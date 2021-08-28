@@ -1,0 +1,138 @@
+/*
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as process from 'child_process';
+import * as fs from 'fs';
+
+import * as path from 'path';
+import Compiler from 'webpack/lib/Compiler';
+import { logger } from './compile_info';
+
+const pandaDir: string = path.join(__dirname, '..', 'bin', 'panda');
+
+const forward: string = '(global.___mainEntry___ = function (globalObjects) {' + '\n' +
+    '  var define = globalObjects.define;' + '\n' +
+    '  var require = globalObjects.require;' + '\n' +
+    '  var bootstrap = globalObjects.bootstrap;' + '\n' +
+    '  var register = globalObjects.register;' + '\n' +
+    '  var render = globalObjects.render;' + '\n' +
+    '  var $app_define$ = globalObjects.$app_define$;' + '\n' +
+    '  var $app_bootstrap$ = globalObjects.$app_bootstrap$;' + '\n' +
+    '  var $app_require$ = globalObjects.$app_require$;' + '\n' +
+    '  var history = globalObjects.history;' + '\n' +
+    '  var Image = globalObjects.Image;' + '\n' +
+    '  (function(global) {' + '\n' +
+    '    "use strict";' + '\n';
+const last: string = '\n' + '})(this.__appProto__);' + '\n' + '})';
+const firstFileEXT: string = '_.js';
+let output: string;
+let webpackPath: string;
+let isWin: boolean = false;
+let isMac: boolean = false;
+let isDebug: boolean = false;
+
+const red: string = '\u001b[31m';
+const blue: string = '\u001b[34m';
+const reset: string = '\u001b[39m';
+
+export class GenAbcPlugin {
+  constructor(output_, webpackPath_, isDebug_) {
+    output = output_;
+    webpackPath = webpackPath_;
+    isDebug = isDebug_;
+  }
+  apply(compiler: Compiler) {
+    if (fs.existsSync(path.resolve(webpackPath, 'panda/build-win'))) {
+      isWin = true;
+    } else {
+      if (fs.existsSync(path.resolve(webpackPath, 'panda/build-mac'))) {
+        isMac = true;
+      } else {
+        if (!fs.existsSync(path.resolve(webpackPath, 'panda/build'))) {
+          logger.error(red, 'ETS:ERROR find build fail', reset);
+          return;
+        }
+      }
+    }
+
+    compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
+      Object.keys(compilation.assets).forEach(key => {
+        // choice *.js
+        if (output && webpackPath && path.extname(key) === '.js') {
+          const newContent: string = forward + compilation.assets[key].source() + last;
+          const keyPath: string = key.replace(/\.js$/, firstFileEXT);
+          writeFileSync(newContent, path.resolve(output, keyPath), key);
+        }
+      });
+    });
+  }
+}
+
+function writeFileSync(inputString: string, output: string, jsBundleFile: string): void {
+  const parent: string = path.join(output, '..');
+  if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+    mkDir(parent);
+  }
+  fs.writeFileSync(output, inputString);
+  if (fs.existsSync(output)) {
+    ts2abcFirst(output);
+  } else {
+    logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+  }
+}
+
+function mkDir(path_: string): void {
+  const parent: string = path.join(path_, '..');
+  if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+    mkDir(parent);
+  }
+  fs.mkdirSync(path_);
+}
+
+function ts2abcFirst(inputPath: string): void {
+  let param: string = '-r';
+  if (isDebug) {
+    param += ' --debug';
+  }
+
+  let ts2abc: string = path.join(pandaDir, 'build', 'src', 'index.js');
+  if (isWin) {
+    ts2abc = path.join(pandaDir, 'build-win', 'src', 'index.js');
+  } else if (isMac) {
+    ts2abc = path.join(pandaDir, 'build-mac', 'src', 'index.js');
+  }
+
+  const cmd: string = `node --expose-gc "${ts2abc}" "${inputPath}" ${param}`;
+
+  try {
+    logger.info(blue, `ETS:INFO ${cmd}`, reset, '\n');
+    process.execSync(cmd);
+  } catch (e) {
+    logger.error(red, `ETS:ERROR Failed to convert file ${inputPath} to abc `, reset);
+    return;
+  }
+
+  if (fs.existsSync(inputPath)) {
+    fs.unlinkSync(inputPath);
+  }
+
+  const abcFile: string = inputPath.replace(/\.js$/, '.abc');
+  if (fs.existsSync(abcFile)) {
+    const abcFileNew: string = abcFile.replace(/_.abc$/, '.abc');
+    fs.renameSync(abcFile, abcFileNew);
+  } else {
+    logger.error(red, `ETS:ERROR ${abcFile} is lost`, reset);
+  }
+}
