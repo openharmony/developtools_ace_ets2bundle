@@ -17,10 +17,8 @@ const ts = require('typescript')
 const path = require('path')
 const fs = require('fs')
 
-generateTargetFile();
-function generateTargetFile() {
-  const filePath = path.resolve(__dirname, '../../../../../../interface/sdk-js/api/@internal/component/ets');
-  const output = path.resolve(__dirname, './declarations');
+generateTargetFile(process.argv[2], process.argv[3]);
+function generateTargetFile(filePath, output) {
   const files = [];
   const globalTsFile = path.resolve(filePath, '../../global.d.ts');
   if (fs.existsSync(globalTsFile)) {
@@ -114,4 +112,17 @@ function isVariable(node) {
     return true;
   }
   return false;
+}
+
+generateComponentConfig(process.argv[4]);
+function generateComponentConfig(dir) {
+  const configFile = path.resolve(dir, 'component_map.js');
+  if (fs.existsSync(configFile)) {
+    const { COMPONENT_MAP } = require(configFile);
+    try {
+      fs.writeFileSync(path.resolve(dir, '../component_config.json'), JSON.stringify(COMPONENT_MAP));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
