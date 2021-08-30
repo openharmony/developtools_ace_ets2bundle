@@ -18,29 +18,29 @@ const path = require('path');
 const fs = require('fs');
 const exec = require('child_process').exec;
 
-if (!fs.existsSync(path.resolve(__dirname, 'bin', 'ark'))) {
+const arkDir = path.resolve(__dirname, 'bin', "ark");
+if (!fs.existsSync(arkDir)) {
   return;
 }
 
 let isWin = !1;
 let isMac = !1;
 
-if (fs.existsSync(path.resolve(__dirname, 'bin', 'ark/build-win'))) {
+if (fs.existsSync(path.join(arkDir, "build"))) {
   isWin = !0;
-} else if (fs.existsSync(path.resolve(__dirname, 'bin', 'ark/build-mac'))) {
+} else if (fs.existsSync(path.join(arkDir, "build-win"))) {
   isMac = !0;
-} else if (!fs.existsSync(path.resolve(__dirname, 'bin', 'ark/build'))) {
-  console.error('[31m', 'find build fail', '[39m');
-  return;
+} else if (!fs.existsSync(path.join(arkDir, "build-mac"))) {
+  throw Error("Error: find build fail").message;
 }
 
 let cwd;
 if (isWin) {
-  cwd = path.join(__dirname, 'bin', 'ark', 'build-win');
+    cwd = path.join(arkDir, "build-win");
 } else if (isMac) {
-  cwd = path.join(__dirname, 'bin', 'ark', 'build-mac');
+    cwd = path.join(arkDir, "build-mac");
 } else {
-  cwd = path.join(__dirname, 'bin', 'ark', 'build');
+    cwd = path.join(arkDir, "build");
 }
 
 exec('npm install', { cwd: cwd }, function(err, stdout, stderr) {
