@@ -1,0 +1,130 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+
+import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+import("//foundation/ace/ace_engine/ace_config.gni")
+
+ets_loader_lib_dir =
+    get_label_info(":build_ets_loader_library", "target_out_dir") + "/lib"
+ets_loader_declarations_dir = get_label_info(":build_ets_loader_library",
+                                             "target_out_dir") + "/declarations"
+ets_loader_component_config_file =
+    get_label_info(":build_ets_loader_library", "target_out_dir") +
+    "/component_config.json"
+ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
+                  "/sysResource.js"
+
+action("build_ets_loader_library") {
+  script = "//foundation/ace/huawei_proprietary/tools/ets-loader/build_ets_loader_library.py"
+  depfile = "$target_gen_dir/$target_name.d"
+  outputs = [
+    ets_loader_lib_dir,
+    ets_loader_declarations_dir,
+    ets_loader_component_config_file,
+  ]
+
+  _ets_loader_dir =
+      "//foundation/ace/huawei_proprietary/tools/ets-loader/compiler"
+  _ace_toolkit_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
+  _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
+
+  _babel_js = _ace_toolkit_dir + "/node_modules/@babel/cli/bin/babel.js"
+  _babel_config_js = _ace_toolkit_dir + "/babel.config.js"
+  _uglify_source_js = _ace_toolkit_dir + "/uglify-source.js"
+  _build_declarations_file_js = _ace_toolkit_dir + "/build_declarations_file.js"
+
+  inputs = [
+    _babel_config_js,
+    _babel_js,
+    _uglify_source_js,
+    _build_declarations_file_js,
+  ]
+
+  # different host platform nodejs tool directory
+  if (host_os == "linux") {
+    nodejs_path =
+        "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-linux-x64/bin/node"
+  } else if (host_os == "mac") {
+    nodejs_path =
+        "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-darwin-x64/bin/node"
+  } else {
+    assert(false, "Unsupported host_os: $host_os")
+  }
+
+  args = [
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+    "--node",
+    rebase_path(nodejs_path, root_build_dir),
+    "--babel-js",
+    rebase_path(_babel_js, root_build_dir),
+    "--ets-loader-src-dir",
+    rebase_path(_ets_loader_dir + "/src", root_build_dir),
+    "--babel-config-js",
+    rebase_path(_babel_config_js, root_build_dir),
+    "--uglify-source-js",
+    rebase_path(_uglify_source_js, root_build_dir),
+    "--output-dir",
+    rebase_path(ets_loader_lib_dir, root_build_dir),
+    "--declarations-file-dir",
+    rebase_path(_declarations_file_dir, root_build_dir),
+    "--build-declarations-file-js",
+    rebase_path(_build_declarations_file_js, root_build_dir),
+    "--output-declarations-dir",
+    rebase_path(ets_loader_declarations_dir, root_build_dir),
+    "--output-component-config-file",
+    rebase_path(ets_loader_component_config_file, root_build_dir),
+  ]
+}
+
+action("build_ets_sysResource") {
+  script = "//foundation/ace/huawei_proprietary/tools/ets-loader/generateSysResource.py"
+  outputs = [ ets_sysResource ]
+
+  _id_defined_json =
+      "//utils/resources/systemres/main/resources/base/element/id_defined.json"
+  inputs = [ _id_defined_json ]
+
+  args = [
+    "--input-json",
+    rebase_path(_id_defined_json, root_build_dir),
+    "--output-js",
+    rebase_path(ets_sysResource, root_build_dir),
+  ]
+}
+
+ohos_copy("ets_loader") {
+  deps = [
+    ":build_ets_loader_library",
+    ":build_ets_sysResource",
+  ]
+  sources = [
+    "compiler/main.js",
+    "compiler/npm-install.js",
+    "compiler/package-lock.json",
+    "compiler/package.json",
+    "compiler/tsconfig.json",
+    "compiler/webpack.config.js",
+    ets_loader_component_config_file,
+    ets_sysResource,
+  ]
+  outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("ets_loader_library") {
+  deps = [ ":build_ets_loader_library" ]
+  sources = [ ets_loader_lib_dir ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("ets_loader_declaration") {
+  deps = [ ":build_ets_loader_library" ]
+  sources = [ ets_loader_declarations_dir ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}

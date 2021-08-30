@@ -1,0 +1,35 @@
+{
+  "appID": "com.huawei.ace.helloworld",
+  "appName": "HelloAce",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minPlatformVersion": "1.0.1",
+  "pages": [
+    "pages/todo",
+    "pages/index",
+    "pages/home",
+    "pages/home_preview",
+
+    "pages/testcases/componentGridTest",
+    "pages/testcases/componentListTest",
+    "pages/testcases/image",
+    "pages/testcases/onclicktest",
+    "pages/testcases/simpleText",
+    "pages/testcases/stacktestsuite",
+
+    "pages/testcases/forEachComplexModel",
+    "pages/testcases/forEachSimpleModel",
+    "pages/testcases/linkArrayModel",
+    "pages/testcases/linkPropCombo",
+    "pages/testcases/linkSimpleModel",
+    "pages/testcases/propSimpleModel",
+    "pages/testcases/stateArrayReverse",
+    "pages/testcases/stateArrayReverseCustomView",
+    "pages/testcases/stateComplexType",
+    "pages/testcases/stateStateBindingProp"
+  ],
+  "window": {
+    "designWidth": 750,
+    "autoDesignWidth": false
+  }
+}
