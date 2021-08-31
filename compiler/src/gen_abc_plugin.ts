@@ -20,7 +20,7 @@ import * as path from 'path';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 
-const pandaDir: string = path.join(__dirname, '..', 'bin', 'panda');
+const arkDir: string = path.join(__dirname, '..', 'bin', 'ark');
 
 const forward: string = '(global.___mainEntry___ = function (globalObjects) {' + '\n' +
     '  var define = globalObjects.define;' + '\n' +
@@ -54,13 +54,13 @@ export class GenAbcPlugin {
     isDebug = isDebug_;
   }
   apply(compiler: Compiler) {
-    if (fs.existsSync(path.resolve(webpackPath, 'panda/build-win'))) {
+    if (fs.existsSync(path.resolve(webpackPath, 'ark/build-win'))) {
       isWin = true;
     } else {
-      if (fs.existsSync(path.resolve(webpackPath, 'panda/build-mac'))) {
+      if (fs.existsSync(path.resolve(webpackPath, 'ark/build-mac'))) {
         isMac = true;
       } else {
-        if (!fs.existsSync(path.resolve(webpackPath, 'panda/build'))) {
+        if (!fs.existsSync(path.resolve(webpackPath, 'ark/build'))) {
           logger.error(red, 'ETS:ERROR find build fail', reset);
           return;
         }
@@ -87,7 +87,7 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   }
   fs.writeFileSync(output, inputString);
   if (fs.existsSync(output)) {
-    ts2abcFirst(output);
+    js2abcFirst(output);
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
   }
@@ -101,20 +101,20 @@ function mkDir(path_: string): void {
   fs.mkdirSync(path_);
 }
 
-function ts2abcFirst(inputPath: string): void {
+function js2abcFirst(inputPath: string): void {
   let param: string = '-r';
   if (isDebug) {
     param += ' --debug';
   }
 
-  let ts2abc: string = path.join(pandaDir, 'build', 'src', 'index.js');
+  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
   if (isWin) {
-    ts2abc = path.join(pandaDir, 'build-win', 'src', 'index.js');
+    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
   } else if (isMac) {
-    ts2abc = path.join(pandaDir, 'build-mac', 'src', 'index.js');
+    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
-  const cmd: string = `node --expose-gc "${ts2abc}" "${inputPath}" ${param}`;
+  const cmd: string = `node --expose-gc "${js2abc}" "${inputPath}" ${param}`;
 
   try {
     logger.info(blue, `ETS:INFO ${cmd}`, reset, '\n');
