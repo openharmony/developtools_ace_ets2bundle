@@ -1,0 +1,6 @@
+./vscode
+compiler/node_modules/
+compiler/lib/
+compiler/declarations/
+compiler/sample/build/
+compiler/component_config.json

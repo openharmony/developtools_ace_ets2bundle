@@ -36,9 +36,6 @@ function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
-    cache: {
-      type: 'filesystem'
-    },
     watch: watchMode,
     watchOptions: {
       aggregateTimeout: 10,

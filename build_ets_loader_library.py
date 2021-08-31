@@ -19,9 +19,8 @@ import subprocess
 import argparse
 
 sys.path.append(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
-                 os.pardir, os.pardir, 'build'))
-from maple.java.util import build_utils  # noqa: E402
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'build'))
+from scripts.util import build_utils  # noqa: E402
 
 
 def parse_args():
