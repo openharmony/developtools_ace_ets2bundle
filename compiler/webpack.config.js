@@ -24,7 +24,8 @@ const {
   loadEntryObj,
   readAppResource,
   resources,
-  loadWorker
+  loadWorker,
+  abilityConfig
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -77,6 +78,7 @@ function initConfig(config) {
           test: /\.ts$/,
           exclude: /node_modules/,
           use: [
+            { loader: path.resolve(__dirname, 'lib/process_ability_entry_file.js') },
             {
               loader: 'ts-loader',
               options: {
@@ -116,24 +118,6 @@ function initConfig(config) {
           /\.d\.ts$/
       ]}),
       new CleanWebpackPlugin(),
-      new CopyPlugin({
-        patterns: [
-          {
-            from: '**/*',
-            context: path.resolve(__dirname, projectConfig.projectPath),
-            globOptions: {
-              ignore: [
-                '**/*.ets',
-                '**/*.ts',
-                '**/*.js',
-                path.resolve(__dirname, projectConfig.buildPath, '**').replace(/\\/g, '/')
-              ]
-            },
-            noErrorOnMissing: true
-          },
-          { from: projectConfig.manifestFilePath }
-        ]
-      }),
       new ResultStates()
     ]
   })
@@ -155,27 +139,8 @@ function setProjectConfig(envArgs) {
   }
 }
 
-module.exports = (env, argv) => {
-  const config = {};
-  setProjectConfig(env);
-  loadEntryObj(projectConfig);
-  initConfig(config);
-
-  if (env.isPreview !== "true") {
-    loadWorker(projectConfig);
-    if (env.compilerType && env.compilerType === 'ark') {
-      config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, path.join(__dirname, 'bin'), env.buildMode === 'debug'));
-    }
-  } else {
-    projectConfig.isPreview = true;
-  }
-
-  if (env.sourceMap === 'none') {
-    config.devtool = false;
-  }
-
-  if (env.buildMode === 'release') {
-    const TerserPlugin = require('terser-webpack-plugin');
+function setReleaseConfig(config) {
+  const TerserPlugin = require('terser-webpack-plugin');
     config.mode = 'production';
     config.optimization = {
       emitOnErrors: true,
@@ -201,6 +166,51 @@ module.exports = (env, argv) => {
       ]
     };
     config.output.sourceMapFilename = '_releaseMap/[name].js.map';
+}
+
+function setCopyPluginConfig(config) {
+  const copyPluginPattrens = [];
+  copyPluginPattrens.push({
+    from: '**/*',
+    context: path.resolve(__dirname, projectConfig.projectPath),
+    globOptions: {
+      ignore: [
+        '**/*.ets',
+        '**/*.ts',
+        '**/*.js',
+        path.resolve(__dirname, projectConfig.buildPath, '**').replace(/\\/g, '/')
+      ]
+    },
+    noErrorOnMissing: true
+  });
+  if (abilityConfig.abilityType === 'page') {
+    copyPluginPattrens.push({ from: projectConfig.manifestFilePath });
+  }
+  config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
+}
+
+module.exports = (env, argv) => {
+  const config = {};
+  setProjectConfig(env);
+  loadEntryObj(projectConfig);
+  initConfig(config);
+  setCopyPluginConfig(config);
+
+  if (env.isPreview !== "true") {
+    loadWorker(projectConfig);
+    if (env.compilerType && env.compilerType === 'ark') {
+      config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, path.join(__dirname, 'bin'), env.buildMode === 'debug'));
+    }
+  } else {
+    projectConfig.isPreview = true;
+  }
+
+  if (env.sourceMap === 'none') {
+    config.devtool = false;
+  }
+
+  if (env.buildMode === 'release') {
+    setReleaseConfig(config);
   }
 
   const appResourcePath = env.appResource || process.env.appResource;
