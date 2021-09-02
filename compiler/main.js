@@ -31,6 +31,10 @@ configure({
 const logger = getLogger('ETS');
 
 const staticPreviewPage = process.env.aceStaticPreview;
+const abilityConfig = {
+  abilityType: process.env.abilityType || 'page',
+  abilityEntryFile: null
+};
 const projectConfig = {};
 const resources = {
   app: {},
@@ -49,24 +53,18 @@ function initProjectConfig(projectConfig) {
 
 function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
-  const appEtsPath = path.join(projectConfig.projectPath, 'app.ets');
-  let manifest = {};
-  try {
-    const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
-    manifest = JSON.parse(jsonString);
-  } catch (error) {
-    throw Error('\u001b[31m ERROR: the manifest file is lost or format is invalid. \u001b[39m').message;
-  }
-
-  if (!fs.existsSync(appEtsPath)) {
-    throw Error('\u001b[31m ERROR: missing app.ets. \u001b[39m').message;
-  }
-  projectConfig.entryObj['./app'] = projectConfig.projectPath + '/app.ets?entry';
-
+  setEntryFile(projectConfig);
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
-  } else {
+  } else if (abilityConfig.abilityType === 'page') {
+    let manifest = {};
+    try {
+      const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
+      manifest = JSON.parse(jsonString);
+    } catch (error) {
+      throw Error(`\u001b[31m ERROR: the manifest file '${projectConfig.manifestFilePath}' is lost or format is invalid. \u001b[39m`).message;
+    }
     if (manifest.pages) {
       const pages = manifest.pages;
       pages.forEach((element) => {
@@ -78,9 +76,20 @@ function loadEntryObj(projectConfig) {
         }
       });
     } else {
-      throw Error('\u001b[31m ERROR: missing pages attribute in manifest.json. \u001b[39m').message;
+      throw Error(`\u001b[31m ERROR: missing pages attribute in '${projectConfig.manifestFilePath}'. \u001b[39m`).message;
     }
   }
+}
+
+function setEntryFile(projectConfig) {
+  const entryFileName = abilityConfig.abilityType === 'page' ? 'app' : abilityConfig.abilityType;
+  const extendFile = entryFileName === 'app' ? '.ets' : '.ts';
+  abilityConfig.abilityEntryFile = entryFileName + extendFile;
+  const entryFilePath = path.join(projectConfig.projectPath, abilityConfig.abilityEntryFile);
+  if (!fs.existsSync(entryFilePath)) {
+    throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
+  }
+  projectConfig.entryObj[`./${entryFileName}`] = projectConfig.projectPath + `/${abilityConfig.abilityEntryFile}?entry`;
 }
 
 function loadWorker(projectConfig) {
@@ -141,3 +150,4 @@ exports.loadEntryObj = loadEntryObj;
 exports.readAppResource = readAppResource;
 exports.resources = resources;
 exports.loadWorker = loadWorker;
+exports.abilityConfig = abilityConfig;
