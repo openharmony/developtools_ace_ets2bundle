@@ -16,8 +16,5 @@
 import { processSystemApi } from './validate_ui_syntax';
 
 module.exports = function processWorker(source: string): string {
-  if (/workers/.test(this.resourcePath)) {
-    return processSystemApi(source);
-  }
-  return source;
+  return processSystemApi(source);
 };
