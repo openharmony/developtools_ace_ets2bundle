@@ -1,39 +1,83 @@
 # developtools_ace-ets2bundle
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+
+提供声明式范式的语法编译转换，语法验证，丰富友好的语法报错提示能力。
 
 #### 软件架构
-软件架构说明
 
+* compiler/src: 编译转换工具源码
+* test: 单元测试用例
+* .eslintrc: eslint配置规则
+* babel.config.js: babel配置信息
+* main.js: 编译转换工具源码
+* package.json: 安装依赖软件版本信息
+* tsconfig.json: 编译工程配置信息
+* webpack.config.js: 打包工具脚本配置信息
 
-#### 安装教程
+#### 环境准备
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```
+> npm -v
+  6.14.8
+> node -v
+  v12.18.3
+```
+请安装最新稳定的node版本。
 
-#### 使用说明
+#### 安装
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+进入到compiler目录
+```
+npm config set registry http://registry.npm.taobao.org
+npm config set strict-ssl false
+npm cache clean -f
+npm install
+```
 
-#### 参与贡献
+#### 快速开始
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+进入到compiler目录
+```
+npm run build
+npm run compile
+```
+上述命令编译了compiler目录下的`sample`工程，编译结果在`sample\build`目录。
 
+#### 创建一个新工程
 
-#### 特技
+进入到compiler目录
+```
+npm run create [projectName]
+```
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+**Note**: 如果`projectName`未指定，`HelloAce`为默认的工程名。
+例如创建一个`foo`工程：
+```
+$ npm run create foo
+```
+工程`foo`的目录结构:
+- foo
+  - pages
+    - index.ets
+  - app.ets
+  - manifest.json
+
+#### 创建一个新的页面
+
+例如在`pages`目录创建一个`bar.ets`页面,需要在manifest.json文件的`pages`新增一行，如下所示：
+```
+  "pages": [
+    "pages/index",
+    "pages/bar"
+  ]
+```
+
+#### 编译工程
+
+进入到compiler目录
+```
+$ npm run build
+$ npm run compile [projectName]
+```
+**Note**: 如果`projectName`未指定，默认编译`sample`工程，编译结果在`sample\build`目录。
