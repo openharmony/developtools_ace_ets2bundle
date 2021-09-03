@@ -1,36 +1,82 @@
 # developtools_ace-ets2bundle
 
 #### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+Provide declarative paradigm syntax compilation conversion, syntax verification, rich and friendly syntax error prompting capabilities.
 
 #### Software Architecture
-Software architecture description
 
-#### Installation
+* compiler/src: source code
+* test: unit test file
+* .eslintrc: eslint configure
+* babel.config.js: babel configure
+* main.js: source code
+* package.json: define what libraries will be installed into node_modules when you run `npm install`
+* tsconfig.json: the compiler options required to compile the project
+* webpack.config.js: webpack configuration information
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+#### Prerequisites
 
-#### Instructions
+```
+> npm -v
+  6.14.8
+> node -v
+  v12.18.3
+```
+Your `npm` and `node` should be of a later version. You can upgrade them to the **latest stable version**.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+#### Installing
 
-#### Contribution
+Enter the root directory of the compiler:
+```
+npm config set registry http://registry.npm.taobao.org
+npm config set strict-ssl false
+npm cache clean -f
+npm install
+```
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+#### Quick Start
 
+Enter the root directory of the compiler:
+```
+npm run build
+npm run compile
+```
+The `sample` project will be compiled. The output is in the `sample/build` directory.
 
-#### Gitee Feature
+#### Create a new project
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Enter the root directory of the compiler:
+```
+npm run create [projectName]
+```
+
+**Note**: If `projectName` is empty, create the `HelloAce` project by default.
+For example, use the following line to create a project named `foo`:
+```
+$ npm run create foo
+```
+The directory structure of project `foo`:
+- foo
+  - pages
+    - index.ets
+  - app.ets
+  - manifest.json
+
+#### Create a new page
+
+For example, create a file `bar.ets` in the `pages` directory. And then add the following lines to `"pages"` field in `manifest.json`:
+```
+  "pages": [
+    "pages/index",
+    "pages/bar"
+  ]
+```
+
+#### Compile a project
+
+Enter the root directory of the compiler:
+```
+$ npm run build
+$ npm run compile [projectName]
+```
+**Note**: If `projectName` is empty, compile the `sample` project by default. In the project root directory, the compilation result is in the `build` directory.
