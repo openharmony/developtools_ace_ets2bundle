@@ -78,6 +78,10 @@ export const COMPONENT_MAP: any = {
     atomic: true,
     attrs: ['iconPosition']
   },
+  Slider: {
+    atomic: true,
+    attrs: ['blockColor', 'trackColor', 'selectedColor', 'minLabel', 'maxLabel', 'showSteps', 'showTips', 'onChange']
+  },
   Counter: {
     attrs: [
       'onStateChange', 'onInc',
