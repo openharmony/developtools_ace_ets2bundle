@@ -61,6 +61,11 @@ export const COMPONENT_MAP: any = {
       'decoration', 'letterSpacing', 'textCase', 'baselineOffset', 'minFontSize', 'maxFontSize'
     ]
   },
+  TextPicker: {
+    atomic: true,
+    attrs: [
+      'defaultPickerItemHeight', 'onAccept', 'onCancel', 'onChange']
+  },
   Span: {
     atomic: true,
     attrs: [
