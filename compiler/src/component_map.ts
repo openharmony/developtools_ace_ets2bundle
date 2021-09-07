@@ -61,6 +61,11 @@ export const COMPONENT_MAP: any = {
       'decoration', 'letterSpacing', 'textCase', 'baselineOffset', 'minFontSize', 'maxFontSize'
     ]
   },
+  TextPicker: {
+    atomic: true,
+    attrs: [
+      'defaultPickerItemHeight', 'onAccept', 'onCancel', 'onChange']
+  },
   Span: {
     atomic: true,
     attrs: [
@@ -77,6 +82,10 @@ export const COMPONENT_MAP: any = {
   Piece: {
     atomic: true,
     attrs: ['iconPosition']
+  },
+  Slider: {
+    atomic: true,
+    attrs: ['blockColor', 'trackColor', 'selectedColor', 'minLabel', 'maxLabel', 'showSteps', 'showTips', 'onChange']
   },
   Counter: {
     attrs: [
@@ -288,8 +297,8 @@ const COMMON_ATTRS: Set<string> = new Set([
   'padding', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom',
   'margin', 'marginLeft', 'marginRight', 'marginTop', 'marginBottom',
   'border', 'borderStyle', 'borderWidth', 'borderColor', 'borderRadius',
-  'backgroundColor', 'backgroundImage', 'backgroundImageSize', 'backgroundImagePosition', 'opacity', 'animation', 'transition',
-  'navigationTitle', 'navigationSubTitle', 'hideNavigationBar', 'hideNavigationBackButton',
+  'backgroundColor', 'backgroundImage', 'backgroundImageSize', 'backgroundImagePosition', 'opacity', 'animation', 
+  'transition', 'navigationTitle', 'navigationSubTitle', 'hideNavigationBar', 'hideNavigationBackButton',
   'toolBar', 'hideToolBar', 'onClick', 'onTouch', 'onKeyEvent',
   'blur', 'backdropBlur', 'windowBlur', 'translate', 'rotate', 'scale', 'transform',
   'onAppear', 'onDisAppear', 'visibility', 'flexBasis', 'flexShrink', 'flexGrow', 'alignSelf',
