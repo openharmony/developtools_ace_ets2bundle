@@ -26,11 +26,11 @@ if (!fs.existsSync(arkDir)) {
 let isWin = !1;
 let isMac = !1;
 
-if (fs.existsSync(path.join(arkDir, "build"))) {
+if (fs.existsSync(path.join(arkDir, "build-win"))) {
   isWin = !0;
-} else if (fs.existsSync(path.join(arkDir, "build-win"))) {
+} else if (fs.existsSync(path.join(arkDir, "build-mac"))) {
   isMac = !0;
-} else if (!fs.existsSync(path.join(arkDir, "build-mac"))) {
+} else if (!fs.existsSync(path.join(arkDir, "build"))) {
   throw Error("Error: find build fail").message;
 }
 
