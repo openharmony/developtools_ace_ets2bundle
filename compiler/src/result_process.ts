@@ -33,7 +33,7 @@ import {
 import { resetComponentCollection } from './validate_ui_syntax';
 import { abilityConfig } from '../main';
 
-module.exports = function resultProcess(source: string, map: any): string {
+module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
   if (/\.ets$/.test(this.resourcePath)) {
     componentInfo.id = 0;
@@ -64,5 +64,4 @@ module.exports = function resultProcess(source: string, map: any): string {
   }
 
   this.callback(null, source, map);
-  return;
 };
