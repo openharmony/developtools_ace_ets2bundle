@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-export const NATIVE_MODULE: Set<string> = new Set(['app', 'router', 'curves', 'matrix4']);
+export const NATIVE_MODULE: Set<string> = new Set(
+  ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
 export const SYSTEM_PLUGIN: string = 'system';
 export const OHOS_PLUGIN: string = 'ohos';
 
@@ -62,6 +63,11 @@ export const APP_STORAGE_GET_OR_SET: string = 'GetOrCreate';
 export const PAGE_ENTRY_FUNCTION_NAME: string = 'loadDocument';
 
 export const COMPONENT_DECORATOR_NAME_COMPONENT: string = 'Component';
+export const COMPONENT_DECORATOR_NAME_CUSTOMDIALOG: string = 'CustomDialog';
+export const CUSTOM_DECORATOR_NAME: Set<string> = new Set([
+  COMPONENT_DECORATOR_NAME_COMPONENT, COMPONENT_DECORATOR_NAME_CUSTOMDIALOG
+]);
+
 export const EXTNAME_ETS: string = '.ets';
 export const NODE_MODULES: string = 'node_modules';
 export const INDEX_ETS: string = 'index.ets';
@@ -137,12 +143,22 @@ export const GESTURE_ENUM_VALUE_LOW: string = 'Low';
 export const GESTURE_ENUM_VALUE_PARALLEL: string = 'Parallel';
 
 export const RESOURCE: string = '$r';
+export const RESOURCE_RAWFILE: string = '$rawfile';
+export const RESOURCE_NAME_ID: string = 'id';
+export const RESOURCE_NAME_TYPE: string = 'type';
+export const RESOURCE_NAME_PARAMS: string = 'params';
 export const RESOURCE_TYPE = {
   color: 10001,
   float: 10002,
   string: 10003,
   plural: 10004,
-  media: 20000
+  boolean: 10005,
+  intarray: 10006,
+  integer: 10007,
+  pattern: 10008,
+  strarray: 10009,
+  media: 20000,
+  rawfile: 30000
 };
 
 export const WORKERS_DIR: string = 'workers';

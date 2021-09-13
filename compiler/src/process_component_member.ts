@@ -70,6 +70,10 @@ import {
   componentInfo,
   createFunction
 } from './utils';
+import {
+  createReference,
+  isProperty
+} from './process_component_class';
 
 export type ControllerType = {
   hasController: boolean
@@ -188,7 +192,8 @@ export const curPropMap: Map<string, string> = new Map();
 
 export function processMemberVariableDecorators(parentName: ts.Identifier,
   item: ts.PropertyDeclaration, ctorNode: ts.ConstructorDeclaration, watchMap: Map<string, ts.Node>,
-  checkController: ControllerType, log: LogInfo[], program: ts.Program): UpdateResult {
+  checkController: ControllerType, log: LogInfo[], program: ts.Program,
+  context: ts.TransformationContext): UpdateResult {
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
   if (!item.decorators || !item.decorators.length) {
@@ -196,13 +201,14 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setProperity(undefined);
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
-      createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program)]));
+      createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
   } else {
-    processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap, log, program);
+    processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
+      log, program, context);
   }
   return updateResult;
 }
@@ -227,7 +233,8 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
 
 function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.PropertyDeclaration,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, name: ts.Identifier,
-  watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program): void {
+  watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
+  context: ts.TransformationContext): void {
   let stateManagementDecoratorCount: number = 0;
   for (let i = 0; i < node.decorators.length; i++) {
     const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/, '').trim();
@@ -264,7 +271,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       processWatch(node, node.decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       stateManagementDecoratorCount += 1;
-      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program);
+      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context);
     }
   }
   if (stateManagementDecoratorCount > 1) {
@@ -275,12 +282,12 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, log: LogInfo[],
-  program: ts.Program): void {
+  program: ts.Program, context: ts.TransformationContext): void {
   const name: ts.Identifier = node.name as ts.Identifier;
   updateResult.setProperity(undefined);
   const updateState: ts.Statement[] = [];
   const variableInitStatement: ts.Statement =
-    createVariableInitStatement(node, decorator, log, program);
+    createVariableInitStatement(node, decorator, log, program, context);
   if (variableInitStatement) {
     updateState.push(variableInitStatement);
   }
@@ -331,7 +338,7 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
 }
 
 function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: string,
-  log: LogInfo[], program: ts.Program): ts.Statement {
+  log: LogInfo[], program: ts.Program, context: ts.TransformationContext): ts.Statement {
   const name: ts.Identifier = node.name as ts.Identifier;
   let type: ts.TypeNode;
   let updateState: ts.ExpressionStatement;
@@ -340,7 +347,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
   }
   switch (decorator) {
     case COMPONENT_NON_DECORATOR:
-      updateState = updateNormalProperty(node, name, log);
+      updateState = updateNormalProperty(node, name, log, context);
       break;
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
@@ -411,8 +418,15 @@ function createUpdateParamsWithSet(name: ts.Identifier): ts.ExpressionStatement 
 }
 
 function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
-  log: LogInfo[]): ts.ExpressionStatement {
-  const init: ts.Expression = processCustomDialogController(node, log);
+  log: LogInfo[], context: ts.TransformationContext): ts.ExpressionStatement {
+  const init: ts.Expression =
+    ts.visitNode(processCustomDialogController(node, log), visitDialogController);
+  function visitDialogController(node: ts.Node): ts.Node {
+    if (isProperty(node)) {
+      node = createReference(node as ts.PropertyAssignment);
+    }
+    return ts.visitEachChild(node, visitDialogController, context);
+  }
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(name.getText()),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), init ||

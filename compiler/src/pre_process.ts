@@ -15,7 +15,8 @@
 
 import {
   sourceReplace,
-  validateUISyntax
+  validateUISyntax,
+  processSystemApi
 } from './validate_ui_syntax';
 import {
   LogInfo,
@@ -25,14 +26,17 @@ import { BUILD_ON } from './pre_define';
 
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
-  const newContent: string = sourceReplace(source);
-  const log: LogInfo[] =
+  if (/\.ets$/.test(this.resourcePath)) {
+    const newContent: string = sourceReplace(source);
+    const log: LogInfo[] =
     validateUISyntax(source, newContent, this.resourcePath, this.resourceQuery);
-  if (log.length) {
-    emitLogInfo(this, log);
+    if (log.length) {
+      emitLogInfo(this, log);
+    }
+    return newContent;
+  } else {
+    return processSystemApi(source);
   }
-
-  return newContent;
 }
 
 module.exports = preProcess;

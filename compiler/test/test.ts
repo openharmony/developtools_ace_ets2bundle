@@ -46,7 +46,7 @@ function expectActual(name: string, filePath: string) {
       "target": ts.ScriptTarget.ES2017
     },
     fileName: `${name}.ts`,
-    transformers: { before: [processUISyntax(null)] }
+    transformers: { before: [processUISyntax(null, true)] }
   });
   componentInfo.id = 0;
   componentCollection.customComponents.clear();
