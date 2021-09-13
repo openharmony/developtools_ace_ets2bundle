@@ -63,6 +63,11 @@ export const APP_STORAGE_GET_OR_SET: string = 'GetOrCreate';
 export const PAGE_ENTRY_FUNCTION_NAME: string = 'loadDocument';
 
 export const COMPONENT_DECORATOR_NAME_COMPONENT: string = 'Component';
+export const COMPONENT_DECORATOR_NAME_CUSTOMDIALOG: string = 'CustomDialog';
+export const CUSTOM_DECORATOR_NAME: Set<string> = new Set([
+  COMPONENT_DECORATOR_NAME_COMPONENT, COMPONENT_DECORATOR_NAME_CUSTOMDIALOG
+]);
+
 export const EXTNAME_ETS: string = '.ets';
 export const NODE_MODULES: string = 'node_modules';
 export const INDEX_ETS: string = 'index.ets';

@@ -90,7 +90,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-        ctorNode, watchMap, checkController, log, program);
+        ctorNode, watchMap, checkController, log, program, context);
       if (result.isItemUpdate()) {
         updateItem = result.getProperity();
       } else {
@@ -245,7 +245,7 @@ function updateHeritageClauses(node: ts.ClassDeclaration): ts.NodeArray<ts.Herit
   return ts.factory.createNodeArray(result);
 }
 
-function isProperty(node: ts.Node): Boolean {
+export function isProperty(node: ts.Node): Boolean {
   if (node.parent && ts.isObjectLiteralExpression(node.parent) && node.parent.parent &&
     ts.isCallExpression(node.parent.parent) && ts.isPropertyAssignment(node) &&
     ts.isIdentifier(node.name)) {
@@ -264,7 +264,7 @@ function isProperty(node: ts.Node): Boolean {
   return false;
 }
 
-function createReference(node: ts.PropertyAssignment): ts.PropertyAssignment {
+export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;

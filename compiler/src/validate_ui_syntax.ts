@@ -206,6 +206,13 @@ export function isObservedClass(node: ts.Node): boolean {
   return false;
 }
 
+export function isCustomDialogClass(node: ts.Node): boolean {
+  if (ts.isClassDeclaration(node) && hasDecorator(node, COMPONENT_DECORATOR_CUSTOM_DIALOG)) {
+    return true;
+  }
+  return false;
+}
+
 function isStruct(node: ts.Node): boolean {
   if ((ts.isExpressionStatement(node) || ts.isExportAssignment(node)) &&
     node.expression && ts.isIdentifier(node.expression) && node.expression.getText() === STRUCT) {
