@@ -13,13 +13,8 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import { processSystemApi } from './validate_ui_syntax';
 
-import { abilityConfig } from '../main';
-
-module.exports = function processAbilityEntryFile(source: string): string {
-  if (path.basename(this.resourcePath) === abilityConfig.abilityEntryFile) {
-    source = source.replace(/exports\.default/, 'globalThis.exports.default');
-  }
-  return source;
-}
+module.exports = function processSystemModule(source: string): string {
+  return processSystemApi(source);
+};

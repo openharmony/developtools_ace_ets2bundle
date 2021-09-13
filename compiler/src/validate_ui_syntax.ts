@@ -107,6 +107,8 @@ export const objectLinkCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
+export const moduleCollection: Set<string> = new Set();
+
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
   let log: LogInfo[] = [];
@@ -729,7 +731,8 @@ export function processSystemApi(content: string): string {
       const moduleType: string = item2 || item5;
       const systemKey: string = item3 || item6;
       const systemValue: string = item1 || item4;
-      if (NATIVE_MODULE.has(systemKey)) {
+      moduleCollection.add(`${moduleType}.${systemKey}`);
+      if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
         item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
       } else if (moduleType === SYSTEM_PLUGIN) {
         item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +

@@ -91,7 +91,8 @@ export const expectResult: string =
         if (earlierCreatedChild_2 == undefined) {
             View.create(new Child("2", this, { stateProperty: this.regularToState,
                 propProperty: this.stateToProp,
-                regularProperty: this.regularToRegular, linkProperty: this.__stateToLink
+                regularProperty: this.regularToRegular,
+                linkProperty: this.__stateToLink
             }));
         }
         else {

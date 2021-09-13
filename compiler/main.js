@@ -54,6 +54,7 @@ function initProjectConfig(projectConfig) {
 function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   setEntryFile(projectConfig);
+
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
