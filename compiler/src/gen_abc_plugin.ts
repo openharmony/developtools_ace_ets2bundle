@@ -22,20 +22,6 @@ import { logger } from './compile_info';
 
 const arkDir: string = path.join(__dirname, '..', 'bin', 'ark');
 
-const forward: string = '(global.___mainEntry___ = function (globalObjects) {' + '\n' +
-    '  var define = globalObjects.define;' + '\n' +
-    '  var require = globalObjects.require;' + '\n' +
-    '  var bootstrap = globalObjects.bootstrap;' + '\n' +
-    '  var register = globalObjects.register;' + '\n' +
-    '  var render = globalObjects.render;' + '\n' +
-    '  var $app_define$ = globalObjects.$app_define$;' + '\n' +
-    '  var $app_bootstrap$ = globalObjects.$app_bootstrap$;' + '\n' +
-    '  var $app_require$ = globalObjects.$app_require$;' + '\n' +
-    '  var history = globalObjects.history;' + '\n' +
-    '  var Image = globalObjects.Image;' + '\n' +
-    '  (function(global) {' + '\n' +
-    '    "use strict";' + '\n';
-const last: string = '\n' + '})(this.__appProto__);' + '\n' + '})';
 const firstFileEXT: string = '_.js';
 let output: string;
 let webpackPath: string;
@@ -71,7 +57,7 @@ export class GenAbcPlugin {
       Object.keys(compilation.assets).forEach(key => {
         // choice *.js
         if (output && webpackPath && path.extname(key) === '.js') {
-          const newContent: string = forward + compilation.assets[key].source() + last;
+          const newContent: string = compilation.assets[key].source();
           const keyPath: string = key.replace(/\.js$/, firstFileEXT);
           writeFileSync(newContent, path.resolve(output, keyPath), key);
         }
