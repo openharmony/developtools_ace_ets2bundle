@@ -53,7 +53,7 @@ function initConfig(config) {
     module: {
       rules: [
         {
-          test: /\.ets$/,
+          test: /\.(ets|ts)$/,
           use: [
             { loader: path.resolve(__dirname, 'lib/result_process.js') },
             {
@@ -64,7 +64,7 @@ function initConfig(config) {
                 configFile: path.resolve(__dirname, 'tsconfig.json'),
                 getCustomTransformers(program) {
                   return {
-                    before: [processUISyntax(program, path.join(projectPath, 'pages'))],
+                    before: [processUISyntax(program)],
                     after: []
                   };
                 },
@@ -75,25 +75,9 @@ function initConfig(config) {
           ]
         },
         {
-          test: /\.ts$/,
-          exclude: /node_modules/,
-          use: [
-            { loader: path.resolve(__dirname, 'lib/process_ability_entry_file.js') },
-            {
-              loader: 'ts-loader',
-              options: {
-                onlyCompileBundledFiles: true,
-                configFile: path.resolve(__dirname, 'tsconfig.json'),
-              }
-            },
-            { loader: path.resolve(__dirname, 'lib/process_worker.js') }
-          ]
-        },
-        {
           test: /\.js$/,
-          exclude: /node_modules/,
           use: [
-            { loader: path.resolve(__dirname, 'lib/process_worker.js') }
+            { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
           ]
         }
       ]
@@ -102,7 +86,7 @@ function initConfig(config) {
       global: false
     },
     resolve: {
-      extensions:['.ts', '.ets', '.js'],
+      extensions:['.js', '.ets', '.ts'],
       modules: [
         projectPath,
         path.join(projectPath, '../../../../../'),

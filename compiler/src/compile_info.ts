@@ -28,7 +28,8 @@ import {
 import { transformLog } from './process_ui_syntax';
 import {
   dollarCollection,
-  componentCollection
+  componentCollection,
+  moduleCollection
 } from './validate_ui_syntax';
 import { decoratorParamSet } from './process_component_member';
 import { appComponentCollection } from './process_component_build';
@@ -78,10 +79,12 @@ export class ResultStates {
     });
 
     if (!projectConfig.isPreview) {
-      compiler.hooks.compilation.tap('Collect Components', compilation => {
-        compilation.hooks.additionalAssets.tapAsync('Collect Components', callback => {
+      compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
+        compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
           compilation.assets['./component_collection.txt'] =
             new RawSource(Array.from(appComponentCollection).join(","));
+          compilation.assets['./module_collection.txt'] =
+            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(","));
           callback();
         });
       })

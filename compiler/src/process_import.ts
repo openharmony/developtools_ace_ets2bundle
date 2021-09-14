@@ -25,7 +25,7 @@ import {
   STRUCT,
   CLASS,
   CUSTOM_COMPONENT_DEFAULT,
-  COMPONENT_DECORATOR_NAME_COMPONENT
+  CUSTOM_DECORATOR_NAME
 } from './pre_define';
 import {
   propertyCollection,
@@ -36,6 +36,7 @@ import {
   processSystemApi,
   propCollection,
   isObservedClass,
+  isCustomDialogClass,
   observedClassCollection,
   enumCollection,
   getComponentSet,
@@ -103,6 +104,10 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
+  }
+  if (isCustomDialogClass(node)) {
+    // @ts-ignore
+    componentCollection.customDialogs.add(node.name.getText());
   }
   if (ts.isEnumDeclaration(node) && node.name) {
     enumCollection.add(node.name.getText());
@@ -209,7 +214,7 @@ function isCustomComponent(node: ts.ClassDeclaration): boolean {
     for (let i = 0; i < node.decorators.length; ++i) {
       const decoratorName: ts.Identifier = node.decorators[i].expression as ts.Identifier;
       if (ts.isIdentifier(decoratorName) &&
-        decoratorName.escapedText.toString() === COMPONENT_DECORATOR_NAME_COMPONENT) {
+        CUSTOM_DECORATOR_NAME.has(decoratorName.escapedText.toString())) {
         return true;
       }
     }

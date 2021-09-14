@@ -42,6 +42,13 @@ export const COMPONENT_MAP: any = {
       'onPause', 'onRepeat', 'onCancel', 'onFinish', 'onFrame'
     ]
   },
+  Refresh: {
+    atomic: true,
+    attrs: [
+      'refreshing', 'offset', 'friction',
+      'onStateChange', 'onRefreshing'
+    ]
+  },
   SpringProp: {
     atomic: true
   },
@@ -63,8 +70,11 @@ export const COMPONENT_MAP: any = {
   },
   TextPicker: {
     atomic: true,
-    attrs: [
-      'defaultPickerItemHeight', 'onAccept', 'onCancel', 'onChange']
+    attrs: ['defaultPickerItemHeight', 'onAccept', 'onCancel', 'onChange']
+  },
+  DatePicker: {
+    atomic: true,
+    attrs: ['lunar', 'onChange', 'useMilitaryTime']
   },
   Span: {
     atomic: true,
@@ -85,7 +95,7 @@ export const COMPONENT_MAP: any = {
   },
   Slider: {
     atomic: true,
-    attrs: ['blockColor', 'trackColor', 'selectedColor', 'minLabel', 'maxLabel', 'showSteps', 'showTips', 'onChange']
+    attrs: ['blockColor', 'trackColor', 'selectedColor', 'minLabel','maxLabel', 'showSteps', 'showTips', 'onChange']
   },
   Counter: {
     attrs: [
@@ -126,10 +136,13 @@ export const COMPONENT_MAP: any = {
   GridContainer: {
     attrs: ['columns', 'sizeType', 'gutter', 'margin']
   },
+  Hyperlink: {
+    attrs: ['color']
+  },
   Swiper: {
     attrs: [
       'index', 'autoPlay', 'interval', 'indicator',
-      'loop', 'duration', 'vertical', 'itemSpace', 'onChange'
+      'loop', 'duration', 'vertical', 'itemSpace', 'displayMode', 'onChange'
     ]
   },
   Rating: {
@@ -187,6 +200,12 @@ export const COMPONENT_MAP: any = {
       'viewPort'
     ]
   },
+  Progress: {
+    atomic: true,
+    attrs: [
+      'value', 'color', 'cricularStyle'
+    ]
+  },
   Rect: {
     atomic: true,
     attrs: [
@@ -212,7 +231,7 @@ export const COMPONENT_MAP: any = {
   Tabs: {
     children: ['TabContent'],
     attrs: [
-      'initialIndex', 'vertical', 'scrollable', 'barMode', 'barWidth', 'barHeight', 'animationDuration',
+      'vertical', 'scrollable', 'barMode', 'barWidth', 'barHeight', 'animationDuration',
       'onChange'
     ]
   },
@@ -245,6 +264,9 @@ export const COMPONENT_MAP: any = {
   AlertDialog: {
     attrs: ['show']
   },
+  ActionSheet: {
+    attrs: ['show']
+  },
   Video: {
     atomic: true,
     attrs: [
@@ -258,7 +280,7 @@ export const COMPONENT_MAP: any = {
   AlphabetIndexer: {
     attrs: [
       'onSelected', 'selectedColor', 'popupColor', 'selectedBackgroundColor', 'popupBackground', 'usingPopup',
-      'selectedFont', 'popupFont', 'iteamSize', 'font', 'color', 'alignStyle'
+      'selectedFont', 'popupFont', 'itemSize', 'font', 'color', 'alignStyle'
     ]
   },
   Radio: {
@@ -290,6 +312,35 @@ export const COMPONENT_MAP: any = {
     atomic: true,
     attrs: ['points']
   },
+  Gauge: {
+    atomic: true,
+    attrs: ['value', 'startAngle', 'endAngle', 'colors', 'strokeWidth', 'labelTextConfig', 'labelColorConfig']
+  },
+  TextArea: {
+    atomic: true,
+    attrs: [
+      'placeholderColor', 'placeholderFont', 'textAlign', 'caretColor', 'correction', 'onChange'
+    ]
+  },
+  TextInput: {
+    atomic: true,
+    attrs: [
+      'textInputType', 'placeholderColor', 'placeholderFont', 'textInputAction', 'inputFilter', 'caretColor',
+      'correction', 'onEditChanged', 'onSubmit', 'onChange'
+    ]
+  },
+  Marquee: {
+    atomic: true,
+    attrs: ['onStart', 'onBounce', 'onFinish']
+  },
+  Menu: {
+    children: ['Option'],
+    attrs: ['show', 'showPosition'],
+  },
+  Option: {
+    parents: ['Menu'],
+    attrs: [],
+  },
 };
 
 const COMMON_ATTRS: Set<string> = new Set([
@@ -297,16 +348,22 @@ const COMMON_ATTRS: Set<string> = new Set([
   'padding', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom',
   'margin', 'marginLeft', 'marginRight', 'marginTop', 'marginBottom',
   'border', 'borderStyle', 'borderWidth', 'borderColor', 'borderRadius',
-  'backgroundColor', 'backgroundImage', 'backgroundImageSize', 'backgroundImagePosition', 'opacity', 'animation', 
-  'transition', 'navigationTitle', 'navigationSubTitle', 'hideNavigationBar', 'hideNavigationBackButton',
-  'toolBar', 'hideToolBar', 'onClick', 'onTouch', 'onKeyEvent',
+  'backgroundColor', 'backgroundImage', 'backgroundImageSize', 'backgroundImagePosition',
+  'opacity', 'animation', 'transition',
+  'navigationTitle', 'navigationSubTitle', 'hideNavigationBar', 'hideNavigationBackButton',
+  'toolBar', 'hideToolBar', 'onClick', 'onTouch', 'onKeyEvent', 'onHover',
   'blur', 'backdropBlur', 'windowBlur', 'translate', 'rotate', 'scale', 'transform',
   'onAppear', 'onDisAppear', 'visibility', 'flexBasis', 'flexShrink', 'flexGrow', 'alignSelf',
   'useAlign', 'zIndex', 'sharedTransition', 'direction', 'align', 'position', 'markAnchor', 'offset',
-  'enabled', 'aspectRatio', 'displayPriority', 'onDrag', 'onDragEnter', 'onDragMove', 'onDragLeave', 'onDrop',
-  'overlay', 'linearGradient', 'sweepGradient', 'radialGradient', 'gridOffset', 'gridSpan', 'useSizeType',
-  'motionPath', 'clip', 'shadow', 'mask', 'accessibilityGroup', 'accessibilityText', 'accessibilityDescription',
-  'accessibilityImportance', 'onAccessibility'
+  'enabled', 'aspectRatio', 'displayPriority',
+  'onDrag', 'onDragEnter', 'onDragMove', 'onDragLeave', 'onDrop',
+  'overlay', 'linearGradient', 'sweepGradient', 'radialGradient',
+  'gridOffset', 'gridSpan', 'useSizeType',
+  'motionPath', 'clip', 'shadow', 'mask',
+  'accessibilityGroup', 'accessibilityText', 'accessibilityDescription',
+  'accessibilityImportance', 'onAccessibility', 'grayscale', 'brightness', 'contrast',
+  'saturate', 'geometryTransition',
+  'bindPopup', 'colorBlend', 'invert', 'sepia', 'hueRotate'
 ]);
 const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
   'slide', 'translate', 'scale', 'opacity'
@@ -336,9 +393,16 @@ export interface ExtendParamterInterfance {
 }
 export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
 
+export const JS_BIND_COMPONENTS: Set<string> = new Set([
+  ...GESTURE_TYPE_NAMES, 'Gesture',
+  'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
+  'TabsController', 'CalendarController', 'AbilityController', 'VideoController'
+]);
+
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {
     INNER_COMPONENT_NAMES.add(componentName);
+    JS_BIND_COMPONENTS.add(componentName);
     if (!COMPONENT_MAP[componentName].atomic) {
       BUILDIN_CONTAINER_COMPONENT.add(componentName);
     } else {
