@@ -31,35 +31,37 @@ import {
   componentInfo
 } from './utils';
 import { resetComponentCollection } from './validate_ui_syntax';
+import { abilityConfig } from '../main';
 
-module.exports = function resultProcess(source: string, map: any): string {
+module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
-  componentInfo.id = 0;
-  propertyCollection.clear();
-  linkCollection.clear();
-  resetComponentCollection();
-  if (transformLog && transformLog.errors.length) {
-    const sourceFile: ts.SourceFile = transformLog.sourceFile;
-
-    const logInfos: LogInfo[] = transformLog.errors.map((item) => {
-      if (item.pos) {
-        const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
-        item.line = posOfNode.line + 1;
-        item.column = posOfNode.character + 1;
-      } else {
-        item.line = undefined;
-        item.column = undefined;
-      }
-      item.fileName = sourceFile.fileName.replace(/.ts$/, '');
-      return item;
-    });
-    emitLogInfo(this, logInfos);
-    resetLog();
+  if (/\.ets$/.test(this.resourcePath)) {
+    componentInfo.id = 0;
+    propertyCollection.clear();
+    linkCollection.clear();
+    resetComponentCollection();
+    if (transformLog && transformLog.errors.length) {
+      const sourceFile: ts.SourceFile = transformLog.sourceFile;
+      const logInfos: LogInfo[] = transformLog.errors.map((item) => {
+        if (item.pos) {
+          const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
+          item.line = posOfNode.line + 1;
+          item.column = posOfNode.character + 1;
+        } else {
+          item.line = undefined;
+          item.column = undefined;
+        }
+        item.fileName = sourceFile.fileName.replace(/.ts$/, '');
+        return item;
+      });
+      emitLogInfo(this, logInfos);
+      resetLog();
+    }
   }
-  if (path.basename(this.resourcePath) === 'app.ets') {
+  const resourcePath: string = path.basename(this.resourcePath);
+  if (['app.ets', abilityConfig.abilityEntryFile].includes(resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
 
   this.callback(null, source, map);
-  return;
 };

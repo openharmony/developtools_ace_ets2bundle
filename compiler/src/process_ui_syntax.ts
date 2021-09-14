@@ -28,7 +28,11 @@ import {
   COMPONENT_EXTEND_DECORATOR,
   RESOURCE,
   RESOURCE_TYPE,
-  WORKER_OBJECT
+  WORKER_OBJECT,
+  RESOURCE_NAME_ID,
+  RESOURCE_NAME_TYPE,
+  RESOURCE_NAME_PARAMS,
+  RESOURCE_RAWFILE
 } from './pre_define';
 import {
   componentInfo,
@@ -48,19 +52,19 @@ import {
   BUILDIN_CONTAINER_COMPONENT,
   CUSTOM_BUILDER_METHOD,
   EXTEND_ATTRIBUTE,
-  INNER_COMPONENT_NAMES
+  JS_BIND_COMPONENTS
 } from './component_map';
 import { resources } from '../main';
 
 export const transformLog: FileLog = new FileLog();
 
-export function processUISyntax(program: ts.Program): Function {
+export function processUISyntax(program: ts.Program, ut = false): Function {
   return (context: ts.TransformationContext) => {
     let pagesDir: string;
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
-        if (path.basename(node.fileName) === 'app.ets.ts') {
+        if (!ut && (path.basename(node.fileName) === 'app.ets.ts' || !/\.ets\.ts$/.test(node.fileName))) {
           return node;
         }
         collectComponents(node);
@@ -120,7 +124,7 @@ function collectComponents(node: ts.SourceFile): void {
   if (node.identifiers && node.identifiers.size) {
     // @ts-ignore
     for (let key of node.identifiers.keys()) {
-      if (INNER_COMPONENT_NAMES.has(key)) {
+      if (JS_BIND_COMPONENTS.has(key)) {
         appComponentCollection.add(key);
       }
     }
@@ -129,23 +133,51 @@ function collectComponents(node: ts.SourceFile): void {
 
 function isResource(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-    node.expression.escapedText.toString() === RESOURCE && node.arguments.length > 0;
+    (node.expression.escapedText.toString() === RESOURCE ||
+    node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
 }
 
 function processResourceData(node: ts.CallExpression): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
-    // @ts-ignore
-    const resourceData: string[] = node.arguments[0].text.split('.');
-    if (validateResourceData(resourceData, resources, node.arguments[0].getStart())) {
-      const resourceType: number = RESOURCE_TYPE[resourceData[1]];
-      const resourceValue: number = resources[resourceData[0]][resourceData[1]][resourceData[2]];
-      const argsArr: ts.Expression[] = Array.from(node.arguments);
-      argsArr.splice(0, 1, ts.factory.createNumericLiteral(resourceValue),
-        ts.factory.createNumericLiteral(resourceType));
-      return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, argsArr);
+    if (node.expression.getText() === RESOURCE_RAWFILE) {
+      return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]]);
+    } else {
+      // @ts-ignore
+      const resourceData: string[] = node.arguments[0].text.trim().split('.');
+      if (validateResourceData(resourceData, resources, node.arguments[0].getStart())) {
+        const resourceType: number = RESOURCE_TYPE[resourceData[1]];
+        const resourceValue: number = resources[resourceData[0]][resourceData[1]][resourceData[2]];
+        return createResourceParam(resourceValue, resourceType,
+          Array.from(node.arguments).slice(1));
+      }
     }
   }
   return node;
+}
+
+function createResourceParam(resourceValue: number, resourceType: number,argsArr: ts.Expression[]):
+  ts.ObjectLiteralExpression {
+  const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
+    [
+      ts.factory.createPropertyAssignment(
+        ts.factory.createStringLiteral(RESOURCE_NAME_ID),
+        ts.factory.createNumericLiteral(resourceValue)
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
+        ts.factory.createNumericLiteral(resourceType)
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
+        ts.factory.createArrayLiteralExpression(
+          argsArr,
+          false
+        )
+      )
+    ],
+    false
+  );
+  return resourceParams;
 }
 
 function validateResourceData(resourceData: string[], resources: object, pos: number): boolean {
