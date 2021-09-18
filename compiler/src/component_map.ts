@@ -319,14 +319,14 @@ export const COMPONENT_MAP: any = {
   TextArea: {
     atomic: true,
     attrs: [
-      'placeholderColor', 'placeholderFont', 'textAlign', 'caretColor', 'correction', 'onChange'
+      'placeholderColor', 'placeholderFont', 'textAlign', 'caretColor', 'onChange'
     ]
   },
   TextInput: {
     atomic: true,
     attrs: [
-      'textInputType', 'placeholderColor', 'placeholderFont', 'textInputAction', 'inputFilter', 'caretColor',
-      'correction', 'onEditChanged', 'onSubmit', 'onChange'
+      'type', 'placeholderColor', 'placeholderFont', 'enterKeyType', 'caretColor', 'onEditChanged',
+      'onSubmit', 'onChange'
     ]
   },
   Marquee: {
