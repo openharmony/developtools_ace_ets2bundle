@@ -179,7 +179,7 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
   newStatements.push(res.newNode);
   if (projectConfig.isPreview) {
     const posOfNode: ts.LineAndCharacter =
-      transformLog.sourceFile.getLineAndCharacterOfPosition(node.getStart());
+      transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
     const projectPath: string = projectConfig.projectPath;
     const curFileName: string = transformLog.sourceFile.fileName.replace(/.ts$/, '');
     const debugInfo: string =
@@ -209,6 +209,16 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
   }
   if (res.isContainerComponent || res.needPop) {
     newStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
+  }
+}
+
+function getRealNodePos(node: ts.Node): number {
+  // @ts-ignore
+  if (node.pos === -1 && node.expression) {
+    // @ts-ignore
+    return getRealNodePos(node.expression);
+  } else {
+    return node.getStart();
   }
 }
 
