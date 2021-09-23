@@ -172,7 +172,6 @@ function checkComponentDecorator(source: string, filePath: string,
       }
     });
     validateEntryCount(result, fileQuery, sourceFile.fileName, log);
-    validatePreviewCount(result, sourceFile.fileName, log);
   }
 
   return log.length ? log : null;
@@ -184,16 +183,6 @@ function validateEntryCount(result: DecoratorResult, fileQuery: string,
     log.push({
       type: LogType.ERROR,
       message: `A page must have one and only one '@Entry' decorator with a struct.`,
-      fileName: fileName
-    });
-  }
-}
-
-function validatePreviewCount(result: DecoratorResult, fileName: string, log: LogInfo[]): void {
-  if (result.previewCount > 1) {
-    log.push({
-      type: LogType.ERROR,
-      message: `A page can have at most one '@Preview' decorator with a struct.`,
       fileName: fileName
     });
   }
