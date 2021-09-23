@@ -130,24 +130,7 @@ function setReleaseConfig(config) {
       emitOnErrors: true,
       usedExports: false,
       minimize: true,
-      minimizer: [
-        new TerserPlugin({
-          minify: (file, sourceMap) => {
-            const uglifyEsOptions = {
-              compress: {
-                unused: true
-              },
-              sourceMap: {
-                content: sourceMap
-              }
-            };
-            if (/\/workers\//.test(Object.keys(file)[0])) {
-              uglifyEsOptions.compress.unused = false;
-            }
-            return require('uglify-es').minify(file, uglifyEsOptions);
-          },
-        }),
-      ]
+      minimizer: [ new TerserPlugin() ]
     };
     config.output.sourceMapFilename = '_releaseMap/[name].js.map';
 }
