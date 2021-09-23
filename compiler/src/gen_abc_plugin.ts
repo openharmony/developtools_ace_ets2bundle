@@ -103,7 +103,6 @@ function js2abcFirst(inputPath: string): void {
   const cmd: string = `node --expose-gc "${js2abc}" "${inputPath}" ${param}`;
 
   try {
-    logger.info(blue, `ETS:INFO ${cmd}`, reset, '\n');
     process.execSync(cmd);
   } catch (e) {
     logger.error(red, `ETS:ERROR Failed to convert file ${inputPath} to abc `, reset);
