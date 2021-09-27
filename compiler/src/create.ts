@@ -54,7 +54,7 @@ function createProject(dist: string) {
 }`;
 
   const manifest:string = `{
-  "appID": "com.huawei.` + appID + `",
+  "id": "com.huawei.` + appID + `",
   "appName": "` + appName + `",
   "versionName": "1.0.0",
   "versionCode": 1,
