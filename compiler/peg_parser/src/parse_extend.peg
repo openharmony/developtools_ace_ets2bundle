@@ -15,7 +15,7 @@
 
 start = extendAttributes:extendAttribute+
 {
-    return {location: location()}
+  return {location: location()}
 }
 
 extendAttribute = whiteSpace '.' whiteSpace attribute item

@@ -15,7 +15,6 @@
 
 import ts from 'typescript';
 import path from 'path';
-const parser = require('../peg_parser/dist/index.js')
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -60,6 +59,7 @@ import {
   addLog,
   hasDecorator
 } from './utils';
+const parser = require('../peg_parser/dist/index.js')
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -666,12 +666,12 @@ function collectionStates(decorator: string, name: string, states: Set<string>, 
   }
 }
 
-export interface afterExtendCheck {
+export interface replaceResult {
   content: string,
   log: LogInfo[]
 }
 
-export function sourceReplace(source: string, sourcePath: string): afterExtendCheck {
+export function sourceReplace(source: string, sourcePath: string): replaceResult {
   let content: string = source;
   const log: LogInfo[] = [];
   // replace struct->class
@@ -692,13 +692,13 @@ export function sourceReplace(source: string, sourcePath: string): afterExtendCh
 }
 
 export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
-  let pegCheckContent
-  let result
+  let pegCheckContent;
+  let result;
   try {
     result = parser.parse(content);
     pegCheckContent = result.content;
     for (let i=0; i<result.collect_extend.component.length; i++) {
-      collectExtend(result.collect_extend.component[i], result.collect_extend.functionName[i], result.collect_extend.parameters[i])
+      collectExtend(result.collect_extend.component[i], result.collect_extend.functionName[i], result.collect_extend.parameters[i]);
     }
   } catch (err) {
     result = err;
@@ -708,8 +708,8 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
       line: err.location.start.line,
       column: err.location.start.column,
       fileName: sourcePath
-    })
-    pegCheckContent = content
+    });
+    pegCheckContent = content;
   }
   if(result.error_otherParsers) {
     for(let i=0; i<result.error_otherParsers.length; i++) {
@@ -719,10 +719,10 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
         line: result.error_otherParsers[i].errPosition.line,
         column: result.error_otherParsers[i].errPosition.column,
         fileName: sourcePath
-      })
+      });
     }
   }
-  return pegCheckContent
+  return pegCheckContent;
 }
 
 function collectExtend(component: string, attribute: string, parameter: string): void {

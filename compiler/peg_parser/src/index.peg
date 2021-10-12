@@ -14,29 +14,31 @@
  */
 
 {
-    const parse_extend = require('./parse_extend.js')
-    let error_otherParsers = []
-    let singleError = function(errMessage, line, column) {
-        this.errMessage = errMessage;
-        this.errPosition = {
-            line: line,
-            column: column
-        }
-    }
-    let collect_extend = {
-        component: [],
-        functionName: [],
-        parameters: []
-    }
+  const parse_extend = require('./parse_extend.js');
+
+  const error_otherParsers = [];
+  let singleError = function(errMessage, line, column) {
+    this.errMessage = errMessage;
+    this.errPosition = {
+      line: line,
+      column: column
+    };
+  };
+  const collect_extend = {
+    component: [],
+    functionName: [],
+    parameters: []
+  };
 }
 
-start = blocks: block+ {
-    return {
-        content: blocks.join(''),
-        location: location(),
-        collect_extend: collect_extend,
-        error_otherParsers: error_otherParsers
-    }
+start = blocks: block+ 
+{
+  return {
+    content: blocks.join(''),
+    location: location(),
+    collect_extend: collect_extend,
+    error_otherParsers: error_otherParsers
+  };
 }
 
 block = extend/(prefix extend?)
@@ -44,37 +46,37 @@ block = extend/(prefix extend?)
 prefix = $((!prefix_extend .)+)
 
 extend =
-whiteSpace1:whiteSpace prefix_extend:prefix_extend funcBody_extend:funcBody_extend
-whiteSpace2: whiteSpace right:'}' whiteSpace3:whiteSpace 
+  whiteSpace1:whiteSpace prefix_extend:prefix_extend funcBody_extend:funcBody_extend
+  whiteSpace2: whiteSpace right:'}' whiteSpace3:whiteSpace 
 {
-    return whiteSpace1 + prefix_extend + funcBody_extend + whiteSpace2 + right + whiteSpace3
+  return whiteSpace1 + prefix_extend + funcBody_extend + whiteSpace2 + right + whiteSpace3;
 }
 
 prefix_extend = prefix_extend_one/prefix_extend_another
 
 //match a kind of extend component
 prefix_extend_one =
-'@Extend' whiteSpace1:whiteSpace '(' component:component ')' whiteSpace2:whiteSpace 'function'
-whiteSpace3:whiteSpace function_name:function_name whiteSpace4:whiteSpace '(' parameters:parameters
-')' whiteSpace5:whiteSpace left:'{'
+  '@Extend' whiteSpace1:whiteSpace '(' component:component ')' whiteSpace2:whiteSpace 'function'
+  whiteSpace3:whiteSpace function_name:function_name whiteSpace4:whiteSpace '(' parameters:parameters
+  ')' whiteSpace5:whiteSpace left:'{'
 {
-    collect_extend.component.push(component)
-    collect_extend.functionName.push(function_name)
-    collect_extend.parameters.push(parameters)
-    return '@Extend' + whiteSpace1 + whiteSpace2 + 'function' + whiteSpace3 + '__' + component +
-        '__' + function_name + whiteSpace4 + '(' + parameters + ')' + whiteSpace5 + left + component
+  collect_extend.component.push(component);
+  collect_extend.functionName.push(function_name);
+  collect_extend.parameters.push(parameters);
+  return '@Extend' + whiteSpace1 + whiteSpace2 + 'function' + whiteSpace3 + '__' + component +
+    '__' + function_name + whiteSpace4 + '(' + parameters + ')' + whiteSpace5 + left + component;
 }
 
 //match another kind of extend component
 prefix_extend_another =
-'@Extend' whiteSpace1:whiteSpace component:component '.' function_name:function_name
-whiteSpace2:whiteSpace '(' parameters:parameters ')' whiteSpace3:whiteSpace left:'{'
+  '@Extend' whiteSpace1:whiteSpace component:component '.' function_name:function_name
+  whiteSpace2:whiteSpace '(' parameters:parameters ')' whiteSpace3:whiteSpace left:'{'
 {
-    collect_extend.component.push(component)
-    collect_extend.functionName.push(function_name)
-    collect_extend.parameters.push(parameters)
-    return '@Extend' + ' function' + whiteSpace1 + '__' + component + '__' + function_name +
-    whiteSpace2 + '(' + parameters + ')' + whiteSpace3 + left + component
+  collect_extend.component.push(component);
+  collect_extend.functionName.push(function_name);
+  collect_extend.parameters.push(parameters);
+  return '@Extend' + ' function' + whiteSpace1 + '__' + component + '__' + function_name +
+    whiteSpace2 + '(' + parameters + ')' + whiteSpace3 + left + component;
 }
 
 component = $ [a-zA-Z_]+
@@ -88,33 +90,34 @@ function_name_tail = $ [a-zA-Z0-9_$]*
 parameters = $ ([^()]* item* [^()]*)
 
 //extract Extend internal attribute SyntaxError
-funcBody_extend = body:($[^{}]* item* [^{}]*) {
-    try {
-        let functionBody = body.join('')
-        parse_extend.parse(functionBody)
-        return functionBody
-    } catch (err) {
-        let countLines = location().end.line - location().start.line
-        if (err.location.start.line === 1) {
-            err.location.start.column += location().start.column
-        }
-        let supportMessage = " Our rule is .attribute(value) , for example: .width(50) . And you'd better have at least one attribute in Extend Component"
-        error_otherParsers.push(
-            new singleError(
-                parse_extend.SyntaxError.buildMessage(err.expected, err.found) + supportMessage,
-                err.location.start.line + location().start.line - 1,
-                err.location.start.column
-            )
-        )
-        let placeHolders = ''
-        while (countLines>0) {
-            placeHolders += '\r\n'
-            countLines -= 1
-        }
-        return '()' + placeHolders
+funcBody_extend = body:($[^{}]* item* [^{}]*) 
+{
+  try {
+    let functionBody = body.join('');
+    parse_extend.parse(functionBody);
+    return functionBody;
+  } catch (err) {
+    let countLines = location().end.line - location().start.line;
+    if (err.location.start.line === 1) {
+      err.location.start.column += location().start.column;
     }
+    let supportMessage = " Our rule is .attribute(value) , for example: .width(50) . And you'd better have at least one attribute in Extend Component";
+    error_otherParsers.push(
+      new singleError(
+        parse_extend.SyntaxError.buildMessage(err.expected, err.found) + supportMessage,
+        err.location.start.line + location().start.line - 1,
+        err.location.start.column
+      )
+    );
+    let placeHolders = '';
+    while (countLines>0) {
+      placeHolders += '\r\n';
+      countLines -= 1;
+    }
+    return '()' + placeHolders;
+  }
 }
 
-item = $(whiteSpace '{' [^{}]* item* [^{}]* '}' whiteSpace)
+item = $ (whiteSpace '{' [^{}]* item* [^{}]* '}' whiteSpace)
 
-whiteSpace = $[ \t\r\n]*
+whiteSpace = $ [ \t\r\n]*
