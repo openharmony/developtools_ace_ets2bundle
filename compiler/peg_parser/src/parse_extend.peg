@@ -19,13 +19,8 @@ start = extendAttributes:extendAttribute+
 }
 
 extendAttribute = whiteSpace '.' whiteSpace attribute item
-
 attribute = attr_head attr_tail
-
 attr_head = $ [a-zA-Z_$]+
-
 attr_tail = $ [a-zA-Z0-9_$]*
-
 item = whiteSpace '(' [^()]* item* [^()]* ')' whiteSpace
-
 whiteSpace = [ \t\r\n]*

@@ -42,9 +42,7 @@ start = blocks: block+
 }
 
 block = extend/(prefix extend?)
-
 prefix = $((!prefix_extend .)+)
-
 extend =
   whiteSpace1:whiteSpace prefix_extend:prefix_extend funcBody_extend:funcBody_extend
   whiteSpace2: whiteSpace right:'}' whiteSpace3:whiteSpace 
@@ -80,13 +78,9 @@ prefix_extend_another =
 }
 
 component = $ [a-zA-Z_]+
-
 function_name = $ (function_name_head function_name_tail)
-
 function_name_head = $ [a-zA-Z_$]+
-
 function_name_tail = $ [a-zA-Z0-9_$]*
-
 parameters = $ ([^()]* item* [^()]*)
 
 //extract Extend internal attribute SyntaxError
@@ -119,5 +113,4 @@ funcBody_extend = body:($[^{}]* item* [^{}]*)
 }
 
 item = $ (whiteSpace '{' [^{}]* item* [^{}]* '}' whiteSpace)
-
 whiteSpace = $ [ \t\r\n]*

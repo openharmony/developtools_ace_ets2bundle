@@ -59,7 +59,7 @@ import {
   addLog,
   hasDecorator
 } from './utils';
-const parser = require('../peg_parser/dist/index.js')
+const parser = require('../peg_parser/dist/peg_parser.js');
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -666,12 +666,12 @@ function collectionStates(decorator: string, name: string, states: Set<string>, 
   }
 }
 
-export interface replaceResult {
+export interface ReplaceResult {
   content: string,
   log: LogInfo[]
 }
 
-export function sourceReplace(source: string, sourcePath: string): replaceResult {
+export function sourceReplace(source: string, sourcePath: string): ReplaceResult {
   let content: string = source;
   const log: LogInfo[] = [];
   // replace struct->class
@@ -692,27 +692,31 @@ export function sourceReplace(source: string, sourcePath: string): replaceResult
 }
 
 export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
-  let pegCheckContent;
-  let result;
+  let pegCheckContent: string;
+  let result: any;
   try {
     result = parser.parse(content);
     pegCheckContent = result.content;
-    for (let i=0; i<result.collect_extend.component.length; i++) {
-      collectExtend(result.collect_extend.component[i], result.collect_extend.functionName[i], result.collect_extend.parameters[i]);
+    for (let i = 0; i < result.collect_extend.component.length; i++) {
+      collectExtend(
+        result.collect_extend.component[i],
+        result.collect_extend.functionName[i],
+        result.collect_extend.parameters[i]
+      );
     }
   } catch (err) {
     result = err;
     log.push({
       type: LogType.ERROR,
-      message: parser.SyntaxError.buildMessage(err.expected,err.found),
+      message: parser.SyntaxError.buildMessage(err.expected, err.found),
       line: err.location.start.line,
       column: err.location.start.column,
       fileName: sourcePath
     });
     pegCheckContent = content;
   }
-  if(result.error_otherParsers) {
-    for(let i=0; i<result.error_otherParsers.length; i++) {
+  if (result.error_otherParsers) {
+    for(let i = 0; i < result.error_otherParsers.length; i++) {
       log.push({
         type: LogType.ERROR,
         message: result.error_otherParsers[i].errMessage,
