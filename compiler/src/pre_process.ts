@@ -14,6 +14,7 @@
  */
 
 import {
+  afterExtendCheck,
   sourceReplace,
   validateUISyntax,
   processSystemApi
@@ -27,13 +28,14 @@ import { BUILD_ON } from './pre_define';
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
   if (/\.ets$/.test(this.resourcePath)) {
-    const newContent: string = sourceReplace(source);
-    const log: LogInfo[] =
-    validateUISyntax(source, newContent, this.resourcePath, this.resourceQuery);
+    const result: afterExtendCheck = sourceReplace(source, this.resourcePath)
+    const content: string = result.content
+    const log: LogInfo[] = result.log
+    log.concat(validateUISyntax(source, content, this.resourcePath, this.resourceQuery));
     if (log.length) {
       emitLogInfo(this, log);
     }
-    return newContent;
+    return content;
   } else {
     return processSystemApi(source);
   }
