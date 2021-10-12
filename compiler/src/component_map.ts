@@ -249,7 +249,7 @@ export const COMPONENT_MAP: any = {
   },
   Blank: {
     parents: ['Row', 'Column'],
-    automic: true,
+    atomic: true,
     attrs: ['color']
   },
   RowSplit: {
