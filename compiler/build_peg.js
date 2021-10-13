@@ -14,8 +14,8 @@
  */
 
 const util = require('util');
-const child_process = require('child_process');
-const exec = util.promisify(child_process.exec);
+const childProcess = require('child_process');
+const exec = util.promisify(childProcess.exec);
 const fs = require('fs');
 const path = require('path');
 
