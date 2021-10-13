@@ -65,6 +65,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
         if (!ut && (path.basename(node.fileName) === 'app.ets.ts' || !/\.ets\.ts$/.test(node.fileName))) {
+          node = ts.visitEachChild(node, processResourceNode, context);
           return node;
         }
         collectComponents(node);
@@ -101,6 +102,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = processWorker(node as ts.NewExpression);
       }
       return ts.visitEachChild(node, processAllNodes, context);
+    }
+    function processResourceNode(node: ts.Node): ts.Node {
+      if (isResource(node)) {
+        node = processResourceData(node as ts.CallExpression);
+      }
+      return ts.visitEachChild(node, processResourceNode, context);
     }
     function validateSourceFileNode(node: ts.SourceFile): void {
       if (program) {
