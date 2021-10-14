@@ -1,4 +1,15 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
@@ -11,9 +22,11 @@ ets_loader_declarations_dir = get_label_info(":build_ets_loader_library",
 ets_loader_component_config_file =
     get_label_info(":build_ets_loader_library", "target_out_dir") +
     "/component_config.json"
+ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
+                  "/sysResource.js"
 
 action("build_ets_loader_library") {
-  script = "//developtools/ace-ets2bundle/build_ets_loader_library.py"
+  script = "build_ets_loader_library.py"
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
     ets_loader_lib_dir,
@@ -21,13 +34,18 @@ action("build_ets_loader_library") {
     ets_loader_component_config_file,
   ]
 
-  _ets_loader_dir = "//developtools/ace-ets2bundle/compiler"
+  _ets_loader_dir = "compiler"
+  if (is_standard_system) {
+    _ace_config_dir = "compiler"
+  } else {
+    _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
+  }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
 
-  _babel_js = _ets_loader_dir + "/node_modules/@babel/cli/bin/babel.js"
-  _babel_config_js = _ets_loader_dir + "/babel.config.js"
-  _uglify_source_js = _ets_loader_dir + "/uglify-source.js"
-  _build_declarations_file_js = _ets_loader_dir + "/build_declarations_file.js"
+  _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
+  _babel_config_js = _ace_config_dir + "/babel.config.js"
+  _uglify_source_js = _ace_config_dir + "/uglify-source.js"
+  _build_declarations_file_js = _ace_config_dir + "/build_declarations_file.js"
 
   inputs = [
     _babel_config_js,
@@ -38,11 +56,19 @@ action("build_ets_loader_library") {
 
   # different host platform nodejs tool directory
   if (host_os == "linux") {
-    nodejs_path =
-        "//prebuilts/build-tools/common/nodejs/node-v12.18.4-linux-x64/bin/node"
+    if (is_standard_system) {
+      nodejs_path = "//prebuilts/build-tools/common/nodejs/node-v12.18.4-linux-x64/bin/node"
+    } else {
+      nodejs_path =
+          "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-linux-x64/bin/node"
+    }
   } else if (host_os == "mac") {
-    nodejs_path =
-        "//prebuilts/build-tools/common/nodejs/node-v12.18.4-darwin-x64/bin/node"
+    if (is_standard_system) {
+      nodejs_path = "//prebuilts/build-tools/common/nodejs/node-v12.18.4-darwin-x64/bin/node"
+    } else {
+      nodejs_path =
+          "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-darwin-x64/bin/node"
+    }
   } else {
     assert(false, "Unsupported host_os: $host_os")
   }
@@ -73,6 +99,22 @@ action("build_ets_loader_library") {
   ]
 }
 
+action("build_ets_sysResource") {
+  script = "//foundation/ace/huawei_proprietary/tools/ets-loader/generateSysResource.py"
+  outputs = [ ets_sysResource ]
+
+  _id_defined_json =
+      "//utils/resources/systemres/main/resources/base/element/id_defined.json"
+  inputs = [ _id_defined_json ]
+
+  args = [
+    "--input-json",
+    rebase_path(_id_defined_json, root_build_dir),
+    "--output-js",
+    rebase_path(ets_sysResource, root_build_dir),
+  ]
+}
+
 ohos_copy("ets_loader") {
   deps = [ ":build_ets_loader_library" ]
   sources = [
@@ -84,6 +126,10 @@ ohos_copy("ets_loader") {
     "compiler/webpack.config.js",
     ets_loader_component_config_file,
   ]
+  if (!is_standard_system) {
+    deps += [ ":build_ets_sysResource" ]
+    sources += [ ets_sysResource ]
+  }
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
