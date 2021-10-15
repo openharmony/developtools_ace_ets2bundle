@@ -166,9 +166,15 @@ function checkComponentDecorator(source: string, filePath: string,
           addLog(LogType.ERROR, message, pos, log, sourceFile);
         }
       }
-      if (ts.isMissingDeclaration(item) && /struct/.test(item.getText())) {
-        const message: string = `Please use a valid decorator.`;
-        addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+      if (ts.isMissingDeclaration(item)) {
+        const decorators: ts.NodeArray<ts.Decorator> = item.decorators;
+        for (let i = 0; i < decorators.length; i++) {
+          if (decorators[i] && /struct/.test(item.getText())) {
+            const message: string = `Please use a valid decorator.`;
+            addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+            break;
+          }
+        }
       }
     });
     validateEntryCount(result, fileQuery, sourceFile.fileName, log);
@@ -379,11 +385,17 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
     if (ts.isBlock(item)) {
       maxCount += getBlockChildrenCount(item, allComponentNames);
     }
-    if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression) &&
-      !isForEachComponent(item.expression) && isComponent(item.expression, allComponentNames)) {
-      maxCount += 1;
-      if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
-        ++i;
+    if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
+      let newNode: any = item.expression;
+      while (newNode.expression) {
+        if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
+        !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
+          maxCount += 1;
+          if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
+            ++i;
+          }
+        }
+        newNode = newNode.expression;
       }
     }
     if (maxCount > 1) {
@@ -482,15 +494,21 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isBlock(item) && isNonspecificChildBlock(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression) &&
-        !isForEachComponent(item.expression) && isComponent(item.expression, allComponentNames)) {
-        const isNonspecific: boolean =
-          isNonspecificChildNonForEach(item.expression, specificChildSet);
-        if (isNonspecific) {
-          return isNonspecific;
-        }
-        if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
-          ++i;
+      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
+        let newNode: any = item.expression;
+        while (newNode.expression) {
+          if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
+          !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
+            const isNonspecific: boolean =
+            isNonspecificChildNonForEach(item.expression, specificChildSet);
+            if (isNonspecific) {
+              return isNonspecific;
+            }
+            if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
+              ++i;
+            }
+          }
+          newNode = newNode.expression;
         }
       }
     }
