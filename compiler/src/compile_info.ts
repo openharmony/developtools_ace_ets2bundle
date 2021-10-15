@@ -64,6 +64,17 @@ export class ResultStates {
   private reset: string = '\u001b[39m';
 
   public apply(compiler: Compiler): void {
+    compiler.hooks.compilation.tap("SourcemapFixer", compilation => {
+      compilation.hooks.afterProcessAssets.tap("SourcemapFixer", assets => {
+        Reflect.ownKeys(assets).forEach(key => {
+          if (/\.map/.test(key.toString())) {
+            assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
+          }
+        });
+      }
+      );
+    });
+
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       this.mStats = stats;
       this.warningCount = 0;

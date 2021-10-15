@@ -203,7 +203,7 @@ export const COMPONENT_MAP: any = {
   Progress: {
     atomic: true,
     attrs: [
-      'value', 'color', 'cricularStyle'
+      'value', 'color', 'cricularStyle', 'circularStyle'
     ]
   },
   Rect: {
@@ -249,7 +249,7 @@ export const COMPONENT_MAP: any = {
   },
   Blank: {
     parents: ['Row', 'Column'],
-    automic: true,
+    atomic: true,
     attrs: ['color']
   },
   RowSplit: {
@@ -286,6 +286,10 @@ export const COMPONENT_MAP: any = {
   Radio: {
     atomic: true,
     attrs: ['checked', 'onChange']
+  },
+  Web: {
+    atomic: true,
+    attrs: ['pagestart', 'pagefinish', 'error','message', 'reload']
   },
   GeometryView: {
     atomic: true
@@ -335,11 +339,11 @@ export const COMPONENT_MAP: any = {
   },
   Menu: {
     children: ['Option'],
-    attrs: ['show', 'showPosition'],
+    attrs: ['show', 'showPosition', 'fontColor', 'fontSize', 'fontWeight', 'fontFamily'],
   },
   Option: {
     parents: ['Menu'],
-    attrs: [],
+    attrs: ['fontColor', 'fontSize', 'fontWeight', 'fontFamily'],
   },
 };
 

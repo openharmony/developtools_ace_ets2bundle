@@ -4,6 +4,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "importsNotUsedAsValues": "preserve",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
