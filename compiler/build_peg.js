@@ -20,10 +20,11 @@ const fs = require('fs');
 const path = require('path');
 
 function generatePeg(inputFile) {
-  const readDirPath = path.resolve(__dirname, './peg_parser/src/');
+  const readDirPath = path.resolve(__dirname, './peg_parser/src');
   const readDirSubFiles = fs.readdirSync(readDirPath);
   const catalogPath = path.resolve(inputFile, '..');
   const catalogSubFiles = fs.readdirSync(catalogPath)
+  const pegjs = path.resolve(__dirname, './node_modules/pegjs/bin/pegjs');
   
   if (catalogSubFiles.includes('dist')) {
     exec('rm -rf ' + catalogPath + '/dist/*.js');
@@ -31,11 +32,13 @@ function generatePeg(inputFile) {
     exec('mkdir ' + catalogPath + '/dist');
   }
 
-  (async function pegTransJs () {
+  ;(async function pegTransJs () {
     if (readDirSubFiles.length) {
       for (let item of readDirSubFiles) {
         let name = path.basename(item, '.peg');
-        await exec('pegjs -o ' + catalogPath + '/dist/' + name + '.js ' + readDirPath + '/' + item);
+        if (name){
+          await exec(pegjs + ' -o ' + catalogPath + '/dist/' + name + '.js ' + readDirPath + '/' + item);
+        }
       }
     }
   })()
