@@ -17,8 +17,8 @@ import("//foundation/ace/ace_engine/ace_config.gni")
 
 ets_loader_lib_dir =
     get_label_info(":build_ets_loader_library", "target_out_dir") + "/lib"
-ets_loader_peg_dir =
-    get_label_info(":build_ets_loader_library", "target_out_dir") + "/peg_parser/dist"
+ets_loader_peg_dir = get_label_info(":build_ets_loader_library",
+                                    "target_out_dir") + "/peg_parser/dist"
 ets_loader_declarations_dir = get_label_info(":build_ets_loader_library",
                                              "target_out_dir") + "/declarations"
 ets_loader_component_config_file =
