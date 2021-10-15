@@ -48,6 +48,7 @@ action("build_ets_loader_library") {
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
   _uglify_source_js = _ace_config_dir + "/uglify-source.js"
+  _build_peg_js = _ace_config_dir + "/build_peg.js"
   _build_declarations_file_js = _ace_config_dir + "/build_declarations_file.js"
 
   inputs = [
