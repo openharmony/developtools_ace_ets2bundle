@@ -59,7 +59,7 @@ import {
   addLog,
   hasDecorator
 } from './utils';
-const parser = require('../peg_parser/dist/peg_parser.js');
+const parser = require('../syntax_parser/dist/syntax_parser.js');
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -692,11 +692,11 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
 }
 
 export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
-  let pegCheckContent: string;
+  let syntaxCheckContent: string;
   let result: any;
   try {
     result = parser.parse(content);
-    pegCheckContent = result.content;
+    syntaxCheckContent = result.content;
     for (let i = 0; i < result.collect_extend.component.length; i++) {
       collectExtend(
         result.collect_extend.component[i],
@@ -713,7 +713,7 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
       column: err.location.start.column,
       fileName: sourcePath
     });
-    pegCheckContent = content;
+    syntaxCheckContent = content;
   }
   if (result.error_otherParsers) {
     for(let i = 0; i < result.error_otherParsers.length; i++) {
@@ -726,7 +726,7 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
       });
     }
   }
-  return pegCheckContent;
+  return syntaxCheckContent;
 }
 
 function collectExtend(component: string, attribute: string, parameter: string): void {
