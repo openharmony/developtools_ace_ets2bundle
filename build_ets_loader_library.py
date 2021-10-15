@@ -39,7 +39,8 @@ def parse_args():
     parser.add_argument('--node', help='path to nodejs exetuable')
     parser.add_argument('--babel-js', help='path to babel.js')
     parser.add_argument('--ets-loader-src-dir', help='path to compiler/src')
-    parser.add_argument('--ets-loader-peg-src-dir', help='path to compiler/peg_parser/src')
+    parser.add_argument('--ets-loader-peg-src-dir',
+        help='path to compiler/peg_parser/src')
     parser.add_argument('--babel-config-js', help='path babel.config.js')
     parser.add_argument('--uglify-source-js', help='path uglify-source.js')
     parser.add_argument('--build-peg-js', help='path build_peg.js')
@@ -73,7 +74,8 @@ def main():
     build_cmd.extend(['--config-file', options.babel_config_js])
     depfile_deps = [options.node, options.babel_js, options.babel_config_js]
     depfile_deps.extend(build_utils.get_all_files(options.ets_loader_src_dir))
-    depfile_deps.extend(build_utils.get_all_files(options.ets_loader_peg_src_dir))
+    depfile_deps.extend(
+        build_utils.get_all_files(options.ets_loader_peg_src_dir))
 
     uglify_cmd = [options.node, options.uglify_source_js, options.output_dir]
     depfile_deps.append(options.uglify_source_js)
@@ -89,7 +91,8 @@ def main():
     depfile_deps.append(options.build_declarations_file_js)
 
     build_utils.call_and_write_depfile_if_stale(
-        lambda: do_build(build_cmd, uglify_cmd, peg_cmd, build_declarations_file_cmd),
+        lambda: do_build(build_cmd, uglify_cmd,
+            peg_cmd, build_declarations_file_cmd),
         options,
         depfile_deps=depfile_deps,
         input_paths=depfile_deps,
