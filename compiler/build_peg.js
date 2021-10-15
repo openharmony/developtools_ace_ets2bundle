@@ -19,20 +19,26 @@ const exec = util.promisify(childProcess.exec);
 const fs = require('fs');
 const path = require('path');
 
-const readDir = fs.readdirSync('./peg_parser/src/');
-const catalog = fs.readdirSync('./peg_parser/');
+function generatePeg(inputFile) {
+  const readDirPath = path.resolve(__dirname, './peg_parser/src/');
+  const readDirSubFiles = fs.readdirSync(readDirPath);
+  const catalogPath = path.resolve(inputFile, '..');
+  const catalogSubFiles = fs.readdirSync(catalogPath)
+  
+  if (catalogSubFiles.includes('dist')) {
+    exec('rm -rf ' + catalogPath + '/dist/*.js');
+  } else {
+    exec('mkdir ' + catalogPath + '/dist');
+  }
 
-if (catalog.includes('dist')) {
-  exec('rm -rf peg_parser/dist');
+  (async function pegTransJs () {
+    if (readDirSubFiles.length) {
+      for (let item of readDirSubFiles) {
+        let name = path.basename(item, '.peg');
+        await exec('pegjs -o ' + catalogPath + '/dist/' + name + '.js ' + readDirPath + '/' + item);
+      }
+    }
+  })()
 }
 
-exec('mkdir peg_parser/dist');
-
-(async function pegTransJs () {
-  if (readDir.length) {
-    for (let item of readDir) {
-      let name = path.basename(item, '.peg');
-      await exec('pegjs -o peg_parser/dist/' + name + '.js peg_parser/src/' + item);
-    }
-  }
-})()
+generatePeg(process.argv[2]);

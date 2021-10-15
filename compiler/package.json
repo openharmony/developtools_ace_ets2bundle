@@ -10,11 +10,12 @@
   ],
   "scripts": {
     "lint": "eslint --fix ./src --ext .ts",
-    "build": "node build_peg.js && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts",
+    "build": "npm run generatePeg && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts",
     "create": "node ./lib/create.js --env projectName",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
     "test": "npm run build && mocha -r ts-node/register test/test.ts",
     "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib",
+    "generatePeg": "node build_peg.js ./peg_parser/dist",
     "postinstall": "node npm-install.js"
   },
   "devDependencies": {
