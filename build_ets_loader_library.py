@@ -39,9 +39,14 @@ def parse_args():
     parser.add_argument('--node', help='path to nodejs exetuable')
     parser.add_argument('--babel-js', help='path to babel.js')
     parser.add_argument('--ets-loader-src-dir', help='path to compiler/src')
+    parser.add_argument('--ets-loader-syntax-src-dir',
+        help='path to compiler/syntax_parser/src')
     parser.add_argument('--babel-config-js', help='path babel.config.js')
     parser.add_argument('--uglify-source-js', help='path uglify-source.js')
+    parser.add_argument('--build-parser-js', help='path build_parser.js')
     parser.add_argument('--output-dir', help='path to output')
+    parser.add_argument('--output-syntax-dir',
+        help='path syntax file to output')
     parser.add_argument('--declarations-file-dir',
         help='path declarations file')
     parser.add_argument('--build-declarations-file-js',
@@ -55,8 +60,9 @@ def parse_args():
     return options
 
 
-def do_build(build_cmd, uglify_cmd, build_declarations_file_cmd):
-    for cmd in [build_cmd, uglify_cmd, build_declarations_file_cmd]:
+def do_build(build_cmd, uglify_cmd, syntax_cmd, build_declarations_file_cmd):
+    for cmd in [build_cmd, uglify_cmd, syntax_cmd,
+        build_declarations_file_cmd]:
         build_utils.check_output(cmd)
 
 
@@ -70,9 +76,15 @@ def main():
     build_cmd.extend(['--config-file', options.babel_config_js])
     depfile_deps = [options.node, options.babel_js, options.babel_config_js]
     depfile_deps.extend(build_utils.get_all_files(options.ets_loader_src_dir))
+    depfile_deps.extend(
+        build_utils.get_all_files(options.ets_loader_syntax_src_dir))
 
     uglify_cmd = [options.node, options.uglify_source_js, options.output_dir]
     depfile_deps.append(options.uglify_source_js)
+
+    syntax_cmd = [options.node, options.build_parser_js,
+        options.output_syntax_dir]
+    depfile_deps.append(options.build_parser_js)
 
     build_declarations_file_cmd = [options.node,
         options.build_declarations_file_js,
@@ -82,12 +94,14 @@ def main():
     depfile_deps.append(options.build_declarations_file_js)
 
     build_utils.call_and_write_depfile_if_stale(
-        lambda: do_build(build_cmd, uglify_cmd, build_declarations_file_cmd),
+        lambda: do_build(build_cmd, uglify_cmd,
+            syntax_cmd, build_declarations_file_cmd),
         options,
         depfile_deps=depfile_deps,
         input_paths=depfile_deps,
         output_paths=([
             options.output_dir,
+            options.output_syntax_dir,
             options.output_declarations_dir,
             options.output_component_config_file]))
 

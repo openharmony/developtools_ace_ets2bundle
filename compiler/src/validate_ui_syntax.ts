@@ -59,6 +59,7 @@ import {
   addLog,
   hasDecorator
 } from './utils';
+const parser = require('../syntax_parser/dist/syntax_parser.js');
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -683,9 +684,14 @@ function collectionStates(decorator: string, name: string, states: Set<string>, 
   }
 }
 
-export function sourceReplace(source: string): string {
-  let content: string = source;
+export interface ReplaceResult {
+  content: string,
+  log: LogInfo[]
+}
 
+export function sourceReplace(source: string, sourcePath: string): ReplaceResult {
+  let content: string = source;
+  const log: LogInfo[] = [];
   // replace struct->class
   content = content.replace(
     new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
@@ -693,28 +699,52 @@ export function sourceReplace(source: string): string {
       return `${item} constructor(${COMPONENT_CONSTRUCTOR_ID}?, ${COMPONENT_CONSTRUCTOR_PARENT}?, ${COMPONENT_CONSTRUCTOR_PARAMS}?) {}`;
     });
 
-  content = preprocessExtend(content);
-  content = preprocessNewExtend(content);
+  content = preprocessExtend(content, sourcePath, log);
   // process @system.
   content = processSystemApi(content);
 
-  return content;
+  return {
+    content: content,
+    log: log
+  }
 }
 
-export function preprocessExtend(content: string): string {
-  const REG_EXTEND: RegExp = /(?<![\*|\/]\s*)^(\s*)@Extend(\s+)(\S+)\.(\S+)(\s*\()(.*)(\)\s*{)/gm;
-  return content.replace(REG_EXTEND, (_, item1, item2, item3, item4, item5, item6, item7) => {
-    collectExtend(item3, item4, item6);
-    return `${item1}${COMPONENT_EXTEND_DECORATOR} function${item2}__${item3}__${item4}${item5}${item6}${item7}${item3}`;
-  });
-}
-
-export function preprocessNewExtend(content: string): string {
-  const REG_EXTEND: RegExp = /(?<![\*|\/]\s*)^(\s*)@Extend\s*\((.+)\)(\s+)function(\s+)(\S+)(\s*\()(.*)(\)\s*{)/gm;
-  return content.replace(REG_EXTEND, (_, item1, item2, item3, item4, item5, item6, item7, item8) => {
-    collectExtend(item2, item5, item7);
-    return `${item1}${COMPONENT_EXTEND_DECORATOR}${item3}function${item4}__${item2}__${item5}${item6}${item7}${item8}${item2}`;
-  });
+export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
+  let syntaxCheckContent: string;
+  let result: any;
+  try {
+    result = parser.parse(content);
+    syntaxCheckContent = result.content;
+    for (let i = 0; i < result.collect_extend.component.length; i++) {
+      collectExtend(
+        result.collect_extend.component[i],
+        result.collect_extend.functionName[i],
+        result.collect_extend.parameters[i]
+      );
+    }
+  } catch (err) {
+    result = err;
+    log.push({
+      type: LogType.ERROR,
+      message: parser.SyntaxError.buildMessage(err.expected, err.found),
+      line: err.location.start.line,
+      column: err.location.start.column,
+      fileName: sourcePath
+    });
+    syntaxCheckContent = content;
+  }
+  if (result.error_otherParsers) {
+    for(let i = 0; i < result.error_otherParsers.length; i++) {
+      log.push({
+        type: LogType.ERROR,
+        message: result.error_otherParsers[i].errMessage,
+        line: result.error_otherParsers[i].errPosition.line,
+        column: result.error_otherParsers[i].errPosition.column,
+        fileName: sourcePath
+      });
+    }
+  }
+  return syntaxCheckContent;
 }
 
 function collectExtend(component: string, attribute: string, parameter: string): void {
