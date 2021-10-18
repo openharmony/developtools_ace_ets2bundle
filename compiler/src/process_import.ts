@@ -32,7 +32,6 @@ import {
   linkCollection,
   componentCollection,
   preprocessExtend,
-  preprocessNewExtend,
   processSystemApi,
   propCollection,
   isObservedClass,
@@ -85,11 +84,11 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath);
     }
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile()) {
-      const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
+      const content: string = preprocessExtend(processSystemApi(
         fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
           new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
             return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-          }))));
+          })), fileResolvePath, log);
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
       visitAllNode(sourceFile, defaultName, asName, pagesDir, log);
