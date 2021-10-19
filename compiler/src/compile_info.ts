@@ -122,7 +122,7 @@ export class ResultStates {
       }
       logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
     } else {
-      logger.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
+      console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
     }
   }
 

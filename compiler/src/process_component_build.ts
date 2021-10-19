@@ -53,7 +53,8 @@ import {
   CUSTOM_BUILDER_METHOD,
   GESTURE_ATTRS,
   GESTURE_TYPE_NAMES,
-  EXTEND_ATTRIBUTE
+  EXTEND_ATTRIBUTE,
+  NO_DEBUG_LINE_COMPONENT
 } from './component_map';
 import { componentCollection } from './validate_ui_syntax';
 import { processCustomComponent } from './process_custom_component';
@@ -145,9 +146,10 @@ function processComponentChild(node: ts.Block, newStatements: ts.Statement[],
   if (node.statements.length) {
     node.statements.forEach((item, index) => {
       if (ts.isExpressionStatement(item)) {
-        switch (getComponentType(item, log)) {
+        const name: string = getName(item);
+        switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
-            processInnerComponent(item, index, Array.from(node.statements), newStatements, log);
+            processInnerComponent(item, index, Array.from(node.statements), newStatements, log, name);
             break;
           case ComponentType.customComponent:
             processCustomComponent(item, newStatements, log);
@@ -174,10 +176,10 @@ function processComponentChild(node: ts.Block, newStatements: ts.Statement[],
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, index: number, arr: ts.Statement[],
-  newStatements: ts.Statement[], log: LogInfo[]): void {
+  newStatements: ts.Statement[], log: LogInfo[], name: string): void {
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
-  if (projectConfig.isPreview) {
+  if (projectConfig.isPreview && !NO_DEBUG_LINE_COMPONENT.has(name)) {
     const posOfNode: ts.LineAndCharacter =
       transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
     const projectPath: string = projectConfig.projectPath;
@@ -664,8 +666,8 @@ enum ComponentType {
   customBuilderMethod
 }
 
-function getComponentType(node: ts.ExpressionStatement, log: LogInfo[]): ComponentType {
-  const name: string = getName(node);
+function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
+  name: string): ComponentType {
   if (INNER_COMPONENT_NAMES.has(name)) {
     return ComponentType.innerComponent;
   } else if (componentCollection.customComponents.has(name)) {

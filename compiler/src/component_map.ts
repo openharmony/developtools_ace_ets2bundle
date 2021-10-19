@@ -14,6 +14,12 @@
  */
 
 export const COMPONENT_MAP: any = {
+  Search: {
+    atomic: true,
+    attrs: [
+      'searchButton', 'placeholderColor', 'placeholderFont', 'onSubmit', 'onChange'
+    ]
+  },
   FormComponent: {
     atomic: true,
     attrs: [
@@ -37,13 +43,14 @@ export const COMPONENT_MAP: any = {
   },
   Animator: {
     atomic: true,
+    noDebugLine: true,
     attrs: [
       'state', 'duration', 'curve', 'delay', 'fillMode', 'iterations', 'playMode', 'motion', 'onStart',
       'onPause', 'onRepeat', 'onCancel', 'onFinish', 'onFrame'
     ]
   },
   Refresh: {
-    atomic: true,
+    single: true,
     attrs: [
       'refreshing', 'offset', 'friction',
       'onStateChange', 'onRefreshing'
@@ -241,10 +248,12 @@ export const COMPONENT_MAP: any = {
   },
   PageTransitionEnter: {
     atomic: true,
+    noDebugLine: true,
     attrs: ['onEnter']
   },
   PageTransitionExit: {
     atomic: true,
+    noDebugLine: true,
     attrs: ['onExit']
   },
   Blank: {
@@ -329,13 +338,13 @@ export const COMPONENT_MAP: any = {
   TextInput: {
     atomic: true,
     attrs: [
-      'type', 'placeholderColor', 'placeholderFont', 'enterKeyType', 'caretColor', 'onEditChanged',
+      'type', 'placeholderColor', 'placeholderFont', 'enterKeyType', 'caretColor', 'maxLength', 'onEditChanged',
       'onSubmit', 'onChange'
     ]
   },
   Marquee: {
     atomic: true,
-    attrs: ['onStart', 'onBounce', 'onFinish']
+    attrs: ['fontColor', 'fontSize', 'allowScale', 'fontWeight', 'fontFamily', 'onStart', 'onBounce', 'onFinish']
   },
   Menu: {
     children: ['Option'],
@@ -367,7 +376,7 @@ const COMMON_ATTRS: Set<string> = new Set([
   'accessibilityGroup', 'accessibilityText', 'accessibilityDescription',
   'accessibilityImportance', 'onAccessibility', 'grayscale', 'brightness', 'contrast',
   'saturate', 'geometryTransition',
-  'bindPopup', 'colorBlend', 'invert', 'sepia', 'hueRotate'
+  'bindPopup', 'colorBlend', 'invert', 'sepia', 'hueRotate', 'bindMenu'
 ]);
 const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
   'slide', 'translate', 'scale', 'opacity'
@@ -376,9 +385,13 @@ export const GESTURE_ATTRS: Set<string> = new Set([
   'gesture', 'parallelGesture', 'priorityGesture'
 ]);
 
-export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperScroller']);
+export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperScroller',
+  'VideoController', 'CustomDialogController', 'SwiperController', 'TabsController',
+  'CalendarController', 'AbilityController'
+]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
+export const NO_DEBUG_LINE_COMPONENT: Set<string> = new Set();
 export const BUILDIN_CONTAINER_COMPONENT: Set<string> = new Set();
 export const BUILDIN_STYLE_NAMES: Set<string> = new Set([
   ...COMMON_ATTRS, ...GESTURE_ATTRS, ...TRANSITION_COMMON_ATTRS
@@ -423,6 +436,9 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
       COMPONENT_MAP[componentName].attrs.forEach((item) => {
         BUILDIN_STYLE_NAMES.add(item);
       });
+    }
+    if (COMPONENT_MAP[componentName].noDebugLine) {
+      NO_DEBUG_LINE_COMPONENT.add(componentName);
     }
   });
 })();
