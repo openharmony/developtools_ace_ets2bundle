@@ -43,6 +43,7 @@ import {
   IComponentSet
 } from './validate_ui_syntax';
 import { LogInfo } from './utils';
+import { projectConfig } from '../main';
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[]): void {
@@ -82,7 +83,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
     } else if (/^\//.test(filePath)) {
       fileResolvePath = filePath;
     } else {
-      fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath);
+      fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
     }
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile()) {
       const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
@@ -248,13 +249,14 @@ function getModuleFilePath(filePath: string): string {
   return filePath;
 }
 
-function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath: string): string {
+function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath: string,
+  projectPath: string): string {
   const moduleFilePath: string = getModuleFilePath(filePath);
-  const defaultModule: string = path.join(pagesDir, '../', moduleFilePath);
+  const defaultModule: string = path.join(projectPath, moduleFilePath);
   if (fs.existsSync(defaultModule)) {
     return defaultModule;
   }
-  const entryModule: string = path.join(pagesDir, '../../../../../../', moduleFilePath);
+  const entryModule: string = path.join(projectPath, '../../../../../', moduleFilePath);
   if (fs.existsSync(entryModule)) {
     return entryModule;
   }
