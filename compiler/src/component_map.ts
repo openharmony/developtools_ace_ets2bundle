@@ -157,7 +157,6 @@ export const COMPONENT_MAP: any = {
     attrs: [
       'onFinish', 'onSkip', 'onChange', 'onNext', 'onPrevious'
     ]
-
   },
   StepperItem: {
     parents: ['Stepper'],
