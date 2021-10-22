@@ -152,6 +152,17 @@ export const COMPONENT_MAP: any = {
       'loop', 'duration', 'vertical', 'itemSpace', 'displayMode', 'onChange'
     ]
   },
+  Stepper: {
+    children: ['StepperItem'],
+    attrs: [
+      'onFinish', 'onSkip', 'onChange', 'onNext', 'onPrevious'
+    ]
+  },
+  StepperItem: {
+    parents: ['Stepper'],
+    single: true,
+    attrs: ['prevLabel', 'nextLabel', 'status']
+  },
   Rating: {
     attrs: ['stars', 'stepSize', 'starStyle', 'onChange']
   },
