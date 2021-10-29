@@ -189,7 +189,8 @@ function validateEntryCount(result: DecoratorResult, fileQuery: string,
   if (result.entryCount !== 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page must have one and only one '@Entry' decorator with a struct.`,
+      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+        + `decorator with a struct.`,
       fileName: fileName
     });
   }
@@ -266,8 +267,13 @@ function checkDecorators(node: ts.MissingDeclaration | ts.ExportAssignment, resu
     addLog(LogType.WARN, message, component.pos, log, sourceFile);
   }
   if (BUILDIN_STYLE_NAMES.has(componentName)) {
-    const message: string =
-      `The struct '${componentName}' cannot have the same name as the built-in attribute '${componentName}'.`;
+    const message: string = `The struct '${componentName}' cannot have the same name ` +
+      `as the built-in attribute '${componentName}'.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+  }
+  if (INNER_COMPONENT_NAMES.has(componentName)) {
+    const message: string = `The struct '${componentName}' cannot have the same name ` +
+      `as the built-in component '${componentName}'.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
 }

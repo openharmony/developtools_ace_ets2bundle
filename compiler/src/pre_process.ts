@@ -30,8 +30,8 @@ function preProcess(source: string): string {
   if (/\.ets$/.test(this.resourcePath)) {
     const result: ReplaceResult = sourceReplace(source, this.resourcePath);
     const newContent: string = result.content;
-    const log: LogInfo[] = result.log;
-    log.concat(validateUISyntax(source, newContent, this.resourcePath, this.resourceQuery));
+    const log: LogInfo[] = result.log.concat(validateUISyntax(source, newContent,
+      this.resourcePath, this.resourceQuery));
     if (log.length) {
       emitLogInfo(this, log);
     }
