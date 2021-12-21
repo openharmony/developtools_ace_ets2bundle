@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-export const source: string = `
-    @Extend Text.fancy(color:string){
-        .backgroundColor(color)
-    }
+exports.source = `
+@Extend Text.fancy(color:string){
+    .backgroundColor(color)
+}
 
 @Extend
 Text.superFancy(size:number){
@@ -43,7 +43,7 @@ struct FancyText {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `function __Text__fancy(color) {
     Text.backgroundColor(color);
 }

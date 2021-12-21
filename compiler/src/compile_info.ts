@@ -15,15 +15,22 @@
 
 import Stats from 'webpack/lib/Stats';
 import Compiler from 'webpack/lib/Compiler';
+import Compilation from 'webpack/lib/Compilation';
+import JavascriptModulesPlugin from 'webpack/lib/javascript/JavascriptModulesPlugin';
 import {
   configure,
   getLogger
 } from 'log4js';
 import RawSource from 'webpack-sources/lib/RawSource';
+import path from 'path';
+import fs from 'fs';
+import CachedSource from 'webpack-sources/lib/CachedSource';
+import ConcatSource from 'webpack-sources/lib/ConcatSource';
 
 import {
   BUILDIN_STYLE_NAMES,
-  EXTEND_ATTRIBUTE
+  EXTEND_ATTRIBUTE,
+  STYLES_ATTRIBUTE
 } from './component_map';
 import { transformLog } from './process_ui_syntax';
 import {
@@ -34,6 +41,8 @@ import {
 import { decoratorParamSet } from './process_component_member';
 import { appComponentCollection } from './process_component_build';
 import { projectConfig } from '../main';
+import { circularFile } from './utils';
+import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -42,6 +51,13 @@ configure({
 export const logger = getLogger('ETS');
 
 const props: string[] = [];
+const GLOBAL_COMMON_MODULE_CACHE: string = `
+globalThis["__common_module_cache__"] = globalThis["__common_module_cache__"] || {};
+globalThis["webpackChunkcompilier"].forEach((item)=> {
+  Object.keys(item[1]).forEach((element) => {
+    globalThis["__common_module_cache__"][element] = null;
+  })
+});`;
 
 interface Info {
   message?: string;
@@ -62,6 +78,7 @@ export class ResultStates {
   private yellow: string = '\u001b[33m';
   private blue: string = '\u001b[34m';
   private reset: string = '\u001b[39m';
+  private modulePaths: Set<string> = new Set([]);
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
@@ -73,6 +90,52 @@ export class ResultStates {
         });
       }
       );
+
+      compilation.hooks.buildModule.tap("findModule", (module) => {
+        if (/node_modules/.test(module.context)) {
+          const modulePath: string =
+            path.resolve(module.resourceResolveData.descriptionFileRoot, MODULE_SHARE_PATH);
+          if (fs.existsSync(modulePath)) {
+            this.modulePaths.add(modulePath);
+          }
+        }
+      });
+    });
+
+    compiler.hooks.afterCompile.tap('copyFindModule', () => {
+      this.modulePaths.forEach(modulePath => {
+        circularFile(modulePath, path.resolve(projectConfig.buildPath, BUILD_SHARE_PATH));
+      });
+    });
+
+    compiler.hooks.compilation.tap('CommonAsset', compilation => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'GLOBAL_COMMON_MODULE_CACHE',
+          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+        },
+        (assets) => {
+          if (assets['commons.js']) {
+            assets['commons.js'] = new CachedSource(
+              new ConcatSource(assets['commons.js'], GLOBAL_COMMON_MODULE_CACHE));
+          } else if (assets['vendors.js']) {
+            assets['vendors.js'] = new CachedSource(
+              new ConcatSource(assets['vendors.js'], GLOBAL_COMMON_MODULE_CACHE));
+          }
+        });
+    });
+
+    compiler.hooks.compilation.tap('Require', compilation => {
+      JavascriptModulesPlugin.getCompilationHooks(compilation).renderRequire.tap('renderRequire',
+        (source) => {
+          return `var commonCachedModule = globalThis["__common_module_cache__"] ? ` +
+            `globalThis["__common_module_cache__"][moduleId]: null;\n` +
+            `if (commonCachedModule) { return commonCachedModule.exports; }\n` +
+            source.replace('// Execute the module function',
+            `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
+            `Object.keys(globalThis["__common_module_cache__"]).indexOf(moduleId) >= 0) {\n` +
+              `  globalThis["__common_module_cache__"][moduleId] = module;\n}`);
+        });
     });
 
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
@@ -192,11 +255,13 @@ export class ResultStates {
     const propInfoReg: RegExp = /Cannot find name\s*'(\$?[_a-zA-Z0-9]+)'/;
     const componentNameReg: RegExp = /'typeof\s*(\$?[_a-zA-Z0-9]+)' is not callable/;
     const stateInfoReg: RegExp = /Property\s*'(\$[_a-zA-Z0-9]+)' does not exist on type/;
-    const extendInfoReg: RegExp = /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)'\./;
+    const extendInfoReg: RegExp =
+      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)(Attribute|Interface)'\./;
     if (this.matchMessage(message, props, propInfoReg) ||
       this.matchMessage(message, [...componentCollection.customComponents], componentNameReg) ||
       this.matchMessage(message, props, stateInfoReg) ||
-      this.matchMessage(message, EXTEND_ATTRIBUTE, extendInfoReg, true)) {
+      this.matchMessage(message, EXTEND_ATTRIBUTE, extendInfoReg, true) ||
+      this.matchMessage(message, STYLES_ATTRIBUTE, extendInfoReg)) {
       return false;
     }
     return true;

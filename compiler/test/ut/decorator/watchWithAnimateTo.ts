@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct ListComponent {
@@ -49,7 +49,7 @@ struct DialogView {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class ListComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

@@ -15,7 +15,7 @@
 
 class MyComponent extends View {
     constructor() {
-        super(); 
+        super();
         this.value1 = value1;
         this.value2 = value2;
         this.value3 = value3;

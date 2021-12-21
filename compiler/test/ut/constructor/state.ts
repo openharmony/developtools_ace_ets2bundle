@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 class DataModel{
     private myData1: number = 0
 }
@@ -35,7 +35,7 @@ struct MyStateComponent {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class DataModel {
     constructor() {
         this.myData1 = 0;

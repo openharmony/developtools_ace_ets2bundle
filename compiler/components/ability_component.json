@@ -1,0 +1,4 @@
+{
+  "name": "AbilityComponent",
+  "attrs": ["onReady", "onDestroy", "onAbilityCreated", "onAbilityMoveToFront", "onAbilityWillRemove"]
+}

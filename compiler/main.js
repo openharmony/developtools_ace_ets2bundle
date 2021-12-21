@@ -49,6 +49,7 @@ function initProjectConfig(projectConfig) {
     path.resolve(projectConfig.projectPath, 'build');
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
     path.join(projectConfig.projectPath, 'manifest.json');
+  projectConfig.aceConfigPath = projectConfig.aceConfigPath || process.env.aceConfigPath;
 }
 
 function loadEntryObj(projectConfig) {
@@ -60,11 +61,14 @@ function loadEntryObj(projectConfig) {
       staticPreviewPage + '.ets?entry';
   } else if (abilityConfig.abilityType === 'page') {
     let manifest = {};
-    try {
+    if (fs.existsSync(projectConfig.manifestFilePath)) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
-    } catch (error) {
-      throw Error(`\u001b[31m ERROR: the manifest file '${projectConfig.manifestFilePath}' is lost or format is invalid. \u001b[39m`).message;
+    } else if (process.env.aceConfigPath && fs.existsSync( projectConfig.aceConfigPath)) {
+      buildManifest(manifest,  projectConfig.aceConfigPath);
+    } else {
+      throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
+        ' or config.json is lost or format is invalid. \u001b[39m').message;
     }
     if (manifest.pages) {
       const pages = manifest.pages;
@@ -77,7 +81,49 @@ function loadEntryObj(projectConfig) {
         }
       });
     } else {
-      throw Error(`\u001b[31m ERROR: missing pages attribute in '${projectConfig.manifestFilePath}'. \u001b[39m`).message;
+      throw Error('\u001b[31m ERROR: missing pages attribute in ' + projectConfig.manifestFilePath +
+        '. \u001b[39m').message;
+    }
+  }
+}
+
+function buildManifest(manifest, aceConfigPath) {
+  try {
+    const configJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
+    const srcPath = process.env.srcPath;
+    manifest.type = process.env.abilityType;
+    if (configJson.module && configJson.module.abilities) {
+      manifest.pages = getPages(configJson, srcPath);
+    } else {
+      throw Error('\u001b[31m'+
+        'EERROR: the config.json file miss keyword module || module[abilities].' +
+        '\u001b[39m').message;
+    }
+    manifest.minPlatformVersion = configJson.app.apiVersion.compatible;
+  } catch (e) {
+    throw Error("\x1B[31m" + 'ERROR: the config.json file is lost or format is invalid.' +
+      "\x1B[39m").message;
+  }
+}
+
+function getPages(configJson, srcPath) {
+  const pages = []
+  for (const ability of configJson.module.abilities){
+    if (ability.srcPath === srcPath) {
+      readPages(ability, pages, configJson)
+      break;
+    }
+  }
+  return pages;
+}
+
+function readPages(ability, pages, configJson) {
+  for (const js of configJson.module.js){
+    if (ability.name === js.name) {
+      js.pages.forEach(page => {
+        pages.push(page)
+      })
+      break;
     }
   }
 }

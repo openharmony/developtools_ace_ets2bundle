@@ -1,0 +1,4 @@
+{
+  "name": "Button",
+  "attrs": ["type", "stateEffect", "fontColor", "fontSize", "fontWeight", "fontStyle", "fontFamily"]
+}

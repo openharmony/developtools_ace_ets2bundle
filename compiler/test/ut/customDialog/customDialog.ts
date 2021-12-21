@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @CustomDialog
 struct DialogExample {
   controller: CustomDialogController;
@@ -68,7 +68,7 @@ struct CustomDialogUser {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class DialogExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

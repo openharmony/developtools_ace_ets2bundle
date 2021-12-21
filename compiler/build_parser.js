@@ -25,7 +25,7 @@ function generateSyntaxParser(inputFile, nodePath) {
   const catalogPath = path.resolve(inputFile, '..');
   const catalogSubFiles = fs.readdirSync(catalogPath)
   const parserPath = path.resolve(__dirname, './node_modules/pegjs/bin/pegjs');
-  
+
   if (catalogSubFiles.includes('dist')) {
     exec('rm -rf ' + catalogPath + '/dist/*.js');
   } else {

@@ -1,0 +1,6 @@
+{
+    "name": "SideBarContainer",
+    "attrs": [
+        "showControlButton", "onChange"
+    ]
+  }

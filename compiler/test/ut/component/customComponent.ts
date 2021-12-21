@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct Parent {
@@ -44,7 +44,7 @@ struct Child {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class Parent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

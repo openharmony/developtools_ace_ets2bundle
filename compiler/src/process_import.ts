@@ -78,7 +78,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
   try {
     let fileResolvePath: string;
     if (/^(\.|\.\.)\//.test(filePath)) {
-      fileResolvePath = path.join(pagesDir, filePath);
+      fileResolvePath = path.resolve(pagesDir, filePath);
     } else if (/^\//.test(filePath)) {
       fileResolvePath = filePath;
     } else {
@@ -92,7 +92,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
           })), fileResolvePath, log);
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-      visitAllNode(sourceFile, defaultName, asName, pagesDir, log);
+      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log);
     }
   } catch (e) {
     // ignore

@@ -1,7 +1,7 @@
-./vscode
+.vscode/
 compiler/node_modules/
 compiler/lib/
 compiler/declarations/
 compiler/sample/build/
 compiler/component_config.json
-compiler/syntax_parser/dist
+compiler/syntax_parser/dist/

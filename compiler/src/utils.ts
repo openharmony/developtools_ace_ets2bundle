@@ -126,7 +126,8 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
 
 const STATEMENT_EXPECT: number = 1128;
 const SEMICOLON_EXPECT: number = 1005;
-export const IGNORE_ERROR_CODE: number[] = [STATEMENT_EXPECT, SEMICOLON_EXPECT];
+const STATESTYLES_EXPECT: number = 1003;
+export const IGNORE_ERROR_CODE: number[] = [STATEMENT_EXPECT, SEMICOLON_EXPECT, STATESTYLES_EXPECT];
 
 export function readFile(dir: string, utFiles: string[]) {
   try {
@@ -155,4 +156,53 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     undefined,
     argumentsArr && argumentsArr.length ? argumentsArr : []
   );
+}
+
+export function circularFile(inputPath: string, outputPath: string): void {
+  if ((!inputPath) || (!outputPath)) {
+    return;
+  }
+  fs.readdir(inputPath, function (err, files) {
+    if (!files) {
+      return;
+    }
+    files.forEach(file => {
+      const inputFile: string = path.resolve(inputPath, file);
+      const outputFile: string = path.resolve(outputPath, file);
+      const fileStat: fs.Stats = fs.statSync(inputFile);
+      if (fileStat.isFile()) {
+        copyFile(inputFile, outputFile);
+      } else {
+        circularFile(inputFile, outputFile);
+      }
+    });
+  });
+}
+
+function copyFile(inputFile: string, outputFile: string): void {
+  try {
+    const parent: string = path.join(outputFile, '..');
+    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+      mkDir(parent);
+    }
+    if (fs.existsSync(outputFile)) {
+      return;
+    }
+    const readStream: fs.ReadStream = fs.createReadStream(inputFile);
+    const writeStream: fs.WriteStream = fs.createWriteStream(outputFile);
+    readStream.pipe(writeStream);
+    readStream.on('close', function() {
+      writeStream.end();
+    });
+  } catch (err) {
+    throw err.message;
+  }
+}
+
+function mkDir(path_: string): void {
+  const parent: string = path.join(path_, '..');
+  if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+    mkDir(parent);
+  }
+  fs.mkdirSync(path_);
 }
