@@ -24,7 +24,7 @@ let pluginSocket = '';
 
 const pluginCommandChannelMessageHandlers = {
   'compileComponent': handlePluginCompileComponent,
-  'default': handlePluginDefault
+  'default': () => {}
 };
 
 function init(port) {
@@ -48,10 +48,6 @@ function handlePluginCommand(jsonData) {
     : pluginCommandChannelMessageHandlers['default'](jsonData);
 }
 
-function handlePluginDefault() {
-  return;
-}
-
 function handlePluginCompileComponent(jsonData) {
   const receivedMsg = jsonData;
   const sourceNode = ts.createSourceFile
@@ -68,9 +64,7 @@ function handlePluginCompileComponent(jsonData) {
 }
 
 function responseToPlugin(jsonData) {
-  pluginSocket.send(JSON.stringify(jsonData), (err) => {
-    return;
-  });
+  pluginSocket.send(JSON.stringify(jsonData), (err) => {});
 }
 
 module.exports = {
