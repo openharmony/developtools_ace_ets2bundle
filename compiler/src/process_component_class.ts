@@ -32,11 +32,17 @@ import {
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_TRANSITION_FUNCTION,
   COMPONENT_CREATE_FUNCTION,
-  GEOMETRY_VIEW
+  GEOMETRY_VIEW,
+  BUILDER_ATTR_NAME,
+  BUILDER_ATTR_BIND,
+  COMPONENT_STYLES_DECORATOR,
+  STYLES
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
-  CUSTOM_BUILDER_METHOD
+  CUSTOM_BUILDER_METHOD,
+  INNER_STYLE_FUNCTION,
+  STYLES_ATTRIBUTE
 } from './component_map';
 import {
   componentCollection,
@@ -51,7 +57,8 @@ import {
   processMemberVariableDecorators,
   UpdateResult,
   stateObjectCollection,
-  curPropMap
+  curPropMap,
+  decoratorParamSet
 } from './process_component_member';
 import {
   processComponentBuild,
@@ -149,6 +156,20 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       updateItem = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log));
+    } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+      if (node.parameters && node.parameters.length === 0) {
+        INNER_STYLE_FUNCTION.set(name, node.body);
+        STYLES_ATTRIBUTE.add(name);
+        BUILDIN_STYLE_NAMES.add(name);
+        decoratorParamSet.add(STYLES);
+      } else {
+        log.push({
+          type: LogType.ERROR,
+          message: `@Styles can't have parameters.`,
+          pos: node.getStart()
+        });
+      }
+      return;
     }
   }
   return ts.visitNode(updateItem, visitMethod);
@@ -189,8 +210,62 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
         ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
         ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
     }
+    if ((ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) &&
+      validateBuilderFunctionNode(node)) {
+      return getParsedBuilderAttrArgument(node);
+    }
     return ts.visitEachChild(node, visitBuild, context);
   }
+}
+
+function validateBuilderFunctionNode(node: ts.PropertyAccessExpression | ts.Identifier): boolean {
+  if (((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
+    node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString())) ||
+    ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) &&
+    !((ts.isPropertyAccessExpression(node) && validateBuilderParam(node)) ||
+    (ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
+    validateBuilderParam(node.parent)))) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function validateBuilderParam(node: ts.PropertyAccessExpression): boolean {
+  if (node.parent && ts.isCallExpression(node.parent) && node.parent.expression === node) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function getParsedBuilderAttrArgument(node: ts.PropertyAccessExpression | ts.Identifier):
+  ts.ObjectLiteralExpression {
+  let newObjectNode: ts.ObjectLiteralExpression = null;
+  if (ts.isPropertyAccessExpression(node)) {
+    newObjectNode = ts.factory.createObjectLiteralExpression([
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(BUILDER_ATTR_NAME),
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            node,
+            ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+          ),
+          undefined,
+          [ts.factory.createThis()]
+        )
+      )
+    ]);
+  } else if (ts.isIdentifier(node)) {
+    newObjectNode = ts.factory.createObjectLiteralExpression([
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(BUILDER_ATTR_NAME),
+        node
+      )
+    ])
+  }
+  return newObjectNode;
 }
 
 function isGeometryView(node: ts.Node): boolean {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Builder
 function SquareText(label: string, size: number) {
   Text(label)
@@ -44,7 +44,7 @@ struct HomeComponent {
   }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `function SquareText(label, size) {
     Text.create(label);
     Text.width(1 * size);

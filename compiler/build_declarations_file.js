@@ -49,7 +49,6 @@ function generateTargetFile(filePath, output) {
     fs.writeFile(fileName, newContent, err => {
       if (err) {
         console.error(err);
-        return;
       }
     });
   });

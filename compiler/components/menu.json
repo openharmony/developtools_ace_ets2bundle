@@ -1,0 +1,5 @@
+{
+  "name": "Menu",
+  "children": ["Option"],
+  "attrs": ["show", "showPosition", "fontColor", "fontSize", "fontWeight", "fontFamily"]
+}

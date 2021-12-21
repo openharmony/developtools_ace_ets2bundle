@@ -1,0 +1,7 @@
+{
+  "name": "Panel",
+  "attrs": [
+    "type", "mode", "dragBar", "fullHeight",
+    "halfHeight", "miniHeight", "show", "onChange"
+  ]
+}

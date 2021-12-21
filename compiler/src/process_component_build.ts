@@ -21,7 +21,6 @@ import {
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_POP_FUNCTION,
   COMPONENT_BUTTON,
-  COMPONENT_BLANK,
   COMPONENT_CREATE_LABEL_FUNCTION,
   COMPONENT_CREATE_CHILD_FUNCTION,
   COMPONENT_FOREACH,
@@ -44,7 +43,10 @@ import {
   GESTURE_ENUM_VALUE_LOW,
   GESTURE_ENUM_VALUE_PARALLEL,
   COMPONENT_TRANSITION_NAME,
-  COMPONENT_DEBUGLINE_FUNCTION
+  COMPONENT_DEBUGLINE_FUNCTION,
+  ATTRIBUTE_STATESTYLES,
+  THIS,
+  VISUAL_STATE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -54,7 +56,11 @@ import {
   GESTURE_ATTRS,
   GESTURE_TYPE_NAMES,
   EXTEND_ATTRIBUTE,
-  NO_DEBUG_LINE_COMPONENT
+  NO_DEBUG_LINE_COMPONENT,
+  NEEDPOP_COMPONENT,
+  INNER_STYLE_FUNCTION,
+  GLOBAL_STYLE_FUNCTION,
+  COMMON_ATTRS
 } from './component_map';
 import { componentCollection } from './validate_ui_syntax';
 import { processCustomComponent } from './process_custom_component';
@@ -141,7 +147,7 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   return isValid;
 }
 
-function processComponentChild(node: ts.Block, newStatements: ts.Statement[],
+export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[]): void {
   if (node.statements.length) {
     node.statements.forEach((item, index) => {
@@ -423,7 +429,7 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
         ? ts.factory.createIdentifier(COMPONENT_CREATE_CHILD_FUNCTION)
         : ts.factory.createIdentifier(COMPONENT_CREATE_LABEL_FUNCTION);
     }
-    if (temp.getText() === COMPONENT_BLANK) {
+    if (NEEDPOP_COMPONENT.has(temp.getText())) {
       res.needPop = true;
     }
     if (BUILDIN_CONTAINER_COMPONENT.has(temp.getText())) {
@@ -445,19 +451,22 @@ interface AnimationInfo {
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
-  newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true): void {
+  newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
+  isStylesAttr: boolean = false): void {
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
   const lastStatement: AnimationInfo = { statement: null, kind: false };
   while (temp && ts.isCallExpression(temp) && temp.expression) {
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name)) {
-      addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log);
+      addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
+        isStylesAttr);
       temp = temp.expression.expression;
     } else if (ts.isIdentifier(temp.expression)) {
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
         !GESTURE_TYPE_NAMES.has(temp.expression.getText())) {
-        addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log);
+        addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
+          isStylesAttr);
       }
       break;
     }
@@ -471,7 +480,8 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
 }
 
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
-  statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[]): void {
+  statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
+  isStylesAttr): void {
   const propName: string = node.getText();
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
@@ -497,11 +507,70 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
       undefined, temp.arguments)));
     lastStatement.kind = true;
+  } else if (propName === ATTRIBUTE_STATESTYLES) {
+    if (temp.arguments.length === 1 && ts.isObjectLiteralExpression(temp.arguments[0])) {
+      statements.push(createViewStackProcessor(temp, true));
+      traverseStateStylesAttr(temp, statements, identifierNode, log);
+      lastStatement.kind = true;
+    } else {
+      validateStateStyleSyntax(temp, log);
+    }
+  } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
+    const styleBlock: ts.Block =
+      GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
+    bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+      statements, log, false, true);
   } else {
+    if (isStylesAttr && !COMMON_ATTRS.has(propName)) {
+      validateStateStyleSyntax(temp, log);
+    }
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
+}
+
+function createViewStackProcessor(item: any, endViewStack: boolean) {
+  const argument: ts.StringLiteral[] = []
+  if (!endViewStack && item.name) {
+    argument.push(ts.factory.createStringLiteral(item.name.getText()));
+  }
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(GLOBAL_CONTEXT),
+      ts.factory.createIdentifier(VISUAL_STATE)
+    ),
+    undefined,
+    argument
+  ));
+}
+
+function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
+  identifierNode: ts.Identifier, log: LogInfo[]) {
+  temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
+    if (ts.isPropertyAccessExpression(item.initializer) &&
+      item.initializer.expression.getText() === THIS &&
+      INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {
+      const name: string = item.initializer.name.getText();
+      bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, statements, log, false, true);
+    } else if (ts.isIdentifier(item.initializer) &&
+      GLOBAL_STYLE_FUNCTION.get(item.initializer.getText())) {
+      const name: string = item.initializer.getText();
+      bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, statements, log, false, true);
+    } else if (ts.isObjectLiteralExpression(item.initializer) &&
+      item.initializer.properties.length === 1 &&
+      ts.isPropertyAssignment(item.initializer.properties[0])) {
+      bindComponentAttr(ts.factory.createExpressionStatement
+        (item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
+    } else {
+      validateStateStyleSyntax(temp, log);
+    }
+    if (item.name) {
+      statements.push(createViewStackProcessor(item, false));
+    }
+  })
 }
 
 function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string): boolean {
@@ -699,4 +768,12 @@ function validateExtendParameterCount(temp: any, identifierNode: ts.Identifier, 
       pos: temp.getStart()
     });
   }
+}
+
+export function validateStateStyleSyntax(temp: any, log: LogInfo[]) {
+  log.push({
+    type: LogType.ERROR,
+    message: `.stateStyles doesn't conform standard.`,
+    pos: temp.getStart()
+  });
 }

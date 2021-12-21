@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 // class without @Component convert tool will not process.
 class Month {
     year: number = 2010; // why add assignment here, TS grammar required, if not it will omit by TSC.
@@ -65,7 +65,7 @@ struct Calendar {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `// class without @Component convert tool will not process.
 class Month {
     constructor(year, month, days) {

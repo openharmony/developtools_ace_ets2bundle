@@ -1,0 +1,24 @@
+{
+  "attrs": [
+    "width", "height", "size", "constraintSize", "layoutPriority", "layoutWeight",
+    "padding", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom",
+    "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
+    "border", "borderStyle", "borderWidth", "borderColor", "borderRadius",
+    "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition",
+    "opacity", "animation", "transition", "stateStyles",
+    "onClick", "onTouch", "touchable", "onKeyEvent", "onHover","onAreaChange",
+    "blur", "backdropBlur", "windowBlur", "translate", "rotate", "scale", "transform",
+    "onAppear", "onDisAppear", "visibility", "flexBasis", "flexShrink", "flexGrow", "alignSelf",
+    "useAlign", "zIndex", "sharedTransition", "direction", "align", "position", "markAnchor",
+    "offset", "enabled", "aspectRatio", "displayPriority",
+    "onDrag", "onDragEnter", "onDragMove", "onDragLeave", "onDrop",
+    "overlay", "linearGradient", "sweepGradient", "radialGradient",
+    "gridOffset", "gridSpan", "useSizeType",
+    "motionPath", "clip", "shadow", "mask", "key",
+    "accessibilityGroup", "accessibilityText", "accessibilityDescription",
+    "accessibilityImportance", "onAccessibility", "grayscale", "brightness", "contrast",
+    "saturate", "geometryTransition",
+    "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "hoverEffect",
+    "onFocus", "onBlur", "onFocusMove", "focusable", "responseRegion"
+  ]
+}

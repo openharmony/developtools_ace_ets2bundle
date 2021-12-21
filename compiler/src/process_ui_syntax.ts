@@ -26,6 +26,7 @@ import {
   COMPONENT_BUILD_FUNCTION,
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_EXTEND_DECORATOR,
+  COMPONENT_STYLES_DECORATOR,
   RESOURCE,
   RESOURCE_TYPE,
   WORKER_OBJECT,
@@ -50,9 +51,12 @@ import {
 } from './process_component_build';
 import {
   BUILDIN_CONTAINER_COMPONENT,
+  BUILDIN_STYLE_NAMES,
   CUSTOM_BUILDER_METHOD,
   EXTEND_ATTRIBUTE,
-  JS_BIND_COMPONENTS
+  JS_BIND_COMPONENTS,
+  INNER_STYLE_FUNCTION,
+  GLOBAL_STYLE_FUNCTION
 } from './component_map';
 import { resources } from '../main';
 
@@ -73,6 +77,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         validateSourceFileNode(node);
         node = createEntryNode(node, context);
         node = ts.visitEachChild(node, processAllNodes, context);
+        GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
+          BUILDIN_STYLE_NAMES.delete(styleName);
+        })
+        GLOBAL_STYLE_FUNCTION.clear();
         return node;
       } else {
         return node;
@@ -86,6 +94,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         componentCollection.currentClassName = node.name.getText();
         node = processComponentClass(node, context, transformLog.errors, program);
         componentCollection.currentClassName = null;
+        INNER_STYLE_FUNCTION.forEach((block, styleName) => {
+          BUILDIN_STYLE_NAMES.delete(styleName);
+        })
+        INNER_STYLE_FUNCTION.clear();
       } else if (ts.isFunctionDeclaration(node)) {
         if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
           node = processExtend(node, transformLog.errors);
@@ -95,6 +107,16 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors));
+        } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          if (node.parameters.length === 0) {
+            node = undefined;
+          } else {
+            transformLog.errors.push({
+              type: LogType.ERROR,
+              message: `@Styles can't have parameters.`,
+              pos: node.getStart()
+            });
+          }
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -266,11 +288,11 @@ function isExtendFunction(node: ts.FunctionDeclaration): string {
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
-  if (componentCollection.entryComponent && !componentCollection.previewComponent) {
+  if (componentCollection.entryComponent) {
     const entryNode: ts.ExpressionStatement =
       createEntryFunction(componentCollection.entryComponent, context);
     return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
-  } else if (componentCollection.entryComponent && componentCollection.previewComponent) {
+  } else if (componentCollection.previewComponent) {
     const entryNode: ts.ExpressionStatement =
       createEntryFunction(componentCollection.previewComponent, context);
     return context.factory.updateSourceFile(node, [...node.statements, entryNode]);

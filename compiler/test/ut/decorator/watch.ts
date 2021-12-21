@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 class PurchaseItem {
   static NextId : number = 0;
 
@@ -66,7 +66,7 @@ struct BasketModifier {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class PurchaseItem {
     constructor(price) {
         this.id = PurchaseItem.NextId++;

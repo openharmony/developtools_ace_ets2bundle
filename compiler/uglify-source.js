@@ -15,7 +15,7 @@
 
 const fs = require('fs')
 const path = require('path')
-const uglifyJS = require('uglify-es')
+const uglifyJS = require('uglify-js')
 
 readCode(process.argv[2])
 

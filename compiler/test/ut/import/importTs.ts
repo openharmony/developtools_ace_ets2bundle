@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 import { AllStarComponent } from './test/pages/ExportStarComponent'
 import TsModule from './test/pages/TsModule'
 
@@ -52,7 +52,7 @@ struct ImportTest {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `import { AllStarComponent } from './test/pages/ExportStarComponent';
 import TsModule from './test/pages/TsModule';
 class ImportTest extends View {

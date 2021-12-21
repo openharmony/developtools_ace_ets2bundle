@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 struct MyComponent {
     build() {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class MyComponent {
     constructor(compilerAssignedUniqueChildId, parent, params) { }
     build() {

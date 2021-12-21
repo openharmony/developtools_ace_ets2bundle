@@ -31,10 +31,18 @@
   };
 }
 
-start = blocks: block+ 
+start = blocks: block+
 {
+  let newContent = "";
+  for (let item in blocks) {
+    if (Array.isArray(blocks[item])) {
+      newContent += blocks[item].join('');
+    } else {
+      newContent += blocks[item];
+    }
+  }
   return {
-    content: blocks.join(''),
+    content: newContent,
     location: location(),
     collect_extend: collect_extend,
     error_otherParsers: error_otherParsers
@@ -84,12 +92,11 @@ function_name_tail = $ [a-zA-Z0-9_$]*
 parameters = $ ([^()]* item* [^()]*)
 
 //extract Extend internal attribute SyntaxError
-funcBody_extend = body:($[^{}]* item* [^{}]*) 
+funcBody_extend = body:$([^{}]* item* [^{}]*)
 {
   try {
-    let functionBody = body.join('');
-    parse_extend.parse(functionBody);
-    return functionBody;
+    parse_extend.parse(body);
+    return body;
   } catch (err) {
     let countLines = location().end.line - location().start.line;
     if (err.location.start.line === 1) {

@@ -1,0 +1,9 @@
+{
+  "name": "List",
+  "children": ["ListItem", "Section"],
+  "attrs": [
+    "listDirection", "scrollBar", "edgeEffect", "divider", "editMode", "cachedCount",
+    "chainAnimation", "onScroll", "onReachStart", "onReachEnd", "onScrollStop", "onItemDelete",
+    "onItemMove", "onItemDragStart", "onItemDragEnter", "onItemDragMove", "onItemDragLeave", "onItemDrop"
+  ]
+}

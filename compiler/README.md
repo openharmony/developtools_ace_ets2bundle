@@ -21,7 +21,7 @@ First, check whether your node version is 12.x or later;
 Secondly, config npm proxy and run `npm install` again.
 ```
 npm config set strict-ssl false
-npm config set registry http://registry.npm.taobao.org
+npm config set registry https://registry.npm.taobao.org
 ```
 
 ### 2. Quick Start
