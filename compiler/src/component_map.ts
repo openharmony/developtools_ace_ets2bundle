@@ -13,382 +13,33 @@
  * limitations under the License.
  */
 
-export const COMPONENT_MAP: any = {
-  Search: {
-    atomic: true,
-    attrs: [
-      'searchButton', 'placeholderColor', 'placeholderFont', 'onSubmit', 'onChange'
-    ]
-  },
-  FormComponent: {
-    atomic: true,
-    attrs: [
-      'size', 'moduleName', 'dimension', 'allowUpdate', 'visibility',
-      'onAcquired', 'onError', 'onRouter'
-    ]
-  },
-  Image: {
-    atomic: true,
-    attrs: [
-      'alt', 'objectFit', 'matchTextDirection', 'fitOriginalSize', 'objectRepeat', 'renderMode', 'interpolation',
-      'onComplete', 'onError', 'onFinish', 'sourceSize', 'fillColor', 'autoResize'
-    ]
-  },
-  ImageAnimator: {
-    atomic: true,
-    attrs: [
-      'images', 'state', 'duration', 'reverse', 'fixedSize', 'preDecode', 'fillMode', 'iterations', 'onStart',
-      'onPause', 'onRepeat', 'onCancel', 'onFinish'
-    ]
-  },
-  Animator: {
-    atomic: true,
-    noDebugLine: true,
-    attrs: [
-      'state', 'duration', 'curve', 'delay', 'fillMode', 'iterations', 'playMode', 'motion', 'onStart',
-      'onPause', 'onRepeat', 'onCancel', 'onFinish', 'onFrame'
-    ]
-  },
-  Refresh: {
-    single: true,
-    attrs: [
-      'refreshing', 'offset', 'friction',
-      'onStateChange', 'onRefreshing'
-    ]
-  },
-  SpringProp: {
-    atomic: true
-  },
-  SpringMotion: {
-    atomic: true
-  },
-  FrictionMotion: {
-    atomic: true
-  },
-  ScrollMotion: {
-    atomic: true
-  },
-  Text: {
-    children: ['Span'],
-    attrs: [
-      'fontColor', 'fontSize', 'fontStyle', 'fontWeight', 'textAlign', 'lineHeight', 'textOverflow', 'maxLines',
-      'decoration', 'letterSpacing', 'textCase', 'baselineOffset', 'minFontSize', 'maxFontSize'
-    ]
-  },
-  TextPicker: {
-    atomic: true,
-    attrs: ['defaultPickerItemHeight', 'onAccept', 'onCancel', 'onChange']
-  },
-  DatePicker: {
-    atomic: true,
-    attrs: ['lunar', 'onChange', 'useMilitaryTime']
-  },
-  Span: {
-    atomic: true,
-    attrs: [
-      'fontColor', 'fontSize', 'fontStyle', 'fontFamily', 'fontWeight', 'decoration', 'letterSpacing', 'textCase'
-    ]
-  },
-  Button: {
-    attrs: ['type', 'stateEffect', 'fontColor', 'fontSize', 'fontWeight']
-  },
-  Divider: {
-    atomic: true,
-    attrs: ['color', 'vertical', 'strokeWidth', 'lineCap']
-  },
-  Piece: {
-    atomic: true,
-    attrs: ['iconPosition']
-  },
-  Slider: {
-    atomic: true,
-    attrs: ['blockColor', 'trackColor', 'selectedColor', 'minLabel','maxLabel', 'showSteps', 'showTips', 'onChange']
-  },
-  Counter: {
-    attrs: [
-      'onStateChange', 'onInc',
-      'onDec', 'height', 'width'
-    ]
-  },
-  Row: {
-    attrs: ['alignItems']
-  },
-  Column: {
-    attrs: ['alignItems']
-  },
-  Stack: {
-    attrs: ['alignContent']
-  },
-  List: {
-    children: ['ListItem', 'Section'],
-    attrs: [
-      'listDirection', 'scrollBar', 'edgeEffect', 'divider', 'editMode', 'cachedCount', 'chainAnimation',
-      'onScroll', 'onReachStart', 'onReachEnd', 'onScrollStop', 'onItemDelete', 'onItemMove'
-    ]
-  },
-  ListItem: {
-    parents: ['List'],
-    single: true,
-    attrs: ['sticky', 'editable']
-  },
-  Grid: {
-    children: ['GridItem'],
-    attrs: ['columnsTemplate', 'rowsTemplate', 'columnsGap', 'rowsGap', 'scrollBar', 'scrollBarWidth', 'scrollBarColor']
-  },
-  GridItem: {
-    parents: ['Grid'],
-    single: true,
-    attrs: ['rowStart', 'rowEnd', 'columnStart', 'columnEnd', 'forceRebuild']
-  },
-  GridContainer: {
-    attrs: ['columns', 'sizeType', 'gutter', 'margin']
-  },
-  Hyperlink: {
-    attrs: ['color']
-  },
-  Swiper: {
-    attrs: [
-      'index', 'autoPlay', 'interval', 'indicator',
-      'loop', 'duration', 'vertical', 'itemSpace', 'displayMode', 'onChange'
-    ]
-  },
-  Stepper: {
-    children: ['StepperItem'],
-    attrs: [
-      'onFinish', 'onSkip', 'onChange', 'onNext', 'onPrevious'
-    ]
-  },
-  StepperItem: {
-    parents: ['Stepper'],
-    single: true,
-    attrs: ['prevLabel', 'nextLabel', 'status']
-  },
-  Rating: {
-    attrs: ['stars', 'stepSize', 'starStyle', 'onChange']
-  },
-  Calendar: {
-    attrs: [
-      'date', 'showLunar', 'startOfWeek', 'offDays', 'onSelectChange', 'onRequestData',
-      'currentData', 'preData', 'nextData', 'needSlide', 'showHoliday', 'direction',
-      'currentDayStyle', 'nonCurrentDayStyle', 'todayStyle', 'weekStyle', 'workStateStyle'
-    ]
-  },
-  Panel: {
-    attrs: [
-      'type', 'mode', 'dragBar', 'fullHeight',
-      'halfHeight', 'miniHeight', 'show', 'onChange'
-    ]
-  },
-  Navigator: {
-    single: true,
-    attrs: ['target', 'type', 'params', 'active']
-  },
-  Sheet: {
-    children: ['Section'],
-    attrs: []
-  },
-  Section: {
-    attrs: []
-  },
-  QRCode: {
-    attrs: ['color', 'backgroundColor']
-  },
-  Flex: {
-    attrs: []
-  },
-  LoadingProgress: {
-    atomic: true,
-    attrs: ['color']
-  },
-  NavigationView: {
-    attrs: []
-  },
-  Scroll: {
-    attrs: [
-      'scrollable', 'onScroll', 'onScrollEdge', 'onScrollEnd', 'scrollBar', 'scrollBarColor',
-      'scrollBarWidth', 'edgeEffect'
-    ]
-  },
-  Shape: {
-    children: ['Rect', 'Path', 'Circle', 'Ellipse', 'Shape', 'Polyline', 'Polygon', 'Image', 'Text'],
-    attrs: [
-      'stroke', 'fill', 'strokeDashOffset', 'strokeLineCap',
-      'strokeLineJoin', 'strokeMiterLimit', 'strokeOpacity',
-      'fillOpacity', 'strokeWidth', 'antiAlias', 'strokeDashArray',
-      'viewPort'
-    ]
-  },
-  Progress: {
-    atomic: true,
-    attrs: [
-      'value', 'color', 'cricularStyle', 'circularStyle'
-    ]
-  },
-  Rect: {
-    atomic: true,
-    attrs: [
-      'radiusWidth', 'radiusHeight', 'radius'
-    ]
-  },
-  Path: {
-    atomic: true,
-    attrs: [
-      'commands'
-    ]
-  },
-  Circle: {
-    atomic: true
-  },
-  Ellipse: {
-    atomic: true
-  },
-  Camera: {
-    atomic: true,
-    attrs: ['devicePosition']
-  },
-  Tabs: {
-    children: ['TabContent'],
-    attrs: [
-      'vertical', 'scrollable', 'barMode', 'barWidth', 'barHeight', 'animationDuration',
-      'onChange'
-    ]
-  },
-  TabContent: {
-    parents: ['Tabs'],
-    attrs: ['tabBar']
-  },
-  PageTransitionEnter: {
-    atomic: true,
-    noDebugLine: true,
-    attrs: ['onEnter']
-  },
-  PageTransitionExit: {
-    atomic: true,
-    noDebugLine: true,
-    attrs: ['onExit']
-  },
-  Blank: {
-    parents: ['Row', 'Column'],
-    atomic: true,
-    attrs: ['color']
-  },
-  RowSplit: {
-    attrs: ['resizeable']
-  },
-  ColumnSplit: {
-    attrs: ['resizeable']
-  },
-  Toggle: {
-    attrs: ['onChange', 'selectedColor', 'swithPointStyle']
-  },
-  AlertDialog: {
-    attrs: ['show']
-  },
-  ActionSheet: {
-    attrs: ['show']
-  },
-  Video: {
-    atomic: true,
-    attrs: [
-      'muted', 'autoPlay', 'controls', 'loop', 'objectFit', 'onSeeking', 'onFullscreenChange',
-      'onStart', 'onPause', 'onPrepared', 'onFinish', 'onSeeked', 'onUpdate', 'onError'
-    ]
-  },
-  AbilityComponent: {
-    attrs: ['onReady', 'onDestroy', 'onAbilityCreated', 'onAbilityMoveToFront', 'onAbilityWillRemove']
-  },
-  AlphabetIndexer: {
-    attrs: [
-      'onSelected', 'selectedColor', 'popupColor', 'selectedBackgroundColor', 'popupBackground', 'usingPopup',
-      'selectedFont', 'popupFont', 'itemSize', 'font', 'color', 'alignStyle'
-    ]
-  },
-  Radio: {
-    atomic: true,
-    attrs: ['checked', 'onChange']
-  },
-  Web: {
-    atomic: true,
-    attrs: ['pagestart', 'pagefinish', 'error','message', 'reload']
-  },
-  GeometryView: {
-    atomic: true
-  },
-  DataPanel: {
-    atomic: false,
-    attrs: ['closeEffect']
-  },
-  Badge: {
-    atomics: true,
-    attrs: []
-  },
-  Line: {
-    atomic: true,
-    attrs: [
-      'startPoint','endPoint'
-    ]
-  },
-  Polygon: {
-    atomic: true,
-    attrs: ['points']
-  },
-  Polyline: {
-    atomic: true,
-    attrs: ['points']
-  },
-  Gauge: {
-    atomic: true,
-    attrs: ['value', 'startAngle', 'endAngle', 'colors', 'strokeWidth', 'labelTextConfig', 'labelColorConfig']
-  },
-  TextArea: {
-    atomic: true,
-    attrs: [
-      'placeholderColor', 'placeholderFont', 'textAlign', 'caretColor', 'onChange'
-    ]
-  },
-  TextInput: {
-    atomic: true,
-    attrs: [
-      'type', 'placeholderColor', 'placeholderFont', 'enterKeyType', 'caretColor', 'maxLength', 'onEditChanged',
-      'onSubmit', 'onChange'
-    ]
-  },
-  Marquee: {
-    atomic: true,
-    attrs: ['fontColor', 'fontSize', 'allowScale', 'fontWeight', 'fontFamily', 'onStart', 'onBounce', 'onFinish']
-  },
-  Menu: {
-    children: ['Option'],
-    attrs: ['show', 'showPosition', 'fontColor', 'fontSize', 'fontWeight', 'fontFamily'],
-  },
-  Option: {
-    parents: ['Menu'],
-    attrs: ['fontColor', 'fontSize', 'fontWeight', 'fontFamily'],
-  },
-};
+const fs = require('fs');
+const path = require('path');
+import ts from 'typescript';
 
-const COMMON_ATTRS: Set<string> = new Set([
-  'width', 'height', 'size', 'constraintSize', 'layoutPriority', 'layoutWeight',
-  'padding', 'paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom',
-  'margin', 'marginLeft', 'marginRight', 'marginTop', 'marginBottom',
-  'border', 'borderStyle', 'borderWidth', 'borderColor', 'borderRadius',
-  'backgroundColor', 'backgroundImage', 'backgroundImageSize', 'backgroundImagePosition',
-  'opacity', 'animation', 'transition',
-  'navigationTitle', 'navigationSubTitle', 'hideNavigationBar', 'hideNavigationBackButton',
-  'toolBar', 'hideToolBar', 'onClick', 'onTouch', 'onKeyEvent', 'onHover',
-  'blur', 'backdropBlur', 'windowBlur', 'translate', 'rotate', 'scale', 'transform',
-  'onAppear', 'onDisAppear', 'visibility', 'flexBasis', 'flexShrink', 'flexGrow', 'alignSelf',
-  'useAlign', 'zIndex', 'sharedTransition', 'direction', 'align', 'position', 'markAnchor', 'offset',
-  'enabled', 'aspectRatio', 'displayPriority',
-  'onDrag', 'onDragEnter', 'onDragMove', 'onDragLeave', 'onDrop',
-  'overlay', 'linearGradient', 'sweepGradient', 'radialGradient',
-  'gridOffset', 'gridSpan', 'useSizeType',
-  'motionPath', 'clip', 'shadow', 'mask',
-  'accessibilityGroup', 'accessibilityText', 'accessibilityDescription',
-  'accessibilityImportance', 'onAccessibility', 'grayscale', 'brightness', 'contrast',
-  'saturate', 'geometryTransition',
-  'bindPopup', 'colorBlend', 'invert', 'sepia', 'hueRotate', 'bindMenu'
-]);
+export const COMPONENT_MAP: any = {};
+
+export let COMMON_ATTRS: Set<string> = new Set([]);
+
+(function readComponents() {
+  const componentsFile: string = path.join(__dirname, '../components');
+  const files: string[] = fs.readdirSync(componentsFile);
+  files.forEach(function(item) {
+    const fPath: string = path.join(componentsFile, item);
+    const json: any = require(fPath);
+    const stat: any = fs.statSync(fPath);
+    if (stat.isFile()) {
+      if (json.name) {
+        const compName: string = json.name;
+        delete json.name;
+        COMPONENT_MAP[compName] = json;
+      } else {
+        COMMON_ATTRS = new Set(json.attrs);
+      }
+    }
+  });
+})();
+
 const TRANSITION_COMMON_ATTRS: Set<string> = new Set([
   'slide', 'translate', 'scale', 'opacity'
 ]);
@@ -397,8 +48,9 @@ export const GESTURE_ATTRS: Set<string> = new Set([
 ]);
 
 export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperScroller',
-  'VideoController', 'CustomDialogController', 'SwiperController', 'TabsController',
-  'CalendarController', 'AbilityController'
+  'VideoController', 'WebController', 'CustomDialogController', 'SwiperController', 'TabsController',
+  'CalendarController', 'AbilityController',  'RenderingContext', 'CanvasGradient', 'ImageBitmap',
+  'ImageData', 'Path2D', 'RenderingContextSettings', 'OffscreenRenderingContext'
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
@@ -411,21 +63,29 @@ export const AUTOMIC_COMPONENT: Set<string> = new Set();
 export const SINGLE_CHILD_COMPONENT: Set<string> = new Set();
 export const SPECIFIC_CHILD_COMPONENT: Map<string, Set<string>> = new Map();
 export const GESTURE_TYPE_NAMES: Set<string> = new Set([
-  'TapGesture', 'LongPressGesture', 'PanGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup'
+  'TapGesture', 'LongPressGesture', 'PanGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup',
+  'SwipeGesture'
 ]);
 export const CUSTOM_BUILDER_METHOD: Set<string> = new Set();
+export const INNER_STYLE_FUNCTION: Map<string, ts.Block> = new Map();
+export const GLOBAL_STYLE_FUNCTION: Map<string, ts.Block> = new Map();
 
 export interface ExtendParamterInterfance {
   attribute: string,
   parameterCount: number
 }
 export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
+export const STYLES_ATTRIBUTE: string[] = [];
 
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
   ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
-  'TabsController', 'CalendarController', 'AbilityController', 'VideoController'
+  'TabsController', 'CalendarController', 'AbilityController', 'VideoController', 'WebController',
+  'RenderingContext', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D','RenderingContextSettings',
+  'OffscreenRenderingContext', 'AlertDialog'
 ]);
+
+export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {

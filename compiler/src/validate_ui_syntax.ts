@@ -42,7 +42,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_EXTEND_DECORATOR,
-  COMPONENT_OBSERVED_DECORATOR
+  COMPONENT_OBSERVED_DECORATOR,
+  STYLES
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -50,7 +51,9 @@ import {
   SINGLE_CHILD_COMPONENT,
   SPECIFIC_CHILD_COMPONENT,
   BUILDIN_STYLE_NAMES,
-  EXTEND_ATTRIBUTE
+  EXTEND_ATTRIBUTE,
+  GLOBAL_STYLE_FUNCTION,
+  STYLES_ATTRIBUTE
 } from './component_map';
 import {
   LogType,
@@ -59,6 +62,7 @@ import {
   addLog,
   hasDecorator
 } from './utils';
+import { projectConfig } from '../main';
 const parser = require('../syntax_parser/dist/syntax_parser.js');
 
 export interface ComponentCollection {
@@ -170,27 +174,55 @@ function checkComponentDecorator(source: string, filePath: string,
       if (ts.isMissingDeclaration(item)) {
         const decorators: ts.NodeArray<ts.Decorator> = item.decorators;
         for (let i = 0; i < decorators.length; i++) {
-          if (decorators[i] && /struct/.test(item.getText())) {
+          if (decorators[i] && /struct/.test(decorators[i].getText())) {
             const message: string = `Please use a valid decorator.`;
             addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
             break;
           }
         }
       }
+      if (ts.isFunctionDeclaration(item) && item.decorators && item.decorators.length === 1 &&
+        item.decorators[0].expression && item.decorators[0].expression.getText() === STYLES) {
+        STYLES_ATTRIBUTE.push(item.name.getText())
+        GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
+        BUILDIN_STYLE_NAMES.add(item.name.getText());
+      }
     });
-    validateEntryCount(result, fileQuery, sourceFile.fileName, log);
+    validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview, log);
   }
 
   return log.length ? log : null;
 }
 
-function validateEntryCount(result: DecoratorResult, fileQuery: string,
-  fileName: string, log: LogInfo[]): void {
-  if (result.entryCount !== 1 && fileQuery === '?entry') {
+function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string,
+  fileName: string, isPreview: boolean, log: LogInfo[]): void {
+  if (result.previewCount > 10 && fileQuery === '?entry') {
+    log.push({
+      type: LogType.ERROR,
+      message: `A page can contain at most 10 '@Preview' decorators.`,
+      fileName: fileName
+    });
+  }
+  if (result.entryCount > 1 && fileQuery === '?entry') {
+    log.push({
+      type: LogType.ERROR,
+      message: `A page can't contain more than one '@Entry' decorator`,
+      fileName: fileName
+    });
+  }
+  if (isPreview && result.previewCount < 1 && result.entryCount !== 1 &&
+    fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
       message: `A page configured in 'config.json' must have one and only one '@Entry' `
-        + `decorator with a struct.`,
+        + `decorator, or at least one '@Preview' decorator.`,
+      fileName: fileName
+    });
+  } else if (!isPreview && result.entryCount !== 1 && fileQuery === '?entry') {
+    log.push({
+      type: LogType.ERROR,
+      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+        + `decorator.`,
       fileName: fileName
     });
   }
@@ -236,7 +268,7 @@ function checkDecorators(node: ts.MissingDeclaration | ts.ExportAssignment, resu
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
   node.decorators.forEach((element) => {
-    const name: string = element.getText();
+    const name: string = element.getText().replace(/\((.|\n)*\)/, '').trim();
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       componentCollection.customComponents.add(componentName);
       switch (name) {
@@ -788,9 +820,10 @@ export function processSystemApi(content: string): string {
         item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
           `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
       } else if (moduleType === OHOS_PLUGIN) {
-        item = `var ${systemValue} = isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
-          `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
-          `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
+        item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
+          `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
+          `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
+          `? globalThis.systemplugin.${systemKey} : undefined)`;
       }
       return item;
     });

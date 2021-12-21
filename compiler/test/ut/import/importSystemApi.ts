@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 import { router1, router2 } from "@system.router";
 import { app } from "@system.router";
 import { fetch } from "@system.fetch";
@@ -36,7 +36,7 @@ import hello from 'libhello.so'
 import world = require('libworld.so')
 `
 
-export const expectResult: string =
+exports.expectResult =
 `var { router1, router2 } = globalThis.requireNativeModule('system.router');
 var { app } = globalThis.requireNativeModule('system.router');
 var { fetch } = isSystemplugin('fetch', 'system') ? globalThis.systemplugin.fetch : globalThis.requireNapi('fetch');
@@ -49,7 +49,7 @@ var fetch = isSystemplugin('fetch', 'system') ? globalThis.systemplugin.fetch : 
 var router = globalThis.requireNativeModule('system.router');
 var app = globalThis.requireNativeModule('system.app');
 var fetch = isSystemplugin('fetch', 'system') ? globalThis.systemplugin.fetch : globalThis.requireNapi('fetch');
-var fetch = isSystemplugin('net.http', 'ohos') ? globalThis.ohosplugin.net.http : isSystemplugin('net.http', 'system') ? globalThis.systemplugin.net.http : globalThis.requireNapi('net.http');
+var fetch = globalThis.requireNapi('net.http') || (isSystemplugin('net.http', 'ohos') ? globalThis.ohosplugin.net.http : isSystemplugin('net.http', 'system') ? globalThis.systemplugin.net.http : undefined);
 var hello = globalThis.requireNapi("hello", true);
 var world = globalThis.requireNapi("world", true);
 `

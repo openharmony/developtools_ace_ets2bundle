@@ -1,0 +1,8 @@
+{
+  "name": "TextArea",
+  "atomic": true,
+  "attrs": [
+    "placeholderColor", "placeholderFont", "textAlign", "caretColor", "onChange",
+    "onCopy", "OnCut", "OnPaste", "fontSize", "fontColor", "fontStyle", "fontWeight", "fontFamily"
+  ]
+}

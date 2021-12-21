@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct Animation {
@@ -58,7 +58,7 @@ struct Animation {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class Animation extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

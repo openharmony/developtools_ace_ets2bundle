@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct GeometryReaderTest {
@@ -30,7 +30,7 @@ struct GeometryReaderTest {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class GeometryReaderTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

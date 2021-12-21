@@ -28,6 +28,7 @@ ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
                   "/sysResource.js"
 
 action("build_ets_loader_library") {
+  deps = [ ":components", ":server" ]
   script = "build_ets_loader_library.py"
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
@@ -111,7 +112,11 @@ action("build_ets_loader_library") {
 }
 
 action("build_ets_sysResource") {
-  script = "//foundation/ace/huawei_proprietary/tools/ets-loader/generateSysResource.py"
+  if (is_standard_system) {
+    script = "//developtools/ace-ets2bundle/generateSysResource.py"
+  } else {
+    script = "//foundation/ace/huawei_proprietary/tools/ets-loader/generateSysResource.py"
+  }
   outputs = [ ets_sysResource ]
 
   _id_defined_json =
@@ -137,10 +142,9 @@ ohos_copy("ets_loader") {
     "compiler/webpack.config.js",
     ets_loader_component_config_file,
   ]
-  if (!is_standard_system) {
-    deps += [ ":build_ets_sysResource" ]
-    sources += [ ets_sysResource ]
-  }
+  deps += [ ":build_ets_sysResource" ]
+  sources += [ ets_sysResource ]
+
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
@@ -157,6 +161,20 @@ ohos_copy("ets_loader_library") {
 ohos_copy("ets_loader_syntax") {
   deps = [ ":build_ets_loader_library" ]
   sources = [ ets_loader_syntax_dir ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("components") {
+  sources = [ "compiler/components" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("server") {
+  sources = [ "compiler/server" ]
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 import
   LinkComponentDefault, {
   LinkComponent as LinkComponent1Ref,
@@ -134,7 +134,7 @@ struct ImportTest {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `import LinkComponentDefault, { LinkComponent as LinkComponent1Ref, LinkComponent2 as LinkComponent2Ref, LinkComponent3 } from './test/pages/LinkComponent.ets';
 import DefaultComponent from "./test/pages/DefaultComponent.ets";
 import * as AllComponent from './test/pages/NamespaceComponent';

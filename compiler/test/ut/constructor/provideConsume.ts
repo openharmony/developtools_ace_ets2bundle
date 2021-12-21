@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Component
 struct GrandChild {
     @Consume arr: number[];
@@ -42,7 +42,7 @@ struct Parent {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class GrandChild extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

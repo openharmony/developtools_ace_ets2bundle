@@ -83,7 +83,7 @@ def main():
     depfile_deps.append(options.uglify_source_js)
 
     syntax_cmd = [options.node, options.build_parser_js,
-        options.output_syntax_dir]
+        options.output_syntax_dir, options.ets_loader_src_dir]
     depfile_deps.append(options.build_parser_js)
 
     build_declarations_file_cmd = [options.node,

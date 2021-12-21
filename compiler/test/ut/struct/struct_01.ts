@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Component
 @Entry
 struct MyComponent {
@@ -21,7 +21,7 @@ struct MyComponent {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

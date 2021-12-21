@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import path from 'path';
+
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
 export const SYSTEM_PLUGIN: string = 'system';
@@ -44,6 +46,7 @@ export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT
 export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
+export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
 
 export const OBSERVED_PROPERTY_SIMPLE: string = 'ObservedPropertySimple';
 export const OBSERVED_PROPERTY_OBJECT: string = 'ObservedPropertyObject';
@@ -86,7 +89,6 @@ export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';
 export const COMPONENT_LAZYFOREACH: string = 'LazyForEach';
 export const IS_RENDERING_IN_PROGRESS: string = 'isRenderingInProgress';
-export const COMPONENT_BLANK: string = 'Blank';
 export const FOREACH_OBSERVED_OBJECT: string = 'ObservedObject';
 export const FOREACH_GET_RAW_OBJECT: string = 'GetRawObject';
 export const COMPONENT_IF: string = 'If';
@@ -95,6 +97,7 @@ export const COMPONENT_IF_UNDEFINED: string = 'undefined';
 export const GLOBAL_CONTEXT: string = 'Context';
 export const ATTRIBUTE_ANIMATION: string = 'animation';
 export const ATTRIBUTE_ANIMATETO: string = 'animateTo';
+export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
@@ -170,4 +173,15 @@ export const SET_CONTROLLER_CTR_TYPE: string = 'CustomDialogController';
 export const JS_DIALOG: string = 'jsDialog';
 export const CUSTOM_DIALOG_CONTROLLER_BUILDER: string = 'builder';
 
+export const BUILDER_ATTR_NAME: string = 'builder';
+export const BUILDER_ATTR_BIND: string = 'bind';
+
 export const GEOMETRY_VIEW: string = 'GeometryView';
+
+export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'ets' + path.sep + 'share';
+export const BUILD_SHARE_PATH: string = '../share';
+
+export const THIS: string = 'this';
+export const STYLES: string = 'Styles';
+export const VISUAL_STATE: string = 'visualState';
+export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';

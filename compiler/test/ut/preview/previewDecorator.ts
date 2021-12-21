@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct HomePreviewComponent {
@@ -56,7 +56,7 @@ struct HomePreviewComponent_Preview {
 }
 `
 
-export const expectResult: string =
+exports.expectResult =
 `class HomePreviewComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -134,5 +134,5 @@ class HomePreviewComponent_Preview extends View {
         Column.pop();
     }
 }
-loadDocument(new HomePreviewComponent_Preview("1", undefined, {}));
+loadDocument(new HomePreviewComponent("1", undefined, {}));
 `

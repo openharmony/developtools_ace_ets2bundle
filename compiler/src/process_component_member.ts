@@ -836,7 +836,7 @@ function validateHasIllegalQuestionToken(propertyName: ts.Identifier, decorator:
   log: LogInfo[]): void {
   log.push({
     type: LogType.WARN,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot have a question token.`,
+    message: `The ${decorator} property '${propertyName.getText()}' cannot be an optional parameter.`,
     pos: propertyName.getStart()
   });
 }

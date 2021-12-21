@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 @Entry
 @Component
 struct MyLinkComponent {
@@ -30,7 +30,7 @@ struct MyLinkComponent {
     }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `class MyLinkComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

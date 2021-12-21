@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-export const source: string = `
+exports.source = `
 import router from '@system.router'
 import app from '@system.app'
 
@@ -110,7 +110,7 @@ struct MyComponent {
   }
 }`
 
-export const expectResult: string =
+exports.expectResult =
 `var router = globalThis.requireNativeModule('system.router');
 var app = globalThis.requireNativeModule('system.app');
 class MyComponent extends View {

@@ -14,10 +14,12 @@
  */
 
 const path = require('path');
+const fs = require('fs');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
+const buildPipeServer = require('./server/build_pipe_server');
 
 const {
   projectConfig,
@@ -30,6 +32,7 @@ const {
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE } = require('./lib/utils');
+const { BUILD_SHARE_PATH } = require('./lib/pre_define');
 
 const watchMode = (process.env.watchMode && process.env.watchMode === 'true') || false;
 
@@ -43,10 +46,32 @@ function initConfig(config) {
       poll: false,
       ignored: /node_modules/
     },
+    optimization: {
+      splitChunks: {
+        chunks: "all",
+        minSize: 0,
+        cacheGroups: {
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            name: "vendors",
+            chunks: 'initial'
+          },
+          commons: {
+            name: 'commons',
+            priority: -20,
+            minChunks: 2,
+            chunks: 'initial',
+            reuseExistingChunk: true
+          }
+        }
+      },
+    },
     output: {
       path: path.resolve(__dirname, projectConfig.buildPath),
       filename: '[name].js',
-      devtoolModuleFilenameTemplate: 'webpack:///[absolute-resource-path]'
+      devtoolModuleFilenameTemplate: 'webpack:///[absolute-resource-path]',
+      globalObject: 'globalThis'
     },
     devtool: 'nosources-source-map',
     mode: 'development',
@@ -150,8 +175,28 @@ function setCopyPluginConfig(config) {
     },
     noErrorOnMissing: true
   });
+  const sharePath = path.resolve(__dirname, projectConfig.projectPath, BUILD_SHARE_PATH);
+  if (fs.existsSync(sharePath)) {
+    copyPluginPattrens.push({
+      from: '**/*',
+      context: path.resolve(__dirname, projectConfig.projectPath, BUILD_SHARE_PATH),
+      to: path.resolve(__dirname, projectConfig.buildPath, BUILD_SHARE_PATH),
+      globOptions: {
+        ignore: [
+          '**/*.ets',
+          '**/*.ts',
+          '**/*.js',
+        ]
+      },
+      noErrorOnMissing: true
+    });
+  }
   if (abilityConfig.abilityType === 'page') {
-    copyPluginPattrens.push({ from: projectConfig.manifestFilePath });
+    if (fs.existsSync(projectConfig.manifestFilePath)) {
+      copyPluginPattrens.push({ from: projectConfig.manifestFilePath });
+    } else if (fs.existsSync(projectConfig.aceConfigPath)) {
+      copyPluginPattrens.push({ from: projectConfig.aceConfigPath });
+    }
   }
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
@@ -170,6 +215,15 @@ module.exports = (env, argv) => {
     }
   } else {
     projectConfig.isPreview = true;
+    let port;
+    process.argv.forEach((val, index) => {
+      if(val.startsWith('port=')){
+        port = val.split('=')[1];
+      }
+    });
+    if (port) {
+      buildPipeServer.init(port);
+    }
   }
 
   if (env.sourceMap === 'none') {
