@@ -75,7 +75,7 @@ export interface ExtendParamterInterfance {
   parameterCount: number
 }
 export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
-export const STYLES_ATTRIBUTE: string[] = [];
+export const STYLES_ATTRIBUTE: Set<string> = new Set();
 
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
   ...GESTURE_TYPE_NAMES, 'Gesture',

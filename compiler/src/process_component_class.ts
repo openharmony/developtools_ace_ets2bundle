@@ -159,7 +159,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         INNER_STYLE_FUNCTION.set(name, node.body);
-        STYLES_ATTRIBUTE.push(name);
+        STYLES_ATTRIBUTE.add(name);
         BUILDIN_STYLE_NAMES.add(name);
         decoratorParamSet.add(STYLES);
       } else {

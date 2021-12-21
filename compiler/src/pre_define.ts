@@ -184,4 +184,3 @@ export const BUILD_SHARE_PATH: string = '../share';
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';
-export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';

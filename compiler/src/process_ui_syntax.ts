@@ -56,8 +56,7 @@ import {
   EXTEND_ATTRIBUTE,
   JS_BIND_COMPONENTS,
   INNER_STYLE_FUNCTION,
-  GLOBAL_STYLE_FUNCTION,
-  STYLES_ATTRIBUTE
+  GLOBAL_STYLE_FUNCTION
 } from './component_map';
 import { resources } from '../main';
 
@@ -82,7 +81,6 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           BUILDIN_STYLE_NAMES.delete(styleName);
         })
         GLOBAL_STYLE_FUNCTION.clear();
-        STYLES_ATTRIBUTE.length = 0;
         return node;
       } else {
         return node;

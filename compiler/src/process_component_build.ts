@@ -46,8 +46,7 @@ import {
   COMPONENT_DEBUGLINE_FUNCTION,
   ATTRIBUTE_STATESTYLES,
   THIS,
-  VISUAL_STATE,
-  VIEW_STACK_PROCESSOR
+  VISUAL_STATE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -517,9 +516,10 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       validateStateStyleSyntax(temp, log);
     }
   } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
-    bindComponentAttr((GLOBAL_STYLE_FUNCTION.get(propName).statements[0] ||
-      INNER_STYLE_FUNCTION.get(propName).statements[0]) as ts.ExpressionStatement,
-      identifierNode, statements, log, false, true);
+    const styleBlock: ts.Block =
+      GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
+    bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+      statements, log, false, true);
   } else {
     if (isStylesAttr && !COMMON_ATTRS.has(propName)) {
       validateStateStyleSyntax(temp, log);
@@ -537,7 +537,7 @@ function createViewStackProcessor(item: any, endViewStack: boolean) {
   }
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
-      ts.factory.createIdentifier(VIEW_STACK_PROCESSOR),
+      ts.factory.createIdentifier(GLOBAL_CONTEXT),
       ts.factory.createIdentifier(VISUAL_STATE)
     ),
     undefined,
