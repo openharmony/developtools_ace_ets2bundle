@@ -28,7 +28,10 @@ ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
                   "/sysResource.js"
 
 action("build_ets_loader_library") {
-  deps = [ ":components", ":server" ]
+  deps = [
+    ":components",
+    ":server",
+  ]
   script = "build_ets_loader_library.py"
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
@@ -142,8 +145,10 @@ ohos_copy("ets_loader") {
     "compiler/webpack.config.js",
     ets_loader_component_config_file,
   ]
-  deps += [ ":build_ets_sysResource" ]
-  sources += [ ets_sysResource ]
+  if (!is_standard_system) {
+    deps += [ ":build_ets_sysResource" ]
+    sources += [ ets_sysResource ]
+  }
 
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"

@@ -49,27 +49,27 @@ function handlePluginCommand(jsonData) {
 }
 
 function handlePluginDefault() {
-  console.error('Failed to recognize command');
+  return;
 }
 
 function handlePluginCompileComponent(jsonData) {
-  const received_msg = jsonData;
+  const receivedMsg = jsonData;
   const sourceNode = ts.createSourceFile
-    ('preview.ts', received_msg.data.script, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    ('preview.ts', receivedMsg.data.script, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const previewStatements = [];
   processComponentChild(sourceNode, previewStatements, []);
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, newSource, newSource);
-  received_msg.data.script = result;
+  receivedMsg.data.script = result;
   if (pluginSocket.readyState === WebSocket.OPEN){
-    responseToPlugin(received_msg);
+    responseToPlugin(receivedMsg);
   }
 }
 
 function responseToPlugin(jsonData) {
   pluginSocket.send(JSON.stringify(jsonData), (err) => {
-    console.error('Failed to send data through websocket');
+    return;
   });
 }
 
