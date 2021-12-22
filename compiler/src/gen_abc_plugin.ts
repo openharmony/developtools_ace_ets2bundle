@@ -20,33 +20,32 @@ import * as path from 'path';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 
-const arkDir: string = path.join(__dirname, '..', 'bin', 'ark');
-
 const firstFileEXT: string = '_.js';
 let output: string;
-let webpackPath: string;
 let isWin: boolean = false;
 let isMac: boolean = false;
 let isDebug: boolean = false;
+let arkDir: string;
+let nodeJs: string;
 
 const red: string = '\u001b[31m';
-const blue: string = '\u001b[34m';
 const reset: string = '\u001b[39m';
 
 export class GenAbcPlugin {
-  constructor(output_, webpackPath_, isDebug_) {
+  constructor(output_, arkDir_, nodeJs_, isDebug_) {
     output = output_;
-    webpackPath = webpackPath_;
+    arkDir = arkDir_;
+    nodeJs = nodeJs_;
     isDebug = isDebug_;
   }
   apply(compiler: Compiler) {
-    if (fs.existsSync(path.resolve(webpackPath, 'ark/build-win'))) {
+    if (fs.existsSync(path.resolve(arkDir, 'build-win'))) {
       isWin = true;
     } else {
-      if (fs.existsSync(path.resolve(webpackPath, 'ark/build-mac'))) {
+      if (fs.existsSync(path.resolve(arkDir, 'build-mac'))) {
         isMac = true;
       } else {
-        if (!fs.existsSync(path.resolve(webpackPath, 'ark/build'))) {
+        if (!fs.existsSync(path.resolve(arkDir, 'build'))) {
           logger.error(red, 'ETS:ERROR find build fail', reset);
           return;
         }
@@ -56,7 +55,7 @@ export class GenAbcPlugin {
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
       Object.keys(compilation.assets).forEach(key => {
         // choice *.js
-        if (output && webpackPath && path.extname(key) === '.js') {
+        if (output && path.extname(key) === '.js') {
           const newContent: string = compilation.assets[key].source();
           const keyPath: string = key.replace(/\.js$/, firstFileEXT);
           writeFileSync(newContent, path.resolve(output, keyPath), key);
@@ -100,7 +99,7 @@ function js2abcFirst(inputPath: string): void {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
-  const cmd: string = `node --expose-gc "${js2abc}" "${inputPath}" ${param}`;
+  const cmd: string = `${nodeJs} --expose-gc "${js2abc}" "${inputPath}" ${param}`;
 
   try {
     process.execSync(cmd);
