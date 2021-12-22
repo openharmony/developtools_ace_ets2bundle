@@ -63,7 +63,7 @@ import {
   hasDecorator
 } from './utils';
 import { projectConfig } from '../main';
-const parser = require('../syntax_parser/dist/syntax_parser.js');
+const parser = require('../syntax_parser/dist/exclude_comment.js');
 
 export interface ComponentCollection {
   entryComponent: string;

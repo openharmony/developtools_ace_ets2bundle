@@ -46,7 +46,13 @@ import {
   COMPONENT_DEBUGLINE_FUNCTION,
   ATTRIBUTE_STATESTYLES,
   THIS,
-  VISUAL_STATE
+  VISUAL_STATE,
+  VIEW_STACK_PROCESSOR,
+  BIND_POPUP,
+  $$_VALUE,
+  $$_CHANGE_EVENT,
+  $$_THIS,
+  $$_NEW_VALUE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -72,6 +78,7 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { transformLog } from './process_ui_syntax';
+import { props } from './compile_info';
 
 export const appComponentCollection: Set<string> = new Set();
 
@@ -479,6 +486,44 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
 }
 
+function createArrowFunctionFor$$ ($$varExp: ts.Expression): ts.ArrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined, undefined,
+    [ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined,
+      ts.factory.createIdentifier($$_NEW_VALUE),
+      undefined, undefined, undefined
+    )],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+        $$varExp,
+        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+        ts.factory.createIdentifier($$_NEW_VALUE)
+      ))],
+      false
+    )
+  );
+}
+
+function updateArgumentFor$$(argument: any): ts.Expression {
+  if (ts.isElementAccessExpression(argument)) {
+    return ts.factory.updateElementAccessExpression
+      (argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
+  } else if (ts.isIdentifier(argument)) {
+    props.push(argument.getText());
+    if (argument.getText() === $$_THIS) {
+      return ts.factory.createThis();
+    } else if (argument.getText().match(/^\$\$(.|\n)+/)) {
+      return ts.factory.createIdentifier(argument.getText().replace(/\$\$/, ''));
+    }
+  } else if (ts.isPropertyAccessExpression(argument)) {
+    return ts.factory.updatePropertyAccessExpression
+      (argument, updateArgumentFor$$(argument.expression), argument.name);
+  }
+}
+
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr): void {
@@ -520,6 +565,15 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
     bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
       statements, log, false, true);
+  } else if (propName === BIND_POPUP && temp.arguments.length === 2 &&
+    temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
+    const argumentsArr: ts.Expression[] = [];
+    const varExp: ts.Expression = updateArgumentFor$$(temp.arguments[0]);
+    argumentsArr.push(generateObjectFor$$(varExp));
+    argumentsArr.push(temp.arguments[1]);
+    statements.push(ts.factory.createExpressionStatement(
+      createFunction(identifierNode, node, argumentsArr)));
+    lastStatement.kind = true;
   } else {
     if (isStylesAttr && !COMMON_ATTRS.has(propName)) {
       validateStateStyleSyntax(temp, log);
@@ -530,14 +584,30 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   }
 }
 
-function createViewStackProcessor(item: any, endViewStack: boolean) {
-  const argument: ts.StringLiteral[] = []
+function generateObjectFor$$(varExp: ts.Expression): ts.ObjectLiteralExpression {
+  return ts.factory.createObjectLiteralExpression(
+    [
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier($$_VALUE),
+        varExp
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier($$_CHANGE_EVENT),
+        createArrowFunctionFor$$(varExp)
+      )
+    ],
+    false
+  );
+}
+
+function createViewStackProcessor(item: any, endViewStack: boolean): ts.ExpressionStatement {
+  const argument: ts.StringLiteral[] = [];
   if (!endViewStack && item.name) {
     argument.push(ts.factory.createStringLiteral(item.name.getText()));
   }
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
-      ts.factory.createIdentifier(GLOBAL_CONTEXT),
+      ts.factory.createIdentifier(VIEW_STACK_PROCESSOR),
       ts.factory.createIdentifier(VISUAL_STATE)
     ),
     undefined,
@@ -546,7 +616,7 @@ function createViewStackProcessor(item: any, endViewStack: boolean) {
 }
 
 function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
-  identifierNode: ts.Identifier, log: LogInfo[]) {
+  identifierNode: ts.Identifier, log: LogInfo[]): void {
   temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
     if (ts.isPropertyAccessExpression(item.initializer) &&
       item.initializer.expression.getText() === THIS &&
@@ -770,7 +840,7 @@ function validateExtendParameterCount(temp: any, identifierNode: ts.Identifier, 
   }
 }
 
-export function validateStateStyleSyntax(temp: any, log: LogInfo[]) {
+export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
     message: `.stateStyles doesn't conform standard.`,
