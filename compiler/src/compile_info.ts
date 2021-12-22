@@ -50,7 +50,7 @@ configure({
 });
 export const logger = getLogger('ETS');
 
-const props: string[] = [];
+export const props: string[] = [];
 const GLOBAL_COMMON_MODULE_CACHE: string = `
 globalThis["__common_module_cache__"] = globalThis["__common_module_cache__"] || {};
 globalThis["webpackChunkcompilier"].forEach((item)=> {
@@ -252,7 +252,7 @@ export class ResultStates {
     }
   }
   private validateError(message: string): boolean {
-    const propInfoReg: RegExp = /Cannot find name\s*'(\$?[_a-zA-Z0-9]+)'/;
+    const propInfoReg: RegExp = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
     const componentNameReg: RegExp = /'typeof\s*(\$?[_a-zA-Z0-9]+)' is not callable/;
     const stateInfoReg: RegExp = /Property\s*'(\$[_a-zA-Z0-9]+)' does not exist on type/;
     const extendInfoReg: RegExp =

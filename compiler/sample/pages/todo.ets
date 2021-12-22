@@ -24,7 +24,6 @@
  * https://rnd-gitlab-eu-c.huawei.com/zidanehbs/ace/ace/-/blob/fin-hmf-dev-ace-diff-clean/samples/common/res/hi_topapp/assets/js/default/acediff/todoListForEach.js
  * This is the ouput the eDSL transpiler should generate.
  */
-
 let tasks: Array<any> = [
   { label: "Wash the car" },
   { label: "Buy some milk" },

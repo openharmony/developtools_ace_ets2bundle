@@ -211,7 +211,16 @@ module.exports = (env, argv) => {
   if (env.isPreview !== "true") {
     loadWorker(projectConfig);
     if (env.compilerType && env.compilerType === 'ark') {
-      config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, path.join(__dirname, 'bin'), env.buildMode === 'debug'));
+      let arkDir = path.join(__dirname, 'bin', 'ark');
+      if (env.arkFrontendDir) {
+        arkDir = env.arkFrontendDir;
+      }
+      let nodeJs = 'node';
+      if (env.nodeJs) {
+        nodeJs = env.nodeJs
+      }
+      config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, arkDir, nodeJs,
+        env.buildMode === 'debug'));
     }
   } else {
     projectConfig.isPreview = true;

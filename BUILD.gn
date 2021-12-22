@@ -134,21 +134,21 @@ action("build_ets_sysResource") {
   ]
 }
 
+ets_loader_sources = [
+  "compiler/main.js",
+  "compiler/npm-install.js",
+  "compiler/package-lock.json",
+  "compiler/package.json",
+  "compiler/tsconfig.json",
+  "compiler/webpack.config.js",
+  ets_loader_component_config_file,
+]
+
 ohos_copy("ets_loader") {
   deps = [ ":build_ets_loader_library" ]
-  sources = [
-    "compiler/main.js",
-    "compiler/npm-install.js",
-    "compiler/package-lock.json",
-    "compiler/package.json",
-    "compiler/tsconfig.json",
-    "compiler/webpack.config.js",
-    ets_loader_component_config_file,
-  ]
-  if (!is_standard_system) {
-    deps += [ ":build_ets_sysResource" ]
-    sources += [ ets_sysResource ]
-  }
+  sources = ets_loader_sources
+  deps += [ ":build_ets_sysResource" ]
+  sources += [ ets_sysResource ]
 
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
@@ -191,4 +191,70 @@ ohos_copy("ets_loader_declaration") {
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
+}
+
+ohos_copy("ets_loader_ark") {
+  deps = [ ":build_ets_loader_library" ]
+  sources = ets_loader_sources
+  deps += [ ":build_ets_sysResource" ]
+  sources += [ ets_sysResource ]
+  outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
+}
+
+ohos_copy("ets_loader_ark_lib") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ ets_loader_lib_dir ]
+  outputs = [ target_out_dir + "/ets_loader_ark/lib" ]
+}
+
+ohos_copy("ets_loader_ark_declaration") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ ets_loader_declarations_dir ]
+  outputs = [ target_out_dir + "/ets_loader_ark/declarations" ]
+}
+
+ohos_copy("ets_loader_ark_components") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ "compiler/components" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/components" ]
+}
+
+ohos_copy("ets_loader_ark_server") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ "compiler/server" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/server" ]
+}
+
+ohos_copy("ets_loader_ark_syntax") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ ets_loader_syntax_dir ]
+  outputs = [ target_out_dir + "/ets_loader_ark/syntax_parser/dist" ]
+}
+
+ohos_copy("ets_loader_node_modules") {
+  deps = [
+    ":ets_loader_ark",
+    ":ets_loader_ark_components",
+    ":ets_loader_ark_declaration",
+    ":ets_loader_ark_lib",
+    ":ets_loader_ark_server",
+    ":ets_loader_ark_syntax",
+  ]
+  sources = [ "//developtools/ace-ets2bundle/compiler/node_modules" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/node_modules" ]
 }

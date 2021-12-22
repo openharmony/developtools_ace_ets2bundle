@@ -184,3 +184,10 @@ export const BUILD_SHARE_PATH: string = '../share';
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';
+export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
+
+export const BIND_POPUP: string = 'bindPopup';
+export const $$_VALUE: string = 'value';
+export const $$_CHANGE_EVENT: string = 'changeEvent';
+export const $$_THIS: string = '$$this';
+export const $$_NEW_VALUE: string = 'newValue';
