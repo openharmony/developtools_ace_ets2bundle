@@ -111,7 +111,7 @@ function initConfig(config) {
       global: false
     },
     resolve: {
-      extensions:['.js', '.ets', '.ts'],
+      extensions: ['.js', '.ets', '.ts'],
       modules: [
         projectPath,
         path.join(projectPath, '../../../../../'),
@@ -125,11 +125,12 @@ function initConfig(config) {
         paths: [
           /\.js$/,
           /\.d\.ts$/
-      ]}),
+        ]
+      }),
       new CleanWebpackPlugin(),
       new ResultStates()
     ]
-  })
+  });
 }
 
 function setProjectConfig(envArgs) {
@@ -150,14 +151,14 @@ function setProjectConfig(envArgs) {
 
 function setReleaseConfig(config) {
   const TerserPlugin = require('terser-webpack-plugin');
-    config.mode = 'production';
-    config.optimization = {
-      emitOnErrors: true,
-      usedExports: false,
-      minimize: true,
-      minimizer: [ new TerserPlugin() ]
-    };
-    config.output.sourceMapFilename = '_releaseMap/[name].js.map';
+  config.mode = 'production';
+  config.optimization = {
+    emitOnErrors: true,
+    usedExports: false,
+    minimize: true,
+    minimizer: [new TerserPlugin()]
+  };
+  config.output.sourceMapFilename = '_releaseMap/[name].js.map';
 }
 
 function setCopyPluginConfig(config) {
@@ -217,7 +218,7 @@ module.exports = (env, argv) => {
       }
       let nodeJs = 'node';
       if (env.nodeJs) {
-        nodeJs = env.nodeJs
+        nodeJs = env.nodeJs;
       }
       config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, arkDir, nodeJs,
         env.buildMode === 'debug'));

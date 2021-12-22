@@ -198,8 +198,10 @@ ohos_copy("ets_loader_declaration") {
 ohos_copy("ets_loader_ark") {
   deps = [ ":build_ets_loader_library" ]
   sources = ets_loader_sources
-  deps += [ ":build_ets_sysResource" ]
-  sources += [ ets_sysResource ]
+  if (!is_standard_system) {
+    deps += [ ":build_ets_sysResource" ]
+    sources += [ ets_sysResource ]
+  }
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
 }
 
@@ -221,6 +223,15 @@ ohos_copy("ets_loader_ark_declaration") {
   outputs = [ target_out_dir + "/ets_loader_ark/declarations" ]
 }
 
+ohos_copy("ets_loader_ark_syntax") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ ets_loader_syntax_dir ]
+  outputs = [ target_out_dir + "/ets_loader_ark/syntax_parser/dist" ]
+}
+
 ohos_copy("ets_loader_ark_components") {
   deps = [
     ":build_ets_loader_library",
@@ -237,15 +248,6 @@ ohos_copy("ets_loader_ark_server") {
   ]
   sources = [ "compiler/server" ]
   outputs = [ target_out_dir + "/ets_loader_ark/server" ]
-}
-
-ohos_copy("ets_loader_ark_syntax") {
-  deps = [
-    ":build_ets_loader_library",
-    ":ets_loader_ark",
-  ]
-  sources = [ ets_loader_syntax_dir ]
-  outputs = [ target_out_dir + "/ets_loader_ark/syntax_parser/dist" ]
 }
 
 ohos_copy("ets_loader_node_modules") {

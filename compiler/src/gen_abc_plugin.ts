@@ -22,7 +22,6 @@ import { logger } from './compile_info';
 
 const firstFileEXT: string = '_.js';
 let output: string;
-let webpackPath: string;
 let isWin: boolean = false;
 let isMac: boolean = false;
 let isDebug: boolean = false;
@@ -30,7 +29,6 @@ let arkDir: string;
 let nodeJs: string;
 
 const red: string = '\u001b[31m';
-const blue: string = '\u001b[34m';
 const reset: string = '\u001b[39m';
 
 export class GenAbcPlugin {
