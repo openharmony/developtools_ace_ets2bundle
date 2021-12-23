@@ -165,29 +165,33 @@ function readAppResource(resources, filePath) {
     const appResource = fs.readFileSync(filePath, "utf-8");
     const resourceArr = appResource.split(/\n/);
     let resourceMap = new Map();
-    for (let i = 0; i < resourceArr.length; i++) {
-      if (!resourceArr[i].length) {
-        continue;
-      }
-      const resourceData = resourceArr[i].split(/\s/);
-      if (resourceData.length === 3 && Number(resourceData[2]) !== NaN ) {
-        if (resourceMap.get(resourceData[0])) {
-          const resourceKeys = resourceMap.get(resourceData[0]);
-          if (!resourceKeys[resourceData[1]] || resourceKeys[resourceData[1]] !== Number(resourceData[2])) {
-            resourceKeys[resourceData[1]] = Number(resourceData[2]);
-          }
-        } else {
-          let obj = {};
-          obj[resourceData[1]] = Number(resourceData[2]);
-          resourceMap.set(resourceData[0], obj);
-        }
-      } else {
-        logger.warn(`\u001b[31m ETS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);
-        break;
-      }
-    }
+    processResourceArr(resourceArr, resourceMap, filePath);
     for (let [key, value] of resourceMap) {
       resources.app[key] = value;
+    }
+  }
+}
+
+function processResourceArr(resourceArr, resourceMap, filePath) {
+  for (let i = 0; i < resourceArr.length; i++) {
+    if (!resourceArr[i].length) {
+      continue;
+    }
+    const resourceData = resourceArr[i].split(/\s/);
+    if (resourceData.length === 3 && !isNaN(Number(resourceData[2])) ) {
+      if (resourceMap.get(resourceData[0])) {
+        const resourceKeys = resourceMap.get(resourceData[0]);
+        if (!resourceKeys[resourceData[1]] || resourceKeys[resourceData[1]] !== Number(resourceData[2])) {
+          resourceKeys[resourceData[1]] = Number(resourceData[2]);
+        }
+      } else {
+        let obj = {};
+        obj[resourceData[1]] = Number(resourceData[2]);
+        resourceMap.set(resourceData[0], obj);
+      }
+    } else {
+      logger.warn(`\u001b[31m ETS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);
+      break;
     }
   }
 }
