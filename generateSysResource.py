@@ -41,7 +41,7 @@ class SysResource:
                 continue
 
             item_name = item["name"]
-            item_id = item["order"] + 0x7000000
+            item_id = item["order"] + 0x7800000
             if item_type not in self.records:
                 self.records[item_type] = dict()
             self.records[item_type][item_name] = item_id
