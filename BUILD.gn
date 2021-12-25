@@ -147,10 +147,8 @@ ets_loader_sources = [
 ohos_copy("ets_loader") {
   deps = [ ":build_ets_loader_library" ]
   sources = ets_loader_sources
-  if (!is_standard_system) {
-    deps += [ ":build_ets_sysResource" ]
-    sources += [ ets_sysResource ]
-  }
+  deps += [ ":build_ets_sysResource" ]
+  sources += [ ets_sysResource ]
 
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
@@ -198,10 +196,8 @@ ohos_copy("ets_loader_declaration") {
 ohos_copy("ets_loader_ark") {
   deps = [ ":build_ets_loader_library" ]
   sources = ets_loader_sources
-  if (!is_standard_system) {
-    deps += [ ":build_ets_sysResource" ]
-    sources += [ ets_sysResource ]
-  }
+  deps += [ ":build_ets_sysResource" ]
+  sources += [ ets_sysResource ]
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
 }
 
