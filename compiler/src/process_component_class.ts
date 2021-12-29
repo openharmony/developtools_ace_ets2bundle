@@ -23,6 +23,7 @@ import {
   CREATE_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   COMPONENT_CONSTRUCTOR_DELETE_PARAMS,
+  COMPONENT_DECORATOR_PREVIEW,
   CREATE_CONSTRUCTOR_SUBSCRIBER_MANAGER,
   ABOUT_TO_BE_DELETE_FUNCTION_ID,
   CREATE_CONSTRUCTOR_GET_FUNCTION,
@@ -74,9 +75,21 @@ export function processComponentClass(node: ts.ClassDeclaration, context: ts.Tra
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
   validateInheritClass(node, log);
   const memberNode: ts.ClassElement[] =
-    processMembers(node.members, node.name, context, log, program);
+    processMembers(node.members, node.name, context, log, program, checkPreview(node));
   return ts.factory.updateClassDeclaration(node, undefined, node.modifiers, node.name,
     node.typeParameters, updateHeritageClauses(node), memberNode);
+}
+
+function checkPreview(node: ts.ClassDeclaration) {
+  let hasPreview: boolean = false;
+  for (let i = 0; i < node.decorators.length; i++) {
+    const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
+    if (name === COMPONENT_DECORATOR_PREVIEW) {
+      hasPreview = true;
+      break;
+    }
+  }
+  return hasPreview;
 }
 
 type BuildCount = {
@@ -84,7 +97,7 @@ type BuildCount = {
 }
 
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
-  context: ts.TransformationContext, log: LogInfo[], program: ts.Program): ts.ClassElement[] {
+  context: ts.TransformationContext, log: LogInfo[], program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
   const buildCount: BuildCount = { count: 0 };
   let ctorNode: any = getInitConstructor(members);
   const newMembers: ts.ClassElement[] = [];
@@ -97,7 +110,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-        ctorNode, watchMap, checkController, log, program, context);
+        ctorNode, watchMap, checkController, log, program, context, hasPreview);
       if (result.isItemUpdate()) {
         updateItem = result.getProperity();
       } else {
@@ -298,7 +311,7 @@ function getGeometryReaderFunctionBlock(node: ts.ArrowFunction | ts.FunctionExpr
   log: LogInfo[]): ts.Block {
   let blockNode: ts.Block;
   if (ts.isBlock(node.body)) {
-      blockNode = node.body;
+    blockNode = node.body;
   } else if (ts.isArrowFunction(node) && ts.isCallExpression(node.body)) {
     blockNode = ts.factory.createBlock([ts.factory.createExpressionStatement(node.body)]);
   }
