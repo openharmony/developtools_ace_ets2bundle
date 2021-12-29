@@ -193,7 +193,7 @@ export const curPropMap: Map<string, string> = new Map();
 export function processMemberVariableDecorators(parentName: ts.Identifier,
   item: ts.PropertyDeclaration, ctorNode: ts.ConstructorDeclaration, watchMap: Map<string, ts.Node>,
   checkController: ControllerType, log: LogInfo[], program: ts.Program,
-  context: ts.TransformationContext): UpdateResult {
+  context: ts.TransformationContext, hasPreview: boolean): UpdateResult {
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
   if (!item.decorators || !item.decorators.length) {
@@ -201,14 +201,14 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setProperity(undefined);
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
-      createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context)]));
+      createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
   } else {
     processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
-      log, program, context);
+      log, program, context, hasPreview);
   }
   return updateResult;
 }
@@ -234,7 +234,7 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
 function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.PropertyDeclaration,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, name: ts.Identifier,
   watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
-  context: ts.TransformationContext): void {
+  context: ts.TransformationContext, hasPreview: boolean): void {
   let stateManagementDecoratorCount: number = 0;
   for (let i = 0; i < node.decorators.length; i++) {
     const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/, '').trim();
@@ -271,7 +271,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       processWatch(node, node.decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       stateManagementDecoratorCount += 1;
-      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context);
+      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context, hasPreview);
     }
   }
   if (stateManagementDecoratorCount > 1) {
@@ -282,12 +282,12 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, log: LogInfo[],
-  program: ts.Program, context: ts.TransformationContext): void {
+  program: ts.Program, context: ts.TransformationContext, hasPreview:boolean): void {
   const name: ts.Identifier = node.name as ts.Identifier;
   updateResult.setProperity(undefined);
   const updateState: ts.Statement[] = [];
   const variableInitStatement: ts.Statement =
-    createVariableInitStatement(node, decorator, log, program, context);
+    createVariableInitStatement(node, decorator, log, program, context, hasPreview);
   if (variableInitStatement) {
     updateState.push(variableInitStatement);
   }
@@ -338,7 +338,8 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
 }
 
 function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: string,
-  log: LogInfo[], program: ts.Program, context: ts.TransformationContext): ts.Statement {
+  log: LogInfo[], program: ts.Program, context: ts.TransformationContext, hasPreview: boolean):
+  ts.Statement {
   const name: ts.Identifier = node.name as ts.Identifier;
   let type: ts.TypeNode;
   let updateState: ts.ExpressionStatement;
@@ -354,9 +355,11 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateObservedProperty(node, name, type, program);
       break;
     case COMPONENT_LINK_DECORATOR:
+      wrongDecoratorInPreview(node, COMPONENT_LINK_DECORATOR, hasPreview, log);
       updateState = updateSynchedPropertyTwoWay(name, type, program);
       break;
     case COMPONENT_PROP_DECORATOR:
+      wrongDecoratorInPreview(node, COMPONENT_PROP_DECORATOR, hasPreview, log);
       updateState = updateSynchedPropertyOneWay(name, type, decorator, log, program);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
@@ -369,10 +372,23 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateSynchedPropertyNesedObject(name, type, decorator, log);
       break;
     case COMPONENT_CONSUME_DECORATOR:
+      wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
       updateState = updateConsumeProperty(node, name);
       break;
   }
   return updateState;
+}
+
+function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string,
+  hasPreview: boolean, log: LogInfo[]) {
+  if (hasPreview) {
+    log.push({
+      type: LogType.WARN,
+      message: `The variable with ${decorator} in component with @Preview may ` +
+        `cause error in component preview mode`,
+      pos: node.getStart()
+    });
+  }
 }
 
 function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statement {
