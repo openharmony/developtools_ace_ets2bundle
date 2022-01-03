@@ -13,4 +13,4 @@
  * limitations under the License.
  */
 
-export * as AllStarComponent from './test/pages/ExportComponent';
+export * as AllStarComponent from './ExportComponent';
