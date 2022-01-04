@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import DefaultComponent from "./test/pages/DefaultComponent.ets"
+import DefaultComponent from "./DefaultComponent.ets"
 
 @Component
 struct ExportComponent1 {
