@@ -49,8 +49,8 @@ export const GESTURE_ATTRS: Set<string> = new Set([
 
 export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperScroller',
   'VideoController', 'WebController', 'CustomDialogController', 'SwiperController', 'TabsController',
-  'CalendarController', 'AbilityController',  'RenderingContext', 'CanvasGradient', 'ImageBitmap',
-  'ImageData', 'Path2D', 'RenderingContextSettings', 'OffscreenRenderingContext'
+  'CalendarController', 'AbilityController',  'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap',
+  'ImageData', 'Path2D', 'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D'
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
@@ -81,8 +81,8 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
   ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'VideoController', 'WebController',
-  'RenderingContext', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D','RenderingContextSettings',
-  'OffscreenRenderingContext', 'AlertDialog'
+  'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D','RenderingContextSettings',
+  'OffscreenCanvasRenderingContext2D', 'AlertDialog'
 ]);
 
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
