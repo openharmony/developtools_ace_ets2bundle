@@ -48,20 +48,20 @@ function initConfig(config) {
     },
     optimization: {
       splitChunks: {
-        chunks: "all",
+        chunks(chunk) {
+          return !/^\.\/workers\//.test(chunk.name);
+        },
         minSize: 0,
         cacheGroups: {
           vendors: {
             test: /[\\/]node_modules[\\/]/,
             priority: -10,
             name: "vendors",
-            chunks: 'initial'
           },
           commons: {
             name: 'commons',
             priority: -20,
             minChunks: 2,
-            chunks: 'initial',
             reuseExistingChunk: true
           }
         }
