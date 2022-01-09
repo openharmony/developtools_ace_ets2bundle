@@ -3,6 +3,8 @@
   "children": ["GridItem"],
   "attrs": [
     "columnsTemplate", "rowsTemplate", "columnsGap", "rowsGap", "scrollBar", "scrollBarWidth",
-    "scrollBarColor"
+    "scrollBarColor", "editMode", "maxCount", "minCount", "cellLength", "onItemDragStart",
+    "onItemDragMove", "onItemDragEnter", "onItemDragMove", "onItemDrop", "layoutDirection", "direction",
+    "supportAnimation", "onItemDragLeave"
   ]
 }
