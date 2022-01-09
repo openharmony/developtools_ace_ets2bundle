@@ -16,6 +16,19 @@
 import ts from 'typescript';
 
 import {
+  COMPONENT_STATE_DECORATOR,
+  COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_LINK_DECORATOR,
+  COMPONENT_PROP_DECORATOR,
+  COMPONENT_STORAGE_LINK_DECORATOR,
+  COMPONENT_STORAGE_PROP_DECORATOR,
+  COMPONENT_OBJECT_LINK_DECORATOR,
+  COMPONENT_CONSUME_DECORATOR,
+  SYNCHED_PROPERTY_NESED_OBJECT,
+  SYNCHED_PROPERTY_SIMPLE_TWO_WAY,
+  SYNCHED_PROPERTY_SIMPLE_ONE_WAY,
+  OBSERVED_PROPERTY_OBJECT,
+  OBSERVED_PROPERTY_SIMPLE,
   COMPONENT_BUILD_FUNCTION,
   BASE_COMPONENT_NAME,
   ATTRIBUTE_ANIMATETO,
@@ -59,7 +72,8 @@ import {
   UpdateResult,
   stateObjectCollection,
   curPropMap,
-  decoratorParamSet
+  decoratorParamSet,
+  isSimpleType
 } from './process_component_member';
 import {
   processComponentBuild,
@@ -109,6 +123,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
+      addPropertyMember(item, newMembers, program);
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
         ctorNode, watchMap, checkController, log, program, context, hasPreview);
       if (result.isItemUpdate()) {
@@ -149,6 +164,65 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   newMembers.unshift(addUpdateParamsFunc(updateParamsStatements));
   newMembers.unshift(addConstructor(ctorNode, watchMap));
   return newMembers;
+}
+
+function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
+  program: ts.Program):void {
+  let propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
+  let decoratorName: string;
+  let updatePropertyItem: ts.PropertyDeclaration;
+  let type: ts.TypeNode = propertyItem.type;
+  if (!propertyItem.decorators || propertyItem.decorators.length === 0) {
+    updatePropertyItem = createPropertyDeclaration(propertyItem, type, true);
+    newMembers.push(updatePropertyItem);
+  } else if (propertyItem.decorators) {
+    for (let i = 0; i < propertyItem.decorators.length; i++) {
+      let newType: ts.TypeNode;
+      decoratorName = propertyItem.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      switch (decoratorName) {
+        case COMPONENT_STATE_DECORATOR:
+        case COMPONENT_PROVIDE_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type]);
+          break;
+        case COMPONENT_LINK_DECORATOR:
+        case COMPONENT_CONSUME_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+          break;
+        case COMPONENT_PROP_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+          break;
+        case COMPONENT_OBJECT_LINK_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type]);
+          break;
+        case COMPONENT_STORAGE_PROP_DECORATOR:
+        case COMPONENT_STORAGE_LINK_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode('ObservedPropertyAbstract', [type]);
+          break;
+      }
+      updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false);
+      if (updatePropertyItem) {
+        newMembers.push(updatePropertyItem);
+      }
+    }
+  }
+}
+
+function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType: ts.TypeNode | undefined,
+  normalVar: boolean): ts.PropertyDeclaration {
+  if (typeof newType === undefined) {
+    return undefined;
+  }
+  let prefix: string = '';
+  if (!normalVar) {
+    prefix = '__';
+  }
+  const privateM: ts.ModifierToken<ts.SyntaxKind.PrivateKeyword> =
+    ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword);
+  return ts.factory.updatePropertyDeclaration(propertyItem, undefined,
+    propertyItem.modifiers || [privateM], prefix + propertyItem.name.getText(),
+    propertyItem.questionToken, newType, undefined);
 }
 
 function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
@@ -450,7 +524,9 @@ function createParamsInitBlock(express: string, statements: ts.Statement[]): ts.
     undefined, undefined, ts.factory.createIdentifier(express), undefined, undefined,
     [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
-        ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined, undefined, undefined)],
+        ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
+      express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
+        ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword), undefined)],
     undefined, ts.factory.createBlock(statements, true));
   return methodDeclaration;
 }

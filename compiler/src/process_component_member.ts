@@ -295,7 +295,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], false));
   updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
   if (!immutableDecorators.has(decorator)) {
-    updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD));
+    updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD, node.type));
   }
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
@@ -689,11 +689,12 @@ function createGetAccessor(item: ts.Identifier, express: string): ts.GetAccessor
   return getAccessorStatement;
 }
 
-function createSetAccessor(item: ts.Identifier, express: string): ts.SetAccessorDeclaration {
+function createSetAccessor(item: ts.Identifier, express: string, type: ts.TypeNode):
+  ts.SetAccessorDeclaration {
   const setAccessorStatement: ts.SetAccessorDeclaration =
     ts.factory.createSetAccessorDeclaration(undefined, undefined, item,
       [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-        ts.factory.createIdentifier(CREATE_NEWVALUE_IDENTIFIER), undefined, undefined,
+        ts.factory.createIdentifier(CREATE_NEWVALUE_IDENTIFIER), undefined, type,
         undefined)], ts.factory.createBlock([ts.factory.createExpressionStatement(
         ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
           createPropertyAccessExpressionWithThis(`__${item.getText()}`),
@@ -710,7 +711,7 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
   return false;
 }
 
-function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolean {
+export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolean {
   let checker: ts.TypeChecker;
   if (program) {
     checker = program.getTypeChecker();
