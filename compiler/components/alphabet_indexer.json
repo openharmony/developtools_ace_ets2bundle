@@ -2,6 +2,7 @@
   "name": "AlphabetIndexer",
   "attrs": [
     "onSelected", "selectedColor", "popupColor", "selectedBackgroundColor", "popupBackground", "usingPopup",
-    "selectedFont", "popupFont", "itemSize", "font", "color", "alignStyle"
+    "selectedFont", "popupFont", "itemSize", "font", "color", "alignStyle", "onRequestPopupData", "onPopupSelected",
+    "selectedIndex", "popupPosition"
   ]
 }
