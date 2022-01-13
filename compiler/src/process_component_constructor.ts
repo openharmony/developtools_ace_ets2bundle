@@ -36,7 +36,8 @@ export function getInitConstructor(members: ts.NodeArray<ts.Node>): ts.Construct
 
 export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
   para: ts.ParameterDeclaration[], addStatements: ts.Statement[],
-  isSuper: boolean = false, isAdd: boolean = false): ts.ConstructorDeclaration {
+  isSuper: boolean = false, isAdd: boolean = false, parentComponentName?: ts.Identifier):
+  ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
   if (para && para.length) {
     modifyPara = Array.from(ctorNode.parameters);
@@ -77,7 +78,8 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
           case COMPONENT_CONSTRUCTOR_PARAMS + '?':
             parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
               item.dotDotDotToken, item.name, item.questionToken,
-              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword), item.initializer);
+              ts.factory.createTypeReferenceNode(ts.factory.createIdentifier
+                (parentComponentName.getText() + '_Params'), undefined), item.initializer);
             break;
         }
         newTSPara.push(parameter);
@@ -94,8 +96,8 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
   return ctorNode;
 }
 
-export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>)
-  : ts.ConstructorDeclaration {
+export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
+  parentComponentName: ts.Identifier): ts.ConstructorDeclaration {
   const watchStatements: ts.ExpressionStatement[] = [];
   watchMap.forEach((value, key) => {
     const watchNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
@@ -123,5 +125,5 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>)
       ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),
     undefined, [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]));
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [updateWithValueParamsStatement, ...watchStatements], false, true);
+    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
 }

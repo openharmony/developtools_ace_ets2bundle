@@ -77,6 +77,8 @@ export interface ExtendParamterInterfance {
 export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
 export const STYLES_ATTRIBUTE: Set<string> = new Set();
 
+export const INTERFACE_NODE_SET: Set<any> = new Set();
+
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
   ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
