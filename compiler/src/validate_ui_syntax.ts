@@ -800,19 +800,32 @@ function collectExtend(component: string, attribute: string, parameter: string):
   }
 }
 
-export function processSystemApi(content: string): string {
-  const REG_SYSTEM: RegExp =
-    /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+export function processSystemApi(content: string, isProcessWhiteList: boolean = false): string {
+  let REG_SYSTEM: RegExp;
+  if (isProcessWhiteList) {
+    REG_SYSTEM =
+      /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|(import|const)\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  } else {
+    REG_SYSTEM =
+      /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  }
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
   return content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
     return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
-    }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6) => {
-      const moduleType: string = item2 || item5;
-      const systemKey: string = item3 || item6;
-      const systemValue: string = item1 || item4;
+    }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
+      let moduleType: string = item2 || item5;
+      let systemKey: string = item3 || item6;
+      let systemValue: string = item1 || item4;
+      if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
+        return item;
+      } else if (isProcessWhiteList) {
+        systemValue = item5;
+        moduleType = item6;
+        systemKey = item7;
+      }
       moduleCollection.add(`${moduleType}.${systemKey}`);
       if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
         item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
@@ -827,6 +840,10 @@ export function processSystemApi(content: string): string {
       }
       return item;
     });
+}
+
+function validateWhiteListModule(moduleType: string, systemKey: string): boolean {
+  return moduleType === 'ohos' && /^application\./g.test(systemKey);
 }
 
 export function resetComponentCollection() {

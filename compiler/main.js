@@ -33,7 +33,8 @@ const logger = getLogger('ETS');
 const staticPreviewPage = process.env.aceStaticPreview;
 const abilityConfig = {
   abilityType: process.env.abilityType || 'page',
-  abilityEntryFile: null
+  abilityEntryFile: null,
+  projectAbilityPath: []
 };
 const projectConfig = {};
 const resources = {
@@ -49,26 +50,31 @@ function initProjectConfig(projectConfig) {
     path.resolve(projectConfig.projectPath, 'build');
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
     path.join(projectConfig.projectPath, 'manifest.json');
-  projectConfig.aceConfigPath = projectConfig.aceConfigPath || process.env.aceConfigPath;
+  projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
+  projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
 }
 
 function loadEntryObj(projectConfig) {
+  let manifest = {};
   initProjectConfig(projectConfig);
-  setEntryFile(projectConfig);
-
+  if (process.env.aceManifestPath) {
+    setEntryFile(projectConfig);
+  }
+  if (process.env.aceModuleJsonPath) {
+    setAbilityPages(projectConfig)
+  }
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
   } else if (abilityConfig.abilityType === 'page') {
-    let manifest = {};
     if (fs.existsSync(projectConfig.manifestFilePath)) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
-    } else if (process.env.aceConfigPath && fs.existsSync( projectConfig.aceConfigPath)) {
-      buildManifest(manifest,  projectConfig.aceConfigPath);
+    } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
+      buildManifest(manifest, projectConfig.aceModuleJsonPath);
     } else {
       throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
-        ' or config.json is lost or format is invalid. \u001b[39m').message;
+        ' or module.json is lost or format is invalid. \u001b[39m').message;
     }
     if (manifest.pages) {
       const pages = manifest.pages;
@@ -89,54 +95,92 @@ function loadEntryObj(projectConfig) {
 
 function buildManifest(manifest, aceConfigPath) {
   try {
-    const configJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
-    const srcPath = process.env.srcPath;
+    const moduleConfigJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
-    if (configJson.module && configJson.module.abilities) {
-      manifest.pages = getPages(configJson, srcPath);
+    if (moduleConfigJson.module && moduleConfigJson.module.uiSyntax === 'ets') {
+      manifest.pages = getPages(moduleConfigJson);
     } else {
       throw Error('\u001b[31m'+
-        'EERROR: the config.json file miss keyword module || module[abilities].' +
+        'EERROR: the config.json file miss key word module || module[abilities].' +
         '\u001b[39m').message;
     }
-    manifest.minPlatformVersion = configJson.app.apiVersion.compatible;
   } catch (e) {
-    throw Error("\x1B[31m" + 'ERROR: the config.json file is lost or format is invalid.' +
+    throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
       "\x1B[39m").message;
   }
 }
 
-function getPages(configJson, srcPath) {
+function getPages(configJson) {
   const pages = []
-  for (const ability of configJson.module.abilities){
-    if (ability.srcPath === srcPath) {
-      readPages(ability, pages, configJson)
-      break;
+  const modulePagePath = path.resolve(projectConfig.aceProfilePath,
+    `${configJson.module.pages.replace(/\@profile\:/, '')}.json`);
+  if (fs.existsSync(modulePagePath)) {
+    const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
+    if (pagesConfig && pagesConfig.src) {
+      return pagesConfig.src;
     }
   }
   return pages;
 }
 
-function readPages(ability, pages, configJson) {
-  for (const js of configJson.module.js){
-    if (ability.name === js.name) {
-      js.pages.forEach(page => {
-        pages.push(page)
-      })
-      break;
-    }
-  }
-}
-
 function setEntryFile(projectConfig) {
   const entryFileName = abilityConfig.abilityType === 'page' ? 'app' : abilityConfig.abilityType;
   const extendFile = entryFileName === 'app' ? '.ets' : '.ts';
-  abilityConfig.abilityEntryFile = entryFileName + extendFile;
-  const entryFilePath = path.join(projectConfig.projectPath, abilityConfig.abilityEntryFile);
+  const entryFileRealPath = entryFileName + extendFile;
+  const entryFilePath = path.resolve(projectConfig.projectPath, entryFileRealPath);
+  abilityConfig.abilityEntryFile = entryFilePath;
   if (!fs.existsSync(entryFilePath)) {
     throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
   }
-  projectConfig.entryObj[`./${entryFileName}`] = projectConfig.projectPath + `/${abilityConfig.abilityEntryFile}?entry`;
+  projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
+}
+
+function setAbilityPages(projectConfig) {
+  let abilityPages = [];
+  if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
+    const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
+    abilityPages = readAbilityEntrance(moduleJson);
+    setAbilityFile(projectConfig, abilityPages);
+  }
+}
+
+function setAbilityFile(projectConfig, abilityPages) {
+  abilityPages.forEach(abilityPath => {
+    if (abilityPath && fs.existsSync(path.resolve(projectConfig.projectPath, '../', abilityPath))) {
+      const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+      const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+      abilityConfig.projectAbilityPath.push(projectAbilityPath);
+      if (fs.existsSync(projectAbilityPath)) {
+        projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+      }
+    }
+  });
+}
+
+function readAbilityEntrance(moduleJson) {
+  let abilityPages = [];
+  if (moduleJson.module) {
+    if (moduleJson.module.srcEntrance) {
+      abilityPages.push(moduleJson.module.srcEntrance);
+    }
+    if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
+      setEntrance(moduleJson.module.abilities, abilityPages);
+    }
+    if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
+      setEntrance(moduleJson.module.extensionAbilities, abilityPages);
+    }
+  }
+  return abilityPages;
+}
+
+function setEntrance(abilityConfig, abilityPages) {
+  if (abilityConfig && abilityConfig.length > 0) {
+    abilityConfig.forEach(ability => {
+      if (ability.srcEntrance) {
+        abilityPages.push(ability.srcEntrance);
+      }
+    });
+  }
 }
 
 function loadWorker(projectConfig) {

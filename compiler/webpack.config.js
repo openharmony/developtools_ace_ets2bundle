@@ -78,7 +78,11 @@ function initConfig(config) {
     module: {
       rules: [
         {
-          test: /\.(ets|ts)$/,
+          test: /\.d\.ts/,
+          loader: 'ignore-loader'
+        },
+        {
+          test: /(?<!\.d)\.(ets|ts)$/,
           use: [
             { loader: path.resolve(__dirname, 'lib/result_process.js') },
             {
@@ -111,12 +115,13 @@ function initConfig(config) {
       global: false
     },
     resolve: {
-      extensions: ['.js', '.ets', '.ts'],
+      extensions: ['.js', '.ets', '.ts', '.d.ts'],
       modules: [
         projectPath,
         path.join(projectPath, '../../../../../'),
         './node_modules',
-        path.join(__dirname, 'node_modules')
+        path.join(__dirname, 'node_modules'),
+        path.join(__dirname, '../../api/common')
       ]
     },
     stats: { preset: 'none' },
