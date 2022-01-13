@@ -43,10 +43,14 @@ function generateTargetFile(filePath, output) {
   * limitations under the License.
   */`;
   files.forEach((item) => {
-    const content = fs.readFileSync(item, 'utf8');
+    let content = fs.readFileSync(item, 'utf8');
     const fileName = path.resolve(output, path.basename(item));
-    const newContent = license + '\n\n' + processsFile(content, fileName);
-    fs.writeFile(fileName, newContent, err => {
+    if (item === globalTsFile) {
+      content = license + '\n\n' + processsFile(content, fileName, true);
+    } else {
+      content = license + '\n\n' + processsFile(content, fileName, false);
+    }
+    fs.writeFile(fileName, content, err => {
       if (err) {
         console.error(err);
         return;
@@ -76,28 +80,59 @@ function mkDir(filePath) {
   fs.mkdirSync(filePath);
 }
 
-function processsFile(content, fileName) {
+function processsFile(content, fileName, isGlobal) {
   let sourceFile = ts.createSourceFile(fileName, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const newStatements = [];
   if (sourceFile.statements && sourceFile.statements.length) {
-    sourceFile.statements.forEach((node) => {
-      if (!ts.isImportDeclaration(node)) {
-        if (node.modifiers && node.modifiers.length && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
-          node.modifiers.splice(0, 1);
+    if (isGlobal) {
+      sourceFile.statements.forEach((node) => {
+        if (!ts.isImportDeclaration(node)) {
+          if (node.modifiers && node.modifiers.length && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
+            node.modifiers.splice(0, 1);
+          }
+          if (isVariable(node)) {
+            const name = node.declarationList.declarations[0].name.getText();
+            const type = node.declarationList.declarations[0].type.getText();
+            if (name.indexOf(type) !== -1) {
+              const declarationNode = ts.factory.updateVariableDeclaration(node.declarationList.declarations[0],
+                ts.factory.createIdentifier(type), node.declarationList.declarations[0].exclamationToken,
+                node.declarationList.declarations[0].type, node.declarationList.declarations[0].initializer);
+              node.declarationList = ts.factory.updateVariableDeclarationList(node.declarationList, [declarationNode]);
+            }
+          }
+          newStatements.push(node);
         }
-        if (isVariable(node)) {
-          const name = node.declarationList.declarations[0].name.getText();
-          const type = node.declarationList.declarations[0].type.getText();
-          if (name.indexOf(type) !== -1) {
-            const declarationNode = ts.factory.updateVariableDeclaration(node.declarationList.declarations[0],
-              ts.factory.createIdentifier(type), node.declarationList.declarations[0].exclamationToken,
-              node.declarationList.declarations[0].type, node.declarationList.declarations[0].initializer);
-            node.declarationList = ts.factory.updateVariableDeclarationList(node.declarationList, [declarationNode]);
+      });
+    } else {
+      sourceFile.statements.forEach((node) => {
+        let extendNode = null;
+        if (isInterface(node)) {
+          const componentName = node.name.getText().replace(/Interface$/, '');
+          let isComponentName = false;
+          if (node.members) {
+            for (let i = 0; i < node.members.length; i++) {
+              const callSignNode = node.members[i];
+              if (isSignNode(callSignNode)) {
+                const callSignName = callSignNode.type.name.getText().repleace(/Attribute$/, '');
+                if (componentName === callSignName) {
+                  extendNode = callSignNode.type.typeName;
+                  isComponentName = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (isComponentName) {
+            const heritageClause = ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
+              [ts.factory.createExpressionWithTypeArguments(extendNode, undefined)]);
+            extendNode = null;
+            node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers,
+              node.name, node.typeParameters, [heritageClause], node.members);
           }
         }
         newStatements.push(node);
-      }
-    });
+      });
+    }
   }
   sourceFile = ts.factory.updateSourceFile(sourceFile, newStatements);
   const printer = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
@@ -112,6 +147,17 @@ function isVariable(node) {
     return true;
   }
   return false;
+}
+
+function isInterface(node) {
+  return ts.isInterfaceDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
+    /Interface$/.test(node.name.getText());
+}
+
+function isSignNode(node) {
+  return (ts.isCallSignatureDeclaration(node) || ts.isConstructSignatureDeclaration(node)) &&
+    node.type && ts.isTypeReferenceNode(node.type) && node.type.name && ts.isIdentifier(node.type.name) &&
+    /Attribute$/.test(node.type.name.getText());
 }
 
 generateComponentConfig(process.argv[4]);
