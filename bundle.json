@@ -1,0 +1,56 @@
+{
+    "name": "@ohos/developtools_ace_ets2bundle",
+    "version": "",
+    "description": "Provides syntax compilation and conversion of declarative paradigms, syntax verification, and rich and friendly syntax error prompt capabilities. | 提供声明式范式的语法编译转换，语法验证，丰富友好的语法报错提示能力。",
+    "homePage": "https://gitee.com/openharmony",
+    "license": "Apache V2",
+    "repository": "https://gitee.com/openharmony/developtools_ace-ets2bundle",
+    "domain": "os",
+    "language": "",
+    "publishAs": "code-segment",
+    "private": false,
+    "scripts": {},
+    "tags": [
+        "developtools"
+    ],
+    "keywords": [
+        "developtools",
+        "ace",
+        "ets2bundle"
+    ],
+    "envs": {},
+    "dirs": {},
+    "author": {
+        "name": "",
+        "email": "",
+        "url": ""
+    },
+    "contributors": [
+        {
+            "name": "",
+            "email": "",
+            "url": ""
+        }
+    ],
+    "segment": {
+        "destPath": "developtools/ace-ets2bundle"
+    },
+    "component": {
+        "name": "developtools_ace-ets2bundle",
+        "subsystem": "",
+        "syscap": [],
+        "features": [],
+        "adapted_system_type": [],
+        "rom": "",
+        "ram": "",
+        "deps": {
+            "components": [],
+            "third_party": []
+        },
+        "build": {
+            "sub_component": [],
+            "inner_kits": [],
+            "test": []
+        }
+    }
+}
