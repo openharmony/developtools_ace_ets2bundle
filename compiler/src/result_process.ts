@@ -23,7 +23,8 @@ import {
 } from './process_ui_syntax';
 import {
   propertyCollection,
-  linkCollection
+  linkCollection,
+  processSystemApi
 } from './validate_ui_syntax';
 import {
   LogInfo,
@@ -35,6 +36,7 @@ import { abilityConfig } from '../main';
 
 module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
+  source = processSystemApi(source, true);
   if (/\.ets$/.test(this.resourcePath)) {
     componentInfo.id = 0;
     propertyCollection.clear();
@@ -58,8 +60,7 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  const resourcePath: string = path.basename(this.resourcePath);
-  if (['app.ets', abilityConfig.abilityEntryFile].includes(resourcePath)) {
+  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
 
