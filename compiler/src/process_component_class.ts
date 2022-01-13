@@ -56,6 +56,7 @@ import {
   BUILDIN_STYLE_NAMES,
   CUSTOM_BUILDER_METHOD,
   INNER_STYLE_FUNCTION,
+  INTERFACE_NODE_SET,
   STYLES_ATTRIBUTE
 } from './component_map';
 import {
@@ -120,12 +121,14 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
   const checkController: ControllerType =
     { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
+  let interfaceNode = ts.factory.createInterfaceDeclaration(undefined, undefined,
+    parentComponentName.getText()+'_Params', undefined, undefined, [])
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
       addPropertyMember(item, newMembers, program);
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-        ctorNode, watchMap, checkController, log, program, context, hasPreview);
+        ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
       if (result.isItemUpdate()) {
         updateItem = result.getProperity();
       } else {
@@ -158,11 +161,12 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
       newMembers.push(updateItem);
     }
   });
+  INTERFACE_NODE_SET.add(interfaceNode);
   validateBuildMethodCount(buildCount, parentComponentName, log);
   validateHasController(parentComponentName, checkController, log);
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
-  newMembers.unshift(addUpdateParamsFunc(updateParamsStatements));
-  newMembers.unshift(addConstructor(ctorNode, watchMap));
+  newMembers.unshift(addUpdateParamsFunc(updateParamsStatements, parentComponentName));
+  newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   return newMembers;
 }
 
@@ -488,8 +492,9 @@ function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
   node.typeArguments, node.arguments);
 }
 
-function addUpdateParamsFunc(statements: ts.Statement[]): ts.MethodDeclaration {
-  return createParamsInitBlock(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS, statements);
+function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier):
+  ts.MethodDeclaration {
+  return createParamsInitBlock(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS, statements, parentComponentName);
 }
 
 function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDeclaration {
@@ -519,15 +524,16 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   return deleteParamsMethod;
 }
 
-function createParamsInitBlock(express: string, statements: ts.Statement[]): ts.MethodDeclaration {
+function createParamsInitBlock(express: string, statements: ts.Statement[],
+  parentComponentName?: ts.Identifier): ts.MethodDeclaration {
   const methodDeclaration: ts.MethodDeclaration = ts.factory.createMethodDeclaration(undefined,
     undefined, undefined, ts.factory.createIdentifier(express), undefined, undefined,
     [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
-        ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword), undefined)],
-    undefined, ts.factory.createBlock(statements, true));
+      ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(parentComponentName.getText() + '_Params')
+      , undefined), undefined)], undefined, ts.factory.createBlock(statements, true));
   return methodDeclaration;
 }
 
