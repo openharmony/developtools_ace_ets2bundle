@@ -105,32 +105,7 @@ function processsFile(content, fileName, isGlobal) {
       });
     } else {
       sourceFile.statements.forEach((node) => {
-        let extendNode = null;
-        if (isInterface(node)) {
-          const componentName = node.name.getText().replace(/Interface$/, '');
-          let isComponentName = false;
-          if (node.members) {
-            for (let i = 0; i < node.members.length; i++) {
-              const callSignNode = node.members[i];
-              if (isSignNode(callSignNode)) {
-                const callSignName = callSignNode.type.name.getText().repleace(/Attribute$/, '');
-                if (componentName === callSignName) {
-                  extendNode = callSignNode.type.typeName;
-                  isComponentName = true;
-                  break;
-                }
-              }
-            }
-          }
-          if (isComponentName) {
-            const heritageClause = ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
-              [ts.factory.createExpressionWithTypeArguments(extendNode, undefined)]);
-            extendNode = null;
-            node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers,
-              node.name, node.typeParameters, [heritageClause], node.members);
-          }
-        }
-        newStatements.push(node);
+        processComponent(node, newStatements);
       });
     }
   }
@@ -138,6 +113,41 @@ function processsFile(content, fileName, isGlobal) {
   const printer = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, sourceFile, sourceFile);
   return result;
+}
+
+function processComponent(node, newStatements) {
+  let extendNode = null;
+  if (isInterface(node)) {
+    const componentName = node.name.getText().replace(/Interface$/, '');
+    const result = validateComponentMembers(node, componentName);
+    if (result.isComponentName) {
+      const heritageClause = ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
+        [ts.factory.createExpressionWithTypeArguments(result.extendNode, undefined)]);
+      extendNode = null;
+      node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers,
+        node.name, node.typeParameters, [heritageClause], node.members);
+    }
+  }
+  newStatements.push(node);
+}
+
+function validateComponentMembers(node, componentName) {
+  let extendNode = null;
+  let isComponentName = false;
+  if (node.members) {
+    for (let i = 0; i < node.members.length; i++) {
+      const callSignNode = node.members[i];
+      if (isSignNode(callSignNode)) {
+        const callSignName = callSignNode.type.typeName.getText().replace(/Attribute$/, '');
+        if (componentName === callSignName) {
+          extendNode = callSignNode.type.typeName;
+          isComponentName = true;
+          break;
+        }
+      }
+    }
+  }
+  return { isComponentName, extendNode }
 }
 
 function isVariable(node) {
@@ -156,8 +166,8 @@ function isInterface(node) {
 
 function isSignNode(node) {
   return (ts.isCallSignatureDeclaration(node) || ts.isConstructSignatureDeclaration(node)) &&
-    node.type && ts.isTypeReferenceNode(node.type) && node.type.name && ts.isIdentifier(node.type.name) &&
-    /Attribute$/.test(node.type.name.getText());
+    node.type && ts.isTypeReferenceNode(node.type) && node.type.typeName && ts.isIdentifier(node.type.typeName) &&
+    /Attribute$/.test(node.type.typeName.getText());
 }
 
 generateComponentConfig(process.argv[4]);
