@@ -18,7 +18,7 @@
     "accessibilityGroup", "accessibilityText", "accessibilityDescription",
     "accessibilityImportance", "onAccessibility", "grayscale", "brightness", "contrast",
     "saturate", "geometryTransition",
-    "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu",
+    "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "bindContextMenu",
     "onFocus", "onBlur", "onFocusMove", "focusable", "responseRegion"
   ]
 }
