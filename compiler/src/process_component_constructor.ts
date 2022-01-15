@@ -21,7 +21,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   COMPONENT_WATCH_FUNCTION,
-  BASE_COMPONENT_NAME
+  BASE_COMPONENT_NAME,
+  INTERFACE_NAME_SUFFIX
 } from './pre_define';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>): ts.ConstructorDeclaration {
@@ -57,43 +58,46 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
     }
   }
   if (ctorNode) {
-    const tsPara: ts.ParameterDeclaration[] | ts.NodeArray<ts.ParameterDeclaration> =
+    let ctorPara: ts.ParameterDeclaration[] | ts.NodeArray<ts.ParameterDeclaration> =
       modifyPara || ctorNode.parameters;
-    const newTSPara: ts.ParameterDeclaration[] = [];
     if (isAdd) {
-      tsPara.forEach((item) => {
-        let parameter: ts.ParameterDeclaration = item;
-        switch (item.getText()) {
-          case COMPONENT_CONSTRUCTOR_ID + '?':
-            parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
-              item.dotDotDotToken, item.name, item.questionToken,
-              ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), item.initializer);
-            break;
-          case COMPONENT_CONSTRUCTOR_PARENT + '?':
-            parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
-              item.dotDotDotToken, item.name, item.questionToken,
-              ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(BASE_COMPONENT_NAME), undefined),
-              item.initializer);
-            break;
-          case COMPONENT_CONSTRUCTOR_PARAMS + '?':
-            parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
-              item.dotDotDotToken, item.name, item.questionToken,
-              ts.factory.createTypeReferenceNode(ts.factory.createIdentifier
-                (parentComponentName.getText() + '_Params'), undefined), item.initializer);
-            break;
-        }
-        newTSPara.push(parameter);
-      })
-      ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
-        ctorNode.modifiers, newTSPara,
-        ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
-    } else {
-      ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
-        ctorNode.modifiers, modifyPara || ctorNode.parameters,
-        ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
+      ctorPara = addParamsType(ctorNode, modifyPara, parentComponentName);
     }
+    ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
+      ctorNode.modifiers, ctorPara, ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
   }
   return ctorNode;
+}
+
+function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.ParameterDeclaration[],
+  parentComponentName: ts.Identifier): ts.ParameterDeclaration[] {
+  const tsPara: ts.ParameterDeclaration[] | ts.NodeArray<ts.ParameterDeclaration> =
+    modifyPara || ctorNode.parameters;
+  const newTSPara: ts.ParameterDeclaration[] = [];
+  tsPara.forEach((item) => {
+    let parameter: ts.ParameterDeclaration = item;
+    switch (item.getText()) {
+      case COMPONENT_CONSTRUCTOR_ID + '?':
+        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_PARENT + '?':
+        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(BASE_COMPONENT_NAME), undefined),
+          item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_PARAMS + '?':
+        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier
+            (parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
+        break;
+    }
+    newTSPara.push(parameter);
+  })
+  return newTSPara;
 }
 
 export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,

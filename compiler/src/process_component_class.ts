@@ -50,7 +50,9 @@ import {
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   COMPONENT_STYLES_DECORATOR,
-  STYLES
+  STYLES,
+  INTERFACE_NAME_SUFFIX,
+  OBSERVED_PROPERTY_ABSTRACT
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -122,7 +124,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const checkController: ControllerType =
     { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
   let interfaceNode = ts.factory.createInterfaceDeclaration(undefined, undefined,
-    parentComponentName.getText()+'_Params', undefined, undefined, [])
+    parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, [])
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
@@ -202,7 +204,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
           break;
         case COMPONENT_STORAGE_PROP_DECORATOR:
         case COMPONENT_STORAGE_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode('ObservedPropertyAbstract', [type]);
+          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type]);
           break;
       }
       updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false);
@@ -532,8 +534,9 @@ function createParamsInitBlock(express: string, statements: ts.Statement[],
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
-      ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(parentComponentName.getText() + '_Params')
-      , undefined), undefined)], undefined, ts.factory.createBlock(statements, true));
+      ts.factory.createTypeReferenceNode(
+        ts.factory.createIdentifier(parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined),
+        undefined)], undefined, ts.factory.createBlock(statements, true));
   return methodDeclaration;
 }
 
