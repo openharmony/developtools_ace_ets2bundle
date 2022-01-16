@@ -61,9 +61,11 @@ import {
 import { resources } from '../main';
 
 export const transformLog: FileLog = new FileLog();
+export let contextGlobal: ts.TransformationContext;
 
 export function processUISyntax(program: ts.Program, ut = false): Function {
   return (context: ts.TransformationContext) => {
+    contextGlobal = context;
     let pagesDir: string;
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));

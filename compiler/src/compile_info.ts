@@ -43,6 +43,7 @@ import { appComponentCollection } from './process_component_build';
 import { projectConfig } from '../main';
 import { circularFile } from './utils';
 import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
+import { COMMON_ATTRS } from './component_map';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -256,12 +257,12 @@ export class ResultStates {
     const componentNameReg: RegExp = /'typeof\s*(\$?[_a-zA-Z0-9]+)' is not callable/;
     const stateInfoReg: RegExp = /Property\s*'(\$[_a-zA-Z0-9]+)' does not exist on type/;
     const extendInfoReg: RegExp =
-      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)(Attribute|Interface)'\./;
-    if (this.matchMessage(message, props, propInfoReg) ||
+      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)(Attribute|Interface)?'\./;
+    if (this.matchMessage(message, props.concat([...STYLES_ATTRIBUTE]), propInfoReg) ||
       this.matchMessage(message, [...componentCollection.customComponents], componentNameReg) ||
       this.matchMessage(message, props, stateInfoReg) ||
       this.matchMessage(message, EXTEND_ATTRIBUTE, extendInfoReg, true) ||
-      this.matchMessage(message, [...STYLES_ATTRIBUTE], extendInfoReg)) {
+      this.matchMessage(message, [...STYLES_ATTRIBUTE, ...COMMON_ATTRS], extendInfoReg)) {
       return false;
     }
     return true;
