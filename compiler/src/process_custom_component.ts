@@ -244,7 +244,7 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       break;
     case COMPONENT_NON_DECORATOR:
       if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR,
-        COMPONENT_OBJECT_LINK_DECORATOR].includes(parent)) {
+        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
         return true;
       }
       break;
