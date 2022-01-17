@@ -82,11 +82,13 @@ export function processComponentClass(node: ts.ClassDeclaration, context: ts.Tra
 
 function checkPreview(node: ts.ClassDeclaration) {
   let hasPreview: boolean = false;
-  for (let i = 0; i < node.decorators.length; i++) {
-    const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
-    if (name === COMPONENT_DECORATOR_PREVIEW) {
-      hasPreview = true;
-      break;
+  if (node && node.decorators) {
+    for (let i = 0; i < node.decorators.length; i++) {
+      const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
+      if (name === COMPONENT_DECORATOR_PREVIEW) {
+        hasPreview = true;
+        break;
+      }
     }
   }
   return hasPreview;
