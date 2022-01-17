@@ -804,7 +804,7 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
   let REG_SYSTEM: RegExp;
   if (isProcessWhiteList) {
     REG_SYSTEM =
-      /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|(import|const)\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+      /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g;
   } else {
     REG_SYSTEM =
       /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
@@ -822,10 +822,10 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
       if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
         return item;
       } else if (isProcessWhiteList) {
-        systemValue = item5;
-        moduleType = item6;
-        systemKey = item7;
-      }
+        systemValue = item2;
+        moduleType = item4;
+        systemKey = item5;
+      } 
       moduleCollection.add(`${moduleType}.${systemKey}`);
       if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
         item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
