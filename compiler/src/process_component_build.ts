@@ -77,7 +77,7 @@ import {
   createFunction
 } from './utils';
 import { projectConfig } from '../main';
-import { transformLog } from './process_ui_syntax';
+import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 
 export const appComponentCollection: Set<string> = new Set();
@@ -526,7 +526,7 @@ function updateArgumentFor$$(argument: any): ts.Expression {
 
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
-  isStylesAttr): void {
+  isStylesAttr: boolean): void {
   const propName: string = node.getText();
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
@@ -565,6 +565,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
     bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
       statements, log, false, true);
+    lastStatement.kind = true;
   } else if (propName === BIND_POPUP && temp.arguments.length === 2 &&
     temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
     const argumentsArr: ts.Expression[] = [];
@@ -575,13 +576,27 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       createFunction(identifierNode, node, argumentsArr)));
     lastStatement.kind = true;
   } else {
-    if (isStylesAttr && !COMMON_ATTRS.has(propName)) {
-      validateStateStyleSyntax(temp, log);
+    if (isStylesAttr) {
+      if (!COMMON_ATTRS.has(propName)) {
+        validateStateStyleSyntax(temp, log);
+      }
+      for (let i=0; i<temp.arguments.length; i++) {
+        temp.arguments[i] = traverseStylesAttr(temp.arguments[i]);
+      }
     }
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
+}
+
+function traverseStylesAttr(node: ts.Node): ts.Node {
+  if (ts.isStringLiteral(node)) {
+    node = ts.factory.createStringLiteral(node.text);
+  } else if (ts.isNumericLiteral(node)) {
+    node = ts.factory.createNumericLiteral(node.text);
+  }
+  return ts.visitEachChild(node, childNode => traverseStylesAttr(childNode), contextGlobal);
 }
 
 function generateObjectFor$$(varExp: ts.Expression): ts.ObjectLiteralExpression {
