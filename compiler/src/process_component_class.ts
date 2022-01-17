@@ -240,7 +240,9 @@ function validateBuilderFunctionNode(node: ts.PropertyAccessExpression | ts.Iden
     ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) &&
     !((ts.isPropertyAccessExpression(node) && validateBuilderParam(node)) ||
     (ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
-    validateBuilderParam(node.parent)))) {
+    validateBuilderParam(node.parent))) &&
+    // @ts-ignore
+    (!node.parent.arguments || (node.parent.arguments && !node.parent.arguments.length))) {
     return true;
   } else {
     return false;
