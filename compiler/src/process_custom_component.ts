@@ -105,9 +105,9 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
     nodeArgument.properties.forEach(item => {
-      if (item.name && node.name.escapedText) {
+      if (item.name && item.name.escapedText) {
         // @ts-ignore
-        curChildProps.add(node.name.escapedText.toString());
+        curChildProps.add(item.name.escapedText.toString());
       }
       if (isThisProperty(item, propertySet)) {
         validateStateManagement(item, name, log);

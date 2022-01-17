@@ -132,14 +132,14 @@ class CustomContainerUser {
             View.create(new CustomContainer("2", this, {
                 header: "Header",
                 footer: "Footer",
-                child: {build:this.specificChild.bind(this)}
+                child: this.specificChild
             }));
         }
         else {
             earlierCreatedChild_2.updateWithValueParams({
                 header: "Header",
                 footer: "Footer",
-                child: {build:this.specificChild.bind(this)}
+                child: this.specificChild
             });
             View.create(earlierCreatedChild_2);
         }
