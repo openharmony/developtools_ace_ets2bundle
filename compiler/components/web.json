@@ -1,5 +1,5 @@
 {
   "name": "Web",
   "atomic": true,
-  "attrs": ["onPagestart", "onPagefinish", "onError","onMessage"]
+  "attrs": ["onPageFinish", "onRequestFocus", "javaScriptEnabled", "fileAccessEnabled"]
 }
