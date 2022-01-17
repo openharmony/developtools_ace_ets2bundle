@@ -199,8 +199,8 @@ function processBlockChange(node: ts.ExpressionStatement, nextNode: ts.Block,
   log: LogInfo[]): ts.block {
   // @ts-ignore
   const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
-  const arrowNode:ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
+  const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
+    [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
   const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(CHILD), arrowNode);
   // @ts-ignore
