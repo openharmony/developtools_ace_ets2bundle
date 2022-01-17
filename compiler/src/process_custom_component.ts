@@ -105,7 +105,7 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
     nodeArgument.properties.forEach(item => {
-      if (item.name) {
+      if (item.name && node.name.escapedText) {
         // @ts-ignore
         curChildProps.add(node.name.escapedText.toString());
       }
@@ -161,7 +161,7 @@ function validateStateManagement(node: ts.ObjectLiteralElementLike, customCompon
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
   log: LogInfo[]): void {
   let propertyName: string;
-  if (node.name) {
+  if (node.name && node.name.escapedText) {
     // @ts-ignore
     propertyName = node.name.escapedText.toString();
   }
