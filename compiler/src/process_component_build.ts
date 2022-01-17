@@ -177,10 +177,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           case ComponentType.forEachComponent:
             processForEachComponent(item, newStatements, log);
             break;
-          case ComponentType.customBuilderMethod:
-            newStatements.push(item);
-            break;
-          case ComponentType.builderParamMethod:
+          case ComponentType.customBuilderMethod || ComponentType.builderParamMethod:
             newStatements.push(item);
             break;
         }
@@ -202,7 +199,7 @@ function processBlockChange(node: ts.ExpressionStatement, nextNode: ts.Block,
   log: LogInfo[]): ts.block {
   // @ts-ignore
   const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
-  const arrowNode = ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+  const arrowNode:ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined, [], undefined,
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
   const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(CHILD), arrowNode);
