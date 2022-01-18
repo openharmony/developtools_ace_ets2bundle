@@ -38,7 +38,7 @@ struct HomeComponent {
             .fontSize(20)
             .bindPopup($$value5[0], {message: "This is $$ for Array"})
         }
-        .bindPopup($$value4, {message: "This is $$ for regular"})
+        .bindPopup($$this.value4, {message: "This is $$ for regular"})
         .width(100)
         .height(20)
         Text(this.value2)
@@ -95,7 +95,7 @@ class HomeComponent extends View {
         Row.create();
         Row.width(20);
         Button.createWithChild();
-        Button.bindPopup({ value: value4, changeEvent: newValue => { value4 = newValue; } }, { message: "This is $$ for regular" });
+        Button.bindPopup({ value: this.value4, changeEvent: newValue => { this.value4 = newValue; } }, { message: "This is $$ for regular" });
         Button.width(100);
         Button.height(20);
         Text.create(this.value1);
