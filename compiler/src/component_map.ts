@@ -84,7 +84,7 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
   'TabsController', 'CalendarController', 'AbilityController', 'VideoController', 'WebController',
   'XComponentController', 'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData',
   'Path2D', 'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'DatePickerDialog',
-  'TextPickerDialog', 'AlertDialog', 'ActionSheet', 'PatternLockController'
+  'TextPickerDialog', 'AlertDialog', 'ContextMenu', 'ActionSheet', 'PatternLockController'
 ]);
 
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
