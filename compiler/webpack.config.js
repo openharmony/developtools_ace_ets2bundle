@@ -152,6 +152,12 @@ function setProjectConfig(envArgs) {
   if (envArgs.aceManifestPath) {
     projectConfig.manifestFilePath = envArgs.aceManifestPath;
   }
+  if (envArgs.aceProfilePath) {
+    projectConfig.aceProfilePath = envArgs.aceProfilePath;
+  }
+  if (envArgs.aceModuleJsonPath) {
+    projectConfig.aceModuleJsonPath = envArgs.aceModuleJsonPath;
+  }
 }
 
 function setReleaseConfig(config) {
