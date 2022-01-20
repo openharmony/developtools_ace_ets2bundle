@@ -210,11 +210,9 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
     });
   }
   const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
-  return ts.visitNode(buildNode, visitBuild);
+  const firstParseBuildNode = ts.visitNode(buildNode, visitBuild);
+  return ts.visitNode(firstParseBuildNode, visitBuildSecond);
   function visitBuild(node: ts.Node): ts.Node {
-    if (isCustomComponentNode(node)) {
-      return node;
-    }
     if (isGeometryView(node)) {
       node = processGeometryView(node as ts.ExpressionStatement, log);
     }
@@ -229,11 +227,17 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
         ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
         ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
     }
+    return ts.visitEachChild(node, visitBuild, context);
+  }
+  function visitBuildSecond(node: ts.Node): ts.Node {
+    if (isCustomComponentNode(node) || isCustomBuilderNode(node)) {
+      return node;
+    }
     if ((ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) &&
       validateBuilderFunctionNode(node)) {
       return getParsedBuilderAttrArgument(node);
     }
-    return ts.visitEachChild(node, visitBuild, context);
+    return ts.visitEachChild(node, visitBuildSecond, context);
   }
 }
 
@@ -298,9 +302,17 @@ function isCustomComponentNode(node:ts.NewExpression | ts.ExpressionStatement): 
     node.expression.expression.expression.escapedText.toString().startsWith(
     CUSTOM_COMPONENT_EARLIER_CREATE_CHILD))) {
     return true;
-  }else {
+  } else {
     return false;
   }
+}
+
+function isCustomBuilderNode(node: ts.ExpressionStatement): boolean {
+  return ts.isExpressionStatement(node) && node.expression &&
+    // @ts-ignore
+    node.expression.expression && node.expression.expression.escapedText &&
+    // @ts-ignore
+    CUSTOM_BUILDER_METHOD.has(node.expression.expression.escapedText.toString());
 }
 
 function isGeometryView(node: ts.Node): boolean {
