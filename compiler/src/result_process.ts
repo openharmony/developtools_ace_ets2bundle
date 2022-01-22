@@ -14,7 +14,6 @@
  */
 
 import ts from 'typescript';
-import path from 'path';
 
 import { BUILD_OFF } from './pre_define';
 import {

@@ -77,7 +77,7 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>)
           ts.factory.createStringLiteral(key),
           ts.isStringLiteral(value) ?
             ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-            ts.factory.createIdentifier(value.text)) : value as ts.PropertyAccessExpression
+              ts.factory.createIdentifier(value.text)) : value as ts.PropertyAccessExpression
         ]
       ));
     watchStatements.push(watchNode);

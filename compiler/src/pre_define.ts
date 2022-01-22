@@ -182,7 +182,6 @@ export const GEOMETRY_VIEW: string = 'GeometryView';
 export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'ets' + path.sep + 'share';
 export const BUILD_SHARE_PATH: string = '../share';
 
-export const CHILD: string = 'child';
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';

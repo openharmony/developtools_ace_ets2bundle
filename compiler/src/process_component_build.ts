@@ -45,7 +45,6 @@ import {
   COMPONENT_TRANSITION_NAME,
   COMPONENT_DEBUGLINE_FUNCTION,
   ATTRIBUTE_STATESTYLES,
-  CHILD,
   THIS,
   VISUAL_STATE,
   VIEW_STACK_PROCESSOR,
@@ -169,10 +168,11 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.customComponent:
             if (index + 1 < array.length && ts.isBlock(array[index + 1])) {
-              item = processExpressionStatementChange(item, 
-                array[index + 1] as ts.Block, log)
+              if (processExpressionStatementChange(item, array[index + 1] as ts.Block, log)) {
+                item = processExpressionStatementChange(item, array[index + 1] as ts.Block, log);
+              }
             }
-            processCustomComponent(item, newStatements, log);
+            processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
             break;
           case ComponentType.forEachComponent:
             processForEachComponent(item, newStatements, log);
@@ -198,41 +198,46 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
 
 function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode: ts.Block,
   log: LogInfo[]): ts.ExpressionStatement {
-    // @ts-ignore
-  let name = node.expression.expression.escapedText.toString()
-  let childParam: string;
-  if (builderParamObjectCollection.get(name) && builderParamObjectCollection.get(name).size > 0) {
-    builderParamObjectCollection.get(name).forEach((item) => {
-      childParam = item
-    })
-    // @ts-ignore
-    const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
-    const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
-      [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
-    const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
-      ts.factory.createIdentifier(childParam), arrowNode);
-    // @ts-ignore
-    let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
-    if (argumentsArray && argumentsArray.length < 1) {
-      argumentsArray = [ts.factory.createObjectLiteralExpression([newPropertyAssignment], true)]
-    } else {
-      // @ts-ignore
-      argumentsArray = [ts.factory.createObjectLiteralExpression(
-        // @ts-ignore
-        node.expression.arguments[0].properties.concat([newPropertyAssignment]), true)]
-    }
-    // @ts-ignore
-    node = ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(node.expression,
-      // @ts-ignore
-      node.expression.expression, node.expression.expression.typeArguments, argumentsArray))
-    return node;
+  let name: string;
+  // @ts-ignore
+  if (node.expression.expression && ts.isIdentifier(node.expression.expression)) {
+    name = node.expression.expression.escapedText.toString();
+  }
+  if (builderParamObjectCollection.get(name) &&
+    builderParamObjectCollection.get(name).size === 1) {
+    return processBlockToExpression(node, nextNode, log, name);
   } else {
     log.push({
       type: LogType.ERROR,
-      message: `'${name}' should have a property decorated with @ builderparam .`,
+      message: `In the trailing lambda case, '${name}' must have one and only one property decorated with `
+        + `@BuilderParam, and its @BuilderParam expects no parameter.`,
       pos: node.getStart()
     });
   }
+}
+
+function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Block,
+  log: LogInfo[], name: string): ts.ExpressionStatement {
+  const childParam: string = [...builderParamObjectCollection.get(name)].slice(-1)[0];
+  const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
+  const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
+    [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
+  const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(childParam), arrowNode);
+  // @ts-ignore
+  let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
+  if (argumentsArray && !argumentsArray.length) {
+    argumentsArray = [ts.factory.createObjectLiteralExpression([newPropertyAssignment], true)];
+  } else {
+    argumentsArray = [ts.factory.createObjectLiteralExpression(
+      // @ts-ignore
+      node.expression.arguments[0].properties.concat([newPropertyAssignment]), true)];
+  }
+  node = ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
+    // @ts-ignore
+    node.expression, node.expression.expression, node.expression.expression.typeArguments,
+    argumentsArray));
+  return node;
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, index: number, arr: ts.Statement[],
@@ -533,7 +538,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
 }
 
-function createArrowFunctionFor$$ ($$varExp: ts.Expression): ts.ArrowFunction {
+function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined, undefined,
     [ts.factory.createParameterDeclaration(
@@ -557,7 +562,7 @@ function createArrowFunctionFor$$ ($$varExp: ts.Expression): ts.ArrowFunction {
 function updateArgumentFor$$(argument: any): ts.Expression {
   if (ts.isElementAccessExpression(argument)) {
     return ts.factory.updateElementAccessExpression
-      (argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
+    (argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
   } else if (ts.isIdentifier(argument)) {
     props.push(argument.getText());
     if (argument.getText() === $$_THIS) {
@@ -567,7 +572,7 @@ function updateArgumentFor$$(argument: any): ts.Expression {
     }
   } else if (ts.isPropertyAccessExpression(argument)) {
     return ts.factory.updatePropertyAccessExpression
-      (argument, updateArgumentFor$$(argument.expression), argument.name);
+    (argument, updateArgumentFor$$(argument.expression), argument.name);
   }
 }
 
@@ -633,7 +638,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         validateStateStyleSyntax(temp, log);
       }
       if (isGlobalStyles) {
-        for (let i=0; i<temp.arguments.length; i++) {
+        for (let i = 0; i < temp.arguments.length; i++) {
           temp.arguments[i] = traverseStylesAttr(temp.arguments[i]);
         }
       }
@@ -702,14 +707,14 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       item.initializer.properties.length === 1 &&
       ts.isPropertyAssignment(item.initializer.properties[0])) {
       bindComponentAttr(ts.factory.createExpressionStatement
-        (item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
+      (item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
       validateStateStyleSyntax(temp, log);
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
     }
-  })
+  });
 }
 
 function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string): boolean {
@@ -830,8 +835,8 @@ export function isAttributeNode(node: ts.ExpressionStatement): boolean {
 function validateFirstNode(node: ts.Statement): boolean {
   const isEntryComponent: boolean =
     componentCollection.entryComponent === componentCollection.currentClassName;
-  if ((isEntryComponent && validateEntryComponent(node)) ||
-    (!isEntryComponent && validateCustomComponent(node))) {
+  if (isEntryComponent && validateEntryComponent(node) ||
+    !isEntryComponent && validateCustomComponent(node)) {
     return true;
   }
   return false;
@@ -846,8 +851,8 @@ function validateEntryComponent(node: ts.Statement): boolean {
 
 function validateCustomComponent(node: ts.Statement): boolean {
   if (ts.isIfStatement(node) ||
-    (ts.isExpressionStatement(node) && (INNER_COMPONENT_NAMES.has(getName(node)) ||
-      componentCollection.customComponents.has(getName(node))))) {
+    ts.isExpressionStatement(node) && (INNER_COMPONENT_NAMES.has(getName(node)) ||
+      componentCollection.customComponents.has(getName(node)))) {
     return true;
   }
   return false;
@@ -886,10 +891,10 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     return ComponentType.forEachComponent;
   } else if (CUSTOM_BUILDER_METHOD.has(name)) {
     return ComponentType.customBuilderMethod;
-  } else if (builderParamObjectCollection.get(componentCollection.currentClassName) && 
+  } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
-  }else if (!isAttributeNode(node)) {
+  } else if (!isAttributeNode(node)) {
     log.push({
       type: LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
