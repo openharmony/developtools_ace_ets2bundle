@@ -81,7 +81,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = ts.visitEachChild(node, processAllNodes, context);
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
-        })
+        });
         GLOBAL_STYLE_FUNCTION.clear();
         return node;
       } else {
@@ -98,7 +98,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
-        })
+        });
         INNER_STYLE_FUNCTION.clear();
       } else if (ts.isFunctionDeclaration(node)) {
         if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
@@ -154,7 +154,7 @@ function collectComponents(node: ts.SourceFile): void {
   // @ts-ignore
   if (node.identifiers && node.identifiers.size) {
     // @ts-ignore
-    for (let key of node.identifiers.keys()) {
+    for (const key of node.identifiers.keys()) {
       if (JS_BIND_COMPONENTS.has(key)) {
         appComponentCollection.add(key);
       }
@@ -186,7 +186,7 @@ function processResourceData(node: ts.CallExpression): ts.Node {
   return node;
 }
 
-function createResourceParam(resourceValue: number, resourceType: number,argsArr: ts.Expression[]):
+function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
   ts.ObjectLiteralExpression {
   const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
     [

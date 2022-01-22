@@ -419,9 +419,9 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
           builderParamObjectCollection.set(componentCollection.currentClassName, new Set([]));
         }
         builderParamObjectCollection.get(componentCollection.currentClassName)
-          .add(name.escapedText.toString())
+          .add(name.escapedText.toString());
       }
-      updateParamsNode = createUpdateParamsWithoutIf(name, true);
+      updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
   }
   return updateParamsNode;
@@ -437,7 +437,7 @@ function createUpdateParamsWithIf(name: ts.Identifier): ts.IfStatement {
     createUpdateParamsWithoutIf(name)], true), undefined);
 }
 
-function createUpdateParamsWithoutIf(name: ts.Identifier, isAdd: boolean = false): ts.ExpressionStatement {
+function createUpdateParamsWithoutIf(name: ts.Identifier): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(name.getText()),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken),
