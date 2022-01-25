@@ -115,7 +115,7 @@ function buildManifest(manifest, aceConfigPath) {
 function getPages(configJson) {
   const pages = []
   const modulePagePath = path.resolve(projectConfig.aceProfilePath,
-    `${configJson.module.pages.replace(/\@profile\:/, '')}.json`);
+    `${configJson.module.pages.replace(/\$profile\:/, '')}.json`);
   if (fs.existsSync(modulePagePath)) {
     const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
     if (pagesConfig && pagesConfig.src) {
