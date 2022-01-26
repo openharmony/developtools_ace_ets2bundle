@@ -242,13 +242,13 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
 }
 
 function validateBuilderFunctionNode(node: ts.PropertyAccessExpression | ts.Identifier): boolean {
-  if (((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
+  if ((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
     node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString())) ||
+    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString()) ||
     ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) &&
-    !((ts.isPropertyAccessExpression(node) && validateBuilderParam(node)) ||
-    (ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
-    validateBuilderParam(node.parent)))) {
+    !(ts.isPropertyAccessExpression(node) && validateBuilderParam(node) ||
+    ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
+    validateBuilderParam(node.parent))) {
     return true;
   } else {
     return false;
@@ -286,21 +286,21 @@ function getParsedBuilderAttrArgument(node: ts.PropertyAccessExpression | ts.Ide
         ts.factory.createIdentifier(BUILDER_ATTR_NAME),
         node
       )
-    ])
+    ]);
   }
   return newObjectNode;
 }
 
 function isCustomComponentNode(node:ts.NewExpression | ts.ExpressionStatement): boolean {
-  if ((ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.escapedText
-    && componentCollection.customComponents.has(node.expression.escapedText.toString())) ||
+  if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.escapedText
+    && componentCollection.customComponents.has(node.expression.escapedText.toString()) ||
     // @ts-ignore
-    (ts.isExpressionStatement(node) && node.expression && node.expression.expression &&
+    ts.isExpressionStatement(node) && node.expression && node.expression.expression &&
     // @ts-ignore
     node.expression.expression.expression && node.expression.expression.expression.escapedText &&
     // @ts-ignore
     node.expression.expression.expression.escapedText.toString().startsWith(
-    CUSTOM_COMPONENT_EARLIER_CREATE_CHILD))) {
+      CUSTOM_COMPONENT_EARLIER_CREATE_CHILD)) {
     return true;
   } else {
     return false;

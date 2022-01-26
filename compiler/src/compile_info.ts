@@ -92,7 +92,7 @@ export class ResultStates {
       }
       );
 
-      compilation.hooks.buildModule.tap("findModule", (module) => {
+      compilation.hooks.buildModule.tap('findModule', (module) => {
         if (/node_modules/.test(module.context)) {
           const modulePath: string =
             path.resolve(module.resourceResolveData.descriptionFileRoot, MODULE_SHARE_PATH);
@@ -113,7 +113,7 @@ export class ResultStates {
       compilation.hooks.processAssets.tap(
         {
           name: 'GLOBAL_COMMON_MODULE_CACHE',
-          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
         },
         (assets) => {
           if (assets['commons.js']) {
@@ -133,7 +133,7 @@ export class ResultStates {
             `globalThis["__common_module_cache__"][moduleId]: null;\n` +
             `if (commonCachedModule) { return commonCachedModule.exports; }\n` +
             source.replace('// Execute the module function',
-            `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
+              `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
             `Object.keys(globalThis["__common_module_cache__"]).indexOf(moduleId) >= 0) {\n` +
               `  globalThis["__common_module_cache__"][moduleId] = module;\n}`);
         });
@@ -157,12 +157,12 @@ export class ResultStates {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
           compilation.assets['./component_collection.txt'] =
-            new RawSource(Array.from(appComponentCollection).join(","));
+            new RawSource(Array.from(appComponentCollection).join(','));
           compilation.assets['./module_collection.txt'] =
-            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(","));
+            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(','));
           callback();
         });
-      })
+      });
     }
   }
 

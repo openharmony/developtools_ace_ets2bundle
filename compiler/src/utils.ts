@@ -159,10 +159,10 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
 }
 
 export function circularFile(inputPath: string, outputPath: string): void {
-  if ((!inputPath) || (!outputPath)) {
+  if (!inputPath || !outputPath) {
     return;
   }
-  fs.readdir(inputPath, function (err, files) {
+  fs.readdir(inputPath, function(err, files) {
     if (!files) {
       return;
     }

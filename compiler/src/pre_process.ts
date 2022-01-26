@@ -70,7 +70,7 @@ function parseStatement(statement: ts.Statement, content: string, log: LogInfo[]
     if (visualPath && fs.existsSync(visualPath) && statement.members) {
       statement.members.forEach(member => {
         if (member.kind && member.kind === ts.SyntaxKind.MethodDeclaration) {
-          content = parseMember(member, content, log, visualPath)
+          content = parseMember(member, content, log, visualPath);
         }
       });
     }
@@ -108,7 +108,7 @@ function findVisualFile(filePath: string): string {
 
 function getVisualContent(visualPath: string, log: LogInfo[], pos: number): string {
   const parseContent: any = genETS(fs.readFileSync(visualPath, 'utf-8'));
-  if (parseContent && parseContent.errorType && parseContent.errorType != '') {
+  if (parseContent && parseContent.errorType && parseContent.errorType !== '') {
     log.push({
       type: LogType.ERROR,
       message: parseContent.message,
