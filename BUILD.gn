@@ -141,7 +141,6 @@ ets_loader_sources = [
   "compiler/package.json",
   "compiler/tsconfig.json",
   "compiler/webpack.config.js",
-  ets_loader_component_config_file,
 ]
 
 ohos_copy("ets_loader") {
@@ -149,6 +148,15 @@ ohos_copy("ets_loader") {
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
   sources += [ ets_sysResource ]
+
+  outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("ets_loader_component_config") {
+  deps = [ ":build_ets_loader_library" ]
+  sources = [ ets_loader_component_config_file ]
 
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
@@ -180,6 +188,13 @@ ohos_copy("components") {
 
 ohos_copy("server") {
   sources = [ "compiler/server" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("codegen") {
+  sources = [ "compiler/codegen" ]
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
@@ -246,9 +261,19 @@ ohos_copy("ets_loader_ark_server") {
   outputs = [ target_out_dir + "/ets_loader_ark/server" ]
 }
 
+ohos_copy("ets_loader_ark_codegen") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ "compiler/codegen" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/codegen" ]
+}
+
 ohos_copy("ets_loader_node_modules") {
   deps = [
     ":ets_loader_ark",
+    ":ets_loader_ark_codegen",
     ":ets_loader_ark_components",
     ":ets_loader_ark_declaration",
     ":ets_loader_ark_lib",

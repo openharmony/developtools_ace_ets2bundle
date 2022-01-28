@@ -6,19 +6,19 @@
     "border", "borderStyle", "borderWidth", "borderColor", "borderRadius",
     "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition",
     "opacity", "animation", "transition", "stateStyles",
-    "onClick", "onTouch", "touchable", "onKeyEvent", "onHover","onAreaChange",
+    "onClick", "onTouch", "touchable", "onKeyEvent", "onHover", "hoverEffect", "onMouse", "onAreaChange",
     "blur", "backdropBlur", "windowBlur", "translate", "rotate", "scale", "transform",
     "onAppear", "onDisAppear", "visibility", "flexBasis", "flexShrink", "flexGrow", "alignSelf",
     "useAlign", "zIndex", "sharedTransition", "direction", "align", "position", "markAnchor",
     "offset", "enabled", "aspectRatio", "displayPriority",
-    "onDrag", "onDragEnter", "onDragMove", "onDragLeave", "onDrop",
+    "onDragStart", "onDragEnter", "onDragMove", "onDragLeave", "onDrop",
     "overlay", "linearGradient", "sweepGradient", "radialGradient",
     "gridOffset", "gridSpan", "useSizeType",
-    "motionPath", "clip", "shadow", "mask", "key",
+    "motionPath", "clip", "shadow", "mask", "key", "id",
     "accessibilityGroup", "accessibilityText", "accessibilityDescription",
     "accessibilityImportance", "onAccessibility", "grayscale", "brightness", "contrast",
     "saturate", "geometryTransition",
-    "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "hoverEffect",
+    "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "bindContextMenu",
     "onFocus", "onBlur", "onFocusMove", "focusable", "responseRegion"
   ]
 }

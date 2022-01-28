@@ -52,6 +52,7 @@ import {
   createViewCreate,
   createCustomComponentNewExpression
 } from './process_component_member';
+import { builderParamObjectCollection } from './process_component_member';
 import {
   LogType,
   LogInfo,
@@ -72,8 +73,42 @@ const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[]): void {
   if (ts.isCallExpression(node.expression)) {
-    addCustomComponent(node, newStatements, createCustomComponentNewExpression(node.expression), log);
+    let ischangeNode: boolean = false;
+    let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
+      node.expression);
+    let argumentsArray: ts.PropertyAssignment[];
+    if (isHasChild(node.expression)) {
+      // @ts-ignore
+      argumentsArray = node.expression.arguments[0].properties.slice();
+      argumentsArray.forEach((item: ts.PropertyAssignment, index: number) => {
+        if (ts.isCallExpression(item.initializer)) {
+          ischangeNode = true;
+          const PropertyAssignmentNode: ts.PropertyAssignment = ts.factory.updatePropertyAssignment(
+            item, item.name, changeNodeFromCallToArrow(item.initializer));
+          argumentsArray.splice(index, 1, PropertyAssignmentNode);
+        }
+      });
+      if (ischangeNode) {
+        const newNode: ts.ExpressionStatement = ts.factory.updateExpressionStatement(node,
+          ts.factory.createNewExpression(node.expression.expression, node.expression.typeArguments,
+            [ts.factory.createObjectLiteralExpression(argumentsArray, true)]));
+        customComponentNewExpression = createCustomComponentNewExpression(
+          newNode.expression as ts.CallExpression);
+      }
+    }
+    addCustomComponent(node, newStatements, customComponentNewExpression, log);
   }
+}
+
+function isHasChild(node: ts.CallExpression): boolean {
+  return node.arguments && node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) &&
+  node.arguments[0].properties && node.arguments[0].properties.length;
+}
+
+function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
+  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock([ts.factory.createExpressionStatement(node)], true));
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
@@ -105,10 +140,16 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
     nodeArgument.properties.forEach(item => {
-      curChildProps.add(item.name.getText());
+      if (item.name && ts.isIdentifier(item.name)) {
+        curChildProps.add(item.name.escapedText.toString());
+      }
       if (isThisProperty(item, propertySet)) {
         validateStateManagement(item, name, log);
         if (isNonThisProperty(item, linkSet)) {
+          if (item.initializer && ts.isCallExpression(item.initializer)) {
+            item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
+              item.name, changeNodeFromCallToArrow(item.initializer));
+          }
           props.push(item);
         }
       } else {
@@ -116,6 +157,7 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
       }
     });
   }
+  validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
   validateMandatoryToInitViaParam(node, name, curChildProps, log);
 }
 
@@ -157,7 +199,11 @@ function validateStateManagement(node: ts.ObjectLiteralElementLike, customCompon
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
   log: LogInfo[]): void {
-  const propertyName: string = node.name.getText();
+  let propertyName: string;
+  if (node.name && node.name.escapedText) {
+    // @ts-ignore
+    propertyName = node.name.escapedText.toString();
+  }
   const curPropertyKind: string = getPropertyDecoratorKind(propertyName, customComponentName);
   if (curPropertyKind) {
     if (isInitFromParent(node)) {
@@ -244,7 +290,7 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       break;
     case COMPONENT_NON_DECORATOR:
       if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR,
-        COMPONENT_OBJECT_LINK_DECORATOR].includes(parent)) {
+        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
         return true;
       }
       break;
@@ -339,9 +385,25 @@ function validateNonExistentProperty(node: ts.ObjectLiteralElementLike,
   customComponentName: string, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `Property '${node.name.getText()}' does not exist on type '${customComponentName}'.`,
+    message: `Property '${node.name.escapedText.toString()}' does not exist on type '${customComponentName}'.`,
     pos: node.name.getStart()
   });
+}
+
+function validateMandatoryToAssignmentViaParam(node: ts.ExpressionStatement, customComponentName: string,
+  curChildProps: Set<string>, log: LogInfo[]): void {
+  if (builderParamObjectCollection.get(customComponentName) &&
+    builderParamObjectCollection.get(customComponentName).size) {
+    builderParamObjectCollection.get(customComponentName).forEach((item) => {
+      if (!curChildProps.has(item)) {
+        log.push({
+          type: LogType.ERROR,
+          message: `The property decorated with @BuilderParam '${item}' must be assigned a value .`,
+          pos: node.getStart()
+        });
+      }
+    });
+  }
 }
 
 function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customComponentName: string,
