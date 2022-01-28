@@ -43,6 +43,7 @@ import { appComponentCollection } from './process_component_build';
 import { projectConfig } from '../main';
 import { circularFile } from './utils';
 import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
+import { COMMON_ATTRS } from './component_map';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -91,7 +92,7 @@ export class ResultStates {
       }
       );
 
-      compilation.hooks.buildModule.tap("findModule", (module) => {
+      compilation.hooks.buildModule.tap('findModule', (module) => {
         if (/node_modules/.test(module.context)) {
           const modulePath: string =
             path.resolve(module.resourceResolveData.descriptionFileRoot, MODULE_SHARE_PATH);
@@ -112,7 +113,7 @@ export class ResultStates {
       compilation.hooks.processAssets.tap(
         {
           name: 'GLOBAL_COMMON_MODULE_CACHE',
-          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+          stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
         },
         (assets) => {
           if (assets['commons.js']) {
@@ -132,7 +133,7 @@ export class ResultStates {
             `globalThis["__common_module_cache__"][moduleId]: null;\n` +
             `if (commonCachedModule) { return commonCachedModule.exports; }\n` +
             source.replace('// Execute the module function',
-            `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
+              `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
             `Object.keys(globalThis["__common_module_cache__"]).indexOf(moduleId) >= 0) {\n` +
               `  globalThis["__common_module_cache__"][moduleId] = module;\n}`);
         });
@@ -156,12 +157,12 @@ export class ResultStates {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
           compilation.assets['./component_collection.txt'] =
-            new RawSource(Array.from(appComponentCollection).join(","));
+            new RawSource(Array.from(appComponentCollection).join(','));
           compilation.assets['./module_collection.txt'] =
-            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(","));
+            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(','));
           callback();
         });
-      })
+      });
     }
   }
 
@@ -256,12 +257,12 @@ export class ResultStates {
     const componentNameReg: RegExp = /'typeof\s*(\$?[_a-zA-Z0-9]+)' is not callable/;
     const stateInfoReg: RegExp = /Property\s*'(\$[_a-zA-Z0-9]+)' does not exist on type/;
     const extendInfoReg: RegExp =
-      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)'\./;
-    if (this.matchMessage(message, props, propInfoReg) ||
+      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)(Attribute|Interface)'\./;
+    if (this.matchMessage(message, props.concat([...STYLES_ATTRIBUTE]), propInfoReg) ||
       this.matchMessage(message, [...componentCollection.customComponents], componentNameReg) ||
       this.matchMessage(message, props, stateInfoReg) ||
       this.matchMessage(message, EXTEND_ATTRIBUTE, extendInfoReg, true) ||
-      this.matchMessage(message, [...STYLES_ATTRIBUTE], extendInfoReg)) {
+      this.matchMessage(message, [...STYLES_ATTRIBUTE, ...COMMON_ATTRS], extendInfoReg)) {
       return false;
     }
     return true;

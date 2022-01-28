@@ -76,8 +76,9 @@ import {
   componentInfo,
   createFunction
 } from './utils';
+import { builderParamObjectCollection } from './process_component_member';
 import { projectConfig } from '../main';
-import { transformLog } from './process_ui_syntax';
+import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 
 export const appComponentCollection: Set<string> = new Set();
@@ -157,20 +158,27 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[]): void {
   if (node.statements.length) {
-    node.statements.forEach((item, index) => {
+    node.statements.forEach((item, index, array) => {
       if (ts.isExpressionStatement(item)) {
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
-            processInnerComponent(item, index, Array.from(node.statements), newStatements, log, name);
+            processInnerComponent(item, index, Array.from(node.statements),
+              newStatements, log, name);
             break;
           case ComponentType.customComponent:
-            processCustomComponent(item, newStatements, log);
+            if (index + 1 < array.length && ts.isBlock(array[index + 1])) {
+              if (processExpressionStatementChange(item, array[index + 1] as ts.Block, log)) {
+                item = processExpressionStatementChange(item, array[index + 1] as ts.Block, log);
+              }
+            }
+            processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
             break;
           case ComponentType.forEachComponent:
             processForEachComponent(item, newStatements, log);
             break;
           case ComponentType.customBuilderMethod:
+          case ComponentType.builderParamMethod:
             newStatements.push(item);
             break;
         }
@@ -186,6 +194,50 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       }
     });
   }
+}
+
+function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode: ts.Block,
+  log: LogInfo[]): ts.ExpressionStatement {
+  let name: string;
+  // @ts-ignore
+  if (node.expression.expression && ts.isIdentifier(node.expression.expression)) {
+    name = node.expression.expression.escapedText.toString();
+  }
+  if (builderParamObjectCollection.get(name) &&
+    builderParamObjectCollection.get(name).size === 1) {
+    return processBlockToExpression(node, nextNode, log, name);
+  } else {
+    log.push({
+      type: LogType.ERROR,
+      message: `In the trailing lambda case, '${name}' must have one and only one property decorated with `
+        + `@BuilderParam, and its @BuilderParam expects no parameter.`,
+      pos: node.getStart()
+    });
+  }
+}
+
+function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Block,
+  log: LogInfo[], name: string): ts.ExpressionStatement {
+  const childParam: string = [...builderParamObjectCollection.get(name)].slice(-1)[0];
+  const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
+  const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
+    [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
+  const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(childParam), arrowNode);
+  // @ts-ignore
+  let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
+  if (argumentsArray && !argumentsArray.length) {
+    argumentsArray = [ts.factory.createObjectLiteralExpression([newPropertyAssignment], true)];
+  } else {
+    argumentsArray = [ts.factory.createObjectLiteralExpression(
+      // @ts-ignore
+      node.expression.arguments[0].properties.concat([newPropertyAssignment]), true)];
+  }
+  node = ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
+    // @ts-ignore
+    node.expression, node.expression.expression, node.expression.expression.typeArguments,
+    argumentsArray));
+  return node;
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, index: number, arr: ts.Statement[],
@@ -459,7 +511,7 @@ interface AnimationInfo {
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
-  isStylesAttr: boolean = false): void {
+  isStylesAttr: boolean = false, isGlobalStyles: boolean = false): void {
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
   const lastStatement: AnimationInfo = { statement: null, kind: false };
@@ -467,13 +519,13 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name)) {
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
-        isStylesAttr);
+        isStylesAttr, isGlobalStyles);
       temp = temp.expression.expression;
     } else if (ts.isIdentifier(temp.expression)) {
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
         !GESTURE_TYPE_NAMES.has(temp.expression.getText())) {
         addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
-          isStylesAttr);
+          isStylesAttr, isGlobalStyles);
       }
       break;
     }
@@ -486,7 +538,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
 }
 
-function createArrowFunctionFor$$ ($$varExp: ts.Expression): ts.ArrowFunction {
+function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined, undefined,
     [ts.factory.createParameterDeclaration(
@@ -510,7 +562,7 @@ function createArrowFunctionFor$$ ($$varExp: ts.Expression): ts.ArrowFunction {
 function updateArgumentFor$$(argument: any): ts.Expression {
   if (ts.isElementAccessExpression(argument)) {
     return ts.factory.updateElementAccessExpression
-      (argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
+    (argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
   } else if (ts.isIdentifier(argument)) {
     props.push(argument.getText());
     if (argument.getText() === $$_THIS) {
@@ -520,13 +572,13 @@ function updateArgumentFor$$(argument: any): ts.Expression {
     }
   } else if (ts.isPropertyAccessExpression(argument)) {
     return ts.factory.updatePropertyAccessExpression
-      (argument, updateArgumentFor$$(argument.expression), argument.name);
+    (argument, updateArgumentFor$$(argument.expression), argument.name);
   }
 }
 
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
-  isStylesAttr): void {
+  isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
@@ -563,8 +615,14 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
     const styleBlock: ts.Block =
       GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
-    bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
-      statements, log, false, true);
+    if (GLOBAL_STYLE_FUNCTION.has(propName)) {
+      bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+        statements, log, false, true, true);
+    } else {
+      bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+        statements, log, false, true, false);
+    }
+    lastStatement.kind = true;
   } else if (propName === BIND_POPUP && temp.arguments.length === 2 &&
     temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
     const argumentsArr: ts.Expression[] = [];
@@ -575,13 +633,29 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       createFunction(identifierNode, node, argumentsArr)));
     lastStatement.kind = true;
   } else {
-    if (isStylesAttr && !COMMON_ATTRS.has(propName)) {
-      validateStateStyleSyntax(temp, log);
+    if (isStylesAttr) {
+      if (!COMMON_ATTRS.has(propName)) {
+        validateStateStyleSyntax(temp, log);
+      }
+      if (isGlobalStyles) {
+        for (let i = 0; i < temp.arguments.length; i++) {
+          temp.arguments[i] = traverseStylesAttr(temp.arguments[i]);
+        }
+      }
     }
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
+}
+
+function traverseStylesAttr(node: ts.Node): ts.Node {
+  if (ts.isStringLiteral(node)) {
+    node = ts.factory.createStringLiteral(node.text);
+  } else if (ts.isNumericLiteral(node)) {
+    node = ts.factory.createNumericLiteral(node.text);
+  }
+  return ts.visitEachChild(node, childNode => traverseStylesAttr(childNode), contextGlobal);
 }
 
 function generateObjectFor$$(varExp: ts.Expression): ts.ObjectLiteralExpression {
@@ -633,14 +707,14 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       item.initializer.properties.length === 1 &&
       ts.isPropertyAssignment(item.initializer.properties[0])) {
       bindComponentAttr(ts.factory.createExpressionStatement
-        (item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
+      (item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
       validateStateStyleSyntax(temp, log);
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
     }
-  })
+  });
 }
 
 function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string): boolean {
@@ -761,8 +835,8 @@ export function isAttributeNode(node: ts.ExpressionStatement): boolean {
 function validateFirstNode(node: ts.Statement): boolean {
   const isEntryComponent: boolean =
     componentCollection.entryComponent === componentCollection.currentClassName;
-  if ((isEntryComponent && validateEntryComponent(node)) ||
-    (!isEntryComponent && validateCustomComponent(node))) {
+  if (isEntryComponent && validateEntryComponent(node) ||
+    !isEntryComponent && validateCustomComponent(node)) {
     return true;
   }
   return false;
@@ -777,8 +851,8 @@ function validateEntryComponent(node: ts.Statement): boolean {
 
 function validateCustomComponent(node: ts.Statement): boolean {
   if (ts.isIfStatement(node) ||
-    (ts.isExpressionStatement(node) && (INNER_COMPONENT_NAMES.has(getName(node)) ||
-      componentCollection.customComponents.has(getName(node))))) {
+    ts.isExpressionStatement(node) && (INNER_COMPONENT_NAMES.has(getName(node)) ||
+      componentCollection.customComponents.has(getName(node)))) {
     return true;
   }
   return false;
@@ -802,7 +876,8 @@ enum ComponentType {
   innerComponent,
   customComponent,
   forEachComponent,
-  customBuilderMethod
+  customBuilderMethod,
+  builderParamMethod
 }
 
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
@@ -816,6 +891,9 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     return ComponentType.forEachComponent;
   } else if (CUSTOM_BUILDER_METHOD.has(name)) {
     return ComponentType.customBuilderMethod;
+  } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
+    builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
+    return ComponentType.builderParamMethod;
   } else if (!isAttributeNode(node)) {
     log.push({
       type: LogType.ERROR,

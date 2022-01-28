@@ -183,7 +183,7 @@ function checkComponentDecorator(source: string, filePath: string,
       }
       if (ts.isFunctionDeclaration(item) && item.decorators && item.decorators.length === 1 &&
         item.decorators[0].expression && item.decorators[0].expression.getText() === STYLES) {
-        STYLES_ATTRIBUTE.add(item.name.getText())
+        STYLES_ATTRIBUTE.add(item.name.getText());
         GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
         BUILDIN_STYLE_NAMES.add(item.name.getText());
       }
@@ -744,7 +744,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   return {
     content: content,
     log: log
-  }
+  };
 }
 
 export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
@@ -772,7 +772,7 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
     syntaxCheckContent = content;
   }
   if (result.error_otherParsers) {
-    for(let i = 0; i < result.error_otherParsers.length; i++) {
+    for (let i = 0; i < result.error_otherParsers.length; i++) {
       log.push({
         type: LogType.ERROR,
         message: result.error_otherParsers[i].errMessage,
@@ -800,8 +800,9 @@ function collectExtend(component: string, attribute: string, parameter: string):
   }
 }
 
-export function processSystemApi(content: string): string {
-  const REG_SYSTEM: RegExp =
+export function processSystemApi(content: string, isProcessWhiteList: boolean = false): string {
+  let REG_SYSTEM: RegExp;
+  REG_SYSTEM =
     /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
@@ -809,24 +810,28 @@ export function processSystemApi(content: string): string {
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
     return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
-    }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6) => {
-      const moduleType: string = item2 || item5;
-      const systemKey: string = item3 || item6;
-      const systemValue: string = item1 || item4;
-      moduleCollection.add(`${moduleType}.${systemKey}`);
-      if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
-        item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-      } else if (moduleType === SYSTEM_PLUGIN) {
-        item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
+  }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
+    const moduleType: string = item2 || item5;
+    const systemKey: string = item3 || item6;
+    const systemValue: string = item1 || item4;
+    moduleCollection.add(`${moduleType}.${systemKey}`);
+    if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
+      item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
+    } else if (moduleType === SYSTEM_PLUGIN) {
+      item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
           `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
-      } else if (moduleType === OHOS_PLUGIN) {
-        item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
+    } else if (moduleType === OHOS_PLUGIN) {
+      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
           `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
           `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
           `? globalThis.systemplugin.${systemKey} : undefined)`;
-      }
-      return item;
-    });
+    }
+    return item;
+  });
+}
+
+function validateWhiteListModule(moduleType: string, systemKey: string): boolean {
+  return moduleType === 'ohos' && /^application\./g.test(systemKey);
 }
 
 export function resetComponentCollection() {

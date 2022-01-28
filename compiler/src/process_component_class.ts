@@ -52,7 +52,8 @@ import {
   COMPONENT_STYLES_DECORATOR,
   STYLES,
   INTERFACE_NAME_SUFFIX,
-  OBSERVED_PROPERTY_ABSTRACT
+  OBSERVED_PROPERTY_ABSTRACT,
+  CUSTOM_COMPONENT_EARLIER_CREATE_CHILD
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -99,11 +100,13 @@ export function processComponentClass(node: ts.ClassDeclaration, context: ts.Tra
 
 function checkPreview(node: ts.ClassDeclaration) {
   let hasPreview: boolean = false;
-  for (let i = 0; i < node.decorators.length; i++) {
-    const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
-    if (name === COMPONENT_DECORATOR_PREVIEW) {
-      hasPreview = true;
-      break;
+  if (node && node.decorators) {
+    for (let i = 0; i < node.decorators.length; i++) {
+      const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
+      if (name === COMPONENT_DECORATOR_PREVIEW) {
+        hasPreview = true;
+        break;
+      }
     }
   }
   return hasPreview;
@@ -287,7 +290,8 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
     });
   }
   const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
-  return ts.visitNode(buildNode, visitBuild);
+  const firstParseBuildNode = ts.visitNode(buildNode, visitBuild);
+  return ts.visitNode(firstParseBuildNode, visitBuildSecond);
   function visitBuild(node: ts.Node): ts.Node {
     if (isGeometryView(node)) {
       node = processGeometryView(node as ts.ExpressionStatement, log);
@@ -303,22 +307,28 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
         ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
         ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
     }
+    return ts.visitEachChild(node, visitBuild, context);
+  }
+  function visitBuildSecond(node: ts.Node): ts.Node {
+    if (isCustomComponentNode(node) || isCustomBuilderNode(node)) {
+      return node;
+    }
     if ((ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) &&
       validateBuilderFunctionNode(node)) {
       return getParsedBuilderAttrArgument(node);
     }
-    return ts.visitEachChild(node, visitBuild, context);
+    return ts.visitEachChild(node, visitBuildSecond, context);
   }
 }
 
 function validateBuilderFunctionNode(node: ts.PropertyAccessExpression | ts.Identifier): boolean {
-  if (((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
+  if ((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
     node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString())) ||
+    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString()) ||
     ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) &&
-    !((ts.isPropertyAccessExpression(node) && validateBuilderParam(node)) ||
-    (ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
-    validateBuilderParam(node.parent)))) {
+    !(ts.isPropertyAccessExpression(node) && validateBuilderParam(node) ||
+    ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
+    validateBuilderParam(node.parent))) {
     return true;
   } else {
     return false;
@@ -356,9 +366,33 @@ function getParsedBuilderAttrArgument(node: ts.PropertyAccessExpression | ts.Ide
         ts.factory.createIdentifier(BUILDER_ATTR_NAME),
         node
       )
-    ])
+    ]);
   }
   return newObjectNode;
+}
+
+function isCustomComponentNode(node:ts.NewExpression | ts.ExpressionStatement): boolean {
+  if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.escapedText
+    && componentCollection.customComponents.has(node.expression.escapedText.toString()) ||
+    // @ts-ignore
+    ts.isExpressionStatement(node) && node.expression && node.expression.expression &&
+    // @ts-ignore
+    node.expression.expression.expression && node.expression.expression.expression.escapedText &&
+    // @ts-ignore
+    node.expression.expression.expression.escapedText.toString().startsWith(
+      CUSTOM_COMPONENT_EARLIER_CREATE_CHILD)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function isCustomBuilderNode(node: ts.ExpressionStatement): boolean {
+  return ts.isExpressionStatement(node) && node.expression &&
+    // @ts-ignore
+    node.expression.expression && node.expression.expression.escapedText &&
+    // @ts-ignore
+    CUSTOM_BUILDER_METHOD.has(node.expression.expression.escapedText.toString());
 }
 
 function isGeometryView(node: ts.Node): boolean {

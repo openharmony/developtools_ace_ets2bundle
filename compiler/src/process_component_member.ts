@@ -51,7 +51,8 @@ import {
   JS_DIALOG,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   BASE_COMPONENT_NAME,
-  COMPONENT_CREATE_FUNCTION
+  COMPONENT_CREATE_FUNCTION,
+  COMPONENT_BUILDERPARAM_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -98,10 +99,12 @@ export const mandatoryToInitViaParamDecorators: Set<string> =
   new Set([...propAndLinkDecorators, COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const setUpdateParamsDecorators: Set<string> =
-  new Set([...observedPropertyDecorators, COMPONENT_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([...observedPropertyDecorators, COMPONENT_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR,
+    COMPONENT_BUILDERPARAM_DECORATOR
+  ]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -109,6 +112,8 @@ export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyw
 export const decoratorParamSet: Set<string> = new Set();
 
 export const stateObjectCollection: Set<string> = new Set();
+
+export const builderParamObjectCollection: Map<string, Set<string>> = new Map();
 
 export class UpdateResult {
   private itemUpdate: boolean = false;
@@ -265,7 +270,8 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     if (node.questionToken && mandatoryToInitViaParamDecorators.has(decoratorName)) {
       validateHasIllegalQuestionToken(name, decoratorName, log);
     }
-    if (!isSimpleType(node.type, program)) {
+    if (!isSimpleType(node.type, program) &&
+      decoratorName !== COMPONENT_BUILDERPARAM_DECORATOR) {
       stateObjectCollection.add(name.escapedText.toString());
     }
     if (decoratorName === COMPONENT_WATCH_DECORATOR &&
@@ -297,14 +303,16 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   }
   addAddProvidedVar(node, name, decorator, updateState);
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], false));
-  updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
+  if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
+    updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
+    updateResult.setDeleteParams(true);
+  }
   if (!immutableDecorators.has(decorator)) {
     updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD, node.type));
   }
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
-  updateResult.setDeleteParams(true);
 }
 
 function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
@@ -414,6 +422,16 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
+      break;
+    case COMPONENT_BUILDERPARAM_DECORATOR:
+      if (decorator === COMPONENT_BUILDERPARAM_DECORATOR) {
+        if (!builderParamObjectCollection.get(componentCollection.currentClassName)) {
+          builderParamObjectCollection.set(componentCollection.currentClassName, new Set([]));
+        }
+        builderParamObjectCollection.get(componentCollection.currentClassName)
+          .add(name.escapedText.toString());
+      }
+      updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
   }
   return updateParamsNode;
