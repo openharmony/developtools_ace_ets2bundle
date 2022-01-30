@@ -83,9 +83,9 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       argumentsArray.forEach((item: ts.PropertyAssignment, index: number) => {
         if (isToChange(item, node.expression as ts.CallExpression)) {
           ischangeNode = true;
-          const PropertyAssignmentNode: ts.PropertyAssignment = ts.factory.updatePropertyAssignment(
+          const propertyAssignmentNode: ts.PropertyAssignment = ts.factory.updatePropertyAssignment(
             item, item.name, changeNodeFromCallToArrow(item.initializer as ts.CallExpression));
-          argumentsArray.splice(index, 1, PropertyAssignmentNode);
+          argumentsArray.splice(index, 1, propertyAssignmentNode);
         }
       });
       if (ischangeNode) {
@@ -106,9 +106,9 @@ function isHasChild(node: ts.CallExpression): boolean {
 }
 
 function isToChange(item: ts.PropertyAssignment, node: ts.CallExpression): boolean {
-  const BuilderParamname = builderParamObjectCollection.get(node.expression.getText());
-  return ts.isCallExpression(item.initializer) && BuilderParamname &&
-    BuilderParamname.has(item.name.getText());
+  const builderParamName: Set<string> = builderParamObjectCollection.get(node.expression.getText());
+  return item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
+    builderParamName.has(item.name.getText());
 }
 
 function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
@@ -152,8 +152,7 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
       if (isThisProperty(item, propertySet)) {
         validateStateManagement(item, name, log);
         if (isNonThisProperty(item, linkSet)) {
-          if (item.initializer && ts.isCallExpression(item.initializer) && isToChange(
-            item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
+          if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
             item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
               item.name, changeNodeFromCallToArrow(item.initializer));
           }
