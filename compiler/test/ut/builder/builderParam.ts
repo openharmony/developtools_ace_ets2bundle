@@ -46,7 +46,7 @@ struct CustomContainerUser {
             CustomContainer({
                 header: "Header",
                 footer: "Footer",
-                menuInfo: this.specificChild("menuInfo")
+                menuInfo: this.specificChild("menuInfo"),
                 child: this.specificChild("child")
             })
         }  
