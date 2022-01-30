@@ -14,9 +14,11 @@
  */
 
 exports.source = `
+
 @Component
 struct CustomContainer {
     header: string = "";
+    menuInfo: () => any;
     footer: string = "";
     @BuilderParam child: () => any;
     
@@ -32,10 +34,10 @@ struct CustomContainer {
 @Entry
 @Component
 struct CustomContainerUser {
-    @Builder specificChild() {
+    @Builder specificChild(label:string) {
         Column() {
             Text("My content1")
-            Text("My content2")
+            Text(label)
         }
     }
 
@@ -44,7 +46,8 @@ struct CustomContainerUser {
             CustomContainer({
                 header: "Header",
                 footer: "Footer",
-                child: this.specificChild
+                menuInfo: this.specificChild("menuInfo")
+                child: this.specificChild("child")
             })
         }  
     }
@@ -55,12 +58,16 @@ exports.expectResult =
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.header = "";
+        this.menuInfo = undefined;
         this.footer = "";
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
         if (params.header !== undefined) {
             this.header = params.header;
+        }
+        if (params.menuInfo !== undefined) {
+            this.menuInfo = params.menuInfo;
         }
         if (params.footer !== undefined) {
             this.footer = params.footer;
@@ -90,31 +97,37 @@ class CustomContainerUser extends View {
     aboutToBeDeleted() {
         SubscriberManager.Get().delete(this.id());
     }
-    specificChild() {
+    specificChild(label) {
         Column.create();
         Text.create("My content1");
         Text.pop();
-        Text.create("My content2");
+        Text.create(label);
         Text.pop();
         Column.pop();
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
-        if (earlierCreatedChild_2 == undefined) {
-            View.create(new CustomContainer("2", this, {
+        let earlierCreatedChild_3 = this.findChildById("3");
+        if (earlierCreatedChild_3 == undefined) {
+            View.create(new CustomContainer("3", this, {
                 header: "Header",
                 footer: "Footer",
-                child: this.specificChild
+                menuInfo: this.specificChild("menuInfo"),
+                child: () => {
+                    this.specificChild("child");
+                }
             }));
         }
         else {
-            earlierCreatedChild_2.updateWithValueParams({
+            earlierCreatedChild_3.updateWithValueParams({
                 header: "Header",
                 footer: "Footer",
-                child: this.specificChild
+                menuInfo: this.specificChild("menuInfo"),
+                child: () => {
+                    this.specificChild("child");
+                }
             });
-            View.create(earlierCreatedChild_2);
+            View.create(earlierCreatedChild_3);
         }
         Column.pop();
     }
