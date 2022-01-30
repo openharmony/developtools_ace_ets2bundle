@@ -17,6 +17,7 @@ import path from 'path';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
+export const VALIDATE_MODULE: string[] = ['application', 'util'];
 export const SYSTEM_PLUGIN: string = 'system';
 export const OHOS_PLUGIN: string = 'ohos';
 

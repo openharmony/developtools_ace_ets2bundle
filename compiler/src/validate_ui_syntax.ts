@@ -43,7 +43,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_OBSERVED_DECORATOR,
-  STYLES
+  STYLES,
+  VALIDATE_MODULE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -802,18 +803,32 @@ function collectExtend(component: string, attribute: string, parameter: string):
 
 export function processSystemApi(content: string, isProcessWhiteList: boolean = false): string {
   let REG_SYSTEM: RegExp;
-  REG_SYSTEM =
-    /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  if (isProcessWhiteList) {
+    REG_SYSTEM =
+      /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g;
+  } else {
+    REG_SYSTEM =
+      /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  }
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
-  return content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
+  const systemValueCollection: Set<string> = new Set();
+  const newContent: string = content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
     return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
   }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
-    const moduleType: string = item2 || item5;
-    const systemKey: string = item3 || item6;
-    const systemValue: string = item1 || item4;
+    let moduleType: string = item2 || item5;
+    let systemKey: string = item3 || item6;
+    let systemValue: string = item1 || item4;
+    if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
+      return item;
+    } else if (isProcessWhiteList) {
+      systemValue = item2;
+      moduleType = item4;
+      systemKey = item5;
+      systemValueCollection.add(systemValue);
+    }
     moduleCollection.add(`${moduleType}.${systemKey}`);
     if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
       item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
@@ -828,10 +843,22 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
     }
     return item;
   });
+  return processInnerModule(newContent, systemValueCollection);
 }
 
+function processInnerModule(content: string, systemValueCollection: Set<string>): string {
+  systemValueCollection.forEach(element => {
+    const target: string = element.trim() + '.default';
+    while (content.includes(target)) {
+      content = content.replace(target, element.trim());
+    }
+  });
+  return content;
+}
+
+const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
 function validateWhiteListModule(moduleType: string, systemKey: string): boolean {
-  return moduleType === 'ohos' && /^application\./g.test(systemKey);
+  return moduleType === 'ohos' && VALIDATE_MODULE_REG.test(systemKey);
 }
 
 export function resetComponentCollection() {
