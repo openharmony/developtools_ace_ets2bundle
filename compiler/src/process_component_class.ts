@@ -126,8 +126,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
   const checkController: ControllerType =
     { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
-  let interfaceNode = ts.factory.createInterfaceDeclaration(undefined, undefined,
-    parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, [])
+  const interfaceNode = ts.factory.createInterfaceDeclaration(undefined, undefined,
+    parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, []);
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
@@ -177,10 +177,10 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
 
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
   program: ts.Program):void {
-  let propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
+  const propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
   let decoratorName: string;
   let updatePropertyItem: ts.PropertyDeclaration;
-  let type: ts.TypeNode = propertyItem.type;
+  const type: ts.TypeNode = propertyItem.type;
   if (!propertyItem.decorators || propertyItem.decorators.length === 0) {
     updatePropertyItem = createPropertyDeclaration(propertyItem, type, true);
     newMembers.push(updatePropertyItem);

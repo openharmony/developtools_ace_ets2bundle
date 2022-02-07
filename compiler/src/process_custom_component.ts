@@ -124,7 +124,7 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[]): void {
   const id: string = componentInfo.id.toString();
-  newStatements.push(createFindChildById(id), createCustomComponentIfStatement(id,
+  newStatements.push(createFindChildById(id, name), createCustomComponentIfStatement(id,
     ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
     ts.factory.createObjectLiteralExpression(props, true), name));
 }
@@ -311,13 +311,14 @@ function getPropertyDecoratorKind(propertyName: string, customComponentName: str
   }
 }
 
-function createFindChildById(id: string): ts.VariableStatement {
+function createFindChildById(id: string, name: string): ts.VariableStatement {
   return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
     [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(
-      `${CUSTOM_COMPONENT_EARLIER_CREATE_CHILD}${id}`), undefined, undefined,
-    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-      ts.factory.createIdentifier(`${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined,
-    [ts.factory.createStringLiteral(id)]))], ts.NodeFlags.Let));
+      `${CUSTOM_COMPONENT_EARLIER_CREATE_CHILD}${id}`), undefined, ts.factory.createTypeReferenceNode(
+      ts.factory.createIdentifier(name)), ts.factory.createAsExpression(ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createThis(), ts.factory.createIdentifier(
+        `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
+    ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))))], ts.NodeFlags.Let));
 }
 
 function createCustomComponentIfStatement(id: string, node: ts.ExpressionStatement,

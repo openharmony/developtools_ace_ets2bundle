@@ -207,7 +207,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
-      interfaceNode)]));
+        interfaceNode)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
   } else if (!item.type) {
     validatePropertyNonType(name, log);
