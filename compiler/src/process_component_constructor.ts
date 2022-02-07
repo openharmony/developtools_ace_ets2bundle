@@ -91,12 +91,12 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
       case COMPONENT_CONSTRUCTOR_PARAMS + '?':
         parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
           item.dotDotDotToken, item.name, item.questionToken,
-          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier
-            (parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
+            parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
         break;
     }
     newTSPara.push(parameter);
-  })
+  });
   return newTSPara;
 }
 
