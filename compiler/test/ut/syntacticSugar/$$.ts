@@ -31,6 +31,8 @@ struct HomeComponent {
         Text(this.value1)
         Text(this.value2)
         Text(this.value3)
+        Radio({value: "Radio", group: "1"})
+          .checked($$this.value4)
       }
       Row() {
         Button() {
@@ -45,6 +47,8 @@ struct HomeComponent {
           .fontSize(100)
           .bindPopup($$value6.item1, {message: "This is $$ for Obj"})
         Text(this.value3)
+        Radio({value: "Radio", group: "1"})
+          .checked($$value5[0])
       }
       .width(20)
     }
@@ -91,6 +95,8 @@ class HomeComponent extends View {
         Text.pop();
         Text.create(this.value3);
         Text.pop();
+        Radio.create({ value: "Radio", group: "1" });
+        Radio.checked(this.value4, newValue => { this.value4 = newValue; });
         Row.pop();
         Row.create();
         Row.width(20);
@@ -109,6 +115,8 @@ class HomeComponent extends View {
         Text.pop();
         Text.create(this.value3);
         Text.pop();
+        Radio.create({ value: "Radio", group: "1" });
+        Radio.checked(value5[0], newValue => { value5[0] = newValue; });
         Row.pop();
         Column.pop();
     }
