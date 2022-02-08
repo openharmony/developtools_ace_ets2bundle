@@ -56,7 +56,8 @@ import {
   EXTEND_ATTRIBUTE,
   JS_BIND_COMPONENTS,
   INNER_STYLE_FUNCTION,
-  GLOBAL_STYLE_FUNCTION
+  GLOBAL_STYLE_FUNCTION,
+  INTERFACE_NODE_SET
 } from './component_map';
 import { resources } from '../main';
 
@@ -83,6 +84,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           BUILDIN_STYLE_NAMES.delete(styleName);
         });
         GLOBAL_STYLE_FUNCTION.clear();
+        const statements: ts.NodeArray<ts.Statement> = node.statements;
+        INTERFACE_NODE_SET.forEach(item => {
+          statements.unshift(item);
+        });
+        node = ts.factory.updateSourceFile(node, statements);
+        INTERFACE_NODE_SET.clear();
         return node;
       } else {
         return node;

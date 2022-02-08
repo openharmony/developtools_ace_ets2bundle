@@ -20,7 +20,9 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
-  COMPONENT_WATCH_FUNCTION
+  COMPONENT_WATCH_FUNCTION,
+  BASE_COMPONENT_NAME,
+  INTERFACE_NAME_SUFFIX
 } from './pre_define';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>): ts.ConstructorDeclaration {
@@ -35,7 +37,8 @@ export function getInitConstructor(members: ts.NodeArray<ts.Node>): ts.Construct
 
 export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
   para: ts.ParameterDeclaration[], addStatements: ts.Statement[],
-  isSuper: boolean = false): ts.ConstructorDeclaration {
+  isSuper: boolean = false, isAdd: boolean = false, parentComponentName?: ts.Identifier):
+  ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
   if (para && para.length) {
     modifyPara = Array.from(ctorNode.parameters);
@@ -55,15 +58,50 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
     }
   }
   if (ctorNode) {
+    let ctorPara: ts.ParameterDeclaration[] | ts.NodeArray<ts.ParameterDeclaration> =
+      modifyPara || ctorNode.parameters;
+    if (isAdd) {
+      ctorPara = addParamsType(ctorNode, modifyPara, parentComponentName);
+    }
     ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
-      ctorNode.modifiers, modifyPara || ctorNode.parameters,
-      ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
+      ctorNode.modifiers, ctorPara, ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
   }
   return ctorNode;
 }
 
-export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>)
-  : ts.ConstructorDeclaration {
+function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.ParameterDeclaration[],
+  parentComponentName: ts.Identifier): ts.ParameterDeclaration[] {
+  const tsPara: ts.ParameterDeclaration[] | ts.NodeArray<ts.ParameterDeclaration> =
+    modifyPara || ctorNode.parameters;
+  const newTSPara: ts.ParameterDeclaration[] = [];
+  tsPara.forEach((item) => {
+    let parameter: ts.ParameterDeclaration = item;
+    switch (item.getText()) {
+      case COMPONENT_CONSTRUCTOR_ID + '?':
+        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_PARENT + '?':
+        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(BASE_COMPONENT_NAME), undefined),
+          item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_PARAMS + '?':
+        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+          item.dotDotDotToken, item.name, item.questionToken,
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
+            parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
+        break;
+    }
+    newTSPara.push(parameter);
+  });
+  return newTSPara;
+}
+
+export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
+  parentComponentName: ts.Identifier): ts.ConstructorDeclaration {
   const watchStatements: ts.ExpressionStatement[] = [];
   watchMap.forEach((value, key) => {
     const watchNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
@@ -91,5 +129,5 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>)
       ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),
     undefined, [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]));
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [updateWithValueParamsStatement, ...watchStatements], false);
+    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
 }
