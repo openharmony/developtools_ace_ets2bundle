@@ -73,6 +73,7 @@ function loadEntryObj(projectConfig) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
+      process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
     } else {
       throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
