@@ -41,10 +41,10 @@ import {
   COMPONENT_CONSTRUCTOR_ID,
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
-  COMPONENT_EXTEND_DECORATOR,
   COMPONENT_OBSERVED_DECORATOR,
   STYLES,
-  VALIDATE_MODULE
+  VALIDATE_MODULE,
+  COMPONENT_BUILDER_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -54,7 +54,8 @@ import {
   BUILDIN_STYLE_NAMES,
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   LogType,
@@ -323,6 +324,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   checkAllNode(node, allComponentNames, sourceFileNode, log);
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
+  }
+  if (ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+    CUSTOM_BUILDER_METHOD.add(node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
