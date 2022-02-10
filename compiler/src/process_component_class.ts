@@ -481,9 +481,9 @@ function createParamsInitBlock(express: string, statements: ts.Statement[],
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
-      ts.factory.createTypeReferenceNode(
-        ts.factory.createIdentifier(parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined),
-        undefined)], undefined, ts.factory.createBlock(statements, true));
+        ts.factory.createTypeReferenceNode(
+          ts.factory.createIdentifier(parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined),
+      undefined)], undefined, ts.factory.createBlock(statements, true));
   return methodDeclaration;
 }
 

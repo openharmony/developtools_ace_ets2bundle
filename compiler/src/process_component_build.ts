@@ -53,6 +53,8 @@ import {
   $$_CHANGE_EVENT,
   $$_THIS,
   $$_NEW_VALUE,
+  CHECKED,
+  RADIO,
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   CUSTOM_DIALOG_CONTROLLER_BUILDER
@@ -753,12 +755,10 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         statements, log, false, true, false);
     }
     lastStatement.kind = true;
-  } else if (propName === BIND_POPUP && temp.arguments.length === 2 &&
-    temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
+  } else if (!isStylesAttr && [BIND_POPUP, CHECKED].includes(propName) &&
+    temp.arguments.length && temp.arguments[0] && temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
     const argumentsArr: ts.Expression[] = [];
-    const varExp: ts.Expression = updateArgumentFor$$(temp.arguments[0]);
-    argumentsArr.push(generateObjectFor$$(varExp));
-    argumentsArr.push(temp.arguments[1]);
+    classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode);
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, argumentsArr)));
     lastStatement.kind = true;
@@ -776,6 +776,17 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
+  }
+}
+
+function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
+  identifierNode: ts.Identifier): void {
+  if (propName === BIND_POPUP && args.length === 2) {
+    const varExp: ts.Expression = updateArgumentFor$$(args[0]);
+    argumentsArr.push(generateObjectFor$$(varExp), args[1]);
+  } else if (propName === CHECKED && args.length === 1 && identifierNode.getText() === RADIO) {
+    const varExp: ts.Expression = updateArgumentFor$$(args[0]);
+    argumentsArr.push(varExp, createArrowFunctionFor$$(varExp));
   }
 }
 
