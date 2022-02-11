@@ -47,8 +47,6 @@ import {
   COMPONENT_TRANSITION_FUNCTION,
   COMPONENT_CREATE_FUNCTION,
   GEOMETRY_VIEW,
-  BUILDER_ATTR_NAME,
-  BUILDER_ATTR_BIND,
   COMPONENT_STYLES_DECORATOR,
   STYLES,
   INTERFACE_NAME_SUFFIX,
@@ -290,8 +288,7 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
     });
   }
   const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
-  const firstParseBuildNode = ts.visitNode(buildNode, visitBuild);
-  return ts.visitNode(firstParseBuildNode, visitBuildSecond);
+  return ts.visitNode(buildNode, visitBuild);
   function visitBuild(node: ts.Node): ts.Node {
     if (isGeometryView(node)) {
       node = processGeometryView(node as ts.ExpressionStatement, log);
@@ -309,90 +306,6 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
     }
     return ts.visitEachChild(node, visitBuild, context);
   }
-  function visitBuildSecond(node: ts.Node): ts.Node {
-    if (isCustomComponentNode(node) || isCustomBuilderNode(node)) {
-      return node;
-    }
-    if ((ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) &&
-      validateBuilderFunctionNode(node)) {
-      return getParsedBuilderAttrArgument(node);
-    }
-    return ts.visitEachChild(node, visitBuildSecond, context);
-  }
-}
-
-function validateBuilderFunctionNode(node: ts.PropertyAccessExpression | ts.Identifier): boolean {
-  if ((ts.isPropertyAccessExpression(node) && node.expression && node.name &&
-    node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString()) ||
-    ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) &&
-    !(ts.isPropertyAccessExpression(node) && validateBuilderParam(node) ||
-    ts.isIdentifier(node) && node.parent && ts.isPropertyAccessExpression(node.parent) &&
-    validateBuilderParam(node.parent))) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function validateBuilderParam(node: ts.PropertyAccessExpression): boolean {
-  if (node.parent && ts.isCallExpression(node.parent) && node.parent.expression === node) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function getParsedBuilderAttrArgument(node: ts.PropertyAccessExpression | ts.Identifier):
-  ts.ObjectLiteralExpression {
-  let newObjectNode: ts.ObjectLiteralExpression = null;
-  if (ts.isPropertyAccessExpression(node)) {
-    newObjectNode = ts.factory.createObjectLiteralExpression([
-      ts.factory.createPropertyAssignment(
-        ts.factory.createIdentifier(BUILDER_ATTR_NAME),
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            node,
-            ts.factory.createIdentifier(BUILDER_ATTR_BIND)
-          ),
-          undefined,
-          [ts.factory.createThis()]
-        )
-      )
-    ]);
-  } else if (ts.isIdentifier(node)) {
-    newObjectNode = ts.factory.createObjectLiteralExpression([
-      ts.factory.createPropertyAssignment(
-        ts.factory.createIdentifier(BUILDER_ATTR_NAME),
-        node
-      )
-    ]);
-  }
-  return newObjectNode;
-}
-
-function isCustomComponentNode(node:ts.NewExpression | ts.ExpressionStatement): boolean {
-  if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.escapedText
-    && componentCollection.customComponents.has(node.expression.escapedText.toString()) ||
-    // @ts-ignore
-    ts.isExpressionStatement(node) && node.expression && node.expression.expression &&
-    // @ts-ignore
-    node.expression.expression.expression && node.expression.expression.expression.escapedText &&
-    // @ts-ignore
-    node.expression.expression.expression.escapedText.toString().startsWith(
-      CUSTOM_COMPONENT_EARLIER_CREATE_CHILD)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function isCustomBuilderNode(node: ts.ExpressionStatement): boolean {
-  return ts.isExpressionStatement(node) && node.expression &&
-    // @ts-ignore
-    node.expression.expression && node.expression.expression.escapedText &&
-    // @ts-ignore
-    CUSTOM_BUILDER_METHOD.has(node.expression.expression.escapedText.toString());
 }
 
 function isGeometryView(node: ts.Node): boolean {
@@ -568,9 +481,9 @@ function createParamsInitBlock(express: string, statements: ts.Statement[],
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
-      ts.factory.createTypeReferenceNode(
-        ts.factory.createIdentifier(parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined),
-        undefined)], undefined, ts.factory.createBlock(statements, true));
+        ts.factory.createTypeReferenceNode(
+          ts.factory.createIdentifier(parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined),
+      undefined)], undefined, ts.factory.createBlock(statements, true));
   return methodDeclaration;
 }
 
