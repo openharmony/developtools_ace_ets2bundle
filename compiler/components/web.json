@@ -1,5 +1,8 @@
 {
   "name": "Web",
   "atomic": true,
-  "attrs": ["onPageEnd", "onRequestSelected", "javaScriptAccess", "fileAccess"]
+  "attrs": [
+    "onPageEnd", "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload",
+    "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart"
+  ]
 }
