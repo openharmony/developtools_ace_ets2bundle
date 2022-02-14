@@ -100,7 +100,7 @@ function initConfig(config) {
         path.join(projectPath, '../../../../../'),
         './node_modules',
         path.join(__dirname, 'node_modules'),
-        path.join(__dirname, '../../api/common')
+        path.join(__dirname, '../../api')
       ]
     },
     stats: { preset: 'none' },
