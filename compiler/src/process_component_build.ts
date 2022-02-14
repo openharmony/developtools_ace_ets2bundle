@@ -557,8 +557,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
 function processCustomBuilderProperty(node: ts.CallExpression): ts.CallExpression {
   const newArguments: ts.Expression[] = [];
   node.arguments.forEach((argument: ts.Expression | ts.Identifier, index: number) => {
-    if (index === 0 && (ts.isPropertyAccessExpression(argument) || ts.isCallExpression(argument) ||
-      ts.isIdentifier(argument))) {
+    if (index === 0 && isBuilderChangeNode(argument)) {
       newArguments.push(parseBuilderNode(argument));
     } else {
       newArguments.push(argument);
@@ -566,6 +565,15 @@ function processCustomBuilderProperty(node: ts.CallExpression): ts.CallExpressio
   });
   node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, newArguments);
   return node;
+}
+
+function isBuilderChangeNode(argument: ts.Node): boolean {
+  return (ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
+    && CUSTOM_BUILDER_METHOD.has(argument.name.getText())) ||
+    (ts.isCallExpression(argument) && argument.expression && argument.expression.name  &&
+    ts.isIdentifier(argument.expression.name) &&
+    CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText())) || (ts.isIdentifier(argument) && 
+    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()));
 }
 
 function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
