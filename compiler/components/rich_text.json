@@ -1,0 +1,7 @@
+{
+  "name": "RichText",
+  "single": true,
+  "attrs": [
+    "onStart", "onComplete"
+  ]
+}
