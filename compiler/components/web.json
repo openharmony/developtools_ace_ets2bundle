@@ -2,7 +2,8 @@
   "name": "Web",
   "atomic": true,
   "attrs": [
-    "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload",
+    "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow", 
+    "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload",
     "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart"
   ]
 }
