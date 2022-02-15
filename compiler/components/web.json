@@ -3,7 +3,8 @@
   "atomic": true,
   "attrs": [
     "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow", 
-    "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload",
+    "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
+    "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
     "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart"
   ]
 }
