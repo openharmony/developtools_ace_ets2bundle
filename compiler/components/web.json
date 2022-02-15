@@ -2,6 +2,8 @@
   "name": "Web",
   "atomic": true,
   "attrs": [
+    "password", "cacheMode", "tableData", "wideViewModeAccess", "overviewModeAccess", "textZoomAtio", "databaseAccess",
+    "onRefreshAccessedHistory", "onUrlLoadIntercept", "onSslErrorReceive", "onRenderExited", "onFileSelectorShow",
     "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow", 
     "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
