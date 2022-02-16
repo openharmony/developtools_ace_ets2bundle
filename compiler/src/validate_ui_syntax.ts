@@ -190,14 +190,15 @@ function checkComponentDecorator(source: string, filePath: string,
         BUILDIN_STYLE_NAMES.add(item.name.getText());
       }
     });
-    validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview, log);
+    validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview,
+      !!projectConfig.checkEntry, log);
   }
 
   return log.length ? log : null;
 }
 
 function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string,
-  fileName: string, isPreview: boolean, log: LogInfo[]): void {
+  fileName: string, isPreview: boolean, checkEntry: boolean, log: LogInfo[]): void {
   if (result.previewCount > 10 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
@@ -212,7 +213,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
       fileName: fileName
     });
   }
-  if (isPreview && result.previewCount < 1 && result.entryCount !== 1 &&
+  if (isPreview && !checkEntry && result.previewCount < 1 && result.entryCount !== 1 &&
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
@@ -220,7 +221,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
-  } else if (!isPreview && result.entryCount !== 1 && fileQuery === '?entry') {
+  } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
       message: `A page configured in 'config.json' must have one and only one '@Entry' `
