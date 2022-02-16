@@ -391,7 +391,7 @@ function isPropertyExist(typeChecker: ts.TypeChecker, pos: number, type: ts.Type
   } else {
     transformLog.errors.push({
       type: LogType.ERROR,
-      message: `TS2339: Property '${propertyName}' does not exist on type '${componentName}'.`,
+      message: `TS2339: Property '${propertyName}' does not exist on type '${componentName}Attribute'.`,
       pos: pos
     });
   }
