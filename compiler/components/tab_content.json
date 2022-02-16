@@ -1,5 +1,6 @@
 {
   "name": "TabContent",
   "parents": ["Tabs"],
-  "attrs": ["tabBar"]
+  "attrs": ["tabBar"],
+  "single": true
 }
