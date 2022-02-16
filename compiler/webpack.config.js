@@ -242,6 +242,7 @@ module.exports = (env, argv) => {
     }
   } else {
     projectConfig.isPreview = true;
+    projectConfig.checkEntry = env.checkEntry;
     let port;
     process.argv.forEach((val, index) => {
       if(val.startsWith('port=')){
