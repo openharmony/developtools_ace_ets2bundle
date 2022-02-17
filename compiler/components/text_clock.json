@@ -1,7 +1,7 @@
 {
   "name": "TextClock",
   "attrs": [
-    "format", "onDateChange", "status", "fontColor",
+    "format", "onDateChange", "fontColor",
     "fontSize", "fontStyle", "fontWeight", "fontFamily"
   ]
 }
