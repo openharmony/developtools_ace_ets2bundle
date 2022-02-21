@@ -2,6 +2,6 @@
   "name": "Progress",
   "atomic": true,
   "attrs": [
-    "value", "color", "cricularStyle", "circularStyle"
+    "value", "color", "cricularStyle", "circularStyle", "style"
   ]
 }
