@@ -14,7 +14,7 @@
     "onDragStart", "onDragEnter", "onDragMove", "onDragLeave", "onDrop",
     "overlay", "linearGradient", "sweepGradient", "radialGradient",
     "gridOffset", "gridSpan", "useSizeType",
-    "motionPath", "clip", "shadow", "mask", "key", "id",
+    "motionPath", "clip", "shadow", "mask", "key", "id", "restoreId",
     "accessibilityGroup", "accessibilityText", "accessibilityDescription",
     "accessibilityImportance", "onAccessibility", "grayscale", "brightness", "contrast",
     "saturate", "geometryTransition",
