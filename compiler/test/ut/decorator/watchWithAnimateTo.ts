@@ -33,9 +33,7 @@ struct MyAlertDialog {
   }
   build() {
     Stack() {
-      DialogView({dialogShow: $dialogVis}).onClick(() => {
-        animateTo({}, () => {})
-      })
+      DialogView({dialogShow: $dialogVis})
     }
   }
 }
@@ -108,15 +106,13 @@ class MyAlertDialog extends View {
     }
     render() {
         Stack.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
-        if (earlierCreatedChild_2 == undefined) {
-            View.create(new (DialogView({ dialogShow: this.__dialogVis }).onClick)(() => {
-                Context.animateTo({}, () => { });
-            }));
+        let earlierCreatedChild_3 = this.findChildById("3");
+        if (earlierCreatedChild_3 == undefined) {
+            View.create(new DialogView("3", this, { dialogShow: this.__dialogVis }));
         }
         else {
-            earlierCreatedChild_2.updateWithValueParams({});
-            View.create(earlierCreatedChild_2);
+            earlierCreatedChild_3.updateWithValueParams({});
+            View.create(earlierCreatedChild_3);
         }
         Stack.pop();
     }

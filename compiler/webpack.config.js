@@ -46,27 +46,6 @@ function initConfig(config) {
       poll: false,
       ignored: /node_modules/
     },
-    optimization: {
-      splitChunks: {
-        chunks(chunk) {
-          return !/^\.\/workers\//.test(chunk.name);
-        },
-        minSize: 0,
-        cacheGroups: {
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            priority: -10,
-            name: "vendors",
-          },
-          commons: {
-            name: 'commons',
-            priority: -20,
-            minChunks: 2,
-            reuseExistingChunk: true
-          }
-        }
-      },
-    },
     output: {
       path: path.resolve(__dirname, projectConfig.buildPath),
       filename: '[name].js',
@@ -121,7 +100,7 @@ function initConfig(config) {
         path.join(projectPath, '../../../../../'),
         './node_modules',
         path.join(__dirname, 'node_modules'),
-        path.join(__dirname, '../../api/common')
+        path.join(__dirname, '../../api')
       ]
     },
     stats: { preset: 'none' },
@@ -151,6 +130,12 @@ function setProjectConfig(envArgs) {
   }
   if (envArgs.aceManifestPath) {
     projectConfig.manifestFilePath = envArgs.aceManifestPath;
+  }
+  if (envArgs.aceProfilePath) {
+    projectConfig.aceProfilePath = envArgs.aceProfilePath;
+  }
+  if (envArgs.aceModuleJsonPath) {
+    projectConfig.aceModuleJsonPath = envArgs.aceModuleJsonPath;
   }
 }
 
@@ -207,11 +192,38 @@ function setCopyPluginConfig(config) {
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
 
+function setOptimizationConfig(config) {
+  if (process.env.compileMode !== 'moduleJson') {
+    config.optimization = {
+      splitChunks: {
+        chunks(chunk) {
+          return !/^\.\/workers\//.test(chunk.name);
+        },
+        minSize: 0,
+        cacheGroups: {
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            name: "vendors",
+          },
+          commons: {
+            name: 'commons',
+            priority: -20,
+            minChunks: 2,
+            reuseExistingChunk: true
+          }
+        }
+      }
+    }
+  }
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
   loadEntryObj(projectConfig);
   initConfig(config);
+  setOptimizationConfig(config);
   setCopyPluginConfig(config);
 
   if (env.isPreview !== "true") {
@@ -230,6 +242,7 @@ module.exports = (env, argv) => {
     }
   } else {
     projectConfig.isPreview = true;
+    projectConfig.checkEntry = env.checkEntry;
     let port;
     process.argv.forEach((val, index) => {
       if(val.startsWith('port=')){

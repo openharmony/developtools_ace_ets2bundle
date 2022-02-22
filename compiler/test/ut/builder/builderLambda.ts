@@ -29,10 +29,10 @@ struct CustomContainer {
     }
 }
 
-@Builder function specificParam(label1: string, label2: string) {
+@Builder function specificParam() {
     Column() {
-        Text(label1)
-        Text(label2)
+        Text("label1")
+        Text("label2")
     }
 }
 
@@ -47,7 +47,7 @@ struct CustomContainerUser {
                         .width(50)
                     Text("content2")
                 }
-                specificParam("content3", "content4")
+                specificParam()
             }
         }  
     }
@@ -57,8 +57,8 @@ exports.expectResult =
 `class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.header = ""
-        this.footer = ""
+        this.header = "";
+        this.footer = "";
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
@@ -68,17 +68,10 @@ exports.expectResult =
         if (params.footer !== undefined) {
             this.footer = params.footer;
         }
-        this.__child = params.child;
+        this.child = params.child;
     }
     aboutToBeDeleted() {
-        this.__child.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id());
-    }
-    get child(){
-        return this.__child.get();
-    }
-    set child(newValue) {
-        this.__child.set(newValue)
     }
     render() {
         Column.create();
@@ -90,15 +83,15 @@ exports.expectResult =
         Column.pop();
     }
 }
-function specificParam(label1, label2) {
+function specificParam() {
     Column.create();
-    Text.create(label1);
+    Text.create("label1");
     Text.pop();
-    Text.create(label1);
+    Text.create("label2");
     Text.pop();
     Column.pop();
 }
-class CustomContainerUser {
+class CustomContainerUser extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);
@@ -117,12 +110,12 @@ class CustomContainerUser {
                 child: () => {
                     Column.create();
                     Text.create("content1");
-                    Text.width(50)
+                    Text.width(50);
                     Text.pop();
                     Text.create("content2");
                     Text.pop();
                     Column.pop();
-                    specificParam("content3", "content4)
+                    specificParam();
                 }
             }));
         }
@@ -132,18 +125,18 @@ class CustomContainerUser {
                 child: () => {
                     Column.create();
                     Text.create("content1");
-                    Text.width(50)
+                    Text.width(50);
                     Text.pop();
                     Text.create("content2");
                     Text.pop();
                     Column.pop();
-                    specificParam("content3", "content4)
-                }}
+                    specificParam();
+                }
             });
             View.create(earlierCreatedChild_2);
         }
-        Column.pop(); 
+        Column.pop();
     }
 }
-loadDocument(new MyComponent("1", undefined, {}));
+loadDocument(new CustomContainerUser("1", undefined, {}));
 `
