@@ -2,6 +2,7 @@
   "name": "Swiper",
   "attrs": [
     "index", "autoPlay", "interval", "indicator", "loop", "duration", "vertical", "itemSpace",
-    "cachedCount", "displayMode", "displayCount", "effectMode", "disableSwipe", "curve", "onChange"
+    "cachedCount", "displayMode", "displayCount", "effectMode", "disableSwipe", "curve", "onChange", 
+    "indicatorStyle"
   ]
 }
