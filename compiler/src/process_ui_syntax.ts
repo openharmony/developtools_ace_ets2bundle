@@ -33,7 +33,9 @@ import {
   RESOURCE_NAME_ID,
   RESOURCE_NAME_TYPE,
   RESOURCE_NAME_PARAMS,
-  RESOURCE_RAWFILE
+  RESOURCE_RAWFILE,
+  ATTRIBUTE_ANIMATETO,
+  GLOBAL_CONTEXT
 } from './pre_define';
 import {
   componentInfo,
@@ -132,6 +134,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
       }
+      else if (isAnimateTo(node)) {
+        node = processAnimateTo(node as ts.CallExpression);
+      }
       return ts.visitEachChild(node, processAllNodes, context);
     }
     function processResourceNode(node: ts.Node): ts.Node {
@@ -173,6 +178,11 @@ function isResource(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
     (node.expression.escapedText.toString() === RESOURCE ||
     node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
+}
+
+function isAnimateTo(node: ts.Node): boolean {
+  return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
+    node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
 }
 
 function processResourceData(node: ts.CallExpression): ts.Node {
@@ -266,6 +276,12 @@ function processWorker(node: ts.NewExpression): ts.Node {
     return ts.factory.updateNewExpression(node, node.expression, node.typeArguments, args);
   }
   return node;
+}
+
+function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
+  return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(GLOBAL_CONTEXT), ts.factory.createIdentifier(ATTRIBUTE_ANIMATETO)),
+  node.typeArguments, node.arguments);
 }
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {

@@ -265,16 +265,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       return;
     }
   }
-  return ts.visitNode(updateItem, visitMethod);
-  function visitMethod(node: ts.Node): ts.Node {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const name: string = node.expression.escapedText.toString();
-      if (name === ATTRIBUTE_ANIMATETO) {
-        node = processAnimateTo(node);
-      }
-    }
-    return ts.visitEachChild(node, visitMethod, context);
-  }
+  return updateItem
 }
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
@@ -434,11 +425,6 @@ function getParentNode(node: ts.PropertyAssignment, collection: Map<string, Set<
   return [grandparentName, ...parentComponent];
 }
 
-function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
-  return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
-    ts.factory.createIdentifier(GLOBAL_CONTEXT), ts.factory.createIdentifier(ATTRIBUTE_ANIMATETO)),
-  node.typeArguments, node.arguments);
-}
 
 function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier):
   ts.MethodDeclaration {
