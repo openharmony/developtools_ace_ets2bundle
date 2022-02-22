@@ -57,7 +57,7 @@ function handlePluginCompileComponent(jsonData) {
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, newSource, newSource);
-  receivedMsg.data.script = result;
+  receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
   if (pluginSocket.readyState === WebSocket.OPEN){
     responseToPlugin(receivedMsg);
   }

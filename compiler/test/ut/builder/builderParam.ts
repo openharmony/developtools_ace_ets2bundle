@@ -14,35 +14,30 @@
  */
 
 exports.source = `
+
 @Component
 struct CustomContainer {
     header: string = "";
+    menuInfo: () => any;
     footer: string = "";
     @BuilderParam child: () => any;
     
     build() {
         Column() {
-            Text(this.header)
             this.child()
+            Text(this.header)
             Text(this.footer)
         }
-    }
-}
-
-@Builder function specificParam(label1: string, label2: string) {
-    Column() {
-        Text(label1)
-        Text(label2)
     }
 }
 
 @Entry
 @Component
 struct CustomContainerUser {
-    @Builder specificChild() {
+    @Builder specificChild(label:string) {
         Column() {
             Text("My content1")
-            Text("My content1")
+            Text(label)
         }
     }
 
@@ -51,12 +46,8 @@ struct CustomContainerUser {
             CustomContainer({
                 header: "Header",
                 footer: "Footer",
-                child: this.specificChild
-            })
-            CustomContainer({
-                header: "Header",
-                footer: "Footer",
-                child: specificParam("content3", "content4")
+                menuInfo: this.specificChild("menuInfo"),
+                child: this.specificChild("child")
             })
         }  
     }
@@ -66,48 +57,37 @@ exports.expectResult =
 `class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.header = ""
-        this.footer = ""
+        this.header = "";
+        this.menuInfo = undefined;
+        this.footer = "";
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
         if (params.header !== undefined) {
             this.header = params.header;
         }
+        if (params.menuInfo !== undefined) {
+            this.menuInfo = params.menuInfo;
+        }
         if (params.footer !== undefined) {
             this.footer = params.footer;
         }
-        this.__child = params.child;
+        this.child = params.child;
     }
     aboutToBeDeleted() {
-        this.__child.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id());
-    }
-    get child(){
-        return this.__child.get();
-    }
-    set child(newValue) {
-        this.__child.set(newValue)
     }
     render() {
         Column.create();
+        this.child();
         Text.create(this.header);
         Text.pop();
-        this.child();
         Text.create(this.footer);
         Text.pop();
         Column.pop();
     }
 }
-function specificParam(label1, label2) {
-    Column.create();
-    Text.create(label1);
-    Text.pop();
-    Text.create(label1);
-    Text.pop();
-    Column.pop();
-}
-class CustomContainerUser {
+class CustomContainerUser extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);
@@ -117,50 +97,40 @@ class CustomContainerUser {
     aboutToBeDeleted() {
         SubscriberManager.Get().delete(this.id());
     }
-    specificChild() {
+    specificChild(label) {
         Column.create();
         Text.create("My content1");
         Text.pop();
-        Text.create("My content2");
+        Text.create(label);
         Text.pop();
         Column.pop();
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
-        if (earlierCreatedChild_2 == undefined) {
-            View.create(new CustomContainer("2", this, {
-                header: "Header",
-                footer: "Footer",
-                child: this.specificChild
-            }));
-        }
-        else {
-            earlierCreatedChild_2.updateWithValueParams({
-                header: "Header",
-                footer: "Footer",
-                child: this.specificChild
-            });
-            View.create(earlierCreatedChild_2);
-        }
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
             View.create(new CustomContainer("3", this, {
                 header: "Header",
                 footer: "Footer",
-                child: specificParam("content3", "content4")
+                menuInfo: this.specificChild("menuInfo"),
+                child: () => {
+                    this.specificChild("child");
+                }
             }));
         }
         else {
             earlierCreatedChild_3.updateWithValueParams({
                 header: "Header",
                 footer: "Footer",
-                child: specificParam("content3", "content4")
+                menuInfo: this.specificChild("menuInfo"),
+                child: () => {
+                    this.specificChild("child");
+                }
             });
             View.create(earlierCreatedChild_3);
         }
-        Column.pop(); 
+        Column.pop();
     }
 }
-loadDocument(new MyComponent("1", undefined, {}));
+loadDocument(new CustomContainerUser("1", undefined, {}));
 `

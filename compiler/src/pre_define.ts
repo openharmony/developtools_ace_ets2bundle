@@ -17,6 +17,7 @@ import path from 'path';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
+export const VALIDATE_MODULE: string[] = ['application', 'util', 'screen'];
 export const SYSTEM_PLUGIN: string = 'system';
 export const OHOS_PLUGIN: string = 'ohos';
 
@@ -182,14 +183,18 @@ export const GEOMETRY_VIEW: string = 'GeometryView';
 export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'ets' + path.sep + 'share';
 export const BUILD_SHARE_PATH: string = '../share';
 
-export const CHILD: string = 'child';
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';
 export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 
 export const BIND_POPUP: string = 'bindPopup';
+export const CHECKED: string = 'checked';
+export const RADIO: string = 'Radio';
 export const $$_VALUE: string = 'value';
 export const $$_CHANGE_EVENT: string = 'changeEvent';
 export const $$_THIS: string = '$$this';
 export const $$_NEW_VALUE: string = 'newValue';
+
+export const INTERFACE_NAME_SUFFIX:string = '_Params';
+export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';

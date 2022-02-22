@@ -41,9 +41,10 @@ import {
   COMPONENT_CONSTRUCTOR_ID,
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
-  COMPONENT_EXTEND_DECORATOR,
   COMPONENT_OBSERVED_DECORATOR,
-  STYLES
+  STYLES,
+  VALIDATE_MODULE,
+  COMPONENT_BUILDER_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -53,7 +54,8 @@ import {
   BUILDIN_STYLE_NAMES,
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   LogType,
@@ -183,19 +185,20 @@ function checkComponentDecorator(source: string, filePath: string,
       }
       if (ts.isFunctionDeclaration(item) && item.decorators && item.decorators.length === 1 &&
         item.decorators[0].expression && item.decorators[0].expression.getText() === STYLES) {
-        STYLES_ATTRIBUTE.add(item.name.getText())
+        STYLES_ATTRIBUTE.add(item.name.getText());
         GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
         BUILDIN_STYLE_NAMES.add(item.name.getText());
       }
     });
-    validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview, log);
+    validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview,
+      !!projectConfig.checkEntry, log);
   }
 
   return log.length ? log : null;
 }
 
 function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string,
-  fileName: string, isPreview: boolean, log: LogInfo[]): void {
+  fileName: string, isPreview: boolean, checkEntry: boolean, log: LogInfo[]): void {
   if (result.previewCount > 10 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
@@ -210,7 +213,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
       fileName: fileName
     });
   }
-  if (isPreview && result.previewCount < 1 && result.entryCount !== 1 &&
+  if (isPreview && !checkEntry && result.previewCount < 1 && result.entryCount !== 1 &&
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
@@ -218,7 +221,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
-  } else if (!isPreview && result.entryCount !== 1 && fileQuery === '?entry') {
+  } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
       message: `A page configured in 'config.json' must have one and only one '@Entry' `
@@ -322,6 +325,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   checkAllNode(node, allComponentNames, sourceFileNode, log);
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
+  }
+  if (ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+    CUSTOM_BUILDER_METHOD.add(node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
@@ -744,7 +750,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   return {
     content: content,
     log: log
-  }
+  };
 }
 
 export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
@@ -772,7 +778,7 @@ export function preprocessExtend(content: string, sourcePath: string, log: LogIn
     syntaxCheckContent = content;
   }
   if (result.error_otherParsers) {
-    for(let i = 0; i < result.error_otherParsers.length; i++) {
+    for (let i = 0; i < result.error_otherParsers.length; i++) {
       log.push({
         type: LogType.ERROR,
         message: result.error_otherParsers[i].errMessage,
@@ -811,39 +817,53 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
   }
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
-  return content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
+  const systemValueCollection: Set<string> = new Set();
+  const newContent: string = content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
     return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
-    }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
-      let moduleType: string = item2 || item5;
-      let systemKey: string = item3 || item6;
-      let systemValue: string = item1 || item4;
-      if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
-        return item;
-      } else if (isProcessWhiteList) {
-        systemValue = item2;
-        moduleType = item4;
-        systemKey = item5;
-      } 
-      moduleCollection.add(`${moduleType}.${systemKey}`);
-      if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
-        item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-      } else if (moduleType === SYSTEM_PLUGIN) {
-        item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
+  }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
+    let moduleType: string = item2 || item5;
+    let systemKey: string = item3 || item6;
+    let systemValue: string = item1 || item4;
+    if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
+      return item;
+    } else if (isProcessWhiteList) {
+      systemValue = item2;
+      moduleType = item4;
+      systemKey = item5;
+      systemValueCollection.add(systemValue);
+    }
+    moduleCollection.add(`${moduleType}.${systemKey}`);
+    if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
+      item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
+    } else if (moduleType === SYSTEM_PLUGIN) {
+      item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
           `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
-      } else if (moduleType === OHOS_PLUGIN) {
-        item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
+    } else if (moduleType === OHOS_PLUGIN) {
+      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
           `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
           `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
           `? globalThis.systemplugin.${systemKey} : undefined)`;
-      }
-      return item;
-    });
+    }
+    return item;
+  });
+  return processInnerModule(newContent, systemValueCollection);
 }
 
+function processInnerModule(content: string, systemValueCollection: Set<string>): string {
+  systemValueCollection.forEach(element => {
+    const target: string = element.trim() + '.default';
+    while (content.includes(target)) {
+      content = content.replace(target, element.trim());
+    }
+  });
+  return content;
+}
+
+const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
 function validateWhiteListModule(moduleType: string, systemKey: string): boolean {
-  return moduleType === 'ohos' && /^application\./g.test(systemKey);
+  return moduleType === 'ohos' && VALIDATE_MODULE_REG.test(systemKey);
 }
 
 export function resetComponentCollection() {

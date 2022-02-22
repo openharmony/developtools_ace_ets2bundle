@@ -78,16 +78,21 @@ export interface ExtendParamterInterfance {
 export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
 export const STYLES_ATTRIBUTE: Set<string> = new Set();
 
+export const INTERFACE_NODE_SET: Set<ts.InterfaceDeclaration> = new Set();
+
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
   ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'VideoController', 'WebController',
   'XComponentController', 'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData',
   'Path2D', 'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'DatePickerDialog',
-  'TextPickerDialog', 'AlertDialog', 'ActionSheet', 'PatternLockController'
+  'TextPickerDialog', 'AlertDialog', 'ContextMenu', 'ActionSheet', 'PatternLockController'
 ]);
 
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
+
+export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['bindPopup', 'bindMenu', 'bindContextMenu', 'title',
+  'menus', 'toolBar', 'tabBar']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {

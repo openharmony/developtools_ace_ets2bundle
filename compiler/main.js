@@ -73,6 +73,7 @@ function loadEntryObj(projectConfig) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
+      process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
     } else {
       throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
@@ -115,7 +116,7 @@ function buildManifest(manifest, aceConfigPath) {
 function getPages(configJson) {
   const pages = []
   const modulePagePath = path.resolve(projectConfig.aceProfilePath,
-    `${configJson.module.pages.replace(/\@profile\:/, '')}.json`);
+    `${configJson.module.pages.replace(/\$profile\:/, '')}.json`);
   if (fs.existsSync(modulePagePath)) {
     const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
     if (pagesConfig && pagesConfig.src) {

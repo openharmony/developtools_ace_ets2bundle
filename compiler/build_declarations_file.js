@@ -17,10 +17,24 @@ const ts = require('typescript')
 const path = require('path')
 const fs = require('fs')
 
+const addTSInterfaceSet = ['ForEach', 'LazyForEach', 'TapGesture', 'LongPressGesture', 'LongPressGesture',
+  'PanGesture', 'SwipeGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup','PageTransitionEnter',
+  'PageTransitionExit'];
+const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'Button', 'Calendar', 'Canvas',
+  'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
+  'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
+  'ImageAnimator', 'Line', 'List', 'ListItem', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
+  'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
+  'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
+  'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
+  'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
+  'Toggle', 'Video', 'Web', 'XComponent', 'RichText'];
+
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
   const files = [];
   const globalTsFile = path.resolve(filePath, '../../global.d.ts');
+  const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
     files.push(globalTsFile);
   }
@@ -47,7 +61,7 @@ function generateTargetFile(filePath, output) {
     const fileName = path.resolve(output, path.basename(item));
     if (item === globalTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, true);
-    } else {
+    } else if (path.resolve(item) !== middleTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, false);
     }
     fs.writeFile(fileName, content, err => {
@@ -127,6 +141,18 @@ function processComponent(node, newStatements) {
       node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers,
         node.name, node.typeParameters, [heritageClause], node.members);
     }
+    if (addTSInterfaceSet.includes(componentName)) {
+      node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers, node.name,
+        node.typeParameters, [ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
+          [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier('TS' + componentName + 'Interface'),
+          undefined)])], node.members);
+    }
+  }
+  if (isClass(node) && addTSAttributeSet.includes(node.name.getText().replace(/Attribute$/, ''))) {
+    node = ts.factory.updateClassDeclaration(node, node.decorators, node.modifiers, node.name,
+      node.typeParameters, [ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
+        [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier('TS' + node.name.getText()),
+        undefined)])], node.members);
   }
   newStatements.push(node);
 }
@@ -162,6 +188,11 @@ function isVariable(node) {
 function isInterface(node) {
   return ts.isInterfaceDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
     /Interface$/.test(node.name.getText());
+}
+
+function isClass(node) {
+  return ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
+    /Attribute$/.test(node.name.getText());
 }
 
 function isSignNode(node) {
