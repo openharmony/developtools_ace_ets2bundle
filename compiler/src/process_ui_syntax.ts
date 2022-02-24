@@ -133,8 +133,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = processResourceData(node as ts.CallExpression);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
-      }
-      else if (isAnimateTo(node)) {
+      } else if (isAnimateTo(node)) {
         node = processAnimateTo(node as ts.CallExpression);
       }
       return ts.visitEachChild(node, processAllNodes, context);
