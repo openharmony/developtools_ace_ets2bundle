@@ -57,7 +57,8 @@ import {
   RADIO,
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
-  CUSTOM_DIALOG_CONTROLLER_BUILDER
+  CUSTOM_DIALOG_CONTROLLER_BUILDER,
+  BIND_DRAG_START
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -530,7 +531,16 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       } else if (ts.isPropertyAccessExpression(temp.expression)) {
         propertyName = temp.expression.name.escapedText.toString();
       }
-      temp = propertyName === BIND_POPUP ? processBindPopupBuilder(temp) : processCustomBuilderProperty(temp);
+      switch (propertyName) {
+        case BIND_POPUP:
+          temp = processBindPopupBuilder(temp);
+          break;
+        case BIND_DRAG_START:
+          temp = processDragStartBuilder(temp);
+          break;
+        default:
+          temp = processCustomBuilderProperty(temp);
+      }
     }
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name)) {
@@ -604,6 +614,47 @@ function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
   });
   node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, newArguments);
   return node;
+}
+
+function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
+  const newStatements: ts.Statement[] = [];
+  if (node.arguments && ts.isArrowFunction(node.arguments[0]) && node.arguments[0].body &&
+    ts.isBlock(node.arguments[0].body)) {
+    for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
+      let statement = node.arguments[0].body.statements[i];
+      checkStatement(statement)
+      newStatements.push(statement);
+      // @ts-ignore
+      node.arguments[0].body = ts.factory.updateBlock(node.arguments[0].body, newStatements);
+    }
+  }
+  return node;
+}
+
+function checkStatement(statement) {
+  if (ts.isReturnStatement(statement)) {
+      if (ts.isObjectLiteralExpression(statement.expression)) {
+        const newProperties: ts.ObjectLiteralElementLike[] = [];
+        for (let j = 0; j < statement.expression.properties.length; j++) {
+          const property = statement.expression.properties[j];
+          checkProperty(property)
+          newProperties.push(property);
+        }
+        statement = ts.factory.updateReturnStatement(statement, ts.factory.updateObjectLiteralExpression(
+          statement.expression, newProperties
+        ));
+      } else {
+        statement = ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
+      }
+  }
+}
+
+function checkProperty(property) {
+  if (ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name) &&
+      property.name.escapedText.toString() === BUILDER_ATTR_NAME) {
+      // @ts-ignore
+      property.initializer = parseBuilderNode(property.initializer);
+  }
 }
 
 function processBindPopupBuilderProperty(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
