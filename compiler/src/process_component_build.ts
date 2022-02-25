@@ -578,12 +578,12 @@ function processCustomBuilderProperty(node: ts.CallExpression): ts.CallExpressio
 }
 
 function isBuilderChangeNode(argument: ts.Node): boolean {
-  return (ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
-    && CUSTOM_BUILDER_METHOD.has(argument.name.getText())) ||
-    (ts.isCallExpression(argument) && argument.expression && argument.expression.name  &&
+  return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
+    && CUSTOM_BUILDER_METHOD.has(argument.name.getText()) ||
+    ts.isCallExpression(argument) && argument.expression && argument.expression.name &&
     ts.isIdentifier(argument.expression.name) &&
-    CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText())) || (ts.isIdentifier(argument) && 
-    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()));
+    CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
+    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString());
 }
 
 function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
@@ -618,11 +618,10 @@ function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
 
 function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
   const newStatements: ts.Statement[] = [];
-  if (node.arguments && ts.isArrowFunction(node.arguments[0]) && node.arguments[0].body &&
-    ts.isBlock(node.arguments[0].body)) {
+  if (isNodeFunction(node)) {
     for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
-      let statement = node.arguments[0].body.statements[i];
-      checkStatement(statement)
+      const statement: ts.Statement = node.arguments[0].body.statements[i];
+      checkStatement(statement);
       newStatements.push(statement);
       // @ts-ignore
       node.arguments[0].body = ts.factory.updateBlock(node.arguments[0].body, newStatements);
@@ -631,30 +630,39 @@ function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
   return node;
 }
 
-function checkStatement(statement) {
+function isNodeFunction(node: ts.CallExpression): boolean {
+  return node.arguments && node.arguments.length && ts.isArrowFunction(node.arguments[0]) &&
+    node.arguments[0].body && ts.isBlock(node.arguments[0].body);
+}
+
+function checkStatement(statement: ts.Statement): void {
   if (ts.isReturnStatement(statement)) {
-      if (ts.isObjectLiteralExpression(statement.expression)) {
-        const newProperties: ts.ObjectLiteralElementLike[] = [];
-        for (let j = 0; j < statement.expression.properties.length; j++) {
-          const property = statement.expression.properties[j];
-          checkProperty(property)
-          newProperties.push(property);
-        }
-        statement = ts.factory.updateReturnStatement(statement, ts.factory.updateObjectLiteralExpression(
-          statement.expression, newProperties
-        ));
-      } else {
-        statement = ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
+    if (ts.isObjectLiteralExpression(statement.expression)) {
+      const newProperties: ts.ObjectLiteralElementLike[] = [];
+      for (let j = 0; j < statement.expression.properties.length; j++) {
+        const property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
+        checkProperty(property);
+        newProperties.push(property);
       }
+      statement = ts.factory.updateReturnStatement(statement, ts.factory.updateObjectLiteralExpression(
+        statement.expression, newProperties
+      ));
+    } else {
+      statement = ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
+    }
   }
 }
 
-function checkProperty(property) {
-  if (ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name) &&
-      property.name.escapedText.toString() === BUILDER_ATTR_NAME) {
-      // @ts-ignore
-      property.initializer = parseBuilderNode(property.initializer);
+function checkProperty(property: ts.ObjectLiteralElementLike): void {
+  if (isInitProperty(property)) {
+    // @ts-ignore
+    property.initializer = parseBuilderNode(property.initializer);
   }
+}
+
+function isInitProperty(property: ts.ObjectLiteralElementLike): boolean {
+  return ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name) &&
+    property.name.escapedText.toString() === BUILDER_ATTR_NAME;
 }
 
 function processBindPopupBuilderProperty(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
