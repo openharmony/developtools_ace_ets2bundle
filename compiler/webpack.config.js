@@ -146,7 +146,13 @@ function setReleaseConfig(config) {
     emitOnErrors: true,
     usedExports: false,
     minimize: true,
-    minimizer: [new TerserPlugin()]
+    minimizer: [new TerserPlugin({
+      terserOptions: {
+        compress: {
+          join_vars: false
+        }
+      }
+    })]
   };
   config.output.sourceMapFilename = '_releaseMap/[name].js.map';
 }
