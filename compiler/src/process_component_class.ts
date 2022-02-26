@@ -265,7 +265,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       return;
     }
   }
-  return updateItem
+  return updateItem;
 }
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
@@ -424,7 +424,6 @@ function getParentNode(node: ts.PropertyAssignment, collection: Map<string, Set<
   }
   return [grandparentName, ...parentComponent];
 }
-
 
 function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier):
   ts.MethodDeclaration {
