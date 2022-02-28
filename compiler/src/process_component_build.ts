@@ -619,20 +619,25 @@ function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
 function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
   const newStatements: ts.Statement[] = [];
   if (isNodeFunction(node)) {
+    // @ts-ignore
     for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
-      const statement: ts.Statement = node.arguments[0].body.statements[i];
+      // @ts-ignore
+      let statement: ts.Statement = node.arguments[0].body.statements[i];
       checkStatement(statement);
       newStatements.push(statement);
-      // @ts-ignore
-      node.arguments[0].body = ts.factory.updateBlock(node.arguments[0].body, newStatements);
+      node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.updateArrowFunction(
+        // @ts-ignore
+        node.arguments[0], undefined, undefined, node.arguments[0].parameters, node.arguments[0].type,
+        // @ts-ignore
+        node.arguments[0].equalsGreaterThanToken, ts.factory.updateBlock(node.arguments[0].body, newStatements))]);
     }
   }
   return node;
 }
 
 function isNodeFunction(node: ts.CallExpression): boolean {
-  return node.arguments && node.arguments.length && ts.isArrowFunction(node.arguments[0]) &&
-    node.arguments[0].body && ts.isBlock(node.arguments[0].body);
+  return node.arguments && node.arguments.length && ts.isArrowFunction(node.arguments[0]) && node.arguments[0].body &&
+    ts.isBlock(node.arguments[0].body);
 }
 
 function checkStatement(statement: ts.Statement): void {
@@ -640,13 +645,11 @@ function checkStatement(statement: ts.Statement): void {
     if (ts.isObjectLiteralExpression(statement.expression)) {
       const newProperties: ts.ObjectLiteralElementLike[] = [];
       for (let j = 0; j < statement.expression.properties.length; j++) {
-        const property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
+        let property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
         checkProperty(property);
         newProperties.push(property);
       }
-      statement = ts.factory.updateReturnStatement(statement, ts.factory.updateObjectLiteralExpression(
-        statement.expression, newProperties
-      ));
+      statement = ts.factory.createReturnStatement(ts.factory.createObjectLiteralExpression(newProperties));
     } else {
       statement = ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
     }
@@ -654,13 +657,13 @@ function checkStatement(statement: ts.Statement): void {
 }
 
 function checkProperty(property: ts.ObjectLiteralElementLike): void {
-  if (isInitProperty(property)) {
+  if (isPropertyFunction(property)) {
     // @ts-ignore
-    property.initializer = parseBuilderNode(property.initializer);
+    property = ts.factory.createPropertyAssignment(property.name, parseBuilderNode(property.initializer));
   }
 }
 
-function isInitProperty(property: ts.ObjectLiteralElementLike): boolean {
+function isPropertyFunction(property: ts.ObjectLiteralElementLike): boolean {
   return ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name) &&
     property.name.escapedText.toString() === BUILDER_ATTR_NAME;
 }
