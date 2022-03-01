@@ -34,7 +34,8 @@ const staticPreviewPage = process.env.aceStaticPreview;
 const abilityConfig = {
   abilityType: process.env.abilityType || 'page',
   abilityEntryFile: null,
-  projectAbilityPath: []
+  projectAbilityPath: [],
+  testRunnerFile: []
 };
 const projectConfig = {};
 const resources = {
@@ -65,6 +66,7 @@ function loadEntryObj(projectConfig) {
   if (process.env.aceModuleJsonPath) {
     setAbilityPages(projectConfig)
   }
+  setTestRunnerFile(projectConfig);
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -158,6 +160,22 @@ function setAbilityFile(projectConfig, abilityPages) {
       }
     }
   });
+}
+
+function setTestRunnerFile(projectConfig) {
+  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const testRunnerPath = path.resolve(projectConfig.projectPath.substring(0,index + 1), "TestRunner");
+  if (fs.existsSync(testRunnerPath)) {
+    const testRunnerFiles = [];
+    readFile(testRunnerPath, testRunnerFiles);
+    testRunnerFiles.forEach((item) => {
+      if (/\.(ts|js)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+              projectConfig.entryObj["../" + relativePath] = item;
+        abilityConfig.testRunnerFile.push(item);
+      }
+    })
+  }
 }
 
 function readAbilityEntrance(moduleJson) {

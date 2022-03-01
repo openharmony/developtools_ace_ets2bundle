@@ -59,7 +59,7 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).includes(this.resourcePath)) {
+  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
 
