@@ -266,5 +266,6 @@ module.exports = (env, argv) => {
   if (appResourcePath) {
     readAppResource(resources, appResourcePath);
   }
+  config.output.library = projectConfig.hashProjectPath;
   return config;
 }
