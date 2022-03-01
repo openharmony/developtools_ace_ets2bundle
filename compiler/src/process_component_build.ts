@@ -623,14 +623,13 @@ function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
     for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
       // @ts-ignore
       let statement: ts.Statement = node.arguments[0].body.statements[i];
-      checkStatement(statement);
-      newStatements.push(statement);
-      node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.updateArrowFunction(
-        // @ts-ignore
-        node.arguments[0], undefined, undefined, node.arguments[0].parameters, node.arguments[0].type,
-        // @ts-ignore
-        node.arguments[0].equalsGreaterThanToken, ts.factory.updateBlock(node.arguments[0].body, newStatements))]);
+      newStatements.push(checkStatement(statement));
     }
+    node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.updateArrowFunction(
+      // @ts-ignore
+      node.arguments[0], undefined, undefined, node.arguments[0].parameters, node.arguments[0].type,
+      // @ts-ignore
+      node.arguments[0].equalsGreaterThanToken, ts.factory.updateBlock(node.arguments[0].body, newStatements))]);
   }
   return node;
 }
@@ -640,7 +639,7 @@ function isNodeFunction(node: ts.CallExpression): boolean {
     ts.isBlock(node.arguments[0].body);
 }
 
-function checkStatement(statement: ts.Statement): void {
+function checkStatement(statement: ts.Statement): ts.Statement {
   if (ts.isReturnStatement(statement)) {
     if (ts.isObjectLiteralExpression(statement.expression)) {
       const newProperties: ts.ObjectLiteralElementLike[] = [];
@@ -649,10 +648,12 @@ function checkStatement(statement: ts.Statement): void {
         checkProperty(property);
         newProperties.push(property);
       }
-      statement = ts.factory.createReturnStatement(ts.factory.createObjectLiteralExpression(newProperties));
+      return ts.factory.createReturnStatement(ts.factory.createObjectLiteralExpression(newProperties));
     } else {
-      statement = ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
+      return ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
     }
+  } else {
+    return statement;
   }
 }
 
