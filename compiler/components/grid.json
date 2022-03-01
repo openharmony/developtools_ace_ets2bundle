@@ -5,6 +5,6 @@
     "columnsTemplate", "rowsTemplate", "columnsGap", "rowsGap", "scrollBar", "scrollBarWidth",
     "scrollBarColor", "editMode", "maxCount", "minCount", "cellLength", "onItemDragStart",
     "onItemDragMove", "onItemDragEnter", "onItemDragMove", "onItemDrop", "layoutDirection", "direction",
-    "supportAnimation", "onItemDragLeave", "multiSelectable"
+    "supportAnimation", "dragAnimation", "edgeEffection", "onItemDragLeave", "multiSelectable"
   ]
 }
