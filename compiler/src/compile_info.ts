@@ -52,13 +52,6 @@ configure({
 export const logger = getLogger('ETS');
 
 export const props: string[] = [];
-const GLOBAL_COMMON_MODULE_CACHE: string = `
-globalThis["__common_module_cache__"] = globalThis["__common_module_cache__"] || {};
-globalThis["webpackChunkcompilier"].forEach((item)=> {
-  Object.keys(item[1]).forEach((element) => {
-    globalThis["__common_module_cache__"][element] = null;
-  })
-});`;
 
 interface Info {
   message?: string;
@@ -82,6 +75,7 @@ export class ResultStates {
   private modulePaths: Set<string> = new Set([]);
 
   public apply(compiler: Compiler): void {
+
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
       compilation.hooks.afterProcessAssets.tap('SourcemapFixer', assets => {
         Reflect.ownKeys(assets).forEach(key => {
@@ -116,6 +110,15 @@ export class ResultStates {
           stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
         },
         (assets) => {
+          const GLOBAL_COMMON_MODULE_CACHE =  `
+          globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] =` +
+          ` globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] || {};
+          globalThis["webpackChunk${projectConfig.hashProjectPath}"].forEach((item)=> {
+            Object.keys(item[1]).forEach((element) => {
+              globalThis["__common_module_cache__${projectConfig.hashProjectPath}"][element] = null;
+            })
+          });`
+
           if (assets['commons.js']) {
             assets['commons.js'] = new CachedSource(
               new ConcatSource(assets['commons.js'], GLOBAL_COMMON_MODULE_CACHE));
@@ -129,13 +132,18 @@ export class ResultStates {
     compiler.hooks.compilation.tap('Require', compilation => {
       JavascriptModulesPlugin.getCompilationHooks(compilation).renderRequire.tap('renderRequire',
         (source) => {
-          return `var commonCachedModule = globalThis["__common_module_cache__"] ? ` +
-            `globalThis["__common_module_cache__"][moduleId]: null;\n` +
+          return `var commonCachedModule = globalThis` +
+          `["__common_module_cache__${projectConfig.hashProjectPath}"] ? ` +
+            `globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
+            `[moduleId]: null;\n` +
             `if (commonCachedModule) { return commonCachedModule.exports; }\n` +
             source.replace('// Execute the module function',
-              `if (globalThis["__common_module_cache__"] && moduleId.indexOf("?name=") < 0 && ` +
-            `Object.keys(globalThis["__common_module_cache__"]).indexOf(moduleId) >= 0) {\n` +
-              `  globalThis["__common_module_cache__"][moduleId] = module;\n}`);
+              `if (globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
+              ` && moduleId.indexOf("?name=") < 0 && ` +
+            `Object.keys(globalThis["__common_module_cache__${projectConfig.hashProjectPath}"])` +
+            `.indexOf(moduleId) >= 0) {\n` +
+              `  globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
+              `[moduleId] = module;\n}`);
         });
     });
 

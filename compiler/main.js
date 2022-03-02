@@ -15,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const md5 = require('md5');
 
 const { readFile } = require('./lib/utils');
 const { WORKERS_DIR } = require('./lib/pre_define');
@@ -54,6 +55,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
     process.env.aceSuperVisualPath
+  projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
+    hashProjectPath(projectConfig.projectPath)
 }
 
 function loadEntryObj(projectConfig) {
@@ -241,6 +244,17 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
       break;
     }
   }
+}
+
+function hashProjectPath(projectPath) {
+  const ASSCIIStart = 65;
+  const ASSCIIEnd = 90;
+  const deviation = 1;
+  process.env.hashProjectPath =
+    String.fromCharCode(Math.floor(Math.random() * (ASSCIIEnd - ASSCIIStart + deviation) + ASSCIIStart)) +
+    md5(projectPath).substring(9, 16) +
+    String.fromCharCode(Math.floor(Math.random() * (ASSCIIEnd - ASSCIIStart + deviation) + ASSCIIStart));
+  return process.env.hashProjectPath;
 }
 
 exports.projectConfig = projectConfig;
