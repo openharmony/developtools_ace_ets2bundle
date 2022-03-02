@@ -171,7 +171,7 @@ function setTestRunnerFile(projectConfig) {
     testRunnerFiles.forEach((item) => {
       if (/\.(ts|js)$/.test(item)) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
-              projectConfig.entryObj["../" + relativePath] = item;
+		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
     })
