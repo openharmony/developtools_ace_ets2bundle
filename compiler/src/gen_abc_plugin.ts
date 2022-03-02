@@ -87,9 +87,9 @@ function mkDir(path_: string): void {
 }
 
 function js2abcFirst(inputPath: string): void {
-  let param: string = '-r';
+  let param: string = '';
   if (isDebug) {
-    param += ' --debug';
+    param += '--debug';
   }
 
   let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
