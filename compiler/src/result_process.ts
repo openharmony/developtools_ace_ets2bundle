@@ -52,7 +52,7 @@ module.exports = function resultProcess(source: string, map: any): void {
           item.line = undefined;
           item.column = undefined;
         }
-        item.fileName = sourceFile.fileName.replace(/.ts$/, '');
+        item.fileName = sourceFile.fileName;
         return item;
       });
       emitLogInfo(this, logInfos);
