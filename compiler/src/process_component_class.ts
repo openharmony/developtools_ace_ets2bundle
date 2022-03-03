@@ -31,8 +31,6 @@ import {
   OBSERVED_PROPERTY_SIMPLE,
   COMPONENT_BUILD_FUNCTION,
   BASE_COMPONENT_NAME,
-  ATTRIBUTE_ANIMATETO,
-  GLOBAL_CONTEXT,
   CREATE_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   COMPONENT_CONSTRUCTOR_DELETE_PARAMS,
@@ -86,12 +84,12 @@ import {
   hasDecorator
 } from './utils';
 
-export function processComponentClass(node: ts.ClassDeclaration, context: ts.TransformationContext,
+export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
   validateInheritClass(node, log);
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, log, program, checkPreview(node));
-  return ts.factory.updateClassDeclaration(node, undefined, node.modifiers, node.name,
+  return ts.factory.createClassDeclaration(undefined, node.modifiers, node.name,
     node.typeParameters, updateHeritageClauses(node), memberNode);
 }
 
@@ -335,7 +333,7 @@ function getGeometryReaderFunctionBlock(node: ts.ArrowFunction | ts.FunctionExpr
   return processComponentBlock(blockNode, false, log);
 }
 
-function updateHeritageClauses(node: ts.ClassDeclaration): ts.NodeArray<ts.HeritageClause> {
+function updateHeritageClauses(node: ts.StructDeclaration): ts.NodeArray<ts.HeritageClause> {
   const result:ts.HeritageClause[] = [];
   const heritageClause:ts.HeritageClause = ts.factory.createHeritageClause(
     ts.SyntaxKind.ExtendsKeyword,
@@ -482,7 +480,7 @@ function validateBuildMethodCount(buildCount: BuildCount, parentComponentName: t
   }
 }
 
-function validateInheritClass(node: ts.ClassDeclaration, log: LogInfo[]): void {
+function validateInheritClass(node: ts.StructDeclaration, log: LogInfo[]): void {
   if (node.heritageClauses) {
     log.push({
       type: LogType.ERROR,

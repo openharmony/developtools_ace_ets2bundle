@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import * as ts from 'typescript';
 import Stats from 'webpack/lib/Stats';
 import Compiler from 'webpack/lib/Compiler';
 import Compilation from 'webpack/lib/Compilation';
@@ -27,23 +28,18 @@ import fs from 'fs';
 import CachedSource from 'webpack-sources/lib/CachedSource';
 import ConcatSource from 'webpack-sources/lib/ConcatSource';
 
-import {
-  BUILDIN_STYLE_NAMES,
-  EXTEND_ATTRIBUTE,
-  STYLES_ATTRIBUTE
-} from './component_map';
 import { transformLog } from './process_ui_syntax';
-import {
-  dollarCollection,
-  componentCollection,
-  moduleCollection
-} from './validate_ui_syntax';
-import { decoratorParamSet } from './process_component_member';
-import { appComponentCollection } from './process_component_build';
+import { moduleCollection } from './validate_ui_syntax';
 import { projectConfig } from '../main';
 import { circularFile } from './utils';
 import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
-import { COMMON_ATTRS } from './component_map';
+import {
+  createLanguageService,
+  dollarCollection,
+  appComponentCollection,
+  decoratorParamsCollection,
+  extendCollection
+} from './ets_checker';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -78,7 +74,7 @@ export class ResultStates {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
       compilation.hooks.afterProcessAssets.tap('SourcemapFixer', assets => {
         Reflect.ownKeys(assets).forEach(key => {
-          if (/\.map$/.test(key.toString())) {
+          if (/\.map$/.test(key.toString()) && assets[key]._value) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
           }
         });
@@ -146,17 +142,45 @@ export class ResultStates {
         });
     });
 
+    compiler.hooks.run.tapPromise('CheckSyntax', async(compiler) => {
+      const rootFileNames: string[] = [];
+      Object.values(projectConfig.entryObj).forEach((fileName: string) => {
+        rootFileNames.push(fileName.replace('?entry', ''));
+      });
+      const languageService: ts.LanguageService = createLanguageService(rootFileNames);
+      const rootProgram: ts.Program = languageService.getProgram();
+      props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
+      let allDiagnostics: ts.Diagnostic[] = rootProgram
+        .getSyntacticDiagnostics()
+        .concat(rootProgram.getSemanticDiagnostics())
+        .concat(rootProgram.getDeclarationDiagnostics());
+      allDiagnostics = allDiagnostics.filter((item) => {
+        return this.validateError(ts.flattenDiagnosticMessageText(item.messageText, '\n'));
+      });
+      this.mErrorCount += allDiagnostics.length;
+      allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+        const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+        if (diagnostic.file) {
+          const { line, character }: ts.LineAndCharacter =
+            diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+          logger.error(this.red,
+            `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+        } else {
+          logger.error(this.red, `ETS:ERROR: ${message}`);
+        }
+      });
+    });
+
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       this.mStats = stats;
       this.warningCount = 0;
       this.noteCount = 0;
       if (this.mStats.compilation.errors) {
-        this.mErrorCount = this.mStats.compilation.errors.length;
+        this.mErrorCount += this.mStats.compilation.errors.length;
       }
       if (this.mStats.compilation.warnings) {
         this.mWarningCount = this.mStats.compilation.warnings.length;
       }
-      props.push(...dollarCollection, ...decoratorParamSet, ...BUILDIN_STYLE_NAMES);
       this.printResult();
     });
 
@@ -261,41 +285,25 @@ export class ResultStates {
   }
   private validateError(message: string): boolean {
     const propInfoReg: RegExp = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
-    const componentNameReg: RegExp = /'typeof\s*(\$?[_a-zA-Z0-9]+)' is not callable/;
-    const stateInfoReg: RegExp = /Property\s*'(\$[_a-zA-Z0-9]+)' does not exist on type/;
-    const extendInfoReg: RegExp =
-      /Property\s*'([_a-zA-Z0-9]+)' does not exist on type\s*'([_a-zA-Z0-9]+)(Attribute|Interface)'\./;
-    if (this.matchMessage(message, props.concat([...STYLES_ATTRIBUTE]), propInfoReg) ||
-      this.matchMessage(message, [...componentCollection.customComponents], componentNameReg) ||
-      this.matchMessage(message, props, stateInfoReg) ||
-      this.matchMessage(message, EXTEND_ATTRIBUTE, extendInfoReg, true) ||
-      this.matchMessage(message, [...STYLES_ATTRIBUTE, ...COMMON_ATTRS], extendInfoReg)) {
+    const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
+    if (this.matchMessage(message, props, propInfoReg) ||
+      this.matchMessage(message, props, stateInfoReg)) {
       return false;
     }
     return true;
   }
-  private matchMessage(message: string, nameArr: any, reg: RegExp,
-    validateComponent: boolean = false): boolean {
+  private matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
     if (reg.test(message)) {
       const match: string[] = message.match(reg);
-      if (validateComponent) {
-        if (match[1] && match[2] && nameArr.has(match[2])) {
-          const attributeArray: string[] = [...nameArr.get(match[2])].map(item => item.attribute);
-          if (attributeArray.includes(match[1])) {
-            return true;
-          }
-        }
-      } else {
-        if (match[1] && nameArr.includes(match[1])) {
-          return true;
-        }
+      if (match[1] && nameArr.includes(match[1])) {
+        return true;
       }
     }
     return false;
   }
   private filterModuleError(message: string): string {
     if (/You may need an additional loader/.test(message) && transformLog && transformLog.sourceFile) {
-      const fileName: string = transformLog.sourceFile.fileName.replace(/.ts$/, '');
+      const fileName: string = transformLog.sourceFile.fileName;
       const errorInfos: string[] = message.split('You may need an additional loader to handle the result of these loaders.');
       if (errorInfos && errorInfos.length > 1 && errorInfos[1]) {
         message = `ERROR in ${fileName}\n The following syntax is incorrect.${errorInfos[1]}`;

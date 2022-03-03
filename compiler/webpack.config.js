@@ -40,6 +40,9 @@ function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
+    cache: {
+      type: "filesystem"
+    },
     watch: watchMode,
     watchOptions: {
       aggregateTimeout: 10,
@@ -67,8 +70,8 @@ function initConfig(config) {
             {
               loader: 'ts-loader',
               options: {
-                appendTsSuffixTo: [/\.ets$/],
                 onlyCompileBundledFiles: true,
+                transpileOnly: true,
                 configFile: path.resolve(__dirname, 'tsconfig.json'),
                 getCustomTransformers(program) {
                   return {

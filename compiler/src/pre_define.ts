@@ -38,6 +38,9 @@ export const COMPONENT_OBJECT_LINK_DECORATOR: string = '@ObjectLink';
 export const COMPONENT_WATCH_DECORATOR: string = '@Watch';
 export const COMPONENT_BUILDERPARAM_DECORATOR: string = '@BuilderParam';
 
+export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
+  COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_WATCH_DECORATOR]);
 export const INNER_COMPONENT_DECORATORS: Set<string> = new Set([COMPONENT_DECORATOR_ENTRY,
   COMPONENT_DECORATOR_PREVIEW, COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_CUSTOM_DIALOG]);
 export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR,
@@ -49,6 +52,7 @@ export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
 export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
+export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 
 export const OBSERVED_PROPERTY_SIMPLE: string = 'ObservedPropertySimple';
 export const OBSERVED_PROPERTY_OBJECT: string = 'ObservedPropertyObject';
@@ -202,3 +206,5 @@ export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
 
 export const SUPERVISUAL: string = './supervisual';
 export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
+
+export const INSTANCE: string = 'Instance';
