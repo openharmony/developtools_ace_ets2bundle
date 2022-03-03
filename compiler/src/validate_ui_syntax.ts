@@ -22,8 +22,6 @@ import {
   COMPONENT_DECORATOR_PREVIEW,
   COMPONENT_DECORATOR_COMPONENT,
   COMPONENT_DECORATOR_CUSTOM_DIALOG,
-  STRUCT,
-  CLASS,
   NATIVE_MODULE,
   SYSTEM_PLUGIN,
   OHOS_PLUGIN,
@@ -38,9 +36,6 @@ import {
   COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_CONSUME_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR,
-  COMPONENT_CONSTRUCTOR_ID,
-  COMPONENT_CONSTRUCTOR_PARENT,
-  COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_OBSERVED_DECORATOR,
   STYLES,
   VALIDATE_MODULE,
@@ -65,7 +60,7 @@ import {
   hasDecorator
 } from './utils';
 import { projectConfig } from '../main';
-const parser = require('../syntax_parser/dist/exclude_comment.js');
+import { collectExtend } from './process_ui_syntax';
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -137,7 +132,7 @@ function checkComponentDecorator(source: string, filePath: string,
   fileQuery: string): LogInfo[] | null {
   const log: LogInfo[] = [];
   const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, source,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   if (sourceFile && sourceFile.statements && sourceFile.statements.length) {
     const result: DecoratorResult = {
       entryCount: 0,
@@ -151,26 +146,17 @@ function checkComponentDecorator(source: string, filePath: string,
       if (ts.isEnumDeclaration(item) && item.name) {
         enumCollection.add(item.name.getText());
       }
-      if (isStruct(item)) {
-        if (index + 1 < arr.length && ts.isExpressionStatement(arr[index + 1]) &&
-        // @ts-ignore
-        arr[index + 1].expression && ts.isIdentifier(arr[index + 1].expression)) {
-          if (ts.isExportAssignment(item) && hasComponentDecorator(item)) {
-            checkDecorators(item, result, arr[index + 1] as ts.ExpressionStatement, log, sourceFile);
-          } else if (index > 0 && hasComponentDecorator(arr[index - 1])) {
-            checkDecorators(arr[index - 1] as ts.MissingDeclaration, result,
-              arr[index + 1] as ts.ExpressionStatement, log, sourceFile);
+      if (ts.isStructDeclaration(item)) {
+        if (item.name && ts.isIdentifier(item.name)) {
+          if (item.decorators && item.decorators.length) {
+            checkDecorators(item.decorators, result, item.name, log, sourceFile);
           } else {
-            // @ts-ignore
-            const pos: number = item.expression.getStart();
             const message: string = `A struct should use decorator '@Component'.`;
-            addLog(LogType.WARN, message, pos, log, sourceFile);
+            addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
           }
         } else {
-          // @ts-ignore
-          const pos: number = item.expression.getStart();
           const message: string = `A struct must have a name.`;
-          addLog(LogType.ERROR, message, pos, log, sourceFile);
+          addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
         }
       }
       if (ts.isMissingDeclaration(item)) {
@@ -245,32 +231,16 @@ export function isCustomDialogClass(node: ts.Node): boolean {
   return false;
 }
 
-function isStruct(node: ts.Node): boolean {
-  if ((ts.isExpressionStatement(node) || ts.isExportAssignment(node)) &&
-    node.expression && ts.isIdentifier(node.expression) && node.expression.getText() === STRUCT) {
-    return true;
-  }
-  return false;
-}
-
-function hasComponentDecorator(node: ts.Node): boolean {
-  if ((ts.isMissingDeclaration(node) || ts.isExportAssignment(node)) &&
-    node.decorators && node.decorators.length) {
-    return true;
-  }
-  return false;
-}
-
 interface DecoratorResult {
   entryCount: number;
   previewCount: number;
 }
 
-function checkDecorators(node: ts.MissingDeclaration | ts.ExportAssignment, result: DecoratorResult,
-  component: ts.ExpressionStatement, log: LogInfo[], sourceFile: ts.SourceFile): void {
+function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: DecoratorResult,
+  component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile): void {
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
-  node.decorators.forEach((element) => {
+  decorators.forEach((element) => {
     const name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       componentCollection.customComponents.add(componentName);
@@ -316,14 +286,14 @@ function checkDecorators(node: ts.MissingDeclaration | ts.ExportAssignment, resu
 function checkUISyntax(filePath: string, allComponentNames: Set<string>, content: string,
   log: LogInfo[]): void {
   const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   visitAllNode(sourceFile, sourceFile, allComponentNames, log);
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[]) {
   checkAllNode(node, allComponentNames, sourceFileNode, log);
-  if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+  if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
   }
   if (ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
@@ -335,7 +305,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
 function checkAllNode(node: ts.Node, allComponentNames: Set<string>, sourceFileNode: ts.SourceFile,
   log: LogInfo[]): void {
   if (ts.isExpressionStatement(node) && node.expression && ts.isIdentifier(node.expression) &&
-  allComponentNames.has(node.expression.escapedText.toString())) {
+    allComponentNames.has(node.expression.escapedText.toString())) {
     const pos: number = node.expression.getStart();
     const message: string =
       `The component name must be followed by parentheses, like '${node.expression.getText()}()'.`;
@@ -629,7 +599,7 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   return false;
 }
 
-function collectComponentProps(node: ts.ClassDeclaration): void {
+function collectComponentProps(node: ts.StructDeclaration): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node);
   propertyCollection.set(componentName, ComponentSet.propertys);
@@ -644,7 +614,7 @@ function collectComponentProps(node: ts.ClassDeclaration): void {
   objectLinkCollection.set(componentName, ComponentSet.objectLinks);
 }
 
-export function getComponentSet(node: ts.ClassDeclaration): IComponentSet {
+export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const propertys: Set<string> = new Set();
   const states: Set<string> = new Set();
   const links: Set<string> = new Set();
@@ -663,7 +633,7 @@ export function getComponentSet(node: ts.ClassDeclaration): IComponentSet {
   };
 }
 
-function traversalComponentProps(node: ts.ClassDeclaration, propertys: Set<string>,
+function traversalComponentProps(node: ts.StructDeclaration, propertys: Set<string>,
   regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
   consumes: Set<string>, objectLinks: Set<string>): void {
@@ -736,14 +706,7 @@ export interface ReplaceResult {
 export function sourceReplace(source: string, sourcePath: string): ReplaceResult {
   let content: string = source;
   const log: LogInfo[] = [];
-  // replace struct->class
-  content = content.replace(
-    new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
-      item = item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-      return `${item} constructor(${COMPONENT_CONSTRUCTOR_ID}?, ${COMPONENT_CONSTRUCTOR_PARENT}?, ${COMPONENT_CONSTRUCTOR_PARAMS}?) {}`;
-    });
-
-  content = preprocessExtend(content, sourcePath, log);
+  content = preprocessExtend(content);
   // process @system.
   content = processSystemApi(content);
 
@@ -753,57 +716,16 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   };
 }
 
-export function preprocessExtend(content: string, sourcePath: string, log: LogInfo[]): string {
-  let syntaxCheckContent: string;
-  let result: any;
-  try {
-    result = parser.parse(content);
-    syntaxCheckContent = result.content;
-    for (let i = 0; i < result.collect_extend.component.length; i++) {
-      collectExtend(
-        result.collect_extend.component[i],
-        result.collect_extend.functionName[i],
-        result.collect_extend.parameters[i]
-      );
+export function preprocessExtend(content: string, extendCollection?: Set<string>): string {
+  const REG_EXTEND: RegExp = /@Extend(\s+)([^\.\s]+)\.([^\(]+)\(/gm;
+  return content.replace(REG_EXTEND, (item, item1, item2, item3) => {
+    collectExtend(EXTEND_ATTRIBUTE, item2, '__' + item2 + '__' + item3);
+    collectExtend(EXTEND_ATTRIBUTE, item2, item3);
+    if (extendCollection) {
+      extendCollection.add(item3);
     }
-  } catch (err) {
-    result = err;
-    log.push({
-      type: LogType.ERROR,
-      message: parser.SyntaxError.buildMessage(err.expected, err.found),
-      line: err.location.start.line,
-      column: err.location.start.column,
-      fileName: sourcePath
-    });
-    syntaxCheckContent = content;
-  }
-  if (result.error_otherParsers) {
-    for (let i = 0; i < result.error_otherParsers.length; i++) {
-      log.push({
-        type: LogType.ERROR,
-        message: result.error_otherParsers[i].errMessage,
-        line: result.error_otherParsers[i].errPosition.line,
-        column: result.error_otherParsers[i].errPosition.column,
-        fileName: sourcePath
-      });
-    }
-  }
-  return syntaxCheckContent;
-}
-
-function collectExtend(component: string, attribute: string, parameter: string): void {
-  let parameterCount: number;
-  if (parameter) {
-    parameterCount = parameter.split(',').length;
-  } else {
-    parameterCount = 0;
-  }
-  BUILDIN_STYLE_NAMES.add(attribute);
-  if (EXTEND_ATTRIBUTE.has(component)) {
-    EXTEND_ATTRIBUTE.get(component).add({ attribute, parameterCount });
-  } else {
-    EXTEND_ATTRIBUTE.set(component, new Set([{ attribute, parameterCount }]));
-  }
+    return `@Extend(${item2})${item1}function __${item2}__${item3}(`;
+  });
 }
 
 export function processSystemApi(content: string, isProcessWhiteList: boolean = false): string {

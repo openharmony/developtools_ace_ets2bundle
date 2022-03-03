@@ -178,6 +178,9 @@ function getCustomComponentName(newNode: ts.NewExpression): string {
 }
 
 function getCollectionSet(name: string, collection: Map<string, Set<string>>): Set<string> {
+  if (!collection) {
+    return new Set([]);
+  }
   return collection.get(name) || new Set([]);
 }
 

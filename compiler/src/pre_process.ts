@@ -150,8 +150,8 @@ function insertImport(visualContent: any, content: string): string {
 
 function insertVarAndFunc(build: ts.MethodDeclaration, visualContent: any,
   content: string, oriContent: string): string {
-  const visualVarAndFunc: string = (visualContent.etsVariable ?? '') +
-    (visualContent.etsFunction ?? '');
+  const visualVarAndFunc: string = (visualContent.etsVariable ? visualContent.etsVariable : '') +
+    (visualContent.etsFunction ? visualContent.etsFunction : '');
   return visualVarAndFunc ? insertVisualCodeBeforePos(build, '\n' + visualVarAndFunc, content,
     oriContent) : content;
 }
