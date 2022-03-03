@@ -199,7 +199,7 @@ function copyFile(inputFile: string, outputFile: string): void {
   }
 }
 
-function mkDir(path_: string): void {
+export function mkDir(path_: string): void {
   const parent: string = path.join(path_, '..');
   if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
     mkDir(parent);
