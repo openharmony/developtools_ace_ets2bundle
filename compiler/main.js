@@ -57,7 +57,7 @@ function initProjectConfig(projectConfig) {
     process.env.aceSuperVisualPath
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
     hashProjectPath(projectConfig.projectPath)
-  projectConfig.aceWorkerPath = projectConfig.aceWorkerPath || process.env.aceWorkerPath;
+  projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
 }
 
 function loadEntryObj(projectConfig) {
@@ -192,7 +192,7 @@ function setEntrance(abilityConfig, abilityPages) {
 
 function loadWorker(projectConfig) {
   if (validateWorkOption()) {
-    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceWorkPath).toString());
+    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     workerConfig.workers.forEach(worker => {
       const relativePath = path.ralative(projectConfig.projectPath, worker);
       if (filterWorker(relativePath)) {
@@ -215,8 +215,8 @@ function loadWorker(projectConfig) {
 }
 
 function validateWorkOption() {
-  if (projectConfig.aceWorkPath && fs.existsSync(projectConfig.aceWorkPath)) {
-    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceWorkPath).toString());
+  if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
+    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     if(workerConfig.workers) {
       return true;
     }
