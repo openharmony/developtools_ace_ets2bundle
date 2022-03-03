@@ -20,9 +20,17 @@ struct MyComponent {
 }`
 
 exports.expectResult =
-`class MyComponent {
-    constructor(compilerAssignedUniqueChildId, parent, params) { }
-    build() {
+`class MyComponent extends View {
+    constructor(compilerAssignedUniqueChildId, parent, params) {
+        super(compilerAssignedUniqueChildId, parent);
+        this.updateWithValueParams(params);
+    }
+    updateWithValueParams(params) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id());
+    }
+    render() {
     }
 }
 `

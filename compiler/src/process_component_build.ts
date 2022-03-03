@@ -88,8 +88,6 @@ import { projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 
-export const appComponentCollection: Set<string> = new Set();
-
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
@@ -130,27 +128,15 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
-  if (node.body.statements.length < 4) {
-    switch (node.body.statements.length) {
-      case 1:
-        if (validateFirstNode(node.body.statements[0])) {
-          isValid = true;
-        }
-        break;
-      case 2:
-        if (validateFirstNode(node.body.statements[0]) &&
-          validateBlockNode(node.body.statements[1])) {
-          isValid = true;
-        }
-        break;
-      case 3:
-        if (validateFirstNode(node.body.statements[0]) &&
-          validateBlockNode(node.body.statements[1]) &&
-          validateSecondNode(node.body.statements[2])) {
-          isValid = true;
-        }
-        break;
+  if (node.body.statements.length === 1) {
+    const statement: ts.Node = node.body.statements[0];
+    if (ts.isIfStatement(statement) || ts.isExpressionStatement(statement) && statement.expression &&
+      (ts.isEtsComponentExpression(statement.expression) || ts.isCallExpression(statement.expression)) &&
+      validateEtsComponentNode(statement.expression)) {
+      isValid = true;
     }
+  } else {
+    isValid = false;
   }
   if (!isValid) {
     log.push({
@@ -174,6 +160,19 @@ let newsupplement: supplementType = {
   column: 0
 };
 
+function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression) {
+  let childNode: ts.Node = node;
+  while (ts.isCallExpression(childNode) && childNode.expression &&
+    ts.isPropertyAccessExpression(childNode.expression) && childNode.expression.expression) {
+    childNode = childNode.expression.expression;
+  }
+  if (ts.isEtsComponentExpression(childNode)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0}): void {
   if (supplement.isAcceleratePreview) {
@@ -189,9 +188,9 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
               newStatements, log, name);
             break;
           case ComponentType.customComponent:
-            if (index + 1 < array.length && ts.isBlock(array[index + 1])) {
-              if (processExpressionStatementChange(item, array[index + 1] as ts.Block, log)) {
-                item = processExpressionStatementChange(item, array[index + 1] as ts.Block, log);
+            if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
+              if (processExpressionStatementChange(item, item.expression.body, log)) {
+                item = processExpressionStatementChange(item, item.expression.body, log);
               }
             }
             processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
@@ -205,7 +204,6 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
         }
       } else if (ts.isIfStatement(item)) {
-        appComponentCollection.add(COMPONENT_IF);
         processIfStatement(item, newStatements, log);
       } else if (!ts.isBlock(item)) {
         log.push({
@@ -262,6 +260,28 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
   return node;
 }
 
+type EtsComponentResult = {
+  etsComponentNode: ts.EtsComponentExpression;
+  hasAttr: boolean;
+}
+function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponentResult {
+  let etsComponentNode: ts.EtsComponentExpression;
+  let hasAttr: boolean = false;
+  let temp: any = node.expression;
+  while (temp) {
+    if (ts.isCallExpression(temp) && temp.expression &&
+      ts.isPropertyAccessExpression(temp.expression)) {
+      hasAttr = true;
+    }
+    if (ts.isEtsComponentExpression(temp)) {
+      etsComponentNode = temp;
+      break;
+    }
+    temp = temp.expression;
+  }
+  return { etsComponentNode: etsComponentNode, hasAttr: hasAttr };
+}
+
 function processInnerComponent(node: ts.ExpressionStatement, index: number, arr: ts.Statement[],
   newStatements: ts.Statement[], log: LogInfo[], name: string): void {
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
@@ -293,7 +313,8 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
         ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
     newStatements.push(debugNode);
   }
-  if (index + 1 < arr.length && ts.isBlock(arr[index + 1])) {
+  const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
+  if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (res.isButton) {
       if (projectConfig.isPreview) {
         newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
@@ -301,11 +322,10 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
         newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
       }
     }
-    if (index + 2 < arr.length && ts.isExpressionStatement(arr[index + 2]) &&
-      isAttributeNode(arr[index + 2] as ts.ExpressionStatement)) {
-      bindComponentAttr(arr[index + 2] as ts.ExpressionStatement, res.identifierNode, newStatements, log);
+    if (etsComponentResult.hasAttr) {
+      bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processComponentChild(arr[index + 1] as ts.Block, newStatements, log);
+    processComponentChild(etsComponentResult.etsComponentNode.body, newStatements, log);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
   }
@@ -516,7 +536,8 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
   while (temp && !ts.isIdentifier(temp) && temp.expression) {
     temp = temp.expression;
   }
-  if (temp && temp.parent && ts.isCallExpression(temp.parent) && ts.isIdentifier(temp)) {
+  if (temp && temp.parent && (ts.isCallExpression(temp.parent) ||
+    ts.isEtsComponentExpression(temp.parent)) && ts.isIdentifier(temp)) {
     if (temp.getText() === COMPONENT_BUTTON && type !== COMPONENT_POP_FUNCTION) {
       res.isButton = true;
       identifierNode = type === COMPONENT_CREATE_CHILD_FUNCTION
@@ -837,7 +858,6 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     parseGesture(temp, propName, statements, log);
     lastStatement.kind = true;
   } else if (isExtendFunctionNode(identifierNode, propName)) {
-    validateExtendParameterCount(temp, identifierNode, propName, log);
     statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
       undefined, temp.arguments)));
@@ -873,16 +893,34 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       if (!COMMON_ATTRS.has(propName)) {
         validateStateStyleSyntax(temp, log);
       }
-      if (isGlobalStyles) {
-        for (let i = 0; i < temp.arguments.length; i++) {
-          temp.arguments[i] = traverseStylesAttr(temp.arguments[i]);
-        }
-      }
     }
+    temp = loopEtsComponent(temp, isStylesAttr, isGlobalStyles);
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
+}
+
+function loopEtsComponent(temp: any, isStylesAttr: boolean, isGlobalStyles: boolean): ts.Node {
+  temp.arguments.forEach((item: ts.Node, index: number) => {
+    if (isStylesAttr && isGlobalStyles) {
+      temp.arguments[index] = traverseStylesAttr(item);
+    }
+    if (ts.isNewExpression(item) && item.expression && ts.isEtsComponentExpression(
+      item.expression)) {
+      temp.arguments[index] = ts.factory.updateNewExpression(item, item.expression.expression,
+        undefined, item.expression.arguments);
+    } else if (ts.isEtsComponentExpression(item)) {
+      temp.arguments[index] = ts.factory.createCallExpression(item.expression,
+        undefined, item.arguments);
+    } else if ((ts.isCallExpression(item) || ts.isNewExpression(item)) && item.expression &&
+      ts.isPropertyAccessExpression(item.expression) && item.expression.expression &&
+      ts.isEtsComponentExpression(item.expression.expression)) {
+      temp.arguments[index].expression.expression = ts.factory.createCallExpression(
+        item.expression.expression.expression, undefined, item.expression.expression.arguments);
+    }
+  });
+  return temp;
 }
 
 function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
@@ -967,7 +1005,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
 function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string): boolean {
   if (identifierNode && EXTEND_ATTRIBUTE.has(identifierNode.escapedText.toString())) {
     const attributeArray: string[] =
-      [...EXTEND_ATTRIBUTE.get(identifierNode.escapedText.toString())].map(item => item.attribute);
+      [...EXTEND_ATTRIBUTE.get(identifierNode.escapedText.toString())];
     if (attributeArray.includes(propName)) {
       return true;
     }
@@ -1053,7 +1091,8 @@ export function getName(node: ts.ExpressionStatement): string {
   let temp: any = node.expression;
   let name: string;
   while (temp) {
-    if (ts.isIdentifier(temp) && temp.parent && ts.isCallExpression(temp.parent)) {
+    if (ts.isIdentifier(temp) && temp.parent && (ts.isCallExpression(temp.parent) ||
+      ts.isEtsComponentExpression(temp.parent))) {
       name = temp.escapedText.toString();
       break;
     } else if (ts.isPropertyAccessExpression(temp) && temp.name && ts.isIdentifier(temp.name) &&
@@ -1079,46 +1118,6 @@ export function isAttributeNode(node: ts.ExpressionStatement): boolean {
   return BUILDIN_STYLE_NAMES.has(name);
 }
 
-function validateFirstNode(node: ts.Statement): boolean {
-  const isEntryComponent: boolean =
-    componentCollection.entryComponent === componentCollection.currentClassName;
-  if (isEntryComponent && validateEntryComponent(node) ||
-    !isEntryComponent && validateCustomComponent(node)) {
-    return true;
-  }
-  return false;
-}
-
-function validateEntryComponent(node: ts.Statement): boolean {
-  if (ts.isExpressionStatement(node) && BUILDIN_CONTAINER_COMPONENT.has(getName(node))) {
-    return true;
-  }
-  return false;
-}
-
-function validateCustomComponent(node: ts.Statement): boolean {
-  if (ts.isIfStatement(node) ||
-    ts.isExpressionStatement(node) && (INNER_COMPONENT_NAMES.has(getName(node)) ||
-      componentCollection.customComponents.has(getName(node)))) {
-    return true;
-  }
-  return false;
-}
-
-function validateBlockNode(node: ts.Statement): boolean {
-  if (ts.isBlock(node)) {
-    return true;
-  }
-  return false;
-}
-
-function validateSecondNode(node: ts.Statement): boolean {
-  if (ts.isExpressionStatement(node) && isAttributeNode(node)) {
-    return true;
-  }
-  return false;
-}
-
 enum ComponentType {
   innerComponent,
   customComponent,
@@ -1127,14 +1126,29 @@ enum ComponentType {
   builderParamMethod
 }
 
+function isEtsComponent(node: ts.ExpressionStatement): boolean {
+  let isEtsComponent: boolean = false;
+  let temp: any = node.expression;
+  while (temp) {
+    if (ts.isEtsComponentExpression(temp)) {
+      isEtsComponent = true;
+    }
+    temp = temp.expression;
+  }
+  return isEtsComponent;
+}
+
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
   name: string): ComponentType {
-  if (INNER_COMPONENT_NAMES.has(name)) {
-    return ComponentType.innerComponent;
+  if (isEtsComponent(node)) {
+    if (componentCollection.customComponents.has(name)) {
+      return ComponentType.customComponent;
+    } else {
+      return ComponentType.innerComponent;
+    }
   } else if (componentCollection.customComponents.has(name)) {
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
-    appComponentCollection.add(name);
     return ComponentType.forEachComponent;
   } else if (CUSTOM_BUILDER_METHOD.has(name)) {
     return ComponentType.customBuilderMethod;
@@ -1149,20 +1163,6 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     });
   }
   return null;
-}
-
-function validateExtendParameterCount(temp: any, identifierNode: ts.Identifier, propName: string,
-  log: LogInfo[]): void {
-  const parameterCount: number =
-    [...EXTEND_ATTRIBUTE.get(identifierNode.escapedText.toString())].filter(item =>
-      item.attribute === propName)[0].parameterCount;
-  if (temp.arguments && temp.arguments.length !== parameterCount) {
-    log.push({
-      type: LogType.ERROR,
-      message: `The '${propName}' is expected ${parameterCount} arguments, but got ${temp.arguments.length}.`,
-      pos: temp.getStart()
-    });
-  }
 }
 
 export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
