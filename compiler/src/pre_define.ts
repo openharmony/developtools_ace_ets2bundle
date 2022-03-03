@@ -199,3 +199,6 @@ export const $$_NEW_VALUE: string = 'newValue';
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
 export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
+
+export const SUPERVISUAL: string = './supervisual';
+export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
