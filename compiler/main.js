@@ -178,8 +178,6 @@ function setStageTestRunnerFile(projectConfig) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
 		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
-		//throw Error('testRunnerPath: ' + item).message;
-		
       }
     })
   }
