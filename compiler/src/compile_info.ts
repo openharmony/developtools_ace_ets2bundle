@@ -75,7 +75,6 @@ export class ResultStates {
   private modulePaths: Set<string> = new Set([]);
 
   public apply(compiler: Compiler): void {
-
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
       compilation.hooks.afterProcessAssets.tap('SourcemapFixer', assets => {
         Reflect.ownKeys(assets).forEach(key => {
@@ -110,14 +109,14 @@ export class ResultStates {
           stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
         },
         (assets) => {
-          const GLOBAL_COMMON_MODULE_CACHE =  `
+          const GLOBAL_COMMON_MODULE_CACHE = `
           globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] =` +
           ` globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] || {};
           globalThis["webpackChunk${projectConfig.hashProjectPath}"].forEach((item)=> {
             Object.keys(item[1]).forEach((element) => {
               globalThis["__common_module_cache__${projectConfig.hashProjectPath}"][element] = null;
             })
-          });`
+          });`;
 
           if (assets['commons.js']) {
             assets['commons.js'] = new CachedSource(
