@@ -62,11 +62,13 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   if (process.env.aceManifestPath) {
     setEntryFile(projectConfig);
+	setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
     setAbilityPages(projectConfig)
+	setStageTestRunnerFile(projectConfig);
   }
-  setTestRunnerFile(projectConfig);
+
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -149,20 +151,7 @@ function setAbilityPages(projectConfig) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages) {
-  abilityPages.forEach(abilityPath => {
-    if (abilityPath && fs.existsSync(path.resolve(projectConfig.projectPath, '../', abilityPath))) {
-      const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
-      const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
-      abilityConfig.projectAbilityPath.push(projectAbilityPath);
-      if (fs.existsSync(projectAbilityPath)) {
-        projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
-      }
-    }
-  });
-}
-
-function setTestRunnerFile(projectConfig) {
+function setFaTestRunnerFile(projectConfig) {
   const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
   const testRunnerPath = path.resolve(projectConfig.projectPath.substring(0,index + 1), "TestRunner");
   if (fs.existsSync(testRunnerPath)) {
@@ -176,6 +165,37 @@ function setTestRunnerFile(projectConfig) {
       }
     })
   }
+}
+
+function setStageTestRunnerFile(projectConfig) {
+  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const testRunnerPath = path.resolve(projectConfig.projectPath, "TestRunner");
+  if (fs.existsSync(testRunnerPath)) {
+    const testRunnerFiles = [];
+    readFile(testRunnerPath, testRunnerFiles);
+    testRunnerFiles.forEach((item) => {
+      if (/\.(ts|js)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
+        abilityConfig.testRunnerFile.push(item);
+		//throw Error('testRunnerPath: ' + item).message;
+		
+      }
+    })
+  }
+}
+
+function setAbilityFile(projectConfig, abilityPages) {
+  abilityPages.forEach(abilityPath => {
+    if (abilityPath && fs.existsSync(path.resolve(projectConfig.projectPath, '../', abilityPath))) {
+      const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+      const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+      abilityConfig.projectAbilityPath.push(projectAbilityPath);
+      if (fs.existsSync(projectAbilityPath)) {
+        projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+      }
+    }
+  });
 }
 
 function readAbilityEntrance(moduleJson) {
