@@ -194,6 +194,9 @@ function loadWorker(projectConfig) {
   if (validateWorkOption()) {
     const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     workerConfig.workers.forEach(worker => {
+      if (!/\.(ts|js)$/.test(worker)) {
+        worker += '.ts'
+      }
       const relativePath = path.relative(projectConfig.projectPath, worker);
       if (filterWorker(relativePath)) {
         projectConfig.entryObj[relativePath.replace(/\.(ts|js)$/,'')] = worker;
