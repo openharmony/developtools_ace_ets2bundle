@@ -271,7 +271,7 @@ function checkDecorators(node: ts.MissingDeclaration | ts.ExportAssignment, resu
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
   node.decorators.forEach((element) => {
-    const name: string = element.getText().replace(/\((.|\n)*\)/, '').trim();
+    const name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       componentCollection.customComponents.add(componentName);
       switch (name) {
