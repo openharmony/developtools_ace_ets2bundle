@@ -87,6 +87,7 @@ export class ResultStates {
         Reflect.ownKeys(assets).forEach(key => {
           if (/\.map$/.test(key.toString())) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
+            assets[key]._value = assets[key]._value.toString().replace('.ts?entry', '.ts');
           }
         });
       }
