@@ -522,6 +522,13 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
   const lastStatement: AnimationInfo = { statement: null, kind: false };
+  if (ts.isPropertyAccessExpression(temp)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `'${node.getText()}' does not meet UI component syntax.`,
+      pos: node.getStart()
+    });
+  }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
     if (temp.expression && (validatePropertyAccessExpressionWithCustomBuilder(temp.expression) ||
       validateIdentifierWithCustomBuilder(temp.expression))) {
