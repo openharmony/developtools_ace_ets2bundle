@@ -99,7 +99,7 @@ function checkPreview(node: ts.ClassDeclaration) {
   let hasPreview: boolean = false;
   if (node && node.decorators) {
     for (let i = 0; i < node.decorators.length; i++) {
-      const name: string = node.decorators[i].getText().replace(/\((.|\n)*\)/, '').trim();
+      const name: string = node.decorators[i].getText().replace(/\([^\(\)]*\)/, '').trim();
       if (name === COMPONENT_DECORATOR_PREVIEW) {
         hasPreview = true;
         break;
