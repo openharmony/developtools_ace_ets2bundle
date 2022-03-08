@@ -34,7 +34,8 @@ const staticPreviewPage = process.env.aceStaticPreview;
 const abilityConfig = {
   abilityType: process.env.abilityType || 'page',
   abilityEntryFile: null,
-  projectAbilityPath: []
+  projectAbilityPath: [],
+  testRunnerFile: []
 };
 const projectConfig = {};
 const resources = {
@@ -61,10 +62,13 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   if (process.env.aceManifestPath) {
     setEntryFile(projectConfig);
+	setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
     setAbilityPages(projectConfig)
+	setStageTestRunnerFile(projectConfig);
   }
+
   if(staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -144,6 +148,38 @@ function setAbilityPages(projectConfig) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
     abilityPages = readAbilityEntrance(moduleJson);
     setAbilityFile(projectConfig, abilityPages);
+  }
+}
+
+function setFaTestRunnerFile(projectConfig) {
+  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const testRunnerPath = path.resolve(projectConfig.projectPath.substring(0,index + 1), "TestRunner");
+  if (fs.existsSync(testRunnerPath)) {
+    const testRunnerFiles = [];
+    readFile(testRunnerPath, testRunnerFiles);
+    testRunnerFiles.forEach((item) => {
+      if (/\.(ts|js)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
+        abilityConfig.testRunnerFile.push(item);
+      }
+    })
+  }
+}
+
+function setStageTestRunnerFile(projectConfig) {
+  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const testRunnerPath = path.resolve(projectConfig.projectPath, "TestRunner");
+  if (fs.existsSync(testRunnerPath)) {
+    const testRunnerFiles = [];
+    readFile(testRunnerPath, testRunnerFiles);
+    testRunnerFiles.forEach((item) => {
+      if (/\.(ts|js)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
+        abilityConfig.testRunnerFile.push(item);
+      }
+    })
   }
 }
 
