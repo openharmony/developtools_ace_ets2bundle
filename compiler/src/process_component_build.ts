@@ -162,8 +162,23 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   return isValid;
 }
 
+interface supplementType {
+  isAcceleratePreview: boolean,
+  line: number,
+  column: number
+}
+
+let newsupplement: supplementType = {
+  isAcceleratePreview: false,
+  line: 0,
+  column: 0
+};
+
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
-  log: LogInfo[]): void {
+  log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0}): void {
+  if (supplement.isAcceleratePreview) {
+    newsupplement = supplement;
+  }
   if (node.statements.length) {
     node.statements.forEach((item, index, array) => {
       if (ts.isExpressionStatement(item)) {
@@ -256,9 +271,22 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
       transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
     const projectPath: string = projectConfig.projectPath;
     const curFileName: string = transformLog.sourceFile.fileName.replace(/.ts$/, '');
+    let line: number = 1;
+    let col: number = 1;
+    if (newsupplement.isAcceleratePreview) {
+      if (posOfNode.line === 0) {
+        col = newsupplement.column;
+      }
+      line = newsupplement.line;
+    }
+    newsupplement = {
+      isAcceleratePreview: false,
+      line: 0,
+      column: 0
+    };
     const debugInfo: string =
       `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
-      `(${posOfNode.line + 1}:${posOfNode.character + 1})`;
+      `(${posOfNode.line + line}:${posOfNode.character + col})`;
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(getName(node)),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
@@ -629,7 +657,7 @@ function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
     // @ts-ignore
     for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
       // @ts-ignore
-      let statement: ts.Statement = node.arguments[0].body.statements[i];
+      const statement: ts.Statement = node.arguments[0].body.statements[i];
       newStatements.push(checkStatement(statement));
     }
     node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.updateArrowFunction(
@@ -651,7 +679,7 @@ function checkStatement(statement: ts.Statement): ts.Statement {
     if (ts.isObjectLiteralExpression(statement.expression)) {
       const newProperties: ts.ObjectLiteralElementLike[] = [];
       for (let j = 0; j < statement.expression.properties.length; j++) {
-        let property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
+        const property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
         checkProperty(property);
         newProperties.push(property);
       }
