@@ -112,11 +112,11 @@ class ComponentInfo {
 
 export const componentInfo: ComponentInfo = new ComponentInfo();
 
-export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration | ts.ClassDeclaration,
-  decortorName: string): boolean {
+export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string): boolean {
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; i++) {
-      if (node.decorators[i].getText() === decortorName) {
+      if (node.decorators[i].getText().replace(/\(.*\)$/, '').trim() === decortorName) {
         return true;
       }
     }

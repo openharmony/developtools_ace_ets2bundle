@@ -61,8 +61,6 @@ function generateTargetFile(filePath, output) {
     const fileName = path.resolve(output, path.basename(item));
     if (item === globalTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, true);
-    } else if (path.resolve(item) !== middleTsFile) {
-      content = license + '\n\n' + processsFile(content, fileName, false);
     }
     fs.writeFile(fileName, content, err => {
       if (err) {

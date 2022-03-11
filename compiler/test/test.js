@@ -38,11 +38,14 @@ function expectActual(name, filePath) {
   process.env.compiler = BUILD_ON;
   const afterProcess = sourceReplace(source);
   validateUISyntax(source, afterProcess.content, `${name}.ts`);
+  const compilerOptions = ts.readConfigFile(
+    path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    Object.assign(compilerOptions, {
+      "sourceMap": false,
+    });
   const result = ts.transpileModule(afterProcess.content, {
-    compilerOptions: {
-      "target": ts.ScriptTarget.ES2017
-    },
-    fileName: `${name}.ts`,
+    compilerOptions: compilerOptions,
+    fileName: `${name}.ets`,
     transformers: { before: [processUISyntax(null, true)] }
   });
   componentInfo.id = 0;
