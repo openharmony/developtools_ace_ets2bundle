@@ -77,8 +77,6 @@
         "SideBarContainer",
         "Slider",
         "Span",
-        "SpringMotion",
-        "SpringProp",
         "Stack",
         "Stepper",
         "StepperItem",
@@ -448,16 +446,6 @@
             "name": "Span",
             "type": "SpanAttribute",
             "instance": "SpanInstance"
-          },
-          {
-            "name": "SpringMotion",
-            "type": "SpringMotionAttribute",
-            "instance": "SpringMotionInstance"
-          },
-          {
-            "name": "SpringProp",
-            "type": "SpringPropAttribute",
-            "instance": "SpringPropInstance"
           },
           {
             "name": "Stack",
