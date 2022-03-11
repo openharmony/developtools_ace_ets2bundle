@@ -75,13 +75,13 @@ export interface ExtendParamterInterfance {
   attribute: string,
   parameterCount: number
 }
-export const EXTEND_ATTRIBUTE: Map<string, Set<ExtendParamterInterfance>> = new Map();
+export const EXTEND_ATTRIBUTE: Map<string, Set<string>> = new Map();
 export const STYLES_ATTRIBUTE: Set<string> = new Set();
 
 export const INTERFACE_NODE_SET: Set<ts.InterfaceDeclaration> = new Set();
 
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
-  ...GESTURE_TYPE_NAMES, 'Gesture',
+  'ForEach', 'LazyForEach', ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'VideoController', 'WebController',
   'XComponentController', 'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData',

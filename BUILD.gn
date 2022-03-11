@@ -143,8 +143,18 @@ ets_loader_sources = [
   "compiler/webpack.config.js",
 ]
 
+ohos_copy("copy_deps") {
+  sources =
+      [ "//third_party/typescript/build_package/ohos-typescript-4.2.3-r2.tgz" ]
+  outputs = [ target_out_dir + "/ets_loader/deps/{{source_file_part}}" ]
+  license_file = "//third_party/typescript/LICENSE"
+}
+
 ohos_copy("ets_loader") {
-  deps = [ ":build_ets_loader_library" ]
+  deps = [
+    ":build_ets_loader_library",
+    ":copy_deps",
+  ]
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
   sources += [ ets_sysResource ]
