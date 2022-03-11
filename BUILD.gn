@@ -282,8 +282,7 @@ ohos_copy("ohos_declaration_ets_ark") {
 ohos_copy("common_api_ark") {
   sources = common_api_src
   deps = [ ":ohos_declaration_ets_ark" ]
-  outputs =
-      [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
+  outputs = [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
   module_install_name = ""
 }
 
