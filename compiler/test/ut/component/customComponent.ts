@@ -25,8 +25,7 @@ struct Parent {
         Row() {
             Child({ stateProperty: this.regularToState,
                     propProperty: this.stateToProp,
-                    regularProperty: this.regularToRegular,
-                    linkProperty: this.$stateToLink
+                    regularProperty: this.regularToRegular, linkProperty: this.__stateToLink
                 })
         }
     }
@@ -91,8 +90,7 @@ exports.expectResult =
         if (earlierCreatedChild_2 == undefined) {
             View.create(new Child("2", this, { stateProperty: this.regularToState,
                 propProperty: this.stateToProp,
-                regularProperty: this.regularToRegular,
-                linkProperty: this.__stateToLink
+                regularProperty: this.regularToRegular, linkProperty: this.__stateToLink
             }));
         }
         else {

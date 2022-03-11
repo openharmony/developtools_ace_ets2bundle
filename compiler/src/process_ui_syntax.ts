@@ -23,7 +23,6 @@ import {
   PAGE_ENTRY_FUNCTION_NAME,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   BUILD_ON,
-  COMPONENT_BUILD_FUNCTION,
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_STYLES_DECORATOR,
@@ -35,7 +34,9 @@ import {
   RESOURCE_NAME_PARAMS,
   RESOURCE_RAWFILE,
   ATTRIBUTE_ANIMATETO,
-  GLOBAL_CONTEXT
+  GLOBAL_CONTEXT,
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  INSTANCE
 } from './pre_define';
 import {
   componentInfo,
@@ -45,18 +46,13 @@ import {
   FileLog
 } from './utils';
 import {
-  getName,
-  isAttributeNode,
   processComponentBlock,
-  bindComponentAttr,
-  appComponentCollection
+  bindComponentAttr
 } from './process_component_build';
 import {
-  BUILDIN_CONTAINER_COMPONENT,
   BUILDIN_STYLE_NAMES,
   CUSTOM_BUILDER_METHOD,
   EXTEND_ATTRIBUTE,
-  JS_BIND_COMPONENTS,
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET
@@ -73,20 +69,18 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
-        if (!ut && (path.basename(node.fileName) === 'app.ets.ts' || !/\.ets\.ts$/.test(node.fileName))) {
+        if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           return node;
         }
-        collectComponents(node);
         transformLog.sourceFile = node;
-        validateSourceFileNode(node);
         node = createEntryNode(node, context);
         node = ts.visitEachChild(node, processAllNodes, context);
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
         });
         GLOBAL_STYLE_FUNCTION.clear();
-        const statements: ts.NodeArray<ts.Statement> = node.statements;
+        const statements: ts.Statement[] = Array.from(node.statements);
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
@@ -100,8 +94,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     function processAllNodes(node: ts.Node): ts.Node {
       if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node)) {
         processImport(node, pagesDir, transformLog.errors);
-      } else if (ts.isClassDeclaration(node) && node.name &&
-        componentCollection.customComponents.has(node.name.getText())) {
+      } else if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         node = processComponentClass(node, context, transformLog.errors, program);
         componentCollection.currentClassName = null;
@@ -144,33 +137,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       }
       return ts.visitEachChild(node, processResourceNode, context);
     }
-    function validateSourceFileNode(node: ts.SourceFile): void {
-      if (program) {
-        node = ts.visitEachChild(node, validateAllNodes, context);
-      }
-    }
-    function validateAllNodes(node: ts.Node): ts.Node {
-      if (ts.isMethodDeclaration(node) && node.name &&
-        node.name.getText() === COMPONENT_BUILD_FUNCTION && node.body && ts.isBlock(node.body)) {
-        const typeChecker: ts.TypeChecker = program.getTypeChecker();
-        validateBody(node.body, typeChecker);
-        return node;
-      }
-      return ts.visitEachChild(node, validateAllNodes, context);
-    }
   };
-}
-
-function collectComponents(node: ts.SourceFile): void {
-  // @ts-ignore
-  if (node.identifiers && node.identifiers.size) {
-    // @ts-ignore
-    for (const key of node.identifiers.keys()) {
-      if (JS_BIND_COMPONENTS.has(key)) {
-        appComponentCollection.add(key);
-      }
-    }
-  }
 }
 
 function isResource(node: ts.Node): boolean {
@@ -285,29 +252,51 @@ function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node);
-  if (componentName) {
+  if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
-    bindComponentAttr(node.body.statements[0] as ts.ExpressionStatement,
+    const attrSet: ts.CallExpression = node.body.statements[0].expression;
+    const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
+    bindComponentAttr(changeCompName as ts.ExpressionStatement,
       ts.factory.createIdentifier(componentName), statementArray, log);
+    let extendFunctionName: string;
+    if (node.name.getText().startsWith('__' + componentName + '__')) {
+      extendFunctionName = node.name.getText();
+    } else {
+      extendFunctionName = '__' + componentName + '__' + node.name.getText();
+      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
+    }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
-      node.name, node.typeParameters, node.parameters, node.type,
-      ts.factory.updateBlock(node.body, statementArray));
+      ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
+      node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+  }
+}
+
+function processExtendBody(node: ts.Node): ts.Expression {
+  switch (node.kind) {
+    case ts.SyntaxKind.CallExpression:
+      return ts.factory.createCallExpression(processExtendBody(node.expression), undefined, node.arguments);
+    case ts.SyntaxKind.PropertyAccessExpression:
+      return ts.factory.createPropertyAccessExpression(processExtendBody(node.expression), node.name);
+    case ts.SyntaxKind.Identifier:
+      return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+  }
+}
+
+export function collectExtend(collectionSet: Map<string, Set<string>>, component: string, attribute: string): void {
+  if (collectionSet.has(component)) {
+    collectionSet.get(component).add(attribute);
+  } else {
+    collectionSet.set(component, new Set([attribute]));
   }
 }
 
 function isExtendFunction(node: ts.FunctionDeclaration): string {
-  if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length === 1 &&
-  ts.isExpressionStatement(node.body.statements[0]) &&
-  // @ts-ignore
-  ts.isCallExpression(node.body.statements[0].expression) && ts.isIdentifier(node.name)) {
-    const nameArray: string[] = node.name.getText().split('__');
-    if (nameArray.length === 3 && !nameArray[0] && EXTEND_ATTRIBUTE.has(nameArray[1])) {
-      const attributeArray: string[] =
-        [...EXTEND_ATTRIBUTE.get(nameArray[1])].map(item => item.attribute);
-      if (attributeArray.includes(nameArray[2])) {
-        return nameArray[1];
-      }
-    }
+  if (node.decorators && node.decorators[0].expression &&
+    node.decorators[0].expression.expression.escapedText.toString() === CHECK_COMPONENT_EXTEND_DECORATOR &&
+    node.decorators[0].expression.arguments) {
+    return node.decorators[0].expression.arguments[0].escapedText.toString();
+  } else {
+    return null;
   }
 }
 
@@ -323,122 +312,6 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
   } else {
     return node;
   }
-}
-
-function validateBody(node: ts.Block, typeChecker: ts.TypeChecker): void {
-  if (node.statements.length) {
-    node.statements.forEach((item, index, arr) => {
-      if (ts.isBlock(item)) {
-        validateBody(item, typeChecker);
-      }
-      if (index + 2 < arr.length && ts.isExpressionStatement(item) &&
-        isAttributeBlockNode(item, arr as ts.Statement[], index) &&
-        ts.isCallExpression(item.expression) && ts.isIdentifier(item.expression.expression)) {
-        const componentName: string = item.expression.expression.getText();
-        const type: ts.Type = typeChecker.getTypeAtLocation(item.expression);
-        let temp: any = arr[index + 2];
-        let name: string;
-        while (temp) {
-          if (ts.isCallExpression(temp)) {
-            if (ts.isPropertyAccessExpression(temp.expression)) {
-              const pos: number = temp.expression.name.getStart();
-              name = temp.expression.name.getText();
-              validateSymbol(isPropertyExist(typeChecker, pos, type, name, componentName),
-                temp.arguments, pos, typeChecker);
-            } else if (ts.isIdentifier(temp.expression)) {
-              const pos: number = temp.expression.getStart();
-              name = temp.expression.getText();
-              validateSymbol(isPropertyExist(typeChecker, pos, type, name, componentName),
-                temp.arguments, pos, typeChecker);
-              break;
-            }
-          }
-          temp = temp.expression;
-        }
-      }
-    });
-  }
-}
-
-function validateSymbol(type: ts.Symbol, args: ts.NodeArray<ts.Expression>,
-  argPos: number, typeChecker: ts.TypeChecker): void {
-  // @ts-ignore
-  if (type && type.valueDeclaration.parameters) {
-    // @ts-ignore
-    const parameters: ts.ParameterDeclaration[] = type.valueDeclaration.parameters;
-    const maxLength: number = parameters.length;
-    const minLength: number = getMinLength(parameters);
-    if (args.length < minLength || args.length > maxLength) {
-      let message:string;
-      if (maxLength !== minLength) {
-        message = `TS2554: Expected ${minLength}-${maxLength} arguments, but got ${args.length}.`;
-      } else {
-        message = `TS2554: Expected ${maxLength} arguments, but got ${args.length}.`;
-      }
-      transformLog.errors.push({
-        type: LogType.ERROR,
-        message: message,
-        pos: argPos
-      });
-    } else {
-      for (let i = 0; i < parameters.length; i++) {
-        validatePropertyType(parameters[i], args[i], typeChecker);
-      }
-    }
-  }
-}
-
-function getMinLength(parameters: ts.ParameterDeclaration[]): number {
-  let length: number = parameters.length;
-  parameters.forEach((item: ts.ParameterDeclaration) => {
-    if (item.questionToken !== undefined) {
-      length--;
-    }
-  });
-  return length;
-}
-
-function isPropertyExist(typeChecker: ts.TypeChecker, pos: number, type: ts.Type,
-  propertyName: string, componentName: string): ts.Symbol {
-  const symbol: ts.Symbol = typeChecker.getPropertyOfType(type, propertyName);
-  if (symbol) {
-    return symbol;
-  } else {
-    transformLog.errors.push({
-      type: LogType.ERROR,
-      message: `TS2339: Property '${propertyName}' does not exist on type '${componentName}Attribute'.`,
-      pos: pos
-    });
-  }
-  return null;
-}
-
-function validatePropertyType(param: ts.ParameterDeclaration, arg: ts.Expression,
-  typeChecker: ts.TypeChecker): void {
-  const argLocalType: ts.Type = typeChecker.getTypeAtLocation(arg);
-  const paramLocalType: ts.Type = typeChecker.getTypeAtLocation(param.type);
-  const argType: ts.Type = typeChecker.getBaseTypeOfLiteralType(typeChecker.getTypeAtLocation(arg));
-  // @ts-ignore
-  const intrinsicName: string = argType.intrinsicName;
-  const argTypeName: string = intrinsicName || typeChecker.typeToString(argLocalType);
-  // @ts-ignore
-  if (!typeChecker.isTypeAssignableTo(argLocalType, paramLocalType)) {
-    generateArgumentLog(arg, argTypeName, typeChecker.typeToString(paramLocalType));
-  }
-}
-
-function generateArgumentLog(arg: ts.Expression, argTypeName: string, paramTypeName: string): void {
-  transformLog.errors.push({
-    type: LogType.ERROR,
-    message: `TS2345: Argument of type '${argTypeName}' is not assignable to parameter of type '${paramTypeName}'.`,
-    pos: arg.getStart()
-  });
-}
-
-function isAttributeBlockNode(node: ts.ExpressionStatement, arr: ts.Statement[], index: number): boolean {
-  const attributeNode: ts.Node = arr[index + 2];
-  return BUILDIN_CONTAINER_COMPONENT.has(getName(node)) && ts.isBlock(arr[index + 1])
-    && ts.isExpressionStatement(attributeNode) && isAttributeNode(attributeNode);
 }
 
 function createEntryFunction(name: string, context: ts.TransformationContext)
