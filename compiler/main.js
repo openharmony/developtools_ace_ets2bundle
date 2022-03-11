@@ -55,6 +55,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
     process.env.aceSuperVisualPath
+  projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
 }
 
 function loadEntryObj(projectConfig) {
@@ -223,17 +224,44 @@ function setEntrance(abilityConfig, abilityPages) {
 }
 
 function loadWorker(projectConfig) {
-  const workerPath = path.resolve(projectConfig.projectPath, WORKERS_DIR);
-  if (fs.existsSync(workerPath)) {
-    const workerFiles = [];
-    readFile(workerPath, workerFiles);
-    workerFiles.forEach((item) => {
-      if (/\.(ts|js)$/.test(item)) {
-        const relativePath = path.relative(workerPath, item).replace(/\.(ts|js)$/, '');
-        projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
+  if (validateWorkOption()) {
+    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+    workerConfig.workers.forEach(worker => {
+      if (!/\.(ts|js)$/.test(worker)) {
+        worker += '.ts';
+      }
+      const relativePath = path.relative(projectConfig.projectPath, worker);
+      if (filterWorker(relativePath)) {
+        projectConfig.entryObj[relativePath.replace(/\.(ts|js)$/,'')] = worker;
       }
     })
+  } else {
+    const workerPath = path.resolve(projectConfig.projectPath, WORKERS_DIR);
+    if (fs.existsSync(workerPath)) {
+      const workerFiles = [];
+      readFile(workerPath, workerFiles);
+      workerFiles.forEach((item) => {
+        if (/\.(ts|js)$/.test(item)) {
+          const relativePath = path.relative(workerPath, item).replace(/\.(ts|js)$/, '');
+          projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
+        }
+      })
+    }
   }
+}
+
+function validateWorkOption() {
+  if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
+    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+    if(workerConfig.workers) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function filterWorker(workerPath) {
+  return /\.(ts|js)$/.test(workerPath) && !/^\.\./.test(workerPath);
 }
 
 ;(function initSystemResource() {
