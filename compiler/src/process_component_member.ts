@@ -879,11 +879,3 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
   });
 }
 
-// function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElementLike,
-//   log: LogInfo[]): void {
-//   log.push({
-//     type: LogType.ERROR,
-//     message: 'The builder should be initialized with a @CustomDialog Component.',
-//     pos: node.getStart()
-//   });
-// }
