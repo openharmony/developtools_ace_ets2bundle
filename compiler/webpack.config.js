@@ -60,7 +60,7 @@ function initConfig(config) {
     module: {
       rules: [
         {
-          test:/\.(jpg|png|gif|jpeg|mp3|mp4)$/,
+          test:/\.(jpg|png|gif|jpeg|mp3|mp4|svg)$/,
           use:{
             loader:'url-loader'
           }
