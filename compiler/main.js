@@ -87,9 +87,10 @@ function loadEntryObj(projectConfig) {
     if (manifest.pages) {
       const pages = manifest.pages;
       pages.forEach((element) => {
-        const fileName = projectConfig.projectPath + path.sep + element + '.ets';
+        const sourcePath = element.replace(/^\.\/ets\//, '');
+        const fileName = projectConfig.projectPath + path.sep + sourcePath + '.ets';
         if (fs.existsSync(fileName)) {
-          projectConfig.entryObj['./' + element] = fileName + '?entry';
+          projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
           throw Error(`\u001b[31m ERROR: page '${fileName}' does not exist. \u001b[39m`).message;
         }
