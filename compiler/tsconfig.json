@@ -30,7 +30,6 @@
         "Ellipse",
         "Flex",
         "FormComponent",
-        "FrictionMotion",
         "Gauge",
         "GeometryView",
         "Grid",
@@ -68,7 +67,6 @@
         "RichText",
         "Scroll",
         "ScrollBar",
-        "ScrollMotion",
         "Search",
         "Section",
         "Select",
@@ -211,11 +209,6 @@
             "name": "FormComponent",
             "type": "FormComponentAttribute",
             "instance": "FormComponentInstance"
-          },
-          {
-            "name": "FrictionMotion",
-            "type": "FrictionMotionAttribute",
-            "instance": "FrictionMotionInstance"
           },
           {
             "name": "Gauge",
@@ -401,11 +394,6 @@
             "name": "ScrollBar",
             "type": "ScrollBarAttribute",
             "instance": "ScrollBarInstance"
-          },
-          {
-            "name": "ScrollMotion",
-            "type": "ScrollMotionAttribute",
-            "instance": "ScrollMotionInstance"
           },
           {
             "name": "Search",
