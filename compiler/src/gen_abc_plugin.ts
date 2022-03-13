@@ -15,10 +15,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import cluster from 'cluster';
+import * as process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 
-const {Worker, isMainThread} = require('worker_threads');
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
 let output: string;
@@ -70,31 +71,7 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
-      let param: string = '';
-      if (isDebug) {
-        param += ' --debug';
-      }
-
-      if (isMainThread) {
-        let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-        if (isWin) {
-          js2abc = path.join(arkDir, 'build-win', 'src', 'index.js'); 
-        } else if (isMac) {
-          js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
-        }
-        let maxWorkerNumber = 3;
-        let splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
-        let workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
-        let cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
-        let workers = [];
-        for (let i = 0; i < workerNumber; ++i) {
-          workers.push(new Worker(path.resolve(__dirname, genAbcScript),
-                                  {workerData: {input: splitedBundles[i], cmd: cmdPrefix} }));
-          workers[i].on('exit', () => {
-            logger.debug("worker ", i, "finished!");
-          });
-        }
-      }
+      invokeWorkersToGenAbc();
     });
   }
 }
@@ -124,12 +101,12 @@ function mkDir(path_: string): void {
 function getSmallestSizeGroup(groupSize: Map<number, number>) {
   let groupSizeArray = Array.from(groupSize);
   groupSizeArray.sort(function(g1, g2) {
-    return g1[1] - g2[1]; // sort by value
+    return g1[1] - g2[1]; // sort by size
   });
-  return groupSizeArray[0][0]; // return key
+  return groupSizeArray[0][0];
 }
 
-function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
+function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
   let result = [];
   if (bundleArray.length < groupNumber) {
     result.push(bundleArray);
@@ -154,4 +131,51 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
     index++;
   }
   return result;
+}
+
+function invokeWorkersToGenAbc() {
+  let param: string = '';
+  if (isDebug) {
+    param += ' --debug';
+  }
+
+  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+  if (isWin) {
+    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+  } else if (isMac) {
+    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  }
+
+  const maxWorkerNumber = 3;
+  const splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
+  const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
+  const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+
+  const clusterNewApiVersion = 16;
+  const currentNodeVersion = parseInt(process.version.split('.')[0]);
+  const useNewApi = currentNodeVersion >= clusterNewApiVersion ? true : false;
+
+  if ((useNewApi && cluster.isPrimary) || (!useNewApi && cluster.isMaster)) {
+    if (useNewApi) {
+      cluster.setupPrimary({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    } else {
+      cluster.setupMaster({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    }
+
+    for (let i = 0; i < workerNumber; ++i) {
+      let workerData = {
+        "inputs": JSON.stringify(splitedBundles[i]),
+        "cmd": cmdPrefix
+      }
+      cluster.fork(workerData);
+    }
+
+    cluster.on('exit', (worker, code, signal) => {
+      logger.debug(`worker ${worker.process.pid} finished`);
+    });
+  }
 }
