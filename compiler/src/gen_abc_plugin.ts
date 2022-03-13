@@ -13,20 +13,26 @@
  * limitations under the License.
  */
 
-import * as process from 'child_process';
 import * as fs from 'fs';
-
 import * as path from 'path';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 
+const {Worker, isMainThread} = require('worker_threads');
 const firstFileEXT: string = '_.js';
+const genAbcScript = 'gen_abc.js';
 let output: string;
 let isWin: boolean = false;
 let isMac: boolean = false;
 let isDebug: boolean = false;
 let arkDir: string;
 let nodeJs: string;
+
+interface File {
+  path: string,
+  size: number
+}
+let intermediateJsBundle: Array<File> = [];
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -54,13 +60,41 @@ export class GenAbcPlugin {
 
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
       Object.keys(compilation.assets).forEach(key => {
-        // choice *.js
+        // choose *.js
         if (output && path.extname(key) === '.js') {
           const newContent: string = compilation.assets[key].source();
           const keyPath: string = key.replace(/\.js$/, firstFileEXT);
           writeFileSync(newContent, path.resolve(output, keyPath), key);
         }
       });
+    });
+
+    compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
+      let param: string = '';
+      if (isDebug) {
+        param += ' --debug';
+      }
+
+      if (isMainThread) {
+        let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+        if (isWin) {
+          js2abc = path.join(arkDir, 'build-win', 'src', 'index.js'); 
+        } else if (isMac) {
+          js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+        }
+        let maxWorkerNumber = 3;
+        let splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
+        let workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
+        let cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+        let workers = [];
+        for (let i = 0; i < workerNumber; ++i) {
+          workers.push(new Worker(path.resolve(__dirname, genAbcScript),
+                                  {workerData: {input: splitedBundles[i], cmd: cmdPrefix} }));
+          workers[i].on('exit', () => {
+            logger.debug("worker ", i, "finished!");
+          });
+        }
+      }
     });
   }
 }
@@ -72,7 +106,8 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   }
   fs.writeFileSync(output, inputString);
   if (fs.existsSync(output)) {
-    js2abcFirst(output);
+    let fileSize = fs.statSync(output).size;
+    intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
   }
@@ -86,37 +121,37 @@ function mkDir(path_: string): void {
   fs.mkdirSync(path_);
 }
 
-function js2abcFirst(inputPath: string): void {
-  let param: string = '-r';
-  if (isDebug) {
-    param += ' --debug';
+function getSmallestSizeGroup(groupSize: Map<number, number>) {
+  let groupSizeArray = Array.from(groupSize);
+  groupSizeArray.sort(function(g1, g2) {
+    return g1[1] - g2[1]; // sort by value
+  });
+  return groupSizeArray[0][0]; // return key
+}
+
+function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
+  let result = [];
+  if (bundleArray.length < groupNumber) {
+    result.push(bundleArray);
+    return result;
   }
 
-  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-  if (isWin) {
-    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
-  } else if (isMac) {
-    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  bundleArray.sort(function(f1: File, f2: File) {
+    return f2.size - f1.size;
+  });
+  let groupFileSize = new Map();
+  for (let i = 0; i < groupNumber; ++i) {
+    result.push([]);
+    groupFileSize.set(i, 0);
   }
 
-  const cmd: string = `${nodeJs} --expose-gc "${js2abc}" "${inputPath}" ${param}`;
-
-  try {
-    process.execSync(cmd);
-  } catch (e) {
-    logger.error(red, `ETS:ERROR Failed to convert file ${inputPath} to abc `, reset);
-    return;
+  let index = 0;
+  while(index < bundleArray.length) {
+    let smallestGroup = getSmallestSizeGroup(groupFileSize);
+    result[smallestGroup].push(bundleArray[index]);
+    let sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
+    groupFileSize.set(smallestGroup, sizeUpdate);
+    index++;
   }
-
-  if (fs.existsSync(inputPath)) {
-    fs.unlinkSync(inputPath);
-  }
-
-  const abcFile: string = inputPath.replace(/\.js$/, '.abc');
-  if (fs.existsSync(abcFile)) {
-    const abcFileNew: string = abcFile.replace(/_.abc$/, '.abc');
-    fs.renameSync(abcFile, abcFileNew);
-  } else {
-    logger.error(red, `ETS:ERROR ${abcFile} is lost`, reset);
-  }
+  return result;
 }
