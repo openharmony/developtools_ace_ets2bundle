@@ -40,9 +40,6 @@ function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
-    cache: {
-      type: "filesystem"
-    },
     watch: watchMode,
     watchOptions: {
       aggregateTimeout: 10,
@@ -118,6 +115,11 @@ function initConfig(config) {
       new ResultStates()
     ]
   });
+  if (!/ets_loader_ark$/.test(__dirname)) {
+    config.cache = {
+      type: "filesystem"
+    };
+  }
 }
 
 function setProjectConfig(envArgs) {
