@@ -31,6 +31,7 @@ configure({
 const logger = getLogger('ETS');
 
 const staticPreviewPage = process.env.aceStaticPreview;
+const aceCompileMode = process.env.aceCompileMode || 'page';
 const abilityConfig = {
   abilityType: process.env.abilityType || 'page',
   abilityEntryFile: null,
@@ -61,7 +62,7 @@ function initProjectConfig(projectConfig) {
 function loadEntryObj(projectConfig) {
   let manifest = {};
   initProjectConfig(projectConfig);
-  if (process.env.aceManifestPath) {
+  if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
 	setFaTestRunnerFile(projectConfig);
   }
@@ -137,7 +138,7 @@ function setEntryFile(projectConfig) {
   const entryFileRealPath = entryFileName + extendFile;
   const entryFilePath = path.resolve(projectConfig.projectPath, entryFileRealPath);
   abilityConfig.abilityEntryFile = entryFilePath;
-  if (!fs.existsSync(entryFilePath)) {
+  if (!fs.existsSync(entryFilePath) && aceCompileMode === 'page') {
     throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
   }
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
