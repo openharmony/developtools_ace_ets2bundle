@@ -28,11 +28,13 @@
     "@typescript-eslint/parser": "^4.11.0",
     "chai": "^4.2.0",
     "eslint": "^7.16.0",
+    "file-loader": "^6.2.0",
     "mocha": "^8.2.1",
     "mocha-context": "^0.1.5",
     "pegjs": "^0.10.0",
     "ts-node": "^9.1.1",
-    "uglify-js": "^3.13.0"
+    "uglify-js": "^3.13.0",
+    "url-loader": "^4.1.1"
   },
   "dependencies": {
     "clean-webpack-plugin": "^3.0.0",
