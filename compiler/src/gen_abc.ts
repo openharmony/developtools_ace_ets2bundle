@@ -13,9 +13,9 @@ const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(inputPaths: File[], cmd: string): Promise<void> {
   for (let i = 0; i < inputPaths.length; ++i) {
-    let input = inputPaths[i].path;
-    let singleCmd = `${cmd} "${input}"`;
-    logger.debug("gen abc cmd is: ", singleCmd);
+    const input = inputPaths[i].path;
+    const singleCmd = `${cmd} "${input}"`;
+    logger.debug('gen abc cmd is: ', singleCmd);
     try {
       process.execSync(singleCmd);
     } catch (e) {
@@ -37,8 +37,8 @@ function js2abcByWorkers(inputPaths: File[], cmd: string): Promise<void> {
   }
 }
 
-logger.debug("worker data is: ", JSON.stringify(workerData));
+logger.debug('worker data is: ', JSON.stringify(workerData));
 if (JSON.stringify(workerData) !== 'null') {
-  logger.debug("==>worker #", threadId, "started!");
+  logger.debug('==>worker #', threadId, 'started!');
   js2abcByWorkers(workerData.input, workerData.cmd);
 }

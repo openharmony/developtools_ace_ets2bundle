@@ -894,33 +894,35 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         validateStateStyleSyntax(temp, log);
       }
     }
-    temp = loopEtsComponent(temp, isStylesAttr, isGlobalStyles);
+    temp = loopEtscomponent(temp, isStylesAttr, isGlobalStyles);
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
 }
 
-function loopEtsComponent(temp: any, isStylesAttr: boolean, isGlobalStyles: boolean): ts.Node {
-  temp.arguments.forEach((item: ts.Node, index: number) => {
+function loopEtscomponent(node: any, isStylesAttr: boolean, isGlobalStyles: boolean): ts.Node {
+  node.arguments.forEach((item: ts.Node, index: number) => {
     if (isStylesAttr && isGlobalStyles) {
-      temp.arguments[index] = traverseStylesAttr(item);
+      node.arguments[index] = traverseStylesAttr(item);
     }
-    if (ts.isNewExpression(item) && item.expression && ts.isEtsComponentExpression(
-      item.expression)) {
-      temp.arguments[index] = ts.factory.updateNewExpression(item, item.expression.expression,
-        undefined, item.expression.arguments);
-    } else if (ts.isEtsComponentExpression(item)) {
-      temp.arguments[index] = ts.factory.createCallExpression(item.expression,
-        undefined, item.arguments);
-    } else if ((ts.isCallExpression(item) || ts.isNewExpression(item)) && item.expression &&
-      ts.isPropertyAccessExpression(item.expression) && item.expression.expression &&
-      ts.isEtsComponentExpression(item.expression.expression)) {
-      temp.arguments[index].expression.expression = ts.factory.createCallExpression(
-        item.expression.expression.expression, undefined, item.expression.expression.arguments);
+    if (ts.isEtsComponentExpression(item)) {
+      node.arguments[index] = ts.factory.createCallExpression(
+        item.expression, undefined, item.arguments);
+    } else if (ts.isCallExpression(item) || ts.isNewExpression(item)) {
+      node.arguments[index] = ts.visitEachChild(item,
+        changeEtsComponentKind, contextGlobal);
     }
   });
-  return temp;
+  return node;
+}
+
+function changeEtsComponentKind(node: ts.Node): ts.Node {
+  if (ts.isEtsComponentExpression(node)) {
+    node.kind = 204;
+    return node;
+  }
+  return ts.visitEachChild(node, changeEtsComponentKind, contextGlobal);
 }
 
 function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
