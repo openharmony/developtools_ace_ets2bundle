@@ -61,6 +61,7 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
+import { importModuleCollection } from "./ets_checker";
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -748,6 +749,9 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
     let moduleType: string = item2 || item5;
     let systemKey: string = item3 || item6;
     let systemValue: string = item1 || item4;
+    if (!VALIDATE_MODULE.includes(systemValue)){
+      importModuleCollection.add(systemValue);
+    }
     if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
       return item;
     } else if (isProcessWhiteList) {
