@@ -147,12 +147,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
   };
 }
 
-function isCustomDialogController(node: ts.PropertyDeclaration) {
+function isCustomDialogController(node: ts.Expression) {
   return node.parent && ts.isNewExpression(node) && ts.isIdentifier(node.expression) &&
     node.expression.getText() === SET_CONTROLLER_CTR_TYPE;
 }
 
-function createCustomDialogController(parent: ts.PropertyDeclaration, node: ts.NewExpression,
+function createCustomDialogController(parent: ts.Expression, node: ts.NewExpression,
   log: LogInfo[]): ts.NewExpression {
   if (node.arguments && node.arguments.length === 1 &&
     ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
@@ -189,7 +189,7 @@ function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElement
   });
 }
 
-function processCustomDialogControllerPropertyAssignment(parent: ts.PropertyDeclaration,
+function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
   node: ts.PropertyAssignment): ts.PropertyAssignment {
   if (ts.isCallExpression(node.initializer)) {
     return ts.factory.updatePropertyAssignment(node, node.name,
@@ -197,25 +197,52 @@ function processCustomDialogControllerPropertyAssignment(parent: ts.PropertyDecl
   }
 }
 
-function processCustomDialogControllerBuilder(parent: ts.PropertyDeclaration,
+function processCustomDialogControllerBuilder(parent: ts.Expression,
   node: ts.CallExpression): ts.ArrowFunction {
   const newExp: ts.Expression = createCustomComponentNewExpression(node);
   const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
   return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
 }
 
-function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,
+function createCustomComponentBuilderArrowFunction(parent: ts.Expression,
   jsDialog: ts.Identifier, newExp: ts.Expression): ts.ArrowFunction {
-  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock([
-      ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-        [ts.factory.createVariableDeclaration(jsDialog, undefined, undefined, newExp)],
-        ts.NodeFlags.Let)), ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(jsDialog,
-          ts.factory.createIdentifier(SET_CONTROLLER_METHOD)), undefined,
-        [ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-            parent.name as ts.Identifier)])), ts.factory.createExpressionStatement(
-        createViewCreate(jsDialog))], true));
+  let mountNodde: ts.PropertyAccessExpression;
+  if (ts.isBinaryExpression(parent)) {
+    mountNodde = parent.left;
+  } else if (ts.isVariableDeclaration(parent) || ts.isPropertyDeclaration(parent)) {
+    mountNodde = ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
+      parent.name as ts.Identifier);
+  }
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock(
+      [
+        ts.factory.createVariableStatement(
+          undefined,
+          ts.factory.createVariableDeclarationList(
+            [ts.factory.createVariableDeclaration(jsDialog, undefined, undefined, newExp)],
+            ts.NodeFlags.Let
+          )
+        ),
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              jsDialog,
+              ts.factory.createIdentifier(SET_CONTROLLER_METHOD)
+            ),
+            undefined,
+            [mountNodde]
+          )
+        ),
+        ts.factory.createExpressionStatement(createViewCreate(jsDialog))
+      ],
+      true
+    )
+  );
 }
 
 function isResource(node: ts.Node): boolean {
