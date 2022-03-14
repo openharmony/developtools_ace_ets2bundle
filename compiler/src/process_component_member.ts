@@ -48,6 +48,8 @@ import {
   SET_CONTROLLER_METHOD,
   SET_CONTROLLER_CTR,
   SET_CONTROLLER_CTR_TYPE,
+  JS_DIALOG,
+  CUSTOM_DIALOG_CONTROLLER_BUILDER,
   BASE_COMPONENT_NAME,
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_BUILDERPARAM_DECORATOR
@@ -462,7 +464,7 @@ function createUpdateParamsWithSet(name: ts.Identifier): ts.ExpressionStatement 
 function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
   log: LogInfo[], context: ts.TransformationContext): ts.ExpressionStatement {
   const init: ts.Expression =
-    ts.visitNode(node.initializer, visitDialogController);
+    ts.visitNode(processCustomDialogController(node, log), visitDialogController);
   function visitDialogController(node: ts.Node): ts.Node {
     if (isProperty(node)) {
       node = createReference(node as ts.PropertyAssignment);
@@ -473,6 +475,59 @@ function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
     createPropertyAccessExpressionWithThis(name.getText()),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), init ||
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)));
+}
+
+function processCustomDialogController(node: ts.PropertyDeclaration,
+  log: LogInfo[]): ts.Expression {
+  if (node.initializer && ts.isNewExpression(node.initializer) &&
+    ts.isIdentifier(node.initializer.expression) &&
+    node.initializer.expression.getText() === SET_CONTROLLER_CTR_TYPE) {
+    return createCustomDialogController(node, node.initializer, log);
+  }
+  return node.initializer;
+}
+
+function createCustomDialogController(parent: ts.PropertyDeclaration, node: ts.NewExpression,
+  log: LogInfo[]): ts.NewExpression {
+  if (node.arguments && node.arguments.length === 1 &&
+    ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
+    const newproperties: ts.ObjectLiteralElementLike[] = node.arguments[0].properties.map((item) => {
+      if (isCustomDialogControllerPropertyAssignment(item, log)) {
+        item = processCustomDialogControllerPropertyAssignment(parent, item as ts.PropertyAssignment);
+      }
+      return item;
+    });
+    return ts.factory.createNewExpression(node.expression, node.typeArguments,
+      [ts.factory.createObjectLiteralExpression(newproperties, true), ts.factory.createThis()]);
+  }
+}
+
+function isCustomDialogControllerPropertyAssignment(node: ts.ObjectLiteralElementLike,
+  log: LogInfo[]): boolean {
+  if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
+    node.name.getText() === CUSTOM_DIALOG_CONTROLLER_BUILDER) {
+    if (ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression) &&
+      componentCollection.customDialogs.has(node.initializer.expression.getText())) {
+      return true;
+    } else {
+      validateCustomDialogControllerBuilderInit(node, log);
+    }
+  }
+}
+
+function processCustomDialogControllerPropertyAssignment(parent: ts.PropertyDeclaration,
+  node: ts.PropertyAssignment): ts.PropertyAssignment {
+  if (ts.isCallExpression(node.initializer)) {
+    return ts.factory.updatePropertyAssignment(node, node.name,
+      processCustomDialogControllerBuilder(parent, node.initializer));
+  }
+}
+
+function processCustomDialogControllerBuilder(parent: ts.PropertyDeclaration,
+  node: ts.CallExpression): ts.ArrowFunction {
+  const newExp: ts.Expression = createCustomComponentNewExpression(node);
+  const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
+  return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
 }
 
 function updateObservedProperty(item: ts.PropertyDeclaration, name: ts.Identifier,
@@ -876,5 +931,14 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
     type: type,
     message: 'The parameter should be a string.',
     pos: pos
+  });
+}
+
+function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElementLike,
+  log: LogInfo[]): void {
+  log.push({
+    type: LogType.ERROR,
+    message: 'The builder should be initialized with a @CustomDialog Component.',
+    pos: node.getStart()
   });
 }

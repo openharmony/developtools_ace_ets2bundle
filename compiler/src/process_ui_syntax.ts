@@ -36,11 +36,7 @@ import {
   ATTRIBUTE_ANIMATETO,
   GLOBAL_CONTEXT,
   CHECK_COMPONENT_EXTEND_DECORATOR,
-  INSTANCE,
-  SET_CONTROLLER_CTR_TYPE,
-  SET_CONTROLLER_METHOD,
-  JS_DIALOG,
-  CUSTOM_DIALOG_CONTROLLER_BUILDER
+  INSTANCE
 } from './pre_define';
 import {
   componentInfo,
@@ -62,7 +58,6 @@ import {
   INTERFACE_NODE_SET
 } from './component_map';
 import { resources } from '../main';
-import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -133,8 +128,6 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = processWorker(node as ts.NewExpression);
       } else if (isAnimateTo(node)) {
         node = processAnimateTo(node as ts.CallExpression);
-      } else if (isCustomDialogController(node)) {
-        node = createCustomDialogController(node.parent, node, transformLog.errors);
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
@@ -145,77 +138,6 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       return ts.visitEachChild(node, processResourceNode, context);
     }
   };
-}
-
-function isCustomDialogController(node: ts.PropertyDeclaration) {
-  return node.parent && ts.isNewExpression(node) && ts.isIdentifier(node.expression) &&
-    node.expression.getText() === SET_CONTROLLER_CTR_TYPE;
-}
-
-function createCustomDialogController(parent: ts.PropertyDeclaration, node: ts.NewExpression,
-  log: LogInfo[]): ts.NewExpression {
-  if (node.arguments && node.arguments.length === 1 &&
-    ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
-    const newproperties: ts.ObjectLiteralElementLike[] = node.arguments[0].properties.map((item) => {
-      if (isCustomDialogControllerPropertyAssignment(item, log)) {
-        item = processCustomDialogControllerPropertyAssignment(parent, item as ts.PropertyAssignment);
-      }
-      return item;
-    });
-    return ts.factory.createNewExpression(node.expression, node.typeArguments,
-      [ts.factory.createObjectLiteralExpression(newproperties, true), ts.factory.createThis()]);
-  }
-}
-
-function isCustomDialogControllerPropertyAssignment(node: ts.ObjectLiteralElementLike,
-  log: LogInfo[]): boolean {
-  if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
-    node.name.getText() === CUSTOM_DIALOG_CONTROLLER_BUILDER) {
-    if (ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression) &&
-      componentCollection.customDialogs.has(node.initializer.expression.getText())) {
-      return true;
-    } else {
-      validateCustomDialogControllerBuilderInit(node, log);
-    }
-  }
-}
-
-function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElementLike,
-  log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: 'The builder should be initialized with a @CustomDialog Component.',
-    pos: node.getStart()
-  });
-}
-
-function processCustomDialogControllerPropertyAssignment(parent: ts.PropertyDeclaration,
-  node: ts.PropertyAssignment): ts.PropertyAssignment {
-  if (ts.isCallExpression(node.initializer)) {
-    return ts.factory.updatePropertyAssignment(node, node.name,
-      processCustomDialogControllerBuilder(parent, node.initializer));
-  }
-}
-
-function processCustomDialogControllerBuilder(parent: ts.PropertyDeclaration,
-  node: ts.CallExpression): ts.ArrowFunction {
-  const newExp: ts.Expression = createCustomComponentNewExpression(node);
-  const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
-  return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
-}
-
-function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,
-  jsDialog: ts.Identifier, newExp: ts.Expression): ts.ArrowFunction {
-  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock([
-      ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-        [ts.factory.createVariableDeclaration(jsDialog, undefined, undefined, newExp)],
-        ts.NodeFlags.Let)), ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(jsDialog,
-          ts.factory.createIdentifier(SET_CONTROLLER_METHOD)), undefined,
-        [ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-            parent.name as ts.Identifier)])), ts.factory.createExpressionStatement(
-        createViewCreate(jsDialog))], true));
 }
 
 function isResource(node: ts.Node): boolean {
