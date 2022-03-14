@@ -16,9 +16,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import cluster from 'cluster';
-import * as process from 'process';
+import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
+import { toUnixPath } from './utils';
+import { createHash } from 'crypto';
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -34,9 +36,14 @@ interface File {
   size: number
 }
 let intermediateJsBundle: Array<File> = [];
+let fileterIntermediateJsBundle: Array<File> = [];
+let hashJsonObject = {};
+let buildPathInfo = "";
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+const hashFile = 'gen_hash.json';
+const ARK = '/ark/';
 
 export class GenAbcPlugin {
   constructor(output_, arkDir_, nodeJs_, isDebug_) {
@@ -71,6 +78,7 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
+      buildPathInfo = output;
       invokeWorkersToGenAbc();
     });
   }
@@ -146,8 +154,9 @@ function invokeWorkersToGenAbc() {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
+  filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
   const maxWorkerNumber = 3;
-  const splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
+  const splitedBundles = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
   const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
@@ -177,5 +186,85 @@ function invokeWorkersToGenAbc() {
     cluster.on('exit', (worker, code, signal) => {
       logger.debug(`worker ${worker.process.pid} finished`);
     });
+
+    process.on('exit', (code) => {
+      if (buildPathInfo.indexOf(ARK)) {
+        const hashPath = genHashJsonPath(buildPathInfo);
+        const hashFilePath = path.join(hashPath, hashFile);
+        const parent: string = path.join(hashFilePath, '..');
+        if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+          mkDir(parent);
+        }
+        for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
+          let input = fileterIntermediateJsBundle[i].path;
+          let abcPath = input.replace(/_.js$/, '.abc');
+          if (fs.existsSync(input) && fs.existsSync(abcPath)) {
+            const inputContent = fs.readFileSync(input);
+            const hashInput = createHash('sha256');
+            hashInput.update(inputContent);
+            const hashInputContentData = hashInput.digest('hex');
+            const abcContent = fs.readFileSync(abcPath);
+            const hashAbc = createHash('sha256');
+            hashAbc.update(abcContent);
+            const hashAbcContentData = hashAbc.digest('hex');
+            hashJsonObject[input] = hashInputContentData;
+            hashJsonObject[abcPath] = hashAbcContentData;
+          }
+          if (fs.existsSync(input)) {
+            fs.unlinkSync(input);
+          }
+        }
+        fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
+      }
+    })
   }
+}
+
+function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]) {
+  for (let i = 0; i < inputPaths.length; ++i) {
+    fileterIntermediateJsBundle.push(inputPaths[i]);
+  }
+  let updateJsonObject = {};
+  if (buildPath.indexOf(ARK)) {
+    const hashPath = genHashJsonPath(buildPath);
+    const hashFilePath = path.join(hashPath, hashFile);
+    let jsonObject = {};
+    let jsonFile = "";
+    if (fs.existsSync(hashFilePath)) {
+      jsonFile = fs.readFileSync(hashFilePath).toString();
+      jsonObject = JSON.parse(jsonFile);
+      fileterIntermediateJsBundle = [];
+      for (let i = 0; i < inputPaths.length; ++i) {
+        let input = inputPaths[i].path;
+        let abcPath = input.replace(/_.js$/, '.abc');
+        if (fs.existsSync(input) && fs.existsSync(abcPath)) {
+          const inputContent = fs.readFileSync(input);
+          const hashInput = createHash('sha256');
+          hashInput.update(inputContent);
+          const hashInputContentData = hashInput.digest('hex');
+          const abcContent = fs.readFileSync(abcPath);
+          const hashAbc = createHash('sha256');
+          hashAbc.update(abcContent);
+          const hashAbcContentData = hashAbc.digest('hex');
+          if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+            updateJsonObject[input] = hashInputContentData;
+            updateJsonObject[abcPath] = hashAbcContentData;
+            fs.unlinkSync(input);
+          } else {
+            fileterIntermediateJsBundle.push(inputPaths[i]);
+          }
+        } else {
+          fileterIntermediateJsBundle.push(inputPaths[i]);
+        }
+      }
+    }
+  }
+
+  hashJsonObject = updateJsonObject;
+}
+
+function genHashJsonPath(buildPath: string) {
+  buildPath = toUnixPath(buildPath);
+  const dataTmps = buildPath.split(ARK);
+  return path.join(dataTmps[0], ARK);
 }
