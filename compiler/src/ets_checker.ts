@@ -134,6 +134,7 @@ export const dollarCollection: Set<string> = new Set();
 export const appComponentCollection: Set<string> = new Set();
 export const decoratorParamsCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
+export const importModuleCollection: Set<string> = new Set();
 
 function checkUISyntax(source: string, fileName: string): void {
   if (/\.ets$/.test(fileName)) {
