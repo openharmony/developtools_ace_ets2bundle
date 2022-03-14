@@ -89,6 +89,7 @@
         "TextArea",
         "TextInput",
         "TextTimer",
+        "TimePicker",
         "Toggle",
         "Video",
         "Web",
@@ -506,6 +507,11 @@
             "name": "TextTimer",
             "type": "TextTimerAttribute",
             "instance": "TextTimerInstance"
+          },
+          {
+            "name": "TimePicker",
+            "type": "TimePickerAttribute",
+            "instance": "TimePickerInstance"
           },
           {
             "name": "Toggle",
