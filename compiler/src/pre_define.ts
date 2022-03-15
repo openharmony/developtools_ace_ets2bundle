@@ -200,6 +200,7 @@ export const $$_VALUE: string = 'value';
 export const $$_CHANGE_EVENT: string = 'changeEvent';
 export const $$_THIS: string = '$$this';
 export const $$_NEW_VALUE: string = 'newValue';
+export const $$: string = '$$';
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
 export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
