@@ -32,7 +32,7 @@ interface File {
   path: string,
   size: number
 }
-let intermediateJsBundle: Array<File> = [];
+const intermediateJsBundle: Array<File> = [];
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -78,20 +78,20 @@ export class GenAbcPlugin {
       if (isMainThread) {
         let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
         if (isWin) {
-          js2abc = path.join(arkDir, 'build-win', 'src', 'index.js'); 
+          js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
         } else if (isMac) {
           js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
         }
-        let maxWorkerNumber = 3;
-        let splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
-        let workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
-        let cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
-        let workers = [];
+        const maxWorkerNumber = 3;
+        const splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
+        const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
+        const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+        const workers = [];
         for (let i = 0; i < workerNumber; ++i) {
           workers.push(new Worker(path.resolve(__dirname, genAbcScript),
-                                  {workerData: {input: splitedBundles[i], cmd: cmdPrefix} }));
+            {workerData: {input: splitedBundles[i], cmd: cmdPrefix} }));
           workers[i].on('exit', () => {
-            logger.debug("worker ", i, "finished!");
+            logger.debug('worker ', i, 'finished!');
           });
         }
       }
@@ -106,7 +106,7 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   }
   fs.writeFileSync(output, inputString);
   if (fs.existsSync(output)) {
-    let fileSize = fs.statSync(output).size;
+    const fileSize = fs.statSync(output).size;
     intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
@@ -122,15 +122,15 @@ function mkDir(path_: string): void {
 }
 
 function getSmallestSizeGroup(groupSize: Map<number, number>) {
-  let groupSizeArray = Array.from(groupSize);
+  const groupSizeArray = Array.from(groupSize);
   groupSizeArray.sort(function(g1, g2) {
     return g1[1] - g2[1]; // sort by value
   });
   return groupSizeArray[0][0]; // return key
 }
 
-function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
-  let result = [];
+function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
+  const result = [];
   if (bundleArray.length < groupNumber) {
     result.push(bundleArray);
     return result;
@@ -139,17 +139,17 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
   bundleArray.sort(function(f1: File, f2: File) {
     return f2.size - f1.size;
   });
-  let groupFileSize = new Map();
+  const groupFileSize = new Map();
   for (let i = 0; i < groupNumber; ++i) {
     result.push([]);
     groupFileSize.set(i, 0);
   }
 
   let index = 0;
-  while(index < bundleArray.length) {
-    let smallestGroup = getSmallestSizeGroup(groupFileSize);
+  while (index < bundleArray.length) {
+    const smallestGroup = getSmallestSizeGroup(groupFileSize);
     result[smallestGroup].push(bundleArray[index]);
-    let sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
+    const sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
     groupFileSize.set(smallestGroup, sizeUpdate);
     index++;
   }
