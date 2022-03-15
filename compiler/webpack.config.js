@@ -123,7 +123,8 @@ function initConfig(config) {
   });
   if (!/ets_loader_ark$/.test(__dirname)) {
     config.cache = {
-      type: "filesystem"
+      type: "filesystem",
+      cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
     };
   }
 }
@@ -147,6 +148,9 @@ function setProjectConfig(envArgs) {
   }
   if (envArgs.aceModuleJsonPath) {
     projectConfig.aceModuleJsonPath = envArgs.aceModuleJsonPath;
+  }
+  if (envArgs.cachePath) {
+    projectConfig.cachePath = envArgs.cachePath;
   }
 }
 
