@@ -315,13 +315,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
 }
 
 function hashProjectPath(projectPath) {
-  const ASSCIIStart = 65;
-  const ASSCIIEnd = 90;
-  const deviation = 1;
-  process.env.hashProjectPath =
-    String.fromCharCode(Math.floor(Math.random() * (ASSCIIEnd - ASSCIIStart + deviation) + ASSCIIStart)) +
-    md5(projectPath).substring(9, 16) +
-    String.fromCharCode(Math.floor(Math.random() * (ASSCIIEnd - ASSCIIStart + deviation) + ASSCIIStart));
+  process.env.hashProjectPath = "_" + md5(projectPath);
   return process.env.hashProjectPath;
 }
 
