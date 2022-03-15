@@ -60,6 +60,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
     hashProjectPath(projectConfig.projectPath)
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
+  projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
+    path.resolve(__dirname, 'node_modules/.cache');
 }
 
 function loadEntryObj(projectConfig) {
