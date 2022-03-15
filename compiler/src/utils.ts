@@ -16,6 +16,7 @@
 import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
+import { createHash } from 'crypto';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -214,4 +215,11 @@ export function toUnixPath(data: string): string {
     return newData;
   }
   return data;
+}
+
+export function toHashData(path: string) {
+  const content = fs.readFileSync(path);
+  const hash = createHash('sha256');
+  hash.update(content);
+  return hash.digest('hex');
 }
