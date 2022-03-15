@@ -1,4 +1,4 @@
 {
   "name": "Row",
-  "attrs": ["alignItems"]
+  "attrs": ["alignItems", "justifyContent"]
 }
