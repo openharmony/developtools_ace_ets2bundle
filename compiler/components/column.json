@@ -1,4 +1,4 @@
 {
   "name": "Column",
-  "attrs": ["alignItems"]
+  "attrs": ["alignItems", "justifyContent"]
 }
