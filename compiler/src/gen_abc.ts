@@ -27,7 +27,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   for (let i = 0; i < inputPaths.length; ++i) {
     const input = inputPaths[i].path;
     const singleCmd = `${cmd} "${input}"`;
-    logger.debug("gen abc cmd is: ", singleCmd, " ,file size is:", inputPaths[i].size, " byte");
+    logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
@@ -45,10 +45,10 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   }
 }
 
-logger.debug("worker data is: ", JSON.stringify(process.env));
-logger.debug("gen_abc isWorker is: ", cluster.isWorker);
-if (cluster.isWorker && process.env["inputs"] !== undefined && process.env["cmd"] !== undefined) {
-  logger.debug("==>worker #", cluster.worker.id, "started!");
-  js2abcByWorkers(process.env["inputs"], process.env["cmd"]);
+logger.debug('worker data is: ', JSON.stringify(process.env));
+logger.debug('gen_abc isWorker is: ', cluster.isWorker);
+if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
+  logger.debug('==>worker #', cluster.worker.id, 'started!');
+  js2abcByWorkers(process.env['inputs'], process.env['cmd']);
   process.exit();
 }
