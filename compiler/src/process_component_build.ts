@@ -129,10 +129,8 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
   if (node.body.statements.length === 1) {
-    const statement: ts.Node = node.body.statements[0];
-    if (ts.isIfStatement(statement) || ts.isExpressionStatement(statement) && statement.expression &&
-      (ts.isEtsComponentExpression(statement.expression) || ts.isCallExpression(statement.expression)) &&
-      validateEtsComponentNode(statement.expression)) {
+    const statement: ts.Statement = node.body.statements[0];
+    if (ts.isIfStatement(statement) || validateFirstNode(statement)) {
       isValid = true;
     }
   } else {
@@ -146,6 +144,24 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     });
   }
   return isValid;
+}
+
+function validateFirstNode(node: ts.Statement): boolean {
+  const isEntryComponent: boolean =
+    componentCollection.entryComponent === componentCollection.currentClassName;
+  if (isEntryComponent) {
+    if (!validateContainerComponent(node)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function validateContainerComponent(node: ts.Statement): boolean {
+  if (ts.isExpressionStatement(node) && BUILDIN_CONTAINER_COMPONENT.has(getName(node))) {
+    return true;
+  }
+  return false;
 }
 
 interface supplementType {
