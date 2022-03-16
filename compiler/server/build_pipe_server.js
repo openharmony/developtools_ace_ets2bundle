@@ -15,6 +15,7 @@
 
 const WebSocket = require('ws');
 const ts = require('typescript');
+const path = require('path');
 
 const { processComponentChild } = require('../lib/process_component_build');
 
@@ -25,7 +26,8 @@ let pluginSocket = '';
 let supplement = {
   isAcceleratePreview: false,
   line: 0,
-  column: 0
+  column: 0,
+  fileName: ''
 }
 
 const pluginCommandChannelMessageHandlers = {
@@ -56,16 +58,22 @@ function handlePluginCommand(jsonData) {
 
 function handlePluginCompileComponent(jsonData) {
   const receivedMsg = jsonData;
-  const sourceNode = ts.createSourceFile('preview.ts', receivedMsg.data.script,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const compilerOptions = ts.readConfigFile(
+    path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    Object.assign(compilerOptions, {
+      "sourceMap": false,
+    });
+  const sourceNode = ts.createSourceFile('preview.ets', 'struct{build(){' + receivedMsg.data.script + '}}',
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   const previewStatements = [];
   const log = [];
   supplement = {
     isAcceleratePreview: true,
     line: parseInt(JSON.parse(receivedMsg.data.offset).line),
-    column: parseInt(JSON.parse(receivedMsg.data.offset).column)
+    column: parseInt(JSON.parse(receivedMsg.data.offset).column),
+    fileName: receivedMsg.data.filePath || ''
   }
-  processComponentChild(sourceNode, previewStatements, log, supplement);
+  processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
   supplement.isAcceleratePreview = false;
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
@@ -73,11 +81,11 @@ function handlePluginCompileComponent(jsonData) {
   receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
   if (receivedMsg.data.offset) {
     for (let i = 0; i < log.length; i++) {
-      let line = parseInt(newSource.getLineAndCharacterOfPosition(log[i].pos).line);
-      let column = parseInt(newSource.getLineAndCharacterOfPosition(log[i].pos).character);
+      let line = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).line);
+      let column = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).character);
       if (line === 0) {
         log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line);
-        log[i].column = parseInt(JSON.parse(receivedMsg.data.offset).column) + column;
+        log[i].column = parseInt(JSON.parse(receivedMsg.data.offset).column) + column - 15;
       } else {
         log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line) + line;
         log[i].column = column;
