@@ -64,11 +64,11 @@ function loadEntryObj(projectConfig) {
   if (process.env.aceManifestPath) {
     setEntryFile(projectConfig);
     setAbilityFileFA(projectConfig);
-	  setFaTestRunnerFile(projectConfig);
+    setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
-    setAbilityPages(projectConfig)
-	  setStageTestRunnerFile(projectConfig);
+    setAbilityPages(projectConfig);
+    setStageTestRunnerFile(projectConfig);
   }
 
   if(staticPreviewPage) {
