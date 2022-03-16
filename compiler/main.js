@@ -319,6 +319,9 @@ function hashProjectPath(projectPath) {
   return process.env.hashProjectPath;
 }
 
+const globalProgram = { program: null };
+
+exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
 exports.readAppResource = readAppResource;
