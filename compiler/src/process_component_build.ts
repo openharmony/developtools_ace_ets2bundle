@@ -149,10 +149,8 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
 function validateFirstNode(node: ts.Statement): boolean {
   const isEntryComponent: boolean =
     componentCollection.entryComponent === componentCollection.currentClassName;
-  if (isEntryComponent) {
-    if (!validateContainerComponent(node)) {
-      return false;
-    }
+  if (isEntryComponent && !validateContainerComponent(node)) {
+    return false;
   }
   return true;
 }
