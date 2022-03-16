@@ -40,6 +40,7 @@ import {
   decoratorParamsCollection,
   extendCollection
 } from './ets_checker';
+import { globalProgram } from '../main';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -136,13 +137,17 @@ export class ResultStates {
         });
     });
 
-    compiler.hooks.run.tapPromise('CheckSyntax', async(compiler) => {
+    compiler.hooks.beforeRun.tap('beforeRun', () => {
       const rootFileNames: string[] = [];
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
         rootFileNames.push(fileName.replace('?entry', ''));
       });
       const languageService: ts.LanguageService = createLanguageService(rootFileNames);
-      const rootProgram: ts.Program = languageService.getProgram();
+      globalProgram.program = languageService.getProgram();
+    });
+
+    compiler.hooks.run.tapPromise('CheckSyntax', async(compiler) => {
+      const rootProgram: ts.Program = globalProgram.program;
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
       let allDiagnostics: ts.Diagnostic[] = rootProgram
         .getSyntacticDiagnostics()
