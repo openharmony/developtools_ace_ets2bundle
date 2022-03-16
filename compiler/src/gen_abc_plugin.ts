@@ -187,9 +187,7 @@ function invokeWorkersToGenAbc() {
     });
 
     process.on('exit', (code) => {
-      if (buildPathInfo.indexOf(ARK)) {
-        writeHashJson();
-      }
+      writeHashJson();
     });
   }
 }
@@ -203,33 +201,31 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
     return;
   }
   const updateJsonObject = {};
-  if (buildPath.indexOf(ARK)) {
-    let jsonObject = {};
-    let jsonFile = '';
-    if (fs.existsSync(hashFilePath)) {
-      jsonFile = fs.readFileSync(hashFilePath).toString();
-      jsonObject = JSON.parse(jsonFile);
-      fileterIntermediateJsBundle = [];
-      for (let i = 0; i < inputPaths.length; ++i) {
-        const input = inputPaths[i].path;
-        const abcPath = input.replace(/_.js$/, '.abc');
-        if (!fs.existsSync(input)) {
-          logger.error(red, `ETS:ERROR ${input} is lost`, reset);
-          continue;
-        }
-        if (fs.existsSync(abcPath)) {
-          const hashInputContentData = toHashData(input);
-          const hashAbcContentData = toHashData(abcPath);
-          if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
-            updateJsonObject[input] = hashInputContentData;
-            updateJsonObject[abcPath] = hashAbcContentData;
-            fs.unlinkSync(input);
-          } else {
-            fileterIntermediateJsBundle.push(inputPaths[i]);
-          }
+  let jsonObject = {};
+  let jsonFile = '';
+  if (fs.existsSync(hashFilePath)) {
+    jsonFile = fs.readFileSync(hashFilePath).toString();
+    jsonObject = JSON.parse(jsonFile);
+    fileterIntermediateJsBundle = [];
+    for (let i = 0; i < inputPaths.length; ++i) {
+      const input = inputPaths[i].path;
+      const abcPath = input.replace(/_.js$/, '.abc');
+      if (!fs.existsSync(input)) {
+        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        continue;
+      }
+      if (fs.existsSync(abcPath)) {
+        const hashInputContentData = toHashData(input);
+        const hashAbcContentData = toHashData(abcPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+          updateJsonObject[input] = hashInputContentData;
+          updateJsonObject[abcPath] = hashAbcContentData;
+          fs.unlinkSync(input);
         } else {
           fileterIntermediateJsBundle.push(inputPaths[i]);
         }
+      } else {
+        fileterIntermediateJsBundle.push(inputPaths[i]);
       }
     }
   }
@@ -238,10 +234,6 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
 }
 
 function writeHashJson() {
-  const hashFilePath = genHashJsonPath(buildPathInfo);
-  if (hashFilePath.length === 0) {
-    return;
-  }
   for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
     const input = fileterIntermediateJsBundle[i].path;
     const abcPath = input.replace(/_.js$/, '.abc');
@@ -255,16 +247,31 @@ function writeHashJson() {
     hashJsonObject[abcPath] = hashAbcContentData;
     fs.unlinkSync(input);
   }
+  const hashFilePath = genHashJsonPath(buildPathInfo);
+  if (hashFilePath.length === 0) {
+    return;
+  }
   fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
 }
 
 function genHashJsonPath(buildPath: string) {
   buildPath = toUnixPath(buildPath);
-  const dataTmps = buildPath.split(ARK);
-  const hashPath = path.join(dataTmps[0], ARK);
-  if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
-    logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+  if (process.env.cachePath) {
+    if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
+      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      return '';
+    }
+    return path.join(process.env.cachePath, hashFile);
+  } else if (buildPath.indexOf(ARK) >= 0) {
+    const dataTmps = buildPath.split(ARK);
+    const hashPath = path.join(dataTmps[0], ARK);
+    if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
+      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      return '';
+    }
+    return path.join(hashPath, hashFile);
+  } else {
+    logger.debug(red, `ETS:ERROR not cache exist`, reset);
     return '';
   }
-  return path.join(hashPath, hashFile);
 }
