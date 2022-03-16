@@ -15,10 +15,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import cluster from 'cluster';
+import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
+import { toUnixPath, toHashData } from './utils';
 
-const {Worker, isMainThread} = require('worker_threads');
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
 let output: string;
@@ -32,10 +34,15 @@ interface File {
   path: string,
   size: number
 }
-let intermediateJsBundle: Array<File> = [];
+const intermediateJsBundle: Array<File> = [];
+let fileterIntermediateJsBundle: Array<File> = [];
+let hashJsonObject = {};
+let buildPathInfo = '';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+const hashFile = 'gen_hash.json';
+const ARK = '/ark/';
 
 export class GenAbcPlugin {
   constructor(output_, arkDir_, nodeJs_, isDebug_) {
@@ -70,31 +77,8 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
-      let param: string = '';
-      if (isDebug) {
-        param += ' --debug';
-      }
-
-      if (isMainThread) {
-        let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-        if (isWin) {
-          js2abc = path.join(arkDir, 'build-win', 'src', 'index.js'); 
-        } else if (isMac) {
-          js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
-        }
-        let maxWorkerNumber = 3;
-        let splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
-        let workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
-        let cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
-        let workers = [];
-        for (let i = 0; i < workerNumber; ++i) {
-          workers.push(new Worker(path.resolve(__dirname, genAbcScript),
-                                  {workerData: {input: splitedBundles[i], cmd: cmdPrefix} }));
-          workers[i].on('exit', () => {
-            logger.debug("worker ", i, "finished!");
-          });
-        }
-      }
+      buildPathInfo = output;
+      invokeWorkersToGenAbc();
     });
   }
 }
@@ -106,7 +90,7 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   }
   fs.writeFileSync(output, inputString);
   if (fs.existsSync(output)) {
-    let fileSize = fs.statSync(output).size;
+    const fileSize = fs.statSync(output).size;
     intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
@@ -122,15 +106,15 @@ function mkDir(path_: string): void {
 }
 
 function getSmallestSizeGroup(groupSize: Map<number, number>) {
-  let groupSizeArray = Array.from(groupSize);
+  const groupSizeArray = Array.from(groupSize);
   groupSizeArray.sort(function(g1, g2) {
-    return g1[1] - g2[1]; // sort by value
+    return g1[1] - g2[1]; // sort by size
   });
-  return groupSizeArray[0][0]; // return key
+  return groupSizeArray[0][0];
 }
 
-function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
-  let result = [];
+function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
+  const result = [];
   if (bundleArray.length < groupNumber) {
     result.push(bundleArray);
     return result;
@@ -139,19 +123,155 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number){
   bundleArray.sort(function(f1: File, f2: File) {
     return f2.size - f1.size;
   });
-  let groupFileSize = new Map();
+  const groupFileSize = new Map();
   for (let i = 0; i < groupNumber; ++i) {
     result.push([]);
     groupFileSize.set(i, 0);
   }
 
   let index = 0;
-  while(index < bundleArray.length) {
-    let smallestGroup = getSmallestSizeGroup(groupFileSize);
+  while (index < bundleArray.length) {
+    const smallestGroup = getSmallestSizeGroup(groupFileSize);
     result[smallestGroup].push(bundleArray[index]);
-    let sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
+    const sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
     groupFileSize.set(smallestGroup, sizeUpdate);
     index++;
   }
   return result;
+}
+
+function invokeWorkersToGenAbc() {
+  let param: string = '';
+  if (isDebug) {
+    param += ' --debug';
+  }
+
+  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+  if (isWin) {
+    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+  } else if (isMac) {
+    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  }
+
+  filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
+  const maxWorkerNumber = 3;
+  const splitedBundles = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
+  const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
+  const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+
+  const clusterNewApiVersion = 16;
+  const currentNodeVersion = parseInt(process.version.split('.')[0]);
+  const useNewApi = currentNodeVersion >= clusterNewApiVersion;
+
+  if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
+    if (useNewApi) {
+      cluster.setupPrimary({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    } else {
+      cluster.setupMaster({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    }
+
+    for (let i = 0; i < workerNumber; ++i) {
+      const workerData = {
+        'inputs': JSON.stringify(splitedBundles[i]),
+        'cmd': cmdPrefix
+      };
+      cluster.fork(workerData);
+    }
+
+    cluster.on('exit', (worker, code, signal) => {
+      logger.debug(`worker ${worker.process.pid} finished`);
+    });
+
+    process.on('exit', (code) => {
+      writeHashJson();
+    });
+  }
+}
+
+function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]) {
+  for (let i = 0; i < inputPaths.length; ++i) {
+    fileterIntermediateJsBundle.push(inputPaths[i]);
+  }
+  const hashFilePath = genHashJsonPath(buildPath);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  const updateJsonObject = {};
+  let jsonObject = {};
+  let jsonFile = '';
+  if (fs.existsSync(hashFilePath)) {
+    jsonFile = fs.readFileSync(hashFilePath).toString();
+    jsonObject = JSON.parse(jsonFile);
+    fileterIntermediateJsBundle = [];
+    for (let i = 0; i < inputPaths.length; ++i) {
+      const input = inputPaths[i].path;
+      const abcPath = input.replace(/_.js$/, '.abc');
+      if (!fs.existsSync(input)) {
+        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        continue;
+      }
+      if (fs.existsSync(abcPath)) {
+        const hashInputContentData = toHashData(input);
+        const hashAbcContentData = toHashData(abcPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+          updateJsonObject[input] = hashInputContentData;
+          updateJsonObject[abcPath] = hashAbcContentData;
+          fs.unlinkSync(input);
+        } else {
+          fileterIntermediateJsBundle.push(inputPaths[i]);
+        }
+      } else {
+        fileterIntermediateJsBundle.push(inputPaths[i]);
+      }
+    }
+  }
+
+  hashJsonObject = updateJsonObject;
+}
+
+function writeHashJson() {
+  for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
+    const input = fileterIntermediateJsBundle[i].path;
+    const abcPath = input.replace(/_.js$/, '.abc');
+    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      continue;
+    }
+    const hashInputContentData = toHashData(input);
+    const hashAbcContentData = toHashData(abcPath);
+    hashJsonObject[input] = hashInputContentData;
+    hashJsonObject[abcPath] = hashAbcContentData;
+    fs.unlinkSync(input);
+  }
+  const hashFilePath = genHashJsonPath(buildPathInfo);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
+}
+
+function genHashJsonPath(buildPath: string) {
+  buildPath = toUnixPath(buildPath);
+  if (process.env.cachePath) {
+    if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
+      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      return '';
+    }
+    return path.join(process.env.cachePath, hashFile);
+  } else if (buildPath.indexOf(ARK) >= 0) {
+    const dataTmps = buildPath.split(ARK);
+    const hashPath = path.join(dataTmps[0], ARK);
+    if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
+      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      return '';
+    }
+    return path.join(hashPath, hashFile);
+  } else {
+    logger.debug(red, `ETS:ERROR not cache exist`, reset);
+    return '';
+  }
 }
