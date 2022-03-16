@@ -53,12 +53,17 @@ struct ImportTest {
 `
 
 exports.expectResult =
-`import { AllStarComponent } from './test/pages/ExportStarComponent';
-import TsModule from './test/pages/TsModule';
+`"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
+const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.__myState1 = new ObservedPropertyObject(new TsModule(1).method(), this, "myState1");
+        this.__myState1 = new ObservedPropertyObject(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimple(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimple('ImportTest', this, "myState4");
@@ -113,7 +118,7 @@ class ImportTest extends View {
         Row.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new AllStarComponent.ExportComponent("2", this, {
+            View.create(new ExportStarComponent_1.AllStarComponent.ExportComponent("2", this, {
                 ExportComponent1Link1: this.__myState1,
                 ExportComponent1Link2: this.__myState2,
                 ExportComponent1Link3: this.__myState3,
@@ -135,7 +140,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new AllStarComponent.default("3", this, {
+            View.create(new ExportStarComponent_1.AllStarComponent.default("3", this, {
                 ExportComponent4Link1: this.__myState1,
                 ExportComponent4Link2: this.__myState2,
                 ExportComponent4Link3: this.__myState3,
