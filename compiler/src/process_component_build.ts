@@ -151,13 +151,15 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
 interface supplementType {
   isAcceleratePreview: boolean,
   line: number,
-  column: number
+  column: number,
+  fileName: string
 }
 
 let newsupplement: supplementType = {
   isAcceleratePreview: false,
   line: 0,
-  column: 0
+  column: 0,
+  fileName: ''
 };
 
 function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression) {
@@ -173,8 +175,8 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
   }
 }
 
-export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
-  log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0}): void {
+export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
+  supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
   }
@@ -290,19 +292,21 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
     const posOfNode: ts.LineAndCharacter =
       transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
     const projectPath: string = projectConfig.projectPath;
-    const curFileName: string = transformLog.sourceFile.fileName.replace(/.ts$/, '');
+    let curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     let line: number = 1;
     let col: number = 1;
     if (newsupplement.isAcceleratePreview) {
       if (posOfNode.line === 0) {
-        col = newsupplement.column;
+        col = newsupplement.column - 15;
       }
       line = newsupplement.line;
+      curFileName = newsupplement.fileName;
     }
     newsupplement = {
       isAcceleratePreview: false,
       line: 0,
-      column: 0
+      column: 0,
+      fileName: ''
     };
     const debugInfo: string =
       `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
