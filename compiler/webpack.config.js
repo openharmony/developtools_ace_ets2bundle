@@ -15,7 +15,6 @@
 
 const path = require('path');
 const fs = require('fs');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
@@ -117,7 +116,6 @@ function initConfig(config) {
           /\.d\.ts$/
         ]
       }),
-      new CleanWebpackPlugin(),
       new ResultStates()
     ]
   });
