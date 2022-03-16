@@ -74,8 +74,13 @@ function parseVisual(resourcePath: string, resourceQuery: string, content: strin
   }
   visualMap.clear();
   slotMap.clear();
+  const compilerOptions = ts.readConfigFile(
+    path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+  Object.assign(compilerOptions, {
+    'sourceMap': false
+  });
   const sourceFile: ts.SourceFile = ts.createSourceFile(resourcePath, content,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   let newContent: string = content;
   if (sourceFile.statements) {
     sourceFile.statements.forEach(statement => {
@@ -95,7 +100,7 @@ function parseVisual(resourcePath: string, resourceQuery: string, content: strin
 
 function parseStatement(statement: ts.Statement, content: string, log: LogInfo[],
   visualContent: any): string {
-  if (statement.kind === ts.SyntaxKind.ClassDeclaration &&
+  if (statement.kind === ts.SyntaxKind.StructDeclaration &&
     statement.name && statement.name.getText() === componentCollection.entryComponent) {
     if (statement.members) {
       statement.members.forEach(member => {
