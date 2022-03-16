@@ -158,8 +158,13 @@ function validateFirstNode(node: ts.Statement): boolean {
 }
 
 function validateContainerComponent(node: ts.Statement): boolean {
-  if (ts.isExpressionStatement(node) && BUILDIN_CONTAINER_COMPONENT.has(getName(node))) {
-    return true;
+  if (ts.isExpressionStatement(node) && node.expression &&
+    (ts.isEtsComponentExpression(node.expression) || ts.isCallExpression(node.expression))) {
+    const nameResult: NameResult = { name: null };
+    validateEtsComponentNode(node.expression, nameResult);
+    if (nameResult.name && BUILDIN_CONTAINER_COMPONENT.has(nameResult.name)) {
+      return true;
+    }
   }
   return false;
 }
@@ -178,13 +183,21 @@ let newsupplement: supplementType = {
   fileName: ''
 };
 
-function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression) {
+type NameResult = {
+  name: string
+}
+
+function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
   let childNode: ts.Node = node;
+  result.name = null;
   while (ts.isCallExpression(childNode) && childNode.expression &&
     ts.isPropertyAccessExpression(childNode.expression) && childNode.expression.expression) {
     childNode = childNode.expression.expression;
   }
   if (ts.isEtsComponentExpression(childNode)) {
+    if (ts.isIdentifier(childNode.expression)) {
+      result.name = childNode.expression.getText();
+    }
     return true;
   } else {
     return false;
