@@ -16,9 +16,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import cluster from 'cluster';
-import * as process from 'process';
+import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
+import { toUnixPath, toHashData } from './utils';
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -34,9 +35,14 @@ interface File {
   size: number
 }
 const intermediateJsBundle: Array<File> = [];
+let fileterIntermediateJsBundle: Array<File> = [];
+let hashJsonObject = {};
+let buildPathInfo = '';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+const hashFile = 'gen_hash.json';
+const ARK = '/ark/';
 
 export class GenAbcPlugin {
   constructor(output_, arkDir_, nodeJs_, isDebug_) {
@@ -71,6 +77,7 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
+      buildPathInfo = output;
       invokeWorkersToGenAbc();
     });
   }
@@ -107,7 +114,7 @@ function getSmallestSizeGroup(groupSize: Map<number, number>) {
 }
 
 function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
-  let result = [];
+  const result = [];
   if (bundleArray.length < groupNumber) {
     result.push(bundleArray);
     return result;
@@ -146,16 +153,17 @@ function invokeWorkersToGenAbc() {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
+  filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
   const maxWorkerNumber = 3;
-  const splitedBundles = splitJsBundlesBySize(intermediateJsBundle, maxWorkerNumber);
+  const splitedBundles = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
   const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
   const clusterNewApiVersion = 16;
   const currentNodeVersion = parseInt(process.version.split('.')[0]);
-  const useNewApi = currentNodeVersion >= clusterNewApiVersion ? true : false;
+  const useNewApi = currentNodeVersion >= clusterNewApiVersion;
 
-  if ((useNewApi && cluster.isPrimary) || (!useNewApi && cluster.isMaster)) {
+  if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
     if (useNewApi) {
       cluster.setupPrimary({
         exec: path.resolve(__dirname, genAbcScript)
@@ -167,15 +175,96 @@ function invokeWorkersToGenAbc() {
     }
 
     for (let i = 0; i < workerNumber; ++i) {
-      let workerData = {
-        "inputs": JSON.stringify(splitedBundles[i]),
-        "cmd": cmdPrefix
-      }
+      const workerData = {
+        'inputs': JSON.stringify(splitedBundles[i]),
+        'cmd': cmdPrefix
+      };
       cluster.fork(workerData);
     }
 
     cluster.on('exit', (worker, code, signal) => {
       logger.debug(`worker ${worker.process.pid} finished`);
     });
+
+    process.on('exit', (code) => {
+      if (buildPathInfo.indexOf(ARK)) {
+        writeHashJson();
+      }
+    });
   }
+}
+
+function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]) {
+  for (let i = 0; i < inputPaths.length; ++i) {
+    fileterIntermediateJsBundle.push(inputPaths[i]);
+  }
+  const hashFilePath = genHashJsonPath(buildPath);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  const updateJsonObject = {};
+  if (buildPath.indexOf(ARK)) {
+    let jsonObject = {};
+    let jsonFile = '';
+    if (fs.existsSync(hashFilePath)) {
+      jsonFile = fs.readFileSync(hashFilePath).toString();
+      jsonObject = JSON.parse(jsonFile);
+      fileterIntermediateJsBundle = [];
+      for (let i = 0; i < inputPaths.length; ++i) {
+        const input = inputPaths[i].path;
+        const abcPath = input.replace(/_.js$/, '.abc');
+        if (!fs.existsSync(input)) {
+          logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+          continue;
+        }
+        if (fs.existsSync(abcPath)) {
+          const hashInputContentData = toHashData(input);
+          const hashAbcContentData = toHashData(abcPath);
+          if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+            updateJsonObject[input] = hashInputContentData;
+            updateJsonObject[abcPath] = hashAbcContentData;
+            fs.unlinkSync(input);
+          } else {
+            fileterIntermediateJsBundle.push(inputPaths[i]);
+          }
+        } else {
+          fileterIntermediateJsBundle.push(inputPaths[i]);
+        }
+      }
+    }
+  }
+
+  hashJsonObject = updateJsonObject;
+}
+
+function writeHashJson() {
+  const hashFilePath = genHashJsonPath(buildPathInfo);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
+    const input = fileterIntermediateJsBundle[i].path;
+    const abcPath = input.replace(/_.js$/, '.abc');
+    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      continue;
+    }
+    const hashInputContentData = toHashData(input);
+    const hashAbcContentData = toHashData(abcPath);
+    hashJsonObject[input] = hashInputContentData;
+    hashJsonObject[abcPath] = hashAbcContentData;
+    fs.unlinkSync(input);
+  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
+}
+
+function genHashJsonPath(buildPath: string) {
+  buildPath = toUnixPath(buildPath);
+  const dataTmps = buildPath.split(ARK);
+  const hashPath = path.join(dataTmps[0], ARK);
+  if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
+    logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+    return '';
+  }
+  return path.join(hashPath, hashFile);
 }
