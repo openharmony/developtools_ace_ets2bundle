@@ -129,10 +129,8 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
   if (node.body.statements.length === 1) {
-    const statement: ts.Node = node.body.statements[0];
-    if (ts.isIfStatement(statement) || ts.isExpressionStatement(statement) && statement.expression &&
-      (ts.isEtsComponentExpression(statement.expression) || ts.isCallExpression(statement.expression)) &&
-      validateEtsComponentNode(statement.expression)) {
+    const statement: ts.Statement = node.body.statements[0];
+    if (ts.isIfStatement(statement) || validateFirstNode(statement)) {
       isValid = true;
     }
   } else {
@@ -146,6 +144,27 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     });
   }
   return isValid;
+}
+
+function validateFirstNode(node: ts.Statement): boolean {
+  const isEntryComponent: boolean =
+    componentCollection.entryComponent === componentCollection.currentClassName;
+  if (isEntryComponent && !validateContainerComponent(node)) {
+    return false;
+  }
+  return true;
+}
+
+function validateContainerComponent(node: ts.Statement): boolean {
+  if (ts.isExpressionStatement(node) && node.expression &&
+    (ts.isEtsComponentExpression(node.expression) || ts.isCallExpression(node.expression))) {
+    const nameResult: NameResult = { name: null };
+    validateEtsComponentNode(node.expression, nameResult);
+    if (nameResult.name && BUILDIN_CONTAINER_COMPONENT.has(nameResult.name)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 interface supplementType {
@@ -162,13 +181,21 @@ let newsupplement: supplementType = {
   fileName: ''
 };
 
-function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression) {
+type NameResult = {
+  name: string
+}
+
+function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
   let childNode: ts.Node = node;
+  result.name = null;
   while (ts.isCallExpression(childNode) && childNode.expression &&
     ts.isPropertyAccessExpression(childNode.expression) && childNode.expression.expression) {
     childNode = childNode.expression.expression;
   }
   if (ts.isEtsComponentExpression(childNode)) {
+    if (ts.isIdentifier(childNode.expression)) {
+      result.name = childNode.expression.getText();
+    }
     return true;
   } else {
     return false;
