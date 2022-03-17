@@ -73,6 +73,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
+import { globalProgram } from '../main';
 
 export type ControllerType = {
   hasController: boolean
@@ -686,7 +687,9 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
 
 export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolean {
   let checker: ts.TypeChecker;
-  if (program) {
+  if (globalProgram.program) {
+    checker = globalProgram.program.getTypeChecker();
+  } else if (program) {
     checker = program.getTypeChecker();
   }
   const enumType: ts.SyntaxKind = getEnumType(typeNode, checker);
