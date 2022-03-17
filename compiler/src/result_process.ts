@@ -14,6 +14,7 @@
  */
 
 import ts from 'typescript';
+import path from 'path';
 
 import { BUILD_OFF } from './pre_define';
 import {
@@ -59,9 +60,11 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
+
+  const configPath = [abilityConfig.abilityEntryFile, 'AbilityStage.ts'].concat(abilityConfig.projectAbilityPath)
+    .concat(abilityConfig.testRunnerFile);
+  if (configPath.includes(path.basename(this.resourcePath)) || configPath.includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
-
   this.callback(null, source, map);
 };

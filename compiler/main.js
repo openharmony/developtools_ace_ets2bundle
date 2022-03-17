@@ -63,11 +63,12 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   if (process.env.aceManifestPath) {
     setEntryFile(projectConfig);
-	setFaTestRunnerFile(projectConfig);
+    setAbilityFileFA(projectConfig);
+    setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
-    setAbilityPages(projectConfig)
-	setStageTestRunnerFile(projectConfig);
+    setAbilityPages(projectConfig);
+    setStageTestRunnerFile(projectConfig);
   }
 
   if(staticPreviewPage) {
@@ -141,6 +142,20 @@ function setEntryFile(projectConfig) {
     throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
   }
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
+}
+
+function setAbilityFileFA(projectConfig) {
+  const index = projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const lastPathName = projectConfig.projectPath.substring(index + 1, projectConfig.projectPath.length);
+  const projectAbilityPath = path.resolve(projectConfig.projectPath,`${lastPathName}.ts`);
+  abilityConfig.projectAbilityPath = path.basename(projectAbilityPath);
+  const AbilityStagePath = path.resolve(projectConfig.projectPath,`../AbilityStage.ts`);
+  if (fs.existsSync(projectAbilityPath)) {
+    projectConfig.entryObj[`./${lastPathName}`] = projectAbilityPath + '?entry';
+  }
+  if (fs.existsSync(AbilityStagePath)) {
+    projectConfig.entryObj[`../AbilityStage`] = AbilityStagePath + '?entry';
+  }
 }
 
 function setAbilityPages(projectConfig) {
