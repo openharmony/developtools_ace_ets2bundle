@@ -295,18 +295,12 @@ export class ResultStates {
     const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
     const importInfoReg: RegExp = /Cannot find namespace\s*'([_a-zA-Z0-9]+)'\./;
     if (this.matchMessage(message, props, propInfoReg) ||
-      this.matchMessage(message, props, stateInfoReg) ||
-      this.matchMessage(message, [...importModuleCollection], importInfoReg)) {
+      this.matchMessage(message, props, stateInfoReg)) {
       return false;
     }
     return true;
   }
   private matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
-    importModuleCollection.forEach(item => {
-      if (message.includes(item)) {
-        return true;
-      }
-    })
     if (reg.test(message)) {
       const match: string[] = message.match(reg);
       if (match[1] && nameArr.includes(match[1])) {

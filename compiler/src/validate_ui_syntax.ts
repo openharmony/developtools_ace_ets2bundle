@@ -752,7 +752,7 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
     if (!VALIDATE_MODULE.includes(systemValue)){
       importModuleCollection.add(systemValue);
     }
-    if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
+    if (!isProcessWhiteList) {
       return item;
     } else if (isProcessWhiteList) {
       systemValue = item2;
