@@ -25,9 +25,16 @@ import {
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_IF,
-  COMPONENT_DECORATORS_PARAMS
+  COMPONENT_DECORATORS_PARAMS,
+  COMPONENT_BUILD_FUNCTION,
+  BIND_POPUP,
+  CHECKED,
+  RADIO,
+  $$
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
+import { getName } from './process_component_build';
+import { INNER_COMPONENT_NAMES } from './component_map';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -183,7 +190,61 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
   if (ts.isIfStatement(node)) {
     appComponentCollection.add(COMPONENT_IF);
   }
+  if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION) {
+    if (node.body && node.body.statements && node.body.statements.length) {
+      const checkProp: ts.NodeArray<ts.Statement> = node.body.statements;
+      checkProp.forEach((item, index) => {
+        traverseBuild(item, index);
+      });
+    }
+  }
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode));
+}
+
+function traverseBuild(node: ts.Node, index: number): void {
+  if (ts.isExpressionStatement(node)) {
+    let parentComponentName: string = getName(node);
+    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements &&
+      index >= 1 && node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
+      parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
+    }
+    node = node.expression;
+    if (node && node.body && ts.isBlock(node.body)) {
+      node.body.statements.forEach((item, indexBlock) => {
+        traverseBuild(item, indexBlock);
+      });
+    } else {
+      while (node) {
+        if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+          const argument = node.arguments;
+          const propertyName = node.expression.name;
+          if (propertyName.escapedText === BIND_POPUP || propertyName.escapedText === CHECKED &&
+            parentComponentName === RADIO) {
+            argument.forEach(item => {
+              if (item.getText().startsWith($$)) {
+                while (item.expression) {
+                  item = item.expression;
+                }
+                dollarCollection.add(item.getText());
+              }
+            });
+          }
+        }
+        node = node.expression;
+      }
+    }
+  } else if (ts.isIfStatement(node)) {
+    if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
+      node.thenStatement.statements.forEach((item, indexIfBlock) => {
+        traverseBuild(item, indexIfBlock);
+      });
+    }
+    if (node.elseStatement && ts.isBlock(node.elseStatement) && node.elseStatement.statements) {
+      node.elseStatement.statements.forEach((item, indexElseBlock) => {
+        traverseBuild(item, indexElseBlock);
+      });
+    }
+  }
 }
 
 function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boolean {
