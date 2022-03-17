@@ -145,7 +145,7 @@ export class ResultStates {
         });
     });
 
-    compiler.hooks.beforeRun.tap('beforeRun', () => {
+    compiler.hooks.entryOption.tap('beforeRun', () => {
       const rootFileNames: string[] = [];
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
         rootFileNames.push(fileName.replace('?entry', ''));
