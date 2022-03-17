@@ -311,6 +311,9 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
   }
 }
 
+const globalProgram = { program: null };
+
+exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
 exports.readAppResource = readAppResource;
