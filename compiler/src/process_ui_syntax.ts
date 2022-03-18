@@ -395,8 +395,8 @@ export function collectExtend(collectionSet: Map<string, Set<string>>, component
   }
 }
 
-function isExtendFunction(node: ts.FunctionDeclaration): string {
-  if (node.decorators && node.decorators[0].expression &&
+export function isExtendFunction(node: ts.FunctionDeclaration): string {
+  if (node.decorators && node.decorators[0].expression && node.decorators[0].expression.expression &&
     node.decorators[0].expression.expression.escapedText.toString() === CHECK_COMPONENT_EXTEND_DECORATOR &&
     node.decorators[0].expression.arguments) {
     return node.decorators[0].expression.arguments[0].escapedText.toString();
