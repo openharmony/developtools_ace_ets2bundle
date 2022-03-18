@@ -51,6 +51,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
   const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
   Object.assign(compilerOptions, {
+    'allowJs': false,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
