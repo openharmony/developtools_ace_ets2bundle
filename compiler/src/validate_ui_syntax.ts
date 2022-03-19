@@ -62,6 +62,7 @@ import {
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
 import { importModuleCollection } from "./ets_checker";
+import { isExtendFunction } from "./process_ui_syntax";
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -299,6 +300,10 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(node.name.getText());
+  }
+  if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
+    let componentName: string = isExtendFunction(node);
+    collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
