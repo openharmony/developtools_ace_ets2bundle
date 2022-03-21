@@ -39,9 +39,6 @@ function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
-    cache: {
-      type: "filesystem"
-    },
     watch: watchMode,
     watchOptions: {
       aggregateTimeout: 10,
@@ -116,6 +113,12 @@ function initConfig(config) {
       new ResultStates()
     ]
   });
+  if (!/ets_loader_ark$/.test(__dirname)) {
+    config.cache = {
+      type: "filesystem",
+      cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
+    };
+  }
 }
 
 function setProjectConfig(envArgs) {
@@ -137,6 +140,9 @@ function setProjectConfig(envArgs) {
   }
   if (envArgs.aceModuleJsonPath) {
     projectConfig.aceModuleJsonPath = envArgs.aceModuleJsonPath;
+  }
+  if (envArgs.cachePath) {
+    projectConfig.cachePath = envArgs.cachePath;
   }
 }
 
