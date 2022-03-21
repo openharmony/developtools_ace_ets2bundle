@@ -89,7 +89,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
         fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
           new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
             return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-          })));
+          }), false, fileResolvePath));
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
       visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log);
