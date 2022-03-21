@@ -29,9 +29,15 @@ import CachedSource from 'webpack-sources/lib/CachedSource';
 import ConcatSource from 'webpack-sources/lib/ConcatSource';
 
 import { transformLog } from './process_ui_syntax';
-import { moduleCollection } from './validate_ui_syntax';
+import {
+  moduleCollection,
+  useOSFiles
+} from './validate_ui_syntax';
 import { projectConfig } from '../main';
-import { circularFile } from './utils';
+import {
+  circularFile,
+  mkDir
+} from './utils';
 import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
 import {
   createLanguageService,
@@ -172,6 +178,10 @@ export class ResultStates {
     });
 
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
+      if (projectConfig.isPreview && projectConfig.aceSoPath &&
+        useOSFiles && useOSFiles.size > 0) {
+        this.writeUseOSFiles();
+      }
       this.mStats = stats;
       this.warningCount = 0;
       this.noteCount = 0;
@@ -195,6 +205,17 @@ export class ResultStates {
         });
       });
     }
+  }
+
+  private writeUseOSFiles(): void {
+    let info: string = '';
+    if (!fs.existsSync(projectConfig.aceSoPath)) {
+      const parent: string = path.join(projectConfig.aceSoPath, '..');
+      if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+        mkDir(parent);
+      }
+    }
+    fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
   }
 
   private printResult(): void {
