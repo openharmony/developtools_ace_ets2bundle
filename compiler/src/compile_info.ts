@@ -226,6 +226,13 @@ export class ResultStates {
     } else {
       console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
     }
+    this.clearCount();
+  }
+
+  private clearCount(): void {
+    this.mErrorCount = 0;
+    this.warningCount = 0;
+    this.noteCount = 0;
   }
 
   private printWarning(): void {
