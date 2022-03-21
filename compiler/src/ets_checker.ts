@@ -103,23 +103,30 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
           const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
           if (ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+          } else {
+            resolvedModules.push(null);
           }
         } else if (/\.ets$/.test(moduleName)) {
           const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
           if (ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, '.ets'));
+          } else {
+            resolvedModules.push(null);
           }
         } else if (/\.ts$/.test(moduleName)) {
           const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
           if (ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, '.ts'));
+          } else {
+            resolvedModules.push(null);
           }
-        }
-      }
-      if (moduleNames.length !== resolvedModules.length) {
-        const length: number = moduleNames.length - resolvedModules.length;
-        for (let i = 0; i < length; i++) {
-          resolvedModules.push(null);
+        } else {
+          const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+          if (ts.sys.fileExists(modulePath)) {
+            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+          } else {
+            resolvedModules.push(null);
+          }
         }
       }
       return resolvedModules;
