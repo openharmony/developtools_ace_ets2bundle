@@ -112,6 +112,7 @@ export const objectLinkCollection: Map<string, Set<string>> = new Map();
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
 export const moduleCollection: Set<string> = new Set();
+export const useOSFiles: Set<string> = new Set();
 
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
@@ -734,7 +735,7 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
   });
 }
 
-export function processSystemApi(content: string, isProcessWhiteList: boolean = false): string {
+export function processSystemApi(content: string, isProcessWhiteList: boolean = false, sourcePath: string): string {
   let REG_SYSTEM: RegExp;
   if (isProcessWhiteList) {
     REG_SYSTEM =
@@ -749,6 +750,9 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
   const newContent: string = content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
+    if (sourcePath) {
+      useOSFiles.add(sourcePath);
+    }
     return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
   }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
     let moduleType: string = item2 || item5;
