@@ -56,6 +56,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
     process.env.aceSuperVisualPath
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
+  projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
+    path.resolve(__dirname, 'node_modules/.cache');
 }
 
 function loadEntryObj(projectConfig) {
