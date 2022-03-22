@@ -55,7 +55,7 @@ function preProcess(source: string): string {
     }
     return newContent;
   } else {
-    return processSystemApi(source);
+    return processSystemApi(source, false, this.resourcePath);
   }
 }
 
