@@ -16,5 +16,5 @@
 import { processSystemApi } from './validate_ui_syntax';
 
 module.exports = function processSystemModule(source: string): string {
-  return processSystemApi(source);
+  return processSystemApi(source, false, this.resourcePath);
 };
