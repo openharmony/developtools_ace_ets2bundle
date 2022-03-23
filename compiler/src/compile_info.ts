@@ -211,6 +211,8 @@ export class ResultStates {
       if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
         mkDir(parent);
       }
+    } else {
+      info = fs.readFileSync(projectConfig.aceSoPath, 'utf-8') + '\n';
     }
     fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
   }
