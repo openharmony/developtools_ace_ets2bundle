@@ -78,7 +78,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
         checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
-        return ts.ScriptSnapshot.fromString(processContent(fs.readFileSync(fileName).toString(), fileName));
+        return ts.ScriptSnapshot.fromString(processContent(fs.readFileSync(fileName).toString()));
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
@@ -272,8 +272,8 @@ function processDraw(source: string): string {
   });
 }
 
-function processContent(source: string, sourcePath: string): string {
-  source = processSystemApi(source, false, sourcePath);
+function processContent(source: string): string {
+  source = processSystemApi(source);
   source = preprocessExtend(source, extendCollection);
   source = processDraw(source);
   return source;
