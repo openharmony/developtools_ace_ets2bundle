@@ -202,10 +202,18 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
   }
 }
 
+let sourceNode: ts.SourceFile; 
+
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
   supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
+    const compilerOptions = ts.readConfigFile(
+      path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    Object.assign(compilerOptions, {
+      "sourceMap": false,
+    });
+    sourceNode = ts.createSourceFile('', node.getText(), ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   }
   if (node.statements.length) {
     node.statements.forEach((item, index, array) => {
@@ -316,19 +324,22 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   if (projectConfig.isPreview && !NO_DEBUG_LINE_COMPONENT.has(name)) {
-    const posOfNode: ts.LineAndCharacter =
-      transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-    const projectPath: string = projectConfig.projectPath;
-    let curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    let posOfNode: ts.LineAndCharacter;
+    let curFileName: string;
     let line: number = 1;
     let col: number = 1;
     if (newsupplement.isAcceleratePreview) {
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = newsupplement.fileName;
       if (posOfNode.line === 0) {
         col = newsupplement.column - 15;
       }
       line = newsupplement.line;
-      curFileName = newsupplement.fileName;
+    } else {
+      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     }
+    const projectPath: string = projectConfig.projectPath;
     newsupplement = {
       isAcceleratePreview: false,
       line: 0,
