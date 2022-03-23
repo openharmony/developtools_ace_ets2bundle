@@ -152,9 +152,6 @@ export class ResultStates {
       });
       const languageService: ts.LanguageService = createLanguageService(rootFileNames);
       globalProgram.program = languageService.getProgram();
-    });
-
-    compiler.hooks.run.tapPromise('CheckSyntax', async(compiler) => {
       const rootProgram: ts.Program = globalProgram.program;
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
       let allDiagnostics: ts.Diagnostic[] = rootProgram
