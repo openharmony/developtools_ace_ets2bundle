@@ -715,7 +715,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   const log: LogInfo[] = [];
   content = preprocessExtend(content);
   // process @system.
-  content = processSystemApi(content);
+  content = processSystemApi(content, false, sourcePath);
 
   return {
     content: content,
@@ -735,7 +735,7 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
   });
 }
 
-export function processSystemApi(content: string, isProcessWhiteList: boolean = false, sourcePath: string): string {
+export function processSystemApi(content: string, isProcessWhiteList: boolean = false, sourcePath?: string): string {
   let REG_SYSTEM: RegExp;
   if (isProcessWhiteList) {
     REG_SYSTEM =
