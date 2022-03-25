@@ -167,6 +167,8 @@ function setAbilityPages(projectConfig) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
     abilityPages = readAbilityEntrance(moduleJson);
     setAbilityFile(projectConfig, abilityPages);
+  } else {
+    throw Error(`\u001b[31m ERROR: the module.json is lost or format is invalid. \u001b[39m`).message;
   }
 }
 
@@ -210,7 +212,11 @@ function setAbilityFile(projectConfig, abilityPages) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       if (fs.existsSync(projectAbilityPath)) {
         projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+      } else {
+        throw Error(`\u001b[31m ERROR: abilitySrcEntrance file is lost or format is invalid. \u001b[39m`).message;
       }
+    } else {
+      throw Error(`\u001b[31m ERROR: abilitySrcEntrance config is lost or format is invalid. \u001b[39m`).message;
     }
   });
 }
