@@ -1,5 +1,5 @@
 {
   "name": "Navigation",
   "attrs": ["title", "subTitle", "hideTitleBar", "hideBackButton", "titleMode", "menus", "menuCount",
-    "toolBar", "hideToolBar", "onTitleModeChanged"]
+    "toolBar", "hideToolBar", "onTitleModeChange"]
 }
