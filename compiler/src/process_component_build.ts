@@ -58,7 +58,8 @@ import {
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
-  BIND_DRAG_START
+  BIND_DRAG_START,
+  BIND_ITEM_DRAG_START
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -634,6 +635,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           temp = processBindPopupBuilder(temp);
           break;
         case BIND_DRAG_START:
+        case BIND_ITEM_DRAG_START:
           temp = processDragStartBuilder(temp);
           break;
         default:
