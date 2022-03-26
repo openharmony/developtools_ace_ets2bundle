@@ -84,6 +84,7 @@ function loadEntryObj(projectConfig) {
     if (fs.existsSync(projectConfig.manifestFilePath)) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
+      projectConfig.pagesJsonFileName = 'config.json';
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
       process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
@@ -133,6 +134,7 @@ function getPages(configJson) {
   if (fs.existsSync(modulePagePath)) {
     const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
     if (pagesConfig && pagesConfig.src) {
+      projectConfig.pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
       return pagesConfig.src;
     }
   }

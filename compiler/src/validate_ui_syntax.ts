@@ -206,14 +206,14 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
   } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
         + `decorator.`,
       fileName: fileName
     });
