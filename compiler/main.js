@@ -70,11 +70,11 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
-	setFaTestRunnerFile(projectConfig);
+    setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
-    setAbilityPages(projectConfig)
-	setStageTestRunnerFile(projectConfig);
+    setAbilityPages(projectConfig);
+    setStageTestRunnerFile(projectConfig);
   }
 
   if(staticPreviewPage) {
@@ -196,13 +196,13 @@ function setStageTestRunnerFile(projectConfig) {
 
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
-    if (abilityPath && fs.existsSync(path.resolve(projectConfig.projectPath, '../', abilityPath))) {
-      const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
-      const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
-      if (fs.existsSync(projectAbilityPath)) {
-        projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
-      }
+      projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+    } else {
+      throw Error(`\u001b[31m ERROR: srcEntrance file '${projectAbilityPath}' does not exist. \u001b[39m`).message;
     }
   });
 }
