@@ -125,12 +125,12 @@ function buildManifest(manifest, aceConfigPath) {
 
 function getPages(configJson) {
   const pages = []
-  const modulePagePath = path.resolve(projectConfig.aceProfilePath,
-    `${configJson.module.pages.replace(/\$profile\:/, '')}.json`);
+  const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
     const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
     if (pagesConfig && pagesConfig.src) {
-      projectConfig.pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+      projectConfig.pagesJsonFileName = pagesJsonFileName;
       return pagesConfig.src;
     }
   }
