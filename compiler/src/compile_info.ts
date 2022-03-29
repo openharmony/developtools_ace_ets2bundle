@@ -194,6 +194,9 @@ export class ResultStates {
     if (!projectConfig.isPreview) {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
+          if (projectConfig.aceSuperVisualPath && fs.existsSync(projectConfig.aceSuperVisualPath)) {
+            appComponentCollection.clear();
+          }
           compilation.assets['./component_collection.txt'] =
             new RawSource(Array.from(appComponentCollection).join(','));
           compilation.assets['./module_collection.txt'] =
