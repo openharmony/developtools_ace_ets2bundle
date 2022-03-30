@@ -623,6 +623,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     });
   }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
+    let flag: boolean = false;
     if (temp.expression && (validatePropertyAccessExpressionWithCustomBuilder(temp.expression) ||
       validateIdentifierWithCustomBuilder(temp.expression))) {
       let propertyName: string = '';
@@ -641,12 +642,14 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
         default:
           temp = processCustomBuilderProperty(temp);
       }
+      flag = true;
     }
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name)) {
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
         isStylesAttr, isGlobalStyles);
       temp = temp.expression.expression;
+      flag = true;
     } else if (ts.isIdentifier(temp.expression)) {
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
         !GESTURE_TYPE_NAMES.has(temp.expression.getText())) {
@@ -654,6 +657,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           isStylesAttr, isGlobalStyles);
       }
       break;
+    }
+    if (!flag) {
+      temp = temp.expression;
     }
   }
   if (lastStatement.statement && lastStatement.kind) {
