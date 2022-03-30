@@ -349,10 +349,8 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
     const debugInfo: string =
       `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
       `(${posOfNode.line + line}:${posOfNode.character + col})`;
-    const nameResult: NameResult = { name: null };
-    validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
-      createFunction(ts.factory.createIdentifier(nameResult.name),
+      createFunction(ts.factory.createIdentifier(getName(node)),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
         ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
     newStatements.push(debugNode);
