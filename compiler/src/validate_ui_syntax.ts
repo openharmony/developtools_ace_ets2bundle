@@ -735,7 +735,8 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
   });
 }
 
-export function processSystemApi(content: string, isProcessWhiteList: boolean = false, sourcePath?: string): string {
+export function processSystemApi(content: string, isProcessWhiteList: boolean = false,
+  sourcePath: string = null, isSystemModule: boolean = false): string {
   let REG_SYSTEM: RegExp;
   if (isProcessWhiteList) {
     REG_SYSTEM =
@@ -761,7 +762,7 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
     if (!VALIDATE_MODULE.includes(systemValue)){
       importModuleCollection.add(systemValue);
     }
-    if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey)) {
+    if (!isProcessWhiteList && validateWhiteListModule(moduleType, systemKey) && !isSystemModule) {
       return item;
     } else if (isProcessWhiteList) {
       systemValue = item2;
