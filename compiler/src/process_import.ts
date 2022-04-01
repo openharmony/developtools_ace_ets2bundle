@@ -162,13 +162,13 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
   if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
-    setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.propertys,
+    setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
       ComponentSet.props);
   } else if (asNameFromParent.has(componentName)) {
-    setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.propertys,
+    setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props);
   } else {
-    setDependencies(componentName, ComponentSet.links, ComponentSet.propertys, ComponentSet.props);
+    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props);
   }
 }
 

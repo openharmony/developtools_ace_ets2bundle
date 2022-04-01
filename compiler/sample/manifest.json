@@ -5,7 +5,7 @@
   "versionCode": 1,
   "minPlatformVersion": "1.0.1",
   "pages": [
-    "pages/todo",
+    "pages/willdo",
     "pages/index",
     "pages/home",
     "pages/home_preview",

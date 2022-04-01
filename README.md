@@ -1,21 +1,20 @@
 # developtools_ace-ets2bundle
 
-#### 介绍
+#### Description
+Provide declarative paradigm syntax compilation conversion, syntax verification, rich and friendly syntax error prompting capabilities.
 
-提供声明式范式的语法编译转换，语法验证，丰富友好的语法报错提示能力。
+#### Software Architecture
 
-#### 软件架构
+* compiler/src: source code
+* test: unit test file
+* .eslintrc: eslint configure
+* babel.config.js: babel configure
+* main.js: source code
+* package.json: define what libraries will be installed into node_modules when you run `npm install`
+* tsconfig.json: the compiler options required to compile the project
+* webpack.config.js: webpack configuration information
 
-* compiler/src: 编译转换工具源码
-* test: 单元测试用例
-* .eslintrc: eslint配置规则
-* babel.config.js: babel配置信息
-* main.js: 编译转换工具源码
-* package.json: 安装依赖软件版本信息
-* tsconfig.json: 编译工程配置信息
-* webpack.config.js: 打包工具脚本配置信息
-
-#### 环境准备
+#### Prerequisites
 
 ```
 > npm -v
@@ -23,11 +22,11 @@
 > node -v
   v12.18.3
 ```
-请安装最新稳定的node版本。
+Please install the **latest stable version**.
 
-#### 安装
+#### Installing
 
-进入到compiler目录
+Enter the root directory of the compiler:
 ```
 npm config set registry http://registry.npm.taobao.org
 npm config set strict-ssl false
@@ -35,37 +34,37 @@ npm cache clean -f
 npm install
 ```
 
-#### 快速开始
+#### Quick Start
 
-进入到compiler目录
+Enter the root directory of the compiler:
 ```
 npm run build
 npm run compile
 ```
-上述命令编译了compiler目录下的`sample`工程，编译结果在`sample\build`目录。
+The `sample` project will be compiled. The output is in the `sample/build` directory.
 
-#### 创建一个新工程
+#### Creating a Project
 
-进入到compiler目录
+Enter the root directory of the compiler:
 ```
 npm run create [projectName]
 ```
 
-**Note**: 如果`projectName`未指定，`HelloAce`为默认的工程名。
-例如创建一个`foo`工程：
+**Note**: If `projectName` is not specified, the `HelloAce` project will be compiled.
+For example, use the following line to create a project named `foo`:
 ```
 $ npm run create foo
 ```
-工程`foo`的目录结构:
+The directory structure of project `foo`:
 - foo
   - pages
     - index.ets
   - app.ets
   - manifest.json
 
-#### 创建一个新的页面
+#### Creating a Page
 
-例如在`pages`目录创建一个`bar.ets`页面,需要在manifest.json文件的`pages`新增一行，如下所示：
+For example, create a file `bar.ets` in the `pages` directory. And then add the following lines to `"pages"` field in `manifest.json`:
 ```
   "pages": [
     "pages/index",
@@ -73,11 +72,11 @@ $ npm run create foo
   ]
 ```
 
-#### 编译工程
+#### Compiling a Project
 
-进入到compiler目录
+Enter the root directory of the compiler:
 ```
 $ npm run build
 $ npm run compile [projectName]
 ```
-**Note**: 如果`projectName`未指定，默认编译`sample`工程，编译结果在`sample\build`目录。
+**Note**: If `projectName` is not specified, the `sample` project will be compiled. In the project root directory, the compilation result is in the `build` directory.
