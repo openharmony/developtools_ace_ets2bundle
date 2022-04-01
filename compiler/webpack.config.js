@@ -127,7 +127,7 @@ function initConfig(config) {
   }
   if (!projectConfig.aceModuleJsonPath) {
     config.resolve.modules.push(path.join(projectPath, '../../../../node_modules/'));
-  } else if (projectConfig.aceModuleJsonPath) {
+  } else {
     config.resolve.modules.push(path.join(projectPath, '../../../node_modules/'));
   }
 }
