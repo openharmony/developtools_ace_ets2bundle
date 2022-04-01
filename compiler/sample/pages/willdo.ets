@@ -16,12 +16,12 @@
 /**
  * ACE @ Web Helsinki
  *
- * eDSL version of TODO application
+ * eDSL version of this application
  *
  * ( unverified due to lack of working eDSL transpiler )
  *
  * For comparison, the plain JS version of this app that works with ACE-Diff can be found here
- * https://rnd-gitlab-eu-c.huawei.com/zidanehbs/ace/ace/-/blob/fin-hmf-dev-ace-diff-clean/samples/common/res/hi_topapp/assets/js/default/acediff/todoListForEach.js
+ *
  * This is the ouput the eDSL transpiler should generate.
  */
 let tasks: Array<any> = [
@@ -159,7 +159,7 @@ struct RootView {
             Text((item.id + 1) + " : " + item.label)
           },
 
-          /* second parameter is a arrow function that takes an item as input
+          /* second parameter is an arrow function that takes an item as input
           and returns a persistent nique id (or key ) */
           item => item.id
       ) // ForEach
