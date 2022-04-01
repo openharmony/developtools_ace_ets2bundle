@@ -729,7 +729,7 @@ struct FiltersView {
     let newValue: boolean = (data.length > 0) ? !data[0].show : false;
     data.forEach((c: CountryVM) => c.show = newValue);
 
-    // FIXME: hack to make this vew render and take chnaged 'show' CountryVM instances into account
+    // hack to make this vew render and take chnaged 'show' CountryVM instances into account
     // this need @Observed CountryVM / createdObservableObject to work efficiently.
     this.countryHasChanged = !this.countryHasChanged
   }
