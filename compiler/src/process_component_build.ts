@@ -226,12 +226,14 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
               newStatements, log, name);
             break;
           case ComponentType.customComponent:
-            if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
-              if (processExpressionStatementChange(item, item.expression.body, log)) {
-                item = processExpressionStatementChange(item, item.expression.body, log);
+            if (!newsupplement.isAcceleratePreview){
+              if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
+                if (processExpressionStatementChange(item, item.expression.body, log)) {
+                  item = processExpressionStatementChange(item, item.expression.body, log);
+                }
               }
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
             }
-            processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
             break;
           case ComponentType.forEachComponent:
             processForEachComponent(item, newStatements, log);
@@ -252,6 +254,12 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       }
     });
   }
+  newsupplement = {
+    isAcceleratePreview: false,
+    line: 0,
+    column: 0,
+    fileName: ''
+  };
 }
 
 function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode: ts.Block,
@@ -341,12 +349,6 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
       curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     }
     const projectPath: string = projectConfig.projectPath;
-    newsupplement = {
-      isAcceleratePreview: false,
-      line: 0,
-      column: 0,
-      fileName: ''
-    };
     const debugInfo: string =
       `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
       `(${posOfNode.line + line}:${posOfNode.character + col})`;
