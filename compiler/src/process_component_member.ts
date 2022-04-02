@@ -689,6 +689,8 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolea
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
+  } else if (globalProgram.watchProgram) {
+    checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   } else if (program) {
     checker = program.getTypeChecker();
   }

@@ -322,7 +322,10 @@ function hashProjectPath(projectPath) {
   return process.env.hashProjectPath;
 }
 
-const globalProgram = { program: null };
+const globalProgram = {
+  program: null,
+  watchProgram: null
+};
 
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
