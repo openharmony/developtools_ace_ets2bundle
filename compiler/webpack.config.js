@@ -33,13 +33,13 @@ const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE } = require('./lib/utils');
 const { BUILD_SHARE_PATH } = require('./lib/pre_define');
 
-const watchMode = (process.env.watchMode && process.env.watchMode === 'true') || false;
+process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
-    watch: watchMode,
+    watch: process.env.watchMode === 'true',
     watchOptions: {
       aggregateTimeout: 10,
       poll: false,
