@@ -97,7 +97,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       }
     };
     function processAllNodes(node: ts.Node): ts.Node {
-      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node)) {
+      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         processImport(node, pagesDir, transformLog.errors);
       } else if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
