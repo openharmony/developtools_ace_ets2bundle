@@ -112,7 +112,6 @@ function initConfig(config) {
     plugins: [
       new Webpack.WatchIgnorePlugin({
         paths: [
-          /\.js$/,
           /\.d\.ts$/
         ]
       }),
