@@ -28,9 +28,8 @@ import {
   COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
   BIND_POPUP,
-  CHECKED,
-  RADIO,
-  $$
+  $$,
+  PROPERTIES_ADD_DOUBLE_DOLLAR
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
@@ -214,34 +213,17 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
 function traverseBuild(node: ts.Node, index: number): void {
   if (ts.isExpressionStatement(node)) {
     let parentComponentName: string = getName(node);
-    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements &&
-      index >= 1 && node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
+    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements && index >= 1 &&
+      node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
       parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
     }
     node = node.expression;
-    if (node && node.body && ts.isBlock(node.body)) {
+    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body)) {
       node.body.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
       });
     } else {
-      while (node) {
-        if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-          const argument = node.arguments;
-          const propertyName = node.expression.name;
-          if (propertyName.escapedText === BIND_POPUP || propertyName.escapedText === CHECKED &&
-            parentComponentName === RADIO) {
-            argument.forEach(item => {
-              if (item.getText().startsWith($$)) {
-                while (item.expression) {
-                  item = item.expression;
-                }
-                dollarCollection.add(item.getText());
-              }
-            });
-          }
-        }
-        node = node.expression;
-      }
+      loopNodeFindDoubleDollar(node, parentComponentName);
     }
   } else if (ts.isIfStatement(node)) {
     if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
@@ -255,6 +237,53 @@ function traverseBuild(node: ts.Node, index: number): void {
       });
     }
   }
+}
+
+function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): void {
+  while (node) {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const argument: ts.NodeArray<ts.Node> = node.arguments;
+      const propertyName: ts.Identifier | ts.PrivateIdentifier= node.expression.name;
+      if (isCanAddDoubleDollar(propertyName.getText(), parentComponentName)) {
+        argument.forEach((item: ts.Node)=> {
+          doubleDollarCollection(item);
+        });
+      } 
+    } else if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments
+      && node.arguments.length) {
+      node.arguments.forEach((item: ts.Node) => {
+        if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+          item.properties.forEach((param: ts.Node)=>{
+            if (isObjectPram(param, parentComponentName)) {
+              doubleDollarCollection(param.initializer);
+            }
+          })
+        }
+      })
+    }
+    node = node.expression;
+  }
+}
+
+function doubleDollarCollection(item: ts.Node): void {
+  if (item.getText().startsWith($$)) {
+    while (item.expression) {
+      item = item.expression;
+    }
+    dollarCollection.add(item.getText());
+  }
+}
+
+function isObjectPram(param: ts.Node, parentComponentName:string): boolean {
+  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
+    param.initializer && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) && 
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(param.name.getText());
+}
+
+function isCanAddDoubleDollar(propertyName: string, parentComponentName: string): boolean {
+  return PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) && 
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(propertyName) ||
+    propertyName === BIND_POPUP;
 }
 
 function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boolean {
