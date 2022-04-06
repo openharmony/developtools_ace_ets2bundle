@@ -61,8 +61,8 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
-import { importModuleCollection } from "./ets_checker";
-import { isExtendFunction } from "./process_ui_syntax";
+import { importModuleCollection } from './ets_checker';
+import { isExtendFunction } from './process_ui_syntax';
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -303,7 +303,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     CUSTOM_BUILDER_METHOD.add(node.name.getText());
   }
   if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
-    let componentName: string = isExtendFunction(node);
+    const componentName: string = isExtendFunction(node);
     collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
@@ -759,7 +759,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     let moduleType: string = item2 || item5;
     let systemKey: string = item3 || item6;
     let systemValue: string = item1 || item4;
-    if (!VALIDATE_MODULE.includes(systemValue)){
+    if (!VALIDATE_MODULE.includes(systemValue)) {
       importModuleCollection.add(systemValue);
     }
     if (!isProcessAllowList && !isSystemModule) {
