@@ -114,7 +114,7 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
         break;
     }
     newTSPara.push(parameter);
-  })
+  });
   return newTSPara;
 }
 
