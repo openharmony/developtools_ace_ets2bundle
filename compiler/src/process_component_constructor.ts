@@ -22,22 +22,29 @@ import {
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   COMPONENT_WATCH_FUNCTION,
   BASE_COMPONENT_NAME,
-  INTERFACE_NAME_SUFFIX
+  INTERFACE_NAME_SUFFIX,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE
 } from './pre_define';
 
-export function getInitConstructor(members: ts.NodeArray<ts.Node>): ts.ConstructorDeclaration {
+import {
+  localStorageLinkCollection,
+  localStoragePropCollection
+} from './validate_ui_syntax';
+
+export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
+  ): ts.ConstructorDeclaration {
   let ctorNode: any = members.find(item => {
     return ts.isConstructorDeclaration(item);
   });
   if (ctorNode) {
     ctorNode = updateConstructor(ctorNode, [], [], true);
   }
-  return initConstructorParams(ctorNode);
+  return initConstructorParams(ctorNode, parentComponentName);
 }
 
-export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
-  para: ts.ParameterDeclaration[], addStatements: ts.Statement[], isSuper: boolean = false, isAdd: boolean = false, parentComponentName?: ts.Identifier):
-  ts.ConstructorDeclaration {
+export function updateConstructor(ctorNode: ts.ConstructorDeclaration,para: ts.ParameterDeclaration[],
+  addStatements: ts.Statement[], isSuper: boolean = false, isAdd: boolean = false,
+  parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
   if (para && para.length) {
     modifyPara = Array.from(ctorNode.parameters);
@@ -63,15 +70,22 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration,
       ctorPara = addParamsType(ctorNode, modifyPara, parentComponentName);
     }
     ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
-      ctorNode.modifiers, ctorPara,
+      ctorNode.modifiers, modifyPara || ctorNode.parameters,
       ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
   }
   return ctorNode;
 }
 
-function initConstructorParams(node: ts.ConstructorDeclaration): ts.ConstructorDeclaration {
-  const paramNames: string[] = [COMPONENT_CONSTRUCTOR_ID, COMPONENT_CONSTRUCTOR_PARENT,
-    COMPONENT_CONSTRUCTOR_PARAMS];
+function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentName: ts.Identifier):
+  ts.ConstructorDeclaration {
+  if (!ts.isIdentifier(parentComponentName)) {
+    return;
+  }
+  const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
+    localStoragePropCollection.get(parentComponentName.getText()).size;
+  const paramNames: Set<string> = new Set([COMPONENT_CONSTRUCTOR_ID, COMPONENT_CONSTRUCTOR_PARENT,
+    COMPONENT_CONSTRUCTOR_PARAMS, localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE :
+      COMPONENT_CONSTRUCTOR_PARAMS]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
     // @ts-ignore
@@ -114,13 +128,15 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
         break;
     }
     newTSPara.push(parameter);
-  })
+  });
   return newTSPara;
 }
 
 export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   parentComponentName: ts.Identifier): ts.ConstructorDeclaration {
   const watchStatements: ts.ExpressionStatement[] = [];
+  const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
+    localStoragePropCollection.get(parentComponentName.getText()).size;
   watchMap.forEach((value, key) => {
     const watchNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(
@@ -140,8 +156,13 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   });
   const callSuperStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
+      localStorageNum ?
       [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
+        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]
+    ));
   const updateWithValueParamsStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),

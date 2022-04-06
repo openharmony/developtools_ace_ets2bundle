@@ -37,6 +37,8 @@ import {
   COMPONENT_CONSUME_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR,
   COMPONENT_OBSERVED_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   STYLES,
   VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR
@@ -61,10 +63,12 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
-import { importModuleCollection } from "./ets_checker";
-import { isExtendFunction } from "./process_ui_syntax";
+import { importModuleCollection } from './ets_checker';
+import { isExtendFunction } from './process_ui_syntax';
 
 export interface ComponentCollection {
+  localStorageName: string;
+  entryComponentPos: number;
   entryComponent: string;
   previewComponent: string;
   customDialogs: Set<string>;
@@ -83,9 +87,13 @@ export interface IComponentSet {
   provides: Set<string>;
   consumes: Set<string>;
   objectLinks: Set<string>;
+  localStorageLink: Map<string, Set<string>>;
+  localStorageProp: Map<string, Set<string>>;
 }
 
 export const componentCollection: ComponentCollection = {
+  localStorageName: null,
+  entryComponentPos: null,
   entryComponent: null,
   previewComponent: null,
   customDialogs: new Set([]),
@@ -108,6 +116,8 @@ export const storageLinkCollection: Map<string, Set<string>> = new Map();
 export const provideCollection: Map<string, Set<string>> = new Map();
 export const consumeCollection: Map<string, Set<string>> = new Map();
 export const objectLinkCollection: Map<string, Set<string>> = new Map();
+export const localStorageLinkCollection: Map<string, Map<string, Set<string>>> = new Map();
+export const localStoragePropCollection: Map<string, Map<string, Set<string>>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -251,6 +261,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
         case COMPONENT_DECORATOR_ENTRY:
           result.entryCount++;
           componentCollection.entryComponent = componentName;
+          collectLocalStorageName(element);
           break;
         case COMPONENT_DECORATOR_PREVIEW:
           result.previewCount++;
@@ -283,6 +294,21 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
     const message: string = `The struct '${componentName}' cannot have the same name ` +
       `as the built-in component '${componentName}'.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+  }
+}
+
+function collectLocalStorageName(node: ts.Decorator): void {
+  if (node && node.expression && ts.isCallExpression(node.expression)) {
+    componentCollection.entryComponentPos = node.expression.pos;
+    if (node.expression.arguments && node.expression.arguments.length) {
+      node.expression.arguments.forEach((item: ts.Node, index: number) => {
+        if (ts.isIdentifier(item) && index === 0) {
+          componentCollection.localStorageName = item.getText();
+        }
+      });
+    }
+  } else {
+    componentCollection.localStorageName = null;
   }
 }
 
@@ -619,6 +645,8 @@ function collectComponentProps(node: ts.StructDeclaration): void {
   provideCollection.set(componentName, ComponentSet.provides);
   consumeCollection.set(componentName, ComponentSet.consumes);
   objectLinkCollection.set(componentName, ComponentSet.objectLinks);
+  localStorageLinkCollection.set(componentName, ComponentSet.localStorageLink);
+  localStoragePropCollection.set(componentName, ComponentSet.localStorageProp);
 }
 
 export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
@@ -632,18 +660,21 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const provides: Set<string> = new Set();
   const consumes: Set<string> = new Set();
   const objectLinks: Set<string> = new Set();
+  const localStorageLink: Map<string, Set<string>> = new Map();
+  const localStorageProp: Map<string, Set<string>> = new Map();
   traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
-    storageLinks, provides, consumes, objectLinks);
+    storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
   return {
     properties, regulars, states, links, props, storageProps, storageLinks, provides,
-    consumes, objectLinks
+    consumes, objectLinks, localStorageLink, localStorageProp
   };
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, properties: Set<string>,
   regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
-  consumes: Set<string>, objectLinks: Set<string>): void {
+  consumes: Set<string>, objectLinks: Set<string>,
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
@@ -659,8 +690,8 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
             const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
-              collectionStates(decoratorName, propertyName, states, links, props, storageProps,
-                storageLinks, provides, consumes, objectLinks);
+              collectionStates(item.decorators[i], decoratorName, propertyName, states, links, props, storageProps,
+                storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
             }
           }
         }
@@ -674,9 +705,10 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
   isStaticViewCollection.set(node.name.getText(), isStatic);
 }
 
-function collectionStates(decorator: string, name: string, states: Set<string>, links: Set<string>,
-  props: Set<string>, storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
-  consumes: Set<string>, objectLinks: Set<string>): void {
+function collectionStates(node: ts.Decorator, decorator: string, name: string,
+  states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
+  storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
       states.add(name);
@@ -702,6 +734,22 @@ function collectionStates(decorator: string, name: string, states: Set<string>, 
     case COMPONENT_OBJECT_LINK_DECORATOR:
       objectLinks.add(name);
       break;
+    case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR :
+      collectionlocalStorageParam(node, name, localStorageLink);
+      break;
+    case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+      collectionlocalStorageParam(node, name, localStorageProp);
+      break;
+    }
+  }
+  
+function collectionlocalStorageParam(node: ts.Decorator, name: string,
+  localStorage: Map<string, Set<string>>): void {
+  const localStorageParam: Set<string> = new Set();
+  if (node && ts.isCallExpression(node.expression) && node.expression.arguments &&
+    node.expression.arguments.length && ts.isStringLiteral(node.expression.arguments[0])) {
+    localStorage.set(name, localStorageParam.add(
+      node.expression.arguments[0].getText().replace(/\"|'/g, '')));
   }
 }
 
@@ -804,5 +852,6 @@ function validateAllowListModule(moduleType: string, systemKey: string): boolean
 
 export function resetComponentCollection() {
   componentCollection.entryComponent = null;
+  componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = null;
 }
