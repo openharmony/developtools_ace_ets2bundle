@@ -148,7 +148,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
 }
 
 function isCustomDialogController(node: ts.Expression) {
-  const tempParent = node.parent;
+  const tempParent: ts.Node = node.parent;
   // @ts-ignore
   if (!node.parent && node.original) {
     // @ts-ignore
