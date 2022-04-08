@@ -126,8 +126,10 @@ function initConfig(config) {
   }
   if (!projectConfig.aceModuleJsonPath) {
     config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
   } else {
     config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
   }
 }
 
