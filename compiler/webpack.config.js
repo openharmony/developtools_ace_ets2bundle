@@ -125,6 +125,11 @@ function initConfig(config) {
       cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
     };
   }
+  if (!projectConfig.aceModuleJsonPath) {
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
+  } else {
+    config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
+  }
 }
 
 function setProjectConfig(envArgs) {
