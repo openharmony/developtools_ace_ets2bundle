@@ -349,10 +349,8 @@ function updateHeritageClauses(node: ts.StructDeclaration): ts.NodeArray<ts.Heri
 }
 
 export function isProperty(node: ts.Node): Boolean {
-  if (node.parent && ts.isObjectLiteralExpression(node.parent) && node.parent.parent &&
-    ts.isCallExpression(node.parent.parent) && ts.isPropertyAssignment(node) &&
-    ts.isIdentifier(node.name)) {
-    if (ts.isIdentifier(node.parent.parent.expression) &&
+  if (judgmentParentType(node)) {
+    if (node.parent.parent.expression && ts.isIdentifier(node.parent.parent.expression) &&
       !BUILDIN_STYLE_NAMES.has(node.parent.parent.expression.escapedText.toString()) &&
       componentCollection.customComponents.has(
         node.parent.parent.expression.escapedText.toString())) {
@@ -365,6 +363,12 @@ export function isProperty(node: ts.Node): Boolean {
     }
   }
   return false;
+}
+
+function judgmentParentType(node: ts.Node): boolean {
+  return ts.isPropertyAssignment(node) && node.name && ts.isIdentifier(node.name) &&
+    node.parent && ts.isObjectLiteralExpression(node.parent) && node.parent.parent &&
+    (ts.isCallExpression(node.parent.parent) || ts.isEtsComponentExpression(node.parent.parent));
 }
 
 export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignment {
