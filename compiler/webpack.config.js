@@ -168,7 +168,13 @@ function setReleaseConfig(config) {
     minimizer: [new TerserPlugin({
       terserOptions: {
         compress: {
-          join_vars: false
+          join_vars: false,
+          sequences: 0
+        },
+        format: {
+          semicolons: false,
+          beautify: true,
+          indent_level: 2
         }
       }
     })]
