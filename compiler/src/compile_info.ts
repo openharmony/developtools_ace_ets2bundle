@@ -41,11 +41,9 @@ import {
 import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
 import {
   createLanguageService,
-  dollarCollection,
   appComponentCollection,
-  decoratorParamsCollection,
-  extendCollection,
-  importModuleCollection
+  importModuleCollection,
+  createWatchCompilerHost
 } from './ets_checker';
 import { globalProgram } from '../main';
 
@@ -156,29 +154,21 @@ export class ResultStates {
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
         rootFileNames.push(fileName.replace('?entry', ''));
       });
-      const languageService: ts.LanguageService = createLanguageService(rootFileNames);
-      globalProgram.program = languageService.getProgram();
-      const rootProgram: ts.Program = globalProgram.program;
-      props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
-      let allDiagnostics: ts.Diagnostic[] = rootProgram
-        .getSyntacticDiagnostics()
-        .concat(rootProgram.getSemanticDiagnostics())
-        .concat(rootProgram.getDeclarationDiagnostics());
-      allDiagnostics = allDiagnostics.filter((item) => {
-        return this.validateError(ts.flattenDiagnosticMessageText(item.messageText, '\n'));
-      });
-      this.mErrorCount += allDiagnostics.length;
-      allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-        const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        if (diagnostic.file) {
-          const { line, character }: ts.LineAndCharacter =
-            diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-          logger.error(this.red,
-            `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
-        } else {
-          logger.error(this.red, `ETS:ERROR: ${message}`);
-        }
-      });
+      if (process.env.watchMode === 'true') {
+        globalProgram.watchProgram = ts.createWatchProgram(
+          createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
+            this.delayPrintLogCount.bind(this)));
+      } else {
+        const languageService: ts.LanguageService = createLanguageService(rootFileNames);
+        globalProgram.program = languageService.getProgram();
+        const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+          .getSyntacticDiagnostics()
+          .concat(globalProgram.program.getSemanticDiagnostics())
+          .concat(globalProgram.program.getDeclarationDiagnostics());
+        allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+          this.printDiagnostic(diagnostic);
+        });
+      }
     });
 
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
@@ -214,6 +204,21 @@ export class ResultStates {
     }
   }
 
+  private printDiagnostic(diagnostic: ts.Diagnostic): void {
+    const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+    if (this.validateError(message)) {
+      this.mErrorCount += 1;
+      if (diagnostic.file) {
+        const { line, character }: ts.LineAndCharacter =
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+        logger.error(this.red,
+          `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+      } else {
+        logger.error(this.red, `ETS:ERROR: ${message}`);
+      }
+    }
+  }
+
   private writeUseOSFiles(): void {
     let info: string = '';
     if (!fs.existsSync(projectConfig.aceSoPath)) {
@@ -230,6 +235,23 @@ export class ResultStates {
   private printResult(): void {
     this.printWarning();
     this.printError();
+    if (process.env.watchMode === 'true') {
+      process.env.watchEts = 'end';
+      this.delayPrintLogCount();
+    } else {
+      this.printLogCount();
+    }
+  }
+
+  private delayPrintLogCount() {
+    if (process.env.watchEts === 'end' && process.env.watchTs === 'end') {
+      this.printLogCount();
+      process.env.watchEts = 'start';
+      process.env.watchTs = 'start';
+    }
+  }
+
+  private printLogCount(): void {
     if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
