@@ -218,7 +218,7 @@ function setCopyPluginConfig(config) {
 }
 
 function setOptimizationConfig(config) {
-  if (process.env.compileMode !== 'moduleJson') {
+  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
     config.optimization = {
       splitChunks: {
         chunks(chunk) {
