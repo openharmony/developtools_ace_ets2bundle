@@ -324,7 +324,7 @@ function checkAllNode(node: ts.Node, allComponentNames: Set<string>, sourceFileN
 }
 
 function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     ts.isIdentifier(node.expression.expression) && hasChild(node)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
@@ -334,30 +334,24 @@ function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log
 }
 
 function hasChild(node: ts.ExpressionStatement): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
-  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) && getNextNode(node)) {
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) && getNextNode(etsComponentExpression)) {
     return true;
   }
   return false;
 }
 
-function getNextNode(node: ts.Node): ts.Block {
-  if (node.parent && ts.isBlock(node.parent) && node.parent.statements) {
-    const statementsArray: ts.Node[] = Array.from(node.parent.statements);
-    for (let i = 0; i < statementsArray.length - 1; i++) {
-      const curNode: ts.Node = statementsArray[i];
-      const nextNode: ts.Node = statementsArray[i + 1];
-      if (node === curNode && ts.isBlock(nextNode)) {
-        return nextNode;
-      }
-    }
+function getNextNode(node: ts.EtsComponentExpression): ts.Block {
+  if (node.body && ts.isBlock(node.body)) {
+    const statementsArray: ts.Block = node.body;
+    return statementsArray
   }
 }
 
 function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     ts.isIdentifier(node.expression.expression) && hasNonSingleChild(node, allComponentNames)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
@@ -368,22 +362,22 @@ function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
 }
 
 function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<string>): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
-  const nextBlockNode: ts.Block = getNextNode(node);
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+  const BlockNode: ts.Block = getNextNode(etsComponentExpression);
   if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString())) {
-    if (!nextBlockNode) {
+    if (!BlockNode) {
       return false;
     }
-    if (nextBlockNode && nextBlockNode.statements) {
-      const length: number = nextBlockNode.statements.length;
+    if (BlockNode && BlockNode.statements) {
+      const length: number = BlockNode.statements.length;
       if (!length) {
         return false;
       }
       if (length > 3) {
         return true;
       }
-      const childCount: number = getBlockChildrenCount(nextBlockNode, allComponentNames);
+      const childCount: number = getBlockChildrenCount(BlockNode, allComponentNames);
       if (childCount > 1) {
         return true;
       }
@@ -404,18 +398,15 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
     if (ts.isIfStatement(item)) {
       maxCount += getIfChildrenCount(item, allComponentNames);
     }
-    if (ts.isBlock(item)) {
-      maxCount += getBlockChildrenCount(item, allComponentNames);
+    if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression)) {
+      maxCount += 1;
     }
     if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
       let newNode: any = item.expression;
       while (newNode.expression) {
-        if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
-        !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
+        if (ts.isEtsComponentExpression(newNode) || ts.isCallExpression(newNode) &&
+          isComponent(newNode, allComponentNames)) {
           maxCount += 1;
-          if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
-            ++i;
-          }
         }
         newNode = newNode.expression;
       }
@@ -427,7 +418,7 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
   return maxCount;
 }
 
-function isComponent(node: ts.CallExpression, allComponentNames: Set<string>): boolean {
+function isComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     allComponentNames.has(node.expression.escapedText.toString())) {
     return true;
@@ -458,10 +449,10 @@ function getStatementCount(node: ts.Node, allComponentNames: Set<string>): numbe
     maxCount = getBlockChildrenCount(node, allComponentNames);
   } else if (ts.isIfStatement(node)) {
     maxCount = getIfChildrenCount(node, allComponentNames);
-  } else if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  } else if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     isForEachComponent(node.expression)) {
     maxCount = 2;
-  } else if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  } else if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     !isForEachComponent(node.expression) && isComponent(node.expression, allComponentNames)) {
     maxCount = 1;
   }
@@ -484,10 +475,10 @@ function checkSpecificChildComponent(node: ts.Node, allComponentNames: Set<strin
 
 function hasNonspecificChild(node: ts.ExpressionStatement,
   allComponentNames: Set<string>): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
   const nodeNameString: string = nodeName.escapedText.toString();
-  const blockNode: ts.Block = getNextNode(node);
+  const blockNode: ts.Block = getNextNode(etsComponentExpression);
   let isNonspecific: boolean = false;
   if (SPECIFIC_CHILD_COMPONENT.has(nodeNameString) && blockNode) {
     const specificChildSet: Set<string> = SPECIFIC_CHILD_COMPONENT.get(nodeNameString);
@@ -508,7 +499,7 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isIfStatement(item) && isNonspecificChildIf(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression) &&
+      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression) &&
         isForEachComponent(item.expression) &&
         isNonspecificChildForEach(item.expression, specificChildSet, allComponentNames)) {
         return true;
@@ -516,10 +507,10 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isBlock(item) && isNonspecificChildBlock(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
+      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression)) {
         let newNode: any = item.expression;
         while (newNode.expression) {
-          if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
+          if (ts.isEtsComponentExpression(newNode) && ts.isIdentifier(newNode.expression) &&
           !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
             const isNonspecific: boolean =
             isNonspecificChildNonForEach(item.expression, specificChildSet);
@@ -544,13 +535,13 @@ function isNonspecificChildIf(node: ts.IfStatement, specificChildSet: Set<string
     isNonspecificChildIfStatement(node.elseStatement, specificChildSet, allComponentNames);
 }
 
-function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Set<string>,
+function isNonspecificChildForEach(node: ts.EtsComponentExpression, specificChildSet: Set<string>,
   allComponentNames: Set<string>): boolean {
-  if (ts.isCallExpression(node) && node.arguments &&
+  if (ts.isEtsComponentExpression(node) && node.arguments &&
     node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const arrowFunction: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
-    const body: ts.Block | ts.CallExpression | ts.IfStatement =
-      arrowFunction.body as ts.Block | ts.CallExpression | ts.IfStatement;
+    const body: ts.Block | ts.EtsComponentExpression | ts.IfStatement =
+      arrowFunction.body as ts.Block | ts.EtsComponentExpression | ts.IfStatement;
     if (!body) {
       return false;
     }
@@ -564,7 +555,7 @@ function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Se
       isNonspecificChildForEach(body, specificChildSet, allComponentNames)) {
       return true;
     }
-    if (ts.isCallExpression(body) && !isForEachComponent(body) &&
+    if (ts.isEtsComponentExpression(body) && !isForEachComponent(body) &&
       isComponent(body, allComponentNames) &&
       isNonspecificChildNonForEach(body, specificChildSet)) {
       return true;
@@ -573,7 +564,7 @@ function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Se
   return false;
 }
 
-function isNonspecificChildNonForEach(node: ts.CallExpression,
+function isNonspecificChildNonForEach(node: ts.EtsComponentExpression,
   specificChildSet: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     !specificChildSet.has(node.expression.escapedText.toString())) {
@@ -593,12 +584,12 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   if (ts.isIfStatement(node) && isNonspecificChildIf(node, specificChildSet, allComponentNames)) {
     return true;
   }
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     isForEachComponent(node.expression) &&
     isNonspecificChildForEach(node.expression, specificChildSet, allComponentNames)) {
     return true;
   }
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     !isForEachComponent(node.expression) && isComponent(node.expression, allComponentNames) &&
     isNonspecificChildNonForEach(node.expression, specificChildSet)) {
     return true;
