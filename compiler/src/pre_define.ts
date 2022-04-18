@@ -195,13 +195,22 @@ export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
+
 export const CHECKED: string = 'checked';
 export const RADIO: string = 'Radio';
 export const $$_VALUE: string = 'value';
 export const $$_CHANGE_EVENT: string = 'changeEvent';
+export const TEXT_TIMER: string = 'TextTimer';
+export const FORMAT: string = 'format';
+export const IS_COUNT_DOWN: string = 'isCountDown';
+export const COUNT: string = 'count';
 export const $$_THIS: string = '$$this';
 export const $$_NEW_VALUE: string = 'newValue';
 export const $$: string = '$$';
+
+export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
+  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
+]);;
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
 export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
