@@ -242,7 +242,7 @@ function loadWorker(projectConfig) {
       }
       const relativePath = path.relative(projectConfig.projectPath, worker);
       if (filterWorker(relativePath)) {
-        projectConfig.entryObj[relativePath.replace(/\.(ts|js)$/,'')] = worker;
+        projectConfig.entryObj[relativePath.replace(/\.(ts|js)$/,'').replace(/\\/g, '/')] = worker;
       }
     })
   } else {
