@@ -102,7 +102,6 @@ function initConfig(config) {
       extensions: ['.js', '.ets', '.ts', '.d.ts'],
       modules: [
         projectPath,
-        path.join(projectPath, '../../../../../'),
         './node_modules',
         path.join(__dirname, 'node_modules'),
         path.join(__dirname, '../../api')
@@ -125,11 +124,15 @@ function initConfig(config) {
     };
   }
   if (!projectConfig.aceModuleJsonPath) {
+    config.resolve.modules.push(path.join(projectPath, '../../../../../'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../../'));
   } else {
+    config.resolve.modules.push(path.join(projectPath, '../../../../'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../'));
   }
 }
 
