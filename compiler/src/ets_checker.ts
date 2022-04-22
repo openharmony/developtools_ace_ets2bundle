@@ -82,8 +82,9 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
-        return ts.ScriptSnapshot.fromString(processContent(fs.readFileSync(fileName).toString()));
+        const content: string = processContent(fs.readFileSync(fileName).toString());
+        checkUISyntax(content, fileName);
+        return ts.ScriptSnapshot.fromString(content);
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
@@ -166,8 +167,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
-      return processContent(fs.readFileSync(fileName).toString());
+      const content: string = processContent(fs.readFileSync(fileName).toString());
+      checkUISyntax(content, fileName);
+      return content;
     }
     return fs.readFileSync(fileName).toString();
   };
