@@ -371,7 +371,7 @@ function hasChild(node: ts.ExpressionStatement): boolean {
 function getNextNode(node: ts.EtsComponentExpression): ts.Block {
   if (node.body && ts.isBlock(node.body)) {
     const statementsArray: ts.Block = node.body;
-    return statementsArray
+    return statementsArray;
   }
 }
 
@@ -731,9 +731,9 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
     case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
       collectionlocalStorageParam(node, name, localStorageProp);
       break;
-    }
   }
-  
+}
+
 function collectionlocalStorageParam(node: ts.Decorator, name: string,
   localStorage: Map<string, Set<string>>): void {
   const localStorageParam: Set<string> = new Set();
@@ -753,6 +753,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   let content: string = source;
   const log: LogInfo[] = [];
   content = preprocessExtend(content);
+  content = preprocessNewExtend(content);
   // process @system.
   content = processSystemApi(content, false, sourcePath);
 
@@ -771,6 +772,16 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
       extendCollection.add(item3);
     }
     return `@Extend(${item2})${item1}function __${item2}__${item3}(`;
+  });
+}
+
+export function preprocessNewExtend(content: string, extendCollection?: Set<string>): string {
+  const REG_EXTEND: RegExp = /@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
+  return content.replace(REG_EXTEND, (item, item1) => {
+    if (extendCollection) {
+      extendCollection.add(item1);
+    }
+    return item;
   });
 }
 
