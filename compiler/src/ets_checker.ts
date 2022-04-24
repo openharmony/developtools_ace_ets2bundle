@@ -20,7 +20,8 @@ import * as ts from 'typescript';
 import { projectConfig } from '../main';
 import {
   processSystemApi,
-  preprocessExtend
+  preprocessExtend,
+  preprocessNewExtend
 } from './validate_ui_syntax';
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
@@ -283,23 +284,23 @@ function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): v
   while (node) {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const argument: ts.NodeArray<ts.Node> = node.arguments;
-      const propertyName: ts.Identifier | ts.PrivateIdentifier= node.expression.name;
+      const propertyName: ts.Identifier | ts.PrivateIdentifier = node.expression.name;
       if (isCanAddDoubleDollar(propertyName.getText(), parentComponentName)) {
-        argument.forEach((item: ts.Node)=> {
+        argument.forEach((item: ts.Node) => {
           doubleDollarCollection(item);
         });
-      } 
+      }
     } else if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments
       && node.arguments.length) {
       node.arguments.forEach((item: ts.Node) => {
         if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
-          item.properties.forEach((param: ts.Node)=>{
+          item.properties.forEach((param: ts.Node) => {
             if (isObjectPram(param, parentComponentName)) {
               doubleDollarCollection(param.initializer);
             }
-          })
+          });
         }
-      })
+      });
     }
     node = node.expression;
   }
@@ -316,12 +317,12 @@ function doubleDollarCollection(item: ts.Node): void {
 
 function isObjectPram(param: ts.Node, parentComponentName:string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
-    param.initializer && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) && 
+    param.initializer && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(param.name.getText());
 }
 
 function isCanAddDoubleDollar(propertyName: string, parentComponentName: string): boolean {
-  return PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) && 
+  return PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(propertyName) ||
     propertyName === BIND_POPUP;
 }
@@ -344,6 +345,7 @@ function processDraw(source: string): string {
 function processContent(source: string): string {
   source = processSystemApi(source);
   source = preprocessExtend(source, extendCollection);
+  source = preprocessNewExtend(source, extendCollection);
   source = processDraw(source);
   return source;
 }
