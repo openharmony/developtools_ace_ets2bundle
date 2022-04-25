@@ -306,9 +306,20 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   if (fs.existsSync(defaultModule)) {
     return defaultModule;
   }
-  const entryModule: string = path.join(projectPath, '../../../../../', moduleFilePath);
+  let entryModule: string;
+  let etsModule: string;
+  if (!projectConfig.aceModuleJsonPath) {
+    entryModule = path.join(projectPath, '../../../../../', moduleFilePath);
+    etsModule = path.join(projectPath, '../../', moduleFilePath);
+  } else {
+    entryModule = path.join(projectPath, '../../../../', moduleFilePath);
+    etsModule = path.join(projectPath, '../', moduleFilePath);
+  }
   if (fs.existsSync(entryModule)) {
     return entryModule;
+  }
+  if (fs.existsSync(etsModule)) {
+    return etsModule;
   }
   let curPageDir: string = pagesDir;
   while (!fs.existsSync(fileResolvePath)) {
