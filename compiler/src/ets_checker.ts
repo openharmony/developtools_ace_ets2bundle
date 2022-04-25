@@ -51,6 +51,16 @@ function readDeaclareFiles(): string[] {
 const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions() {
+  const allPath: Array<string> = [
+    '*',
+  ]
+  if (!projectConfig.aceModuleJsonPath) {
+    allPath.push('../../../../../*');
+    allPath.push('../../*');
+  } else {
+    allPath.push('../../../../*');
+    allPath.push('../*');
+  }
   Object.assign(compilerOptions, {
     'allowJs': false,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
@@ -60,10 +70,7 @@ function setCompilerOptions() {
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
     'paths': {
-      '*': [
-        '*',
-        '../../../../../*'
-      ]
+      '*': allPath
     },
     'lib': [
       'lib.es2020.d.ts'
