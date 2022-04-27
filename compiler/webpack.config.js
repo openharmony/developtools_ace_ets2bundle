@@ -128,11 +128,29 @@ function initConfig(config) {
     config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../../'));
+    existsPackageJson(config, path.resolve(projectPath, '../../../../../package.json'),
+      path.resolve(projectPath, '../../../../package.json'));
   } else {
     config.resolve.modules.push(path.join(projectPath, '../../../../'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
     config.resolve.modules.push(path.resolve(projectPath, '../'));
+    existsPackageJson(config, path.resolve(projectPath, '../../../../package.json'),
+      path.resolve(projectPath, '../../../package.json'));
+  }
+}
+
+function existsPackageJson(config, rootPackageJsonPath, modulePackageJsonPath) {
+  if (config.cache) {
+    config.cache.buildDependencies = {
+      config: []
+    };
+    if (fs.existsSync(rootPackageJsonPath)) {
+      config.cache.buildDependencies.config.push(rootPackageJsonPath);
+    }
+    if (fs.existsSync(modulePackageJsonPath)) {
+      config.cache.buildDependencies.config.push(modulePackageJsonPath);
+    }
   }
 }
 
