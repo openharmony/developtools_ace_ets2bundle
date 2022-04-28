@@ -1,4 +1,5 @@
 {
   "name": "AbilityComponent",
-  "attrs": ["onReady", "onDestroy", "onAbilityCreated", "onAbilityMoveToFront", "onAbilityWillRemove"]
+  "attrs": ["onReady", "onDestroy", "onAbilityCreated", "onAbilityMoveToFront", "onAbilityWillRemove", "onConnected", "onDisconnected"],
+  "atomic": true
 }
