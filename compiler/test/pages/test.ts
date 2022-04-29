@@ -13,4 +13,8 @@
  * limitations under the License.
  */
 
-export * as AllStarComponent from './ExportComponent';
+export enum Animal {
+    Cat,
+    Dog,
+    Bird
+}
