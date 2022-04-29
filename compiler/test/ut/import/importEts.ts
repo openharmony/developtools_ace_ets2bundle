@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,16 +15,14 @@
 
 exports.source = `
 import
-  LinkComponentDefault, {
+LinkComponentDefault, {
   LinkComponent as LinkComponent1Ref,
   LinkComponent2 as LinkComponent2Ref,
   LinkComponent3
-} from './test/pages/LinkComponent.ets'
-import DefaultComponent from "./test/pages/DefaultComponent.ets"
-import * as AllComponent from './test/pages/NamespaceComponent'
+} from './test/pages/LinkComponent'
+import DefaultComponent from "./test/pages/DefaultComponent"
 import AMDComponentDefault = require('./test/pages/AMDComponent')
-import { AllStarComponent } from './test/pages/ExportStarComponent'
-import TsModule = require('./test/pages/TsModule')
+import TsModule from './test/pages/TsModule'
 
 @Entry
 @Component
@@ -35,10 +33,10 @@ struct ImportTest {
   @State myState4: string = 'ImportTest'
 
   build() {
-    Row() {
+    Column() {
       LinkComponent2Ref({
         LinkComponent2Link1: $myState1,
-        LinkComponent2Link2: this.$myState2,
+        LinkComponent2Link2: $myState2,
         LinkComponent2Link3: $myState3,
         LinkComponent2Link4: $myState4,
         indexState1: { count: 1 },
@@ -47,9 +45,11 @@ struct ImportTest {
         indexState4: 'LinkComponent2'
       })
       Text('space')
+        .fontSize(20)
+        .fontColor(Color.Red)
       LinkComponent1Ref({
         LinkComponent1Link1: $myState1,
-        LinkComponent1Link2: this.$myState2,
+        LinkComponent1Link2: $myState2,
         LinkComponent1Link3: $myState3,
         LinkComponent1Link4: $myState4,
         indexState1: { count: 1 },
@@ -59,23 +59,15 @@ struct ImportTest {
       })
       DefaultComponent({
         DefaultComponentLink1: $myState1,
-        DefaultComponentLink2: this.$myState2,
+        DefaultComponentLink2: $myState2,
         DefaultComponentLink3: $myState3,
         DefaultComponentLink4: $myState4,
         myVar: 100,
         myVar2: 100
       })
-      AllComponent.NamespaceComponent1({
-        NamespaceComponent1Link1: $myState1,
-        NamespaceComponent1Link2: this.$myState2,
-        NamespaceComponent1Link3: $myState3,
-        NamespaceComponent1Link4: $myState4,
-        myVar: 100,
-        myVar2: 80
-      })
       LinkComponentDefault({
         LinkComponent3Link1: $myState1,
-        LinkComponent3Link2: this.$myState2,
+        LinkComponent3Link2: $myState2,
         LinkComponent3Link3: $myState3,
         LinkComponent3Link4: $myState4,
         indexState1: { count: 1 },
@@ -85,7 +77,7 @@ struct ImportTest {
       })
       AMDComponentDefault({
         AMDComponentLink1: $myState1,
-        AMDComponentLink2: this.$myState2,
+        AMDComponentLink2: $myState2,
         AMDComponentLink3: $myState3,
         AMDComponentLink4: $myState4,
         myVar: 100,
@@ -93,41 +85,13 @@ struct ImportTest {
       })
       LinkComponent3({
         LinkComponent3Link1: $myState1,
-        LinkComponent3Link2: this.$myState2,
+        LinkComponent3Link2: $myState2,
         LinkComponent3Link3: $myState3,
         LinkComponent3Link4: $myState4,
         indexState1: { count: 1 },
         indexState2: 1,
         indexState3: true,
         indexState4: 'LinkComponent1'
-      })
-      AllStarComponent.ExportComponent({
-        ExportComponent1Link1: $myState1,
-        ExportComponent1Link2: this.$myState2,
-        ExportComponent1Link3: $myState3,
-        ExportComponent1Link4: $myState4,
-        indexState1: { count: 1 },
-        indexState2: 1,
-        indexState3: true,
-        indexState4: 'ExportComponent1'
-      })
-      AllStarComponent.default({
-        ExportComponent4Link1: $myState1,
-        ExportComponent4Link2: this.$myState2,
-        ExportComponent4Link3: $myState3,
-        ExportComponent4Link4: $myState4,
-        indexState1: { count: 1 },
-        indexState2: 1,
-        indexState3: true,
-        indexState4: 'ExportComponent4'
-      })
-      AllComponent.default({
-        NamespaceComponent3Link1: $myState1,
-        NamespaceComponent3Link2: this.$myState2,
-        NamespaceComponent3Link3: $myState3,
-        NamespaceComponent3Link4: $myState4,
-        myVar: 100,
-        myVar2: 80
       })
     }
   }
@@ -159,16 +123,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const LinkComponent_ets_1 = __importStar(require("./test/pages/LinkComponent.ets"));
-const DefaultComponent_ets_1 = __importDefault(require("./test/pages/DefaultComponent.ets"));
-const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
+const LinkComponent_1 = __importStar(require("./test/pages/LinkComponent"));
+const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponent"));
 const AMDComponentDefault = require("./test/pages/AMDComponent");
-const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
-const TsModule = require("./test/pages/TsModule");
+const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.__myState1 = new ObservedPropertyObject(new TsModule(1).method(), this, "myState1");
+        this.__myState1 = new ObservedPropertyObject(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimple(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimple('ImportTest', this, "myState4");
@@ -220,10 +182,10 @@ class ImportTest extends View {
         this.__myState4.set(newValue);
     }
     render() {
-        Row.create();
+        Column.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new LinkComponent_ets_1.LinkComponent2("2", this, {
+            View.create(new LinkComponent_1.LinkComponent2("2", this, {
                 LinkComponent2Link1: this.__myState1,
                 LinkComponent2Link2: this.__myState2,
                 LinkComponent2Link3: this.__myState3,
@@ -244,10 +206,12 @@ class ImportTest extends View {
             View.create(earlierCreatedChild_2);
         }
         Text.create('space');
+        Text.fontSize(20);
+        Text.fontColor(Color.Red);
         Text.pop();
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new LinkComponent_ets_1.LinkComponent("3", this, {
+            View.create(new LinkComponent_1.LinkComponent("3", this, {
                 LinkComponent1Link1: this.__myState1,
                 LinkComponent1Link2: this.__myState2,
                 LinkComponent1Link3: this.__myState3,
@@ -269,7 +233,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_4 = this.findChildById("4");
         if (earlierCreatedChild_4 == undefined) {
-            View.create(new DefaultComponent_ets_1.default("4", this, {
+            View.create(new DefaultComponent_1.default("4", this, {
                 DefaultComponentLink1: this.__myState1,
                 DefaultComponentLink2: this.__myState2,
                 DefaultComponentLink3: this.__myState3,
@@ -287,25 +251,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_5 = this.findChildById("5");
         if (earlierCreatedChild_5 == undefined) {
-            View.create(new AllComponent.NamespaceComponent1("5", this, {
-                NamespaceComponent1Link1: this.__myState1,
-                NamespaceComponent1Link2: this.__myState2,
-                NamespaceComponent1Link3: this.__myState3,
-                NamespaceComponent1Link4: this.__myState4,
-                myVar: 100,
-                myVar2: 80
-            }));
-        }
-        else {
-            earlierCreatedChild_5.updateWithValueParams({
-                myVar: 100,
-                myVar2: 80
-            });
-            View.create(earlierCreatedChild_5);
-        }
-        let earlierCreatedChild_6 = this.findChildById("6");
-        if (earlierCreatedChild_6 == undefined) {
-            View.create(new LinkComponent_ets_1.default("6", this, {
+            View.create(new LinkComponent_1.default("5", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,
@@ -317,17 +263,17 @@ class ImportTest extends View {
             }));
         }
         else {
-            earlierCreatedChild_6.updateWithValueParams({
+            earlierCreatedChild_5.updateWithValueParams({
                 indexState1: { count: 1 },
                 indexState2: 1,
                 indexState3: true,
                 indexState4: 'LinkComponent3'
             });
-            View.create(earlierCreatedChild_6);
+            View.create(earlierCreatedChild_5);
         }
-        let earlierCreatedChild_7 = this.findChildById("7");
-        if (earlierCreatedChild_7 == undefined) {
-            View.create(new AMDComponentDefault("7", this, {
+        let earlierCreatedChild_6 = this.findChildById("6");
+        if (earlierCreatedChild_6 == undefined) {
+            View.create(new AMDComponentDefault("6", this, {
                 AMDComponentLink1: this.__myState1,
                 AMDComponentLink2: this.__myState2,
                 AMDComponentLink3: this.__myState3,
@@ -337,15 +283,15 @@ class ImportTest extends View {
             }));
         }
         else {
-            earlierCreatedChild_7.updateWithValueParams({
+            earlierCreatedChild_6.updateWithValueParams({
                 myVar: 100,
                 myVar2: 100
             });
-            View.create(earlierCreatedChild_7);
+            View.create(earlierCreatedChild_6);
         }
-        let earlierCreatedChild_8 = this.findChildById("8");
-        if (earlierCreatedChild_8 == undefined) {
-            View.create(new LinkComponent_ets_1.LinkComponent3("8", this, {
+        let earlierCreatedChild_7 = this.findChildById("7");
+        if (earlierCreatedChild_7 == undefined) {
+            View.create(new LinkComponent_1.LinkComponent3("7", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,
@@ -357,77 +303,15 @@ class ImportTest extends View {
             }));
         }
         else {
-            earlierCreatedChild_8.updateWithValueParams({
+            earlierCreatedChild_7.updateWithValueParams({
                 indexState1: { count: 1 },
                 indexState2: 1,
                 indexState3: true,
                 indexState4: 'LinkComponent1'
             });
-            View.create(earlierCreatedChild_8);
+            View.create(earlierCreatedChild_7);
         }
-        let earlierCreatedChild_9 = this.findChildById("9");
-        if (earlierCreatedChild_9 == undefined) {
-            View.create(new ExportStarComponent_1.AllStarComponent.ExportComponent("9", this, {
-                ExportComponent1Link1: this.__myState1,
-                ExportComponent1Link2: this.__myState2,
-                ExportComponent1Link3: this.__myState3,
-                ExportComponent1Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent1'
-            }));
-        }
-        else {
-            earlierCreatedChild_9.updateWithValueParams({
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent1'
-            });
-            View.create(earlierCreatedChild_9);
-        }
-        let earlierCreatedChild_10 = this.findChildById("10");
-        if (earlierCreatedChild_10 == undefined) {
-            View.create(new ExportStarComponent_1.AllStarComponent.default("10", this, {
-                ExportComponent4Link1: this.__myState1,
-                ExportComponent4Link2: this.__myState2,
-                ExportComponent4Link3: this.__myState3,
-                ExportComponent4Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent4'
-            }));
-        }
-        else {
-            earlierCreatedChild_10.updateWithValueParams({
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent4'
-            });
-            View.create(earlierCreatedChild_10);
-        }
-        let earlierCreatedChild_11 = this.findChildById("11");
-        if (earlierCreatedChild_11 == undefined) {
-            View.create(new AllComponent.default("11", this, {
-                NamespaceComponent3Link1: this.__myState1,
-                NamespaceComponent3Link2: this.__myState2,
-                NamespaceComponent3Link3: this.__myState3,
-                NamespaceComponent3Link4: this.__myState4,
-                myVar: 100,
-                myVar2: 80
-            }));
-        }
-        else {
-            earlierCreatedChild_11.updateWithValueParams({
-                myVar: 100,
-                myVar2: 80
-            });
-            View.create(earlierCreatedChild_11);
-        }
-        Row.pop();
+        Column.pop();
     }
 }
 loadDocument(new ImportTest("1", undefined, {}));

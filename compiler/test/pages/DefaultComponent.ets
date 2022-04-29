@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,16 +15,31 @@
 
 @Component
 struct DefaultComponent {
-  @Link DefaultComponentLink1?: any
-  @Link DefaultComponentLink2?: number
-  @Link DefaultComponentLink3?: boolean
-  @Link DefaultComponentLink4?: string
+  @Link DefaultComponentLink1: any
+  @Link DefaultComponentLink2: number
+  @Link DefaultComponentLink3: boolean
+  @Link DefaultComponentLink4: string
 
   private myVar: number = 0
   private myVar2: number
 
   build() {
-
+    Column(){
+      Text('DefaultComponent')
+        .fontSize(20)
+      Text('DefaultComponentLink1: ' + JSON.stringify(this.DefaultComponentLink1))
+        .fontSize(20)
+      Text('DefaultComponentLink2: ' + JSON.stringify(this.DefaultComponentLink2))
+        .fontSize(20)
+      Text('DefaultComponentLink3: ' + JSON.stringify(this.DefaultComponentLink3))
+        .fontSize(20)
+      Text('DefaultComponentLink4: ' + JSON.stringify(this.DefaultComponentLink4))
+        .fontSize(20)
+      Text('myVar: ' + JSON.stringify(this.myVar))
+        .fontSize(20)
+      Text('myVar2: ' + JSON.stringify(this.myVar2))
+        .fontSize(20)
+    }
   }
 }
 

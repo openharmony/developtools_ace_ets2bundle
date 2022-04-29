@@ -14,39 +14,35 @@
  */
 
 exports.source = `
-import { AllStarComponent } from './test/pages/ExportStarComponent'
+import * as AllComponent from './test/pages/NamespaceComponent'
 import TsModule from './test/pages/TsModule'
 
 @Entry
 @Component
 struct ImportTest {
-  @State myState1: any = new TsModule(1).method();
+  @State myState1: any = new TsModule(1).method()
   @State myState2: number = 0
   @State myState3: boolean = false
   @State myState4: string = 'ImportTest'
 
   build() {
     Column() {
-      AllStarComponent.ExportComponent({
-        ExportComponent1Link1: $myState1,
-        ExportComponent1Link2: $myState2,
-        ExportComponent1Link3: $myState3,
-        ExportComponent1Link4: $myState4,
-        indexState1: { count: 1 },
-        indexState2: 1,
-        indexState3: true,
-        indexState4: 'ExportComponent1'
-      })
-      AllStarComponent.default({
-        ExportComponent4Link1: $myState1,
-        ExportComponent4Link2: $myState2,
-        ExportComponent4Link3: $myState3,
-        ExportComponent4Link4: $myState4,
-        indexState1: { count: 1 },
-        indexState2: 1,
-        indexState3: true,
-        indexState4: 'ExportComponent4'
-      })
+        AllComponent.NamespaceComponent1({
+            NamespaceComponent1Link1: $myState1,
+            NamespaceComponent1Link2: $myState2,
+            NamespaceComponent1Link3: $myState3,
+            NamespaceComponent1Link4: $myState4,
+            myVar: 100,
+            myVar2: 80
+          })
+          AllComponent.default({
+            NamespaceComponent3Link1: $myState1,
+            NamespaceComponent3Link2: $myState2,
+            NamespaceComponent3Link3: $myState3,
+            NamespaceComponent3Link4: $myState4,
+            myVar: 100,
+            myVar2: 80
+          })
     }
   }
 }
@@ -54,11 +50,30 @@ struct ImportTest {
 
 exports.expectResult =
 `"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
+const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
@@ -118,45 +133,37 @@ class ImportTest extends View {
         Column.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new ExportStarComponent_1.AllStarComponent.ExportComponent("2", this, {
-                ExportComponent1Link1: this.__myState1,
-                ExportComponent1Link2: this.__myState2,
-                ExportComponent1Link3: this.__myState3,
-                ExportComponent1Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent1'
+            View.create(new AllComponent.NamespaceComponent1("2", this, {
+                NamespaceComponent1Link1: this.__myState1,
+                NamespaceComponent1Link2: this.__myState2,
+                NamespaceComponent1Link3: this.__myState3,
+                NamespaceComponent1Link4: this.__myState4,
+                myVar: 100,
+                myVar2: 80
             }));
         }
         else {
             earlierCreatedChild_2.updateWithValueParams({
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent1'
+                myVar: 100,
+                myVar2: 80
             });
             View.create(earlierCreatedChild_2);
         }
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new ExportStarComponent_1.AllStarComponent.default("3", this, {
-                ExportComponent4Link1: this.__myState1,
-                ExportComponent4Link2: this.__myState2,
-                ExportComponent4Link3: this.__myState3,
-                ExportComponent4Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent4'
+            View.create(new AllComponent.default("3", this, {
+                NamespaceComponent3Link1: this.__myState1,
+                NamespaceComponent3Link2: this.__myState2,
+                NamespaceComponent3Link3: this.__myState3,
+                NamespaceComponent3Link4: this.__myState4,
+                myVar: 100,
+                myVar2: 80
             }));
         }
         else {
             earlierCreatedChild_3.updateWithValueParams({
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent4'
+                myVar: 100,
+                myVar2: 80
             });
             View.create(earlierCreatedChild_3);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,16 +15,31 @@
 
 @Component
 struct AMDComponent {
-  @Link AMDComponentLink1?: any
-  @Link AMDComponentLink2?: number
-  @Link AMDComponentLink3?: boolean
-  @Link AMDComponentLink4?: string
+  @Link AMDComponentLink1: any
+  @Link AMDComponentLink2: number
+  @Link AMDComponentLink3: boolean
+  @Link AMDComponentLink4: string
 
   private myVar: number = 0
   private myVar2: number
 
   build() {
-
+    Column(){
+      Text('AMDComponent')
+        .fontSize(20)
+      Text('AMDComponentLink1: ' + JSON.stringify(this.AMDComponentLink1))
+        .fontSize(20)
+      Text('AMDComponentLink2: ' + JSON.stringify(this.AMDComponentLink2))
+        .fontSize(20)
+      Text('AMDComponentLink3: ' + JSON.stringify(this.AMDComponentLink3))
+        .fontSize(20)
+      Text('AMDComponentLink4: ' + JSON.stringify(this.AMDComponentLink4))
+        .fontSize(20)
+      Text('myVar: ' + JSON.stringify(this.myVar))
+        .fontSize(20)
+      Text('myVar2: ' + JSON.stringify(this.myVar2))
+        .fontSize(20)
+    }
   }
 }
 
