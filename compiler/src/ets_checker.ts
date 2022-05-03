@@ -36,6 +36,7 @@ import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
 import { props } from './compile_info';
+import { resolveSourceFile } from './resolve_ohm_url';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -109,6 +110,21 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
 }
 
+function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string} {
+  let modulePath = resolveSourceFile(moduleName);
+  let suffix: string;
+  if (modulePath.endsWith('.ets')) {
+    suffix = '.ets';
+  } else if (modulePath.endsWith('.ts')) {
+    suffix = '.ts';
+  } else {
+    modulePath = modulePath.replace('.js', '.d.ts');
+    suffix = '.d.ts';
+  }
+
+  return {modulePath, suffix};
+}
+
 function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   for (const moduleName of moduleNames) {
@@ -122,6 +138,13 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
     });
     if (result.resolvedModule) {
       resolvedModules.push(result.resolvedModule);
+    } else if (/^@bundle:/.test(moduleName.trim())) {
+      const module = getOhmUrlFile(moduleName.trim());
+      if (ts.sys.fileExists(module.modulePath)) {
+        resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
+      } else {
+        resolvedModules.push(null);
+      }
     } else if (/^@(system|ohos)/.test(moduleName.trim())) {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
       if (ts.sys.fileExists(modulePath)) {

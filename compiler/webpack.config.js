@@ -18,6 +18,7 @@ const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
+const { OHMResolverPlugin } = require('./lib/resolve_ohm_url');
 const buildPipeServer = require('./server/build_pipe_server');
 
 const {
@@ -100,6 +101,7 @@ function initConfig(config) {
       global: false
     },
     resolve: {
+      plugins: [new OHMResolverPlugin()],
       extensions: ['.js', '.ets', '.ts', '.d.ts'],
       modules: [
         projectPath,
