@@ -126,6 +126,7 @@ export const localStoragePropCollection: Map<string, Map<string, Set<string>>> =
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
+export const packageCollection: Map<string, Array<string>> = new Map();
 export const moduleCollection: Set<string> = new Set();
 export const useOSFiles: Set<string> = new Set();
 
@@ -829,56 +830,155 @@ export function preprocessNewExtend(content: string, extendCollection?: Set<stri
   });
 }
 
+function getPackageInfo(configFile: string): Array<string> {
+  if (packageCollection.has(configFile)) {
+    return packageCollection.get(configFile);
+  }
+
+  const rawData: string = fs.readFileSync(configFile, 'utf-8');
+  const data = JSON.parse(rawData);
+  const bundleName = data.app.bundleName;
+  const moduleName = data.module.distro.moduleName;
+  packageCollection.set(configFile, [bundleName, moduleName]);
+  return [bundleName, moduleName];
+}
+
+function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string) {
+  moduleCollection.add(`${moduleType}.${systemKey}`);
+  if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
+    item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
+  } else if (moduleType === SYSTEM_PLUGIN) {
+    item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
+        `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
+  } else if (moduleType === OHOS_PLUGIN) {
+    item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
+        `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
+        `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
+        `? globalThis.systemplugin.${systemKey} : undefined)`;
+  }
+  return item;
+}
+
+function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string = null) {
+  if (sourcePath) {
+    useOSFiles.add(sourcePath);
+  }
+  return `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
+}
+
+function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: string, moduleRequest: string, sourcePath: string = null) {
+  const result = moduleRequest.match(/^@(\S+):(\S+)$/)
+  let urlType: string = result[1];
+  let url: string = result[2];
+  switch(urlType) {
+    case 'bundle': {
+      let urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)\/(\S+)$/);
+      let moduleKind = urlResult[3];
+      if (moduleKind == 'lib') {
+        item = replaceLibSo(importValue, moduleRequest, sourcePath);
+      }
+      break;
+    }
+    case 'module': {
+      let urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)$/);
+      let moduleName = urlResult[1];
+      let moduleKind = urlResult[2];
+      let modulePath = urlResult[3];
+      const configJsonFile: string =
+        path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main/config.json');
+      let bundleName = getPackageInfo(configJsonFile)[0];
+      moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
+        item = moduleKind == 'lib' ?
+          replaceLibSo(importValue, moduleRequest, sourcePath) : item.replace(/['"](\S+)['"]/, moduleRequest);
+      break;
+    }
+    case 'ohos': {
+      url = url.replace('/', '.');
+      let urlResult = url.match(/^system\.(\S+)/)
+      moduleRequest = urlResult ? `@${url}` : `@ohos.${url}`;
+      if (!isSystemModule) {
+        item = item.replace(/['"](\S+)['"]/, moduleRequest);
+      } else {
+        let moduleType = urlResult ? 'system' : 'ohos';
+        let systemKey = urlResult ? url.substring(7) : url;
+        item = replaceSystemApi(item, importValue, moduleType, systemKey);
+      }
+      break;
+    }
+    case 'lib': {
+      item = replaceLibSo(importValue, url, sourcePath);
+      break;
+    }
+    case 'local': {
+      let result = sourcePath.match(/(S+)\/src\/main\/(S+)/);
+      const configJsonFile: string = `${result[1]}/src/main/config.json`;
+      let packageInfo = getPackageInfo(configJsonFile);
+      let urlResult = url.match(/^(ets|js|lib)\/(S+)$/);
+      let moduleKind = urlResult[1];
+      let modulePath = urlResult[2];
+      if (moduleKind == 'lib') {
+        item = replaceLibSo(importValue, modulePath, sourcePath);
+      } else {
+        moduleRequest = `@bundle:${packageInfo[0]}/${packageInfo[1]}/${moduleKind}/${modulePath}`;
+        item = item.replace(/['"](\S+)['"]/, moduleRequest);
+      }
+      break;
+    }
+    default:
+      console.error("Incorrect OpenHarmony module kind: ", urlType);
+  }
+  return item;
+}
+
+function replaceRelativePath(moduleRequest: string, sourcePath: string) {
+  let filePath = path.resolve(sourcePath, moduleRequest);
+  let result = filePath.match(/(S+)\/src\/main\/(ets|js)\/(S+)/);
+  const configJsonFile: string = `${result[1]}/src/main/config.json`;
+  let packageInfo = getPackageInfo(configJsonFile);
+  let bundleName = packageInfo[0];
+  let moduleName = packageInfo[1];
+
+  return `@bundle:${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+}
+
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
-  let REG_SYSTEM: RegExp;
-  if (isProcessAllowList) {
-    REG_SYSTEM =
-      /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g;
-  } else {
-    REG_SYSTEM =
-      /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
-  }
-  const REG_LIB_SO: RegExp =
-    /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
   const systemValueCollection: Set<string> = new Set();
-  const newContent: string = content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
-    const libSoValue: string = item1 || item3;
-    const libSoKey: string = item2 || item4;
-    if (sourcePath) {
-      useOSFiles.add(sourcePath);
+  const REG_IMPORT_DECL = isProcessAllowList ?
+    /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
+    /import\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+
+  const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
+    let importValue: string = isProcessAllowList ? item2 : item1 || item3;
+
+    if (isProcessAllowList) {
+      systemValueCollection.add(importValue);
+      return replaceSystemApi(item, importValue, item4, item5);
     }
-    return `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
-  }).replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6, item7) => {
-    let moduleType: string = item2 || item5;
-    let systemKey: string = item3 || item6;
-    let systemValue: string = item1 || item4;
-    if (!VALIDATE_MODULE.includes(systemValue)) {
-      importModuleCollection.add(systemValue);
+
+    let moduleRequest: string = item2 || item4;
+    if (/^@(\S+):/.test(moduleRequest)) { // ohmURL
+      return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
+    } else if (/^@(system|ohos)\./.test(moduleRequest)) { //ohos/system.api
+      // ets & ts file need compile with .d.ts, so do not replace at the phase of pre_process
+      if (!isSystemModule) {
+        return item;
+      }
+      let result = moduleRequest.match(/^@(system|ohos)\.(\S+)$/);
+      let moduleType: string = result[1];
+      let apiName: string = result[2];
+      return replaceSystemApi(item, importValue, moduleType, apiName);
+    } else if (/^(\.|\.\.)\//.test(moduleRequest)) { // relativePath
+      return replaceRelativePath(moduleRequest, sourcePath);
+    } else if (/^lib(\S+)\.so$/.test(moduleRequest)) { // libxxx.so
+      let result = moduleRequest.match(/^lib(\S+)\.so$/);
+      let libSoKey = result[1];
+      return replaceLibSo(importValue, libSoKey, sourcePath);
     }
-    if (!isProcessAllowList && !isSystemModule) {
-      return item;
-    } else if (isProcessAllowList) {
-      systemValue = item2;
-      moduleType = item4;
-      systemKey = item5;
-      systemValueCollection.add(systemValue);
-    }
-    moduleCollection.add(`${moduleType}.${systemKey}`);
-    if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
-      item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-    } else if (moduleType === SYSTEM_PLUGIN) {
-      item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
-          `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
-    } else if (moduleType === OHOS_PLUGIN) {
-      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
-          `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
-          `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
-          `? globalThis.systemplugin.${systemKey} : undefined)`;
-    }
+    // node_modules
     return item;
   });
-  return processInnerModule(newContent, systemValueCollection);
+  return isProcessAllowList ? processInnerModule(processedContent, systemValueCollection) : processedContent;
 }
 
 function processInnerModule(content: string, systemValueCollection: Set<string>): string {
