@@ -91,7 +91,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        const content: string = processContent(fs.readFileSync(fileName).toString());
+        const content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         checkUISyntax(content, fileName);
         return ts.ScriptSnapshot.fromString(content);
       }
@@ -117,8 +117,9 @@ function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string}
     suffix = '.ets';
   } else if (modulePath.endsWith('.ts')) {
     suffix = '.ts';
+  } else if (modulePath.endsWith('.js')) {
+    suffix = '.js';
   } else {
-    modulePath = modulePath.replace('.js', '.d.ts');
     suffix = '.d.ts';
   }
 
@@ -198,7 +199,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      const content: string = processContent(fs.readFileSync(fileName).toString());
+      const content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
       checkUISyntax(content, fileName);
       return content;
     }
@@ -375,8 +376,8 @@ function processDraw(source: string): string {
   });
 }
 
-function processContent(source: string): string {
-  source = processSystemApi(source);
+function processContent(source: string, sourcePath: string): string {
+  source = processSystemApi(source, false, sourcePath);
   source = preprocessExtend(source, extendCollection);
   source = preprocessNewExtend(source, extendCollection);
   source = processDraw(source);

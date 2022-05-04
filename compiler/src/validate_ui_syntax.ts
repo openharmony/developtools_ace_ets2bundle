@@ -15,6 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -64,7 +65,8 @@ import {
   LogInfo,
   componentInfo,
   addLog,
-  hasDecorator
+  hasDecorator,
+  toUnixPath
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
@@ -835,7 +837,6 @@ function getPackageInfo(configFile: string): Array<string> {
   if (packageCollection.has(configFile)) {
     return packageCollection.get(configFile);
   }
-
   const data = JSON.parse(fs.readFileSync(configFile).toString());
   const bundleName = data.app.bundleName;
   const moduleName = data.module.distro.moduleName;
@@ -889,7 +890,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       let bundleName = getPackageInfo(configJsonFile)[0];
       moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
         item = moduleKind == 'lib' ?
-          replaceLibSo(importValue, moduleRequest, sourcePath) : item.replace(/['"](\S+)['"]/, moduleRequest);
+          replaceLibSo(importValue, moduleRequest, sourcePath) : item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
       break;
     }
     case 'ohos': {
@@ -897,7 +898,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       let urlResult = url.match(/^system\.(\S+)/)
       moduleRequest = urlResult ? `@${url}` : `@ohos.${url}`;
       if (!isSystemModule) {
-        item = item.replace(/['"](\S+)['"]/, moduleRequest);
+        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
       } else {
         let moduleType = urlResult ? 'system' : 'ohos';
         let systemKey = urlResult ? url.substring(7) : url;
@@ -910,17 +911,20 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       break;
     }
     case 'local': {
-      let result = sourcePath.match(/(S+)\/src\/main\/(ets|js)\/(S+)/);
-      const configJsonFile: string = `${result[1]}/src/main/config.json`;
+      let result = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+      const configJsonFile: string = path.join(result[1], 'src/main/config.json');
       let packageInfo = getPackageInfo(configJsonFile);
-      let urlResult = url.match(/^(ets|js|lib)\/(S+)$/);
+      let urlResult = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
       let moduleKind = urlResult[1];
       let modulePath = urlResult[2];
       if (moduleKind == 'lib') {
         item = replaceLibSo(importValue, modulePath, sourcePath);
+      } else if (moduleKind == 'node_modules') {
+        moduleRequest = `${modulePath}`;
+        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
       } else {
         moduleRequest = `@bundle:${packageInfo[0]}/${packageInfo[1]}/${moduleKind}/${modulePath}`;
-        item = item.replace(/['"](\S+)['"]/, moduleRequest);
+        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
       }
       break;
     }
@@ -931,14 +935,15 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
 }
 
 function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string) {
-  let filePath = path.resolve(sourcePath, moduleRequest);
-  let result = filePath.match(/(S+)\/src\/main\/(ets|js)\/(S+)/);
+  let filePath = path.resolve(path.dirname(sourcePath), moduleRequest);
+  let result = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
   if (result) {
-    const configJsonFile: string = `${result[1]}/src/main/config.json`;
+    const configJsonFile: string = path.join(result[1], 'src/main/config.json');
     let packageInfo = getPackageInfo(configJsonFile);
     let bundleName = packageInfo[0];
     let moduleName = packageInfo[1];
-    item = `@bundle:${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+    moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
+    item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
   }
   return item;
 }
