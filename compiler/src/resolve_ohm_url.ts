@@ -20,7 +20,7 @@ export class OHMResolverPlugin {
     apply(resolver) {
         const target = resolver.ensureHook(this.target);
         resolver.getHook(this.source).tapAsync("OHMResolverPlugin", (request, resolveContext, callback) => {
-            if (/^@bundle:/.test(request.request)) {
+            if (isOhmUrl(request.request)) {
                 var resolvedSourceFile: string = resolveSourceFile(request.request);
                 var obj = Object.assign({}, request, {
                     request: resolvedSourceFile
@@ -30,6 +30,10 @@ export class OHMResolverPlugin {
             callback();
         });
     }
+}
+
+export function isOhmUrl(moduleRequest: string) {
+    return /^@(\S+):/.test(moduleRequest) ? true : false;
 }
 
 export function resolveSourceFile(ohmUrl: string): string {
