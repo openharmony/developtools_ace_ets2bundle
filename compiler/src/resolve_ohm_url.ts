@@ -6,7 +6,7 @@ const { projectConfig } = require('../main');
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-const REG_OHM_URL = /^@bundle:(\S+)\/(\S+)\/(ets|js|node_modules)\/(\S+)$/;
+const REG_OHM_URL = /^@bundle:(\S+)\/(\S+)\/(ets|js)\/(\S+)$/;
 
 export class OHMResolverPlugin {
     private source: any;
@@ -38,24 +38,17 @@ export function isOhmUrl(moduleRequest: string) {
 
 export function resolveSourceFile(ohmUrl: string): string {
     const result = ohmUrl.match(REG_OHM_URL);
-    // let bundleName = result[1];
     let moduleName = result[2];
     let srcKind = result[3];
     let file = path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main', srcKind, result[4]);
-    if(srcKind == 'ets') {
-        if (!file.endsWith('.ets') && !file.endsWith('ts')) {
-            if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
-                file += '.ets';
-            } else {
-                file += '.ts';
-            }
-        }
-    } else if(srcKind == 'js') {
-        if (!file.endsWith('.js')) {
-            file += '.js';
-        }
+    if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
+        file += '.ets';
+    } else if (fs.existsSync(file + '.ts') && fs.statSync(file + '.ts').isFile()) {
+        file += '.ts';
+    } else if (fs.existsSync(file + '.js') && fs.statSync(file + '.js').isFile()) {
+        file += '.js';
     } else {
-        // Todo: node_modules
+        file += '.d.ts';
     }
 
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
