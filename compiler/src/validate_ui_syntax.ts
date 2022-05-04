@@ -70,6 +70,7 @@ import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
 import { importModuleCollection } from './ets_checker';
 import { isExtendFunction } from './process_ui_syntax';
+import { isOhmUrl } from './resolve_ohm_url';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -835,8 +836,7 @@ function getPackageInfo(configFile: string): Array<string> {
     return packageCollection.get(configFile);
   }
 
-  const rawData: string = fs.readFileSync(configFile, 'utf-8');
-  const data = JSON.parse(rawData);
+  const data = JSON.parse(fs.readFileSync(configFile).toString());
   const bundleName = data.app.bundleName;
   const moduleName = data.module.distro.moduleName;
   packageCollection.set(configFile, [bundleName, moduleName]);
@@ -910,7 +910,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       break;
     }
     case 'local': {
-      let result = sourcePath.match(/(S+)\/src\/main\/(S+)/);
+      let result = sourcePath.match(/(S+)\/src\/main\/(ets|js)\/(S+)/);
       const configJsonFile: string = `${result[1]}/src/main/config.json`;
       let packageInfo = getPackageInfo(configJsonFile);
       let urlResult = url.match(/^(ets|js|lib)\/(S+)$/);
@@ -930,15 +930,17 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
   return item;
 }
 
-function replaceRelativePath(moduleRequest: string, sourcePath: string) {
+function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string) {
   let filePath = path.resolve(sourcePath, moduleRequest);
   let result = filePath.match(/(S+)\/src\/main\/(ets|js)\/(S+)/);
-  const configJsonFile: string = `${result[1]}/src/main/config.json`;
-  let packageInfo = getPackageInfo(configJsonFile);
-  let bundleName = packageInfo[0];
-  let moduleName = packageInfo[1];
-
-  return `@bundle:${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+  if (result) {
+    const configJsonFile: string = `${result[1]}/src/main/config.json`;
+    let packageInfo = getPackageInfo(configJsonFile);
+    let bundleName = packageInfo[0];
+    let moduleName = packageInfo[1];
+    item = `@bundle:${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+  }
+  return item;
 }
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
@@ -957,7 +959,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     }
 
     let moduleRequest: string = item2 || item4;
-    if (/^@(\S+):/.test(moduleRequest)) { // ohmURL
+    if (isOhmUrl(moduleRequest)) { // ohmURL
       return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
     } else if (/^@(system|ohos)\./.test(moduleRequest)) { //ohos/system.api
       // ets & ts file need compile with .d.ts, so do not replace at the phase of pre_process
@@ -969,7 +971,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
       let apiName: string = result[2];
       return replaceSystemApi(item, importValue, moduleType, apiName);
     } else if (/^(\.|\.\.)\//.test(moduleRequest)) { // relativePath
-      return replaceRelativePath(moduleRequest, sourcePath);
+      return replaceRelativePath(item, moduleRequest, sourcePath);
     } else if (/^lib(\S+)\.so$/.test(moduleRequest)) { // libxxx.so
       let result = moduleRequest.match(/^lib(\S+)\.so$/);
       let libSoKey = result[1];
