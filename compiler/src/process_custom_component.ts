@@ -153,22 +153,16 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      if (isThisProperty(item, propertySet)) {
-        validateStateManagement(item, name, log);
-        if (isNonThisProperty(item, linkSet)) {
-          if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
-            item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
-              item.name, changeNodeFromCallToArrow(item.initializer));
-          }
-          props.push(item);
+      validateStateManagement(item, name, log);
+      if (isNonThisProperty(item, linkSet)) {
+        if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
+          item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
+            item.name, changeNodeFromCallToArrow(item.initializer));
         }
-      } else {
-        validateNonExistentProperty(item, name, log);
+        props.push(item);
       }
     });
   }
-  validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
-  validateMandatoryToInitViaParam(node, name, curChildProps, log);
 }
 
 function getCustomComponentName(newNode: ts.NewExpression): string {
