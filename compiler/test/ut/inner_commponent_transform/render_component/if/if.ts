@@ -15,7 +15,7 @@
 
 exports.source = `
 import { TestComponent } from './test/pages/TestComponent';
-import { Animal } from './test/pages/test';
+import { Animal } from './test/pages/TsModule';
 
 @Entry
 @Component
@@ -55,7 +55,7 @@ exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const TestComponent_1 = require("./test/pages/TestComponent");
-const test_1 = require("./test/pages/test");
+const TsModule_1 = require("./test/pages/TsModule");
 class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -110,7 +110,7 @@ class MyComponent extends View {
         }
         If.pop();
         If.create();
-        if (test_1.Animal.Dog) {
+        if (TsModule_1.Animal.Dog) {
             If.branchId(0);
             let earlierCreatedChild_2 = this.findChildById("2");
             if (earlierCreatedChild_2 == undefined) {
