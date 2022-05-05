@@ -34,7 +34,7 @@ const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE } = require('./lib/utils');
 const { BUILD_SHARE_PATH } = require('./lib/pre_define');
-
+const { processJs } = require('./lib/process_js_ast');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
@@ -80,7 +80,7 @@ function initConfig(config) {
                 getCustomTransformers(program) {
                   return {
                     before: [processUISyntax(program)],
-                    after: []
+                    after: [processJs(program)]
                   };
                 },
                 ignoreDiagnostics: IGNORE_ERROR_CODE
@@ -92,6 +92,7 @@ function initConfig(config) {
         {
           test: /\.js$/,
           use: [
+            { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
             { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
           ]
         }
@@ -311,9 +312,13 @@ module.exports = (env, argv) => {
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
+
+  process.env.processTs = false;
+
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark') {
+      process.env.compilerType = 'ark';
       let arkDir = path.join(__dirname, 'bin', 'ark');
       if (env.arkFrontendDir) {
         arkDir = env.arkFrontendDir;

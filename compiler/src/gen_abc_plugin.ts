@@ -17,9 +17,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import cluster from 'cluster';
 import process from 'process';
+import * as  child_process from 'child_process'
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
-import { toUnixPath, toHashData } from './utils';
+import { 
+  toUnixPath,
+  toHashData,
+  genTemporaryPath } from './utils';
+import { Compilation } from 'webpack';
+import { projectConfig } from '../main';
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -65,6 +71,28 @@ export class GenAbcPlugin {
       }
     }
 
+    compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
+      compilation.hooks.finishModules.tap("finishModules", handleFinishModules.bind(this));
+    });
+
+    compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
+      compilation.hooks.afterOptimizeTree.tap("afterOptimizeModules", (chunks, modules) => {
+        modules.forEach(module => {
+          if (module != undefined && module.resourceResolveData != undefined) {
+            let filePath: string = module.resourceResolveData.path;
+            console.error(filePath);
+          }      
+      });
+    });
+
+    compilation.hooks.processAssets.tap("processAssets", (assets) => {
+      Object.keys(compilation.assets).forEach(key => {
+        delete assets[key];
+      })
+    })
+
+  })
+
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
@@ -80,7 +108,88 @@ export class GenAbcPlugin {
       buildPathInfo = output;
       invokeWorkersToGenAbc();
     });
+
+
   }
+}
+
+function handleFinishModules(modules, callback) {
+  modules.forEach(module => {
+    if (module != undefined && module.resourceResolveData != undefined) {
+      let filePath: string = module.resourceResolveData.path;
+      console.error(filePath);
+      if (filePath.endsWith('ets')) {
+        let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+        tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.js');
+        tempFilePath = toUnixPath(tempFilePath);
+        const abcFilePath = genAbcFileName(tempFilePath);
+        processToAbcFile(tempFilePath, abcFilePath);
+      } else if (filePath.endsWith('ts')) {
+        let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+        tempFilePath = tempFilePath.replace(/\.ts$/, '.ts.js');
+        tempFilePath = toUnixPath(tempFilePath);
+        const abcFilePath = genAbcFileName(tempFilePath);
+        processToAbcFile(tempFilePath, abcFilePath);
+      } else if (filePath.endsWith('js')) {
+        if (filePath.indexOf("node_modules") !== -1) {
+          let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+          tempFilePath = toUnixPath(tempFilePath);
+          const parent: string = path.join(tempFilePath, '..');
+          if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+            mkDir(parent);
+          }
+          fs.copyFileSync(filePath, tempFilePath);
+          const abcFilePath = genAbcFileName(tempFilePath);
+          processToAbcFile(tempFilePath, abcFilePath);
+        } else {
+          let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+          tempFilePath = toUnixPath(tempFilePath);
+          const parent: string = path.join(tempFilePath, '..');
+          if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+            mkDir(parent);
+          }
+          // fs.copyFileSync(filePath, tempFilePath);
+          const abcFilePath = genAbcFileName(tempFilePath);
+          processToAbcFile(tempFilePath, abcFilePath);
+        }
+      } else {
+        console.error("=========================handleFinishModules else===================");
+        console.error(filePath);
+      }
+    }
+  })
+}
+
+function genAbcFileName(temporaryFile: string): string {
+  let abcFile: string = temporaryFile;
+  if (temporaryFile.endsWith('ts')) {
+    abcFile = temporaryFile.replace(/\.ts$/, '.abc');
+  } else {
+    abcFile = temporaryFile.replace(/\.js$/, '.abc');
+  }
+  return abcFile;
+}
+
+function processToAbcFile(tempFilePath, outPutFile) {
+  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+  if (isWin) {
+    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+  } else if (isMac) {
+    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  }
+  
+  const args: string[] = [
+    '--expose-gc',
+    js2abc,
+    '-o',
+    outPutFile
+  ];
+  if (isDebug) {
+    args.push('--debug');
+  }
+  args.push(tempFilePath);
+
+  child_process.execFileSync(nodeJs, args);
 }
 
 function writeFileSync(inputString: string, output: string, jsBundleFile: string): void {

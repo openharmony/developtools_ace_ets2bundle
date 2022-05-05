@@ -49,7 +49,8 @@ import {
   LogInfo,
   LogType,
   hasDecorator,
-  FileLog
+  FileLog,
+  writeFileSyncByNode
 } from './utils';
 import {
   processComponentBlock,
@@ -82,6 +83,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (process.env.compiler === BUILD_ON) {
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
+          if (process.env.processTs && process.env.processTs === 'true') {
+            writeFileSyncByNode(node, true);
+          }
           return node;
         }
         transformLog.sourceFile = node;
@@ -97,6 +101,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
+        if (process.env.processTs && process.env.processTs === 'true') {
+          writeFileSyncByNode(node, true);
+        }
         return node;
       } else {
         return node;

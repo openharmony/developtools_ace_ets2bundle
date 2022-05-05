@@ -13,16 +13,22 @@
  * limitations under the License.
  */
 
-import ts from 'typescript';
 import path from 'path';
+import ts from 'typescript';
 import fs from 'fs';
+import { projectConfig } from '../main';
 import { createHash } from 'crypto';
+import { processSystemApi } from './validate_ui_syntax';
 
 export enum LogType {
   ERROR = 'ERROR',
   WARN = 'WARN',
   NOTE = 'NOTE'
 }
+export const TEMPORARYS: string = 'temporarys';
+export const BUILD: string = 'build';
+export const SRC_MAIN: string = 'src/main';
+const TS_NOCHECK: string = '// @ts-nocheck';
 
 export interface LogInfo {
   type: LogType,
@@ -234,3 +240,108 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+  filePath = toUnixPath(filePath);
+  projectPath = toUnixPath(projectPath);
+
+  if (filePath.indexOf('node_modules') !== -1) {
+    const dataTmps = filePath.split('node_modules');
+    const preStr = dataTmps[0];
+    const sufStr = dataTmps[1];
+    const output: string = path.join(buildPath, 'node_modules', sufStr);
+    return output;
+  }
+
+  const sufStr = filePath.replace(projectPath, "");
+  const output: string = path.join(buildPath, sufStr);
+  return output;
+}
+
+export function mkdirsSync(dirname: string): boolean {
+  if (fs.existsSync(dirname)) {
+    return true;
+  } else {
+    if (mkdirsSync(path.dirname(dirname))) {
+      fs.mkdirSync(dirname);
+      return true;
+    }
+  }
+  return false;
+}
+
+export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
+  let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  mkdirsSync(path.dirname(temporaryFile));
+  fs.writeFileSync(temporaryFile, sourceCode);
+}
+
+export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
+  if (toTsFile) {
+    const newStatements = [];
+    const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
+    newStatements.push(tsIgnoreNode);
+    if (node.statements && node.statements.length) {
+      newStatements.push(...node.statements);
+    }
+  
+    node = ts.factory.updateSourceFile(node, newStatements);  
+  }
+  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  let options : ts.CompilerOptions = {
+    sourceMap : true
+  };
+  let mapOpions = {
+    sourceMap : true,
+    inlineSourceMap : false,
+    inlineSources : false,
+    sourceRoot : "",
+    mapRoot : "",
+    extendedDiagnostics : false
+  }
+  let host = ts.createCompilerHost(options);
+  let fileName = node.fileName;
+  // @ts-ignore
+  let sourceMapGenerator = ts.createSourceMapGenerator(
+    host,
+    // @ts-ignore
+    ts.getBaseFileName(fileName),
+    "",
+    "",
+    mapOpions
+  );
+  // @ts-ignore
+  let writer = ts.createTextWriter(
+    // @ts-ignore
+    ts.getNewLineCharacter({newLine : ts.NewLineKind.LineFeed, removeComments : false}));
+  printer["writeFile"](node, writer, sourceMapGenerator);
+  let sourceMapJson = sourceMapGenerator.toJSON();
+  sourceMapJson['sources'] = [fileName];
+  const result: string = writer.getText();
+  let content: string = result;
+  content = processSystemApi(content, true);
+  if (toTsFile) {
+    content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
+  }
+  const sourceMapContent = JSON.stringify(sourceMapJson);
+  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  let temporarySourceMapFile: string = "";
+  if (temporaryFile.endsWith("ets")) {
+    temporarySourceMapFile = temporaryFile.replace(/\.ets$/, '.ets.sourcemap');
+    if (toTsFile) {
+      temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.ts');
+    } else {
+      temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.js');
+    }  
+  } else {
+    if (!toTsFile) {
+      temporarySourceMapFile = temporaryFile.replace(/\.ts$/, '.ts.sourcemap');
+      temporaryFile = temporaryFile.replace(/\.ts$/, '.ts.js');
+    }
+  }
+  mkdirsSync(path.dirname(temporaryFile));
+  fs.writeFileSync(temporaryFile, content);
+  if (temporarySourceMapFile.length > 0) {
+
+    fs.writeFileSync(temporarySourceMapFile, sourceMapContent);
+  }
+}
