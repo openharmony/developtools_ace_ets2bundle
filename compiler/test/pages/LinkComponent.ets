@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import DefaultComponent from "./DefaultComponent.ets"
+import DefaultComponent from "./DefaultComponent"
 
 @Component
 struct LinkComponent1 {
-  @Link LinkComponent1Link1?: any
-  @Link LinkComponent1Link2?: number
-  @Link LinkComponent1Link3?: boolean
-  @Link LinkComponent1Link4?: string
+  @Link LinkComponent1Link1: any
+  @Link LinkComponent1Link2: number
+  @Link LinkComponent1Link3: boolean
+  @Link LinkComponent1Link4: string
   @State indexState1: any = { count: 0 }
   @State indexState2: number = 0
   @State indexState3: boolean = false
@@ -42,10 +42,10 @@ struct LinkComponent1 {
 
 @Component
 struct LinkComponent2 {
-  @Link LinkComponent2Link1?: any
-  @Link LinkComponent2Link2?: number
-  @Link LinkComponent2Link3?: boolean
-  @Link LinkComponent2Link4?: string
+  @Link LinkComponent2Link1: any
+  @Link LinkComponent2Link2: number
+  @Link LinkComponent2Link3: boolean
+  @Link LinkComponent2Link4: string
   @State indexState1: any = { count: 0 }
   @State indexState2: number = 0
   @State indexState3: boolean = false
@@ -67,10 +67,10 @@ struct LinkComponent2 {
 
 @Component
 struct LinkComponent3 {
-  @Link LinkComponent3Link1?: any
-  @Link LinkComponent3Link2?: number
-  @Link LinkComponent3Link3?: boolean
-  @Link LinkComponent3Link4?: string
+  @Link LinkComponent3Link1: any
+  @Link LinkComponent3Link2: number
+  @Link LinkComponent3Link3: boolean
+  @Link LinkComponent3Link4: string
   @State indexState1: any = { count: 0 }
   @State indexState2: number = 0
   @State indexState3: boolean = false
@@ -92,10 +92,10 @@ struct LinkComponent3 {
 
 @Component
 struct LinkComponent4 {
-  @Link LinkComponent3Link1?: any
-  @Link LinkComponent3Link2?: number
-  @Link LinkComponent3Link3?: boolean
-  @Link LinkComponent3Link4?: string
+  @Link LinkComponent3Link1: any
+  @Link LinkComponent3Link2: number
+  @Link LinkComponent3Link3: boolean
+  @Link LinkComponent3Link4: string
   @State indexState1: any = { count: 0 }
   @State indexState2: number = 0
   @State indexState3: boolean = false

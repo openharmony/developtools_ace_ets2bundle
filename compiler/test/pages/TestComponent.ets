@@ -13,4 +13,14 @@
  * limitations under the License.
  */
 
-export * as AllStarComponent from './ExportComponent';
+@Component
+export struct TestComponent {
+  private content: string = 'Test Component';
+
+  build() {
+    Column(){
+      Text(this.content)
+        .fontSize(32)
+    }
+  }
+}

@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+export enum Animal {
+  Cat,
+  Dog,
+  Bird
+}
+
 export default class TsModule {
   private property: number = 1;
   constructor(property: number) {
