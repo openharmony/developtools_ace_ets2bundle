@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,46 +15,91 @@
 
 @Component
 struct NamespaceComponent1 {
-  @Link NamespaceComponent1Link1?: any
-  @Link NamespaceComponent1Link2?: number
-  @Link NamespaceComponent1Link3?: boolean
-  @Link NamespaceComponent1Link4?: string
+  @Link NamespaceComponent1Link1: any
+  @Link NamespaceComponent1Link2: number
+  @Link NamespaceComponent1Link3: boolean
+  @Link NamespaceComponent1Link4: string
 
   private myVar: number = 0
   private myVar2: number
 
   build() {
-
+    Column(){
+      Text('NamespaceComponent1')
+        .fontSize(20)
+      Text('NamespaceComponent1Link1: ' + JSON.stringify(this.NamespaceComponent1Link1))
+        .fontSize(20)
+      Text('NamespaceComponent1Link2: ' + JSON.stringify(this.NamespaceComponent1Link2))
+        .fontSize(20)
+      Text('NamespaceComponent1Link3: ' + JSON.stringify(this.NamespaceComponent1Link3))
+        .fontSize(20)
+      Text('NamespaceComponent1Link4: ' + JSON.stringify(this.NamespaceComponent1Link4))
+        .fontSize(20)
+      Text('myVar: ' + JSON.stringify(this.myVar))
+        .fontSize(20)
+      Text('myVar2: ' + JSON.stringify(this.myVar2))
+        .fontSize(20)
+    }
   }
 }
 
 @Component
 struct NamespaceComponent2 {
-  @Link NamespaceComponent2Link1?: any
-  @Link NamespaceComponent2Link2?: number
-  @Link NamespaceComponent2Link3?: boolean
-  @Link NamespaceComponent2Link4?: string
+  @Link NamespaceComponent2Link1: any
+  @Link NamespaceComponent2Link2: number
+  @Link NamespaceComponent2Link3: boolean
+  @Link NamespaceComponent2Link4: string
 
   private myVar: number = 0
   private myVar2: number
 
   build() {
-
+    Column(){
+      Text('NamespaceComponent2')
+        .fontSize(20)
+      Text('NamespaceComponent2Link1: ' + JSON.stringify(this.NamespaceComponent2Link1))
+        .fontSize(20)
+      Text('NamespaceComponent2Link2: ' + JSON.stringify(this.NamespaceComponent2Link2))
+        .fontSize(20)
+      Text('NamespaceComponent2Link3: ' + JSON.stringify(this.NamespaceComponent2Link3))
+        .fontSize(20)
+      Text('NamespaceComponent2Link4: ' + JSON.stringify(this.NamespaceComponent2Link4))
+        .fontSize(20)
+      Text('myVar: ' + JSON.stringify(this.myVar))
+        .fontSize(20)
+      Text('myVar2: ' + JSON.stringify(this.myVar2))
+        .fontSize(20)
+    }
   }
 }
 
 @Component
 struct NamespaceComponent3 {
-  @Link NamespaceComponent3Link1?: any
-  @Link NamespaceComponent3Link2?: number
-  @Link NamespaceComponent3Link3?: boolean
-  @Link NamespaceComponent3Link4?: string
+  @Link NamespaceComponent3Link1: any
+  @Link NamespaceComponent3Link2: number
+  @Link NamespaceComponent3Link3: boolean
+  @Link NamespaceComponent3Link4: string
 
   private myVar: number = 0
   private myVar2: number
 
   build() {
-
+    Column(){
+      Text('NamespaceComponent3')
+        .fontSize(20)
+      Text('NamespaceComponent3Link1: ' + JSON.stringify(this.NamespaceComponent3Link1))
+        .fontSize(20)
+      Text('NamespaceComponent3Link2: ' + JSON.stringify(this.NamespaceComponent3Link2))
+        .fontSize(20)
+      Text('NamespaceComponent3Link3: ' + JSON.stringify(this.NamespaceComponent3Link3))
+        .fontSize(20)
+      Text('NamespaceComponent3Link4: ' + JSON.stringify(this.NamespaceComponent3Link4))
+        .fontSize(20)
+      Text('myVar: ' + JSON.stringify(this.myVar))
+        .fontSize(20)
+      Text('myVar2: ' + JSON.stringify(this.myVar2))
+        .fontSize(20)
+    }
   }
 }
 
