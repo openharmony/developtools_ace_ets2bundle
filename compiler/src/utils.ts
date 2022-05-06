@@ -243,18 +243,29 @@ export function writeFileSync(filePath: string, content: string): void {
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
   filePath = toUnixPath(filePath);
   projectPath = toUnixPath(projectPath);
+  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let tempFilePath = filePath.replace(hapPath, "");
 
-  if (filePath.indexOf('node_modules') !== -1) {
-    const dataTmps = filePath.split('node_modules');
-    const preStr = dataTmps[0];
-    const sufStr = dataTmps[1];
-    const output: string = path.join(buildPath, 'node_modules', sufStr);
+  if (tempFilePath.indexOf('node_modules') !== -1) {
+    const dataTmps = tempFilePath.split('node_modules');
+    let output:string = "";
+    if (filePath.indexOf(projectPath) === -1) {
+      const sufStr = dataTmps[dataTmps.length-1];
+      output = path.join(buildPath, 'main', 'node_modules', sufStr);
+    } else {
+      const sufStr = dataTmps[dataTmps.length-1];
+      output = path.join(buildPath, 'auxiliary', 'node_modules', sufStr);
+    }
     return output;
   }
 
-  const sufStr = filePath.replace(projectPath, "");
-  const output: string = path.join(buildPath, sufStr);
-  return output;
+  if (filePath.indexOf(projectPath) !== -1) {
+    const sufStr = filePath.replace(projectPath, "");
+    const output: string = path.join(buildPath, sufStr);
+    return output;
+  }
+
+  return "";
 }
 
 export function mkdirsSync(dirname: string): boolean {
@@ -271,6 +282,9 @@ export function mkdirsSync(dirname: string): boolean {
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
   let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  if (temporaryFile.length === 0) {
+    return ;
+  }
   mkdirsSync(path.dirname(temporaryFile));
   fs.writeFileSync(temporaryFile, sourceCode);
 }
@@ -324,6 +338,9 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
   }
   const sourceMapContent = JSON.stringify(sourceMapJson);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  if (temporaryFile.length === 0) {
+    return ;
+  }
   let temporarySourceMapFile: string = "";
   if (temporaryFile.endsWith("ets")) {
     temporarySourceMapFile = temporaryFile.replace(/\.ets$/, '.ets.sourcemap');
