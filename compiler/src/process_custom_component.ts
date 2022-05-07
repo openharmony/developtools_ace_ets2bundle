@@ -108,7 +108,7 @@ function isHasChild(node: ts.CallExpression): boolean {
 function isToChange(item: ts.PropertyAssignment, node: ts.CallExpression): boolean {
   const builderParamName: Set<string> = builderParamObjectCollection.get(node.expression.getText());
   if (item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
-    builderParamName.has(item.name.getText()) && 
+    builderParamName.has(item.name.getText()) &&
     !/\.(bind|call|apply)/.test(item.initializer.getText())) {
     return true;
   }
@@ -191,6 +191,10 @@ function isThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<stri
 }
 
 function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<string>): boolean {
+  if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
+    node.initializer.escapedText && node.initializer.escapedText.includes('$')) {
+    return false;
+  }
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
     !propertySet.has(node.name.escapedText.toString())) {
     return true;
