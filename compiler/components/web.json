@@ -4,9 +4,10 @@
   "attrs": [
     "password", "cacheMode", "tableData", "wideViewModeAccess", "overviewModeAccess", "textZoomAtio", "databaseAccess",
     "onRefreshAccessedHistory", "onUrlLoadIntercept", "onSslErrorReceive", "onRenderExited", "onFileSelectorShow",
-    "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow", 
+    "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow",
     "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
-    "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess"
+    "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess",
+    "webDebuggingAccess"
   ]
 }
