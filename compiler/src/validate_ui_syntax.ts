@@ -839,7 +839,7 @@ function getPackageInfo(configFile: string): Array<string> {
   }
   const data = JSON.parse(fs.readFileSync(configFile).toString());
   const bundleName = data.app.bundleName;
-  const moduleName = data.module.distro.moduleName;
+  const moduleName = projectConfig.aceModuleJsonPath ? data.module.name : data.module.distro.moduleName;
   packageCollection.set(configFile, [bundleName, moduleName]);
   return [bundleName, moduleName];
 }
@@ -885,7 +885,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       let moduleName = urlResult[1];
       let moduleKind = urlResult[2];
       let modulePath = urlResult[3];
-      const configJsonFile: string =
+      const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
         path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main/config.json');
       let bundleName = getPackageInfo(configJsonFile)[0];
       moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
@@ -912,7 +912,8 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
     }
     case 'local': {
       let result = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
-      const configJsonFile: string = path.join(result[1], 'src/main/config.json');
+      const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
+        path.join(result[1], 'src/main/config.json');
       let packageInfo = getPackageInfo(configJsonFile);
       let urlResult = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
       let moduleKind = urlResult[1];
@@ -938,7 +939,8 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
   let filePath = path.resolve(path.dirname(sourcePath), moduleRequest);
   let result = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
   if (result) {
-    const configJsonFile: string = path.join(result[1], 'src/main/config.json');
+    const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
+      path.join(result[1], 'src/main/config.json');
     let packageInfo = getPackageInfo(configJsonFile);
     let bundleName = packageInfo[0];
     let moduleName = packageInfo[1];
@@ -953,20 +955,20 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
   const systemValueCollection: Set<string> = new Set();
   const REG_IMPORT_DECL = isProcessAllowList ?
     /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
-    /import\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    let importValue: string = isProcessAllowList ? item2 : item1 || item3;
+    let importValue: string = isProcessAllowList ? item2 : item2 || item4;
 
     if (isProcessAllowList) {
       systemValueCollection.add(importValue);
       return replaceSystemApi(item, importValue, item4, item5);
     }
 
-    let moduleRequest: string = item2 || item4;
+    let moduleRequest: string = item3 || item5;
     if (isOhmUrl(moduleRequest)) { // ohmURL
       return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
-    } else if (/^@(system|ohos)\./.test(moduleRequest)) { //ohos/system.api
+    } else if (/^@(system|ohos)\./.test(moduleRequest)) { // ohos/system.api
       // ets & ts file need compile with .d.ts, so do not replace at the phase of pre_process
       if (!isSystemModule) {
         return item;
