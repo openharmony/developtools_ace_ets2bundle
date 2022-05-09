@@ -190,8 +190,9 @@ export const BUILDER_ATTR_BIND: string = 'bind';
 
 export const GEOMETRY_VIEW: string = 'GeometryView';
 
-export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'ets' + path.sep + 'share';
+export const MODULE_SHARE_PATH: string = 'src' + path.sep + 'main' + path.sep + 'ets' + path.sep + 'share';
 export const BUILD_SHARE_PATH: string = '../share';
+export const MODULE_ETS_PATH: string = 'src' + path.sep + 'main' + path.sep + 'ets';
 
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
