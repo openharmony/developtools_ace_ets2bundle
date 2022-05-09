@@ -422,10 +422,7 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
   if (ts.isIdentifier(initExpression) &&
     initExpression.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.escapedText.toString().replace(LINK_REG, '');
-  } else if (ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
-    initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
-    ts.isIdentifier(initExpression.name) &&
-    initExpression.name.escapedText.toString().match(LINK_REG)) {
+  } else if (isMatchInitExpression(initExpression) && initExpression.name.escapedText.toString().match(LINK_REG)) {
     if (linkParentComponent.includes(propertyName.escapedText.toString())) {
       initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
     }
@@ -434,6 +431,13 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
     node = addDoubleUnderline(node, propertyName, initText);
   }
   return node;
+}
+
+function isMatchInitExpression(initExpression: ts.Expression): boolean {
+  return ts.isPropertyAccessExpression(initExpression) &&
+    initExpression.expression &&
+    initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initExpression.name);
 }
 
 function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identifier,
