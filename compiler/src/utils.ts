@@ -249,7 +249,7 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   if (tempFilePath.indexOf('node_modules') !== -1) {
     const dataTmps = tempFilePath.split('node_modules');
     let output:string = "";
-    if (filePath.indexOf(projectPath) === -1) {
+    if (filePath.indexOf(hapPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
       output = path.join(buildPath, 'main', 'node_modules', sufStr);
     } else {

@@ -43,7 +43,10 @@ interface File {
 }
 const intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
+let moduleInfos = new Array<ModuleInfo>();
+let filterModuleInfos = new Array<ModuleInfo>();
 let hashJsonObject = {};
+let moduleHashJsonObject = {};
 let buildPathInfo = '';
 
 const red: string = '\u001b[31m';
@@ -52,10 +55,10 @@ const hashFile = 'gen_hash.json';
 const ARK = '/ark/';
 
 class ModuleInfo {
-  protected filePath: string;
-  protected buildFilePath: string;
-  protected abcFilePath: string;
-  protected isModuleJs: boolean;
+  filePath: string;
+  buildFilePath: string;
+  abcFilePath: string;
+  isModuleJs: boolean;
 
   constructor(filePath: string, buildFilePath: string, abcFilePath: string, isModuleJs: boolean) {
     this.filePath  = filePath;
@@ -87,6 +90,7 @@ export class GenAbcPlugin {
     }
 
     compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
+      buildPathInfo = output;
       compilation.hooks.finishModules.tap("finishModules", handleFinishModules.bind(this));
     });
 
@@ -130,8 +134,7 @@ export class GenAbcPlugin {
 }
 
 function handleFinishModules(modules, callback) {
-  console.error("==================handleFinishModules====================");
-  let moduleInfos = new Array<ModuleInfo>();
+  console.error("==================handleFinishModules====================");  
   modules.forEach(module => {
     if (module != undefined && module.resourceResolveData != undefined) {
       let filePath: string = module.resourceResolveData.path;
@@ -286,9 +289,9 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
+  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
   const maxWorkerNumber = 3;
-  const splitedBundles = splitModuleBySize(moduleInfos, maxWorkerNumber);
-  
+  const splitedBundles = splitModuleBySize(filterModuleInfos, maxWorkerNumber);
   const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
   const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
@@ -320,7 +323,7 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
     });
 
     process.on('exit', (code) => {
-      writeHashJson();
+      writeModuleHashJson();
     });
   }
 }
@@ -392,6 +395,68 @@ function invokeWorkersToGenAbc() {
       writeHashJson();
     });
   }
+}
+
+function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Array<ModuleInfo>) {
+  for (let i = 0; i < moduleInfos.length; ++i) {
+    filterModuleInfos.push(moduleInfos[i]);
+  }
+  const hashFilePath = genHashJsonPath(buildPath);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  const updateJsonObject = {};
+  let jsonObject = {};
+  let jsonFile = '';
+  if (fs.existsSync(hashFilePath)) {
+    jsonFile = fs.readFileSync(hashFilePath).toString();
+    jsonObject = JSON.parse(jsonFile);
+    filterModuleInfos = [];
+    for (let i = 0; i < moduleInfos.length; ++i) {
+      const input = moduleInfos[i].buildFilePath;
+      const abcPath = moduleInfos[i].abcFilePath;
+      if (!fs.existsSync(input)) {
+        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        continue;
+      }
+      if (fs.existsSync(abcPath)) {
+        const hashInputContentData = toHashData(input);
+        const hashAbcContentData = toHashData(abcPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+          updateJsonObject[input] = hashInputContentData;
+          updateJsonObject[abcPath] = hashAbcContentData;
+          // fs.unlinkSync(input);
+        } else {
+          filterModuleInfos.push(moduleInfos[i]);
+        }
+      } else {
+        filterModuleInfos.push(moduleInfos[i]);
+      }
+    }
+  }
+
+  moduleHashJsonObject = updateJsonObject;
+}
+
+function writeModuleHashJson() {
+  for (let i = 0; i < filterModuleInfos.length; ++i) {
+    const input = filterModuleInfos[i].buildFilePath;
+    const abcPath = filterModuleInfos[i].abcFilePath;
+    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      continue;
+    }
+    const hashInputContentData = toHashData(input);
+    const hashAbcContentData = toHashData(abcPath);
+    moduleHashJsonObject[input] = hashInputContentData;
+    moduleHashJsonObject[abcPath] = hashAbcContentData;
+    // fs.unlinkSync(input);
+  }
+  const hashFilePath = genHashJsonPath(buildPathInfo);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]) {
