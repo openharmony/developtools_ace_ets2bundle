@@ -6,7 +6,7 @@ const { projectConfig } = require('../main');
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-const REG_OHM_URL = /^@bundle:(\S+)\/(\S+)\/(ets|js)\/(\S+)$/;
+const REG_OHM_URL: RegExp = /^@bundle:(\S+)\/(\S+)\/(ets|js)\/(\S+)$/;
 
 export class OHMResolverPlugin {
     private source: any;
@@ -32,8 +32,26 @@ export class OHMResolverPlugin {
     }
 }
 
-export function isOhmUrl(moduleRequest: string) {
+export function isOhmUrl(moduleRequest: string): boolean {
     return /^@(\S+):/.test(moduleRequest) ? true : false;
+}
+
+function addExtension(file: string): string {
+    if (path.extname(file) != '') {
+        return file;
+    }
+
+    let extension: string = '.d.ts';
+    if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
+        extension = '.ets';
+    }
+    if (fs.existsSync(file + '.ts') && fs.statSync(file + '.ts').isFile()) {
+        extension = '.ts';
+    }
+    if (fs.existsSync(file + '.js') && fs.statSync(file + '.js').isFile()) {
+        extension = '.js';
+    }
+    return file + extension;
 }
 
 export function resolveSourceFile(ohmUrl: string): string {
@@ -41,15 +59,7 @@ export function resolveSourceFile(ohmUrl: string): string {
     let moduleName = result[2];
     let srcKind = result[3];
     let file = path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main', srcKind, result[4]);
-    if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
-        file += '.ets';
-    } else if (fs.existsSync(file + '.ts') && fs.statSync(file + '.ts').isFile()) {
-        file += '.ts';
-    } else if (fs.existsSync(file + '.js') && fs.statSync(file + '.js').isFile()) {
-        file += '.js';
-    } else {
-        file += '.d.ts';
-    }
+    file = addExtension(file);
 
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
         logger.error(red, `ETS:ERROR Failed to resolve existed file by this ohm url ${ohmUrl} `, reset);

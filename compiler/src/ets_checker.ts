@@ -112,14 +112,8 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
 
 function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string} {
   let modulePath = resolveSourceFile(moduleName);
-  let suffix: string;
-  if (modulePath.endsWith('.ets')) {
-    suffix = '.ets';
-  } else if (modulePath.endsWith('.ts')) {
-    suffix = '.ts';
-  } else if (modulePath.endsWith('.js')) {
-    suffix = '.js';
-  } else {
+  let suffix: string = path.extname(modulePath);
+  if (suffix === 'ts' && modulePath.endsWith('.d.ts')) {
     suffix = '.d.ts';
   }
 
@@ -140,7 +134,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
     if (result.resolvedModule) {
       resolvedModules.push(result.resolvedModule);
     } else if (/^@bundle:/.test(moduleName.trim())) {
-      const module = getOhmUrlFile(moduleName.trim());
+      const module: {modulePath: string, suffix: string} = getOhmUrlFile(moduleName.trim());
       if (ts.sys.fileExists(module.modulePath)) {
         resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
       } else {
