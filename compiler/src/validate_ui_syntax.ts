@@ -844,7 +844,7 @@ function getPackageInfo(configFile: string): Array<string> {
   return [bundleName, moduleName];
 }
 
-function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string) {
+function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string): string {
   moduleCollection.add(`${moduleType}.${systemKey}`);
   if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
     item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
@@ -860,7 +860,7 @@ function replaceSystemApi(item: string, systemValue: string, moduleType: string,
   return item;
 }
 
-function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string = null) {
+function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string = null): string {
   if (sourcePath) {
     useOSFiles.add(sourcePath);
   }
@@ -936,16 +936,18 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
 }
 
 function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string) {
-  let filePath = path.resolve(path.dirname(sourcePath), moduleRequest);
-  let result = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
-  if (result) {
-    const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
-      path.join(result[1], 'src/main/config.json');
-    let packageInfo = getPackageInfo(configJsonFile);
-    let bundleName = packageInfo[0];
-    let moduleName = packageInfo[1];
-    moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
-    item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+  if (sourcePath) {
+    let filePath = path.resolve(path.dirname(sourcePath), moduleRequest);
+    let result = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    if (result) {
+      const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
+        path.join(result[1], 'src/main/config.json');
+      let packageInfo = getPackageInfo(configJsonFile);
+      let bundleName = packageInfo[0];
+      let moduleName = packageInfo[1];
+      moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
+      item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+    }
   }
   return item;
 }
