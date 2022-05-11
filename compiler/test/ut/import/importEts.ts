@@ -135,10 +135,36 @@ struct ImportTest {
 `
 
 exports.expectResult =
-`import LinkComponentDefault, { LinkComponent as LinkComponent1Ref, LinkComponent2 as LinkComponent2Ref, LinkComponent3 } from './test/pages/LinkComponent.ets';
-import DefaultComponent from "./test/pages/DefaultComponent.ets";
-import * as AllComponent from './test/pages/NamespaceComponent';
-import { AllStarComponent } from './test/pages/ExportStarComponent';
+`"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const LinkComponent_ets_1 = __importStar(require("./test/pages/LinkComponent.ets"));
+const DefaultComponent_ets_1 = __importDefault(require("./test/pages/DefaultComponent.ets"));
+const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
+const AMDComponentDefault = require("./test/pages/AMDComponent");
+const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
+const TsModule = require("./test/pages/TsModule");
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -197,7 +223,7 @@ class ImportTest extends View {
         Row.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new LinkComponent2Ref("2", this, {
+            View.create(new LinkComponent_ets_1.LinkComponent2("2", this, {
                 LinkComponent2Link1: this.__myState1,
                 LinkComponent2Link2: this.__myState2,
                 LinkComponent2Link3: this.__myState3,
@@ -221,7 +247,7 @@ class ImportTest extends View {
         Text.pop();
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new LinkComponent1Ref("3", this, {
+            View.create(new LinkComponent_ets_1.LinkComponent("3", this, {
                 LinkComponent1Link1: this.__myState1,
                 LinkComponent1Link2: this.__myState2,
                 LinkComponent1Link3: this.__myState3,
@@ -243,7 +269,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_4 = this.findChildById("4");
         if (earlierCreatedChild_4 == undefined) {
-            View.create(new DefaultComponent("4", this, {
+            View.create(new DefaultComponent_ets_1.default("4", this, {
                 DefaultComponentLink1: this.__myState1,
                 DefaultComponentLink2: this.__myState2,
                 DefaultComponentLink3: this.__myState3,
@@ -279,7 +305,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_6 = this.findChildById("6");
         if (earlierCreatedChild_6 == undefined) {
-            View.create(new LinkComponentDefault("6", this, {
+            View.create(new LinkComponent_ets_1.default("6", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,
@@ -319,7 +345,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_8 = this.findChildById("8");
         if (earlierCreatedChild_8 == undefined) {
-            View.create(new LinkComponent3("8", this, {
+            View.create(new LinkComponent_ets_1.LinkComponent3("8", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,
@@ -341,7 +367,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_9 = this.findChildById("9");
         if (earlierCreatedChild_9 == undefined) {
-            View.create(new AllStarComponent.ExportComponent("9", this, {
+            View.create(new ExportStarComponent_1.AllStarComponent.ExportComponent("9", this, {
                 ExportComponent1Link1: this.__myState1,
                 ExportComponent1Link2: this.__myState2,
                 ExportComponent1Link3: this.__myState3,
@@ -363,7 +389,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_10 = this.findChildById("10");
         if (earlierCreatedChild_10 == undefined) {
-            View.create(new AllStarComponent.default("10", this, {
+            View.create(new ExportStarComponent_1.AllStarComponent.default("10", this, {
                 ExportComponent4Link1: this.__myState1,
                 ExportComponent4Link2: this.__myState2,
                 ExportComponent4Link3: this.__myState3,

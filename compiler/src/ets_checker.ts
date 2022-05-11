@@ -35,6 +35,7 @@ import {
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
+import { props } from './compile_info';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -47,14 +48,15 @@ function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
-export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
-  const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
-    path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
+  path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+function setCompilerOptions() {
   Object.assign(compilerOptions, {
     'allowJs': false,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
+    'noEmit': true,
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
     'paths': {
@@ -67,6 +69,10 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
       'lib.es2020.d.ts'
     ]
   });
+}
+
+export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
+  setCompilerOptions();
   const files: ts.MapLike<{ version: number }> = {};
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
@@ -88,55 +94,86 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
     fileExists: ts.sys.fileExists,
     readFile: ts.sys.readFile,
     readDirectory: ts.sys.readDirectory,
-    resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-      const resolvedModules: ts.ResolvedModuleFull[] = [];
-      for (const moduleName of moduleNames) {
-        const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
-          fileExists(fileName: string): boolean {
-            return ts.sys.fileExists(fileName);
-          },
-          readFile(fileName: string): string | undefined {
-            return ts.sys.readFile(fileName);
-          }
-        });
-        if (result.resolvedModule) {
-          resolvedModules.push(result.resolvedModule);
-        } else if (/^@(system|ohos)/.test(moduleName.trim())) {
-          const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-          if (ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-          } else {
-            resolvedModules.push(null);
-          }
-        } else if (/\.ets$/.test(moduleName)) {
-          const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-          if (ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.ets'));
-          } else {
-            resolvedModules.push(null);
-          }
-        } else if (/\.ts$/.test(moduleName)) {
-          const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-          if (ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.ts'));
-          } else {
-            resolvedModules.push(null);
-          }
-        } else {
-          const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-          if (ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-          } else {
-            resolvedModules.push(null);
-          }
-        }
-      }
-      return resolvedModules;
-    },
+    resolveModuleNames: resolveModuleNames,
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+}
+
+function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+  const resolvedModules: ts.ResolvedModuleFull[] = [];
+  for (const moduleName of moduleNames) {
+    const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
+      fileExists(fileName: string): boolean {
+        return ts.sys.fileExists(fileName);
+      },
+      readFile(fileName: string): string | undefined {
+        return ts.sys.readFile(fileName);
+      }
+    });
+    if (result.resolvedModule) {
+      resolvedModules.push(result.resolvedModule);
+    } else if (/^@(system|ohos)/.test(moduleName.trim())) {
+      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+      if (ts.sys.fileExists(modulePath)) {
+        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+      } else {
+        resolvedModules.push(null);
+      }
+    } else if (/\.ets$/.test(moduleName)) {
+      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+      if (ts.sys.fileExists(modulePath)) {
+        resolvedModules.push(getResolveModule(modulePath, '.ets'));
+      } else {
+        resolvedModules.push(null);
+      }
+    } else if (/\.ts$/.test(moduleName)) {
+      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+      if (ts.sys.fileExists(modulePath)) {
+        resolvedModules.push(getResolveModule(modulePath, '.ts'));
+      } else {
+        resolvedModules.push(null);
+      }
+    } else {
+      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+      if (ts.sys.fileExists(modulePath)) {
+        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+      } else {
+        resolvedModules.push(null);
+      }
+    }
+  }
+  return resolvedModules;
+}
+
+export function createWatchCompilerHost(rootFileNames: string[],
+  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function
+): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
+  setCompilerOptions();
+  const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
+  const host = ts.createWatchCompilerHost(
+    [...rootFileNames, ...readDeaclareFiles()], compilerOptions,
+    ts.sys, createProgram, reportDiagnostic,
+    (diagnostic: ts.Diagnostic) => {
+      // End of compilation in watch mode flag.
+      if ([6193, 6194].includes(diagnostic.code)) {
+        process.env.watchTs = 'end';
+        delayPrintLogCount();
+      }
+    });
+  host.readFile = (fileName: string) => {
+    if (!fs.existsSync(fileName)) {
+      return undefined;
+    }
+    if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
+      checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
+      return processContent(fs.readFileSync(fileName).toString());
+    }
+    return fs.readFileSync(fileName).toString();
+  };
+  host.resolveModuleNames = resolveModuleNames;
+  return host;
 }
 
 function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
@@ -160,13 +197,14 @@ function checkUISyntax(source: string, fileName: string): void {
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile);
+      props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
   }
 }
 
 function collectComponents(node: ts.SourceFile): void {
   // @ts-ignore
-  if (node.identifiers && node.identifiers.size) {
+  if (process.env.watchMode !== 'true' && node.identifiers && node.identifiers.size) {
     // @ts-ignore
     for (const key of node.identifiers.keys()) {
       if (JS_BIND_COMPONENTS.has(key)) {
