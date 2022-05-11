@@ -58,7 +58,8 @@ import {
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
-  BIND_DRAG_START
+  BIND_DRAG_SET,
+  BIND_POPUP_SET
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -202,7 +203,7 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
   }
 }
 
-let sourceNode: ts.SourceFile; 
+let sourceNode: ts.SourceFile;
 
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
   supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}): void {
@@ -211,21 +212,20 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     Object.assign(compilerOptions, {
-      "sourceMap": false,
+      'sourceMap': false
     });
     sourceNode = ts.createSourceFile('', node.getText(), ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   }
   if (node.statements.length) {
-    node.statements.forEach((item, index, array) => {
+    node.statements.forEach((item) => {
       if (ts.isExpressionStatement(item)) {
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
-            processInnerComponent(item, index, Array.from(node.statements),
-              newStatements, log, name);
+            processInnerComponent(item, newStatements, log);
             break;
           case ComponentType.customComponent:
-            if (!newsupplement.isAcceleratePreview){
+            if (!newsupplement.isAcceleratePreview) {
               if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
                 if (processExpressionStatementChange(item, item.expression.body, log)) {
                   item = processExpressionStatementChange(item, item.expression.body, log);
@@ -327,11 +327,12 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
   return { etsComponentNode: etsComponentNode, hasAttr: hasAttr };
 }
 
-function processInnerComponent(node: ts.ExpressionStatement, index: number, arr: ts.Statement[],
-  newStatements: ts.Statement[], log: LogInfo[], name: string): void {
+function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[], log: LogInfo[]): void {
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
-  if (projectConfig.isPreview && !NO_DEBUG_LINE_COMPONENT.has(name)) {
+  const nameResult: NameResult = { name: null };
+  validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
+  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
     let posOfNode: ts.LineAndCharacter;
     let curFileName: string;
     let line: number = 1;
@@ -352,7 +353,7 @@ function processInnerComponent(node: ts.ExpressionStatement, index: number, arr:
       `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
       `(${posOfNode.line + line}:${posOfNode.character + col})`;
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
-      createFunction(ts.factory.createIdentifier(getName(node)),
+      createFunction(ts.factory.createIdentifier(nameResult.name),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
         ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
     newStatements.push(debugNode);
@@ -632,11 +633,11 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       } else if (ts.isPropertyAccessExpression(temp.expression)) {
         propertyName = temp.expression.name.escapedText.toString();
       }
-      switch (propertyName) {
-        case BIND_POPUP:
+      switch (true) {
+        case BIND_POPUP_SET.has(propertyName):
           temp = processBindPopupBuilder(temp);
           break;
-        case BIND_DRAG_START:
+        case BIND_DRAG_SET.has(propertyName):
           temp = processDragStartBuilder(temp);
           break;
         default:

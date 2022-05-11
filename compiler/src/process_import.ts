@@ -25,7 +25,8 @@ import {
   STRUCT,
   CLASS,
   CUSTOM_COMPONENT_DEFAULT,
-  CUSTOM_DECORATOR_NAME
+  CUSTOM_DECORATOR_NAME,
+  COMPONENT_DECORATOR_ENTRY
 } from './pre_define';
 import {
   propertyCollection,
@@ -41,7 +42,7 @@ import {
   getComponentSet,
   IComponentSet
 } from './validate_ui_syntax';
-import { LogInfo } from './utils';
+import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
@@ -92,7 +93,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
           })));
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log);
+      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(), new Set());
     }
   } catch (e) {
     // ignore
@@ -100,7 +101,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
 }
 
 function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
-  pagesDir: string, log: LogInfo[]) {
+  pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -114,6 +115,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   }
   if (ts.isClassDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
     addDependencies(node, defaultNameFromParent, asNameFromParent);
+    isExportEntry(node, log, entryCollection, exportCollection);
     if (!defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 &&
       node.modifiers[0] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
       node.modifiers[1] && node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword &&
@@ -123,6 +125,9 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
+    if (projectConfig.isPreview && entryCollection.has(node.expression.escapedText.toString())) {
+      remindExportEntryComponent(node, log);
+    }
     if (defaultNameFromParent) {
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
@@ -134,6 +139,10 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (ts.isExportDeclaration(node) && node.exportClause &&
     ts.isNamedExports(node.exportClause) && node.exportClause.elements) {
     node.exportClause.elements.forEach(item => {
+      if (projectConfig.isPreview &&
+        entryCollection.has((item.propertyName ? item.propertyName : item.name).escapedText.toString())) {
+        remindExportEntryComponent(node, log);
+      }
       if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
         ts.isIdentifier(item.propertyName) && hasCollection(item.propertyName)) {
         let asExportName: string = item.name.escapedText.toString();
@@ -149,10 +158,51 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   }
   if (ts.isExportDeclaration(node) && node.moduleSpecifier &&
     ts.isStringLiteral(node.moduleSpecifier)) {
+    if (projectConfig.isPreview && node.exportClause && ts.isNamedExports(node.exportClause) &&
+      node.exportClause.elements) {
+      node.exportClause.elements.forEach(item => {
+        exportCollection.add((item.propertyName ? item.propertyName : item.name).escapedText.toString());
+      });
+    }
     processImport(node, pagesDir, log);
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
-    asNameFromParent, pagesDir, log));
+    asNameFromParent, pagesDir, log, entryCollection, exportCollection));
+}
+
+function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
+  exportCollection: Set<string>): void {
+  if (projectConfig.isPreview && node && node.decorators) {
+    let existExport: boolean = false;
+    let existEntry: boolean = false;
+    if (node.modifiers) {
+      for (let i = 0; i < node.modifiers.length; i++) {
+        if (node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
+          existExport = true;
+          break;
+        }
+      }
+    }
+    for (let i = 0; i < node.decorators.length; i++) {
+      if (node.decorators[i].getText() === COMPONENT_DECORATOR_ENTRY) {
+        entryCollection.add(node.name.escapedText.toString());
+        existEntry = true;
+        break;
+      }
+    }
+    if (existEntry && existExport || exportCollection.has(node.name.escapedText.toString())) {
+      remindExportEntryComponent(node, log);
+    }
+  }
+}
+
+function remindExportEntryComponent(node: ts.Node, log: LogInfo[]): void {
+  log.push({
+    type: LogType.WARN,
+    message: `It's not a recommended way to export struct with @Entry decorator, ` +
+      `which may cause ACE Engine error in component preview mode.`,
+    pos: node.getStart()
+  });
 }
 
 function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: string,
@@ -162,13 +212,13 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
   if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
-    setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.propertys,
+    setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
       ComponentSet.props);
   } else if (asNameFromParent.has(componentName)) {
-    setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.propertys,
+    setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props);
   } else {
-    setDependencies(componentName, ComponentSet.links, ComponentSet.propertys, ComponentSet.props);
+    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props);
   }
 }
 

@@ -15,6 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const md5 = require('md5');
 
 const { readFile } = require('./lib/utils');
 const { WORKERS_DIR } = require('./lib/pre_define');
@@ -55,7 +56,9 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath
+    process.env.aceSuperVisualPath;
+  projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
+    hashProjectPath(projectConfig.projectPath);
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
@@ -67,11 +70,11 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
-	setFaTestRunnerFile(projectConfig);
+    setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
-    setAbilityPages(projectConfig)
-	setStageTestRunnerFile(projectConfig);
+    setAbilityPages(projectConfig);
+    setStageTestRunnerFile(projectConfig);
   }
 
   if(staticPreviewPage) {
@@ -81,6 +84,7 @@ function loadEntryObj(projectConfig) {
     if (fs.existsSync(projectConfig.manifestFilePath)) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
+      projectConfig.pagesJsonFileName = 'config.json';
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
       process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
@@ -108,7 +112,7 @@ function loadEntryObj(projectConfig) {
 
 function buildManifest(manifest, aceConfigPath) {
   try {
-    const moduleConfigJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
+    const moduleConfigJson = JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
     if (moduleConfigJson.module && moduleConfigJson.module.uiSyntax === 'ets') {
       manifest.pages = getPages(moduleConfigJson);
@@ -125,11 +129,12 @@ function buildManifest(manifest, aceConfigPath) {
 
 function getPages(configJson) {
   const pages = []
-  const modulePagePath = path.resolve(projectConfig.aceProfilePath,
-    `${configJson.module.pages.replace(/\$profile\:/, '')}.json`);
+  const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
     const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
     if (pagesConfig && pagesConfig.src) {
+      projectConfig.pagesJsonFileName = pagesJsonFileName;
       return pagesConfig.src;
     }
   }
@@ -166,15 +171,15 @@ function setFaTestRunnerFile(projectConfig) {
     testRunnerFiles.forEach((item) => {
       if (/\.(ts|js)$/.test(item)) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
-		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
+        projectConfig.entryObj["../TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
-    })
+    });
   }
 }
 
 function setStageTestRunnerFile(projectConfig) {
-  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const index = projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
   const testRunnerPath = path.resolve(projectConfig.projectPath, "TestRunner");
   if (fs.existsSync(testRunnerPath)) {
     const testRunnerFiles = [];
@@ -182,22 +187,22 @@ function setStageTestRunnerFile(projectConfig) {
     testRunnerFiles.forEach((item) => {
       if (/\.(ts|js)$/.test(item)) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
-		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
+		    projectConfig.entryObj["./TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
-    })
+    });
   }
 }
 
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
-    if (abilityPath && fs.existsSync(path.resolve(projectConfig.projectPath, '../', abilityPath))) {
-      const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
-      const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
-      if (fs.existsSync(projectAbilityPath)) {
-        projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
-      }
+      projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+    } else {
+      throw Error(`\u001b[31m ERROR: srcEntrance file '${projectAbilityPath}' does not exist. \u001b[39m`).message;
     }
   });
 }
@@ -312,7 +317,15 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
   }
 }
 
-const globalProgram = { program: null };
+function hashProjectPath(projectPath) {
+  process.env.hashProjectPath = "_" + md5(projectPath);
+  return process.env.hashProjectPath;
+}
+
+const globalProgram = {
+  program: null,
+  watchProgram: null
+};
 
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
