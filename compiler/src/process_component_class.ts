@@ -422,10 +422,10 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
   if (ts.isIdentifier(initExpression) &&
     initExpression.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.escapedText.toString().replace(LINK_REG, '');
-  } else if (isMatchInitExpression(initExpression) && initExpression.name.escapedText.toString().match(LINK_REG)) {
-    if (linkParentComponent.includes(propertyName.escapedText.toString())) {
-      initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
-    }
+  } else if (isMatchInitExpression(initExpression) &&
+    initExpression.name.escapedText.toString().match(LINK_REG) &&
+    linkParentComponent.includes(propertyName.escapedText.toString())) {
+    initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText);
