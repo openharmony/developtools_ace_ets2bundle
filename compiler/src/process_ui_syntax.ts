@@ -97,7 +97,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       }
     };
     function processAllNodes(node: ts.Node): ts.Node {
-      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node)) {
+      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         processImport(node, pagesDir, transformLog.errors);
       } else if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
@@ -148,8 +149,20 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
 }
 
 function isCustomDialogController(node: ts.Expression) {
-  return node.parent && ts.isNewExpression(node) && ts.isIdentifier(node.expression) &&
-    node.expression.getText() === SET_CONTROLLER_CTR_TYPE;
+  const tempParent: ts.Node = node.parent;
+  // @ts-ignore
+  if (!node.parent && node.original) {
+    // @ts-ignore
+    node.parent = node.original.parent;
+  }
+  if (ts.isNewExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    node.expression.escapedText.toString() === SET_CONTROLLER_CTR_TYPE) {
+    return true;
+  } else {
+    // @ts-ignore
+    node.parent = tempParent;
+    return false;
+  }
 }
 
 function createCustomDialogController(parent: ts.Expression, node: ts.NewExpression,

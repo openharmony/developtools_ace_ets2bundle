@@ -33,13 +33,13 @@ const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE } = require('./lib/utils');
 const { BUILD_SHARE_PATH } = require('./lib/pre_define');
 
-const watchMode = (process.env.watchMode && process.env.watchMode === 'true') || false;
+process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
   const projectPath = path.resolve(projectConfig.projectPath);
   Object.assign(config, {
     entry: projectConfig.entryObj,
-    watch: watchMode,
+    watch: process.env.watchMode === 'true',
     watchOptions: {
       aggregateTimeout: 10,
       poll: false,
@@ -112,7 +112,6 @@ function initConfig(config) {
     plugins: [
       new Webpack.WatchIgnorePlugin({
         paths: [
-          /\.js$/,
           /\.d\.ts$/
         ]
       }),
@@ -124,6 +123,13 @@ function initConfig(config) {
       type: "filesystem",
       cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
     };
+  }
+  if (!projectConfig.aceModuleJsonPath) {
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
+  } else {
+    config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
+    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
   }
 }
 
@@ -212,7 +218,7 @@ function setCopyPluginConfig(config) {
 }
 
 function setOptimizationConfig(config) {
-  if (process.env.compileMode !== 'moduleJson') {
+  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
     config.optimization = {
       splitChunks: {
         chunks(chunk) {
@@ -285,5 +291,6 @@ module.exports = (env, argv) => {
   if (appResourcePath) {
     readAppResource(resources, appResourcePath);
   }
+  config.output.library = projectConfig.hashProjectPath;
   return config;
 }

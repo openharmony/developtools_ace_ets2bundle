@@ -26,7 +26,7 @@
  (in SwiftUI). Therefore, the app needs to provide a unique id for each array item.
  We do so by making each array item an object with a unique id.
 
- TODO this id should be used as the 'key' argument when creating a Text.
+ this id should be used as the 'key' argument when creating a Text.
 
 */
 

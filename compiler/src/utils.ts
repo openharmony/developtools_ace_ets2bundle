@@ -85,13 +85,13 @@ export function addLog(type: LogType, message: string, pos: number, log: LogInfo
 }
 
 export function getMessage(fileName: string, info: LogInfo): string {
-  let messsage: string;
+  let message: string;
   if (info.line && info.column) {
-    messsage = `BUILD${info.type} File: ${fileName}:${info.line}:${info.column}\n ${info.message}`;
+    message = `BUILD${info.type} File: ${fileName}:${info.line}:${info.column}\n ${info.message}`;
   } else {
-    messsage = `BUILD${info.type} File: ${fileName}\n ${info.message}`;
+    message = `BUILD${info.type} File: ${fileName}\n ${info.message}`;
   }
-  return messsage;
+  return message;
 }
 
 class ComponentInfo {

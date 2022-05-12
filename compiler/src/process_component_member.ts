@@ -689,6 +689,8 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolea
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
+  } else if (globalProgram.watchProgram) {
+    checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   } else if (program) {
     checker = program.getTypeChecker();
   }
@@ -856,7 +858,7 @@ function validateForbiddenUseStateType(propertyName: ts.Identifier, decorator: s
 function validateDuplicateDecorator(decorator: ts.Decorator, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The decorator '${decorator.getText()}' cannot have the same name as the build-in ` +
+    message: `The decorator '${decorator.getText()}' cannot have the same name as the built-in ` +
       `style attribute '${decorator.getText().replace('@', '')}'.`,
     pos: decorator.getStart()
   });
