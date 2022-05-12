@@ -61,8 +61,8 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
-import { importModuleCollection } from "./ets_checker";
-import { isExtendFunction } from "./process_ui_syntax";
+import { importModuleCollection } from './ets_checker';
+import { isExtendFunction } from './process_ui_syntax';
 
 export interface ComponentCollection {
   entryComponent: string;
@@ -73,7 +73,7 @@ export interface ComponentCollection {
 }
 
 export interface IComponentSet {
-  propertys: Set<string>;
+  properties: Set<string>;
   regulars: Set<string>;
   states: Set<string>;
   links: Set<string>;
@@ -206,14 +206,14 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
   } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in 'config.json' must have one and only one '@Entry' `
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
         + `decorator.`,
       fileName: fileName
     });
@@ -303,7 +303,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     CUSTOM_BUILDER_METHOD.add(node.name.getText());
   }
   if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
-    let componentName: string = isExtendFunction(node);
+    const componentName: string = isExtendFunction(node);
     collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
@@ -609,7 +609,7 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
 function collectComponentProps(node: ts.StructDeclaration): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node);
-  propertyCollection.set(componentName, ComponentSet.propertys);
+  propertyCollection.set(componentName, ComponentSet.properties);
   stateCollection.set(componentName, ComponentSet.states);
   linkCollection.set(componentName, ComponentSet.links);
   propCollection.set(componentName, ComponentSet.props);
@@ -622,7 +622,7 @@ function collectComponentProps(node: ts.StructDeclaration): void {
 }
 
 export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
-  const propertys: Set<string> = new Set();
+  const properties: Set<string> = new Set();
   const states: Set<string> = new Set();
   const links: Set<string> = new Set();
   const props: Set<string> = new Set();
@@ -632,15 +632,15 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const provides: Set<string> = new Set();
   const consumes: Set<string> = new Set();
   const objectLinks: Set<string> = new Set();
-  traversalComponentProps(node, propertys, regulars, states, links, props, storageProps,
+  traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
     storageLinks, provides, consumes, objectLinks);
   return {
-    propertys, regulars, states, links, props, storageProps, storageLinks, provides,
+    properties, regulars, states, links, props, storageProps, storageLinks, provides,
     consumes, objectLinks
   };
 }
 
-function traversalComponentProps(node: ts.StructDeclaration, propertys: Set<string>,
+function traversalComponentProps(node: ts.StructDeclaration, properties: Set<string>,
   regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
   consumes: Set<string>, objectLinks: Set<string>): void {
@@ -650,7 +650,7 @@ function traversalComponentProps(node: ts.StructDeclaration, propertys: Set<stri
     node.members.forEach(item => {
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
         const propertyName: string = item.name.getText();
-        propertys.add(propertyName);
+        properties.add(propertyName);
         if (!item.decorators || !item.decorators.length) {
           regulars.add(propertyName);
         } else {
@@ -735,10 +735,10 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
   });
 }
 
-export function processSystemApi(content: string, isProcessWhiteList: boolean = false,
+export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
   let REG_SYSTEM: RegExp;
-  if (isProcessWhiteList) {
+  if (isProcessAllowList) {
     REG_SYSTEM =
       /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g;
   } else {
@@ -759,12 +759,12 @@ export function processSystemApi(content: string, isProcessWhiteList: boolean = 
     let moduleType: string = item2 || item5;
     let systemKey: string = item3 || item6;
     let systemValue: string = item1 || item4;
-    if (!VALIDATE_MODULE.includes(systemValue)){
+    if (!VALIDATE_MODULE.includes(systemValue)) {
       importModuleCollection.add(systemValue);
     }
-    if (!isProcessWhiteList && !isSystemModule) {
+    if (!isProcessAllowList && !isSystemModule) {
       return item;
-    } else if (isProcessWhiteList) {
+    } else if (isProcessAllowList) {
       systemValue = item2;
       moduleType = item4;
       systemKey = item5;
@@ -798,7 +798,7 @@ function processInnerModule(content: string, systemValueCollection: Set<string>)
 }
 
 const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
-function validateWhiteListModule(moduleType: string, systemKey: string): boolean {
+function validateAllowListModule(moduleType: string, systemKey: string): boolean {
   return moduleType === 'ohos' && VALIDATE_MODULE_REG.test(systemKey);
 }
 

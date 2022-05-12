@@ -107,8 +107,12 @@ function isHasChild(node: ts.CallExpression): boolean {
 
 function isToChange(item: ts.PropertyAssignment, node: ts.CallExpression): boolean {
   const builderParamName: Set<string> = builderParamObjectCollection.get(node.expression.getText());
-  return item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
-    builderParamName.has(item.name.getText());
+  if (item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
+    builderParamName.has(item.name.getText()) && 
+    !/\.(bind|call|apply)/.test(item.initializer.getText())) {
+    return true;
+  }
+  return false;
 }
 
 function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
