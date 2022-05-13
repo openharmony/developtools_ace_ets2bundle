@@ -230,8 +230,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
 }
 
 function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType: ts.TypeNode | undefined,
-  normalVar: boolean, isLocalStorage: boolean = false, parentComponentName: string = null
-  ): ts.PropertyDeclaration {
+  normalVar: boolean, isLocalStorage: boolean = false, parentComponentName: string = null): ts.PropertyDeclaration {
   if (typeof newType === undefined) {
     return undefined;
   }
@@ -419,28 +418,27 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
-  if (linkParentComponent && ts.isPropertyAssignment(node) && ts.isIdentifier(propertyName) &&
+  const LINK_REG: RegExp = /^\$/g;
+  const initExpression: ts.Expression = node.initializer;
+  if (ts.isIdentifier(initExpression) &&
+    initExpression.escapedText.toString().match(LINK_REG)) {
+    initText = initExpression.escapedText.toString().replace(LINK_REG, '');
+  } else if (isMatchInitExpression(initExpression) &&
+    initExpression.name.escapedText.toString().match(LINK_REG) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
-    const LINK_REG: RegExp = /^\$/g;
-    const initExpression: ts.Expression = node.initializer;
-    if (ts.isIdentifier(initExpression) &&
-      initExpression.escapedText.toString().match(LINK_REG)) {
-      if (linkParentComponent.includes(propertyName.escapedText.toString())) {
-        initText = initExpression.escapedText.toString().replace(LINK_REG, '');
-      }
-    } else if (ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
-      initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
-      ts.isIdentifier(initExpression.name) &&
-      initExpression.name.escapedText.toString().match(LINK_REG)) {
-      if (linkParentComponent.includes(propertyName.escapedText.toString())) {
-        initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
-      }
-    }
-    if (initText) {
-      node = addDoubleUnderline(node, propertyName, initText);
-    }
+    initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
+  }
+  if (initText) {
+    node = addDoubleUnderline(node, propertyName, initText);
   }
   return node;
+}
+
+function isMatchInitExpression(initExpression: ts.Expression): boolean {
+  return ts.isPropertyAccessExpression(initExpression) &&
+    initExpression.expression &&
+    initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initExpression.name);
 }
 
 function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identifier,

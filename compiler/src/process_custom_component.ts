@@ -108,7 +108,7 @@ function isHasChild(node: ts.CallExpression): boolean {
 function isToChange(item: ts.PropertyAssignment, node: ts.CallExpression): boolean {
   const builderParamName: Set<string> = builderParamObjectCollection.get(node.expression.getText());
   if (item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
-    builderParamName.has(item.name.getText()) && 
+    builderParamName.has(item.name.getText()) &&
     !/\.(bind|call|apply)/.test(item.initializer.getText())) {
     return true;
   }
@@ -153,22 +153,16 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      if (isThisProperty(item, propertySet)) {
-        validateStateManagement(item, name, log);
-        if (isNonThisProperty(item, linkSet)) {
-          if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
-            item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
-              item.name, changeNodeFromCallToArrow(item.initializer));
-          }
-          props.push(item);
+      validateStateManagement(item, name, log);
+      if (isNonThisProperty(item, linkSet)) {
+        if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
+          item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
+            item.name, changeNodeFromCallToArrow(item.initializer));
         }
-      } else {
-        validateNonExistentProperty(item, name, log);
+        props.push(item);
       }
     });
   }
-  validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
-  validateMandatoryToInitViaParam(node, name, curChildProps, log);
 }
 
 function getCustomComponentName(newNode: ts.NewExpression): string {
@@ -197,6 +191,10 @@ function isThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<stri
 }
 
 function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<string>): boolean {
+  if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
+    node.initializer.escapedText && node.initializer.escapedText.includes('$')) {
+    return false;
+  }
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
     !propertySet.has(node.name.escapedText.toString())) {
     return true;
