@@ -251,6 +251,34 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     let output:string = "";
     if (filePath.indexOf(hapPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
+      output = path.join(buildPath, "temprary", 'main', 'node_modules', sufStr);
+    } else {
+      const sufStr = dataTmps[dataTmps.length-1];
+      output = path.join(buildPath, "temprary", 'auxiliary', 'node_modules', sufStr);
+    }
+    return output;
+  }
+
+  if (filePath.indexOf(projectPath) !== -1) {
+    const sufStr = filePath.replace(projectPath, "");
+    const output: string = path.join(buildPath, "temprary", sufStr);
+    return output;
+  }
+
+  return "";
+}
+
+export function genBuilldPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+  filePath = toUnixPath(filePath);
+  projectPath = toUnixPath(projectPath);
+  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let tempFilePath = filePath.replace(hapPath, "");
+
+  if (tempFilePath.indexOf('node_modules') !== -1) {
+    const dataTmps = tempFilePath.split('node_modules');
+    let output:string = "";
+    if (filePath.indexOf(hapPath) === -1) {
+      const sufStr = dataTmps[dataTmps.length-1];
       output = path.join(buildPath, 'main', 'node_modules', sufStr);
     } else {
       const sufStr = dataTmps[dataTmps.length-1];
@@ -281,7 +309,7 @@ export function mkdirsSync(dirname: string): boolean {
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
-  let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return ;
   }
@@ -337,7 +365,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
     content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
   const sourceMapContent = JSON.stringify(sourceMapJson);
-  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, projectConfig.buildPath, toTsFile);
+  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return ;
   }
@@ -361,4 +389,14 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
 
     fs.writeFileSync(temporarySourceMapFile, sourceMapContent);
   }
+}
+
+export function genAbcFileName(temporaryFile: string): string {
+  let abcFile: string = temporaryFile;
+  if (temporaryFile.endsWith('ts')) {
+    abcFile = temporaryFile.replace(/\.ts$/, '.abc');
+  } else {
+    abcFile = temporaryFile.replace(/\.js$/, '.abc');
+  }
+  return abcFile;
 }
