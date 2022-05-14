@@ -23,7 +23,10 @@ import { logger } from './compile_info';
 import { 
   toUnixPath,
   toHashData,
-  genTemporaryPath } from './utils';
+  genTemporaryPath, 
+  genBuilldPath,
+  genAbcFileName, 
+  mkdirsSync} from './utils';
 import { Compilation } from 'webpack';
 import { projectConfig } from '../main';
 
@@ -56,12 +59,14 @@ const ARK = '/ark/';
 
 class ModuleInfo {
   filePath: string;
+  tempFilePath: string;
   buildFilePath: string;
   abcFilePath: string;
   isModuleJs: boolean;
 
-  constructor(filePath: string, buildFilePath: string, abcFilePath: string, isModuleJs: boolean) {
+  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isModuleJs: boolean) {
     this.filePath  = filePath;
+    this.tempFilePath = tempFilePath;
     this.buildFilePath = buildFilePath;
     this.abcFilePath = abcFilePath;
     this.isModuleJs = isModuleJs;
@@ -126,7 +131,7 @@ export class GenAbcPlugin {
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
       buildPathInfo = output;
-      invokeWorkersToGenAbc();
+      // invokeWorkersToGenAbc();
     });
 
 
@@ -134,46 +139,51 @@ export class GenAbcPlugin {
 }
 
 function handleFinishModules(modules, callback) {
-  console.error("==================handleFinishModules====================");  
+  console.error("==================handleFinishModules====================");
+  let nodeModulesFile = new Array<string>();
   modules.forEach(module => {
     if (module != undefined && module.resourceResolveData != undefined) {
       let filePath: string = module.resourceResolveData.path;
       console.error(filePath);
-      let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+      let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+      let buildFilePath = genBuilldPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+      tempFilePath = toUnixPath(tempFilePath);
+      buildFilePath = toUnixPath(buildFilePath);
       if (tempFilePath.length === 0) {
         return ;
       }
       if (filePath.endsWith('ets')) {
         if (process.env.processTs && process.env.processTs === 'true') {
           tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.ts');
+          buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.ts');
         } else {
           tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.js');
+          buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.js');
         }
-        tempFilePath = toUnixPath(tempFilePath);
         const abcFilePath = genAbcFileName(tempFilePath);
-        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, abcFilePath, false);
+        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
         moduleInfos.push(tempModuleInfo);
       } else if (filePath.endsWith('ts')) {
         if (process.env.processTs && process.env.processTs === 'false') {
           tempFilePath = tempFilePath.replace(/\.ts$/, '.ts.js');
+          buildFilePath = buildFilePath.replace(/\.ts$/, '.ts.js');
         }
-        tempFilePath = toUnixPath(tempFilePath);
         const abcFilePath = genAbcFileName(tempFilePath);
-        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, abcFilePath, false);
+        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
         moduleInfos.push(tempModuleInfo);
       } else if (filePath.endsWith('js')) {
-        tempFilePath = toUnixPath(tempFilePath);
         const parent: string = path.join(tempFilePath, '..');
         if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
           mkDir(parent);
         }
         if (tempFilePath.indexOf("node_modules") !== -1) {
           const abcFilePath = genAbcFileName(tempFilePath);
-          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, abcFilePath, false);
-          moduleInfos.push(tempModuleInfo);  
+          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+          moduleInfos.push(tempModuleInfo);
+          nodeModulesFile.push(tempFilePath);
         } else {
           const abcFilePath = genAbcFileName(tempFilePath);
-          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, abcFilePath, true);
+          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
           moduleInfos.push(tempModuleInfo);  
         }
       } else {
@@ -184,20 +194,11 @@ function handleFinishModules(modules, callback) {
   });
 
   invokeWorkersModuleToGenAbc(moduleInfos);
+  processToAbcFile(nodeModulesFile);
 
 }
 
-function genAbcFileName(temporaryFile: string): string {
-  let abcFile: string = temporaryFile;
-  if (temporaryFile.endsWith('ts')) {
-    abcFile = temporaryFile.replace(/\.ts$/, '.abc');
-  } else {
-    abcFile = temporaryFile.replace(/\.js$/, '.abc');
-  }
-  return abcFile;
-}
-
-function processToAbcFile(tempFilePath, outPutFile) {
+function processToAbcFile(nodeModulesFile: Array<string>) {
   let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
   if (isWin) {
     js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
@@ -207,14 +208,14 @@ function processToAbcFile(tempFilePath, outPutFile) {
   
   const args: string[] = [
     '--expose-gc',
-    js2abc,
-    '-o',
-    outPutFile
+    js2abc
   ];
   if (isDebug) {
     args.push('--debug');
   }
-  args.push(tempFilePath);
+  nodeModulesFile.forEach(ele => {
+    args.push(ele);
+  });
 
   child_process.execFileSync(nodeJs, args);
 }
@@ -289,6 +290,9 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
+  if (fs.existsSync(buildPathInfo)) {
+    fs.rmdirSync(buildPathInfo, { recursive : true});
+  }
   filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
   const maxWorkerNumber = 3;
   const splitedBundles = splitModuleBySize(filterModuleInfos, maxWorkerNumber);
@@ -379,6 +383,7 @@ function invokeWorkersToGenAbc() {
       });
     }
 
+    var count_ = 0;
     for (let i = 0; i < workerNumber; ++i) {
       const workerData = {
         'inputs': JSON.stringify(splitedBundles[i]),
@@ -388,9 +393,15 @@ function invokeWorkersToGenAbc() {
     }
 
     cluster.on('exit', (worker, code, signal) => {
+      count_++;
       logger.debug(`worker ${worker.process.pid} finished`);
     });
 
+    while(true) {
+      if (count_ === workerNumber) {
+        break;
+      }
+    }
     process.on('exit', (code) => {
       writeHashJson();
     });
@@ -413,7 +424,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
     jsonObject = JSON.parse(jsonFile);
     filterModuleInfos = [];
     for (let i = 0; i < moduleInfos.length; ++i) {
-      const input = moduleInfos[i].buildFilePath;
+      const input = moduleInfos[i].tempFilePath;
       const abcPath = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
@@ -425,7 +436,11 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
         if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
-          // fs.unlinkSync(input);
+          console.error("===============filterIntermediateModuleByHashJson copy==============")
+          console.error(moduleInfos[i].tempFilePath);
+          mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
+          fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
+          fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
         } else {
           filterModuleInfos.push(moduleInfos[i]);
         }
@@ -439,8 +454,10 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
 }
 
 function writeModuleHashJson() {
+  console.error("===============writeModuleHashJson==============")
+  console.error(filterModuleInfos);
   for (let i = 0; i < filterModuleInfos.length; ++i) {
-    const input = filterModuleInfos[i].buildFilePath;
+    const input = filterModuleInfos[i].tempFilePath;
     const abcPath = filterModuleInfos[i].abcFilePath;
     if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
@@ -450,6 +467,11 @@ function writeModuleHashJson() {
     const hashAbcContentData = toHashData(abcPath);
     moduleHashJsonObject[input] = hashInputContentData;
     moduleHashJsonObject[abcPath] = hashAbcContentData;
+    mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
+    console.error("===============writeModuleHashJson copy==============")
+    console.error(filterModuleInfos[i].tempFilePath);  
+    fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
+    fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
     // fs.unlinkSync(input);
   }
   const hashFilePath = genHashJsonPath(buildPathInfo);
