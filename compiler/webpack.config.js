@@ -313,7 +313,9 @@ module.exports = (env, argv) => {
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
 
+  process.env.moduleAbc = false;
   process.env.processTs = false;
+  process.env.buildMode = env.buildMode;
 
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);

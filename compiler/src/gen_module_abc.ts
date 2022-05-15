@@ -27,26 +27,16 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   let inputs = [];
   for (let i = 0; i < inputPaths.length; ++i) {
     const input = inputPaths[i].tempFilePath;
-    inputs.push(input);
-    // const abcFilePathPath = inputPaths[i].abcFilePath;
-    // const singleCmd = `${cmd} "${input}" -o "${abcFilePathPath}"`;
-    // logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
-    // try {
-    //   console.error(singleCmd);
-    //   childProcess.execSync(singleCmd);
-    // } catch (e) {
-    //   logger.error(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
-    //   return;
-    // }
+    inputs.push('"' + input + '"');
   }
-  let inputsStr = inputs.join(',');
-  const singleCmd = `${cmd} "${inputs}"`;
+  let inputsStr = inputs.join(' ');
+  const singleCmd = `${cmd} ${inputsStr}`;
   logger.debug('gen abc cmd is: ', singleCmd);
   try {
     console.error(singleCmd);
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.error(red, `ETS:ERROR Failed to convert file ${inputs} to abc `, reset);
+    logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
     return;
   }
 

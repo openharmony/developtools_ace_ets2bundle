@@ -309,6 +309,9 @@ export function mkdirsSync(dirname: string): boolean {
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
+  if (process.env.moduleAbc === 'false') {
+    return ;
+  }
   let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return ;
@@ -318,6 +321,9 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, to
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
+  if (process.env.moduleAbc === 'false') {
+    return ;
+  }
   if (toTsFile) {
     const newStatements = [];
     const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
@@ -371,22 +377,21 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
   }
   let temporarySourceMapFile: string = "";
   if (temporaryFile.endsWith("ets")) {
-    temporarySourceMapFile = temporaryFile.replace(/\.ets$/, '.ets.sourcemap');
     if (toTsFile) {
       temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.ts');
     } else {
       temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.js');
-    }  
+    }
+    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
   } else {
     if (!toTsFile) {
-      temporarySourceMapFile = temporaryFile.replace(/\.ts$/, '.ts.sourcemap');
       temporaryFile = temporaryFile.replace(/\.ts$/, '.ts.js');
+      temporarySourceMapFile = genSourceMapFileName(temporaryFile);
     }
   }
   mkdirsSync(path.dirname(temporaryFile));
   fs.writeFileSync(temporaryFile, content);
-  if (temporarySourceMapFile.length > 0) {
-
+  if (temporarySourceMapFile.length > 0 && process.env.buildMode === "debug") {
     fs.writeFileSync(temporarySourceMapFile, sourceMapContent);
   }
 }
@@ -397,6 +402,16 @@ export function genAbcFileName(temporaryFile: string): string {
     abcFile = temporaryFile.replace(/\.ts$/, '.abc');
   } else {
     abcFile = temporaryFile.replace(/\.js$/, '.abc');
+  }
+  return abcFile;
+}
+
+export function genSourceMapFileName(temporaryFile: string): string {
+  let abcFile: string = temporaryFile;
+  if (temporaryFile.endsWith('ts')) {
+    abcFile = temporaryFile.replace(/\.ts$/, '.sourcemap');
+  } else {
+    abcFile = temporaryFile.replace(/\.js$/, '.sourcemap');
   }
   return abcFile;
 }

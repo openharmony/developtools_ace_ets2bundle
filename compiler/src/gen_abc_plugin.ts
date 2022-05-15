@@ -26,7 +26,8 @@ import {
   genTemporaryPath, 
   genBuilldPath,
   genAbcFileName, 
-  mkdirsSync} from './utils';
+  mkdirsSync,
+  genSourceMapFileName} from './utils';
 import { Compilation } from 'webpack';
 import { projectConfig } from '../main';
 
@@ -95,22 +96,29 @@ export class GenAbcPlugin {
     }
 
     compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
+      if (process.env.moduleAbc === 'false') {
+        return ;
+      }
       buildPathInfo = output;
       compilation.hooks.finishModules.tap("finishModules", handleFinishModules.bind(this));
     });
 
     compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
       compilation.hooks.afterOptimizeTree.tap("afterOptimizeModules", (chunks, modules) => {
-        console.error("==================afterOptimizeModules====================");
+        if (process.env.moduleAbc === 'false') {
+          return ;
+        }
         modules.forEach(module => {
           if (module != undefined && module.resourceResolveData != undefined) {
             let filePath: string = module.resourceResolveData.path;
-            console.error(filePath);
           }      
       });
     });
 
     compilation.hooks.processAssets.tap("processAssets", (assets) => {
+      if (process.env.moduleAbc === 'false') {
+        return ;
+      }
       Object.keys(compilation.assets).forEach(key => {
         delete assets[key];
       })
@@ -119,6 +127,9 @@ export class GenAbcPlugin {
   })
 
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
+      if (process.env.moduleAbc === 'true') {
+        return ;
+      }
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
         if (output && path.extname(key) === '.js') {
@@ -130,8 +141,11 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
+      if (process.env.moduleAbc === 'true') {
+        return ;
+      }
       buildPathInfo = output;
-      // invokeWorkersToGenAbc();
+      invokeWorkersToGenAbc();
     });
 
 
@@ -139,12 +153,10 @@ export class GenAbcPlugin {
 }
 
 function handleFinishModules(modules, callback) {
-  console.error("==================handleFinishModules====================");
   let nodeModulesFile = new Array<string>();
   modules.forEach(module => {
     if (module != undefined && module.resourceResolveData != undefined) {
       let filePath: string = module.resourceResolveData.path;
-      console.error(filePath);
       let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
       let buildFilePath = genBuilldPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
       tempFilePath = toUnixPath(tempFilePath);
@@ -187,15 +199,12 @@ function handleFinishModules(modules, callback) {
           moduleInfos.push(tempModuleInfo);  
         }
       } else {
-        console.error("=========================handleFinishModules else===================");
-        console.error(filePath);
+        console.error("ETS error: Cannot find resolve this path: ", filePath);
       }
     }
   });
 
   invokeWorkersModuleToGenAbc(moduleInfos);
-  processToAbcFile(nodeModulesFile);
-
 }
 
 function processToAbcFile(nodeModulesFile: Array<string>) {
@@ -383,7 +392,6 @@ function invokeWorkersToGenAbc() {
       });
     }
 
-    var count_ = 0;
     for (let i = 0; i < workerNumber; ++i) {
       const workerData = {
         'inputs': JSON.stringify(splitedBundles[i]),
@@ -393,15 +401,9 @@ function invokeWorkersToGenAbc() {
     }
 
     cluster.on('exit', (worker, code, signal) => {
-      count_++;
       logger.debug(`worker ${worker.process.pid} finished`);
     });
 
-    while(true) {
-      if (count_ === workerNumber) {
-        break;
-      }
-    }
     process.on('exit', (code) => {
       writeHashJson();
     });
@@ -436,11 +438,12 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
         if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
-          console.error("===============filterIntermediateModuleByHashJson copy==============")
-          console.error(moduleInfos[i].tempFilePath);
           mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
           fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
           fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
+          if (process.env.buildMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+            fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
+          }
         } else {
           filterModuleInfos.push(moduleInfos[i]);
         }
@@ -454,8 +457,6 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
 }
 
 function writeModuleHashJson() {
-  console.error("===============writeModuleHashJson==============")
-  console.error(filterModuleInfos);
   for (let i = 0; i < filterModuleInfos.length; ++i) {
     const input = filterModuleInfos[i].tempFilePath;
     const abcPath = filterModuleInfos[i].abcFilePath;
@@ -468,11 +469,11 @@ function writeModuleHashJson() {
     moduleHashJsonObject[input] = hashInputContentData;
     moduleHashJsonObject[abcPath] = hashAbcContentData;
     mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
-    console.error("===============writeModuleHashJson copy==============")
-    console.error(filterModuleInfos[i].tempFilePath);  
     fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
     fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
-    // fs.unlinkSync(input);
+    if (process.env.buildMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+      fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
+    }
   }
   const hashFilePath = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
