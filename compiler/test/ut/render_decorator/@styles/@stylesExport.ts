@@ -55,10 +55,7 @@ export struct FancyUseExp {
 `
 
 exports.expectResult =
-`"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FancyUseExp = void 0;
-class FancyUseExp extends View {
+`export class FancyUseExp extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__enable = new ObservedPropertySimple(true, this, "enable");
@@ -109,6 +106,5 @@ class FancyUseExp extends View {
         Column.pop();
     }
 }
-exports.FancyUseExp = FancyUseExp;
 loadDocument(new FancyUseExp("1", undefined, {}));
 `
