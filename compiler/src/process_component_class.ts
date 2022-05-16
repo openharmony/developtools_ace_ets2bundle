@@ -196,27 +196,32 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
         case COMPONENT_STATE_DECORATOR:
         case COMPONENT_PROVIDE_DECORATOR:
           newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
-            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type]);
+            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type ||
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_LINK_DECORATOR:
         case COMPONENT_CONSUME_DECORATOR:
           newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
-            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_PROP_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_OBJECT_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type]);
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_STORAGE_PROP_DECORATOR:
         case COMPONENT_STORAGE_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type]);
+          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
         case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
           newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
-            ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)]);
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           isLocalStorage = true;
           break;
       }
