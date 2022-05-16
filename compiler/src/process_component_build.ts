@@ -48,18 +48,18 @@ import {
   THIS,
   VISUAL_STATE,
   VIEW_STACK_PROCESSOR,
-  BIND_POPUP,
+  STYLE_ADD_DOUBLE_DOLLAR,
   $$_VALUE,
   $$_CHANGE_EVENT,
   $$_THIS,
   $$_NEW_VALUE,
-  CHECKED,
-  RADIO,
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   BIND_DRAG_SET,
-  BIND_POPUP_SET
+  BIND_POPUP_SET,
+  $$,
+  PROPERTIES_ADD_DOUBLE_DOLLAR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -359,6 +359,11 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
     newStatements.push(debugNode);
   }
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
+  if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
+    etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
+    etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
+      res.identifierNode.getText());
+  }
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (res.isButton) {
       if (projectConfig.isPreview) {
@@ -932,8 +937,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         statements, log, false, true, false);
     }
     lastStatement.kind = true;
-  } else if (!isStylesAttr && [BIND_POPUP, CHECKED].includes(propName) &&
-    temp.arguments.length && temp.arguments[0] && temp.arguments[0].getText().match(/^\$\$(.|\n)+/)) {
+  } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
     const argumentsArr: ts.Expression[] = [];
     classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode);
     statements.push(ts.factory.createExpressionStatement(
@@ -950,6 +954,37 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       createFunction(identifierNode, node, temp.arguments)));
     lastStatement.kind = true;
   }
+}
+
+function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identifier, 
+  propName: string, temp: any): boolean {
+  return !isStylesAttr && 
+    PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) && 
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
+    STYLE_ADD_DOUBLE_DOLLAR.has(propName) && temp.arguments.length && temp.arguments[0] ?
+      temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null ? true : false
+    : false;
+}
+
+function processDollarEtsComponent(node: ts.EtsComponentExpression, name: string
+  ): ts.EtsComponentExpression {
+  node.arguments.forEach((item: ts.Node, index: number) => {
+    if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number)=>{
+        if (isHaveDoubleDollar(param, name)) {
+          const varExp: ts.Expression = updateArgumentFor$$(param.initializer);
+          node.arguments[index].properties[paramIndex].initializer = generateObjectFor$$(varExp);
+        }
+      })
+    }
+  })
+  return node;
+}
+
+function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
+  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) && 
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
+    param.initializer.getText().startsWith($$);
 }
 
 function loopEtscomponent(node: any, isStylesAttr: boolean, isGlobalStyles: boolean): ts.Node {
@@ -978,10 +1013,12 @@ function changeEtsComponentKind(node: ts.Node): ts.Node {
 
 function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
   identifierNode: ts.Identifier): void {
-  if (propName === BIND_POPUP && args.length === 2) {
+  if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 2) {
     const varExp: ts.Expression = updateArgumentFor$$(args[0]);
     argumentsArr.push(generateObjectFor$$(varExp), args[1]);
-  } else if (propName === CHECKED && args.length === 1 && identifierNode.getText() === RADIO) {
+  } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.getText()) && args.length === 1 &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.getText()).has(propName) ||
+    STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 1) {
     const varExp: ts.Expression = updateArgumentFor$$(args[0]);
     argumentsArr.push(varExp, createArrowFunctionFor$$(varExp));
   }
