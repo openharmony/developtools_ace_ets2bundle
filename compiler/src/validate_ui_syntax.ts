@@ -874,28 +874,32 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
   switch(urlType) {
     case 'bundle': {
       let urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)\/(\S+)$/);
-      let moduleKind = urlResult[3];
-      if (moduleKind == 'lib') {
-        item = replaceLibSo(importValue, moduleRequest, sourcePath);
+      if (urlResult) {
+        let moduleKind = urlResult[3];
+        if (moduleKind === 'lib') {
+          item = replaceLibSo(importValue, moduleRequest, sourcePath);
+        }
       }
       break;
     }
     case 'module': {
       let urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)$/);
-      let moduleName = urlResult[1];
-      let moduleKind = urlResult[2];
-      let modulePath = urlResult[3];
-      const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
-        path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main/config.json');
-      let bundleName = getPackageInfo(configJsonFile)[0];
-      moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
-        item = moduleKind == 'lib' ?
-          replaceLibSo(importValue, moduleRequest, sourcePath) : item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      if (urlResult) {
+        let moduleName = urlResult[1];
+        let moduleKind = urlResult[2];
+        let modulePath = urlResult[3];
+        const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
+          path.join(projectConfig.projectPath, '../../../../../', moduleName, 'src/main/config.json');
+        let bundleName = getPackageInfo(configJsonFile)[0];
+        moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
+        item = moduleKind === 'lib' ? replaceLibSo(importValue, moduleRequest, sourcePath) :
+          item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      }
       break;
     }
     case 'ohos': {
       url = url.replace('/', '.');
-      let urlResult = url.match(/^system\.(\S+)/)
+      let urlResult = url.match(/^system\.(\S+)/);
       moduleRequest = urlResult ? `@${url}` : `@ohos.${url}`;
       if (!isSystemModule) {
         item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
@@ -912,20 +916,24 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
     }
     case 'local': {
       let result = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
-      const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
-        path.join(result[1], 'src/main/config.json');
-      let packageInfo = getPackageInfo(configJsonFile);
-      let urlResult = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
-      let moduleKind = urlResult[1];
-      let modulePath = urlResult[2];
-      if (moduleKind == 'lib') {
-        item = replaceLibSo(importValue, modulePath, sourcePath);
-      } else if (moduleKind == 'node_modules') {
-        moduleRequest = `${modulePath}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-      } else {
-        moduleRequest = `@bundle:${packageInfo[0]}/${packageInfo[1]}/${moduleKind}/${modulePath}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      if (result) {
+        const configJsonFile: string = projectConfig.aceModuleJsonPath ? projectConfig.aceModuleJsonPath :
+          path.join(result[1], 'src/main/config.json');
+        let packageInfo = getPackageInfo(configJsonFile);
+        let urlResult = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
+        if (urlResult) {
+          let moduleKind = urlResult[1];
+          let modulePath = urlResult[2];
+          if (moduleKind === 'lib') {
+            item = replaceLibSo(importValue, modulePath, sourcePath);
+          } else if (moduleKind === 'node_modules') {
+            moduleRequest = `${modulePath}`;
+            item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+          } else {
+            moduleRequest = `@bundle:${packageInfo[0]}/${packageInfo[1]}/${moduleKind}/${modulePath}`;
+            item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+          }
+        }
       }
       break;
     }
@@ -954,17 +962,14 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
-  const systemValueCollection: Set<string> = new Set();
-  const REG_IMPORT_DECL = isProcessAllowList ?
-    /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
+  const REG_IMPORT_DECL = isProcessAllowList ? /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    let importValue: string = isProcessAllowList ? item2 : item2 || item4;
+    let importValue: string = isProcessAllowList ? item1 : item2 || item4;
 
     if (isProcessAllowList) {
-      systemValueCollection.add(importValue);
-      return replaceSystemApi(item, importValue, item4, item5);
+      return replaceSystemApi(item, importValue, item2, item3);
     }
 
     let moduleRequest: string = item3 || item5;
@@ -989,17 +994,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     // node_modules
     return item;
   });
-  return isProcessAllowList ? processInnerModule(processedContent, systemValueCollection) : processedContent;
-}
-
-function processInnerModule(content: string, systemValueCollection: Set<string>): string {
-  systemValueCollection.forEach(element => {
-    const target: string = element.trim() + '.default';
-    while (content.includes(target)) {
-      content = content.replace(target, element.trim());
-    }
-  });
-  return content;
+  return processedContent;
 }
 
 const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
