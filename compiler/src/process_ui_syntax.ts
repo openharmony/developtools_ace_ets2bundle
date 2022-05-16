@@ -61,6 +61,10 @@ import {
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET
 } from './component_map';
+import {
+  localStorageLinkCollection,
+  localStoragePropCollection
+} from './validate_ui_syntax'
 import { resources } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
@@ -434,12 +438,35 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
 
 function createEntryFunction(name: string, context: ts.TransformationContext)
   : ts.ExpressionStatement {
-  return context.factory.createExpressionStatement(context.factory.createCallExpression(
-    context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,
-    [context.factory.createNewExpression(context.factory.createIdentifier(name), undefined,
-      [context.factory.createStringLiteral((++componentInfo.id).toString()),
-        context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
-        context.factory.createObjectLiteralExpression([], false)])]));
+  let localStorageName: string;
+  const localStorageNum: number = localStorageLinkCollection.get(name).size +
+    localStoragePropCollection.get(name).size;
+  if (componentCollection.entryComponent === name && componentCollection.localStorageName &&
+    localStorageNum) {
+    localStorageName = componentCollection.localStorageName;
+  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
+    && localStorageNum) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      message: `@Entry should have a parameter, like '@Entry (storage)'.`,
+      pos: componentCollection.entryComponentPos
+    });
+    return;
+  }
+  const newArray: ts.Expression[] = [
+    context.factory.createStringLiteral((++componentInfo.id).toString()),
+    context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    context.factory.createObjectLiteralExpression([], false)
+  ]
+  if (localStorageName) {
+    newArray.push(context.factory.createIdentifier(localStorageName))
+  }
+  const newExpressionStatement: ts.ExpressionStatement =
+    context.factory.createExpressionStatement(context.factory.createCallExpression(
+      context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,
+      [context.factory.createNewExpression(context.factory.createIdentifier(name),
+        undefined, newArray)]));
+  return newExpressionStatement;
 }
 
 export function resetLog(): void {

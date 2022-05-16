@@ -38,7 +38,11 @@ import {
   circularFile,
   mkDir
 } from './utils';
-import { MODULE_SHARE_PATH, BUILD_SHARE_PATH } from './pre_define';
+import {
+  MODULE_ETS_PATH,
+  MODULE_SHARE_PATH,
+  BUILD_SHARE_PATH
+} from './pre_define';
 import {
   createLanguageService,
   appComponentCollection,
@@ -74,7 +78,7 @@ export class ResultStates {
   private yellow: string = '\u001b[33m';
   private blue: string = '\u001b[34m';
   private reset: string = '\u001b[39m';
-  private modulePaths: Set<string> = new Set([]);
+  private moduleSharePaths: Set<string> = new Set([]);
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
@@ -89,18 +93,23 @@ export class ResultStates {
       );
 
       compilation.hooks.buildModule.tap('findModule', (module) => {
-        if (/node_modules/.test(module.context)) {
-          const modulePath: string =
-            path.resolve(module.resourceResolveData.descriptionFileRoot, MODULE_SHARE_PATH);
-          if (fs.existsSync(modulePath)) {
-            this.modulePaths.add(modulePath);
-          }
+        if (module.context.indexOf(projectConfig.projectPath) >= 0) {
+          return;
+        }
+        const modulePath: string = path.join(module.context);
+        const srcIndex: number = modulePath.lastIndexOf(MODULE_ETS_PATH);
+        if (srcIndex < 0) {
+          return;
+        }
+        const moduleSharePath: string = path.resolve(modulePath.substring(0, srcIndex), MODULE_SHARE_PATH);
+        if (fs.existsSync(moduleSharePath)) {
+          this.moduleSharePaths.add(moduleSharePath);
         }
       });
     });
 
     compiler.hooks.afterCompile.tap('copyFindModule', () => {
-      this.modulePaths.forEach(modulePath => {
+      this.moduleSharePaths.forEach(modulePath => {
         circularFile(modulePath, path.resolve(projectConfig.buildPath, BUILD_SHARE_PATH));
       });
     });
