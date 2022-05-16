@@ -197,6 +197,9 @@ function setStageTestRunnerFile(projectConfig) {
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
+    if (path.isAbsolute(abilityPath)) {
+      abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
+    }
     const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
