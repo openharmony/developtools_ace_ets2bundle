@@ -223,3 +223,14 @@ export function toHashData(path: string) {
   hash.update(content);
   return hash.digest('hex');
 }
+
+export function writeFileSync(filePath: string, content: string): void {
+  if (!fs.existsSync(filePath)) {
+    const parent: string = path.join(filePath, '..');
+    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+      mkDir(parent);
+    }
+  }
+  fs.writeFileSync(filePath, content);
+}
+
