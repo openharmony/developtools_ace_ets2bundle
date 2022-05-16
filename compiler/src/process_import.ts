@@ -78,9 +78,9 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
   }
   try {
     let fileResolvePath: string;
-    if (/^(\.|\.\.)\//.test(filePath)) {
+    if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = path.resolve(pagesDir, filePath);
-    } else if (/^\//.test(filePath)) {
+    } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = filePath;
     } else {
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
@@ -256,7 +256,7 @@ function hasCollection(node: ts.Identifier): boolean {
 }
 
 function isModule(filePath: string): boolean {
-  return !/^(\.|\.\.)?\//.test(filePath);
+  return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(NODE_MODULES) > -1;
 }
 
 function isCustomComponent(node: ts.ClassDeclaration): boolean {
@@ -311,7 +311,11 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   }
   let curPageDir: string = pagesDir;
   while (!fs.existsSync(fileResolvePath)) {
-    fileResolvePath = path.join(curPageDir, NODE_MODULES, filePath);
+    if (filePath.indexOf(NODE_MODULES) > -1) {
+      fileResolvePath = path.join(curPageDir, filePath);
+    } else {
+      fileResolvePath = path.join(curPageDir, NODE_MODULES, filePath);
+    }
     if (fs.existsSync(fileResolvePath + EXTNAME_ETS)) {
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
     } else if (isPackageJsonEntry(fileResolvePath)) {
