@@ -22,8 +22,8 @@
  The expectation is that TextElement objects are created only once, then put to new order.
  For this to work, each time a TextComponent is created it needs to be assigned the same unique key.
 
- This is why anArray is not a simple array of strings. strings are not uniquely identifyable
- (in SwiftUI). Therefore, the app needs to provide a unique id for each array item.
+ This is why anArray is not a simple array of strings. strings are not uniquely identifyable.
+ Therefore, the app needs to provide a unique id for each array item.
  We do so by making each array item an object with a unique id.
 
  this id should be used as the 'key' argument when creating a Text.
