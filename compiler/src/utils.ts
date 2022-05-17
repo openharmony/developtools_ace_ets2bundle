@@ -242,6 +242,12 @@ export function writeFileSync(filePath: string, content: string): void {
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
   filePath = toUnixPath(filePath);
+  if (filePath.endsWith("mjs")) {
+    filePath = filePath.replace(/\.mjs$/, '.js')
+  }
+  if (filePath.endsWith("cjs")) {
+    filePath = filePath.replace(/\.cjs$/, '.js')
+  }
   projectPath = toUnixPath(projectPath);
   let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
   let tempFilePath = filePath.replace(hapPath, "");
@@ -251,10 +257,10 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     let output:string = "";
     if (filePath.indexOf(hapPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, "temprary", 'main', 'node_modules', sufStr);
+      output = path.join(buildPath, "temprary", 'node_modules', 'main', sufStr);
     } else {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, "temprary", 'auxiliary', 'node_modules', sufStr);
+      output = path.join(buildPath, "temprary", 'node_modules', 'auxiliary', sufStr);
     }
     return output;
   }
@@ -270,6 +276,12 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
 
 export function genBuilldPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
   filePath = toUnixPath(filePath);
+  if (filePath.endsWith("mjs")) {
+    filePath = filePath.replace(/\.mjs$/, '.js')
+  }
+  if (filePath.endsWith("cjs")) {
+    filePath = filePath.replace(/\.cjs$/, '.js')
+  }
   projectPath = toUnixPath(projectPath);
   let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
   let tempFilePath = filePath.replace(hapPath, "");
@@ -279,10 +291,10 @@ export function genBuilldPath(filePath: string, projectPath: string, buildPath: 
     let output:string = "";
     if (filePath.indexOf(hapPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, 'main', 'node_modules', sufStr);
+      output = path.join(buildPath, 'node_modules', 'main', sufStr);
     } else {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, 'auxiliary', 'node_modules', sufStr);
+      output = path.join(buildPath, 'node_modules', 'auxiliary', sufStr);
     }
     return output;
   }

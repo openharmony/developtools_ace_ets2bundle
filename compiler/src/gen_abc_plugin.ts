@@ -49,6 +49,9 @@ const intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
 let moduleInfos = new Array<ModuleInfo>();
 let filterModuleInfos = new Array<ModuleInfo>();
+let commonJsModuleInfos = new Array<ModuleInfo>();
+let ESMModuleInfos = new Array<ModuleInfo>();
+let entryInfos = new Map<string, EntryInfo>();
 let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo = '';
@@ -63,14 +66,26 @@ class ModuleInfo {
   tempFilePath: string;
   buildFilePath: string;
   abcFilePath: string;
-  isModuleJs: boolean;
+  isCommonJs: boolean;
 
-  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isModuleJs: boolean) {
+  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
     this.filePath  = filePath;
     this.tempFilePath = tempFilePath;
     this.buildFilePath = buildFilePath;
     this.abcFilePath = abcFilePath;
-    this.isModuleJs = isModuleJs;
+    this.isCommonJs = isCommonJs;
+  }
+}
+
+class EntryInfo {
+  npmInfo: string;
+  abcFileName: string;
+  buildPath: string;
+
+  constructor(npmInfo: string, abcFileName: string, buildPath: string) {
+    this.npmInfo = npmInfo;
+    this.abcFileName = abcFileName;
+    this.buildPath = buildPath;
   }
 }
 
@@ -152,6 +167,98 @@ export class GenAbcPlugin {
   }
 }
 
+function getEntryInfo(tempFilePath: string, packageJsonPath: string) {
+  let npmInfoPath = path.resolve(packageJsonPath, "..");
+  let fakeEntryPath = path.resolve(npmInfoPath, "fake.js");
+  let tempFakeEntryPath = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
+  let buildFakeEntryPath = genBuilldPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
+  npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, ".."));
+  let buildNpmInfoPath = toUnixPath(path.resolve(buildFakeEntryPath, ".."));
+  if (entryInfos.has(npmInfoPath)) {
+    return ;
+  }
+
+  let npmInfoPaths = npmInfoPath.split("node_modules");
+  let npmInfo = ["node_modules", npmInfoPaths[npmInfoPaths.length - 1]].join(path.sep);
+  npmInfo = toUnixPath(npmInfo);
+  let abcFileName = genAbcFileName(tempFilePath);
+  let abcFilePaths = abcFileName.split("node_modules");
+  abcFileName = ["node_modules", abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
+  abcFileName = toUnixPath(abcFileName);
+  let entryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath);
+  entryInfos.set(npmInfoPath, entryInfo);
+}
+
+function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
+  if (process.env.processTs && process.env.processTs === 'true') {
+    tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.ts');
+    buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.ts');
+  } else {
+    tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.js');
+    buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.js');
+  }
+  const abcFilePath = genAbcFileName(tempFilePath);
+  if (tempFilePath.indexOf("node_modules") !== -1) {
+    getEntryInfo(tempFilePath, module.resourceResolveData.descriptionFilePath);
+    let descriptionFileData = module.resourceResolveData.descriptionFileData
+    if (descriptionFileData && descriptionFileData["type"] && descriptionFileData["type"] == "module") {
+      let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+      moduleInfos.push(tempModuleInfo);
+      nodeModulesFile.push(tempFilePath);
+    } else {
+      let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
+      moduleInfos.push(tempModuleInfo);
+      nodeModulesFile.push(tempFilePath);
+    }
+  } else {
+    const abcFilePath = genAbcFileName(tempFilePath);
+    let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+  }
+}
+
+function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
+  if (process.env.processTs && process.env.processTs === 'false') {
+    tempFilePath = tempFilePath.replace(/\.ts$/, '.ts.js');
+    buildFilePath = buildFilePath.replace(/\.ts$/, '.ts.js');
+  }
+  const abcFilePath = genAbcFileName(tempFilePath);
+  let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+  moduleInfos.push(tempModuleInfo);
+}
+
+function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
+  const parent: string = path.join(tempFilePath, '..');
+  if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+    mkDir(parent);
+  }
+  if (filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
+    fs.copyFileSync(filePath, tempFilePath);
+  }
+  if (tempFilePath.indexOf("node_modules") !== -1) {
+    getEntryInfo(tempFilePath, module.resourceResolveData.descriptionFilePath);
+    const abcFilePath = genAbcFileName(tempFilePath);
+    let descriptionFileData = module.resourceResolveData.descriptionFileData
+    if (descriptionFileData && descriptionFileData["type"] && descriptionFileData["type"] == "module") {
+      let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+      moduleInfos.push(tempModuleInfo);
+      nodeModulesFile.push(tempFilePath);
+    } else if (filePath.endsWith('mjs')) {
+      let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+      moduleInfos.push(tempModuleInfo);
+      nodeModulesFile.push(tempFilePath);
+    } else {
+      let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
+      moduleInfos.push(tempModuleInfo);
+      nodeModulesFile.push(tempFilePath);
+    }
+  } else {
+    const abcFilePath = genAbcFileName(tempFilePath);
+    let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+  }
+}
+
 function handleFinishModules(modules, callback) {
   let nodeModulesFile = new Array<string>();
   modules.forEach(module => {
@@ -165,39 +272,11 @@ function handleFinishModules(modules, callback) {
         return ;
       }
       if (filePath.endsWith('ets')) {
-        if (process.env.processTs && process.env.processTs === 'true') {
-          tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.ts');
-          buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.ts');
-        } else {
-          tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.js');
-          buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.js');
-        }
-        const abcFilePath = genAbcFileName(tempFilePath);
-        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
-        moduleInfos.push(tempModuleInfo);
+        processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else if (filePath.endsWith('ts')) {
-        if (process.env.processTs && process.env.processTs === 'false') {
-          tempFilePath = tempFilePath.replace(/\.ts$/, '.ts.js');
-          buildFilePath = buildFilePath.replace(/\.ts$/, '.ts.js');
-        }
-        const abcFilePath = genAbcFileName(tempFilePath);
-        let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
-        moduleInfos.push(tempModuleInfo);
-      } else if (filePath.endsWith('js')) {
-        const parent: string = path.join(tempFilePath, '..');
-        if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-          mkDir(parent);
-        }
-        if (tempFilePath.indexOf("node_modules") !== -1) {
-          const abcFilePath = genAbcFileName(tempFilePath);
-          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
-          moduleInfos.push(tempModuleInfo);
-          nodeModulesFile.push(tempFilePath);
-        } else {
-          const abcFilePath = genAbcFileName(tempFilePath);
-          let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
-          moduleInfos.push(tempModuleInfo);  
-        }
+        processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else if (filePath.endsWith('js') || filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
+        processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else {
         console.error("ETS error: Cannot find resolve this path: ", filePath);
       }
@@ -205,6 +284,30 @@ function handleFinishModules(modules, callback) {
   });
 
   invokeWorkersModuleToGenAbc(moduleInfos);
+  processEntryToGenAbc(entryInfos);
+}
+
+function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>) {
+  let url2abc: string = path.join(arkDir, 'build', 'bin', 'url2abc');
+  if (isWin) {
+    url2abc = path.join(arkDir, 'build-win', 'bin', 'url2abc');
+  } else if (isMac) {
+    url2abc = path.join(arkDir, 'build-mac', 'bin', 'url2abc');
+  }
+
+  for(let [key, value] of entryInfos) {
+    let tempAbcFilePath = value.npmInfo + '.abc';
+    let buildAbcFilePath = value.buildPath + '.abc';
+    let args = [];
+    args.push(value.npmInfo);
+    args.push(value.abcFileName);
+    //child_process.execFileSync(url2abc, args);
+    fs.writeFileSync(tempAbcFilePath, "1234");
+    if (!fs.existsSync(buildAbcFilePath)) {
+      mkDir(value.buildPath);
+    }
+    fs.copyFileSync(tempAbcFilePath, buildAbcFilePath);
+  } 
 }
 
 function processToAbcFile(nodeModulesFile: Array<string>) {
@@ -287,11 +390,22 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
 }
 
 function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
-  let param: string = '';
-  if (isDebug) {
-    param += ' --debug';
+  if (fs.existsSync(buildPathInfo)) {
+    fs.rmdirSync(buildPathInfo, { recursive : true});
   }
+  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
+  filterModuleInfos.forEach(moduleInfo => {
+    if (moduleInfo.isCommonJs) {
+      commonJsModuleInfos.push(moduleInfo);
+    } else {
+      ESMModuleInfos.push(moduleInfo);
+    }
+  });
 
+  invokeCluterModuleToAbc();
+}
+
+function initAbcEnv() : string[] {
   let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
   if (isWin) {
     js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
@@ -299,14 +413,19 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
-  if (fs.existsSync(buildPathInfo)) {
-    fs.rmdirSync(buildPathInfo, { recursive : true});
+  const args: string[] = [
+    '--expose-gc',
+    js2abc
+  ];
+  if (isDebug) {
+    args.push('--debug');
   }
-  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
-  const maxWorkerNumber = 3;
-  const splitedBundles = splitModuleBySize(filterModuleInfos, maxWorkerNumber);
-  const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
-  const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+
+  return args;
+}
+
+function invokeCluterModuleToAbc() {
+  let abcArgs = initAbcEnv();
 
   const clusterNewApiVersion = 16;
   const currentNodeVersion = parseInt(process.version.split('.')[0]);
@@ -323,10 +442,19 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
       });
     }
 
-    for (let i = 0; i < workerNumber; ++i) {
+    if (commonJsModuleInfos.length > 0) {
+      let commonJsCmdPrefix =  `${nodeJs} ${abcArgs.join(" ")}`;
       const workerData = {
-        'inputs': JSON.stringify(splitedBundles[i]),
-        'cmd': cmdPrefix
+        'inputs': JSON.stringify(commonJsModuleInfos),
+        'cmd': commonJsCmdPrefix
+      };
+      cluster.fork(workerData);
+    }
+    if (ESMModuleInfos.length > 0) {
+      let ESMCmdPrefix =  `${nodeJs} ${abcArgs.join(" ")}`;
+      const workerData = {
+        'inputs': JSON.stringify(ESMModuleInfos),
+        'cmd': ESMCmdPrefix
       };
       cluster.fork(workerData);
     }
