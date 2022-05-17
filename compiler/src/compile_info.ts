@@ -36,7 +36,8 @@ import {
 import { projectConfig } from '../main';
 import {
   circularFile,
-  mkDir
+  mkDir,
+  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -203,10 +204,13 @@ export class ResultStates {
           if (projectConfig.aceSuperVisualPath && fs.existsSync(projectConfig.aceSuperVisualPath)) {
             appComponentCollection.clear();
           }
-          compilation.assets['./component_collection.txt'] =
-            new RawSource(Array.from(appComponentCollection).join(','));
-          compilation.assets['./module_collection.txt'] =
-            new RawSource(moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(','));
+          const moduleContent: string =
+            moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(',');
+          writeFileSync(path.resolve(projectConfig.buildPath, './module_collection.txt'),
+            moduleContent);
+          const componentContent: string = Array.from(appComponentCollection).join(',');
+          writeFileSync(path.resolve(projectConfig.buildPath, './component_collection.txt'),
+            componentContent);
           callback();
         });
       });
