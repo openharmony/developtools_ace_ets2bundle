@@ -50,7 +50,9 @@ import {
   SET_CONTROLLER_CTR_TYPE,
   BASE_COMPONENT_NAME,
   COMPONENT_CREATE_FUNCTION,
-  COMPONENT_BUILDERPARAM_DECORATOR
+  COMPONENT_BUILDERPARAM_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -86,7 +88,8 @@ export const propAndLinkDecorators: Set<string> =
   new Set([COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR]);
 
 export const appStorageDecorators: Set<string> =
-  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR]);
+  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR,
+    COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR]);
 
 export const mandatorySpecifyDefaultValueDecorators: Set<string> =
   new Set([...observedPropertyDecorators, ...appStorageDecorators]);

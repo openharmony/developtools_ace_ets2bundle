@@ -37,6 +37,8 @@ import {
   COMPONENT_CONSUME_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR,
   COMPONENT_OBSERVED_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   STYLES,
   VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR
@@ -65,6 +67,8 @@ import { importModuleCollection } from './ets_checker';
 import { isExtendFunction } from './process_ui_syntax';
 
 export interface ComponentCollection {
+  localStorageName: string;
+  entryComponentPos: number;
   entryComponent: string;
   previewComponent: string;
   customDialogs: Set<string>;
@@ -83,9 +87,13 @@ export interface IComponentSet {
   provides: Set<string>;
   consumes: Set<string>;
   objectLinks: Set<string>;
+  localStorageLink: Map<string, Set<string>>;
+  localStorageProp: Map<string, Set<string>>;
 }
 
 export const componentCollection: ComponentCollection = {
+  localStorageName: null,
+  entryComponentPos: null,
   entryComponent: null,
   previewComponent: null,
   customDialogs: new Set([]),
@@ -108,6 +116,8 @@ export const storageLinkCollection: Map<string, Set<string>> = new Map();
 export const provideCollection: Map<string, Set<string>> = new Map();
 export const consumeCollection: Map<string, Set<string>> = new Map();
 export const objectLinkCollection: Map<string, Set<string>> = new Map();
+export const localStorageLinkCollection: Map<string, Map<string, Set<string>>> = new Map();
+export const localStoragePropCollection: Map<string, Map<string, Set<string>>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -251,6 +261,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
         case COMPONENT_DECORATOR_ENTRY:
           result.entryCount++;
           componentCollection.entryComponent = componentName;
+          collectLocalStorageName(element);
           break;
         case COMPONENT_DECORATOR_PREVIEW:
           result.previewCount++;
@@ -283,6 +294,21 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
     const message: string = `The struct '${componentName}' cannot have the same name ` +
       `as the built-in component '${componentName}'.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+  }
+}
+
+function collectLocalStorageName(node: ts.Decorator): void {
+  if (node && node.expression && ts.isCallExpression(node.expression)) {
+    componentCollection.entryComponentPos = node.expression.pos;
+    if (node.expression.arguments && node.expression.arguments.length) {
+      node.expression.arguments.forEach((item: ts.Node, index: number) => {
+        if (ts.isIdentifier(item) && index === 0) {
+          componentCollection.localStorageName = item.getText();
+        }
+      });
+    }
+  } else {
+    componentCollection.localStorageName = null;
   }
 }
 
@@ -324,7 +350,7 @@ function checkAllNode(node: ts.Node, allComponentNames: Set<string>, sourceFileN
 }
 
 function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     ts.isIdentifier(node.expression.expression) && hasChild(node)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
@@ -334,30 +360,24 @@ function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log
 }
 
 function hasChild(node: ts.ExpressionStatement): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
-  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) && getNextNode(node)) {
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) && getNextNode(etsComponentExpression)) {
     return true;
   }
   return false;
 }
 
-function getNextNode(node: ts.Node): ts.Block {
-  if (node.parent && ts.isBlock(node.parent) && node.parent.statements) {
-    const statementsArray: ts.Node[] = Array.from(node.parent.statements);
-    for (let i = 0; i < statementsArray.length - 1; i++) {
-      const curNode: ts.Node = statementsArray[i];
-      const nextNode: ts.Node = statementsArray[i + 1];
-      if (node === curNode && ts.isBlock(nextNode)) {
-        return nextNode;
-      }
-    }
+function getNextNode(node: ts.EtsComponentExpression): ts.Block {
+  if (node.body && ts.isBlock(node.body)) {
+    const statementsArray: ts.Block = node.body;
+    return statementsArray;
   }
 }
 
 function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     ts.isIdentifier(node.expression.expression) && hasNonSingleChild(node, allComponentNames)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
@@ -368,22 +388,22 @@ function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
 }
 
 function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<string>): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
-  const nextBlockNode: ts.Block = getNextNode(node);
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+  const BlockNode: ts.Block = getNextNode(etsComponentExpression);
   if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString())) {
-    if (!nextBlockNode) {
+    if (!BlockNode) {
       return false;
     }
-    if (nextBlockNode && nextBlockNode.statements) {
-      const length: number = nextBlockNode.statements.length;
+    if (BlockNode && BlockNode.statements) {
+      const length: number = BlockNode.statements.length;
       if (!length) {
         return false;
       }
       if (length > 3) {
         return true;
       }
-      const childCount: number = getBlockChildrenCount(nextBlockNode, allComponentNames);
+      const childCount: number = getBlockChildrenCount(BlockNode, allComponentNames);
       if (childCount > 1) {
         return true;
       }
@@ -404,18 +424,15 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
     if (ts.isIfStatement(item)) {
       maxCount += getIfChildrenCount(item, allComponentNames);
     }
-    if (ts.isBlock(item)) {
-      maxCount += getBlockChildrenCount(item, allComponentNames);
+    if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression)) {
+      maxCount += 1;
     }
     if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
       let newNode: any = item.expression;
       while (newNode.expression) {
-        if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
-        !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
+        if (ts.isEtsComponentExpression(newNode) || ts.isCallExpression(newNode) &&
+          isComponent(newNode, allComponentNames)) {
           maxCount += 1;
-          if (i + 1 < length && ts.isBlock(blockNode.statements[i + 1])) {
-            ++i;
-          }
         }
         newNode = newNode.expression;
       }
@@ -427,7 +444,7 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
   return maxCount;
 }
 
-function isComponent(node: ts.CallExpression, allComponentNames: Set<string>): boolean {
+function isComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     allComponentNames.has(node.expression.escapedText.toString())) {
     return true;
@@ -458,10 +475,10 @@ function getStatementCount(node: ts.Node, allComponentNames: Set<string>): numbe
     maxCount = getBlockChildrenCount(node, allComponentNames);
   } else if (ts.isIfStatement(node)) {
     maxCount = getIfChildrenCount(node, allComponentNames);
-  } else if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  } else if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     isForEachComponent(node.expression)) {
     maxCount = 2;
-  } else if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  } else if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     !isForEachComponent(node.expression) && isComponent(node.expression, allComponentNames)) {
     maxCount = 1;
   }
@@ -484,10 +501,10 @@ function checkSpecificChildComponent(node: ts.Node, allComponentNames: Set<strin
 
 function hasNonspecificChild(node: ts.ExpressionStatement,
   allComponentNames: Set<string>): boolean {
-  const callExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeName: ts.Identifier = callExpression.expression as ts.Identifier;
+  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
   const nodeNameString: string = nodeName.escapedText.toString();
-  const blockNode: ts.Block = getNextNode(node);
+  const blockNode: ts.Block = getNextNode(etsComponentExpression);
   let isNonspecific: boolean = false;
   if (SPECIFIC_CHILD_COMPONENT.has(nodeNameString) && blockNode) {
     const specificChildSet: Set<string> = SPECIFIC_CHILD_COMPONENT.get(nodeNameString);
@@ -508,7 +525,7 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isIfStatement(item) && isNonspecificChildIf(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression) &&
+      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression) &&
         isForEachComponent(item.expression) &&
         isNonspecificChildForEach(item.expression, specificChildSet, allComponentNames)) {
         return true;
@@ -516,10 +533,10 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isBlock(item) && isNonspecificChildBlock(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
+      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression)) {
         let newNode: any = item.expression;
         while (newNode.expression) {
-          if (ts.isCallExpression(newNode) && ts.isIdentifier(newNode.expression) &&
+          if (ts.isEtsComponentExpression(newNode) && ts.isIdentifier(newNode.expression) &&
           !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
             const isNonspecific: boolean =
             isNonspecificChildNonForEach(item.expression, specificChildSet);
@@ -544,13 +561,13 @@ function isNonspecificChildIf(node: ts.IfStatement, specificChildSet: Set<string
     isNonspecificChildIfStatement(node.elseStatement, specificChildSet, allComponentNames);
 }
 
-function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Set<string>,
+function isNonspecificChildForEach(node: ts.EtsComponentExpression, specificChildSet: Set<string>,
   allComponentNames: Set<string>): boolean {
-  if (ts.isCallExpression(node) && node.arguments &&
+  if (ts.isEtsComponentExpression(node) && node.arguments &&
     node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const arrowFunction: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
-    const body: ts.Block | ts.CallExpression | ts.IfStatement =
-      arrowFunction.body as ts.Block | ts.CallExpression | ts.IfStatement;
+    const body: ts.Block | ts.EtsComponentExpression | ts.IfStatement =
+      arrowFunction.body as ts.Block | ts.EtsComponentExpression | ts.IfStatement;
     if (!body) {
       return false;
     }
@@ -564,7 +581,7 @@ function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Se
       isNonspecificChildForEach(body, specificChildSet, allComponentNames)) {
       return true;
     }
-    if (ts.isCallExpression(body) && !isForEachComponent(body) &&
+    if (ts.isEtsComponentExpression(body) && !isForEachComponent(body) &&
       isComponent(body, allComponentNames) &&
       isNonspecificChildNonForEach(body, specificChildSet)) {
       return true;
@@ -573,7 +590,7 @@ function isNonspecificChildForEach(node: ts.CallExpression, specificChildSet: Se
   return false;
 }
 
-function isNonspecificChildNonForEach(node: ts.CallExpression,
+function isNonspecificChildNonForEach(node: ts.EtsComponentExpression,
   specificChildSet: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     !specificChildSet.has(node.expression.escapedText.toString())) {
@@ -593,12 +610,12 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   if (ts.isIfStatement(node) && isNonspecificChildIf(node, specificChildSet, allComponentNames)) {
     return true;
   }
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     isForEachComponent(node.expression) &&
     isNonspecificChildForEach(node.expression, specificChildSet, allComponentNames)) {
     return true;
   }
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     !isForEachComponent(node.expression) && isComponent(node.expression, allComponentNames) &&
     isNonspecificChildNonForEach(node.expression, specificChildSet)) {
     return true;
@@ -619,6 +636,8 @@ function collectComponentProps(node: ts.StructDeclaration): void {
   provideCollection.set(componentName, ComponentSet.provides);
   consumeCollection.set(componentName, ComponentSet.consumes);
   objectLinkCollection.set(componentName, ComponentSet.objectLinks);
+  localStorageLinkCollection.set(componentName, ComponentSet.localStorageLink);
+  localStoragePropCollection.set(componentName, ComponentSet.localStorageProp);
 }
 
 export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
@@ -632,18 +651,21 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const provides: Set<string> = new Set();
   const consumes: Set<string> = new Set();
   const objectLinks: Set<string> = new Set();
+  const localStorageLink: Map<string, Set<string>> = new Map();
+  const localStorageProp: Map<string, Set<string>> = new Map();
   traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
-    storageLinks, provides, consumes, objectLinks);
+    storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
   return {
     properties, regulars, states, links, props, storageProps, storageLinks, provides,
-    consumes, objectLinks
+    consumes, objectLinks, localStorageLink, localStorageProp
   };
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, properties: Set<string>,
   regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
-  consumes: Set<string>, objectLinks: Set<string>): void {
+  consumes: Set<string>, objectLinks: Set<string>,
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
@@ -659,8 +681,8 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
             const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
-              collectionStates(decoratorName, propertyName, states, links, props, storageProps,
-                storageLinks, provides, consumes, objectLinks);
+              collectionStates(item.decorators[i], decoratorName, propertyName, states, links, props, storageProps,
+                storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
             }
           }
         }
@@ -674,9 +696,10 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
   isStaticViewCollection.set(node.name.getText(), isStatic);
 }
 
-function collectionStates(decorator: string, name: string, states: Set<string>, links: Set<string>,
-  props: Set<string>, storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
-  consumes: Set<string>, objectLinks: Set<string>): void {
+function collectionStates(node: ts.Decorator, decorator: string, name: string,
+  states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
+  storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
       states.add(name);
@@ -702,6 +725,22 @@ function collectionStates(decorator: string, name: string, states: Set<string>, 
     case COMPONENT_OBJECT_LINK_DECORATOR:
       objectLinks.add(name);
       break;
+    case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR :
+      collectionlocalStorageParam(node, name, localStorageLink);
+      break;
+    case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+      collectionlocalStorageParam(node, name, localStorageProp);
+      break;
+  }
+}
+
+function collectionlocalStorageParam(node: ts.Decorator, name: string,
+  localStorage: Map<string, Set<string>>): void {
+  const localStorageParam: Set<string> = new Set();
+  if (node && ts.isCallExpression(node.expression) && node.expression.arguments &&
+    node.expression.arguments.length && ts.isStringLiteral(node.expression.arguments[0])) {
+    localStorage.set(name, localStorageParam.add(
+      node.expression.arguments[0].getText().replace(/\"|'/g, '')));
   }
 }
 
@@ -714,6 +753,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   let content: string = source;
   const log: LogInfo[] = [];
   content = preprocessExtend(content);
+  content = preprocessNewExtend(content);
   // process @system.
   content = processSystemApi(content, false, sourcePath);
 
@@ -732,6 +772,16 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
       extendCollection.add(item3);
     }
     return `@Extend(${item2})${item1}function __${item2}__${item3}(`;
+  });
+}
+
+export function preprocessNewExtend(content: string, extendCollection?: Set<string>): string {
+  const REG_EXTEND: RegExp = /@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
+  return content.replace(REG_EXTEND, (item, item1) => {
+    if (extendCollection) {
+      extendCollection.add(item1);
+    }
+    return item;
   });
 }
 
@@ -804,5 +854,6 @@ function validateAllowListModule(moduleType: string, systemKey: string): boolean
 
 export function resetComponentCollection() {
   componentCollection.entryComponent = null;
+  componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = null;
 }

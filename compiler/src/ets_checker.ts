@@ -20,17 +20,17 @@ import * as ts from 'typescript';
 import { projectConfig } from '../main';
 import {
   processSystemApi,
-  preprocessExtend
+  preprocessExtend,
+  preprocessNewExtend
 } from './validate_ui_syntax';
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_IF,
   COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
-  BIND_POPUP,
-  CHECKED,
-  RADIO,
-  $$
+  STYLE_ADD_DOUBLE_DOLLAR,
+  $$,
+  PROPERTIES_ADD_DOUBLE_DOLLAR
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
@@ -51,6 +51,16 @@ function readDeaclareFiles(): string[] {
 const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions() {
+  const allPath: Array<string> = [
+    '*',
+  ]
+  if (!projectConfig.aceModuleJsonPath) {
+    allPath.push('../../../../../*');
+    allPath.push('../../*');
+  } else {
+    allPath.push('../../../../*');
+    allPath.push('../*');
+  }
   Object.assign(compilerOptions, {
     'allowJs': false,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
@@ -60,10 +70,7 @@ function setCompilerOptions() {
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
     'paths': {
-      '*': [
-        '*',
-        '../../../../../*'
-      ]
+      '*': allPath
     },
     'lib': [
       'lib.es2020.d.ts'
@@ -83,8 +90,9 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
-        return ts.ScriptSnapshot.fromString(processContent(fs.readFileSync(fileName).toString()));
+        const content: string = processContent(fs.readFileSync(fileName).toString());
+        checkUISyntax(content, fileName);
+        return ts.ScriptSnapshot.fromString(content);
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
@@ -167,8 +175,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      checkUISyntax(fs.readFileSync(fileName).toString(), fileName);
-      return processContent(fs.readFileSync(fileName).toString());
+      const content: string = processContent(fs.readFileSync(fileName).toString());
+      checkUISyntax(content, fileName);
+      return content;
     }
     return fs.readFileSync(fileName).toString();
   };
@@ -252,34 +261,17 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
 function traverseBuild(node: ts.Node, index: number): void {
   if (ts.isExpressionStatement(node)) {
     let parentComponentName: string = getName(node);
-    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements &&
-      index >= 1 && node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
+    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements && index >= 1 &&
+      node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
       parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
     }
     node = node.expression;
-    if (node && node.body && ts.isBlock(node.body)) {
+    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body)) {
       node.body.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
       });
     } else {
-      while (node) {
-        if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-          const argument = node.arguments;
-          const propertyName = node.expression.name;
-          if (propertyName.escapedText === BIND_POPUP || propertyName.escapedText === CHECKED &&
-            parentComponentName === RADIO) {
-            argument.forEach(item => {
-              if (item.getText().startsWith($$)) {
-                while (item.expression) {
-                  item = item.expression;
-                }
-                dollarCollection.add(item.getText());
-              }
-            });
-          }
-        }
-        node = node.expression;
-      }
+      loopNodeFindDoubleDollar(node, parentComponentName);
     }
   } else if (ts.isIfStatement(node)) {
     if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
@@ -293,6 +285,56 @@ function traverseBuild(node: ts.Node, index: number): void {
       });
     }
   }
+}
+
+function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): void {
+  while (node) {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const argument: ts.NodeArray<ts.Node> = node.arguments;
+      const propertyName: ts.Identifier | ts.PrivateIdentifier = node.expression.name;
+      if (isCanAddDoubleDollar(propertyName.getText(), parentComponentName)) {
+        argument.forEach((item: ts.Node) => {
+          doubleDollarCollection(item);
+        });
+      }
+    } else if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments
+      && node.arguments.length) {
+      node.arguments.forEach((item: ts.Node) => {
+        if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+          item.properties.forEach((param: ts.Node) => {
+            if (isObjectPram(param, parentComponentName)) {
+              doubleDollarCollection(param.initializer);
+            }
+          });
+        }
+        if (STYLE_ADD_DOUBLE_DOLLAR.has(node.expression.getText()) && ts.isPropertyAccessExpression(item)) {
+          doubleDollarCollection(item);
+        }
+      });
+    }
+    node = node.expression;
+  }
+}
+
+function doubleDollarCollection(item: ts.Node): void {
+  if (item.getText().startsWith($$)) {
+    while (item.expression) {
+      item = item.expression;
+    }
+    dollarCollection.add(item.getText());
+  }
+}
+
+function isObjectPram(param: ts.Node, parentComponentName:string): boolean {
+  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
+    param.initializer && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(param.name.getText());
+}
+
+function isCanAddDoubleDollar(propertyName: string, parentComponentName: string): boolean {
+  return PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(propertyName) ||
+    STYLE_ADD_DOUBLE_DOLLAR.has(propertyName);
 }
 
 function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boolean {
@@ -313,6 +355,7 @@ function processDraw(source: string): string {
 function processContent(source: string): string {
   source = processSystemApi(source);
   source = preprocessExtend(source, extendCollection);
+  source = preprocessNewExtend(source, extendCollection);
   source = processDraw(source);
   return source;
 }

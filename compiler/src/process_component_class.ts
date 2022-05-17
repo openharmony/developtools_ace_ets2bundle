@@ -48,7 +48,13 @@ import {
   COMPONENT_STYLES_DECORATOR,
   STYLES,
   INTERFACE_NAME_SUFFIX,
-  OBSERVED_PROPERTY_ABSTRACT
+  OBSERVED_PROPERTY_ABSTRACT,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
+  COMPONENT_SET_AND_LINK,
+  COMPONENT_SET_AND_PROP,
+  COMPONENT_CONSTRUCTOR_UNDEFINED
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -59,7 +65,9 @@ import {
 } from './component_map';
 import {
   componentCollection,
-  linkCollection
+  linkCollection,
+  localStorageLinkCollection,
+  localStoragePropCollection
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -114,7 +122,7 @@ type BuildCount = {
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, log: LogInfo[], program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
   const buildCount: BuildCount = { count: 0 };
-  let ctorNode: any = getInitConstructor(members);
+  let ctorNode: any = getInitConstructor(members, parentComponentName);
   const newMembers: ts.ClassElement[] = [];
   const watchMap: Map<string, ts.Node> = new Map();
   const updateParamsStatements: ts.Statement[] = [];
@@ -126,7 +134,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
-      addPropertyMember(item, newMembers, program);
+      addPropertyMember(item, newMembers, program, parentComponentName.getText());
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
         ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
       if (result.isItemUpdate()) {
@@ -171,7 +179,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
 }
 
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
-  program: ts.Program):void {
+  program: ts.Program, parentComponentName: string): void {
   const propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
   let decoratorName: string;
   let updatePropertyItem: ts.PropertyDeclaration;
@@ -183,29 +191,42 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
     for (let i = 0; i < propertyItem.decorators.length; i++) {
       let newType: ts.TypeNode;
       decoratorName = propertyItem.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      let isLocalStorage: boolean = false;
       switch (decoratorName) {
         case COMPONENT_STATE_DECORATOR:
         case COMPONENT_PROVIDE_DECORATOR:
           newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
-            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type]);
+            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type ||
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_LINK_DECORATOR:
         case COMPONENT_CONSUME_DECORATOR:
           newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
-            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_PROP_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type]);
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_OBJECT_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type]);
+          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_STORAGE_PROP_DECORATOR:
         case COMPONENT_STORAGE_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type]);
+          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
+          break;
+        case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
+        case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
+          isLocalStorage = true;
           break;
       }
-      updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false);
+      updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false,
+        isLocalStorage, parentComponentName);
       if (updatePropertyItem) {
         newMembers.push(updatePropertyItem);
       }
@@ -214,7 +235,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
 }
 
 function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType: ts.TypeNode | undefined,
-  normalVar: boolean): ts.PropertyDeclaration {
+  normalVar: boolean, isLocalStorage: boolean = false, parentComponentName: string = null): ts.PropertyDeclaration {
   if (typeof newType === undefined) {
     return undefined;
   }
@@ -226,7 +247,34 @@ function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType
     ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword);
   return ts.factory.updatePropertyDeclaration(propertyItem, undefined,
     propertyItem.modifiers || [privateM], prefix + propertyItem.name.getText(),
-    propertyItem.questionToken, newType, undefined);
+    propertyItem.questionToken, newType, isLocalStorage ?
+      createLocalStroageCallExpression(propertyItem, propertyItem.name.getText(),
+        parentComponentName) : undefined);
+}
+
+function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: string,
+  parentComponentName: string): ts.CallExpression {
+  const localStorageLink: Set<string> = localStorageLinkCollection.get(parentComponentName).get(name);
+  const localStorageProp: Set<string> = localStoragePropCollection.get(parentComponentName).get(name);
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(`${COMPONENT_CONSTRUCTOR_LOCALSTORAGE}_`)
+      ),
+      ts.factory.createIdentifier(localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
+        COMPONENT_SET_AND_PROP)
+    ),
+    [node.type],
+    [
+      ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
+        Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
+        Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
+      ts.factory.createNumericLiteral(node.initializer ? node.initializer.getText() :
+        COMPONENT_CONSTRUCTOR_UNDEFINED), ts.factory.createThis(),
+      ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
+    ]
+  );
 }
 
 function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
@@ -375,28 +423,27 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
-  if (linkParentComponent && ts.isPropertyAssignment(node) && ts.isIdentifier(propertyName) &&
+  const LINK_REG: RegExp = /^\$/g;
+  const initExpression: ts.Expression = node.initializer;
+  if (ts.isIdentifier(initExpression) &&
+    initExpression.escapedText.toString().match(LINK_REG)) {
+    initText = initExpression.escapedText.toString().replace(LINK_REG, '');
+  } else if (isMatchInitExpression(initExpression) &&
+    initExpression.name.escapedText.toString().match(LINK_REG) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
-    const LINK_REG: RegExp = /^\$/g;
-    const initExpression: ts.Expression = node.initializer;
-    if (ts.isIdentifier(initExpression) &&
-      initExpression.escapedText.toString().match(LINK_REG)) {
-      if (linkParentComponent.includes(propertyName.escapedText.toString())) {
-        initText = initExpression.escapedText.toString().replace(LINK_REG, '');
-      }
-    } else if (ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
-      initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
-      ts.isIdentifier(initExpression.name) &&
-      initExpression.name.escapedText.toString().match(LINK_REG)) {
-      if (linkParentComponent.includes(propertyName.escapedText.toString())) {
-        initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
-      }
-    }
-    if (initText) {
-      node = addDoubleUnderline(node, propertyName, initText);
-    }
+    initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
+  }
+  if (initText) {
+    node = addDoubleUnderline(node, propertyName, initText);
   }
   return node;
+}
+
+function isMatchInitExpression(initExpression: ts.Expression): boolean {
+  return ts.isPropertyAccessExpression(initExpression) &&
+    initExpression.expression &&
+    initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initExpression.name);
 }
 
 function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identifier,
