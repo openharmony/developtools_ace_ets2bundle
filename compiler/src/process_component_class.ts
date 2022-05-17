@@ -330,7 +330,7 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
       node = processGeometryView(node as ts.ExpressionStatement, log);
     }
     if (isProperty(node)) {
-      node = createReference(node as ts.PropertyAssignment);
+      node = createReference(node as ts.PropertyAssignment, log);
     }
     if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
       stateObjectCollection.has(node.name.escapedText.toString()) && node.parent &&
@@ -419,7 +419,7 @@ function judgmentParentType(node: ts.Node): boolean {
     (ts.isCallExpression(node.parent.parent) || ts.isEtsComponentExpression(node.parent.parent));
 }
 
-export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignment {
+export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
@@ -429,9 +429,15 @@ export function createReference(node: ts.PropertyAssignment): ts.PropertyAssignm
     initExpression.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.escapedText.toString().replace(LINK_REG, '');
   } else if (isMatchInitExpression(initExpression) &&
-    initExpression.name.escapedText.toString().match(LINK_REG) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
+    if (!initExpression.name.escapedText.toString().match(LINK_REG)) {
+      log.push({
+        type: LogType.WARN,
+        message: `The @Link property should initialze using "$" to create a reference.`,
+        pos: initExpression.getStart()
+      });
+    }
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText);
