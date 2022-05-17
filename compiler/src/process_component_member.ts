@@ -469,7 +469,7 @@ function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
     ts.visitNode(node.initializer, visitDialogController);
   function visitDialogController(node: ts.Node): ts.Node {
     if (isProperty(node)) {
-      node = createReference(node as ts.PropertyAssignment);
+      node = createReference(node as ts.PropertyAssignment, log);
     }
     return ts.visitEachChild(node, visitDialogController, context);
   }
