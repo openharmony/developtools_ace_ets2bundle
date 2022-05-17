@@ -216,6 +216,7 @@ function setCopyPluginConfig(config) {
         path.resolve(__dirname, projectConfig.buildPath, '**').replace(/\\/g, '/')
       ]
     },
+    to: path.resolve(__dirname, projectConfig.buildPath),
     noErrorOnMissing: true
   });
   const sharePath = path.resolve(__dirname, projectConfig.projectPath, BUILD_SHARE_PATH);
@@ -236,9 +237,15 @@ function setCopyPluginConfig(config) {
   }
   if (abilityConfig.abilityType === 'page') {
     if (fs.existsSync(projectConfig.manifestFilePath)) {
-      copyPluginPattrens.push({ from: projectConfig.manifestFilePath });
+      copyPluginPattrens.push({
+        from: projectConfig.manifestFilePath,
+        to: path.resolve(__dirname, projectConfig.buildPath)
+      });
     } else if (fs.existsSync(projectConfig.aceConfigPath)) {
-      copyPluginPattrens.push({ from: projectConfig.aceConfigPath });
+      copyPluginPattrens.push({
+        from: projectConfig.aceConfigPath,
+        to: path.resolve(__dirname, projectConfig.buildPath)
+      });
     }
   }
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
@@ -277,7 +284,6 @@ module.exports = (env, argv) => {
   initConfig(config);
   setOptimizationConfig(config);
   setCopyPluginConfig(config);
-
   if (env.isPreview !== "true") {
     loadWorker(projectConfig);
     if (env.compilerType && env.compilerType === 'ark') {
@@ -291,6 +297,10 @@ module.exports = (env, argv) => {
       }
       config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, arkDir, nodeJs,
         env.buildMode === 'debug'));
+      if (env.buildMode === 'release') {
+        config.output.path = path.join(projectConfig.cachePath, 'releaseAssets',
+          path.basename(projectConfig.buildPath))
+      }
     }
   } else {
     projectConfig.isPreview = true;
