@@ -216,10 +216,10 @@ export const $$_NEW_VALUE: string = 'newValue';
 export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
 
-export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY])
+export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
-  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
-]);;
+  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])]
+]);
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
 export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
@@ -228,3 +228,8 @@ export const SUPERVISUAL: string = './supervisual';
 export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
 
 export const INSTANCE: string = 'Instance';
+
+export const COMPONENT_TOGGLE: string = 'Toggle';
+export const TTOGGLE_CHECKBOX: string = 'Checkbox';
+export const TOGGLE_SWITCH: string = 'Switch';
+
