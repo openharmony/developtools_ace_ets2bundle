@@ -52,8 +52,8 @@ const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions() {
   const allPath: Array<string> = [
-    '*',
-  ]
+    '*'
+  ];
   if (!projectConfig.aceModuleJsonPath) {
     allPath.push('../../../../../*');
     allPath.push('../../*');

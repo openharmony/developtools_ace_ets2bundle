@@ -64,7 +64,7 @@ import {
 import {
   localStorageLinkCollection,
   localStoragePropCollection
-} from './validate_ui_syntax'
+} from './validate_ui_syntax';
 import { resources } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
@@ -457,9 +457,9 @@ function createEntryFunction(name: string, context: ts.TransformationContext)
     context.factory.createStringLiteral((++componentInfo.id).toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
-  ]
+  ];
   if (localStorageName) {
-    newArray.push(context.factory.createIdentifier(localStorageName))
+    newArray.push(context.factory.createIdentifier(localStorageName));
   }
   const newExpressionStatement: ts.ExpressionStatement =
     context.factory.createExpressionStatement(context.factory.createCallExpression(
