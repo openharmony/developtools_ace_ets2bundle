@@ -81,11 +81,13 @@ class EntryInfo {
   npmInfo: string;
   abcFileName: string;
   buildPath: string;
+  entry: string;
 
-  constructor(npmInfo: string, abcFileName: string, buildPath: string) {
+  constructor(npmInfo: string, abcFileName: string, buildPath: string, entry: string) {
     this.npmInfo = npmInfo;
     this.abcFileName = abcFileName;
     this.buildPath = buildPath;
+    this.entry = entry;
   }
 }
 
@@ -167,7 +169,12 @@ export class GenAbcPlugin {
   }
 }
 
-function getEntryInfo(tempFilePath: string, packageJsonPath: string) {
+function getEntryInfo(tempFilePath: string, resourceResolveData: any) {
+  if (!resourceResolveData.descriptionFilePath) {
+    return ;
+  }
+  let packageName = resourceResolveData.descriptionFileData['name'];
+  let packageJsonPath = resourceResolveData.descriptionFilePath;
   let npmInfoPath = path.resolve(packageJsonPath, "..");
   let fakeEntryPath = path.resolve(npmInfoPath, "fake.js");
   let tempFakeEntryPath = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
@@ -185,7 +192,11 @@ function getEntryInfo(tempFilePath: string, packageJsonPath: string) {
   let abcFilePaths = abcFileName.split("node_modules");
   abcFileName = ["node_modules", abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
   abcFileName = toUnixPath(abcFileName);
-  let entryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath);
+  // let entry = resourceResolveData.descriptionFileData['main'] ?? "";
+  let packagePaths = tempFilePath.split('node_modules');
+  let entryPaths = packagePaths[packagePaths.length-1].split(packageName);
+  let entry = toUnixPath(entryPaths[entryPaths.length - 1]);
+  let entryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
   entryInfos.set(npmInfoPath, entryInfo);
 }
 
@@ -199,7 +210,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   }
   const abcFilePath = genAbcFileName(tempFilePath);
   if (tempFilePath.indexOf("node_modules") !== -1) {
-    getEntryInfo(tempFilePath, module.resourceResolveData.descriptionFilePath);
+    getEntryInfo(tempFilePath, module.resourceResolveData);
     let descriptionFileData = module.resourceResolveData.descriptionFileData
     if (descriptionFileData && descriptionFileData["type"] && descriptionFileData["type"] == "module") {
       let tempModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
@@ -236,7 +247,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     fs.copyFileSync(filePath, tempFilePath);
   }
   if (tempFilePath.indexOf("node_modules") !== -1) {
-    getEntryInfo(tempFilePath, module.resourceResolveData.descriptionFilePath);
+    getEntryInfo(tempFilePath, module.resourceResolveData);
     const abcFilePath = genAbcFileName(tempFilePath);
     let descriptionFileData = module.resourceResolveData.descriptionFileData
     if (descriptionFileData && descriptionFileData["type"] && descriptionFileData["type"] == "module") {
@@ -288,26 +299,15 @@ function handleFinishModules(modules, callback) {
 }
 
 function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>) {
-  let url2abc: string = path.join(arkDir, 'build', 'bin', 'url2abc');
-  if (isWin) {
-    url2abc = path.join(arkDir, 'build-win', 'bin', 'url2abc');
-  } else if (isMac) {
-    url2abc = path.join(arkDir, 'build-mac', 'bin', 'url2abc');
-  }
-
   for(let [key, value] of entryInfos) {
-    let tempAbcFilePath = value.npmInfo + '.abc';
-    let buildAbcFilePath = value.buildPath + '.abc';
-    let args = [];
-    args.push(value.npmInfo);
-    args.push(value.abcFileName);
-    //child_process.execFileSync(url2abc, args);
-    fs.writeFileSync(tempAbcFilePath, "1234");
+    let tempAbcFilePath = toUnixPath(path.resolve(value.npmInfo, 'entry'));
+    let buildAbcFilePath = toUnixPath(path.resolve(value.buildPath, 'entry'));
+    fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
     if (!fs.existsSync(buildAbcFilePath)) {
       mkDir(value.buildPath);
     }
     fs.copyFileSync(tempAbcFilePath, buildAbcFilePath);
-  } 
+  }
 }
 
 function processToAbcFile(nodeModulesFile: Array<string>) {
