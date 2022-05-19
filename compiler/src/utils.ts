@@ -308,6 +308,18 @@ export function genBuilldPath(filePath: string, projectPath: string, buildPath: 
   return "";
 }
 
+
+export function checkNodeModulesFile(filePath: string, projectPath: string) {
+  projectPath = toUnixPath(projectPath);
+  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let tempFilePath = filePath.replace(hapPath, "");
+  if (tempFilePath.indexOf('node_modules') !== -1 && filePath.indexOf(projectPath) === -1) {
+    return true;
+  }
+
+  return false;
+}
+
 export function mkdirsSync(dirname: string): boolean {
   if (fs.existsSync(dirname)) {
     return true;
