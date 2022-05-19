@@ -956,33 +956,33 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   }
 }
 
-function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identifier, 
+function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identifier,
   propName: string, temp: any): boolean {
-  return !isStylesAttr && 
-    PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) && 
+  return !isStylesAttr &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && temp.arguments.length && temp.arguments[0] ?
-      temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null ? true : false
+    temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null
     : false;
 }
 
 function processDollarEtsComponent(node: ts.EtsComponentExpression, name: string
-  ): ts.EtsComponentExpression {
+): ts.EtsComponentExpression {
   node.arguments.forEach((item: ts.Node, index: number) => {
     if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
-      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number)=>{
+      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number) => {
         if (isHaveDoubleDollar(param, name)) {
           const varExp: ts.Expression = updateArgumentFor$$(param.initializer);
           node.arguments[index].properties[paramIndex].initializer = generateObjectFor$$(varExp);
         }
-      })
+      });
     }
-  })
+  });
   return node;
 }
 
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
-  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) && 
+  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
     param.initializer.getText().startsWith($$);
 }

@@ -32,7 +32,7 @@ import {
 } from './validate_ui_syntax';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
-  ): ts.ConstructorDeclaration {
+): ts.ConstructorDeclaration {
   let ctorNode: any = members.find(item => {
     return ts.isConstructorDeclaration(item);
   });
@@ -42,7 +42,7 @@ export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentCompone
   return initConstructorParams(ctorNode, parentComponentName);
 }
 
-export function updateConstructor(ctorNode: ts.ConstructorDeclaration,para: ts.ParameterDeclaration[],
+export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.ParameterDeclaration[],
   addStatements: ts.Statement[], isSuper: boolean = false, isAdd: boolean = false,
   parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
@@ -157,11 +157,11 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   const callSuperStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
       localStorageNum ?
-      [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
         [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
+        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]
     ));
   const updateWithValueParamsStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
