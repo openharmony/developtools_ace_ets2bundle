@@ -41,7 +41,12 @@ import {
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   STYLES,
   VALIDATE_MODULE,
-  COMPONENT_BUILDER_DECORATOR
+  COMPONENT_BUILDER_DECORATOR,
+  RESOURCE_NAME_TYPE,
+  TTOGGLE_CHECKBOX,
+  TOGGLE_SWITCH,
+  COMPONENT_BUTTON,
+  COMPONENT_TOGGLE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -52,7 +57,7 @@ import {
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
   STYLES_ATTRIBUTE,
-  CUSTOM_BUILDER_METHOD
+  CUSTOM_BUILDER_METHOD,
 } from './component_map';
 import {
   LogType,
@@ -349,21 +354,55 @@ function checkAllNode(node: ts.Node, allComponentNames: Set<string>, sourceFileN
   checkSpecificChildComponent(node, allComponentNames, sourceFileNode, log);
 }
 
+interface ParamType {
+  name: string,
+  value: string,
+}
+
 function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const isCheckType: ParamType = { name: null, value: null};
   if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) && hasChild(node)) {
+    ts.isIdentifier(node.expression.expression) && hasChild(node, isCheckType)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
-    const message: string = `The component '${componentName}' can't have any child.`;
+    const message: string = isCheckType.name === null ?
+      `The component '${componentName}' can't have any child.` :
+      `When the component '${componentName}' set '${isCheckType.name}' is '${isCheckType.value}'` +
+        `, can't have any child.`;
     addLog(LogType.ERROR, message, pos, log, sourceFileNode);
   }
 }
 
-function hasChild(node: ts.ExpressionStatement): boolean {
+function hasChild(node: ts.ExpressionStatement, isCheckType: ParamType): boolean {
   const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
   const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
-  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) && getNextNode(etsComponentExpression)) {
+  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) || judgeComponentType(
+    nodeName, etsComponentExpression, isCheckType) && getNextNode(etsComponentExpression)) {
     return true;
+  }
+  return false;
+}
+
+function judgeComponentType(nodeName: ts.Identifier, etsComponentExpression: ts.EtsComponentExpression,
+  isCheckType: ParamType): boolean {
+  return COMPONENT_TOGGLE === nodeName.escapedText.toString() &&
+    etsComponentExpression.arguments && etsComponentExpression.arguments[0] &&
+    ts.isObjectLiteralExpression(etsComponentExpression.arguments[0]) &&
+    etsComponentExpression.arguments[0].getText() &&
+    judgeToggleComponentParamType(etsComponentExpression.arguments[0].getText(), isCheckType);
+}
+
+function judgeToggleComponentParamType(param: string, isCheckType: ParamType): boolean {
+  if (param.indexOf(RESOURCE_NAME_TYPE) > -1) {
+    isCheckType.name = RESOURCE_NAME_TYPE;
+    const match: string[] = param.match(/\b(Checkbox|Switch|Button)\b/);
+    if (match && match.length) {
+      isCheckType.value = match[0];
+      if (isCheckType.value === COMPONENT_BUTTON) {
+        return false;
+      }
+      return true;
+    }
   }
   return false;
 }
@@ -377,21 +416,26 @@ function getNextNode(node: ts.EtsComponentExpression): ts.Block {
 
 function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const isCheckType: ParamType = { name: null, value: null};
   if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) && hasNonSingleChild(node, allComponentNames)) {
+    ts.isIdentifier(node.expression.expression) && hasNonSingleChild(node, allComponentNames, isCheckType)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
-    const message: string =
-      `The component '${componentName}' can only have a single child component.`;
+    const message: string = isCheckType.name === null ?
+      `The component '${componentName}' can only have a single child component.` :
+      `When the component '${componentName}' set '${isCheckType.name}' is ` +
+        `'${isCheckType.value}', can only have a single child component.`;
     addLog(LogType.ERROR, message, pos, log, sourceFileNode);
   }
 }
 
-function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<string>): boolean {
+function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<string>,
+  isCheckType: ParamType): boolean {
   const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
   const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
   const BlockNode: ts.Block = getNextNode(etsComponentExpression);
-  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString())) {
+  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(
+    nodeName, etsComponentExpression, isCheckType) && isCheckType.value === COMPONENT_BUTTON) {
     if (!BlockNode) {
       return false;
     }

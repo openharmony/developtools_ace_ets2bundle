@@ -228,3 +228,8 @@ export const SUPERVISUAL: string = './supervisual';
 export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
 
 export const INSTANCE: string = 'Instance';
+
+export const COMPONENT_TOGGLE: string = 'Toggle';
+export const TTOGGLE_CHECKBOX: string = 'Checkbox';
+export const TOGGLE_SWITCH: string = 'Switch';
+
