@@ -94,17 +94,19 @@ export class ResultStates {
       );
 
       compilation.hooks.buildModule.tap('findModule', (module) => {
-        if (module.context.indexOf(projectConfig.projectPath) >= 0) {
-          return;
-        }
-        const modulePath: string = path.join(module.context);
-        const srcIndex: number = modulePath.lastIndexOf(MODULE_ETS_PATH);
-        if (srcIndex < 0) {
-          return;
-        }
-        const moduleSharePath: string = path.resolve(modulePath.substring(0, srcIndex), MODULE_SHARE_PATH);
-        if (fs.existsSync(moduleSharePath)) {
-          this.moduleSharePaths.add(moduleSharePath);
+        if (module.context) {
+          if (module.context.indexOf(projectConfig.projectPath) >= 0) {
+            return;
+          }
+          const modulePath: string = path.join(module.context);
+          const srcIndex: number = modulePath.lastIndexOf(MODULE_ETS_PATH);
+          if (srcIndex < 0) {
+            return;
+          }
+          const moduleSharePath: string = path.resolve(modulePath.substring(0, srcIndex), MODULE_SHARE_PATH);
+          if (fs.existsSync(moduleSharePath)) {
+            this.moduleSharePaths.add(moduleSharePath);
+          }
         }
       });
     });
