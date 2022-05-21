@@ -249,13 +249,14 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     filePath = filePath.replace(/\.cjs$/, '.js')
   }
   projectPath = toUnixPath(projectPath);
-  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let hapPath =  toUnixPath(projectConfig.projectRootPath);
   let tempFilePath = filePath.replace(hapPath, "");
 
-  if (tempFilePath.indexOf('node_modules') !== -1) {
+  if (checkNodeModulesFile(filePath, projectPath)) {
+    let fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, "node_modules"));
     const dataTmps = tempFilePath.split('node_modules');
     let output:string = "";
-    if (filePath.indexOf(hapPath) === -1) {
+    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
       output = path.join(buildPath, "temprary", 'node_modules', 'main', sufStr);
     } else {
@@ -274,7 +275,7 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   return "";
 }
 
-export function genBuilldPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+export function genBuildPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith("mjs")) {
     filePath = filePath.replace(/\.mjs$/, '.js')
@@ -283,18 +284,20 @@ export function genBuilldPath(filePath: string, projectPath: string, buildPath: 
     filePath = filePath.replace(/\.cjs$/, '.js')
   }
   projectPath = toUnixPath(projectPath);
-  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let hapPath =  toUnixPath(projectConfig.projectRootPath);
   let tempFilePath = filePath.replace(hapPath, "");
 
-  if (tempFilePath.indexOf('node_modules') !== -1) {
+  if (checkNodeModulesFile(filePath, projectPath)) {
+    filePath = toUnixPath(filePath);
+    let fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, "node_modules"));
     const dataTmps = tempFilePath.split('node_modules');
     let output:string = "";
-    if (filePath.indexOf(hapPath) === -1) {
+    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, 'node_modules', 'main', sufStr);
+      output = path.join(projectConfig.nodeModulesPath, '0', sufStr);
     } else {
       const sufStr = dataTmps[dataTmps.length-1];
-      output = path.join(buildPath, 'node_modules', 'auxiliary', sufStr);
+      output = path.join(projectConfig.nodeModulesPath, '1', sufStr);
     }
     return output;
   }
@@ -310,11 +313,24 @@ export function genBuilldPath(filePath: string, projectPath: string, buildPath: 
 
 
 export function checkNodeModulesFile(filePath: string, projectPath: string) {
+  filePath = toUnixPath(filePath);
   projectPath = toUnixPath(projectPath);
-  let hapPath = toUnixPath(path.resolve(projectPath, "../../../../../"));
+  let hapPath =  toUnixPath(projectConfig.projectRootPath);
   let tempFilePath = filePath.replace(hapPath, "");
-  if (tempFilePath.indexOf('node_modules') !== -1 && filePath.indexOf(projectPath) === -1) {
-    return true;
+  if (tempFilePath.indexOf('node_modules') !== -1) {
+    let fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, "node_modules"));
+    if (filePath.indexOf(fakeNodeModulesPath) !== -1) {
+      return true;
+    }
+    if (projectConfig.modulePathMap) {
+      for (let key in projectConfig.modulePathMap) {
+        let value = projectConfig.modulePathMap[key];
+        let fakeModuleNodeModulesPath = toUnixPath(path.resolve(value, "node_modules"));
+        if (filePath.indexOf(fakeModuleNodeModulesPath) !== -1) {
+          return true;
+        }
+      }
+    }
   }
 
   return false;
@@ -333,9 +349,6 @@ export function mkdirsSync(dirname: string): boolean {
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
-  if (process.env.moduleAbc === 'false') {
-    return ;
-  }
   let temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return ;
@@ -345,9 +358,6 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, to
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
-  if (process.env.moduleAbc === 'false') {
-    return ;
-  }
   if (toTsFile) {
     const newStatements = [];
     const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
@@ -402,20 +412,20 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
   let temporarySourceMapFile: string = "";
   if (temporaryFile.endsWith("ets")) {
     if (toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.ts');
+      temporaryFile = temporaryFile.replace(/\.ets$/, '.ts');
     } else {
-      temporaryFile = temporaryFile.replace(/\.ets$/, '.ets.js');
+      temporaryFile = temporaryFile.replace(/\.ets$/, '.js');
     }
     temporarySourceMapFile = genSourceMapFileName(temporaryFile);
   } else {
     if (!toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ts$/, '.ts.js');
+      temporaryFile = temporaryFile.replace(/\.ts$/, '.js');
       temporarySourceMapFile = genSourceMapFileName(temporaryFile);
     }
   }
   mkdirsSync(path.dirname(temporaryFile));
   fs.writeFileSync(temporaryFile, content);
-  if (temporarySourceMapFile.length > 0 && process.env.buildMode === "debug") {
+  if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === "debug") {
     fs.writeFileSync(temporarySourceMapFile, sourceMapContent);
   }
 }
@@ -433,9 +443,9 @@ export function genAbcFileName(temporaryFile: string): string {
 export function genSourceMapFileName(temporaryFile: string): string {
   let abcFile: string = temporaryFile;
   if (temporaryFile.endsWith('ts')) {
-    abcFile = temporaryFile.replace(/\.ts$/, '.sourcemap');
+    abcFile = temporaryFile.replace(/\.ts$/, '.map');
   } else {
-    abcFile = temporaryFile.replace(/\.js$/, '.sourcemap');
+    abcFile = temporaryFile.replace(/\.js$/, '.map');
   }
   return abcFile;
 }
