@@ -24,7 +24,7 @@ import {
   toUnixPath,
   toHashData,
   genTemporaryPath, 
-  genBuilldPath,
+  genBuildPath,
   genAbcFileName, 
   mkdirsSync,
   genSourceMapFileName,
@@ -114,7 +114,7 @@ export class GenAbcPlugin {
     }
 
     compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
-      if (process.env.bundleless === 'false') {
+      if (projectConfig.bundleLess === false) {
         return ;
       }
       buildPathInfo = output;
@@ -123,7 +123,7 @@ export class GenAbcPlugin {
 
     compiler.hooks.compilation.tap("GenAbcPlugin", (compilation) => {
       compilation.hooks.afterOptimizeTree.tap("afterOptimizeModules", (chunks, modules) => {
-        if (process.env.bundleless === 'false') {
+        if (projectConfig.bundleLess === false) {
           return ;
         }
         modules.forEach(module => {
@@ -134,18 +134,18 @@ export class GenAbcPlugin {
     });
 
     compilation.hooks.processAssets.tap("processAssets", (assets) => {
-      if (process.env.bundleless === 'false') {
+      if (projectConfig.bundleLess === false) {
         return ;
       }
       Object.keys(compilation.assets).forEach(key => {
         delete assets[key];
       })
-    })
+    });
 
   })
 
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
-      if (process.env.bundleless === 'true') {
+      if (projectConfig.bundleLess === true) {
         return ;
       }
       Object.keys(compilation.assets).forEach(key => {
@@ -159,7 +159,7 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
-      if (process.env.bundleless === 'true') {
+      if (projectConfig.bundleLess === true) {
         return ;
       }
       buildPathInfo = output;
@@ -179,7 +179,7 @@ function getEntryInfo(tempFilePath: string, resourceResolveData: any) {
   let npmInfoPath = path.resolve(packageJsonPath, "..");
   let fakeEntryPath = path.resolve(npmInfoPath, "fake.js");
   let tempFakeEntryPath = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
-  let buildFakeEntryPath = genBuilldPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
+  let buildFakeEntryPath = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, ".."));
   let buildNpmInfoPath = toUnixPath(path.resolve(buildFakeEntryPath, ".."));
   if (entryInfos.has(npmInfoPath)) {
@@ -197,6 +197,9 @@ function getEntryInfo(tempFilePath: string, resourceResolveData: any) {
   let packagePaths = tempFilePath.split('node_modules');
   let entryPaths = packagePaths[packagePaths.length-1].split(packageName);
   let entry = toUnixPath(entryPaths[entryPaths.length - 1]);
+  if (entry.startsWith("/")) {
+    entry = entry.slice(1, entry.length);
+  }
   let entryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
   entryInfos.set(npmInfoPath, entryInfo);
 }
@@ -222,12 +225,12 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
-  if (process.env.processTs && process.env.processTs === 'true') {
-    tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.ts');
-    buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.ts');
+  if (projectConfig.processTs === true) {
+    tempFilePath = tempFilePath.replace(/\.ets$/, '.ts');
+    buildFilePath = buildFilePath.replace(/\.ets$/, '.ts');
   } else {
-    tempFilePath = tempFilePath.replace(/\.ets$/, '.ets.js');
-    buildFilePath = buildFilePath.replace(/\.ets$/, '.ets.js');
+    tempFilePath = tempFilePath.replace(/\.ets$/, '.js');
+    buildFilePath = buildFilePath.replace(/\.ets$/, '.js');
   }
   const abcFilePath = genAbcFileName(tempFilePath);
   if (checkNodeModulesFile(filePath,  projectConfig.projectPath)) {
@@ -238,10 +241,14 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   }
 }
 
+function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
+  return ;
+}
+
 function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
-  if (process.env.processTs && process.env.processTs === 'false') {
-    tempFilePath = tempFilePath.replace(/\.ts$/, '.ts.js');
-    buildFilePath = buildFilePath.replace(/\.ts$/, '.ts.js');
+  if (projectConfig.processTs === false) {
+    tempFilePath = tempFilePath.replace(/\.ts$/, '.js');
+    buildFilePath = buildFilePath.replace(/\.ts$/, '.js');
   }
   const abcFilePath = genAbcFileName(tempFilePath);
   if (checkNodeModulesFile(filePath,  projectConfig.projectPath)) {
@@ -275,14 +282,16 @@ function handleFinishModules(modules, callback) {
     if (module != undefined && module.resourceResolveData != undefined) {
       let filePath: string = module.resourceResolveData.path;
       let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
-      let buildFilePath = genBuilldPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
-      tempFilePath = toUnixPath(tempFilePath);
-      buildFilePath = toUnixPath(buildFilePath);
       if (tempFilePath.length === 0) {
         return ;
       }
+      let buildFilePath = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+      tempFilePath = toUnixPath(tempFilePath);
+      buildFilePath = toUnixPath(buildFilePath);
       if (filePath.endsWith('ets')) {
         processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else if (filePath.endsWith('d.ts')) {
+        processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else if (filePath.endsWith('ts')) {
         processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else if (filePath.endsWith('js') || filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
@@ -303,7 +312,10 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>) {
     let buildAbcFilePath = toUnixPath(path.resolve(value.buildPath, 'entry.txt'));
     fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
     if (!fs.existsSync(buildAbcFilePath)) {
-      mkDir(value.buildPath);
+      const parent: string = path.join(buildAbcFilePath, '..');
+      if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+        mkDir(parent);
+      }
     }
     fs.copyFileSync(tempAbcFilePath, buildAbcFilePath);
   }
@@ -391,6 +403,9 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
 function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>) {
   if (fs.existsSync(buildPathInfo)) {
     fs.rmdirSync(buildPathInfo, { recursive : true});
+  }
+  if (fs.existsSync(projectConfig.nodeModulesPath)) {
+    fs.rmdirSync(projectConfig.nodeModulesPath, { recursive : true});
   }
   filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
   filterModuleInfos.forEach(moduleInfo => {
@@ -572,7 +587,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
           mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
           fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
           fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
-          if (process.env.buildMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+          if (projectConfig.buildArkMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
             fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
           }
         } else {
@@ -602,7 +617,7 @@ function writeModuleHashJson() {
     mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
     fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
     fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
-    if (process.env.buildMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+    if (projectConfig.buildArkMode == "debug" && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
       fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
     }
   }

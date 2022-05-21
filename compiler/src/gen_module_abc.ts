@@ -33,7 +33,6 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const singleCmd = `${cmd} ${inputsStr}`;
   logger.debug('gen abc cmd is: ', singleCmd);
   try {
-    console.error(singleCmd);
     childProcess.execSync(singleCmd);
   } catch (e) {
     logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);

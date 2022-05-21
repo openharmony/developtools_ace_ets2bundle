@@ -68,7 +68,10 @@ import {
   localStorageLinkCollection,
   localStoragePropCollection
 } from './validate_ui_syntax';
-import { projectConfig, resources } from '../main';
+import {
+  resources,
+  projectConfig
+} from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
 export const transformLog: FileLog = new FileLog();
@@ -83,7 +86,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (process.env.compiler === BUILD_ON) {
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (process.env.processTs && process.env.processTs === 'true') {
+          if (projectConfig.bundleLess === true && projectConfig.processTs === true) {
             writeFileSyncByNode(node, true);
           }
           return node;
@@ -101,7 +104,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
-        if (process.env.processTs && process.env.processTs === 'true') {
+        if (projectConfig.bundleLess === true && projectConfig.processTs === true) {
           writeFileSyncByNode(node, true);
         }
         return node;

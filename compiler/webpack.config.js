@@ -28,7 +28,8 @@ const {
   resources,
   loadWorker,
   abilityConfig,
-  readWorkerFile
+  readWorkerFile,
+  loadModuleInfo
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -307,15 +308,12 @@ module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
   loadEntryObj(projectConfig);
+  loadModuleInfo(projectConfig, env);
   setTsConfigFile();
   initConfig(config);
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
-
-  process.env.bundleless = false;
-  process.env.processTs = false;
-  process.env.buildMode = env.buildMode;
 
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
