@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
-  'Toggle', 'Video', 'Web', 'XComponent', 'RichText'];
+  'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow'];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
