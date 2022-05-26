@@ -26,7 +26,8 @@ const {
   readAppResource,
   resources,
   loadWorker,
-  abilityConfig
+  abilityConfig,
+  readWorkerFile
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -251,12 +252,19 @@ function setCopyPluginConfig(config) {
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
 
-function setOptimizationConfig(config) {
+function excludeWorker(workerFile, name) {
+  if (workerFile) {
+    return Object.keys(workerFile).includes(name);
+  }
+  return /^\.\/workers\//.test(name);
+}
+
+function setOptimizationConfig(config, workerFile) {
   if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
     config.optimization = {
       splitChunks: {
         chunks(chunk) {
-          return !/^\.\/workers\//.test(chunk.name) && !/^\.\/TestAbility/.test(chunk.name);
+          return !excludeWorker(workerFile, chunk.name) && !/^\.\/TestAbility/.test(chunk.name);
         },
         minSize: 0,
         cacheGroups: {
@@ -282,10 +290,11 @@ module.exports = (env, argv) => {
   setProjectConfig(env);
   loadEntryObj(projectConfig);
   initConfig(config);
-  setOptimizationConfig(config);
+  const workerFile = readWorkerFile();
+  setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
   if (env.isPreview !== "true") {
-    loadWorker(projectConfig);
+    loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark') {
       let arkDir = path.join(__dirname, 'bin', 'ark');
       if (env.arkFrontendDir) {
