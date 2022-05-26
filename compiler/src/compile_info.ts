@@ -203,20 +203,33 @@ export class ResultStates {
     if (!projectConfig.isPreview) {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
-          if (projectConfig.aceSuperVisualPath && fs.existsSync(projectConfig.aceSuperVisualPath)) {
-            appComponentCollection.clear();
-          }
-          const moduleContent: string =
-            moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(',');
-          writeFileSync(path.resolve(projectConfig.buildPath, './module_collection.txt'),
-            moduleContent);
-          const componentContent: string = Array.from(appComponentCollection).join(',');
-          writeFileSync(path.resolve(projectConfig.buildPath, './component_collection.txt'),
-            componentContent);
+          this.generateCollectionFile();
           callback();
         });
       });
     }
+  }
+
+  private generateCollectionFile() {
+    if (projectConfig.aceSuperVisualPath && fs.existsSync(projectConfig.aceSuperVisualPath)) {
+      appComponentCollection.clear();
+    }
+    if (fs.existsSync(path.resolve(projectConfig.buildPath, './module_collection.txt'))) {
+      const lastModuleCollection: string =
+        fs.readFileSync(path.resolve(projectConfig.buildPath, './module_collection.txt')).toString();
+      if (lastModuleCollection && lastModuleCollection !== 'NULL') {
+        lastModuleCollection.split(',').forEach(item => {
+          moduleCollection.add(item);
+        })
+      }
+    }
+    const moduleContent: string =
+      moduleCollection.size === 0 ? 'NULL' : Array.from(moduleCollection).join(',');
+    writeFileSync(path.resolve(projectConfig.buildPath, './module_collection.txt'),
+      moduleContent);
+    const componentContent: string = Array.from(appComponentCollection).join(',');
+    writeFileSync(path.resolve(projectConfig.buildPath, './component_collection.txt'),
+      componentContent);
   }
 
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
