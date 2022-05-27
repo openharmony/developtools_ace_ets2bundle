@@ -236,18 +236,9 @@ function setEntrance(abilityConfig, abilityPages) {
   }
 }
 
-function loadWorker(projectConfig) {
-  if (validateWorkOption()) {
-    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    workerConfig.workers.forEach(worker => {
-      if (!/\.(ts|js)$/.test(worker)) {
-        worker += '.ts';
-      }
-      const relativePath = path.relative(projectConfig.projectPath, worker);
-      if (filterWorker(relativePath)) {
-        projectConfig.entryObj[relativePath.replace(/\.(ts|js)$/,'').replace(/\\/g, '/')] = worker;
-      }
-    })
+function loadWorker(projectConfig, workerFileEntry) {
+  if (workerFileEntry) {
+    projectConfig.entryObj = Object.assign(projectConfig.entryObj, workerFileEntry);
   } else {
     const workerPath = path.resolve(projectConfig.projectPath, WORKERS_DIR);
     if (fs.existsSync(workerPath)) {
@@ -255,7 +246,8 @@ function loadWorker(projectConfig) {
       readFile(workerPath, workerFiles);
       workerFiles.forEach((item) => {
         if (/\.(ts|js)$/.test(item)) {
-          const relativePath = path.relative(workerPath, item).replace(/\.(ts|js)$/, '');
+          const relativePath = path.relative(workerPath, item)
+            .replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
         }
       })
@@ -263,14 +255,24 @@ function loadWorker(projectConfig) {
   }
 }
 
-function validateWorkOption() {
+function readWorkerFile() {
+  const workerFileEntry = {};
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    if(workerConfig.workers) {
-      return true;
+    if (workerConfig.workers) {
+      workerConfig.workers.forEach(worker => {
+        if (!/\.(ts|js)$/.test(worker)) {
+          worker += '.ts';
+        }
+        const relativePath = path.relative(projectConfig.projectPath, worker);
+        if (filterWorker(relativePath)) {
+          workerFileEntry[relativePath.replace(/\.(ts|js)$/, '').replace(/\\/g, '/')] = worker;
+        }
+      });
+      return workerFileEntry;
     }
   }
-  return false;
+  return null;
 }
 
 function filterWorker(workerPath) {
@@ -337,3 +339,4 @@ exports.readAppResource = readAppResource;
 exports.resources = resources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
+exports.readWorkerFile = readWorkerFile;
