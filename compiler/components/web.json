@@ -8,6 +8,6 @@
     "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
     "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess",
-    "webDebuggingAccess"
+    "webDebuggingAccess", "onShowFileSelector"
   ]
 }
