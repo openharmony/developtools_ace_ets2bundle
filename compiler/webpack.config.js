@@ -327,6 +327,9 @@ module.exports = (env, argv) => {
   const appResourcePath = env.appResource || process.env.appResource;
   if (appResourcePath) {
     readAppResource(resources, appResourcePath);
+    if (fs.existsSync(appResourcePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePath)
+    }
   }
   config.output.library = projectConfig.hashProjectPath;
   return config;
