@@ -39,7 +39,7 @@
   "dependencies": {
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^8.1.0",
-    "deccjsunit": "^1.0.6",
+    "deccjsunit": "^1.0.8",
     "hypium": "^1.0.0",
     "ignore-loader": "^0.1.2",
     "log4js": "^6.3.0",
