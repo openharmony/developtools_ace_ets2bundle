@@ -62,6 +62,7 @@
         "Rating",
         "Rect",
         "Refresh",
+        "RemoteWindow",
         "Row",
         "RowSplit",
         "RichText",
@@ -370,6 +371,11 @@
             "name": "Refresh",
             "type": "RefreshAttribute",
             "instance": "RefreshInstance"
+          },
+          {
+            "name": "RemoteWindow",
+            "type": "RemoteWindowAttribute",
+            "instance": "RemoteWindowInstance"
           },
           {
             "name": "Row",
