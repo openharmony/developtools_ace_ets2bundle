@@ -111,7 +111,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
 }
 
 function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string} {
-  let modulePath = resolveSourceFile(moduleName);
+  const modulePath: string = resolveSourceFile(moduleName);
   let suffix: string = path.extname(modulePath);
   if (suffix === 'ts' && modulePath.endsWith('.d.ts')) {
     suffix = '.d.ts';
