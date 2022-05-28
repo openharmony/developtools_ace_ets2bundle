@@ -512,14 +512,13 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
   setFuncName: string, log: LogInfo[]): ts.ExpressionStatement {
   if (isSingleKey(node)) {
-    const key: string = getDecoratorKey(node);
     return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
       createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
             ts.factory.createIdentifier(APP_STORAGE_GET_OR_SET)), undefined, []),
-        ts.factory.createIdentifier(setFuncName)), undefined, [ts.factory.createStringLiteral(key),
+        ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
           node.initializer, ts.factory.createThis()])));
   } else {
     validateAppStorageDecoractorsNonSingleKey(node, log);
