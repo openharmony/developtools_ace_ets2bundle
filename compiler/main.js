@@ -340,14 +340,15 @@ function hashProjectPath(projectPath) {
 function loadModuleInfo(projectConfig, envArgs) {
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    projectConfig.bundleLess = buildJsonInfo.bundleLess;
+    projectConfig.compileMode = buildJsonInfo.compileMode;
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.processTs = false;
     projectConfig.buildArkMode = envArgs.buildMode;
-    projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
+    if (buildJsonInfo.compileMode === 'esmodle') {
+      projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
+    }
   }
-  return ;
 }
 
 const globalProgram = {

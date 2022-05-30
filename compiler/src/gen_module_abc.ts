@@ -15,7 +15,6 @@
 
 import * as childProcess from 'child_process';
 import * as process from 'process';
-import * as fs from 'fs';
 import cluster from 'cluster';
 import { logger } from './compile_info';
 
@@ -24,12 +23,12 @@ const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths = JSON.parse(jsonInput);
-  let inputs = [];
+  const inputs = [];
   for (let i = 0; i < inputPaths.length; ++i) {
     const input = inputPaths[i].tempFilePath;
     inputs.push('"' + input + '"');
   }
-  let inputsStr = inputs.join(' ');
+  const inputsStr = inputs.join(' ');
   const singleCmd = `${cmd} ${inputsStr}`;
   logger.debug('gen abc cmd is: ', singleCmd);
   try {
@@ -39,7 +38,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     return;
   }
 
-  return ;
+  return;
 }
 
 logger.debug('worker data is: ', JSON.stringify(process.env));

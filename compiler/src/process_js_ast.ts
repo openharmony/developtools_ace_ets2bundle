@@ -14,23 +14,21 @@
  */
 
 import ts from 'typescript';
-import path from 'path';
 import { BUILD_ON } from './pre_define';
 import { writeFileSyncByNode } from './utils';
 import { projectConfig } from '../main';
 
 export function processJs(program: ts.Program, ut = false): Function {
-    return (context: ts.TransformationContext) => {
-      return (node: ts.SourceFile) => {
-        if (process.env.compiler === BUILD_ON) {
-          if (projectConfig.bundleLess === true && projectConfig.processTs === false) {
-            writeFileSyncByNode(node, false);
-          }
-          return node;
-        } else {
-            return node;
+  return (context: ts.TransformationContext) => {
+    return (node: ts.SourceFile) => {
+      if (process.env.compiler === BUILD_ON) {
+        if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === false) {
+          writeFileSyncByNode(node, false);
         }
-
+        return node;
+      } else {
+        return node;
       }
-    }
+    };
+  };
 }

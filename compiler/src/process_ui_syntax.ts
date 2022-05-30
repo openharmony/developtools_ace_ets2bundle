@@ -86,7 +86,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (process.env.compiler === BUILD_ON) {
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (projectConfig.bundleLess === true && projectConfig.processTs === true) {
+          if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === true) {
             writeFileSyncByNode(node, true);
           }
           return node;
@@ -104,7 +104,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
-        if (projectConfig.bundleLess === true && projectConfig.processTs === true) {
+        if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === true) {
           writeFileSyncByNode(node, true);
         }
         return node;
