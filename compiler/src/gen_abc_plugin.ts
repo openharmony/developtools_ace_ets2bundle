@@ -29,6 +29,19 @@ import {
   genSourceMapFileName,
   checkNodeModulesFile} from './utils';
 import { projectConfig } from '../main';
+import {
+  ESMODULE,
+  JSBUNDLE,
+  NODE_MODULES,
+  ENTRY_TXT,
+  EXTNAME_ETS,
+  EXTNAME_JS,
+  EXTNAME_TS,
+  EXTNAME_MJS,
+  EXTNAME_CJS,
+  EXTNAME_D_TS,
+  EXTNAME_ABC
+} from './pre_define'
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -59,10 +72,6 @@ const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 const hashFile = 'gen_hash.json';
 const ARK = '/ark/';
-const ESMODULE = 'esmodule';
-const JSBUNDLE = 'jsbundle';
-const NODE_MODULES = 'node_modules';
-const ENTRY_TXT = 'entry.txt';
 
 class ModuleInfo {
   filePath: string;
@@ -144,7 +153,7 @@ export class GenAbcPlugin {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === '.js') {
+          if (path.extname(key) === EXTNAME_JS) {
             delete assets[key];
           }
         });
@@ -157,7 +166,7 @@ export class GenAbcPlugin {
       }
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
-        if (output && path.extname(key) === '.js') {
+        if (output && path.extname(key) === EXTNAME_JS) {
           const newContent: string = compilation.assets[key].source();
           const keyPath: string = key.replace(/\.js$/, firstFileEXT);
           writeFileSync(newContent, path.resolve(output, keyPath), key);
@@ -231,11 +240,11 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
   if (projectConfig.processTs === true) {
-    tempFilePath = tempFilePath.replace(/\.ets$/, '.ts');
-    buildFilePath = buildFilePath.replace(/\.ets$/, '.ts');
+    tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_TS);
+    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_TS);
   } else {
-    tempFilePath = tempFilePath.replace(/\.ets$/, '.js');
-    buildFilePath = buildFilePath.replace(/\.ets$/, '.js');
+    tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_JS);
+    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
   }
   const abcFilePath = genAbcFileName(tempFilePath);
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
@@ -252,8 +261,8 @@ function processDtsModule(filePath: string, tempFilePath: string, buildFilePath:
 
 function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any) {
   if (projectConfig.processTs === false) {
-    tempFilePath = tempFilePath.replace(/\.ts$/, '.js');
-    buildFilePath = buildFilePath.replace(/\.ts$/, '.js');
+    tempFilePath = tempFilePath.replace(/\.ts$/, EXTNAME_JS);
+    buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
   }
   const abcFilePath = genAbcFileName(tempFilePath);
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
@@ -269,7 +278,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
   }
-  if (filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
+  if (filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
     fs.copyFileSync(filePath, tempFilePath);
   }
   const abcFilePath = genAbcFileName(tempFilePath);
@@ -293,13 +302,13 @@ function handleFinishModules(modules, callback) {
       let buildFilePath = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
       tempFilePath = toUnixPath(tempFilePath);
       buildFilePath = toUnixPath(buildFilePath);
-      if (filePath.endsWith('ets')) {
+      if (filePath.endsWith(EXTNAME_ETS)) {
         processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith('d.ts')) {
+      } else if (filePath.endsWith(EXTNAME_D_TS)) {
         processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith('ts')) {
+      } else if (filePath.endsWith(EXTNAME_TS)) {
         processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith('js') || filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
+      } else if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
         processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else {
         logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
@@ -628,7 +637,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
     fileterIntermediateJsBundle = [];
     for (let i = 0; i < inputPaths.length; ++i) {
       const input = inputPaths[i].path;
-      const abcPath = input.replace(/_.js$/, '.abc');
+      const abcPath = input.replace(/_.js$/, EXTNAME_ABC);
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
         continue;
@@ -655,7 +664,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
 function writeHashJson() {
   for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
     const input = fileterIntermediateJsBundle[i].path;
-    const abcPath = input.replace(/_.js$/, '.abc');
+    const abcPath = input.replace(/_.js$/, EXTNAME_ABC);
     if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
       continue;
