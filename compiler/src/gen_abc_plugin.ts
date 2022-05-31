@@ -59,6 +59,10 @@ const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 const hashFile = 'gen_hash.json';
 const ARK = '/ark/';
+const ESMODULE = 'esmodule';
+const JSBUNDLE = 'jsbundle';
+const NODE_MODULES = 'node_modules';
+const ENTRY_TXT = 'entry.txt';
 
 class ModuleInfo {
   filePath: string;
@@ -111,8 +115,12 @@ export class GenAbcPlugin {
       }
     }
 
+    if (projectConfig.compileMode === undefined || projectConfig.compileMode !== JSBUNDLE || projectConfig.compileMode !== ESMODULE) {
+      logger.error(red, `ETS:ERROR Compile Module is warong `, reset);
+    }
+
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
-      if (projectConfig.compileMode === 'jsbundle') {
+      if (projectConfig.compileMode === JSBUNDLE) {
         return;
       }
       buildPathInfo = output;
@@ -121,7 +129,7 @@ export class GenAbcPlugin {
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
       compilation.hooks.afterOptimizeTree.tap('afterOptimizeModules', (chunks, modules) => {
-        if (projectConfig.compileMode === 'jsbundle') {
+        if (projectConfig.compileMode === JSBUNDLE) {
           return;
         }
         modules.forEach(module => {
@@ -132,17 +140,19 @@ export class GenAbcPlugin {
       });
 
       compilation.hooks.processAssets.tap('processAssets', (assets) => {
-        if (projectConfig.compileMode === 'jsbundle') {
+        if (projectConfig.compileMode === JSBUNDLE) {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          delete assets[key];
+          if (path.extname(key) === '.js') {
+            delete assets[key];
+          }
         });
       });
     });
 
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
-      if (projectConfig.compileMode === 'esmodule') {
+      if (projectConfig.compileMode === ESMODULE) {
         return;
       }
       Object.keys(compilation.assets).forEach(key => {
@@ -156,7 +166,7 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
-      if (projectConfig.compileMode === 'esmodule') {
+      if (projectConfig.compileMode === ESMODULE) {
         return;
       }
       buildPathInfo = output;
@@ -181,15 +191,15 @@ function getEntryInfo(tempFilePath: string, resourceResolveData: any) {
     return;
   }
 
-  const npmInfoPaths = npmInfoPath.split('node_modules');
-  let npmInfo = ['node_modules', npmInfoPaths[npmInfoPaths.length - 1]].join(path.sep);
+  const npmInfoPaths = npmInfoPath.split(NODE_MODULES);
+  let npmInfo = [NODE_MODULES, npmInfoPaths[npmInfoPaths.length - 1]].join(path.sep);
   npmInfo = toUnixPath(npmInfo);
   let abcFileName = genAbcFileName(tempFilePath);
-  const abcFilePaths = abcFileName.split('node_modules');
-  abcFileName = ['node_modules', abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
+  const abcFilePaths = abcFileName.split(NODE_MODULES);
+  abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
   abcFileName = toUnixPath(abcFileName);
   // let entry = resourceResolveData.descriptionFileData['main'] ?? "";
-  const packagePaths = tempFilePath.split('node_modules');
+  const packagePaths = tempFilePath.split(NODE_MODULES);
   const entryPaths = packagePaths[packagePaths.length - 1].split(packageName);
   let entry = toUnixPath(entryPaths[entryPaths.length - 1]);
   if (entry.startsWith('/')) {
@@ -292,7 +302,7 @@ function handleFinishModules(modules, callback) {
       } else if (filePath.endsWith('js') || filePath.endsWith('mjs') || filePath.endsWith('cjs')) {
         processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else {
-        console.error('ETS error: Cannot find resolve this file path: ', filePath);
+        logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
       }
     }
   });
@@ -303,8 +313,8 @@ function handleFinishModules(modules, callback) {
 
 function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>) {
   for (const [key, value] of entryInfos) {
-    const tempAbcFilePath = toUnixPath(path.resolve(value.npmInfo, 'entry.txt'));
-    const buildAbcFilePath = toUnixPath(path.resolve(value.buildPath, 'entry.txt'));
+    const tempAbcFilePath = toUnixPath(path.resolve(value.npmInfo, ENTRY_TXT));
+    const buildAbcFilePath = toUnixPath(path.resolve(value.buildPath, ENTRY_TXT));
     fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
     if (!fs.existsSync(buildAbcFilePath)) {
       const parent: string = path.join(buildAbcFilePath, '..');
