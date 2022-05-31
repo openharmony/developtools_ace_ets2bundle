@@ -277,18 +277,12 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   );
 }
 
-function processComponentMethod(
-  node: ts.MethodDeclaration,
-  parentComponentName: ts.Identifier,
-  context: ts.TransformationContext,
-  log: LogInfo[],
-  buildCount: BuildCount
-): ts.MethodDeclaration {
+function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
+  context: ts.TransformationContext, log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   if (name === COMPONENT_BUILD_FUNCTION) {
     buildCount.count = buildCount.count + 1;
-    // if Build with params, process error
     if (node.parameters.length) {
       log.push({
         type: LogType.ERROR,
@@ -297,7 +291,6 @@ function processComponentMethod(
       });
     }
     const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
-    // Traversal Build's nodes, process inner property
     updateItem = processBuildMember(buildNode, context, log);
     curPropMap.clear();
   } else if (node.body && ts.isBlock(node.body)) {
@@ -310,7 +303,6 @@ function processComponentMethod(
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log));
-      // Traversal @Builder's nodes, process inner property
       updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
@@ -331,11 +323,8 @@ function processComponentMethod(
   return updateItem;
 }
 
-function processBuildMember(
-  node: ts.MethodDeclaration,
-  context: ts.TransformationContext,
-  log: LogInfo[]
-): ts.MethodDeclaration {
+function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
+  log: LogInfo[]): ts.MethodDeclaration {
   return ts.visitNode(node, visitBuild);
   function visitBuild(node: ts.Node): ts.Node {
     if (isGeometryView(node)) {
