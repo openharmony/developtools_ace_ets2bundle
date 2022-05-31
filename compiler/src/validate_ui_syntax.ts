@@ -330,7 +330,8 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
   }
-  if (ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+  if ((ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
+    hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(node.name.getText());
   }
   if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
