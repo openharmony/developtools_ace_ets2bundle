@@ -159,6 +159,7 @@ function setAbilityPages(projectConfig) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
     abilityPages = readAbilityEntrance(moduleJson);
     setAbilityFile(projectConfig, abilityPages);
+    setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
 
@@ -191,6 +192,15 @@ function setStageTestRunnerFile(projectConfig) {
         abilityConfig.testRunnerFile.push(item);
       }
     })
+  }
+}
+
+function setBundleModuleInfo(projectConfig, moduleJson) {
+  if (moduleJson.module) {
+    projectConfig.moduleName = moduleJson.module.name;
+  }
+  if (moduleJson.app) {
+    projectConfig.bundleName = moduleJson.app.bundleName;
   }
 }
 
