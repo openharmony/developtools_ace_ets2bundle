@@ -283,7 +283,15 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
   const name: string = node.name.getText();
   if (name === COMPONENT_BUILD_FUNCTION) {
     buildCount.count = buildCount.count + 1;
-    updateItem = processBuildMember(node, context, log);
+    if (node.parameters.length) {
+      log.push({
+        type: LogType.ERROR,
+        message: `The 'build' method can not have arguments.`,
+        pos: node.getStart()
+      });
+    }
+    const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
+    updateItem = processBuildMember(buildNode, context, log);
     curPropMap.clear();
   } else if (node.body && ts.isBlock(node.body)) {
     if (name === COMPONENT_TRANSITION_FUNCTION) {
@@ -292,9 +300,10 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(name);
-      updateItem = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log));
+      updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         INNER_STYLE_FUNCTION.set(name, node.body);
@@ -316,15 +325,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
   log: LogInfo[]): ts.MethodDeclaration {
-  if (node.parameters.length) {
-    log.push({
-      type: LogType.ERROR,
-      message: `The 'build' method can not have arguments.`,
-      pos: node.getStart()
-    });
-  }
-  const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
-  return ts.visitNode(buildNode, visitBuild);
+  return ts.visitNode(node, visitBuild);
   function visitBuild(node: ts.Node): ts.Node {
     if (isGeometryView(node)) {
       node = processGeometryView(node as ts.ExpressionStatement, log);
