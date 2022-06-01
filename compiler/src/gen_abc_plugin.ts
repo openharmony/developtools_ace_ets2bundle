@@ -124,12 +124,8 @@ export class GenAbcPlugin {
       }
     }
 
-    if (projectConfig.compileMode === undefined || projectConfig.compileMode !== JSBUNDLE || projectConfig.compileMode !== ESMODULE) {
-      logger.error(red, `ETS:ERROR Compile Module is warong `, reset);
-    }
-
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
-      if (projectConfig.compileMode === JSBUNDLE) {
+      if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
         return;
       }
       buildPathInfo = output;
@@ -138,7 +134,7 @@ export class GenAbcPlugin {
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
       compilation.hooks.afterOptimizeTree.tap('afterOptimizeModules', (chunks, modules) => {
-        if (projectConfig.compileMode === JSBUNDLE) {
+        if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
           return;
         }
         modules.forEach(module => {
@@ -149,7 +145,7 @@ export class GenAbcPlugin {
       });
 
       compilation.hooks.processAssets.tap('processAssets', (assets) => {
-        if (projectConfig.compileMode === JSBUNDLE) {
+        if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
