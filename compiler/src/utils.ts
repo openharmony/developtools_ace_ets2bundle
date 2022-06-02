@@ -20,10 +20,7 @@ import { projectConfig } from '../main';
 import { createHash } from 'crypto';
 import { processSystemApi } from './validate_ui_syntax';
 import {
-  ESMODULE,
-  JSBUNDLE,
   NODE_MODULES,
-  ENTRY_TXT,
   TEMPRARY,
   MAIN,
   AUXILIARY,
@@ -37,7 +34,7 @@ import {
   EXTNAME_ETS,
   EXTNAME_TS_MAP,
   EXTNAME_JS_MAP
-} from './pre_define'
+} from './pre_define';
 
 export enum LogType {
   ERROR = 'ERROR',

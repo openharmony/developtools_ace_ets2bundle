@@ -41,7 +41,7 @@ import {
   EXTNAME_CJS,
   EXTNAME_D_TS,
   EXTNAME_ABC
-} from './pre_define'
+} from './pre_define';
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -59,7 +59,7 @@ interface File {
 }
 const intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
-const moduleInfos: Array<ModuleInfo> = [];;
+const moduleInfos: Array<ModuleInfo> = [];
 let filterModuleInfos: Array<ModuleInfo> = [];
 const commonJsModuleInfos: Array<ModuleInfo> = [];
 const ESMModuleInfos: Array<ModuleInfo> = [];
@@ -133,17 +133,6 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
-      compilation.hooks.afterOptimizeTree.tap('afterOptimizeModules', (chunks, modules) => {
-        if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
-          return;
-        }
-        modules.forEach(module => {
-          if (module !== undefined && module.resourceResolveData !== undefined) {
-            const filePath: string = module.resourceResolveData.path;
-          }
-        });
-      });
-
       compilation.hooks.processAssets.tap('processAssets', (assets) => {
         if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
           return;
@@ -196,14 +185,11 @@ function getEntryInfo(tempFilePath: string, resourceResolveData: any) {
     return;
   }
 
-  const npmInfoPaths = npmInfoPath.split(NODE_MODULES);
-  let npmInfo = [NODE_MODULES, npmInfoPaths[npmInfoPaths.length - 1]].join(path.sep);
-  npmInfo = toUnixPath(npmInfo);
   let abcFileName = genAbcFileName(tempFilePath);
   const abcFilePaths = abcFileName.split(NODE_MODULES);
   abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
   abcFileName = toUnixPath(abcFileName);
-  // let entry = resourceResolveData.descriptionFileData['main'] ?? "";
+
   const packagePaths = tempFilePath.split(NODE_MODULES);
   const entryPaths = packagePaths[packagePaths.length - 1].split(packageName);
   let entry = toUnixPath(entryPaths[entryPaths.length - 1]);
@@ -317,7 +303,7 @@ function handleFinishModules(modules, callback) {
 }
 
 function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>) {
-  for (const [key, value] of entryInfos) {
+  for (const value of entryInfos.values()) {
     const tempAbcFilePath = toUnixPath(path.resolve(value.npmInfo, ENTRY_TXT));
     const buildAbcFilePath = toUnixPath(path.resolve(value.buildPath, ENTRY_TXT));
     fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
@@ -473,23 +459,6 @@ function invokeCluterModuleToAbc() {
       writeModuleHashJson();
     });
   }
-}
-
-function splitModuleBySize(moduleInfos: Array<ModuleInfo>, groupNumber: number) {
-  const result = [];
-  if (moduleInfos.length < groupNumber) {
-    result.push(moduleInfos);
-    return result;
-  }
-
-  for (let i = 0; i < groupNumber; ++i) {
-    result.push([]);
-  }
-  for (let i = 0; i < moduleInfos.length; i++) {
-    const pos = i % groupNumber;
-    result[pos].push(moduleInfos[i]);
-  }
-  return result;
 }
 
 function invokeWorkersToGenAbc() {
