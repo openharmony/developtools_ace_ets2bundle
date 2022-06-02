@@ -17,7 +17,7 @@ import ts from 'typescript';
 import {
   BUILD_ON,
   ESMODULE
- } from './pre_define';
+} from './pre_define';
 import { writeFileSyncByNode } from './utils';
 import { projectConfig } from '../main';
 
