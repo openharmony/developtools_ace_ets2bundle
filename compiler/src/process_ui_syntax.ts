@@ -33,6 +33,8 @@ import {
   RESOURCE_NAME_TYPE,
   RESOURCE_NAME_PARAMS,
   RESOURCE_RAWFILE,
+  RESOURCE_NAME_BUNDLE,
+  RESOURCE_NAME_MODULE,
   ATTRIBUTE_ANIMATETO,
   GLOBAL_CONTEXT,
   CHECK_COMPONENT_EXTEND_DECORATOR,
@@ -65,7 +67,7 @@ import {
   localStorageLinkCollection,
   localStoragePropCollection
 } from './validate_ui_syntax';
-import { resources } from '../main';
+import { projectConfig, resources } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
 export const transformLog: FileLog = new FileLog();
@@ -293,26 +295,37 @@ function processResourceData(node: ts.CallExpression): ts.Node {
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
   ts.ObjectLiteralExpression {
+  const propertyArray: Array[ts.PropertyAssignment] = [
+    ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_ID),
+      ts.factory.createNumericLiteral(resourceValue)
+    ),
+    ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
+      ts.factory.createNumericLiteral(resourceType)
+    ),
+    ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
+      ts.factory.createArrayLiteralExpression(argsArr, false)
+    )
+  ];
+
+  if (projectConfig.bundleName) {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
+      ts.factory.createStringLiteral(projectConfig.bundleName)
+    ));
+  }
+
+  if (projectConfig.moduleName) {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
+      ts.factory.createStringLiteral(projectConfig.moduleName)
+    ));
+  }
+
   const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
-    [
-      ts.factory.createPropertyAssignment(
-        ts.factory.createStringLiteral(RESOURCE_NAME_ID),
-        ts.factory.createNumericLiteral(resourceValue)
-      ),
-      ts.factory.createPropertyAssignment(
-        ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
-        ts.factory.createNumericLiteral(resourceType)
-      ),
-      ts.factory.createPropertyAssignment(
-        ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
-        ts.factory.createArrayLiteralExpression(
-          argsArr,
-          false
-        )
-      )
-    ],
-    false
-  );
+    propertyArray, false);
   return resourceParams;
 }
 
