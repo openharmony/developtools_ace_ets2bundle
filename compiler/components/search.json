@@ -3,6 +3,6 @@
   "atomic": true,
   "attrs": [
     "searchButton", "placeholderColor", "placeholderFont", "textFont", "onSubmit", "onChange",
-    "onCopy", "OnCut", "OnPaste"
+    "onCopy", "OnCut", "OnPaste", "copyOption"
   ]
 }
