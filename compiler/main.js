@@ -44,6 +44,7 @@ const resources = {
   app: {},
   sys: {}
 };
+const abilityPagesFullPath = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
@@ -157,7 +158,7 @@ function setAbilityPages(projectConfig) {
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    abilityPages = readAbilityEntrance(moduleJson);
+    abilityPages = readAbilityEntrance(moduleJson, projectConfig);
     setAbilityFile(projectConfig, abilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
@@ -220,27 +221,34 @@ function setAbilityFile(projectConfig, abilityPages) {
   });
 }
 
-function readAbilityEntrance(moduleJson) {
+function readAbilityEntrance(moduleJson, projectConfig) {
   let abilityPages = [];
   if (moduleJson.module) {
     if (moduleJson.module.srcEntrance) {
       abilityPages.push(moduleJson.module.srcEntrance);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
-      setEntrance(moduleJson.module.abilities, abilityPages);
+      setEntrance(moduleJson.module.abilities, abilityPages, projectConfig);
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
-      setEntrance(moduleJson.module.extensionAbilities, abilityPages);
+      setEntrance(moduleJson.module.extensionAbilities, abilityPages, projectConfig);
     }
   }
   return abilityPages;
 }
 
-function setEntrance(abilityConfig, abilityPages) {
+function setEntrance(abilityConfig, abilityPages, projectConfig) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
+        let finalPath = path.resolve(path.resolve(projectConfig.projectPath, '../'), ability.srcEntrance);
+        finalPath = finalPath.replace(/\\/g, '/');
+        if (fs.existsSync(finalPath)) {
+          abilityPagesFullPath.push(finalPath);
+        } else {
+          abilityPagesFullPath.push(ability.srcEntrance);
+        }
       }
     });
   }
@@ -350,3 +358,4 @@ exports.resources = resources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
+exports.abilityPagesFullPath = abilityPagesFullPath;
