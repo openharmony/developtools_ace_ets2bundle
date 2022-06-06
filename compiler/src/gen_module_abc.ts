@@ -22,14 +22,14 @@ const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
-  const inputPaths = JSON.parse(jsonInput);
-  const inputs = [];
+  const inputPaths: any = JSON.parse(jsonInput);
+  const inputs: string[] = [];
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input = inputPaths[i].tempFilePath;
+    const input: string = inputPaths[i].tempFilePath;
     inputs.push('"' + input + '"');
   }
-  const inputsStr = inputs.join(' ');
-  const singleCmd = `${cmd} ${inputsStr}`;
+  const inputsStr: string = inputs.join(' ');
+  const singleCmd: any = `${cmd} ${inputsStr}`;
   logger.debug('gen abc cmd is: ', singleCmd);
   try {
     childProcess.execSync(singleCmd);

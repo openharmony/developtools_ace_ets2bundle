@@ -79,10 +79,16 @@ function initConfig(config) {
                 transpileOnly: true,
                 configFile: path.resolve(__dirname, 'tsconfig.json'),
                 getCustomTransformers(program) {
-                  return {
+                  let transformerOperation = {
                     before: [processUISyntax(program)],
-                    after: [processJs(program)]
+                    after: []
                   };
+                  if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === false
+                  && process.env.compilerType && process.env.compilerType === 'ark') {
+                    transformerOperation.after.push(processJs(program));
+                  }
+
+                  return transformerOperation;
                 },
                 ignoreDiagnostics: IGNORE_ERROR_CODE
               }
