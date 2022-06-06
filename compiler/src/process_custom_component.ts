@@ -43,7 +43,8 @@ import {
   provideCollection,
   consumeCollection,
   objectLinkCollection,
-  isStaticViewCollection
+  isStaticViewCollection,
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -52,7 +53,6 @@ import {
   createViewCreate,
   createCustomComponentNewExpression
 } from './process_component_member';
-import { builderParamObjectCollection } from './process_component_member';
 import {
   LogType,
   LogInfo,

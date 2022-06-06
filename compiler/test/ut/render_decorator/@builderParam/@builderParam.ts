@@ -14,6 +14,7 @@
  */
 
 exports.source = `
+import { CustomContainerExport } from './test/pages/TestComponent';
 @Component
 struct CustomContainer {
   header: string = "";
@@ -60,6 +61,15 @@ struct CustomContainerUser {
 
   build() {
     Column() {
+      CustomContainerExport({
+        header: this.text,
+      }){
+        Column(){
+          specificParam("111", "22")
+        }.onClick(()=>{
+          this.text = "changeHeader"
+        })
+      }
       Row(){
         CustomContainer({
           header: this.text,
@@ -84,7 +94,10 @@ struct CustomContainerUser {
 }
 `
 exports.expectResult =
-`class CustomContainer extends View {
+`"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const TestComponent_1 = require("./test/pages/TestComponent");
+class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.header = "";
@@ -178,10 +191,38 @@ class CustomContainerUser extends View {
     }
     render() {
         Column.create();
-        Row.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new CustomContainer("2", this, {
+            View.create(new TestComponent_1.CustomContainerExport("2", this, {
+                header: this.text,
+                closer: () => {
+                    Column.create();
+                    Column.onClick(() => {
+                        this.text = "changeHeader";
+                    });
+                    specificParam("111", "22");
+                    Column.pop();
+                }
+            }));
+        }
+        else {
+            earlierCreatedChild_2.updateWithValueParams({
+                header: this.text,
+                closer: () => {
+                    Column.create();
+                    Column.onClick(() => {
+                        this.text = "changeHeader";
+                    });
+                    specificParam("111", "22");
+                    Column.pop();
+                }
+            });
+            View.create(earlierCreatedChild_2);
+        }
+        Row.create();
+        let earlierCreatedChild_3 = this.findChildById("3");
+        if (earlierCreatedChild_3 == undefined) {
+            View.create(new CustomContainer("3", this, {
                 header: this.text,
                 content: this.specificParam,
                 callContent: this.callSpecificParam("callContent1", 'callContent2'),
@@ -189,19 +230,19 @@ class CustomContainerUser extends View {
             }));
         }
         else {
-            earlierCreatedChild_2.updateWithValueParams({
+            earlierCreatedChild_3.updateWithValueParams({
                 header: this.text,
                 content: this.specificParam,
                 callContent: this.callSpecificParam("callContent1", 'callContent2'),
                 footer: "Footer"
             });
-            View.create(earlierCreatedChild_2);
+            View.create(earlierCreatedChild_3);
         }
         Row.pop();
         Row.create();
-        let earlierCreatedChild_3 = this.findChildById("3");
-        if (earlierCreatedChild_3 == undefined) {
-            View.create(new CustomContainer2("3", this, {
+        let earlierCreatedChild_4 = this.findChildById("4");
+        if (earlierCreatedChild_4 == undefined) {
+            View.create(new CustomContainer2("4", this, {
                 header: this.text,
                 content: () => {
                     Column.create();
@@ -214,7 +255,7 @@ class CustomContainerUser extends View {
             }));
         }
         else {
-            earlierCreatedChild_3.updateWithValueParams({
+            earlierCreatedChild_4.updateWithValueParams({
                 header: this.text,
                 content: () => {
                     Column.create();
@@ -225,7 +266,7 @@ class CustomContainerUser extends View {
                     Column.pop();
                 }
             });
-            View.create(earlierCreatedChild_3);
+            View.create(earlierCreatedChild_4);
         }
         Row.pop();
         Column.pop();
