@@ -435,21 +435,31 @@ function invokeCluterModuleToAbc() {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-c');
       const commonJsCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      const workerData: any = {
-        'inputs': JSON.stringify(commonJsModuleInfos),
-        'cmd': commonJsCmdPrefix
-      };
-      cluster.fork(workerData);
+      const chunkSize: number = 50;
+      const splitedModules: any[] = splitModulesByNumber(commonJsModuleInfos, chunkSize);
+      const workerNumber: number = splitedModules.length;
+      for (let i= 0; i < workerNumber;i++) {
+        const workerData: any = {
+          'inputs': JSON.stringify(splitedModules[i]),
+          'cmd': commonJsCmdPrefix
+        };
+        cluster.fork(workerData);
+      }
     }
     if (ESMModuleInfos.length > 0) {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-m');
       const ESMCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      const workerData: any = {
-        'inputs': JSON.stringify(ESMModuleInfos),
-        'cmd': ESMCmdPrefix
-      };
-      cluster.fork(workerData);
+      const chunkSize: number = 50;
+      const splitedModules: any[] = splitModulesByNumber(ESMModuleInfos, chunkSize);
+      const workerNumber: number = splitedModules.length;
+      for (let i=0;i<workerNumber;i++) {
+        const workerData: any = {
+          'inputs': JSON.stringify(splitedModules[i]),
+          'cmd': ESMCmdPrefix
+        };
+        cluster.fork(workerData);
+      }
     }
 
     cluster.on('exit', (worker, code, signal) => {
@@ -460,6 +470,15 @@ function invokeCluterModuleToAbc() {
       writeModuleHashJson();
     });
   }
+}
+
+function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, chunkSize: number): any[] {
+  const result: any[] = [];
+  for(let i = 0; i <  moduleInfos.length; i += chunkSize) {
+    result.push(moduleInfos.slice(i, i + chunkSize));
+  }
+
+  return result;
 }
 
 function invokeWorkersToGenAbc() {
