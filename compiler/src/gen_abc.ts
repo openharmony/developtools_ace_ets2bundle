@@ -23,10 +23,10 @@ const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
-  const inputPaths = JSON.parse(jsonInput);
+  const inputPaths: any = JSON.parse(jsonInput);
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input = inputPaths[i].path;
-    const singleCmd = `${cmd} "${input}"`;
+    const input: string = inputPaths[i].path;
+    const singleCmd: any = `${cmd} "${input}"`;
     logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
     try {
       childProcess.execSync(singleCmd);

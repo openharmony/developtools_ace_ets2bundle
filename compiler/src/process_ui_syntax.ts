@@ -43,7 +43,8 @@ import {
   SET_CONTROLLER_METHOD,
   JS_DIALOG,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
-  ESMODULE
+  ESMODULE,
+  ARK
 } from './pre_define';
 import {
   componentInfo,
@@ -87,7 +88,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (process.env.compiler === BUILD_ON) {
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (projectConfig.compileMode === 'ESMODULE' && projectConfig.processTs === true) {
+          if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
+            && process.env.compilerType && process.env.compilerType === ARK) {
             writeFileSyncByNode(node, true);
           }
           return node;
@@ -105,7 +107,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
-        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
+        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
+          && process.env.compilerType && process.env.compilerType === ARK) {
           writeFileSyncByNode(node, true);
         }
         return node;

@@ -239,9 +239,9 @@ export function toUnixPath(data: string): string {
   return data;
 }
 
-export function toHashData(path: string) {
-  const content = fs.readFileSync(path);
-  const hash = createHash('sha256');
+export function toHashData(path: string): any {
+  const content: string = fs.readFileSync(path).toString();
+  const hash: any = createHash('sha256');
   hash.update(content);
   return hash.digest('hex');
 }
@@ -265,25 +265,25 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
   }
   projectPath = toUnixPath(projectPath);
-  const hapPath = toUnixPath(projectConfig.projectRootPath);
-  const tempFilePath = filePath.replace(hapPath, '');
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
 
   if (checkNodeModulesFile(filePath, projectPath)) {
-    const fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
-    const dataTmps = tempFilePath.split(NODE_MODULES);
-    let output:string = '';
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    let output: string = '';
     if (filePath.indexOf(fakeNodeModulesPath) === -1) {
-      const sufStr = dataTmps[dataTmps.length - 1];
+      const sufStr: string = dataTmps[dataTmps.length - 1];
       output = path.join(buildPath, TEMPRARY, NODE_MODULES, MAIN, sufStr);
     } else {
-      const sufStr = dataTmps[dataTmps.length - 1];
+      const sufStr: string = dataTmps[dataTmps.length - 1];
       output = path.join(buildPath, TEMPRARY, NODE_MODULES, AUXILIARY, sufStr);
     }
     return output;
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
-    const sufStr = filePath.replace(projectPath, '');
+    const sufStr: string = filePath.replace(projectPath, '');
     const output: string = path.join(buildPath, TEMPRARY, sufStr);
     return output;
   }
@@ -300,26 +300,26 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
     filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
   }
   projectPath = toUnixPath(projectPath);
-  const hapPath = toUnixPath(projectConfig.projectRootPath);
-  const tempFilePath = filePath.replace(hapPath, '');
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
 
   if (checkNodeModulesFile(filePath, projectPath)) {
     filePath = toUnixPath(filePath);
-    const fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
-    const dataTmps = tempFilePath.split(NODE_MODULES);
-    let output:string = '';
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    let output: string = '';
     if (filePath.indexOf(fakeNodeModulesPath) === -1) {
-      const sufStr = dataTmps[dataTmps.length - 1];
+      const sufStr: string = dataTmps[dataTmps.length - 1];
       output = path.join(projectConfig.nodeModulesPath, ZERO, sufStr);
     } else {
-      const sufStr = dataTmps[dataTmps.length - 1];
+      const sufStr: string = dataTmps[dataTmps.length - 1];
       output = path.join(projectConfig.nodeModulesPath, ONE, sufStr);
     }
     return output;
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
-    const sufStr = filePath.replace(projectPath, '');
+    const sufStr: string = filePath.replace(projectPath, '');
     const output: string = path.join(buildPath, sufStr);
     return output;
   }
@@ -330,17 +330,17 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
 export function checkNodeModulesFile(filePath: string, projectPath: string) {
   filePath = toUnixPath(filePath);
   projectPath = toUnixPath(projectPath);
-  const hapPath = toUnixPath(projectConfig.projectRootPath);
-  const tempFilePath = filePath.replace(hapPath, '');
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
   if (tempFilePath.indexOf(NODE_MODULES) !== -1) {
-    const fakeNodeModulesPath = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
     if (filePath.indexOf(fakeNodeModulesPath) !== -1) {
       return true;
     }
     if (projectConfig.modulePathMap) {
       for (const key in projectConfig.modulePathMap) {
-        const value = projectConfig.modulePathMap[key];
-        const fakeModuleNodeModulesPath = toUnixPath(path.resolve(value, NODE_MODULES));
+        const value: string = projectConfig.modulePathMap[key];
+        const fakeModuleNodeModulesPath: string = toUnixPath(path.resolve(value, NODE_MODULES));
         if (filePath.indexOf(fakeModuleNodeModulesPath) !== -1) {
           return true;
         }
@@ -354,27 +354,27 @@ export function checkNodeModulesFile(filePath: string, projectPath: string) {
 export function mkdirsSync(dirname: string): boolean {
   if (fs.existsSync(dirname)) {
     return true;
-  } else {
-    if (mkdirsSync(path.dirname(dirname))) {
-      fs.mkdirSync(dirname);
-      return true;
-    }
+  } else if (mkdirsSync(path.dirname(dirname))) {
+    fs.mkdirSync(dirname);
+    return true;
   }
+
   return false;
 }
 
-export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean) {
+export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean): void {
   const temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return;
   }
   mkdirsSync(path.dirname(temporaryFile));
   fs.writeFileSync(temporaryFile, sourceCode);
+  return;
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
   if (toTsFile) {
-    const newStatements = [];
+    const newStatements: ts.Node[] = [];
     const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
     newStatements.push(tsIgnoreNode);
     if (node.statements && node.statements.length) {
@@ -383,43 +383,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
 
     node = ts.factory.updateSourceFile(node, newStatements);
   }
-  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const options : ts.CompilerOptions = {
-    sourceMap: true
-  };
-  const mapOpions = {
-    sourceMap: true,
-    inlineSourceMap: false,
-    inlineSources: false,
-    sourceRoot: '',
-    mapRoot: '',
-    extendedDiagnostics: false
-  };
-  const host = ts.createCompilerHost(options);
-  const fileName = node.fileName;
-  // @ts-ignore
-  const sourceMapGenerator = ts.createSourceMapGenerator(
-    host,
-    // @ts-ignore
-    ts.getBaseFileName(fileName),
-    '',
-    '',
-    mapOpions
-  );
-  // @ts-ignore
-  const writer = ts.createTextWriter(
-    // @ts-ignore
-    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
-  printer['writeFile'](node, writer, sourceMapGenerator);
-  const sourceMapJson = sourceMapGenerator.toJSON();
-  sourceMapJson['sources'] = [fileName];
-  const result: string = writer.getText();
-  let content: string = result;
-  content = processSystemApi(content, true);
-  if (toTsFile) {
-    content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
-  }
-  const sourceMapContent = JSON.stringify(sourceMapJson);
+  const mixedInfo: {content: string, sourceMapContent: string} = genContentAndSourceMapInfo(node, toTsFile);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath, toTsFile);
   if (temporaryFile.length === 0) {
     return;
@@ -439,10 +403,55 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
     }
   }
   mkdirsSync(path.dirname(temporaryFile));
-  fs.writeFileSync(temporaryFile, content);
+  fs.writeFileSync(temporaryFile, mixedInfo.content);
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(temporarySourceMapFile, sourceMapContent);
+    fs.writeFileSync(temporarySourceMapFile, mixedInfo.sourceMapContent);
   }
+}
+
+function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): {content: string, sourceMapContent: string} {
+  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  const options: ts.CompilerOptions = {
+    sourceMap: true
+  };
+  const mapOpions: any = {
+    sourceMap: true,
+    inlineSourceMap: false,
+    inlineSources: false,
+    sourceRoot: '',
+    mapRoot: '',
+    extendedDiagnostics: false
+  };
+  const host: ts.CompilerHost = ts.createCompilerHost(options);
+  const fileName: string = node.fileName;
+  // @ts-ignore
+  const sourceMapGenerator: any = ts.createSourceMapGenerator(
+    host,
+    // @ts-ignore
+    ts.getBaseFileName(fileName),
+    '',
+    '',
+    mapOpions
+  );
+  // @ts-ignore
+  const writer: any = ts.createTextWriter(
+    // @ts-ignore
+    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
+  printer['writeFile'](node, writer, sourceMapGenerator);
+  const sourceMapJson: any = sourceMapGenerator.toJSON();
+  sourceMapJson['sources'] = [fileName];
+  const result: string = writer.getText();
+  let content: string = result;
+  content = processSystemApi(content, true);
+  if (toTsFile) {
+    content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
+  }
+  const sourceMapContent: string = JSON.stringify(sourceMapJson);
+
+  return {
+    content: content,
+    sourceMapContent: sourceMapContent
+  };
 }
 
 export function genAbcFileName(temporaryFile: string): string {

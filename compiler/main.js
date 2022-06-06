@@ -345,7 +345,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.processTs = false;
     projectConfig.buildArkMode = envArgs.buildMode;
-    if (buildJsonInfo.compileMode === 'esmodle') {
+    if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
   }
