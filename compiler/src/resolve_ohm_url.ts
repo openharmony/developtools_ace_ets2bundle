@@ -9,27 +9,27 @@ const reset: string = '\u001b[39m';
 const REG_OHM_URL: RegExp = /^@bundle:(\S+)\/(\S+)\/(ets|js)\/(\S+)$/;
 
 export class OHMResolverPlugin {
-    private source: any;
-    private target: any;
+  private source: any;
+  private target: any;
 
-    constructor(source = 'resolve', target = 'resolve') {
-      this.source = source;
-      this.target = target;
-    }
+  constructor(source = 'resolve', target = 'resolve') {
+    this.source = source;
+    this.target = target;
+  }
 
-    apply(resolver) {
-      const target = resolver.ensureHook(this.target);
-      resolver.getHook(this.source).tapAsync('OHMResolverPlugin', (request, resolveContext, callback) => {
-        if (isOhmUrl(request.request)) {
-          const resolvedSourceFile: string = resolveSourceFile(request.request);
-          const obj = Object.assign({}, request, {
-            request: resolvedSourceFile
-          });
-          return resolver.doResolve(target, obj, null, resolveContext, callback);
-        }
-        callback();
-      });
-    }
+  apply(resolver) {
+    const target: any = resolver.ensureHook(this.target);
+    resolver.getHook(this.source).tapAsync('OHMResolverPlugin', (request, resolveContext, callback) => {
+      if (isOhmUrl(request.request)) {
+        const resolvedSourceFile: string = resolveSourceFile(request.request);
+        const obj = Object.assign({}, request, {
+          request: resolvedSourceFile
+        });
+        return resolver.doResolve(target, obj, null, resolveContext, callback);
+      }
+      callback();
+    });
+  }
 }
 
 export function isOhmUrl(moduleRequest: string): boolean {
@@ -61,15 +61,14 @@ function addExtension(file: string, srcPath: string): string {
 }
 
 export function resolveSourceFile(ohmUrl: string): string {
-  const result = ohmUrl.match(REG_OHM_URL);
-  const moduleName = result[2];
-  const srcKind = result[3];
+  const result: RegExpMatchArray = ohmUrl.match(REG_OHM_URL);
+  const moduleName: string = result[2];
+  const srcKind: string = result[3];
 
-  let file = '';
+  let file: string = '';
 
   if (projectConfig.aceBuildJson) {
-    const buildJson = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    const modulePath = buildJson.modulePathMap[moduleName];
+    const modulePath: string = projectConfig.modulePathMap[moduleName];
     file = path.join(modulePath, 'src/main', srcKind, result[4]);
   } else {
     logger.error(red, `ETS:ERROR Failed to resolve OhmUrl because of aceBuildJson not existing `, reset);

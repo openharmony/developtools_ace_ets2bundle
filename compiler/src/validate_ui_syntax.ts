@@ -70,9 +70,9 @@ import {
 } from './utils';
 import { projectConfig } from '../main';
 import { collectExtend } from './process_ui_syntax';
-import { importModuleCollection } from './ets_checker';
 import { isExtendFunction } from './process_ui_syntax';
 import { isOhmUrl } from './resolve_ohm_url';
+import { logger } from './compile_info';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -837,9 +837,9 @@ function getPackageInfo(configFile: string): Array<string> {
   if (packageCollection.has(configFile)) {
     return packageCollection.get(configFile);
   }
-  const data = JSON.parse(fs.readFileSync(configFile).toString());
-  const bundleName = data.app.bundleName;
-  const moduleName = data.module.name;
+  const data: any = JSON.parse(fs.readFileSync(configFile).toString());
+  const bundleName: string = data.app.bundleName;
+  const moduleName: string = data.module.name;
   packageCollection.set(configFile, [bundleName, moduleName]);
   return [bundleName, moduleName];
 }
@@ -867,10 +867,10 @@ function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string 
   return `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
 }
 
-function replaceOhmStartsWithBundle(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string) {
-  const urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)\/(\S+)$/);
+function replaceOhmStartsWithBundle(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
+  const urlResult: RegExpMatchArray | null = url.match(/^(\S+)\/(\S+)\/(\S+)\/(\S+)$/);
   if (urlResult) {
-    const moduleKind = urlResult[3];
+    const moduleKind: string = urlResult[3];
     if (moduleKind === 'lib') {
       item = replaceLibSo(importValue, moduleRequest, sourcePath);
     }
@@ -878,13 +878,13 @@ function replaceOhmStartsWithBundle(url: string, item: string, importValue: stri
   return item;
 }
 
-function replaceOhmStartsWithModule(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string) {
-  const urlResult = url.match(/^(\S+)\/(\S+)\/(\S+)$/);
+function replaceOhmStartsWithModule(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
+  const urlResult: RegExpMatchArray | null = url.match(/^(\S+)\/(\S+)\/(\S+)$/);
   if (urlResult && projectConfig.aceModuleJsonPath) {
-    const moduleName = urlResult[1];
-    const moduleKind = urlResult[2];
-    const modulePath = urlResult[3];
-    const bundleName = getPackageInfo(projectConfig.aceModuleJsonPath)[0];
+    const moduleName: string = urlResult[1];
+    const moduleKind: string = urlResult[2];
+    const modulePath: string = urlResult[3];
+    const bundleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[0];
     moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
     item = moduleKind === 'lib' ? replaceLibSo(importValue, moduleRequest, sourcePath) :
       item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
@@ -892,28 +892,28 @@ function replaceOhmStartsWithModule(url: string, item: string, importValue: stri
   return item;
 }
 
-function replaceOhmStartsWithOhos(url: string, item: string, importValue:string, moduleRequest: string, isSystemModule: boolean) {
+function replaceOhmStartsWithOhos(url: string, item: string, importValue:string, moduleRequest: string, isSystemModule: boolean): string {
   url = url.replace('/', '.');
-  const urlResult = url.match(/^system\.(\S+)/);
+  const urlResult: RegExpMatchArray | null = url.match(/^system\.(\S+)/);
   moduleRequest = urlResult ? `@${url}` : `@ohos.${url}`;
   if (!isSystemModule) {
     item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
   } else {
-    const moduleType = urlResult ? 'system' : 'ohos';
-    const systemKey = urlResult ? url.substring(7) : url;
+    const moduleType: string = urlResult ? 'system' : 'ohos';
+    const systemKey: string = urlResult ? url.substring(7) : url;
     item = replaceSystemApi(item, importValue, moduleType, systemKey);
   }
   return item;
 }
 
-function replaceOhmStartsWithLocal(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string) {
-  const result = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+function replaceOhmStartsWithLocal(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
+  const result: RegExpMatchArray | null = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
   if (result && projectConfig.aceModuleJsonPath) {
-    const packageInfo = getPackageInfo(projectConfig.aceModuleJsonPath);
-    const urlResult = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
+    const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+    const urlResult: RegExpMatchArray | null = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
     if (urlResult) {
-      const moduleKind = urlResult[1];
-      const modulePath = urlResult[2];
+      const moduleKind: string = urlResult[1];
+      const modulePath: string = urlResult[2];
       if (moduleKind === 'lib') {
         item = replaceLibSo(importValue, modulePath, sourcePath);
       } else if (moduleKind === 'node_modules') {
@@ -928,8 +928,8 @@ function replaceOhmStartsWithLocal(url: string, item: string, importValue: strin
   return item;
 }
 
-function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: string, moduleRequest: string, sourcePath: string = null) {
-  const result = moduleRequest.match(/^@(\S+):(\S+)$/);
+function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: string, moduleRequest: string, sourcePath: string = null): string {
+  const result: RegExpMatchArray = moduleRequest.match(/^@(\S+):(\S+)$/);
   const urlType: string = result[1];
   const url: string = result[2];
   switch (urlType) {
@@ -954,20 +954,20 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       break;
     }
     default:
-      console.error('Incorrect OpenHarmony module kind: ', urlType);
+      logger.error('\u001b[31m', `ETS:ERROR Incorrect OpenHarmony module kind: ${urlType}`, '\u001b[39m');
   }
   return item;
 }
 
-function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string) {
+function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string): string {
   // Do not replace relativePath to ohmUrl when building bundle
   if (sourcePath && projectConfig.compileMode === 'esmodule') {
-    const filePath = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
+    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
-      const packageInfo = getPackageInfo(projectConfig.aceModuleJsonPath);
-      const bundleName = packageInfo[0];
-      const moduleName = packageInfo[1];
+      const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+      const bundleName: string = packageInfo[0];
+      const moduleName: string = packageInfo[1];
       moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
       item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
     }
@@ -977,7 +977,7 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
-  const REG_IMPORT_DECL = isProcessAllowList ? /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
+  const REG_IMPORT_DECL: RegExp = isProcessAllowList ? /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
@@ -995,15 +995,15 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
       if (!isSystemModule) {
         return item;
       }
-      const result = moduleRequest.match(/^@(system|ohos)\.(\S+)$/);
+      const result: RegExpMatchArray = moduleRequest.match(/^@(system|ohos)\.(\S+)$/);
       const moduleType: string = result[1];
       const apiName: string = result[2];
       return replaceSystemApi(item, importValue, moduleType, apiName);
     } else if (/^(\.|\.\.)\//.test(moduleRequest)) { // relativePath
       return replaceRelativePath(item, moduleRequest, sourcePath);
     } else if (/^lib(\S+)\.so$/.test(moduleRequest)) { // libxxx.so
-      const result = moduleRequest.match(/^lib(\S+)\.so$/);
-      const libSoKey = result[1];
+      const result: RegExpMatchArray = moduleRequest.match(/^lib(\S+)\.so$/);
+      const libSoKey: string = result[1];
       return replaceLibSo(importValue, libSoKey, sourcePath);
     }
     // node_modules
