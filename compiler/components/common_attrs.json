@@ -19,6 +19,6 @@
     "accessibilityImportance", "onAccessibility", "grayscale", "brightness", "contrast",
     "saturate", "geometryTransition",
     "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "bindContextMenu",
-    "onFocus", "onBlur", "onFocusMove", "focusable", "responseRegion", "alignRules"
+    "onFocus", "onBlur", "onFocusMove", "focusable", "tabIndex", "responseRegion", "alignRules"
   ]
 }
