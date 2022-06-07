@@ -337,6 +337,20 @@ function hashProjectPath(projectPath) {
   return process.env.hashProjectPath;
 }
 
+function loadModuleInfo(projectConfig, envArgs) {
+  if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
+    const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+    projectConfig.compileMode = buildJsonInfo.compileMode;
+    projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
+    projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
+    projectConfig.processTs = false;
+    projectConfig.buildArkMode = envArgs.buildMode;
+    if (buildJsonInfo.compileMode === 'esmodule') {
+      projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
+    }
+  }
+}
+
 const globalProgram = {
   program: null,
   watchProgram: null
@@ -350,3 +364,4 @@ exports.resources = resources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
+exports.loadModuleInfo = loadModuleInfo;
