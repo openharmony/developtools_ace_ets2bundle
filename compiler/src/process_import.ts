@@ -41,7 +41,8 @@ import {
   observedClassCollection,
   enumCollection,
   getComponentSet,
-  IComponentSet
+  IComponentSet,
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
@@ -150,7 +151,8 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
         propertyCollection.get(node.expression.escapedText.toString()),
-        propCollection.get(node.expression.escapedText.toString()));
+        propCollection.get(node.expression.escapedText.toString()),
+        builderParamObjectCollection.get(node.expression.escapedText.toString()));
     }
     addDefaultExport(node);
   }
@@ -177,7 +179,8 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
           }
           setDependencies(asExportName, linkCollection.get(asExportPropertyName),
             propertyCollection.get(asExportPropertyName),
-            propCollection.get(asExportPropertyName));
+            propCollection.get(asExportPropertyName),
+            builderParamObjectCollection.get(asExportPropertyName));
         }
         asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
       }
@@ -198,7 +201,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
           ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString())) {
           asNameFromParent.set(item.propertyName.escapedText.toString(),
             asNameFromParent.get(item.name.escapedText.toString()));
-            defaultCollection.add(item.name.escapedText.toString());
+          defaultCollection.add(item.name.escapedText.toString());
         }
       });
     }
@@ -267,12 +270,13 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
     setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props);
+      ComponentSet.props, ComponentSet.builderParams);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props);
+      ComponentSet.props, ComponentSet.builderParams);
   } else {
-    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props);
+    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
+      ComponentSet.builderParams);
   }
 }
 
@@ -288,18 +292,24 @@ function addDefaultExport(node: ts.ClassDeclaration | ts.ExportAssignment): void
   setDependencies(CUSTOM_COMPONENT_DEFAULT,
     linkCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...linkCollection.get(CUSTOM_COMPONENT_DEFAULT), ...linkCollection.get(name)]) :
-      linkCollection.get(name), propertyCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
-      new Set([...propertyCollection.get(CUSTOM_COMPONENT_DEFAULT), ...propertyCollection.get(name)]) :
-      propertyCollection.get(name), propCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      linkCollection.get(name),
+    propertyCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...propertyCollection.get(CUSTOM_COMPONENT_DEFAULT),
+        ...propertyCollection.get(name)]) : propertyCollection.get(name),
+    propCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...propCollection.get(CUSTOM_COMPONENT_DEFAULT), ...propCollection.get(name)]) :
-      propCollection.get(name));
+      propCollection.get(name),
+    builderParamObjectCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...builderParamObjectCollection.get(CUSTOM_COMPONENT_DEFAULT),
+        ...builderParamObjectCollection.get(name)]) : builderParamObjectCollection.get(name));
 }
 
 function setDependencies(component: string, linkArray: Set<string>, propertyArray: Set<string>,
-  propArray: Set<string>): void {
+  propArray: Set<string>, builderParamArray: Set<string>): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
+  builderParamObjectCollection.set(component, builderParamArray);
   componentCollection.customComponents.add(component);
 }
 
