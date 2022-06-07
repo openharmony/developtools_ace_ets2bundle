@@ -76,7 +76,10 @@ import {
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES
 } from './component_map';
-import { componentCollection } from './validate_ui_syntax';
+import {
+  componentCollection,
+  builderParamObjectCollection
+} from './validate_ui_syntax';
 import { processCustomComponent } from './process_custom_component';
 import {
   LogType,
@@ -84,7 +87,6 @@ import {
   componentInfo,
   createFunction
 } from './utils';
-import { builderParamObjectCollection } from './process_component_member';
 import { projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
