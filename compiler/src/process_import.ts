@@ -46,6 +46,7 @@ import {
 } from './validate_ui_syntax';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
+import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
@@ -84,12 +85,15 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       }
     }
   }
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath) && !isOhmUrl(filePath)) {
     filePath += EXTNAME_ETS;
   }
+
   try {
     let fileResolvePath: string;
-    if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+    if (isOhmUrl(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+      fileResolvePath = resolveSourceFile(filePath);
+    } else if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = path.resolve(pagesDir, filePath);
     } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = filePath;

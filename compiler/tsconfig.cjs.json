@@ -557,7 +557,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "module": "es2020",
+    "module": "commonjs",
     "target": "es2017",
     "types": [],
     "typeRoots": [],

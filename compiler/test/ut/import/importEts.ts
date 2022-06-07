@@ -21,7 +21,7 @@ LinkComponentDefault, {
   LinkComponent3
 } from './test/pages/LinkComponent'
 import DefaultComponent from "./test/pages/DefaultComponent"
-import AMDComponentDefault = require('./test/pages/AMDComponent')
+import AMDComponentDefault from "./test/pages/AMDComponent"
 import TsModule from './test/pages/TsModule'
 
 @Entry
@@ -99,38 +99,14 @@ struct ImportTest {
 `
 
 exports.expectResult =
-`"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const LinkComponent_1 = __importStar(require("./test/pages/LinkComponent"));
-const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponent"));
-const AMDComponentDefault = require("./test/pages/AMDComponent");
-const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
+`import LinkComponentDefault, { LinkComponent as LinkComponent1Ref, LinkComponent2 as LinkComponent2Ref, LinkComponent3 } from './test/pages/LinkComponent';
+import DefaultComponent from "./test/pages/DefaultComponent";
+import AMDComponentDefault from "./test/pages/AMDComponent";
+import TsModule from './test/pages/TsModule';
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.__myState1 = new ObservedPropertyObject(new TsModule_1.default(1).method(), this, "myState1");
+        this.__myState1 = new ObservedPropertyObject(new TsModule(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimple(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimple('ImportTest', this, "myState4");
@@ -185,7 +161,7 @@ class ImportTest extends View {
         Column.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new LinkComponent_1.LinkComponent2("2", this, {
+            View.create(new LinkComponent2Ref("2", this, {
                 LinkComponent2Link1: this.__myState1,
                 LinkComponent2Link2: this.__myState2,
                 LinkComponent2Link3: this.__myState3,
@@ -211,7 +187,7 @@ class ImportTest extends View {
         Text.pop();
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new LinkComponent_1.LinkComponent("3", this, {
+            View.create(new LinkComponent1Ref("3", this, {
                 LinkComponent1Link1: this.__myState1,
                 LinkComponent1Link2: this.__myState2,
                 LinkComponent1Link3: this.__myState3,
@@ -233,7 +209,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_4 = this.findChildById("4");
         if (earlierCreatedChild_4 == undefined) {
-            View.create(new DefaultComponent_1.default("4", this, {
+            View.create(new DefaultComponent("4", this, {
                 DefaultComponentLink1: this.__myState1,
                 DefaultComponentLink2: this.__myState2,
                 DefaultComponentLink3: this.__myState3,
@@ -251,7 +227,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_5 = this.findChildById("5");
         if (earlierCreatedChild_5 == undefined) {
-            View.create(new LinkComponent_1.default("5", this, {
+            View.create(new LinkComponentDefault("5", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,
@@ -291,7 +267,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_7 = this.findChildById("7");
         if (earlierCreatedChild_7 == undefined) {
-            View.create(new LinkComponent_1.LinkComponent3("7", this, {
+            View.create(new LinkComponent3("7", this, {
                 LinkComponent3Link1: this.__myState1,
                 LinkComponent3Link2: this.__myState2,
                 LinkComponent3Link3: this.__myState3,

@@ -220,7 +220,7 @@ export class ResultStates {
       if (lastModuleCollection && lastModuleCollection !== 'NULL') {
         lastModuleCollection.split(',').forEach(item => {
           moduleCollection.add(item);
-        })
+        });
       }
     }
     const moduleContent: string =
