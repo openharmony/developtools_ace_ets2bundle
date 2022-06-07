@@ -13,16 +13,38 @@
  * limitations under the License.
  */
 
-import ts from 'typescript';
 import path from 'path';
+import ts from 'typescript';
 import fs from 'fs';
+import { projectConfig } from '../main';
 import { createHash } from 'crypto';
+import { processSystemApi } from './validate_ui_syntax';
+import {
+  NODE_MODULES,
+  TEMPRARY,
+  MAIN,
+  AUXILIARY,
+  ZERO,
+  ONE,
+  EXTNAME_JS,
+  EXTNAME_TS,
+  EXTNAME_MJS,
+  EXTNAME_CJS,
+  EXTNAME_ABC,
+  EXTNAME_ETS,
+  EXTNAME_TS_MAP,
+  EXTNAME_JS_MAP
+} from './pre_define';
 
 export enum LogType {
   ERROR = 'ERROR',
   WARN = 'WARN',
   NOTE = 'NOTE'
 }
+export const TEMPORARYS: string = 'temporarys';
+export const BUILD: string = 'build';
+export const SRC_MAIN: string = 'src/main';
+const TS_NOCHECK: string = '// @ts-nocheck';
 
 export interface LogInfo {
   type: LogType,
@@ -217,9 +239,9 @@ export function toUnixPath(data: string): string {
   return data;
 }
 
-export function toHashData(path: string) {
-  const content = fs.readFileSync(path);
-  const hash = createHash('sha256');
+export function toHashData(path: string): any {
+  const content: string = fs.readFileSync(path).toString();
+  const hash: any = createHash('sha256');
   hash.update(content);
   return hash.digest('hex');
 }
@@ -234,3 +256,220 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+  filePath = toUnixPath(filePath);
+  if (filePath.endsWith(EXTNAME_MJS)) {
+    filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
+  }
+  if (filePath.endsWith(EXTNAME_CJS)) {
+    filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
+  }
+  projectPath = toUnixPath(projectPath);
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
+
+  if (checkNodeModulesFile(filePath, projectPath)) {
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    let output: string = '';
+    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+      const sufStr: string = dataTmps[dataTmps.length - 1];
+      output = path.join(buildPath, TEMPRARY, NODE_MODULES, MAIN, sufStr);
+    } else {
+      const sufStr: string = dataTmps[dataTmps.length - 1];
+      output = path.join(buildPath, TEMPRARY, NODE_MODULES, AUXILIARY, sufStr);
+    }
+    return output;
+  }
+
+  if (filePath.indexOf(projectPath) !== -1) {
+    const sufStr: string = filePath.replace(projectPath, '');
+    const output: string = path.join(buildPath, TEMPRARY, sufStr);
+    return output;
+  }
+
+  return '';
+}
+
+export function genBuildPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+  filePath = toUnixPath(filePath);
+  if (filePath.endsWith(EXTNAME_MJS)) {
+    filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
+  }
+  if (filePath.endsWith(EXTNAME_CJS)) {
+    filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
+  }
+  projectPath = toUnixPath(projectPath);
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
+
+  if (checkNodeModulesFile(filePath, projectPath)) {
+    filePath = toUnixPath(filePath);
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    let output: string = '';
+    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+      const sufStr: string = dataTmps[dataTmps.length - 1];
+      output = path.join(projectConfig.nodeModulesPath, ZERO, sufStr);
+    } else {
+      const sufStr: string = dataTmps[dataTmps.length - 1];
+      output = path.join(projectConfig.nodeModulesPath, ONE, sufStr);
+    }
+    return output;
+  }
+
+  if (filePath.indexOf(projectPath) !== -1) {
+    const sufStr: string = filePath.replace(projectPath, '');
+    const output: string = path.join(buildPath, sufStr);
+    return output;
+  }
+
+  return '';
+}
+
+export function checkNodeModulesFile(filePath: string, projectPath: string): boolean {
+  filePath = toUnixPath(filePath);
+  projectPath = toUnixPath(projectPath);
+  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+  const tempFilePath: string = filePath.replace(hapPath, '');
+  if (tempFilePath.indexOf(NODE_MODULES) !== -1) {
+    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
+    if (filePath.indexOf(fakeNodeModulesPath) !== -1) {
+      return true;
+    }
+    if (projectConfig.modulePathMap) {
+      for (const key in projectConfig.modulePathMap) {
+        const value: string = projectConfig.modulePathMap[key];
+        const fakeModuleNodeModulesPath: string = toUnixPath(path.resolve(value, NODE_MODULES));
+        if (filePath.indexOf(fakeModuleNodeModulesPath) !== -1) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+export function mkdirsSync(dirname: string): boolean {
+  if (fs.existsSync(dirname)) {
+    return true;
+  } else if (mkdirsSync(path.dirname(dirname))) {
+    fs.mkdirSync(dirname);
+    return true;
+  }
+
+  return false;
+}
+
+export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean): void {
+  const temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
+  if (temporaryFile.length === 0) {
+    return;
+  }
+  mkdirsSync(path.dirname(temporaryFile));
+  fs.writeFileSync(temporaryFile, sourceCode);
+  return;
+}
+
+export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
+  if (toTsFile) {
+    const newStatements: ts.Node[] = [];
+    const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
+    newStatements.push(tsIgnoreNode);
+    if (node.statements && node.statements.length) {
+      newStatements.push(...node.statements);
+    }
+
+    node = ts.factory.updateSourceFile(node, newStatements);
+  }
+  const mixedInfo: {content: string, sourceMapContent: string} = genContentAndSourceMapInfo(node, toTsFile);
+  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath, toTsFile);
+  if (temporaryFile.length === 0) {
+    return;
+  }
+  let temporarySourceMapFile: string = '';
+  if (temporaryFile.endsWith(EXTNAME_ETS)) {
+    if (toTsFile) {
+      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
+    } else {
+      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_JS);
+    }
+    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
+  } else {
+    if (!toTsFile) {
+      temporaryFile = temporaryFile.replace(/\.ts$/, EXTNAME_JS);
+      temporarySourceMapFile = genSourceMapFileName(temporaryFile);
+    }
+  }
+  mkdirsSync(path.dirname(temporaryFile));
+  fs.writeFileSync(temporaryFile, mixedInfo.content);
+  if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
+    fs.writeFileSync(temporarySourceMapFile, mixedInfo.sourceMapContent);
+  }
+}
+
+function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any {
+  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  const options: ts.CompilerOptions = {
+    sourceMap: true
+  };
+  const mapOpions: any = {
+    sourceMap: true,
+    inlineSourceMap: false,
+    inlineSources: false,
+    sourceRoot: '',
+    mapRoot: '',
+    extendedDiagnostics: false
+  };
+  const host: ts.CompilerHost = ts.createCompilerHost(options);
+  const fileName: string = node.fileName;
+  // @ts-ignore
+  const sourceMapGenerator: any = ts.createSourceMapGenerator(
+    host,
+    // @ts-ignore
+    ts.getBaseFileName(fileName),
+    '',
+    '',
+    mapOpions
+  );
+  // @ts-ignore
+  const writer: any = ts.createTextWriter(
+    // @ts-ignore
+    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
+  printer['writeFile'](node, writer, sourceMapGenerator);
+  const sourceMapJson: any = sourceMapGenerator.toJSON();
+  sourceMapJson['sources'] = [fileName];
+  const result: string = writer.getText();
+  let content: string = result;
+  content = processSystemApi(content, true);
+  if (toTsFile) {
+    content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
+  }
+  const sourceMapContent: string = JSON.stringify(sourceMapJson);
+
+  return {
+    content: content,
+    sourceMapContent: sourceMapContent
+  };
+}
+
+export function genAbcFileName(temporaryFile: string): string {
+  let abcFile: string = temporaryFile;
+  if (temporaryFile.endsWith(EXTNAME_TS)) {
+    abcFile = temporaryFile.replace(/\.ts$/, EXTNAME_ABC);
+  } else {
+    abcFile = temporaryFile.replace(/\.js$/, EXTNAME_ABC);
+  }
+  return abcFile;
+}
+
+export function genSourceMapFileName(temporaryFile: string): string {
+  let abcFile: string = temporaryFile;
+  if (temporaryFile.endsWith(EXTNAME_TS)) {
+    abcFile = temporaryFile.replace(/\.ts$/, EXTNAME_TS_MAP);
+  } else {
+    abcFile = temporaryFile.replace(/\.js$/, EXTNAME_JS_MAP);
+  }
+  return abcFile;
+}

@@ -41,29 +41,37 @@ import {
   observedClassCollection,
   enumCollection,
   getComponentSet,
-  IComponentSet
+  IComponentSet,
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
+import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
-  ts.ExportDeclaration, pagesDir: string, log: LogInfo[]): void {
+  ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
+  isEntryPage: boolean = true): void {
   let filePath: string;
   let defaultName: string;
-  const asName: Map<string, string> = new Map();
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
     filePath = node.moduleSpecifier.getText().replace(/'|"/g, '');
     if (ts.isImportDeclaration(node) && node.importClause && node.importClause.name &&
       ts.isIdentifier(node.importClause.name)) {
       defaultName = node.importClause.name.escapedText.toString();
+      if (isEntryPage) {
+        asName.set(defaultName, defaultName);
+      }
     }
     if (ts.isImportDeclaration(node) && node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) &&
-      node.importClause.namedBindings.elements) {
+      node.importClause.namedBindings.elements && isEntryPage) {
       node.importClause.namedBindings.elements.forEach(item => {
-        if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
-          ts.isIdentifier(item.propertyName)) {
-          asName.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
+        if (item.name && ts.isIdentifier(item.name)) {
+          if (item.propertyName && ts.isIdentifier(item.propertyName) && asName) {
+            asName.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
+          } else {
+            asName.set(item.name.escapedText.toString(), item.name.escapedText.toString());
+          }
         }
       });
     }
@@ -72,14 +80,20 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       node.moduleReference.expression && ts.isStringLiteral(node.moduleReference.expression)) {
       filePath = node.moduleReference.expression.text;
       defaultName = node.name.escapedText.toString();
+      if (isEntryPage) {
+        asName.set(defaultName, defaultName);
+      }
     }
   }
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath) && !isOhmUrl(filePath)) {
     filePath += EXTNAME_ETS;
   }
+
   try {
     let fileResolvePath: string;
-    if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+    if (isOhmUrl(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+      fileResolvePath = resolveSourceFile(filePath);
+    } else if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = path.resolve(pagesDir, filePath);
     } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = filePath;
@@ -94,7 +108,8 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
           }))));
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(), new Set());
+      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
+        new Set(), new Set(), new Map());
     }
   } catch (e) {
     // ignore
@@ -102,7 +117,8 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
 }
 
 function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
-  pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>) {
+  pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>,
+  defaultCollection: Set<string>, asExportCollection: Map<string, string>) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -117,11 +133,17 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (ts.isClassDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
     addDependencies(node, defaultNameFromParent, asNameFromParent);
     isExportEntry(node, log, entryCollection, exportCollection);
+    if (asExportCollection.has(node.name.getText())) {
+      componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
+    }
     if (!defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 &&
       node.modifiers[0] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
       node.modifiers[1] && node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword &&
       hasCollection(node.name)) {
       addDefaultExport(node);
+    }
+    if (defaultCollection.has(node.name.getText())) {
+      componentCollection.customComponents.add('default');
     }
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
@@ -133,9 +155,16 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
         propertyCollection.get(node.expression.escapedText.toString()),
-        propCollection.get(node.expression.escapedText.toString()));
+        propCollection.get(node.expression.escapedText.toString()),
+        builderParamObjectCollection.get(node.expression.escapedText.toString()));
     }
     addDefaultExport(node);
+  }
+  if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression)) {
+    if (defaultNameFromParent) {
+      asNameFromParent.set(node.expression.getText(), asNameFromParent.get(defaultNameFromParent));
+    }
+    defaultCollection.add(node.expression.getText());
   }
   if (ts.isExportDeclaration(node) && node.exportClause &&
     ts.isNamedExports(node.exportClause) && node.exportClause.elements) {
@@ -145,15 +174,24 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         remindExportEntryComponent(node, log);
       }
       if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
-        ts.isIdentifier(item.propertyName) && hasCollection(item.propertyName)) {
-        let asExportName: string = item.name.escapedText.toString();
-        const asExportPropertyName: string = item.propertyName.escapedText.toString();
-        if (asNameFromParent.has(asExportName)) {
-          asExportName = asNameFromParent.get(asExportName);
+        ts.isIdentifier(item.propertyName)) {
+        if (hasCollection(item.propertyName)) {
+          let asExportName: string = item.name.escapedText.toString();
+          const asExportPropertyName: string = item.propertyName.escapedText.toString();
+          if (asNameFromParent.has(asExportName)) {
+            asExportName = asNameFromParent.get(asExportName);
+          }
+          setDependencies(asExportName, linkCollection.get(asExportPropertyName),
+            propertyCollection.get(asExportPropertyName),
+            propCollection.get(asExportPropertyName),
+            builderParamObjectCollection.get(asExportPropertyName));
         }
-        setDependencies(asExportName, linkCollection.get(asExportPropertyName),
-          propertyCollection.get(asExportPropertyName),
-          propCollection.get(asExportPropertyName));
+        asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
+      }
+      if (item.name && ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString()) &&
+        item.propertyName && ts.isIdentifier(item.propertyName)) {
+        asNameFromParent.set(item.propertyName.escapedText.toString(),
+          asNameFromParent.get(item.name.escapedText.toString()));
       }
     });
   }
@@ -163,12 +201,34 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
       node.exportClause.elements) {
       node.exportClause.elements.forEach(item => {
         exportCollection.add((item.propertyName ? item.propertyName : item.name).escapedText.toString());
+        if (item.propertyName && ts.isIdentifier(item.propertyName) && item.name &&
+          ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString())) {
+          asNameFromParent.set(item.propertyName.escapedText.toString(),
+            asNameFromParent.get(item.name.escapedText.toString()));
+          defaultCollection.add(item.name.escapedText.toString());
+        }
       });
     }
-    processImport(node, pagesDir, log);
+    processImport(node, pagesDir, log, asNameFromParent);
   }
-  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
-    asNameFromParent, pagesDir, log, entryCollection, exportCollection));
+  if (ts.isImportDeclaration(node)) {
+    if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
+      processImport(node, pagesDir, log, asNameFromParent, false);
+    } else if (node.importClause && node.importClause.namedBindings &&
+      ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
+      node.importClause.namedBindings.elements.forEach(item => {
+        if (item.name && ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString())) {
+          if (item.propertyName && ts.isIdentifier(item.propertyName)) {
+            asNameFromParent.set(item.propertyName.escapedText.toString(),
+              asNameFromParent.get(item.name.escapedText.toString()));
+          }
+        }
+      });
+      processImport(node, pagesDir, log, asNameFromParent, false);
+    }
+  }
+  node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
+    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection, asExportCollection));
 }
 
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
@@ -214,12 +274,13 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
     setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props);
+      ComponentSet.props, ComponentSet.builderParams);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props);
+      ComponentSet.props, ComponentSet.builderParams);
   } else {
-    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props);
+    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
+      ComponentSet.builderParams);
   }
 }
 
@@ -235,18 +296,24 @@ function addDefaultExport(node: ts.ClassDeclaration | ts.ExportAssignment): void
   setDependencies(CUSTOM_COMPONENT_DEFAULT,
     linkCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...linkCollection.get(CUSTOM_COMPONENT_DEFAULT), ...linkCollection.get(name)]) :
-      linkCollection.get(name), propertyCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
-      new Set([...propertyCollection.get(CUSTOM_COMPONENT_DEFAULT), ...propertyCollection.get(name)]) :
-      propertyCollection.get(name), propCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      linkCollection.get(name),
+    propertyCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...propertyCollection.get(CUSTOM_COMPONENT_DEFAULT),
+        ...propertyCollection.get(name)]) : propertyCollection.get(name),
+    propCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...propCollection.get(CUSTOM_COMPONENT_DEFAULT), ...propCollection.get(name)]) :
-      propCollection.get(name));
+      propCollection.get(name),
+    builderParamObjectCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...builderParamObjectCollection.get(CUSTOM_COMPONENT_DEFAULT),
+        ...builderParamObjectCollection.get(name)]) : builderParamObjectCollection.get(name));
 }
 
 function setDependencies(component: string, linkArray: Set<string>, propertyArray: Set<string>,
-  propArray: Set<string>): void {
+  propArray: Set<string>, builderParamArray: Set<string>): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
+  builderParamObjectCollection.set(component, builderParamArray);
   componentCollection.customComponents.add(component);
 }
 

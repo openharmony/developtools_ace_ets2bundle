@@ -158,7 +158,7 @@ function setAbilityPages(projectConfig) {
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    abilityPages = readAbilityEntrance(moduleJson, projectConfig);
+    abilityPages = readAbilityEntrance(moduleJson);
     setAbilityFile(projectConfig, abilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
@@ -211,7 +211,7 @@ function setAbilityFile(projectConfig, abilityPages) {
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
-    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
@@ -221,23 +221,23 @@ function setAbilityFile(projectConfig, abilityPages) {
   });
 }
 
-function readAbilityEntrance(moduleJson, projectConfig) {
+function readAbilityEntrance(moduleJson) {
   let abilityPages = [];
   if (moduleJson.module) {
     if (moduleJson.module.srcEntrance) {
       abilityPages.push(moduleJson.module.srcEntrance);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
-      setEntrance(moduleJson.module.abilities, abilityPages, projectConfig);
+      setEntrance(moduleJson.module.abilities, abilityPages);
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
-      setEntrance(moduleJson.module.extensionAbilities, abilityPages, projectConfig);
+      setEntrance(moduleJson.module.extensionAbilities, abilityPages);
     }
   }
   return abilityPages;
 }
 
-function setEntrance(abilityConfig, abilityPages, projectConfig) {
+function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntrance) {
@@ -345,6 +345,20 @@ function hashProjectPath(projectPath) {
   return process.env.hashProjectPath;
 }
 
+function loadModuleInfo(projectConfig, envArgs) {
+  if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
+    const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+    projectConfig.compileMode = buildJsonInfo.compileMode;
+    projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
+    projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
+    projectConfig.processTs = false;
+    projectConfig.buildArkMode = envArgs.buildMode;
+    if (buildJsonInfo.compileMode === 'esmodule') {
+      projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
+    }
+  }
+}
+
 const globalProgram = {
   program: null,
   watchProgram: null
@@ -359,3 +373,4 @@ exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
+exports.loadModuleInfo = loadModuleInfo;
