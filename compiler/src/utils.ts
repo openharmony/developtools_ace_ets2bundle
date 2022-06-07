@@ -327,7 +327,7 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
   return '';
 }
 
-export function checkNodeModulesFile(filePath: string, projectPath: string) {
+export function checkNodeModulesFile(filePath: string, projectPath: string): boolean {
   filePath = toUnixPath(filePath);
   projectPath = toUnixPath(projectPath);
   const hapPath: string = toUnixPath(projectConfig.projectRootPath);
@@ -372,7 +372,7 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, to
   return;
 }
 
-export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
+export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
   if (toTsFile) {
     const newStatements: ts.Node[] = [];
     const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
@@ -409,7 +409,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean) {
   }
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): {content: string, sourceMapContent: string} {
+function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
