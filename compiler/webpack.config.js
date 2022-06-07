@@ -18,6 +18,7 @@ const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
+const { OHMResolverPlugin } = require('./lib/resolve_ohm_url');
 const buildPipeServer = require('./server/build_pipe_server');
 
 const {
@@ -100,6 +101,7 @@ function initConfig(config) {
       global: false
     },
     resolve: {
+      plugins: [new OHMResolverPlugin()],
       extensions: ['.js', '.ets', '.ts', '.d.ts'],
       modules: [
         projectPath,
@@ -285,10 +287,26 @@ function setOptimizationConfig(config, workerFile) {
   }
 }
 
+function setTsConfigFile() {
+  let tsconfigTemplate =
+    path.resolve(__dirname, projectConfig.compileMode === 'esmodule' ? 'tsconfig.esm.json' : 'tsconfig.cjs.json');
+  if (fs.existsSync(tsconfigTemplate) && fs.statSync(tsconfigTemplate).isFile()) {
+    let currentTsconfigFile = path.resolve(__dirname, 'tsconfig.json');
+    let tsconfigTemplateNew =
+      currentTsconfigFile.replace(/.json$/, projectConfig.compileMode === 'esmodule' ? '.cjs.json' : '.esm.json');
+    fs.renameSync(currentTsconfigFile, tsconfigTemplateNew);
+
+    let tsconfigFileNew =
+      tsconfigTemplate.replace(projectConfig.compileMode === 'esmodule' ? /.esm.json$/ : /.cjs.json$/, '.json');
+    fs.renameSync(tsconfigTemplate, tsconfigFileNew);
+  }
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
   loadEntryObj(projectConfig);
+  setTsConfigFile();
   initConfig(config);
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
