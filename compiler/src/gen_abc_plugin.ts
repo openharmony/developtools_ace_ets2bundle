@@ -19,10 +19,34 @@ import cluster from 'cluster';
 import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
-import { toUnixPath, toHashData } from './utils';
+import {
+  toUnixPath,
+  toHashData,
+  genTemporaryPath,
+  genBuildPath,
+  genAbcFileName,
+  mkdirsSync,
+  genSourceMapFileName,
+  checkNodeModulesFile
+} from './utils';
+import { projectConfig } from '../main';
+import {
+  ESMODULE,
+  JSBUNDLE,
+  NODE_MODULES,
+  ENTRY_TXT,
+  EXTNAME_ETS,
+  EXTNAME_JS,
+  EXTNAME_TS,
+  EXTNAME_MJS,
+  EXTNAME_CJS,
+  EXTNAME_D_TS,
+  EXTNAME_ABC
+} from './pre_define';
 
 const firstFileEXT: string = '_.js';
-const genAbcScript = 'gen_abc.js';
+const genAbcScript: string = 'gen_abc.js';
+const genModuleAbcScript: string = 'gen_module_abc.js';
 let output: string;
 let isWin: boolean = false;
 let isMac: boolean = false;
@@ -36,13 +60,49 @@ interface File {
 }
 const intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
+const moduleInfos: Array<ModuleInfo> = [];
+let filterModuleInfos: Array<ModuleInfo> = [];
+const commonJsModuleInfos: Array<ModuleInfo> = [];
+const ESMModuleInfos: Array<ModuleInfo> = [];
+const entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
 let hashJsonObject = {};
-let buildPathInfo = '';
+let moduleHashJsonObject = {};
+let buildPathInfo: string = '';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
-const hashFile = 'gen_hash.json';
-const ARK = '/ark/';
+const hashFile: string = 'gen_hash.json';
+const ARK: string = '/ark/';
+
+class ModuleInfo {
+  filePath: string;
+  tempFilePath: string;
+  buildFilePath: string;
+  abcFilePath: string;
+  isCommonJs: boolean;
+
+  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
+    this.filePath = filePath;
+    this.tempFilePath = tempFilePath;
+    this.buildFilePath = buildFilePath;
+    this.abcFilePath = abcFilePath;
+    this.isCommonJs = isCommonJs;
+  }
+}
+
+class EntryInfo {
+  npmInfo: string;
+  abcFileName: string;
+  buildPath: string;
+  entry: string;
+
+  constructor(npmInfo: string, abcFileName: string, buildPath: string, entry: string) {
+    this.npmInfo = npmInfo;
+    this.abcFileName = abcFileName;
+    this.buildPath = buildPath;
+    this.entry = entry;
+  }
+}
 
 export class GenAbcPlugin {
   constructor(output_, arkDir_, nodeJs_, isDebug_) {
@@ -65,10 +125,34 @@ export class GenAbcPlugin {
       }
     }
 
+    compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
+      if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
+        return;
+      }
+      buildPathInfo = output;
+      compilation.hooks.finishModules.tap('finishModules', handleFinishModules.bind(this));
+    });
+
+    compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
+      compilation.hooks.processAssets.tap('processAssets', (assets) => {
+        if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
+          return;
+        }
+        Object.keys(compilation.assets).forEach(key => {
+          if (path.extname(key) === EXTNAME_JS) {
+            delete assets[key];
+          }
+        });
+      });
+    });
+
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
+      if (projectConfig.compileMode === ESMODULE) {
+        return;
+      }
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
-        if (output && path.extname(key) === '.js') {
+        if (output && path.extname(key) === EXTNAME_JS) {
           const newContent: string = compilation.assets[key].source();
           const keyPath: string = key.replace(/\.js$/, firstFileEXT);
           writeFileSync(newContent, path.resolve(output, keyPath), key);
@@ -77,9 +161,160 @@ export class GenAbcPlugin {
     });
 
     compiler.hooks.afterEmit.tap('GenAbcPluginMultiThread', () => {
+      if (projectConfig.compileMode === ESMODULE) {
+        return;
+      }
       buildPathInfo = output;
       invokeWorkersToGenAbc();
     });
+  }
+}
+
+function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
+  if (!resourceResolveData.descriptionFilePath) {
+    return;
+  }
+  const packageName: string = resourceResolveData.descriptionFileData['name'];
+  const packageJsonPath: string = resourceResolveData.descriptionFilePath;
+  let npmInfoPath: string = path.resolve(packageJsonPath, '..');
+  const fakeEntryPath: string = path.resolve(npmInfoPath, 'fake.js');
+  const tempFakeEntryPath: string = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
+  const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
+  npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
+  const buildNpmInfoPath: string = toUnixPath(path.resolve(buildFakeEntryPath, '..'));
+  if (entryInfos.has(npmInfoPath)) {
+    return;
+  }
+
+  let abcFileName: string = genAbcFileName(tempFilePath);
+  const abcFilePaths: string[] = abcFileName.split(NODE_MODULES);
+  abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
+  abcFileName = toUnixPath(abcFileName);
+
+  const packagePaths: string[] = tempFilePath.split(NODE_MODULES);
+  const entryPaths: string[] = packagePaths[packagePaths.length - 1].split(packageName);
+  let entry: string = toUnixPath(entryPaths[entryPaths.length - 1]);
+  if (entry.startsWith('/')) {
+    entry = entry.slice(1, entry.length);
+  }
+  const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
+  entryInfos.set(npmInfoPath, entryInfo);
+}
+
+function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  getEntryInfo(tempFilePath, module.resourceResolveData);
+  const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
+  if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+    nodeModulesFile.push(tempFilePath);
+  } else if (filePath.endsWith(EXTNAME_MJS)) {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+    nodeModulesFile.push(tempFilePath);
+  } else {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
+    moduleInfos.push(tempModuleInfo);
+    nodeModulesFile.push(tempFilePath);
+  }
+
+  return;
+}
+
+function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  if (projectConfig.processTs === true) {
+    tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_TS);
+    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_TS);
+  } else {
+    tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_JS);
+    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
+  }
+  const abcFilePath: string = genAbcFileName(tempFilePath);
+  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+    processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
+  } else {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+  }
+}
+
+function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  return;
+}
+
+function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  if (projectConfig.processTs === false) {
+    tempFilePath = tempFilePath.replace(/\.ts$/, EXTNAME_JS);
+    buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
+  }
+  const abcFilePath: string = genAbcFileName(tempFilePath);
+  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+    processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
+  } else {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+  }
+}
+
+function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  const parent: string = path.join(tempFilePath, '..');
+  if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+    mkDir(parent);
+  }
+  if (filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
+    fs.copyFileSync(filePath, tempFilePath);
+  }
+  const abcFilePath: string = genAbcFileName(tempFilePath);
+  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+    processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
+  } else {
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    moduleInfos.push(tempModuleInfo);
+  }
+}
+
+function handleFinishModules(modules, callback): any {
+  const nodeModulesFile: Array<string> = [];
+  modules.forEach(module => {
+    if (module !== undefined && module.resourceResolveData !== undefined) {
+      const filePath: string = module.resourceResolveData.path;
+      let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+      if (tempFilePath.length === 0) {
+        return;
+      }
+      let buildFilePath: string = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
+      tempFilePath = toUnixPath(tempFilePath);
+      buildFilePath = toUnixPath(buildFilePath);
+      if (filePath.endsWith(EXTNAME_ETS)) {
+        processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else if (filePath.endsWith(EXTNAME_D_TS)) {
+        processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else if (filePath.endsWith(EXTNAME_TS)) {
+        processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
+        processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      } else {
+        logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+      }
+    }
+  });
+
+  invokeWorkersModuleToGenAbc(moduleInfos);
+  processEntryToGenAbc(entryInfos);
+}
+
+function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
+  for (const value of entryInfos.values()) {
+    const tempAbcFilePath: string = toUnixPath(path.resolve(value.npmInfo, ENTRY_TXT));
+    const buildAbcFilePath: string = toUnixPath(path.resolve(value.buildPath, ENTRY_TXT));
+    fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
+    if (!fs.existsSync(buildAbcFilePath)) {
+      const parent: string = path.join(buildAbcFilePath, '..');
+      if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+        mkDir(parent);
+      }
+    }
+    fs.copyFileSync(tempAbcFilePath, buildAbcFilePath);
   }
 }
 
@@ -90,7 +325,7 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   }
   fs.writeFileSync(output, inputString);
   if (fs.existsSync(output)) {
-    const fileSize = fs.statSync(output).size;
+    const fileSize: any = fs.statSync(output).size;
     intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
@@ -105,16 +340,16 @@ function mkDir(path_: string): void {
   fs.mkdirSync(path_);
 }
 
-function getSmallestSizeGroup(groupSize: Map<number, number>) {
-  const groupSizeArray = Array.from(groupSize);
+function getSmallestSizeGroup(groupSize: Map<number, number>): any {
+  const groupSizeArray: any = Array.from(groupSize);
   groupSizeArray.sort(function(g1, g2) {
     return g1[1] - g2[1]; // sort by size
   });
   return groupSizeArray[0][0];
 }
 
-function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
-  const result = [];
+function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): any {
+  const result: any = [];
   if (bundleArray.length < groupNumber) {
     result.push(bundleArray);
     return result;
@@ -123,7 +358,7 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
   bundleArray.sort(function(f1: File, f2: File) {
     return f2.size - f1.size;
   });
-  const groupFileSize = new Map();
+  const groupFileSize: any = new Map();
   for (let i = 0; i < groupNumber; ++i) {
     result.push([]);
     groupFileSize.set(i, 0);
@@ -131,16 +366,122 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number) {
 
   let index = 0;
   while (index < bundleArray.length) {
-    const smallestGroup = getSmallestSizeGroup(groupFileSize);
+    const smallestGroup: any = getSmallestSizeGroup(groupFileSize);
     result[smallestGroup].push(bundleArray[index]);
-    const sizeUpdate = groupFileSize.get(smallestGroup) + bundleArray[index].size;
+    const sizeUpdate: any = groupFileSize.get(smallestGroup) + bundleArray[index].size;
     groupFileSize.set(smallestGroup, sizeUpdate);
     index++;
   }
   return result;
 }
 
-function invokeWorkersToGenAbc() {
+function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
+  if (fs.existsSync(buildPathInfo)) {
+    fs.rmdirSync(buildPathInfo, { recursive: true});
+  }
+  if (fs.existsSync(projectConfig.nodeModulesPath)) {
+    fs.rmdirSync(projectConfig.nodeModulesPath, { recursive: true});
+  }
+  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
+  filterModuleInfos.forEach(moduleInfo => {
+    if (moduleInfo.isCommonJs) {
+      commonJsModuleInfos.push(moduleInfo);
+    } else {
+      ESMModuleInfos.push(moduleInfo);
+    }
+  });
+
+  invokeCluterModuleToAbc();
+}
+
+function initAbcEnv() : string[] {
+  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+  if (isWin) {
+    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+  } else if (isMac) {
+    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  }
+
+  const args: string[] = [
+    '--expose-gc',
+    js2abc
+  ];
+  if (isDebug) {
+    args.push('--debug');
+  }
+
+  return args;
+}
+
+function invokeCluterModuleToAbc(): void {
+  const abcArgs: string[] = initAbcEnv();
+
+  const clusterNewApiVersion: number = 16;
+  const currentNodeVersion: number = parseInt(process.version.split('.')[0]);
+  const useNewApi: boolean = currentNodeVersion >= clusterNewApiVersion;
+
+  if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
+    if (useNewApi) {
+      cluster.setupPrimary({
+        exec: path.resolve(__dirname, genModuleAbcScript)
+      });
+    } else {
+      cluster.setupMaster({
+        exec: path.resolve(__dirname, genModuleAbcScript)
+      });
+    }
+
+    if (commonJsModuleInfos.length > 0) {
+      const tempAbcArgs: string[] = abcArgs.slice(0);
+      tempAbcArgs.push('-c');
+      const commonJsCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
+      const chunkSize: number = 50;
+      const splitedModules: any[] = splitModulesByNumber(commonJsModuleInfos, chunkSize);
+      const workerNumber: number = splitedModules.length;
+      for (let i = 0; i < workerNumber; i++) {
+        const workerData: any = {
+          'inputs': JSON.stringify(splitedModules[i]),
+          'cmd': commonJsCmdPrefix
+        };
+        cluster.fork(workerData);
+      }
+    }
+    if (ESMModuleInfos.length > 0) {
+      const tempAbcArgs: string[] = abcArgs.slice(0);
+      tempAbcArgs.push('-m');
+      const ESMCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
+      const chunkSize: number = 50;
+      const splitedModules: any[] = splitModulesByNumber(ESMModuleInfos, chunkSize);
+      const workerNumber: number = splitedModules.length;
+      for (let i = 0; i < workerNumber; i++) {
+        const workerData: any = {
+          'inputs': JSON.stringify(splitedModules[i]),
+          'cmd': ESMCmdPrefix
+        };
+        cluster.fork(workerData);
+      }
+    }
+
+    cluster.on('exit', (worker, code, signal) => {
+      logger.debug(`worker ${worker.process.pid} finished`);
+    });
+
+    process.on('exit', (code) => {
+      writeModuleHashJson();
+    });
+  }
+}
+
+function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, chunkSize: number): any[] {
+  const result: any[] = [];
+  for (let i = 0; i < moduleInfos.length; i += chunkSize) {
+    result.push(moduleInfos.slice(i, i + chunkSize));
+  }
+
+  return result;
+}
+
+function invokeWorkersToGenAbc(): void {
   let param: string = '';
   if (isDebug) {
     param += ' --debug';
@@ -154,14 +495,14 @@ function invokeWorkersToGenAbc() {
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
-  const maxWorkerNumber = 3;
-  const splitedBundles = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
-  const workerNumber = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
+  const maxWorkerNumber: number = 3;
+  const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
+  const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
   const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
-  const clusterNewApiVersion = 16;
-  const currentNodeVersion = parseInt(process.version.split('.')[0]);
-  const useNewApi = currentNodeVersion >= clusterNewApiVersion;
+  const clusterNewApiVersion: number = 16;
+  const currentNodeVersion: number = parseInt(process.version.split('.')[0]);
+  const useNewApi: boolean = currentNodeVersion >= clusterNewApiVersion;
 
   if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
     if (useNewApi) {
@@ -175,7 +516,7 @@ function invokeWorkersToGenAbc() {
     }
 
     for (let i = 0; i < workerNumber; ++i) {
-      const workerData = {
+      const workerData: any = {
         'inputs': JSON.stringify(splitedBundles[i]),
         'cmd': cmdPrefix
       };
@@ -192,31 +533,103 @@ function invokeWorkersToGenAbc() {
   }
 }
 
-function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]) {
-  for (let i = 0; i < inputPaths.length; ++i) {
-    fileterIntermediateJsBundle.push(inputPaths[i]);
+function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Array<ModuleInfo>): void {
+  for (let i = 0; i < moduleInfos.length; ++i) {
+    filterModuleInfos.push(moduleInfos[i]);
   }
-  const hashFilePath = genHashJsonPath(buildPath);
+  const hashFilePath: string = genHashJsonPath(buildPath);
   if (hashFilePath.length === 0) {
     return;
   }
-  const updateJsonObject = {};
-  let jsonObject = {};
-  let jsonFile = '';
+  const updateJsonObject: any = {};
+  let jsonObject: any = {};
+  let jsonFile: string = '';
   if (fs.existsSync(hashFilePath)) {
     jsonFile = fs.readFileSync(hashFilePath).toString();
     jsonObject = JSON.parse(jsonFile);
-    fileterIntermediateJsBundle = [];
-    for (let i = 0; i < inputPaths.length; ++i) {
-      const input = inputPaths[i].path;
-      const abcPath = input.replace(/_.js$/, '.abc');
+    filterModuleInfos = [];
+    for (let i = 0; i < moduleInfos.length; ++i) {
+      const input: string = moduleInfos[i].tempFilePath;
+      const abcPath: string = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
         continue;
       }
       if (fs.existsSync(abcPath)) {
-        const hashInputContentData = toHashData(input);
-        const hashAbcContentData = toHashData(abcPath);
+        const hashInputContentData: any = toHashData(input);
+        const hashAbcContentData: any = toHashData(abcPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+          updateJsonObject[input] = hashInputContentData;
+          updateJsonObject[abcPath] = hashAbcContentData;
+          mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
+          fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
+          fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
+          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+            fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
+          }
+        } else {
+          filterModuleInfos.push(moduleInfos[i]);
+        }
+      } else {
+        filterModuleInfos.push(moduleInfos[i]);
+      }
+    }
+  }
+
+  moduleHashJsonObject = updateJsonObject;
+}
+
+function writeModuleHashJson(): void {
+  for (let i = 0; i < filterModuleInfos.length; ++i) {
+    const input: string = filterModuleInfos[i].tempFilePath;
+    const abcPath: string = filterModuleInfos[i].abcFilePath;
+    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      continue;
+    }
+    const hashInputContentData: any = toHashData(input);
+    const hashAbcContentData: any = toHashData(abcPath);
+    moduleHashJsonObject[input] = hashInputContentData;
+    moduleHashJsonObject[abcPath] = hashAbcContentData;
+    mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
+    fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
+    fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
+    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
+      fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
+    }
+  }
+  const hashFilePath: string = genHashJsonPath(buildPathInfo);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
+}
+
+function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
+  for (let i = 0; i < inputPaths.length; ++i) {
+    fileterIntermediateJsBundle.push(inputPaths[i]);
+  }
+  const hashFilePath: string = genHashJsonPath(buildPath);
+  if (hashFilePath.length === 0) {
+    return;
+  }
+  const updateJsonObject: any = {};
+  let jsonObject: any = {};
+  let jsonFile: string = '';
+  if (fs.existsSync(hashFilePath)) {
+    jsonFile = fs.readFileSync(hashFilePath).toString();
+    jsonObject = JSON.parse(jsonFile);
+    fileterIntermediateJsBundle = [];
+    for (let i = 0; i < inputPaths.length; ++i) {
+      const input: string = inputPaths[i].path;
+      const abcPath: string = input.replace(/_.js$/, EXTNAME_ABC);
+      if (!fs.existsSync(input)) {
+        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        continue;
+      }
+      if (fs.existsSync(abcPath)) {
+        const hashInputContentData: any = toHashData(input);
+        const hashAbcContentData: any = toHashData(abcPath);
         if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
@@ -233,28 +646,28 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
   hashJsonObject = updateJsonObject;
 }
 
-function writeHashJson() {
+function writeHashJson(): void {
   for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
-    const input = fileterIntermediateJsBundle[i].path;
-    const abcPath = input.replace(/_.js$/, '.abc');
+    const input:string = fileterIntermediateJsBundle[i].path;
+    const abcPath: string = input.replace(/_.js$/, EXTNAME_ABC);
     if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
       continue;
     }
-    const hashInputContentData = toHashData(input);
-    const hashAbcContentData = toHashData(abcPath);
+    const hashInputContentData: any = toHashData(input);
+    const hashAbcContentData: any = toHashData(abcPath);
     hashJsonObject[input] = hashInputContentData;
     hashJsonObject[abcPath] = hashAbcContentData;
     fs.unlinkSync(input);
   }
-  const hashFilePath = genHashJsonPath(buildPathInfo);
+  const hashFilePath: string = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
     return;
   }
   fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
 }
 
-function genHashJsonPath(buildPath: string) {
+function genHashJsonPath(buildPath: string): string {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
@@ -263,8 +676,8 @@ function genHashJsonPath(buildPath: string) {
     }
     return path.join(process.env.cachePath, hashFile);
   } else if (buildPath.indexOf(ARK) >= 0) {
-    const dataTmps = buildPath.split(ARK);
-    const hashPath = path.join(dataTmps[0], ARK);
+    const dataTmps: string[] = buildPath.split(ARK);
+    const hashPath: string = path.join(dataTmps[0], ARK);
     if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
       logger.error(red, `ETS:ERROR hash path does not exist`, reset);
       return '';

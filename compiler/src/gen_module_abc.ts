@@ -15,7 +15,6 @@
 
 import * as childProcess from 'child_process';
 import * as process from 'process';
-import * as fs from 'fs';
 import cluster from 'cluster';
 import { logger } from './compile_info';
 
@@ -24,25 +23,22 @@ const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
+  const inputs: string[] = [];
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].path;
-    const singleCmd: any = `${cmd} "${input}"`;
-    logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
-    try {
-      childProcess.execSync(singleCmd);
-    } catch (e) {
-      logger.error(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
-      return;
-    }
-
-    const abcFile: string = input.replace(/\.js$/, '.abc');
-    if (fs.existsSync(abcFile)) {
-      const abcFileNew: string = abcFile.replace(/_.abc$/, '.abc');
-      fs.renameSync(abcFile, abcFileNew);
-    } else {
-      logger.error(red, `ETS:ERROR ${abcFile} is lost`, reset);
-    }
+    const input: string = inputPaths[i].tempFilePath;
+    inputs.push('"' + input + '"');
   }
+  const inputsStr: string = inputs.join(' ');
+  const singleCmd: any = `${cmd} ${inputsStr}`;
+  logger.debug('gen abc cmd is: ', singleCmd);
+  try {
+    childProcess.execSync(singleCmd);
+  } catch (e) {
+    logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
+    return;
+  }
+
+  return;
 }
 
 logger.debug('worker data is: ', JSON.stringify(process.env));

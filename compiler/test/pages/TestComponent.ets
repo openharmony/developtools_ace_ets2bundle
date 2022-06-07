@@ -24,3 +24,16 @@ export struct TestComponent {
     }
   }
 }
+
+@Component
+export struct CustomContainerExport {
+  header: string = "";
+  @BuilderParam closer: () => void;
+  build() {
+    Column() {
+      Text(this.header)
+        .fontSize(50)
+      this.closer()
+    }
+  }
+}

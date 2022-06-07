@@ -115,8 +115,6 @@ export const decoratorParamSet: Set<string> = new Set();
 
 export const stateObjectCollection: Set<string> = new Set();
 
-export const builderParamObjectCollection: Map<string, Set<string>> = new Map();
-
 export class UpdateResult {
   private itemUpdate: boolean = false;
   private ctorUpdate: boolean = false;
@@ -420,20 +418,11 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
+    case COMPONENT_BUILDERPARAM_DECORATOR:
       updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
-      break;
-    case COMPONENT_BUILDERPARAM_DECORATOR:
-      if (decorator === COMPONENT_BUILDERPARAM_DECORATOR) {
-        if (!builderParamObjectCollection.get(componentCollection.currentClassName)) {
-          builderParamObjectCollection.set(componentCollection.currentClassName, new Set([]));
-        }
-        builderParamObjectCollection.get(componentCollection.currentClassName)
-          .add(name.escapedText.toString());
-      }
-      updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
   }
   return updateParamsNode;
@@ -512,14 +501,13 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
   setFuncName: string, log: LogInfo[]): ts.ExpressionStatement {
   if (isSingleKey(node)) {
-    const key: string = getDecoratorKey(node);
     return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
       createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
             ts.factory.createIdentifier(APP_STORAGE_GET_OR_SET)), undefined, []),
-        ts.factory.createIdentifier(setFuncName)), undefined, [ts.factory.createStringLiteral(key),
+        ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
           node.initializer, ts.factory.createThis()])));
   } else {
     validateAppStorageDecoractorsNonSingleKey(node, log);

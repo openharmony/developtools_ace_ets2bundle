@@ -52,10 +52,8 @@ struct MyComponent {
 `
 
 exports.expectResult =
-`"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const TestComponent_1 = require("./test/pages/TestComponent");
-const TsModule_1 = require("./test/pages/TsModule");
+`import { TestComponent } from './test/pages/TestComponent';
+import { Animal } from './test/pages/TsModule';
 class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -110,11 +108,11 @@ class MyComponent extends View {
         }
         If.pop();
         If.create();
-        if (TsModule_1.Animal.Dog) {
+        if (Animal.Dog) {
             If.branchId(0);
             let earlierCreatedChild_2 = this.findChildById("2");
             if (earlierCreatedChild_2 == undefined) {
-                View.create(new TestComponent_1.TestComponent("2", this, { content: 'if (import enum)' }));
+                View.create(new TestComponent("2", this, { content: 'if (import enum)' }));
             }
             else {
                 earlierCreatedChild_2.updateWithValueParams({
