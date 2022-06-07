@@ -273,7 +273,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   }
 }
 
-function handleFinishModules(modules, callback): void {
+function handleFinishModules(modules, callback): any {
   const nodeModulesFile: Array<string> = [];
   modules.forEach(module => {
     if (module !== undefined && module.resourceResolveData !== undefined) {
@@ -667,7 +667,7 @@ function writeHashJson(): void {
   fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
 }
 
-function genHashJsonPath(buildPath: string): void {
+function genHashJsonPath(buildPath: string): string {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
