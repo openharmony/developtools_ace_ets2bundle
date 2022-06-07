@@ -28,13 +28,14 @@ const {
   resources,
   loadWorker,
   abilityConfig,
-  readWorkerFile
+  readWorkerFile,
+  loadModuleInfo
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE } = require('./lib/utils');
 const { BUILD_SHARE_PATH } = require('./lib/pre_define');
-
+const { processJs } = require('./lib/process_js_ast');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
@@ -78,10 +79,16 @@ function initConfig(config) {
                 transpileOnly: true,
                 configFile: path.resolve(__dirname, 'tsconfig.json'),
                 getCustomTransformers(program) {
-                  return {
+                  let transformerOperation = {
                     before: [processUISyntax(program)],
                     after: []
                   };
+                  if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === false
+                  && process.env.compilerType && process.env.compilerType === 'ark') {
+                    transformerOperation.after.push(processJs(program));
+                  }
+
+                  return transformerOperation;
                 },
                 ignoreDiagnostics: IGNORE_ERROR_CODE
               }
@@ -92,6 +99,7 @@ function initConfig(config) {
         {
           test: /\.js$/,
           use: [
+            { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
             { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
           ]
         }
@@ -306,14 +314,17 @@ module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
   loadEntryObj(projectConfig);
+  loadModuleInfo(projectConfig, env);
   setTsConfigFile();
   initConfig(config);
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
+
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark') {
+      process.env.compilerType = 'ark';
       let arkDir = path.join(__dirname, 'bin', 'ark');
       if (env.arkFrontendDir) {
         arkDir = env.arkFrontendDir;
