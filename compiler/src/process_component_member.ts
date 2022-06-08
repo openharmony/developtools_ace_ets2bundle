@@ -75,7 +75,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
-import { globalProgram } from '../main';
+import { globalProgram, projectConfig } from '../main';
 
 export type ControllerType = {
   hasController: boolean
@@ -399,7 +399,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
 
 function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string,
   hasPreview: boolean, log: LogInfo[]) {
-  if (hasPreview) {
+  if (hasPreview && projectConfig.isPreview) {
     log.push({
       type: LogType.WARN,
       message: `The variable with ${decorator} in component with @Preview may ` +
