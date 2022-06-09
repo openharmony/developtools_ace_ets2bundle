@@ -94,9 +94,7 @@ struct CustomContainerUser {
 }
 `
 exports.expectResult =
-`"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const TestComponent_1 = require("./test/pages/TestComponent");
+`import { CustomContainerExport } from './test/pages/TestComponent';
 class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -193,7 +191,7 @@ class CustomContainerUser extends View {
         Column.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new TestComponent_1.CustomContainerExport("2", this, {
+            View.create(new CustomContainerExport("2", this, {
                 header: this.text,
                 closer: () => {
                     Column.create();
