@@ -41,7 +41,9 @@ import {
   EXTNAME_MJS,
   EXTNAME_CJS,
   EXTNAME_D_TS,
-  EXTNAME_ABC
+  EXTNAME_ABC,
+  SUCCESS,
+  FAIL
 } from './pre_define';
 
 const firstFileEXT: string = '_.js';
@@ -120,6 +122,7 @@ export class GenAbcPlugin {
       } else {
         if (!fs.existsSync(path.resolve(arkDir, 'build'))) {
           logger.error(red, 'ETS:ERROR find build fail', reset);
+          process.exitCode = FAIL;
           return;
         }
       }
@@ -295,6 +298,7 @@ function handleFinishModules(modules, callback): any {
         processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else {
         logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+        process.exitCode = FAIL;
       }
     }
   });
@@ -329,6 +333,7 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
     intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    process.exitCode = FAIL;
   }
 }
 
@@ -463,10 +468,16 @@ function invokeCluterModuleToAbc(): void {
     }
 
     cluster.on('exit', (worker, code, signal) => {
+      if (code === FAIL) {
+        process.exitCode = FAIL;
+      }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
 
     process.on('exit', (code) => {
+      if (process.exitCode === FAIL) {
+        return;
+      }
       writeModuleHashJson();
     });
   }
@@ -524,10 +535,16 @@ function invokeWorkersToGenAbc(): void {
     }
 
     cluster.on('exit', (worker, code, signal) => {
+      if (code === FAIL) {
+        process.exitCode = FAIL;
+      }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
 
     process.on('exit', (code) => {
+      if (process.exitCode === FAIL) {
+        return;
+      }
       writeHashJson();
     });
   }
@@ -553,7 +570,8 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
       const abcPath: string = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
-        continue;
+        process.exitCode = FAIL;
+        break;
       }
       if (fs.existsSync(abcPath)) {
         const hashInputContentData: any = toHashData(input);
@@ -585,7 +603,8 @@ function writeModuleHashJson(): void {
     const abcPath: string = filterModuleInfos[i].abcFilePath;
     if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
-      continue;
+      process.exitCode = FAIL;
+      break;
     }
     const hashInputContentData: any = toHashData(input);
     const hashAbcContentData: any = toHashData(abcPath);
@@ -625,7 +644,8 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
       const abcPath: string = input.replace(/_.js$/, EXTNAME_ABC);
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
-        continue;
+        process.exitCode = FAIL;
+        break;
       }
       if (fs.existsSync(abcPath)) {
         const hashInputContentData: any = toHashData(input);
@@ -671,7 +691,7 @@ function genHashJsonPath(buildPath: string): string {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
-      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
     return path.join(process.env.cachePath, hashFile);
@@ -679,7 +699,7 @@ function genHashJsonPath(buildPath: string): string {
     const dataTmps: string[] = buildPath.split(ARK);
     const hashPath: string = path.join(dataTmps[0], ARK);
     if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
-      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
     return path.join(hashPath, hashFile);
