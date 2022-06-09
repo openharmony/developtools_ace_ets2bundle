@@ -252,3 +252,6 @@ export const EXTNAME_MJS: string = '.mjs';
 export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
 export const EXTNAME_ABC: string = '.abc';
+
+export const SUCCESS: number = 0;
+export const FAIL: number = 1;

@@ -17,6 +17,10 @@ import * as childProcess from 'child_process';
 import * as process from 'process';
 import cluster from 'cluster';
 import { logger } from './compile_info';
+import {
+  SUCCESS,
+  FAIL
+} from './pre_define'
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -35,7 +39,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     childProcess.execSync(singleCmd);
   } catch (e) {
     logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
-    return;
+    process.exit(FAIL);
   }
 
   return;
@@ -46,5 +50,5 @@ logger.debug('gen_abc isWorker is: ', cluster.isWorker);
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
   js2abcByWorkers(process.env['inputs'], process.env['cmd']);
-  process.exit();
+  process.exit(SUCCESS);
 }
