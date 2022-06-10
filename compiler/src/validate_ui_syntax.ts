@@ -990,13 +990,20 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
-  const REG_IMPORT_DECL: RegExp = isProcessAllowList ? /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
+  const REG_IMPORT_DECL: RegExp = isProcessAllowList ? projectConfig.compileMode === 'esmodule' ?
+    /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
+    /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
+  const systemValueCollection: Set<string> = new Set();
   const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    const importValue: string = isProcessAllowList ? item1 : item2 || item4;
+    const importValue: string = isProcessAllowList ? projectConfig.compileMode === 'esmodule' ? item1 : item2 : item2 || item4;
 
     if (isProcessAllowList) {
+      systemValueCollection.add(importValue);
+      if (projectConfig.compileMode !== 'esmodule') {
+        return replaceSystemApi(item, importValue, item4, item5);
+      }
       return replaceSystemApi(item, importValue, item2, item3);
     }
 
@@ -1022,7 +1029,17 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     // node_modules
     return item;
   });
-  return processedContent;
+  return processInnerModule(processedContent, systemValueCollection);
+}
+
+function processInnerModule(content: string, systemValueCollection: Set<string>): string {
+  systemValueCollection.forEach(element => {
+    const target: string = element.trim() + '.default';
+    while (content.includes(target)) {
+      content = content.replace(target, element.trim());
+    }
+  });
+  return content;
 }
 
 const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
