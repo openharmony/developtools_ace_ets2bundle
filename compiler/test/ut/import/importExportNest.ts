@@ -44,7 +44,9 @@ struct ImportTest {
 `
 
 exports.expectResult =
-`import { Base, BaseTest } from './test/pages/ImportNestAll';
+`"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -125,7 +127,7 @@ class ImportTest extends View {
         Column.create();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new Base("2", this, {
+            View.create(new ImportNestAll_1.Base("2", this, {
                 testStr: this.__testState1,
                 testNum: this.__testState2,
                 testObj: this.__testState3
@@ -137,7 +139,7 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new BaseTest("3", this, {
+            View.create(new ImportNestAll_1.BaseTest("3", this, {
                 testStr: this.__testState4,
                 testNum: this.__testState5,
                 testObj: this.__testState6
