@@ -44,14 +44,15 @@ import {
   IComponentSet,
   builderParamObjectCollection
 } from './validate_ui_syntax';
-import { IMPORT_FILE_ASTCACHE } from './component_map';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
+const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
+
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
-  isEntryPage: boolean = true): void {
+  isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -101,8 +102,10 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
     } else {
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
     }
-    if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile()) {
+    if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
+      !pathCollection.has(fileResolvePath)) {
       let sourceFile: ts.SourceFile
+      pathCollection.add(fileResolvePath);
       if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
         sourceFile = IMPORT_FILE_ASTCACHE.get(fileResolvePath);
       } else {
@@ -115,7 +118,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
         IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
       }
       visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
-        new Set(), new Set(), new Map());
+        new Set(), new Set(), new Map(), pathCollection);
     }
   } catch (e) {
     // ignore
@@ -124,7 +127,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
 
 function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
   pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>,
-  defaultCollection: Set<string>, asExportCollection: Map<string, string>) {
+  defaultCollection: Set<string>, asExportCollection: Map<string, string>, pathCollection: Set<string>) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -142,11 +145,14 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
     if (asExportCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
     }
-    if (!defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 &&
-      node.modifiers[0] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
-      node.modifiers[1] && node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword &&
-      hasCollection(node.name)) {
-      addDefaultExport(node);
+    if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
+      node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
+      node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
+      if (!defaultNameFromParent && hasCollection(node.name)) {
+        addDefaultExport(node);
+      } else if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
+        componentCollection.customComponents.add(asNameFromParent.get(defaultNameFromParent));
+      }
     }
     if (defaultCollection.has(node.name.getText())) {
       componentCollection.customComponents.add('default');
@@ -215,12 +221,12 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         }
       });
     }
-    processImport(node, pagesDir, log, asNameFromParent);
+    processImport(node, pagesDir, log, asNameFromParent, true, pathCollection);
   }
   if (ts.isImportDeclaration(node)) {
     if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
       asNameFromParent.has(node.importClause.name.getText())) {
-      processImport(node, pagesDir, log, asNameFromParent, false);
+      processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
       let nested: boolean = false;
@@ -234,12 +240,13 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         }
       });
       if (nested) {
-        processImport(node, pagesDir, log, asNameFromParent, false);
+        processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
       }
     }
   }
   node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
-    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection, asExportCollection));
+    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection,
+    asExportCollection, pathCollection));
 }
 
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
