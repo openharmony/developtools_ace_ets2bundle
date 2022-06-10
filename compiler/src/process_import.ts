@@ -44,6 +44,7 @@ import {
   IComponentSet,
   builderParamObjectCollection
 } from './validate_ui_syntax';
+import { IMPORT_FILE_ASTCACHE } from './component_map';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
@@ -101,13 +102,18 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
     }
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile()) {
-      const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
-        fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
-          new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
-            return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-          }))));
-      const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
-        ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      let sourceFile: ts.SourceFile
+      if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
+        sourceFile = IMPORT_FILE_ASTCACHE.get(fileResolvePath);
+      } else {
+        const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
+          fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
+            new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
+              return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
+            }))));
+        sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
+      }
       visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
         new Set(), new Set(), new Map());
     }
@@ -212,19 +218,24 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
     processImport(node, pagesDir, log, asNameFromParent);
   }
   if (ts.isImportDeclaration(node)) {
-    if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
+    if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
+      asNameFromParent.has(node.importClause.name.getText())) {
       processImport(node, pagesDir, log, asNameFromParent, false);
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
+      let nested: boolean = false;
       node.importClause.namedBindings.elements.forEach(item => {
         if (item.name && ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString())) {
+          nested = true;
           if (item.propertyName && ts.isIdentifier(item.propertyName)) {
             asNameFromParent.set(item.propertyName.escapedText.toString(),
               asNameFromParent.get(item.name.escapedText.toString()));
           }
         }
       });
-      processImport(node, pagesDir, log, asNameFromParent, false);
+      if (nested) {
+        processImport(node, pagesDir, log, asNameFromParent, false);
+      }
     }
   }
   node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
