@@ -49,12 +49,36 @@ struct ImportTest {
 `
 
 exports.expectResult =
-`import * as AllComponent from './test/pages/NamespaceComponent';
-import TsModule from './test/pages/TsModule';
+`"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
+const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.__myState1 = new ObservedPropertyObject(new TsModule(1).method(), this, "myState1");
+        this.__myState1 = new ObservedPropertyObject(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimple(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimple('ImportTest', this, "myState4");
