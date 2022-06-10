@@ -50,7 +50,7 @@ import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
-  isEntryPage: boolean = true): void {
+  isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -100,7 +100,9 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
     } else {
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
     }
-    if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile()) {
+    if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
+      !pathCollection.has(fileResolvePath)) {
+      pathCollection.add(fileResolvePath);
       const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
         fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
           new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
@@ -109,7 +111,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
       visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
-        new Set(), new Set(), new Map());
+        new Set(), new Set(), new Map(), pathCollection);
     }
   } catch (e) {
     // ignore
@@ -118,7 +120,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
 
 function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
   pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>,
-  defaultCollection: Set<string>, asExportCollection: Map<string, string>) {
+  defaultCollection: Set<string>, asExportCollection: Map<string, string>, pathCollection: Set<string>) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -209,11 +211,11 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         }
       });
     }
-    processImport(node, pagesDir, log, asNameFromParent);
+    processImport(node, pagesDir, log, asNameFromParent, true, pathCollection);
   }
   if (ts.isImportDeclaration(node)) {
     if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
-      processImport(node, pagesDir, log, asNameFromParent, false);
+      processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
       node.importClause.namedBindings.elements.forEach(item => {
@@ -224,11 +226,12 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
           }
         }
       });
-      processImport(node, pagesDir, log, asNameFromParent, false);
+      processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
     }
   }
   node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
-    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection, asExportCollection));
+    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection,
+    asExportCollection, pathCollection));
 }
 
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
