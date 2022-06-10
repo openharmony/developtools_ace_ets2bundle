@@ -95,8 +95,6 @@ export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['bindPopup', 'bindMenu', 'bindContextMenu', 'title',
   'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart']);
 
-export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
-
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {
     INNER_COMPONENT_NAMES.add(componentName);
