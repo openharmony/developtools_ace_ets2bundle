@@ -139,6 +139,7 @@ ets_loader_sources = [
   "compiler/npm-install.js",
   "compiler/package-lock.json",
   "compiler/package.json",
+  "compiler/tsconfig.esm.json",
   "compiler/tsconfig.json",
   "compiler/webpack.config.js",
 ]
