@@ -55,6 +55,8 @@ export interface LogInfo {
   fileName?: string
 }
 
+export const repeatLog: Map<string, LogInfo> = new Map();
+
 export class FileLog {
   private _sourceFile: ts.SourceFile;
   private _errors: LogInfo[] = [];
@@ -84,7 +86,7 @@ export function emitLogInfo(loader: any, infos: LogInfo[]) {
           loader.emitError(getMessage(loader.resourcePath, item));
           break;
         case LogType.WARN:
-          loader.emitWarning(getMessage(loader.resourcePath, item));
+          loader.emitWarning(getMessage(item.fileName || loader.resourcePath, item));
           break;
         case LogType.NOTE:
           loader.emitWarning(getMessage(loader.resourcePath, item));
