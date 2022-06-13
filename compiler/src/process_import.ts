@@ -48,6 +48,8 @@ import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
+const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
+
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
   isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
@@ -102,14 +104,19 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
     }
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
       !pathCollection.has(fileResolvePath)) {
+      let sourceFile: ts.SourceFile
       pathCollection.add(fileResolvePath);
-      const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
-        fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
-          new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
-            return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-          }))));
-      const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
-        ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
+        sourceFile = IMPORT_FILE_ASTCACHE.get(fileResolvePath);
+      } else {
+        const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
+          fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
+            new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
+              return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
+            }))));
+        sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
+      }
       visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
         new Set(), new Set(), new Map(), pathCollection);
     }
@@ -138,11 +145,14 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
     if (asExportCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
     }
-    if (!defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 &&
-      node.modifiers[0] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
-      node.modifiers[1] && node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword &&
-      hasCollection(node.name)) {
-      addDefaultExport(node);
+    if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
+      node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
+      node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
+      if (!defaultNameFromParent && hasCollection(node.name)) {
+        addDefaultExport(node);
+      } else if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
+        componentCollection.customComponents.add(asNameFromParent.get(defaultNameFromParent));
+      }
     }
     if (defaultCollection.has(node.name.getText())) {
       componentCollection.customComponents.add('default');
@@ -214,19 +224,24 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
     processImport(node, pagesDir, log, asNameFromParent, true, pathCollection);
   }
   if (ts.isImportDeclaration(node)) {
-    if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
+    if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
+      asNameFromParent.has(node.importClause.name.getText())) {
       processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
+      let nested: boolean = false;
       node.importClause.namedBindings.elements.forEach(item => {
         if (item.name && ts.isIdentifier(item.name) && asNameFromParent.has(item.name.escapedText.toString())) {
+          nested = true;
           if (item.propertyName && ts.isIdentifier(item.propertyName)) {
             asNameFromParent.set(item.propertyName.escapedText.toString(),
               asNameFromParent.get(item.name.escapedText.toString()));
           }
         }
       });
-      processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
+      if (nested) {
+        processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
+      }
     }
   }
   node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
