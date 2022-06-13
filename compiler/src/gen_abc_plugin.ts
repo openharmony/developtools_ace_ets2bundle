@@ -407,6 +407,7 @@ function initAbcEnv() : string[] {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
 
+  js2abc = '"' + js2abc + '"';
   const args: string[] = [
     '--expose-gc',
     js2abc
