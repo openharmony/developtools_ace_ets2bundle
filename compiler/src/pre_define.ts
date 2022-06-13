@@ -162,8 +162,8 @@ export const RESOURCE_RAWFILE: string = '$rawfile';
 export const RESOURCE_NAME_ID: string = 'id';
 export const RESOURCE_NAME_TYPE: string = 'type';
 export const RESOURCE_NAME_PARAMS: string = 'params';
-export const RESOURCE_NAME_BUNDLE: string = 'bundle';
-export const RESOURCE_NAME_MODULE: string = 'mdoule';
+export const RESOURCE_NAME_BUNDLE: string = 'bundleName';
+export const RESOURCE_NAME_MODULE: string = 'mdouleName';
 export const RESOURCE_TYPE = {
   color: 10001,
   float: 10002,
