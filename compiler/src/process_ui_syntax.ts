@@ -86,6 +86,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
+        transformLog.sourceFile = node;
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
@@ -94,7 +95,6 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           }
           return node;
         }
-        transformLog.sourceFile = node;
         node = createEntryNode(node, context);
         node = ts.visitEachChild(node, processAllNodes, context);
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
