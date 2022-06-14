@@ -221,12 +221,12 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         }
       });
     }
-    processImport(node, pagesDir, log, asNameFromParent, true, pathCollection);
+    processImport(node, pagesDir, log, asNameFromParent, true, new Set(pathCollection));
   }
   if (ts.isImportDeclaration(node)) {
     if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
       asNameFromParent.has(node.importClause.name.getText())) {
-      processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
+      processImport(node, pagesDir, log, asNameFromParent, false, new Set(pathCollection));
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
       let nested: boolean = false;
@@ -240,7 +240,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
         }
       });
       if (nested) {
-        processImport(node, pagesDir, log, asNameFromParent, false, pathCollection);
+        processImport(node, pagesDir, log, asNameFromParent, false, new Set(pathCollection));
       }
     }
   }
