@@ -44,7 +44,7 @@ import {
   IComponentSet,
   builderParamObjectCollection
 } from './validate_ui_syntax';
-import { LogInfo, LogType } from './utils';
+import { LogInfo, LogType, repeatLog } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 
@@ -104,7 +104,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
     }
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
       !pathCollection.has(fileResolvePath)) {
-      let sourceFile: ts.SourceFile
+      let sourceFile: ts.SourceFile;
       pathCollection.add(fileResolvePath);
       if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
         sourceFile = IMPORT_FILE_ASTCACHE.get(fileResolvePath);
@@ -117,17 +117,18 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
         sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
       }
-      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
-        new Set(), new Set(), new Map(), pathCollection);
+      visitAllNode(sourceFile, sourceFile, defaultName, asName, path.dirname(fileResolvePath), log,
+        new Set(), new Set(), new Set(), new Map(), pathCollection, fileResolvePath);
     }
   } catch (e) {
     // ignore
   }
 }
 
-function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
-  pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>,
-  defaultCollection: Set<string>, asExportCollection: Map<string, string>, pathCollection: Set<string>) {
+function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
+  asNameFromParent: Map<string, string>, pagesDir: string, log: LogInfo[], entryCollection: Set<string>,
+  exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
+  pathCollection: Set<string>, fileResolvePath: string) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -141,7 +142,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   }
   if (ts.isClassDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
     addDependencies(node, defaultNameFromParent, asNameFromParent);
-    isExportEntry(node, log, entryCollection, exportCollection);
+    isExportEntry(node, log, entryCollection, exportCollection, defaultCollection, fileResolvePath, sourceFile);
     if (asExportCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
     }
@@ -161,7 +162,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
     if (projectConfig.isPreview && entryCollection.has(node.expression.escapedText.toString())) {
-      remindExportEntryComponent(node, log);
+      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
     }
     if (defaultNameFromParent) {
       setDependencies(defaultNameFromParent,
@@ -181,9 +182,8 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (ts.isExportDeclaration(node) && node.exportClause &&
     ts.isNamedExports(node.exportClause) && node.exportClause.elements) {
     node.exportClause.elements.forEach(item => {
-      if (projectConfig.isPreview &&
-        entryCollection.has((item.propertyName ? item.propertyName : item.name).escapedText.toString())) {
-        remindExportEntryComponent(node, log);
+      if (projectConfig.isPreview) {
+        exportCollection.add((item.propertyName ? item.propertyName : item.name).escapedText.toString());
       }
       if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
         ts.isIdentifier(item.propertyName)) {
@@ -244,13 +244,14 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
       }
     }
   }
-  node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
-    asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection,
-    asExportCollection, pathCollection));
+  node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, sourceFile,
+    defaultNameFromParent, asNameFromParent, pagesDir, log, entryCollection, exportCollection,
+    defaultCollection, asExportCollection, pathCollection, fileResolvePath));
 }
 
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
-  exportCollection: Set<string>): void {
+  exportCollection: Set<string>, defaultCollection: Set<string>, fileResolvePath: string,
+  sourceFile: ts.SourceFile): void {
   if (projectConfig.isPreview && node && node.decorators) {
     let existExport: boolean = false;
     let existEntry: boolean = false;
@@ -269,19 +270,31 @@ function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollectio
         break;
       }
     }
-    if (existEntry && existExport || exportCollection.has(node.name.escapedText.toString())) {
-      remindExportEntryComponent(node, log);
+    if (existEntry && (existExport || defaultCollection.has(node.name.escapedText.toString()) ||
+      exportCollection.has(node.name.escapedText.toString()))) {
+      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
     }
   }
 }
 
-function remindExportEntryComponent(node: ts.Node, log: LogInfo[]): void {
-  log.push({
+function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePath: string,
+  sourceFile: ts.SourceFile): void {
+  const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+  const line: number = posOfNode.line + 1;
+  const column: number = posOfNode.character + 1;
+  let warnInfo: LogInfo = {
     type: LogType.WARN,
     message: `It's not a recommended way to export struct with @Entry decorator, ` +
       `which may cause ACE Engine error in component preview mode.`,
-    pos: node.getStart()
-  });
+    pos: node.getStart(),
+    fileName: fileResolvePath,
+    line: line,
+    column: column
+  }
+  if (!repeatLog.has(fileResolvePath)) {
+    log.push(warnInfo);
+    repeatLog.set(fileResolvePath, warnInfo);
+  }
 }
 
 function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: string,

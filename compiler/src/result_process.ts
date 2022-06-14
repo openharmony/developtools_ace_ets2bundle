@@ -45,14 +45,18 @@ module.exports = function resultProcess(source: string, map: any): void {
       const sourceFile: ts.SourceFile = transformLog.sourceFile;
       const logInfos: LogInfo[] = transformLog.errors.map((item) => {
         if (item.pos) {
-          const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
-          item.line = posOfNode.line + 1;
-          item.column = posOfNode.character + 1;
+          if (!item.column || !item.line) {
+            const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
+            item.line = posOfNode.line + 1;
+            item.column = posOfNode.character + 1;
+          }
         } else {
           item.line = undefined;
           item.column = undefined;
         }
-        item.fileName = sourceFile.fileName;
+        if (!item.fileName) {
+          item.fileName = sourceFile.fileName;
+        }
         return item;
       });
       emitLogInfo(this, logInfos);
