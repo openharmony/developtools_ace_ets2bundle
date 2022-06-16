@@ -304,6 +304,7 @@ function processResourceData(node: ts.CallExpression): ts.Node {
             message: `The resource type ${resourceData[1]} is not supported.`,
             pos: node.getStart()
           })
+          return ;
         }
         const resourceValue: number = resources[resourceData[0]][resourceData[1]][resourceData[2]];
         return createResourceParam(resourceValue, resourceType,
