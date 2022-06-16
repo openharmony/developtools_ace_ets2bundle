@@ -282,6 +282,13 @@ function processResourceData(node: ts.CallExpression): ts.Node {
       const resourceData: string[] = node.arguments[0].text.trim().split('.');
       if (validateResourceData(resourceData, resources, node.arguments[0].getStart())) {
         const resourceType: number = RESOURCE_TYPE[resourceData[1]];
+        if (resourceType === undefined) {
+          transformLog.errors.push({
+            type: LogType.ERROR,
+            message: `The resource type ${resourceData[1]} is not supported.`,
+            pos: node.getStart()
+          })
+        }
         const resourceValue: number = resources[resourceData[0]][resourceData[1]][resourceData[2]];
         return createResourceParam(resourceValue, resourceType,
           Array.from(node.arguments).slice(1));
