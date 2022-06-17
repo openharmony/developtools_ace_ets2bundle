@@ -175,7 +175,8 @@ export const RESOURCE_TYPE = {
   pattern: 10008,
   strarray: 10009,
   media: 20000,
-  rawfile: 30000
+  rawfile: 30000,
+  graphic: 40000
 };
 
 export const WORKERS_DIR: string = 'workers';
