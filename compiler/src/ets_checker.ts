@@ -17,7 +17,7 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 
-import { projectConfig } from '../main';
+import { projectConfig,readSysteModule } from '../main';
 import {
   processSystemApi,
   preprocessExtend,
@@ -142,7 +142,8 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       }
     } else if (/^@(system|ohos)/.test(moduleName.trim())) {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-      if (ts.sys.fileExists(modulePath)) {
+      const modulePathDeveloper: string = moduleName + '.d.ts';
+        if (readSysteModule.includes(modulePathDeveloper) && readSysteModule.indexOf(modulePathDeveloper) !== -1) {
         resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
       } else {
         resolvedModules.push(null);
