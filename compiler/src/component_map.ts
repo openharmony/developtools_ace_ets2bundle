@@ -77,6 +77,9 @@ export interface ExtendParamterInterfance {
 }
 export const EXTEND_ATTRIBUTE: Map<string, Set<string>> = new Map();
 export const STYLES_ATTRIBUTE: Set<string> = new Set();
+export const BUILDER_MIX_EXTEND_RESPECTIVE: Map<string, Set<string>> = new Map();
+export const BUILDER_MIX_EXTEND: Set<string> = new Set();
+export const BUILDER_MIX_STYLES: Set<string> = new Set();
 
 export const INTERFACE_NODE_SET: Set<ts.InterfaceDeclaration> = new Set();
 
