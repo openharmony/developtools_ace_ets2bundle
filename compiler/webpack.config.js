@@ -310,6 +310,24 @@ function setTsConfigFile() {
   }
 }
 
+function setGenAbcPlugin(env, config) {
+  process.env.compilerType = 'ark';
+  let arkDir = path.join(__dirname, 'bin', 'ark');
+  if (env.arkFrontendDir) {
+    arkDir = env.arkFrontendDir;
+  }
+  let nodeJs = 'node';
+  if (env.nodeJs) {
+    nodeJs = env.nodeJs;
+  }
+  config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, arkDir, nodeJs,
+    env.buildMode === 'debug'));
+  if (env.buildMode === 'release') {
+    config.output.path = path.join(projectConfig.cachePath, 'releaseAssets',
+      path.basename(projectConfig.buildPath))
+  }
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
@@ -324,25 +342,12 @@ module.exports = (env, argv) => {
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark') {
-      process.env.compilerType = 'ark';
-      let arkDir = path.join(__dirname, 'bin', 'ark');
-      if (env.arkFrontendDir) {
-        arkDir = env.arkFrontendDir;
-      }
-      let nodeJs = 'node';
-      if (env.nodeJs) {
-        nodeJs = env.nodeJs;
-      }
-      config.plugins.push(new GenAbcPlugin(projectConfig.buildPath, arkDir, nodeJs,
-        env.buildMode === 'debug'));
-      if (env.buildMode === 'release') {
-        config.output.path = path.join(projectConfig.cachePath, 'releaseAssets',
-          path.basename(projectConfig.buildPath))
-      }
+      setGenAbcPlugin(env, config);
     }
   } else {
     projectConfig.isPreview = true;
     projectConfig.checkEntry = env.checkEntry;
+    setGenAbcPlugin(env, config);
     let port;
     process.argv.forEach((val, index) => {
       if(val.startsWith('port=')){
