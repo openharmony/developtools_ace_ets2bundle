@@ -42,7 +42,8 @@ import {
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
-  BUILD_SHARE_PATH
+  BUILD_SHARE_PATH,
+  ARK
 } from './pre_define';
 import {
   createLanguageService,
@@ -51,6 +52,7 @@ import {
   createWatchCompilerHost
 } from './ets_checker';
 import { globalProgram } from '../main';
+import cluster from 'cluster';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -298,9 +300,17 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
+      if (result === 'SUCCESS' && projectConfig.isPreview) {
+        this.printPreviewResult(resultInfo);
+      } else {
+        logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
+      }
     } else {
-      console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
+      if (projectConfig.isPreview) {
+        this.printPreviewResult();
+      } else {
+        console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
+      }
     }
     this.clearCount();
   }
@@ -309,6 +319,33 @@ export class ResultStates {
     this.mErrorCount = 0;
     this.warningCount = 0;
     this.noteCount = 0;
+  }
+
+  private printPreviewResult(resultInfo: string = ""): void {
+    let workerNum: number = Object.keys(cluster.workers).length;
+    let count_: number = 0;
+    let blue = this.blue;
+    let reset = this.reset;
+    if (workerNum > 0) {
+      for (const worker of Object.values(cluster.workers)) {
+        worker.on('exit', function(code, signal) {
+          count_++;
+          if (count_ === workerNum) {
+            printSuccessInfo(resultInfo);
+          }
+        });
+      }
+    } else {
+      printSuccessInfo(resultInfo);
+    }
+
+    function printSuccessInfo(resultInfo: string) {
+      if (resultInfo.length === 0) {
+        console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+      } else {
+        console.info(blue, 'COMPILE RESULT:SUCCESS ' + `{${resultInfo}}`, reset);
+      }
+    }
   }
 
   private printWarning(): void {
