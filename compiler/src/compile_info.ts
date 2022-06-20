@@ -321,30 +321,32 @@ export class ResultStates {
     this.noteCount = 0;
   }
 
-  private printPreviewResult(resultInfo: string = ""): void {
-    let workerNum: number = Object.keys(cluster.workers).length;
+  private printPreviewResult(resultInfo: string = ''): void {
+    const workerNum: number = Object.keys(cluster.workers).length;
     let count_: number = 0;
-    let blue = this.blue;
-    let reset = this.reset;
+    const blue = this.blue;
+    const reset = this.reset;
     if (workerNum > 0) {
       for (const worker of Object.values(cluster.workers)) {
         worker.on('exit', function(code, signal) {
           count_++;
           if (count_ === workerNum) {
-            printSuccessInfo(resultInfo);
+            this.printSuccessInfo(resultInfo);
           }
         });
       }
     } else {
-      printSuccessInfo(resultInfo);
+      this.printSuccessInfo(resultInfo);
     }
+  }
 
-    function printSuccessInfo(resultInfo: string) {
-      if (resultInfo.length === 0) {
-        console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
-      } else {
-        console.info(blue, 'COMPILE RESULT:SUCCESS ' + `{${resultInfo}}`, reset);
-      }
+  private printSuccessInfo(resultInfo: string): void {
+    const blue = this.blue;
+    const reset = this.reset;
+    if (resultInfo.length === 0) {
+      console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+    } else {
+      console.info(blue, 'COMPILE RESULT:SUCCESS ' + `{${resultInfo}}`, reset);
     }
   }
 

@@ -369,7 +369,7 @@ function getSmallestSizeGroup(groupSize: Map<number, number>): any {
 function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): any {
   const result: any = [];
   if (bundleArray.length < groupNumber) {
-    for (let value of bundleArray){
+    for (const value of bundleArray) {
       result.push([value]);
     }
     return result;

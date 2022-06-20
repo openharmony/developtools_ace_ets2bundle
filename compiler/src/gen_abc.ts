@@ -21,7 +21,7 @@ import { logger } from './compile_info';
 import {
   SUCCESS,
   FAIL
-} from './pre_define'
+} from './pre_define';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
