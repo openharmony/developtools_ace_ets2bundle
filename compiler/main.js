@@ -298,18 +298,18 @@ function filterWorker(workerPath) {
   return /\.(ts|js)$/.test(workerPath);
 }
 
-;(function initSystemResource() {
+(function initSystemResource() {
   const sysResourcePath = path.resolve('./sysResource.js');
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
   }
-})();
+})()
 
 (function readSystemModules() {
   const systemModulesPath = path.resolve(__dirname,'../../api');
   if (fs.existsSync(systemModulesPath)) {
     systemModules.push(...fs.readdirSync(systemModulesPath));
-  };
+  }
 })()
 
 function readAppResource(resources, filePath) {
