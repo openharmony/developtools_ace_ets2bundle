@@ -44,7 +44,8 @@ import {
   JS_DIALOG,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   ESMODULE,
-  ARK
+  ARK,
+  COMPONENT_COMMON
 } from './pre_define';
 import {
   componentInfo,
@@ -129,7 +130,21 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         INNER_STYLE_FUNCTION.clear();
       } else if (ts.isFunctionDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
+        if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          if (!hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+            if (node.parameters.length === 0) {
+              node = undefined;
+            } else {
+              transformLog.errors.push({
+                type: LogType.ERROR,
+                message: `@Styles can't have parameters.`,
+                pos: node.getStart()
+              });
+            }
+          } else {
+            node = processStyles(node, transformLog.errors);
+          }
+        } else if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
           node = processExtend(node, transformLog.errors);
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
@@ -137,16 +152,6 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors));
-        } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-          if (node.parameters.length === 0) {
-            node = undefined;
-          } else {
-            transformLog.errors.push({
-              type: LogType.ERROR,
-              message: `@Styles can't have parameters.`,
-              pos: node.getStart()
-            });
-          }
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -411,6 +416,32 @@ function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
   node.typeArguments, node.arguments);
 }
 
+function processStyles(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
+  const componentName: string = COMPONENT_COMMON;
+  if (node.body && node.body.statements.length) {
+    const statementArray: ts.Statement[] = [];
+    const attrSet: ts.CallExpression = node.body.statements[0].expression;
+    const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processStylesBody(attrSet));
+    bindComponentAttr(changeCompName as ts.ExpressionStatement,
+      ts.factory.createIdentifier(componentName), statementArray, log);
+    const stylesFunctionName: string = node.name.getText();
+    return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
+      ts.factory.createIdentifier(stylesFunctionName), node.typeParameters,
+      node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+  }
+}
+
+function processStylesBody(node: ts.Node): ts.Expression {
+  switch (node.kind) {
+    case ts.SyntaxKind.CallExpression:
+      return ts.factory.createCallExpression(processStylesBody(node.expression), undefined, node.arguments);
+    case ts.SyntaxKind.PropertyAccessExpression:
+      return ts.factory.createPropertyAccessExpression(processStylesBody(node.expression), node.name);
+    case ts.SyntaxKind.Identifier:
+      return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+  }
+}
+
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node);
   if (componentName && node.body && node.body.statements.length) {
@@ -420,11 +451,16 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     bindComponentAttr(changeCompName as ts.ExpressionStatement,
       ts.factory.createIdentifier(componentName), statementArray, log);
     let extendFunctionName: string;
-    if (node.name.getText().startsWith('__' + componentName + '__')) {
-      extendFunctionName = node.name.getText();
+    const prefixCompName: string = '__' + componentName + '__';
+    if (!hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+      if (node.name.getText().startsWith(prefixCompName)) {
+        extendFunctionName = node.name.getText();
+      } else {
+        extendFunctionName = prefixCompName + node.name.getText();
+        collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
+      }
     } else {
-      extendFunctionName = '__' + componentName + '__' + node.name.getText();
-      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
+      extendFunctionName = node.name.getText();
     }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
@@ -452,13 +488,16 @@ export function collectExtend(collectionSet: Map<string, Set<string>>, component
 }
 
 export function isExtendFunction(node: ts.FunctionDeclaration): string {
-  if (node.decorators && node.decorators[0].expression && node.decorators[0].expression.expression &&
-    node.decorators[0].expression.expression.escapedText.toString() === CHECK_COMPONENT_EXTEND_DECORATOR &&
-    node.decorators[0].expression.arguments) {
-    return node.decorators[0].expression.arguments[0].escapedText.toString();
-  } else {
-    return null;
+  if (node.decorators && node.decorators.length) {
+    for (let i = 0, len = node.decorators.length; i < len; i++) {
+      if (node.decorators[i].expression && node.decorators[i].expression.expression &&
+        node.decorators[i].expression.expression.escapedText.toString() === CHECK_COMPONENT_EXTEND_DECORATOR &&
+        node.decorators[i].expression.arguments) {
+        return node.decorators[i].expression.arguments[0].escapedText.toString();
+      }
+    }
   }
+  return null;
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
