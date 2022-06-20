@@ -69,7 +69,7 @@ import {
   hasDecorator,
   toUnixPath
 } from './utils';
-import { projectConfig } from '../main';
+import { projectConfig, abilityPagesFullPath } from '../main';
 import { collectExtend } from './process_ui_syntax';
 import { isExtendFunction } from './process_ui_syntax';
 import { isOhmUrl } from './resolve_ohm_url';
@@ -232,7 +232,8 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
-  } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry') {
+  } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry' &&
+    !abilityPagesFullPath.includes(fileName)) {
     log.push({
       type: LogType.ERROR,
       message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `

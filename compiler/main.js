@@ -44,7 +44,8 @@ const resources = {
   app: {},
   sys: {}
 };
-const readSysteModule = [];
+const systemModules = [];
+const abilityPagesFullPath = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
@@ -211,7 +212,7 @@ function setAbilityFile(projectConfig, abilityPages) {
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
     }
-    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '');
+    const entryPageKey = abilityPath.replace(/^\.\/ets\//, './').replace(/\.ts$/, '').replace(/\.ets$/, '');
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
@@ -242,6 +243,13 @@ function setEntrance(abilityConfig, abilityPages) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
+        let finalPath = path.resolve(path.resolve(projectConfig.projectPath, '../'), ability.srcEntrance);
+        finalPath = finalPath.replace(/\\/g, '/');
+        if (fs.existsSync(finalPath)) {
+          abilityPagesFullPath.push(finalPath);
+        } else {
+          abilityPagesFullPath.push(ability.srcEntrance);
+        }
       }
     });
   }
@@ -297,10 +305,10 @@ function filterWorker(workerPath) {
   }
 })();
 
-(function initReadSystemModule() {
-  const modulePathApi = path.resolve('../../api');
-  if (fs.existsSync(modulePathApi)) {
-    readSysteModule.push(...fs.readdirSync(modulePathApi));
+(function readSystemModules() {
+  const systemModulesPath = path.resolve(__dirname,'../../api');
+  if (fs.existsSync(systemModulesPath)) {
+    systemModules.push(...fs.readdirSync(systemModulesPath));
   };
 })()
 
@@ -372,5 +380,6 @@ exports.resources = resources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
+exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
-exports.readSysteModule = readSysteModule;
+exports.systemModules = systemModules;
