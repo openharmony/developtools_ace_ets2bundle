@@ -125,13 +125,6 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
     });
     if (result.resolvedModule) {
       resolvedModules.push(result.resolvedModule);
-    } else if (/^@bundle:/.test(moduleName.trim())) {
-      const module: {modulePath: string, suffix: string} = getOhmUrlFile(moduleName.trim());
-      if (ts.sys.fileExists(module.modulePath)) {
-        resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
-      } else {
-        resolvedModules.push(null);
-      }
     } else if (/^@(system|ohos)/i.test(moduleName.trim())) {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
       if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
