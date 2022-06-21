@@ -143,7 +143,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       } else {
         resolvedModules.push(null);
       }
-    } else if (/^@(system|ohos)/.test(moduleName.trim())) {
+    } else if (/^@(system|ohos)/i.test(moduleName.trim())) {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
       if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
         resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
