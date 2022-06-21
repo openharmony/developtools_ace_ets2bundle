@@ -310,13 +310,6 @@ function filterWorker(workerPath) {
   if (fs.existsSync(systemModulesPath)) {
     systemModules.push(...fs.readdirSync(systemModulesPath));
   }
-})();
-
-;(function readSystemModules() {
-  const systemModulesPath = path.resolve(__dirname,'../../api');
-  if (fs.existsSync(systemModulesPath)) {
-    systemModules.push(...fs.readdirSync(systemModulesPath));
-  }
 })()
 
 function readAppResource(resources, filePath) {
