@@ -236,11 +236,13 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           case ComponentType.customComponent:
             if (!newsupplement.isAcceleratePreview) {
               if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
-                if (processExpressionStatementChange(item, item.expression.body, log)) {
-                  item = processExpressionStatementChange(item, item.expression.body, log);
+                const expressionResult: ts.ExpressionStatement =
+                  processExpressionStatementChange(item, item.expression.body, log);
+                if (expressionResult) {
+                  item = expressionResult;
                 }
               }
-              processCustomComponent(item as ts.ExpressionStatement, newStatements, log);
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name);
               lastName = name;
               lastExpression = item;
             }
@@ -295,8 +297,8 @@ function processMixBuilder(lastName: string, name: string, index: number, lastEx
     isMixExtend = false;
   }
   if (lastName) {
-    if (index && (isMixExtend ? (BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName) &&
-      BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName).has(name)) : true) &&
+    if (index && (isMixExtend ? BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName) &&
+      BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName).has(name) : true) &&
       (getComponentType(lastExpression as ts.ExpressionStatement, log, lastName) ===
       ComponentType.innerComponent || (isMixExtend ? undefined : getComponentType(
       lastExpression as ts.ExpressionStatement, log, lastName) === ComponentType.customComponent))) {
@@ -348,6 +350,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
         + `@BuilderParam, and its @BuilderParam expects no parameter.`,
       pos: node.getStart()
     });
+    return null;
   }
 }
 
@@ -368,10 +371,15 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
       // @ts-ignore
       node.expression.arguments[0].properties.concat([newPropertyAssignment]), true)];
   }
-  node = ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
+  const callNode: ts.CallExpression = ts.factory.updateCallExpression(
     // @ts-ignore
     node.expression, node.expression.expression, node.expression.expression.typeArguments,
-    argumentsArray));
+    argumentsArray);
+  // @ts-ignore
+  node.expression.expression.parent = callNode;
+  // @ts-ignore
+  callNode.parent = node.expression.parent;
+  node = ts.factory.updateExpressionStatement(node, callNode);
   return node;
 }
 
@@ -721,14 +729,16 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       flag = true;
     }
     if (ts.isPropertyAccessExpression(temp.expression) &&
-      temp.expression.name && ts.isIdentifier(temp.expression.name)) {
+      temp.expression.name && ts.isIdentifier(temp.expression.name) &&
+      !componentCollection.customComponents.has(temp.expression.name.getText())) {
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
         isStylesAttr, isGlobalStyles);
       temp = temp.expression.expression;
       flag = true;
     } else if (ts.isIdentifier(temp.expression)) {
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
-        !GESTURE_TYPE_NAMES.has(temp.expression.getText())) {
+        !GESTURE_TYPE_NAMES.has(temp.expression.getText()) &&
+        !componentCollection.customComponents.has(temp.expression.getText())) {
         addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
           isStylesAttr, isGlobalStyles);
       }
@@ -1253,7 +1263,8 @@ function parseGestureInterface(node: ts.CallExpression, statements: ts.Statement
   }
 }
 
-export function getName(node: ts.ExpressionStatement): string {
+export function getName(node: ts.ExpressionStatement | ts.Expression): string {
+  // @ts-ignore
   let temp: any = node.expression;
   let name: string;
   while (temp) {

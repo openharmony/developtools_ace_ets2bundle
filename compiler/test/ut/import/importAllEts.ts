@@ -35,6 +35,15 @@ struct ImportTest {
             myVar: 100,
             myVar2: 80
           })
+        AllComponent.NamespaceComponent1({
+            NamespaceComponent1Link1: $myState1,
+            NamespaceComponent1Link2: $myState2,
+            NamespaceComponent1Link3: $myState3,
+            NamespaceComponent1Link4: $myState4,
+            myVar: 100,
+            myVar2: 80
+          })
+          .width(100)
           AllComponent.default({
             NamespaceComponent3Link1: $myState1,
             NamespaceComponent3Link2: $myState2,
@@ -43,6 +52,15 @@ struct ImportTest {
             myVar: 100,
             myVar2: 80
           })
+          AllComponent.default({
+            NamespaceComponent3Link1: $myState1,
+            NamespaceComponent3Link2: $myState2,
+            NamespaceComponent3Link3: $myState3,
+            NamespaceComponent3Link4: $myState4,
+            myVar: 100,
+            myVar2: 80
+          })
+          .height(200)
     }
   }
 }
@@ -149,13 +167,15 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_2);
         }
+        __Common__.create();
+        __Common__.width(100);
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new AllComponent.default("3", this, {
-                NamespaceComponent3Link1: this.__myState1,
-                NamespaceComponent3Link2: this.__myState2,
-                NamespaceComponent3Link3: this.__myState3,
-                NamespaceComponent3Link4: this.__myState4,
+            View.create(new AllComponent.NamespaceComponent1("3", this, {
+                NamespaceComponent1Link1: this.__myState1,
+                NamespaceComponent1Link2: this.__myState2,
+                NamespaceComponent1Link3: this.__myState3,
+                NamespaceComponent1Link4: this.__myState4,
                 myVar: 100,
                 myVar2: 80
             }));
@@ -167,6 +187,46 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_3);
         }
+        __Common__.pop();
+        let earlierCreatedChild_4 = this.findChildById("4");
+        if (earlierCreatedChild_4 == undefined) {
+            View.create(new AllComponent.default("4", this, {
+                NamespaceComponent3Link1: this.__myState1,
+                NamespaceComponent3Link2: this.__myState2,
+                NamespaceComponent3Link3: this.__myState3,
+                NamespaceComponent3Link4: this.__myState4,
+                myVar: 100,
+                myVar2: 80
+            }));
+        }
+        else {
+            earlierCreatedChild_4.updateWithValueParams({
+                myVar: 100,
+                myVar2: 80
+            });
+            View.create(earlierCreatedChild_4);
+        }
+        __Common__.create();
+        __Common__.height(200);
+        let earlierCreatedChild_5 = this.findChildById("5");
+        if (earlierCreatedChild_5 == undefined) {
+            View.create(new AllComponent.default("5", this, {
+                NamespaceComponent3Link1: this.__myState1,
+                NamespaceComponent3Link2: this.__myState2,
+                NamespaceComponent3Link3: this.__myState3,
+                NamespaceComponent3Link4: this.__myState4,
+                myVar: 100,
+                myVar2: 80
+            }));
+        }
+        else {
+            earlierCreatedChild_5.updateWithValueParams({
+                myVar: 100,
+                myVar2: 80
+            });
+            View.create(earlierCreatedChild_5);
+        }
+        __Common__.pop();
         Column.pop();
     }
 }

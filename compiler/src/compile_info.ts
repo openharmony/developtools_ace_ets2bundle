@@ -22,7 +22,6 @@ import {
   configure,
   getLogger
 } from 'log4js';
-import RawSource from 'webpack-sources/lib/RawSource';
 import path from 'path';
 import fs from 'fs';
 import CachedSource from 'webpack-sources/lib/CachedSource';
@@ -47,7 +46,6 @@ import {
 import {
   createLanguageService,
   appComponentCollection,
-  importModuleCollection,
   createWatchCompilerHost
 } from './ets_checker';
 import { globalProgram } from '../main';
@@ -376,7 +374,6 @@ export class ResultStates {
   private validateError(message: string): boolean {
     const propInfoReg: RegExp = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
     const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-    const importInfoReg: RegExp = /Cannot find namespace\s*'([_a-zA-Z0-9]+)'\./;
     if (this.matchMessage(message, props, propInfoReg) ||
       this.matchMessage(message, props, stateInfoReg)) {
       return false;

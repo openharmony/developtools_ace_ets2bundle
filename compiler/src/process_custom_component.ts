@@ -24,13 +24,15 @@ import {
   COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR,
   COMPONENT_CREATE_FUNCTION,
+  COMPONENT_POP_FUNCTION,
   BASE_COMPONENT_NAME,
   CUSTOM_COMPONENT_EARLIER_CREATE_CHILD,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION,
-  CUSTOM_COMPONENT_MARK_STATIC_FUNCTION
+  CUSTOM_COMPONENT_MARK_STATIC_FUNCTION,
+  COMPONENT_COMMON
 } from './pre_define';
 import {
   propertyCollection,
@@ -56,8 +58,10 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo
+  componentInfo,
+  createFunction
 } from './utils';
+import { bindComponentAttr } from './process_component_build';
 
 const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
@@ -71,17 +75,20 @@ const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
     [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[]): void {
-  if (ts.isCallExpression(node.expression)) {
+  log: LogInfo[], name: string): void {
+  const componentNode: ts.CallExpression = getCustomComponentNode(node);
+  if (componentNode) {
+    const hasChainCall: boolean = componentNode.parent &&
+      ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
-      node.expression);
+      componentNode, name);
     let argumentsArray: ts.PropertyAssignment[];
-    if (isHasChild(node.expression)) {
+    if (isHasChild(componentNode)) {
       // @ts-ignore
-      argumentsArray = node.expression.arguments[0].properties.slice();
+      argumentsArray = componentNode.arguments[0].properties.slice();
       argumentsArray.forEach((item: ts.PropertyAssignment, index: number) => {
-        if (isToChange(item, node.expression as ts.CallExpression)) {
+        if (isToChange(item, name)) {
           ischangeNode = true;
           const propertyAssignmentNode: ts.PropertyAssignment = ts.factory.updatePropertyAssignment(
             item, item.name, changeNodeFromCallToArrow(item.initializer as ts.CallExpression));
@@ -90,23 +97,34 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       });
       if (ischangeNode) {
         const newNode: ts.ExpressionStatement = ts.factory.updateExpressionStatement(node,
-          ts.factory.createNewExpression(node.expression.expression, node.expression.typeArguments,
+          ts.factory.createNewExpression(componentNode.expression, componentNode.typeArguments,
             [ts.factory.createObjectLiteralExpression(argumentsArray, true)]));
         customComponentNewExpression = createCustomComponentNewExpression(
-          newNode.expression as ts.CallExpression);
+          newNode.expression as ts.CallExpression, name);
       }
     }
-    addCustomComponent(node, newStatements, customComponentNewExpression, log);
+    if (hasChainCall) {
+      newStatements.push(ts.factory.createExpressionStatement(
+        createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
+      bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
+    }
+    addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode);
+    if (hasChainCall) {
+      newStatements.push(ts.factory.createExpressionStatement(
+        createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+          ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
+    }
   }
 }
 
 function isHasChild(node: ts.CallExpression): boolean {
   return node.arguments && node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) &&
-  node.arguments[0].properties && node.arguments[0].properties.length;
+    node.arguments[0].properties && node.arguments[0].properties.length > 0;
 }
 
-function isToChange(item: ts.PropertyAssignment, node: ts.CallExpression): boolean {
-  const builderParamName: Set<string> = builderParamObjectCollection.get(node.expression.getText());
+function isToChange(item: ts.PropertyAssignment, name: string): boolean {
+  const builderParamName: Set<string> = builderParamObjectCollection.get(name);
   if (item.initializer && ts.isCallExpression(item.initializer) && builderParamName &&
     builderParamName.has(item.name.getText()) &&
     !/\.(bind|call|apply)/.test(item.initializer.getText())) {
@@ -122,12 +140,11 @@ function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  newNode: ts.NewExpression, log: LogInfo[]): void {
+  newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression): void {
   if (ts.isNewExpression(newNode)) {
-    const customComponentName: string = getCustomComponentName(newNode);
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
-    validateCustomComponentPrams(node, customComponentName, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, customComponentName, propertyArray);
+    validateCustomComponentPrams(componentNode, name, propertyArray, log);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray);
   }
 }
 
@@ -139,11 +156,10 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
     ts.factory.createObjectLiteralExpression(props, true), name));
 }
 
-function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string,
+function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   props: ts.ObjectLiteralElementLike[], log: LogInfo[]): void {
   const curChildProps: Set<string> = new Set([]);
-  const nodeExpression: ts.CallExpression = node.expression as ts.CallExpression;
-  const nodeArguments: ts.NodeArray<ts.Expression> = nodeExpression.arguments;
+  const nodeArguments: ts.NodeArray<ts.Expression> = node.arguments;
   const propertySet: Set<string> = getCollectionSet(name, propertyCollection);
   const linkSet: Set<string> = getCollectionSet(name, linkCollection);
   if (nodeArguments && nodeArguments.length === 1 &&
@@ -155,7 +171,7 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
       }
       validateStateManagement(item, name, log);
       if (isNonThisProperty(item, linkSet)) {
-        if (isToChange(item as ts.PropertyAssignment, node.expression as ts.CallExpression)) {
+        if (isToChange(item as ts.PropertyAssignment, name)) {
           item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
             item.name, changeNodeFromCallToArrow(item.initializer));
         }
@@ -165,14 +181,31 @@ function validateCustomComponentPrams(node: ts.ExpressionStatement, name: string
   }
 }
 
-function getCustomComponentName(newNode: ts.NewExpression): string {
-  let customComponentName: string;
-  if (ts.isIdentifier(newNode.expression)) {
-    customComponentName = newNode.expression.escapedText.toString();
-  } else if (ts.isPropertyAccessExpression(newNode.expression)) {
-    customComponentName = newNode.expression.name.escapedText.toString();
+function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
+  let temp: any = node.expression;
+  let child: any = null;
+  let componentNode: any = null;
+  while (temp) {
+    if (ts.isIdentifier(temp)) {
+      child = temp;
+      break;
+    }
+    temp = temp.expression;
   }
-  return customComponentName;
+  if (child) {
+    let parent = child.parent;
+    while (parent) {
+      if (ts.isExpressionStatement(parent)) {
+        break;
+      }
+      if (ts.isCallExpression(parent) || ts.isEtsComponentExpression(parent)) {
+        componentNode = parent;
+        break;
+      }
+      parent = parent.parent;
+    }
+  }
+  return componentNode;
 }
 
 function getCollectionSet(name: string, collection: Map<string, Set<string>>): Set<string> {

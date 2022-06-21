@@ -94,7 +94,6 @@ export const COMPONENT_RENDER_FUNCTION: string = 'render';
 export const COMPONENT_TRANSITION_FUNCTION: string = 'pageTransition';
 export const COMPONENT_TRANSITION_NAME: string = 'PageTransition';
 
-export const COMPONENT_COMMON: string = '__Common__';
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';
 export const COMPONENT_LAZYFOREACH: string = 'LazyForEach';
@@ -125,6 +124,7 @@ export const COMPONENT_CREATE_LABEL_FUNCTION: string = 'createWithLabel';
 export const COMPONENT_CREATE_CHILD_FUNCTION: string = 'createWithChild';
 export const COMPONENT_POP_FUNCTION: string = 'pop';
 export const COMPONENT_DEBUGLINE_FUNCTION: string = 'debugLine';
+export const COMPONENT_COMMON: string = '__Common__';
 
 export const COMPONENT_CONSTRUCTOR_UPDATE_PARAMS: string = 'updateWithValueParams';
 export const COMPONENT_CONSTRUCTOR_DELETE_PARAMS: string = 'aboutToBeDeleted';

@@ -62,7 +62,7 @@ const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
-  isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
+isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
