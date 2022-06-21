@@ -94,6 +94,7 @@ export const COMPONENT_RENDER_FUNCTION: string = 'render';
 export const COMPONENT_TRANSITION_FUNCTION: string = 'pageTransition';
 export const COMPONENT_TRANSITION_NAME: string = 'PageTransition';
 
+export const COMPONENT_COMMON: string = '__Common__';
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';
 export const COMPONENT_LAZYFOREACH: string = 'LazyForEach';
