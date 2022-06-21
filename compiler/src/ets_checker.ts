@@ -17,15 +17,9 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 
-<<<<<<< HEAD
 import {
   projectConfig,
   systemModules
-=======
-import { 
-  projectConfig,
-  systemModules 
->>>>>>> d712be2971d248e9058470cdcd363d78d1da182b
 } from '../main';
 import {
   processSystemApi,
