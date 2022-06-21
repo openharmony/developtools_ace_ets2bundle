@@ -43,6 +43,8 @@ import {
   STYLES,
   VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR,
+  COMPONENT_EXTEND_DECORATOR,
+  COMPONENT_STYLES_DECORATOR,
   RESOURCE_NAME_TYPE,
   TTOGGLE_CHECKBOX,
   TOGGLE_SWITCH,
@@ -59,7 +61,10 @@ import {
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
   STYLES_ATTRIBUTE,
-  CUSTOM_BUILDER_METHOD
+  CUSTOM_BUILDER_METHOD,
+  BUILDER_MIX_EXTEND,
+  BUILDER_MIX_EXTEND_RESPECTIVE,
+  BUILDER_MIX_STYLES
 } from './component_map';
 import {
   LogType,
@@ -193,12 +198,6 @@ function checkComponentDecorator(source: string, filePath: string,
             break;
           }
         }
-      }
-      if (ts.isFunctionDeclaration(item) && item.decorators && item.decorators.length === 1 &&
-        item.decorators[0].expression && item.decorators[0].expression.getText() === STYLES) {
-        STYLES_ATTRIBUTE.add(item.name.getText());
-        GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
-        BUILDIN_STYLE_NAMES.add(item.name.getText());
       }
     });
     validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview,
@@ -340,11 +339,22 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if ((ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
     hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-    CUSTOM_BUILDER_METHOD.add(node.name.getText());
-  }
-  if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
+    if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR) && ts.isFunctionDeclaration(node)) {
+      const componentName: string = isExtendFunction(node);
+      BUILDER_MIX_EXTEND.add(node.name.getText());
+      collectExtend(BUILDER_MIX_EXTEND_RESPECTIVE, componentName, node.name.getText());
+    } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+      BUILDER_MIX_STYLES.add(node.name.getText());
+    } else {
+      CUSTOM_BUILDER_METHOD.add(node.name.getText());
+    }
+  } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
     const componentName: string = isExtendFunction(node);
     collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
+  } else if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+    GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
+    STYLES_ATTRIBUTE.add(node.name.getText());
+    BUILDIN_STYLE_NAMES.add(node.name.getText());
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
@@ -838,12 +848,20 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
 
 export function preprocessNewExtend(content: string, extendCollection?: Set<string>): string {
   const REG_EXTEND: RegExp = /@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
-  return content.replace(REG_EXTEND, (item, item1) => {
+  content.replace(REG_EXTEND, (item, item1) => {
     if (extendCollection) {
       extendCollection.add(item1);
     }
     return item;
   });
+  const REG_BUILDER_EXTEND: RegExp = /@Builder\s*@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
+  content.replace(REG_BUILDER_EXTEND, (item, item1) => {
+    if (extendCollection) {
+      extendCollection.delete(item1);
+    }
+    return item;
+  });
+  return content;
 }
 
 function getPackageInfo(configFile: string): Array<string> {
