@@ -45,6 +45,8 @@ const resources = {
   sys: {}
 };
 
+const systemModules = [];
+
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
   projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
@@ -283,6 +285,13 @@ function filterWorker(workerPath) {
   }
 })()
 
+;(function readSystemModules() {
+  const systemModulesPath = path.resolve(__dirname,'../../api');
+  if (fs.existsSync(systemModulesPath)) {
+    systemModules.push(...fs.readdirSync(systemModulesPath));
+  }
+})()
+
 function readAppResource(resources, filePath) {
   if (fs.existsSync(filePath)) {
     const appResource = fs.readFileSync(filePath, "utf-8");
@@ -337,3 +346,4 @@ exports.resources = resources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
+exports.systemModules = systemModules;
