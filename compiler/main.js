@@ -44,6 +44,7 @@ const resources = {
   app: {},
   sys: {}
 };
+const systemModules = [];
 const abilityPagesFullPath = [];
 
 function initProjectConfig(projectConfig) {
@@ -302,6 +303,13 @@ function filterWorker(workerPath) {
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
   }
+})();
+
+;(function readSystemModules() {
+  const systemModulesPath = path.resolve(__dirname,'../../api');
+  if (fs.existsSync(systemModulesPath)) {
+    systemModules.push(...fs.readdirSync(systemModulesPath));
+  }
 })()
 
 function readAppResource(resources, filePath) {
@@ -374,3 +382,4 @@ exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
+exports.systemModules = systemModules;
