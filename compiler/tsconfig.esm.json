@@ -544,6 +544,7 @@
         },
         "property": "stateStyles"
       },
+      "customComponent": "CustomComponent",
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

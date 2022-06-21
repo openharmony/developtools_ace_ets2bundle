@@ -572,26 +572,23 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
     ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
 }
 
-export function createCustomComponentNewExpression(node: ts.CallExpression): ts.NewExpression {
+export function createCustomComponentNewExpression(node: ts.CallExpression, name: string)
+  : ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode);
+  return addCustomComponentId(newNode, name);
 }
 
-function addCustomComponentId(node: ts.NewExpression): ts.NewExpression {
+function addCustomComponentId(node: ts.NewExpression, componentName: string): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
   componentInfo.componentNames.forEach((name: string) => {
-    const nodeIdentifier: ts.Identifier | ts.PropertyAccessExpression =
-      node.expression as ts.Identifier | ts.PropertyAccessExpression;
     let argumentsArray: ts.Expression[];
     if (node.arguments && node.arguments.length) {
       argumentsArray = Array.from(node.arguments);
     }
-    if (nodeIdentifier && (ts.isIdentifier(nodeIdentifier) &&
-      nodeIdentifier.escapedText === name || ts.isPropertyAccessExpression(nodeIdentifier) &&
-      ts.isIdentifier(nodeIdentifier.name) && nodeIdentifier.name.escapedText === name)) {
+    if (componentName === name) {
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
