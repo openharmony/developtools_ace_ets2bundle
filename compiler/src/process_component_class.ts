@@ -94,11 +94,10 @@ import {
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
-  validateInheritClass(node, log);
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, log, program, checkPreview(node));
   return ts.factory.createClassDeclaration(undefined, node.modifiers, node.name,
-    node.typeParameters, updateHeritageClauses(node), memberNode);
+    node.typeParameters, updateHeritageClauses(), memberNode);
 }
 
 function checkPreview(node: ts.ClassDeclaration) {
@@ -382,18 +381,13 @@ function getGeometryReaderFunctionBlock(node: ts.ArrowFunction | ts.FunctionExpr
   return processComponentBlock(blockNode, false, log);
 }
 
-function updateHeritageClauses(node: ts.StructDeclaration): ts.NodeArray<ts.HeritageClause> {
+function updateHeritageClauses(): ts.NodeArray<ts.HeritageClause> {
   const result:ts.HeritageClause[] = [];
   const heritageClause:ts.HeritageClause = ts.factory.createHeritageClause(
     ts.SyntaxKind.ExtendsKeyword,
     [ts.factory.createExpressionWithTypeArguments(
       ts.factory.createIdentifier(BASE_COMPONENT_NAME), [])]);
-
-  if (node.heritageClauses) {
-    result.push(...node.heritageClauses);
-  }
   result.push(heritageClause);
-
   return ts.factory.createNodeArray(result);
 }
 
@@ -534,16 +528,6 @@ function validateBuildMethodCount(buildCount: BuildCount, parentComponentName: t
       type: LogType.ERROR,
       message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.`,
       pos: parentComponentName.getStart()
-    });
-  }
-}
-
-function validateInheritClass(node: ts.StructDeclaration, log: LogInfo[]): void {
-  if (node.heritageClauses) {
-    log.push({
-      type: LogType.ERROR,
-      message: '@Component should not be inherit other Classes.',
-      pos: node.heritageClauses.pos
     });
   }
 }

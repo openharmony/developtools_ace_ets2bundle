@@ -60,7 +60,8 @@ import {
 } from './utils';
 import {
   processComponentBlock,
-  bindComponentAttr
+  bindComponentAttr,
+  getName
 } from './process_component_build';
 import {
   BUILDIN_STYLE_NAMES,
@@ -198,8 +199,10 @@ function createCustomDialogController(parent: ts.Expression, node: ts.NewExpress
   if (node.arguments && node.arguments.length === 1 &&
     ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
     const newproperties: ts.ObjectLiteralElementLike[] = node.arguments[0].properties.map((item) => {
-      if (isCustomDialogControllerPropertyAssignment(item, log)) {
-        item = processCustomDialogControllerPropertyAssignment(parent, item as ts.PropertyAssignment);
+      const componentName: string = isCustomDialogControllerPropertyAssignment(item, log);
+      if (componentName !== null) {
+        item = processCustomDialogControllerPropertyAssignment(parent,
+          item as ts.PropertyAssignment, componentName);
       }
       return item;
     });
@@ -209,16 +212,19 @@ function createCustomDialogController(parent: ts.Expression, node: ts.NewExpress
 }
 
 function isCustomDialogControllerPropertyAssignment(node: ts.ObjectLiteralElementLike,
-  log: LogInfo[]): boolean {
+  log: LogInfo[]): string {
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
     node.name.getText() === CUSTOM_DIALOG_CONTROLLER_BUILDER) {
-    if (ts.isCallExpression(node.initializer) && ts.isIdentifier(node.initializer.expression) &&
-      componentCollection.customDialogs.has(node.initializer.expression.getText())) {
-      return true;
+    if (node.initializer) {
+      const componentName: string = getName(node.initializer);
+      if (componentCollection.customDialogs.has(componentName)) {
+        return componentName;
+      }
     } else {
       validateCustomDialogControllerBuilderInit(node, log);
     }
   }
+  return null;
 }
 
 function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElementLike,
@@ -231,16 +237,16 @@ function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElement
 }
 
 function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
-  node: ts.PropertyAssignment): ts.PropertyAssignment {
+  node: ts.PropertyAssignment, componentName: string): ts.PropertyAssignment {
   if (ts.isCallExpression(node.initializer)) {
     return ts.factory.updatePropertyAssignment(node, node.name,
-      processCustomDialogControllerBuilder(parent, node.initializer));
+      processCustomDialogControllerBuilder(parent, node.initializer, componentName));
   }
 }
 
 function processCustomDialogControllerBuilder(parent: ts.Expression,
-  node: ts.CallExpression): ts.ArrowFunction {
-  const newExp: ts.Expression = createCustomComponentNewExpression(node);
+  node: ts.CallExpression, componentName: string): ts.ArrowFunction {
+  const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName);
   const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
   return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
 }
