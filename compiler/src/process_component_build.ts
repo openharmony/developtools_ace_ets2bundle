@@ -134,8 +134,17 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
-  if (node.body.statements.length === 1) {
-    const statement: ts.Statement = node.body.statements[0];
+  const bodyStatements: ts.NodeArray<ts.Statement> = node.body.statements;
+  let length: number = bodyStatements.length;
+  bodyStatements.map(node => {
+    const nodeName: string = node.expression && node.expression.expression &&
+      node.expression.expression.escapedText || undefined;
+    if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
+      length--;
+    }
+  });
+  if (length === 1) {
+    const statement: ts.Statement = bodyStatements[0];
     if (ts.isIfStatement(statement) || validateFirstNode(statement)) {
       isValid = true;
     }
@@ -146,7 +155,7 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     log.push({
       type: LogType.ERROR,
       message: `There should have a root container component.`,
-      pos: node.body.statements.pos
+      pos: bodyStatements.pos
     });
   }
   return isValid;
