@@ -21,7 +21,7 @@ import { logger } from './compile_info';
 import {
   SUCCESS,
   FAIL
-} from './pre_define'
+} from './pre_define';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -36,18 +36,21 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
       childProcess.execSync(singleCmd);
     } catch (e) {
       logger.error(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
-      return;
+      process.exit(FAIL);
     }
 
     const abcFile: string = input.replace(/\.js$/, '.abc');
     if (fs.existsSync(abcFile)) {
       const abcFileNew: string = abcFile.replace(/_.abc$/, '.abc');
-      fs.renameSync(abcFile, abcFileNew);
+      fs.copyFileSync(abcFile, abcFileNew);
+      fs.unlinkSync(abcFile);
     } else {
       logger.error(red, `ETS:ERROR ${abcFile} is lost`, reset);
       process.exit(FAIL);
     }
   }
+
+  return;
 }
 
 logger.debug('worker data is: ', JSON.stringify(process.env));
