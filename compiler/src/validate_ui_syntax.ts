@@ -459,10 +459,17 @@ function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<
       return false;
     }
     if (BlockNode && BlockNode.statements) {
-      const length: number = BlockNode.statements.length;
+      let length: number = BlockNode.statements.length;
       if (!length) {
         return false;
       }
+      BlockNode.statements.map(node => {
+        const nodeName: string = node.expression && node.expression.expression &&
+          node.expression.expression.escapedText || undefined;
+        if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
+          length--;
+        }
+      });
       if (length > 3) {
         return true;
       }
