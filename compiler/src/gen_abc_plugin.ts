@@ -60,13 +60,13 @@ interface File {
   path: string,
   size: number
 }
-const intermediateJsBundle: Array<File> = [];
+let intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
-const moduleInfos: Array<ModuleInfo> = [];
+let moduleInfos: Array<ModuleInfo> = [];
 let filterModuleInfos: Array<ModuleInfo> = [];
-const commonJsModuleInfos: Array<ModuleInfo> = [];
-const ESMModuleInfos: Array<ModuleInfo> = [];
-const entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
+let commonJsModuleInfos: Array<ModuleInfo> = [];
+let ESMModuleInfos: Array<ModuleInfo> = [];
+let entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
 let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo: string = '';
@@ -171,6 +171,19 @@ export class GenAbcPlugin {
       invokeWorkersToGenAbc();
     });
   }
+}
+
+function clearGlobalInfo() {
+  intermediateJsBundle = [];
+  fileterIntermediateJsBundle = [];
+  moduleInfos = [];
+  filterModuleInfos = [];
+  commonJsModuleInfos = [];
+  ESMModuleInfos = [];
+  entryInfos = new Map<string, EntryInfo>();
+  hashJsonObject = {};
+  moduleHashJsonObject = {};
+  buildPathInfo = '';
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -356,7 +369,9 @@ function getSmallestSizeGroup(groupSize: Map<number, number>): any {
 function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): any {
   const result: any = [];
   if (bundleArray.length < groupNumber) {
-    result.push(bundleArray);
+    for (const value of bundleArray) {
+      result.push([value]);
+    }
     return result;
   }
 
@@ -535,18 +550,17 @@ function invokeWorkersToGenAbc(): void {
       cluster.fork(workerData);
     }
 
+    let count_ = 0;
     cluster.on('exit', (worker, code, signal) => {
       if (code === FAIL) {
         process.exitCode = FAIL;
       }
-      logger.debug(`worker ${worker.process.pid} finished`);
-    });
-
-    process.on('exit', (code) => {
-      if (process.exitCode === FAIL) {
-        return;
+      count_++;
+      if (count_ === workerNumber) {
+        writeHashJson();
+        clearGlobalInfo();
       }
-      writeHashJson();
+      logger.debug(`worker ${worker.process.pid} finished`);
     });
   }
 }

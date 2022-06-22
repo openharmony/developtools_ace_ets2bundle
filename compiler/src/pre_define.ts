@@ -73,6 +73,9 @@ export const APP_STORAGE_SET_AND_LINK: string = 'setAndLink';
 export const APP_STORAGE_GET_OR_SET: string = 'GetOrCreate';
 
 export const PAGE_ENTRY_FUNCTION_NAME: string = 'loadDocument';
+export const STORE_PREVIEW_COMPONENTS: string = 'storePreviewComponents';
+export const PREVIEW_COMPONENT_FUNCTION_NAME: string = 'previewComponent';
+export const GET_PREVIEW_FLAG_FUNCTION_NAME: string = 'getPreviewComponentFlag';
 
 export const COMPONENT_DECORATOR_NAME_COMPONENT: string = 'Component';
 export const COMPONENT_DECORATOR_NAME_CUSTOMDIALOG: string = 'CustomDialog';
