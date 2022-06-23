@@ -557,7 +557,7 @@ function getStatementCount(node: ts.Node, allComponentNames: Set<string>): numbe
 
 function checkSpecificChildComponent(node: ts.Node, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
+  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
     ts.isIdentifier(node.expression.expression) && hasNonspecificChild(node, allComponentNames)) {
     const componentName: string = node.expression.expression.escapedText.toString();
     const pos: number = node.expression.expression.getStart();
