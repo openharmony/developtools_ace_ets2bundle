@@ -298,7 +298,7 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      if (result === 'SUCCESS' && projectConfig.isPreview) {
+      if (result === 'SUCCESS ' && projectConfig.isPreview) {
         this.printPreviewResult(resultInfo);
       } else {
         logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
@@ -322,25 +322,24 @@ export class ResultStates {
   private printPreviewResult(resultInfo: string = ''): void {
     const workerNum: number = Object.keys(cluster.workers).length;
     let count_: number = 0;
-    const blue = this.blue;
-    const reset = this.reset;
+    const printSuccessInfo = this.printSuccessInfo;
+    const blue: string = this.blue;
+    const reset: string = this.reset;
     if (workerNum > 0) {
       for (const worker of Object.values(cluster.workers)) {
         worker.on('exit', function(code, signal) {
           count_++;
           if (count_ === workerNum) {
-            this.printSuccessInfo(resultInfo);
+            printSuccessInfo(blue, reset, resultInfo);
           }
         });
       }
     } else {
-      this.printSuccessInfo(resultInfo);
+      printSuccessInfo(blue, reset, resultInfo);
     }
   }
 
-  private printSuccessInfo(resultInfo: string): void {
-    const blue = this.blue;
-    const reset = this.reset;
+  private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
     if (resultInfo.length === 0) {
       console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
     } else {
