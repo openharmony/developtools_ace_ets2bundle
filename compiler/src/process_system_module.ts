@@ -14,7 +14,22 @@
  */
 
 import { processSystemApi } from './validate_ui_syntax';
+import { systemModules } from '../main';
 
 module.exports = function processSystemModule(source: string): string {
-  return processSystemApi(source, false, this.resourcePath, true);
+  const REG_IMPORT: RegExp =
+    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+  source.replace(REG_IMPORT, (item, item1, item2, item3, item4, item5) => {
+    const moduleRequest: string = item3 || item5;
+    if (/^@(system|ohos)\./i.test(moduleRequest.trim())) {
+      if (!systemModules.includes(moduleRequest.trim() + '.d.ts')) {
+        const message: string =
+          `Cannot find module '${moduleRequest}' or its corresponding type declarations.`;
+        this.emitError(`BUILDERROR File: ${this.resourcePath}\n ${message}`);
+      }
+    }
+    return item;
+  });
+  source = processSystemApi(source, false, this.resourcePath, true);
+  return source;
 };
