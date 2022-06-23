@@ -13,4 +13,4 @@
  * limitations under the License.
  */
 
-export { BaseComponent as BaseTest } from './BaseComponent';
+export { textStyles as tStyles, DivideComponent as DivideTest } from './DivideComponent';

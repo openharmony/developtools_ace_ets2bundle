@@ -13,5 +13,6 @@
  * limitations under the License.
  */
 
-import { BaseComponent as Base } from './BaseComponent';
+import { textExtend as tExtend, BaseComponent as Base } from './BaseComponent';
+export { tExtend };
 export default Base;

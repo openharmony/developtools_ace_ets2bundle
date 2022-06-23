@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 
-import Base from './ImportNest';
-import { BaseTest } from './ExportNest';
-export { Base, BaseTest };
+import Base, { tExtend } from './ImportNest';
+import { tStyles, DivideTest } from './ExportNest';
+export { tStyles, tExtend, DivideTest, Base };
