@@ -14,32 +14,60 @@
  */
 
 exports.source = `
-import { Base, BaseTest } from './test/pages/ImportNestAll';
+import { tExtend, tStyles, DivideTest, Base } from './test/pages/ImportNestAll';
 
 @Entry
 @Component
 struct ImportTest {
+  @State testText1: string = 'Hello'
+  @State testText2: string = 'World'
+  @State testText3: string = 'Test'
+  @State testText4: string = 'Component'
+
   @State testState1: string = 'Base'
   @State testState2: number = 0
   @State testState3: object = { name: 'Base' }
-  @State testState4: string = 'BaseTest'
-  @State testState5: number = 1
-  @State testState6: object = { name: 'BaseTest' }
+  @State testState4: number = 3
+  @State testState5: number = 10
 
   build() {
     Column() {
+      Text(this.testText1)
+        .fontSize(50)
+      tExtend(20)
+      Text(this.testText2)
+      tStyles()
+      Button(this.testText3)
+      globalExtend(Color.Blue)
+      Text(this.testText4)
+        .fontSize(50)
+      globalStyles()
+
       Base({
         testStr: $testState1,
         testNum: $testState2,
         testObj: $testState3
       })
-      BaseTest({
-        testStr: $testState4,
-        testNum: $testState5,
-        testObj: $testState6
+      DivideTest({
+        testNum1: $testState4,
+        testNum2: $testState5
       })
     }
   }
+}
+
+@Builder
+@Extend(Button)
+function globalExtend(color: Color | string){
+  .backgroundColor(color)
+  .width(100)
+  .height(30)
+}
+
+@Builder
+@Styles
+function globalStyles(){
+  .backgroundColor('#abcdef')
 }
 `
 
@@ -50,15 +78,30 @@ const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
+        this.__testText1 = new ObservedPropertySimple('Hello', this, "testText1");
+        this.__testText2 = new ObservedPropertySimple('World', this, "testText2");
+        this.__testText3 = new ObservedPropertySimple('Test', this, "testText3");
+        this.__testText4 = new ObservedPropertySimple('Component', this, "testText4");
         this.__testState1 = new ObservedPropertySimple('Base', this, "testState1");
         this.__testState2 = new ObservedPropertySimple(0, this, "testState2");
         this.__testState3 = new ObservedPropertyObject({ name: 'Base' }, this, "testState3");
-        this.__testState4 = new ObservedPropertySimple('BaseTest', this, "testState4");
-        this.__testState5 = new ObservedPropertySimple(1, this, "testState5");
-        this.__testState6 = new ObservedPropertyObject({ name: 'BaseTest' }, this, "testState6");
+        this.__testState4 = new ObservedPropertySimple(3, this, "testState4");
+        this.__testState5 = new ObservedPropertySimple(10, this, "testState5");
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
+        if (params.testText1 !== undefined) {
+            this.testText1 = params.testText1;
+        }
+        if (params.testText2 !== undefined) {
+            this.testText2 = params.testText2;
+        }
+        if (params.testText3 !== undefined) {
+            this.testText3 = params.testText3;
+        }
+        if (params.testText4 !== undefined) {
+            this.testText4 = params.testText4;
+        }
         if (params.testState1 !== undefined) {
             this.testState1 = params.testState1;
         }
@@ -74,18 +117,42 @@ class ImportTest extends View {
         if (params.testState5 !== undefined) {
             this.testState5 = params.testState5;
         }
-        if (params.testState6 !== undefined) {
-            this.testState6 = params.testState6;
-        }
     }
     aboutToBeDeleted() {
+        this.__testText1.aboutToBeDeleted();
+        this.__testText2.aboutToBeDeleted();
+        this.__testText3.aboutToBeDeleted();
+        this.__testText4.aboutToBeDeleted();
         this.__testState1.aboutToBeDeleted();
         this.__testState2.aboutToBeDeleted();
         this.__testState3.aboutToBeDeleted();
         this.__testState4.aboutToBeDeleted();
         this.__testState5.aboutToBeDeleted();
-        this.__testState6.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id());
+    }
+    get testText1() {
+        return this.__testText1.get();
+    }
+    set testText1(newValue) {
+        this.__testText1.set(newValue);
+    }
+    get testText2() {
+        return this.__testText2.get();
+    }
+    set testText2(newValue) {
+        this.__testText2.set(newValue);
+    }
+    get testText3() {
+        return this.__testText3.get();
+    }
+    set testText3(newValue) {
+        this.__testText3.set(newValue);
+    }
+    get testText4() {
+        return this.__testText4.get();
+    }
+    set testText4(newValue) {
+        this.__testText4.set(newValue);
     }
     get testState1() {
         return this.__testState1.get();
@@ -117,14 +184,22 @@ class ImportTest extends View {
     set testState5(newValue) {
         this.__testState5.set(newValue);
     }
-    get testState6() {
-        return this.__testState6.get();
-    }
-    set testState6(newValue) {
-        this.__testState6.set(newValue);
-    }
     render() {
         Column.create();
+        Text.create(this.testText1);
+        Text.fontSize(50);
+        ImportNestAll_1.tExtend(20);
+        Text.pop();
+        Text.create(this.testText2);
+        ImportNestAll_1.tStyles();
+        Text.pop();
+        Button.createWithLabel(this.testText3);
+        globalExtend(Color.Blue);
+        Button.pop();
+        Text.create(this.testText4);
+        Text.fontSize(50);
+        globalStyles();
+        Text.pop();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
             View.create(new ImportNestAll_1.Base("2", this, {
@@ -139,10 +214,9 @@ class ImportTest extends View {
         }
         let earlierCreatedChild_3 = this.findChildById("3");
         if (earlierCreatedChild_3 == undefined) {
-            View.create(new ImportNestAll_1.BaseTest("3", this, {
-                testStr: this.__testState4,
-                testNum: this.__testState5,
-                testObj: this.__testState6
+            View.create(new ImportNestAll_1.DivideTest("3", this, {
+                testNum1: this.__testState4,
+                testNum2: this.__testState5
             }));
         }
         else {
@@ -151,6 +225,14 @@ class ImportTest extends View {
         }
         Column.pop();
     }
+}
+function globalExtend(color) {
+    Button.backgroundColor(color);
+    Button.width(100);
+    Button.height(30);
+}
+function globalStyles() {
+    __Common__.backgroundColor('#abcdef');
 }
 loadDocument(new ImportTest("1", undefined, {}));
 `

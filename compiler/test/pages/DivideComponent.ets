@@ -14,29 +14,24 @@
  */
 
 @Builder
-@Extend(Text)
-function textExtend(fontsize: number){
-  .fontSize(fontsize)
+@Styles
+function textStyles(){
+  .backgroundColor(Color.Red)
 }
 
 @Component
-struct BaseComponent {
-  @Link testStr: string
-  @Link testNum: number
-  @Link testObj: object
+struct DivideComponent {
+  @Link testNum1: number
+  @Link testNum2: number
 
   build() {
     Column(){
-      Text('BaseComponent')
+      Text('DivideComponent')
         .fontSize(20)
-      Text('testStr: ' + JSON.stringify(this.testStr))
-        .fontSize(20)
-      Text('testNum: ' + JSON.stringify(this.testNum))
-        .fontSize(20)
-      Text('testObj: ' + JSON.stringify(this.testObj))
+      Text('DivideResult: ' + JSON.stringify(this.testNum1 / this.testNum2))
         .fontSize(20)
     }
   }
 }
 
-export { textExtend, BaseComponent }
+export { textStyles, DivideComponent }
