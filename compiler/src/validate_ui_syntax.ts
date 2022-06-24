@@ -333,7 +333,6 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[]) {
-  checkAllNode(node, allComponentNames, sourceFileNode, log);
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
   }
@@ -359,18 +358,17 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
 
-function checkAllNode(node: ts.Node, allComponentNames: Set<string>, sourceFileNode: ts.SourceFile,
-  log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && node.expression && ts.isIdentifier(node.expression) &&
-    allComponentNames.has(node.expression.escapedText.toString())) {
-    const pos: number = node.expression.getStart();
-    const message: string =
-      `The component name must be followed by parentheses, like '${node.expression.getText()}()'.`;
-    addLog(LogType.ERROR, message, pos, log, sourceFileNode);
+export function checkAllNode(
+  node: ts.EtsComponentExpression,
+  allComponentNames: Set<string>,
+  sourceFileNode: ts.SourceFile,
+  log: LogInfo[]
+): void {
+  if (ts.isIdentifier(node.expression)) {
+    checkNoChildComponent(node, sourceFileNode, log);
+    checkOneChildComponent(node, allComponentNames, sourceFileNode, log);
+    checkSpecificChildComponent(node, allComponentNames, sourceFileNode, log);
   }
-  checkNoChildComponent(node, sourceFileNode, log);
-  checkOneChildComponent(node, allComponentNames, sourceFileNode, log);
-  checkSpecificChildComponent(node, allComponentNames, sourceFileNode, log);
 }
 
 interface ParamType {
@@ -378,12 +376,11 @@ interface ParamType {
   value: string,
 }
 
-function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+function checkNoChildComponent(node: ts.EtsComponentExpression, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   const isCheckType: ParamType = { name: null, value: null};
-  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) && hasChild(node, isCheckType)) {
-    const componentName: string = node.expression.expression.escapedText.toString();
-    const pos: number = node.expression.expression.getStart();
+  if (hasChild(node, isCheckType)) {
+    const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
+    const pos: number = node.expression.getStart();
     const message: string = isCheckType.name === null ?
       `The component '${componentName}' can't have any child.` :
       `When the component '${componentName}' set '${isCheckType.name}' is '${isCheckType.value}'` +
@@ -392,11 +389,10 @@ function checkNoChildComponent(node: ts.Node, sourceFileNode: ts.SourceFile, log
   }
 }
 
-function hasChild(node: ts.ExpressionStatement, isCheckType: ParamType): boolean {
-  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
-  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+function hasChild(node: ts.EtsComponentExpression, isCheckType: ParamType): boolean {
+  const nodeName: ts.Identifier = node.expression as ts.Identifier;  
   if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) || judgeComponentType(
-    nodeName, etsComponentExpression, isCheckType) && getNextNode(etsComponentExpression)) {
+    nodeName, node, isCheckType) && getNextNode(node)) {
     return true;
   }
   return false;
@@ -433,13 +429,12 @@ function getNextNode(node: ts.EtsComponentExpression): ts.Block {
   }
 }
 
-function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
+function checkOneChildComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   const isCheckType: ParamType = { name: null, value: null};
-  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) && hasNonSingleChild(node, allComponentNames, isCheckType)) {
-    const componentName: string = node.expression.expression.escapedText.toString();
-    const pos: number = node.expression.expression.getStart();
+  if (hasNonSingleChild(node, allComponentNames, isCheckType)) {
+    const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
+    const pos: number = node.expression.getStart();
     const message: string = isCheckType.name === null ?
       `The component '${componentName}' can only have a single child component.` :
       `When the component '${componentName}' set '${isCheckType.name}' is ` +
@@ -448,13 +443,12 @@ function checkOneChildComponent(node: ts.Node, allComponentNames: Set<string>,
   }
 }
 
-function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<string>,
+function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: Set<string>,
   isCheckType: ParamType): boolean {
-  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
-  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
-  const BlockNode: ts.Block = getNextNode(etsComponentExpression);
+  const nodeName: ts.Identifier = node.expression as ts.Identifier;
+  const BlockNode: ts.Block = getNextNode(node);
   if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(
-    nodeName, etsComponentExpression, isCheckType) && isCheckType.value === COMPONENT_BUTTON) {
+    nodeName, node, isCheckType) && isCheckType.value === COMPONENT_BUTTON) {
     if (!BlockNode) {
       return false;
     }
@@ -464,8 +458,10 @@ function hasNonSingleChild(node: ts.ExpressionStatement, allComponentNames: Set<
         return false;
       }
       BlockNode.statements.map(node => {
-        const nodeName: string = node.expression && node.expression.expression &&
-          node.expression.expression.escapedText || undefined;
+        const nodeName: string = ts.isExpressionStatement(node) &&
+          ts.isCallExpression(node.expression) &&
+          ts.isIdentifier(node.expression.expression) ?
+          node.expression.expression.escapedText.toString() : ''
         if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
           length--;
         }
@@ -514,7 +510,7 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
   return maxCount;
 }
 
-function isComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>): boolean {
+function isComponent(node: any, allComponentNames: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     allComponentNames.has(node.expression.escapedText.toString())) {
     return true;
@@ -522,7 +518,7 @@ function isComponent(node: ts.EtsComponentExpression, allComponentNames: Set<str
   return false;
 }
 
-function isForEachComponent(node: ts.CallExpression): boolean {
+function isForEachComponent(node: any): boolean {
   if (ts.isIdentifier(node.expression)) {
     const componentName: string = node.expression.escapedText.toString();
     return componentName === COMPONENT_FOREACH || componentName === COMPONENT_LAZYFOREACH;
@@ -555,12 +551,11 @@ function getStatementCount(node: ts.Node, allComponentNames: Set<string>): numbe
   return maxCount;
 }
 
-function checkSpecificChildComponent(node: ts.Node, allComponentNames: Set<string>,
+function checkSpecificChildComponent(node: ts.EtsComponentExpression,allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isExpressionStatement(node) && ts.isEtsComponentExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) && hasNonspecificChild(node, allComponentNames)) {
-    const componentName: string = node.expression.expression.escapedText.toString();
-    const pos: number = node.expression.expression.getStart();
+  if (hasNonspecificChild(node, allComponentNames)) {
+    const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
+    const pos: number = node.expression.getStart();
     const specificChildArray: string =
       Array.from(SPECIFIC_CHILD_COMPONENT.get(componentName)).join(' and ');
     const message: string =
@@ -569,9 +564,9 @@ function checkSpecificChildComponent(node: ts.Node, allComponentNames: Set<strin
   }
 }
 
-function hasNonspecificChild(node: ts.ExpressionStatement,
+function hasNonspecificChild(node: ts.EtsComponentExpression,
   allComponentNames: Set<string>): boolean {
-  const etsComponentExpression: ts.EtsComponentExpression = node.expression as ts.EtsComponentExpression;
+  const etsComponentExpression: ts.EtsComponentExpression = node;
   const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
   const nodeNameString: string = nodeName.escapedText.toString();
   const blockNode: ts.Block = getNextNode(etsComponentExpression);

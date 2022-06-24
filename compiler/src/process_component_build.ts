@@ -81,7 +81,8 @@ import {
 } from './component_map';
 import {
   componentCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  checkAllNode
 } from './validate_ui_syntax';
 import { processCustomComponent } from './process_custom_component';
 import {
@@ -235,6 +236,15 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     let lastExpression: ts.Statement;
     node.statements.forEach((item, index) => {
       if (ts.isExpressionStatement(item)) {
+        const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
+        if (etsComponentExpression) {
+          checkAllNode(
+            etsComponentExpression,
+            new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]),
+            transformLog.sourceFile,
+            log
+          );
+        }
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
@@ -1352,4 +1362,15 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
     message: `.stateStyles doesn't conform standard.`,
     pos: temp.getStart()
   });
+}
+
+function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
+  let current: any = node.expression;
+  while(current) {
+    if (ts.isEtsComponentExpression(current)) {
+      return current;
+    }
+    current = current.expression;
+  }
+  return null;
 }
