@@ -390,9 +390,9 @@ function checkNoChildComponent(node: ts.EtsComponentExpression, sourceFileNode: 
 }
 
 function hasChild(node: ts.EtsComponentExpression, isCheckType: ParamType): boolean {
-  const nodeName: ts.Identifier = node.expression as ts.Identifier;  
-  if (AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) || judgeComponentType(
-    nodeName, node, isCheckType) && getNextNode(node)) {
+  const nodeName: ts.Identifier = node.expression as ts.Identifier;
+  if ((AUTOMIC_COMPONENT.has(nodeName.escapedText.toString()) || judgeComponentType(nodeName, node, isCheckType)) &&
+    getNextNode(node)) {
     return true;
   }
   return false;
@@ -447,8 +447,8 @@ function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: S
   isCheckType: ParamType): boolean {
   const nodeName: ts.Identifier = node.expression as ts.Identifier;
   const BlockNode: ts.Block = getNextNode(node);
-  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(
-    nodeName, node, isCheckType) && isCheckType.value === COMPONENT_BUTTON) {
+  if ((SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType))
+    && isCheckType.value === COMPONENT_BUTTON) {
     if (!BlockNode) {
       return false;
     }
