@@ -461,7 +461,7 @@ function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: S
         const nodeName: string = ts.isExpressionStatement(node) &&
           ts.isCallExpression(node.expression) &&
           ts.isIdentifier(node.expression.expression) ?
-          node.expression.expression.escapedText.toString() : ''
+          node.expression.expression.escapedText.toString() : '';
         if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
           length--;
         }
@@ -510,7 +510,7 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
   return maxCount;
 }
 
-function isComponent(node: any, allComponentNames: Set<string>): boolean {
+function isComponent(node: ts.EtsComponentExpression | ts.CallExpression, allComponentNames: Set<string>): boolean {
   if (ts.isIdentifier(node.expression) &&
     allComponentNames.has(node.expression.escapedText.toString())) {
     return true;
@@ -518,7 +518,7 @@ function isComponent(node: any, allComponentNames: Set<string>): boolean {
   return false;
 }
 
-function isForEachComponent(node: any): boolean {
+function isForEachComponent(node: ts.EtsComponentExpression | ts.CallExpression): boolean {
   if (ts.isIdentifier(node.expression)) {
     const componentName: string = node.expression.escapedText.toString();
     return componentName === COMPONENT_FOREACH || componentName === COMPONENT_LAZYFOREACH;
@@ -551,7 +551,7 @@ function getStatementCount(node: ts.Node, allComponentNames: Set<string>): numbe
   return maxCount;
 }
 
-function checkSpecificChildComponent(node: ts.EtsComponentExpression,allComponentNames: Set<string>,
+function checkSpecificChildComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   if (hasNonspecificChild(node, allComponentNames)) {
     const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
