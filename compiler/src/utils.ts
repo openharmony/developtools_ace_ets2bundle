@@ -102,6 +102,7 @@ export function addLog(type: LogType, message: string, pos: number, log: LogInfo
   log.push({
     type: type,
     message: message,
+    pos: pos,
     line: posOfNode.line + 1,
     column: posOfNode.character + 1,
     fileName: sourceFile.fileName
