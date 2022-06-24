@@ -96,6 +96,7 @@ export const COMPONENT_BUILD_FUNCTION: string = 'build';
 export const COMPONENT_RENDER_FUNCTION: string = 'render';
 export const COMPONENT_TRANSITION_FUNCTION: string = 'pageTransition';
 export const COMPONENT_TRANSITION_NAME: string = 'PageTransition';
+export const CUSTOM_COMPONENT: string = 'CustomComponent';
 
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';

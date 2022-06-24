@@ -54,7 +54,8 @@ import {
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
   COMPONENT_SET_AND_LINK,
   COMPONENT_SET_AND_PROP,
-  COMPONENT_CONSTRUCTOR_UNDEFINED
+  COMPONENT_CONSTRUCTOR_UNDEFINED,
+  CUSTOM_COMPONENT
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -97,7 +98,7 @@ export function processComponentClass(node: ts.StructDeclaration, context: ts.Tr
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, log, program, checkPreview(node));
   return ts.factory.createClassDeclaration(undefined, node.modifiers, node.name,
-    node.typeParameters, updateHeritageClauses(), memberNode);
+    node.typeParameters, updateHeritageClauses(node, log), memberNode);
 }
 
 function checkPreview(node: ts.ClassDeclaration) {
@@ -381,7 +382,15 @@ function getGeometryReaderFunctionBlock(node: ts.ArrowFunction | ts.FunctionExpr
   return processComponentBlock(blockNode, false, log);
 }
 
-function updateHeritageClauses(): ts.NodeArray<ts.HeritageClause> {
+function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[])
+  : ts.NodeArray<ts.HeritageClause> {
+  if (node.heritageClauses && !checkHeritageClauses(node)) {
+    log.push({
+      type: LogType.ERROR,
+      message: 'The struct component is not allowed to extends other class or implements other interface.',
+      pos: node.heritageClauses.pos
+    });
+  }
   const result:ts.HeritageClause[] = [];
   const heritageClause:ts.HeritageClause = ts.factory.createHeritageClause(
     ts.SyntaxKind.ExtendsKeyword,
@@ -389,6 +398,18 @@ function updateHeritageClauses(): ts.NodeArray<ts.HeritageClause> {
       ts.factory.createIdentifier(BASE_COMPONENT_NAME), [])]);
   result.push(heritageClause);
   return ts.factory.createNodeArray(result);
+}
+
+function checkHeritageClauses(node: ts.StructDeclaration): boolean {
+  if (node.heritageClauses.length === 1 && node.heritageClauses[0].types &&
+    node.heritageClauses[0].types.length === 1) {
+    const expressionNode: ts.ExpressionWithTypeArguments = node.heritageClauses[0].types[0];
+    if (expressionNode.expression && ts.isIdentifier(expressionNode.expression) &&
+      expressionNode.expression.escapedText.toString() === CUSTOM_COMPONENT) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function isProperty(node: ts.Node): Boolean {
