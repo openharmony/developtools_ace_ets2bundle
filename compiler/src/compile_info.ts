@@ -126,13 +126,7 @@ export class ResultStates {
         (assets) => {
           const GLOBAL_COMMON_MODULE_CACHE = `
           globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] =` +
-          ` globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] || {};
-          globalThis["webpackChunk${projectConfig.hashProjectPath}"].forEach((item)=> {
-            Object.keys(item[1]).forEach((element) => {
-              globalThis["__common_module_cache__${projectConfig.hashProjectPath}"][element] = null;
-            })
-          });`;
-
+          ` globalThis["__common_module_cache__${projectConfig.hashProjectPath}"] || {};`;
           if (assets['commons.js']) {
             assets['commons.js'] = new CachedSource(
               new ConcatSource(assets['commons.js'], GLOBAL_COMMON_MODULE_CACHE));
@@ -152,10 +146,21 @@ export class ResultStates {
             `[moduleId]: null;\n` +
             `if (commonCachedModule) { return commonCachedModule.exports; }\n` +
             source.replace('// Execute the module function',
+              `function isCommonModue(moduleId) {
+                if (globalThis["webpackChunk${projectConfig.hashProjectPath}"]) {
+                  const length = globalThis["webpackChunk${projectConfig.hashProjectPath}"].length;
+                  switch (length) {
+                    case 1:
+                      return globalThis["webpackChunk${projectConfig.hashProjectPath}"][0][1][moduleId];
+                    case 2:
+                      return globalThis["webpackChunk${projectConfig.hashProjectPath}"][0][1][moduleId] ||
+                      globalThis["webpackChunk${projectConfig.hashProjectPath}"][1][1][moduleId];
+                  }
+                }
+                return undefined;
+              }\n` +
               `if (globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
-              ` && moduleId.indexOf("?name=") < 0 && ` +
-            `Object.keys(globalThis["__common_module_cache__${projectConfig.hashProjectPath}"])` +
-            `.indexOf(moduleId) >= 0) {\n` +
+              ` && moduleId.indexOf("?name=") < 0 && isCommonModue(moduleId)) {\n` +
               `  globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
               `[moduleId] = module;\n}`);
         });
