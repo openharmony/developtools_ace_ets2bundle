@@ -1367,7 +1367,7 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
   return null;
 }
 
-function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]) {
+function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
   const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);   
   if (etsComponentExpression) {
     checkAllNode(
