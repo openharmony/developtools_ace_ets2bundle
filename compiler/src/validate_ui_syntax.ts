@@ -566,10 +566,9 @@ function checkSpecificChildComponent(node: ts.EtsComponentExpression, allCompone
 
 function hasNonspecificChild(node: ts.EtsComponentExpression,
   allComponentNames: Set<string>): boolean {
-  const etsComponentExpression: ts.EtsComponentExpression = node;
-  const nodeName: ts.Identifier = etsComponentExpression.expression as ts.Identifier;
+  const nodeName: ts.Identifier = node.expression as ts.Identifier;
   const nodeNameString: string = nodeName.escapedText.toString();
-  const blockNode: ts.Block = getNextNode(etsComponentExpression);
+  const blockNode: ts.Block = getNextNode(node);
   let isNonspecific: boolean = false;
   if (SPECIFIC_CHILD_COMPONENT.has(nodeNameString) && blockNode) {
     const specificChildSet: Set<string> = SPECIFIC_CHILD_COMPONENT.get(nodeNameString);
