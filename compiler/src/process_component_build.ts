@@ -81,7 +81,8 @@ import {
 } from './component_map';
 import {
   componentCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  checkAllNode
 } from './validate_ui_syntax';
 import { processCustomComponent } from './process_custom_component';
 import {
@@ -134,8 +135,17 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
-  if (node.body.statements.length === 1) {
-    const statement: ts.Statement = node.body.statements[0];
+  const bodyStatements: ts.NodeArray<ts.Statement> = node.body.statements;
+  let length: number = bodyStatements.length;
+  bodyStatements.map(node => {
+    const nodeName: string = node.expression && node.expression.expression &&
+      node.expression.expression.escapedText || undefined;
+    if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
+      length--;
+    }
+  });
+  if (length === 1) {
+    const statement: ts.Statement = bodyStatements[0];
     if (ts.isIfStatement(statement) || validateFirstNode(statement)) {
       isValid = true;
     }
@@ -146,7 +156,7 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     log.push({
       type: LogType.ERROR,
       message: `There should have a root container component.`,
-      pos: node.body.statements.pos
+      pos: bodyStatements.pos
     });
   }
   return isValid;
@@ -226,6 +236,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     let lastExpression: ts.Statement;
     node.statements.forEach((item, index) => {
       if (ts.isExpressionStatement(item)) {
+        checkEtsComponent(item, log);
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
@@ -1354,4 +1365,27 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
     message: `.stateStyles doesn't conform standard.`,
     pos: temp.getStart()
   });
+}
+
+function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
+  let current: any = node.expression;
+  while(current) {
+    if (ts.isEtsComponentExpression(current)) {
+      return current;
+    }
+    current = current.expression;
+  }
+  return null;
+}
+
+function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
+  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);   
+  if (etsComponentExpression) {
+    checkAllNode(
+      etsComponentExpression,
+      new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]),
+      transformLog.sourceFile,
+      log
+    );
+  }
 }
