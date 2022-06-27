@@ -236,15 +236,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     let lastExpression: ts.Statement;
     node.statements.forEach((item, index) => {
       if (ts.isExpressionStatement(item)) {
-        const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
-        if (etsComponentExpression) {
-          checkAllNode(
-            etsComponentExpression,
-            new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]),
-            transformLog.sourceFile,
-            log
-          );
-        }
+        checkEtsComponent(item, log);
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
@@ -1373,4 +1365,16 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
     current = current.expression;
   }
   return null;
+}
+
+function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]) {
+  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);   
+  if (etsComponentExpression) {
+    checkAllNode(
+      etsComponentExpression,
+      new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]),
+      transformLog.sourceFile,
+      log
+    );
+  }
 }
