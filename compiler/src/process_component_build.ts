@@ -1284,7 +1284,7 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
       name = temp.escapedText.toString();
       break;
     } else if (ts.isPropertyAccessExpression(temp) && temp.name && ts.isIdentifier(temp.name) &&
-    isCustomAttributes(temp)) {
+      isCustomAttributes(temp)) {
       name = temp.name.escapedText.toString();
       break;
     }
