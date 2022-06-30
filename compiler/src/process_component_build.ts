@@ -1292,6 +1292,7 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
   }
   return name;
 }
+
 function isDecoratedAttributeName(temp: ts.PropertyAccessExpression): boolean {
   if (temp.expression && temp.expression.getText() === THIS) {
     return true;
@@ -1299,7 +1300,6 @@ function isDecoratedAttributeName(temp: ts.PropertyAccessExpression): boolean {
     return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
   }
 }
-
 
 export function isAttributeNode(node: ts.ExpressionStatement): boolean {
   let temp: any = node.expression;
