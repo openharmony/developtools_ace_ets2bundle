@@ -1284,7 +1284,7 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
       name = temp.escapedText.toString();
       break;
     } else if (ts.isPropertyAccessExpression(temp) && temp.name && ts.isIdentifier(temp.name) &&
-      !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString())) {
+    isDecoratedAttributeName(temp)) {
       name = temp.name.escapedText.toString();
       break;
     }
@@ -1292,6 +1292,14 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
   }
   return name;
 }
+function isDecoratedAttributeName(temp: ts.PropertyAccessExpression): boolean {
+  if (temp.expression && temp.expression.getText() === THIS) {
+    return true;
+  } else {
+    return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
+  }
+}
+
 
 export function isAttributeNode(node: ts.ExpressionStatement): boolean {
   let temp: any = node.expression;
