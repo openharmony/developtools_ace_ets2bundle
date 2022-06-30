@@ -1284,7 +1284,7 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
       name = temp.escapedText.toString();
       break;
     } else if (ts.isPropertyAccessExpression(temp) && temp.name && ts.isIdentifier(temp.name) &&
-      isBuildStyleNames(temp)) {
+    notPropertyAccessExpressionName(temp)) {
       name = temp.name.escapedText.toString();
       break;
     }
@@ -1293,7 +1293,7 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
   return name;
 }
 
-function isBuildStyleNames(temp: ts.PropertyAccessExpression): boolean {
+function notPropertyAccessExpressionName(temp: ts.PropertyAccessExpression): boolean {
   if (temp.expression && temp.expression.getText() === THIS) {
     return true;
   } else {
