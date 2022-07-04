@@ -93,7 +93,9 @@
         "Toggle",
         "Video",
         "Web",
-        "XComponent"
+        "XComponent",
+        "GridRow",
+        "GridCol"
       ],
       "extend": {
         "decorator": "Extend",
@@ -533,6 +535,16 @@
             "type": "XComponentAttribute",
             "instance": "XComponentInstance"
           },
+          {
+            "name": "GridRow",
+            "type": "GridRowAttribute",
+            "instance": "GridRowInterface"
+          },
+          {
+            "name": "GridCol",
+            "type": "GridColAttribute",
+            "instance": "GridColInterface"
+          }
         ]
       },
       "styles": {
