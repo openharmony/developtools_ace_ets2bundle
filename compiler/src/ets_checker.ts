@@ -148,8 +148,12 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       }
     } else {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+      const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
+      const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
       if (ts.sys.fileExists(modulePath)) {
         resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+      } else if (ts.sys.fileExists(jsModulePath)) {
+        resolvedModules.push(getResolveModule(modulePath, '.js'));
       } else {
         resolvedModules.push(null);
       }
