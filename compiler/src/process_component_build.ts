@@ -1181,7 +1181,9 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
-      validateStateStyleSyntax(temp, log);
+       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
+        validateStateStyleSyntax(temp, log);
+       } 
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
