@@ -599,7 +599,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
             ...argsArr
           ]
         )),
-        context.factory.createExpressionStatement(context.factory.createCallExpression(
+        name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
           context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
           undefined,
           [context.factory.createNewExpression(
@@ -607,7 +607,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
             undefined,
             newArray
           )]
-        ))
+        )) : undefined
       ],
       true
     )
