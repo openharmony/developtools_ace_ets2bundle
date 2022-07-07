@@ -998,11 +998,15 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
     const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
-      const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
-      const bundleName: string = packageInfo[0];
-      const moduleName: string = packageInfo[1];
-      moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
-      item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
+      const projectRootPath: string = projectConfig.projectRootPath;
+      if (npmModuleIdx == -1 || npmModuleIdx == projectRootPath.search(/(\/|\\)node_modules(\/|\\)/)) {
+        const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+        const bundleName: string = packageInfo[0];
+        const moduleName: string = packageInfo[1];
+        moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
+        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      }
     }
   }
   return item;
