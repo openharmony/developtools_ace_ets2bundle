@@ -276,7 +276,7 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
     ]
   );
 }
-
+export const INNER_CUSTOM_BUILDER_METHOD: Set<string> = new Set();
 function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
@@ -300,9 +300,19 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(name);
+      INNER_CUSTOM_BUILDER_METHOD.add(name)
+      node.parameters.push(ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        ts.factory.createIdentifier("parent"),
+        undefined,
+        undefined,
+        undefined
+      ))
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
-        node.type, processComponentBlock(node.body, false, log));
+        node.type, processComponentBlock(node.body, false, log, false, true));
       updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {

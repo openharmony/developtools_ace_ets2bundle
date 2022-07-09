@@ -75,7 +75,7 @@ const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
     [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], name: string): void {
+  log: LogInfo[], name: string, isInnerBuilder: boolean = false): void {
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
     const hasChainCall: boolean = componentNode.parent &&
@@ -109,7 +109,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
       bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
     }
-    addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode);
+    addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode, isInnerBuilder);
     if (hasChainCall) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -140,18 +140,18 @@ function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression): void {
+  newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression, isInnerBuilder: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isInnerBuilder);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[]): void {
+  newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[], isInnerBuilder: boolean = false): void {
   const id: string = componentInfo.id.toString();
-  newStatements.push(createFindChildById(id, name), createCustomComponentIfStatement(id,
+  newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
     ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
     ts.factory.createObjectLiteralExpression(props, true), name));
 }
@@ -355,12 +355,12 @@ function getPropertyDecoratorKind(propertyName: string, customComponentName: str
   }
 }
 
-function createFindChildById(id: string, name: string): ts.VariableStatement {
+function createFindChildById(id: string, name: string, isInnerBuilder: boolean = false): ts.VariableStatement {
   return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
     [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(
       `${CUSTOM_COMPONENT_EARLIER_CREATE_CHILD}${id}`), undefined, ts.factory.createTypeReferenceNode(
       ts.factory.createIdentifier(name)), ts.factory.createAsExpression(ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(ts.factory.createThis(), ts.factory.createIdentifier(
+      ts.factory.createPropertyAccessExpression(isInnerBuilder ? ts.factory.createIdentifier('parent') : ts.factory.createThis(), ts.factory.createIdentifier(
         `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
     ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))))], ts.NodeFlags.Let));
 }
