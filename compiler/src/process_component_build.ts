@@ -94,6 +94,7 @@ import {
 import { projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
+import { INNER_CUSTOM_BUILDER_METHOD } from './process_component_class';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -113,9 +114,9 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 }
 
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false): ts.Block {
+  isTransition: boolean = false, isInnerBuilder: boolean = false): ts.Block {
   const newStatements: ts.Statement[] = [];
-  processComponentChild(node, newStatements, log);
+  processComponentChild(node, newStatements, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder);
   if (isLazy) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -221,7 +222,7 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
 let sourceNode: ts.SourceFile;
 
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
-  supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}): void {
+  supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -253,7 +254,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                   item = expressionResult;
                 }
               }
-              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name);
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name, isInnerBuilder);
               lastName = name;
               lastExpression = item;
             }
@@ -264,8 +265,16 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             lastExpression = item;
             break;
           case ComponentType.customBuilderMethod:
+            if (INNER_CUSTOM_BUILDER_METHOD.has(name)) {
+              newStatements.push(addInnerBuilderParameter(item));
+            } else {
+              newStatements.push(item);
+            }
+            lastName = name;
+            lastExpression = item;
+            break;
           case ComponentType.builderParamMethod:
-            newStatements.push(item);
+            newStatements.push(addInnerBuilderParameter(item));
             lastName = name;
             lastExpression = item;
             break;
@@ -297,6 +306,16 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     column: 0,
     fileName: ''
   };
+}
+
+function addInnerBuilderParameter(node: ts.ExpressionStatement): ts.ExpressionStatement {
+  if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments) {
+    node.expression.arguments.push(ts.factory.createThis());
+    return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(node.expression,
+      node.expression.expression, node.expression.typeArguments, node.expression.arguments));
+  } else {
+    return node;
+  }
 }
 
 function processMixBuilder(lastName: string, name: string, index: number, lastExpression: ts.Statement, log: LogInfo[],
