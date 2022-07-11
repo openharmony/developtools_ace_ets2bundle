@@ -168,7 +168,7 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      invokeWorkersToGenAbc();
+      judgeWorkersToGenAbc(invokeWorkersToGenAbc);
     });
   }
 }
@@ -184,6 +184,7 @@ function clearGlobalInfo() {
   hashJsonObject = {};
   moduleHashJsonObject = {};
   buildPathInfo = '';
+  process.env.compilerStatus = 'on';
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -411,7 +412,7 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
     }
   });
 
-  invokeCluterModuleToAbc();
+  judgeWorkersToGenAbc(invokeCluterModuleToAbc);
 }
 
 function initAbcEnv() : string[] {
@@ -452,13 +453,15 @@ function invokeCluterModuleToAbc(): void {
       });
     }
 
+    let totalWorkerNumber = 0;
     if (commonJsModuleInfos.length > 0) {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-c');
       const commonJsCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      const chunkSize: number = 50;
-      const splitedModules: any[] = splitModulesByNumber(commonJsModuleInfos, chunkSize);
-      const workerNumber: number = splitedModules.length;
+      let workerNumber: number = 3;
+      const splitedModules: any[] = splitModulesByNumber(commonJsModuleInfos, workerNumber);
+      workerNumber = splitedModules.length;
+      totalWorkerNumber += workerNumber;
       for (let i = 0; i < workerNumber; i++) {
         const workerData: any = {
           'inputs': JSON.stringify(splitedModules[i]),
@@ -471,9 +474,10 @@ function invokeCluterModuleToAbc(): void {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-m');
       const ESMCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      const chunkSize: number = 50;
-      const splitedModules: any[] = splitModulesByNumber(ESMModuleInfos, chunkSize);
-      const workerNumber: number = splitedModules.length;
+      let workerNumber: number = 3;
+      const splitedModules: any[] = splitModulesByNumber(ESMModuleInfos, workerNumber);
+      workerNumber = splitedModules.length;
+      totalWorkerNumber += workerNumber;
       for (let i = 0; i < workerNumber; i++) {
         const workerData: any = {
           'inputs': JSON.stringify(splitedModules[i]),
@@ -483,29 +487,54 @@ function invokeCluterModuleToAbc(): void {
       }
     }
 
+    let count_ = 0;
     cluster.on('exit', (worker, code, signal) => {
       if (code === FAIL) {
         process.exitCode = FAIL;
       }
-      logger.debug(`worker ${worker.process.pid} finished`);
-    });
-
-    process.on('exit', (code) => {
-      if (process.exitCode === FAIL) {
-        return;
+      count_++;
+      if (count_ === totalWorkerNumber) {
+        writeModuleHashJson();
+        clearGlobalInfo();
       }
-      writeModuleHashJson();
+      logger.debug(`worker ${worker.process.pid} finished`);
     });
   }
 }
 
-function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, chunkSize: number): any[] {
-  const result: any[] = [];
-  for (let i = 0; i < moduleInfos.length; i += chunkSize) {
-    result.push(moduleInfos.slice(i, i + chunkSize));
+function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, workerNumber: number): any[] {
+  const result: any = [];
+  if (moduleInfos.length < workerNumber) {
+    for (const value of moduleInfos) {
+      result.push([value]);
+    }
+    return result;
+  }
+
+  for (let i = 0; i < workerNumber; ++i) {
+    result.push([]);
+  }
+
+  for (let i = 0; i < moduleInfos.length; i++) {
+    const chunk = i % workerNumber;
+    result[chunk].push(moduleInfos[i]);
   }
 
   return result;
+}
+
+function judgeWorkersToGenAbc(callback: any): void {
+  let timeoutId: any = null;
+  if (process.env.compilerStatus && process.env.compilerStatus === 'on') {
+    callback();
+    process.env.compilerStatus = 'off';
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    return;
+  } else {
+    timeoutId = setTimeout(judgeWorkersToGenAbc.bind(null, callback), 50);
+  }
 }
 
 function invokeWorkersToGenAbc(): void {
@@ -687,7 +716,8 @@ function writeHashJson(): void {
     const abcPath: string = input.replace(/_.js$/, EXTNAME_ABC);
     if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
-      continue;
+      process.exitCode = FAIL;
+      break;
     }
     const hashInputContentData: any = toHashData(input);
     const hashAbcContentData: any = toHashData(abcPath);

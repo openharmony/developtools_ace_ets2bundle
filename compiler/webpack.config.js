@@ -312,6 +312,7 @@ function setTsConfigFile() {
 
 function setGenAbcPlugin(env, config) {
   process.env.compilerType = 'ark';
+  process.env.compilerStatus = "on";
   let arkDir = path.join(__dirname, 'bin', 'ark');
   if (env.arkFrontendDir) {
     arkDir = env.arkFrontendDir;

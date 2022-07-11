@@ -20,26 +20,34 @@ import { logger } from './compile_info';
 import {
   SUCCESS,
   FAIL
-} from './pre_define'
+} from './pre_define';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
-  const inputs: string[] = [];
-  for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].tempFilePath;
-    inputs.push('"' + input + '"');
+  const result: any[] = [];
+  const chunkSize = 5;
+  for (let i = 0; i < inputPaths.length; i += chunkSize) {
+    result.push(inputPaths.slice(i, i + chunkSize));
   }
-  const inputsStr: string = inputs.join(' ');
-  const singleCmd: any = `${cmd} ${inputsStr}`;
-  logger.debug('gen abc cmd is: ', singleCmd);
-  try {
-    childProcess.execSync(singleCmd);
-  } catch (e) {
-    logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
-    process.exit(FAIL);
+
+  for (let i = 0; i < result.length; i++) {
+    const inputs = [];
+    for (let j = 0; j < result[i].length; j++) {
+      const input: string = result[i][j].tempFilePath;
+      inputs.push('"' + input + '"');
+    }
+    const inputsStr: string = inputs.join(' ');
+    const singleCmd: any = `${cmd} ${inputsStr}`;
+    logger.debug('gen abc cmd is: ', singleCmd);
+    try {
+      childProcess.execSync(singleCmd);
+    } catch (e) {
+      logger.error(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
+      process.exit(FAIL);
+    }
   }
 
   return;
