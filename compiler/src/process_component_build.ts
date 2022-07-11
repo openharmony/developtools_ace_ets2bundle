@@ -1181,9 +1181,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
-       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
-        validateStateStyleSyntax(temp, log);
-       } 
+        validateStateStyleSyntax(item, temp, log);
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
@@ -1369,12 +1367,14 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
   return null;
 }
 
-export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: `.stateStyles doesn't conform standard.`,
-    pos: temp.getStart()
-  });
+export function validateStateStyleSyntax(item: ts.PropertyAssignment, temp: any, log: LogInfo[]): void {
+  if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `.stateStyles doesn't conform standard.`,
+      pos: temp.getStart()
+    });
+  }
 }
 
 function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
