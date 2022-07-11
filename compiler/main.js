@@ -226,8 +226,10 @@ function setAbilityFile(projectConfig, abilityPages) {
 function readAbilityEntrance(moduleJson) {
   let abilityPages = [];
   if (moduleJson.module) {
-    if (moduleJson.module.srcEntrance) {
-      abilityPages.push(moduleJson.module.srcEntrance);
+    const moduleSrcEntrance = moduleJson.module.srcEntrance;
+    if (moduleSrcEntrance) {
+      abilityPages.push(moduleSrcEntrance);
+      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -244,15 +246,19 @@ function setEntrance(abilityConfig, abilityPages) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        let finalPath = path.resolve(path.resolve(projectConfig.projectPath, '../'), ability.srcEntrance);
-        finalPath = finalPath.replace(/\\/g, '/');
-        if (fs.existsSync(finalPath)) {
-          abilityPagesFullPath.push(finalPath);
-        } else {
-          abilityPagesFullPath.push(ability.srcEntrance);
-        }
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
+  }
+}
+
+function getAbilityFullPath(projectPath, abilityPath) {
+  let finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
+  finalPath = finalPath.replace(/\\/g, '/');
+  if (fs.existsSync(finalPath)) {
+    return finalPath;
+  } else {
+    return abilityPath;
   }
 }
 
