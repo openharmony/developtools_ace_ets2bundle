@@ -16,8 +16,13 @@
 const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
+const fs = require('fs');
 
 const { processComponentChild } = require('../lib/process_component_build');
+const { createWatchCompilerHost } = require('../lib/ets_checker');
+const { writeFileSync } = require('../lib/utils');
+const { projectConfig } = require('../main');
+const { props } = require('../lib/compile_info');
 
 const WebSocketServer = WebSocket.Server;
 
@@ -35,7 +40,25 @@ const pluginCommandChannelMessageHandlers = {
   'default': () => {}
 };
 
+let previewCacheFilePath;
+const messages = [];
+let start = false;
+let checkStatus = false;
+let compileStatus = false;
+let receivedMsg_;
+let errorInfo;
+let compileWithCheck;
+
 function init(port) {
+  previewCacheFilePath =
+    path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
+  const rootFileNames = [];
+  if (!fs.existsSync(previewCacheFilePath)) {
+    writeFileSync(previewCacheFilePath, '');
+  }
+  rootFileNames.push(previewCacheFilePath);
+  ts.createWatchProgram(
+    createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount));
   const wss = new WebSocketServer({port: port});
   wss.on('connection', function(ws) {
     pluginSocket = ws;
@@ -57,14 +80,31 @@ function handlePluginCommand(jsonData) {
 }
 
 function handlePluginCompileComponent(jsonData) {
+  if (jsonData) {
+    messages.push(jsonData);
+    if (receivedMsg_) {
+      return;
+    }
+  } else if (messages.length > 0){
+    jsonData = messages[0];
+  } else {
+    return
+  }
+  start = true;
   const receivedMsg = jsonData;
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     Object.assign(compilerOptions, {
       "sourceMap": false,
     });
-  const sourceNode = ts.createSourceFile('preview.ets', 'struct{build(){' + receivedMsg.data.script + '}}',
+  const sourceNode = ts.createSourceFile('preview.ets',
+    'struct preview{build(){' + receivedMsg.data.script + '}}',
     ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
+  compileWithCheck = jsonData.data.compileWithCheck;
+  if (previewCacheFilePath && fs.existsSync(previewCacheFilePath)
+    && compileWithCheck === 'true') {
+      writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
+  }
   const previewStatements = [];
   const log = [];
   supplement = {
@@ -94,12 +134,75 @@ function handlePluginCompileComponent(jsonData) {
   }
   receivedMsg.data.log = log;
   if (pluginSocket.readyState === WebSocket.OPEN){
-    responseToPlugin(receivedMsg);
+    compileStatus = true;
+    receivedMsg_ = receivedMsg;
+    responseToPlugin();
   }
 }
 
-function responseToPlugin(jsonData) {
-  pluginSocket.send(JSON.stringify(jsonData), (err) => {});
+function resolveDiagnostic(diagnostic) {
+  errorInfo = [];
+  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+  if (validateError(message)) {
+    if (diagnostic.file) {
+      const { line, character } =
+        diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        errorInfo.push(
+          `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+    } else {
+      errorInfo.push(`ETS:ERROR: ${message}`);
+    }
+  }
+}
+
+function delayPrintLogCount() {
+  if (start == true) {
+    checkStatus = true;
+    responseToPlugin();
+  }
+}
+
+function responseToPlugin() {
+  if ((compileWithCheck !== "true" && compileStatus == true) ||
+    (compileWithCheck === "true" && compileStatus == true && checkStatus == true) ) {
+    if (receivedMsg_) {
+      if (errorInfo) {
+        receivedMsg_.data.log =  receivedMsg_.data.log || [];
+        receivedMsg_.data.log.push(...errorInfo);
+      }
+      pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
+        start = false;
+        checkStatus = false;
+        compileStatus = false;
+        errorInfo = undefined;
+        receivedMsg_ = undefined;
+        messages.shift();
+        if (messages.length > 0) {
+          handlePluginCompileComponent();
+        }
+      });
+    }
+  }
+}
+
+function validateError(message) {
+  const propInfoReg = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
+  const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
+  if (matchMessage(message, props, propInfoReg) ||
+    matchMessage(message, props, stateInfoReg)) {
+    return false;
+  }
+  return true;
+}
+
+function matchMessage(message, nameArr, reg) {
+  if (reg.test(message)) {
+    const match = message.match(reg);
+    if (match[1] && nameArr.includes(match[1])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 module.exports = {
