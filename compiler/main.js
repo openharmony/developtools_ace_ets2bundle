@@ -102,7 +102,8 @@ function loadEntryObj(projectConfig) {
         if (fs.existsSync(fileName)) {
           projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
-          throw Error(`\u001b[31m ERROR: page '${fileName}' does not exist. \u001b[39m`).message;
+          const errorFileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
+          throw Error(`\u001b[31m ERROR: page '${errorFileName}' does not exist. \u001b[39m`).message;
         }
       });
     } else {
