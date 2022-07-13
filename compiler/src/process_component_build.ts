@@ -77,7 +77,8 @@ import {
   CUSTOM_BUILDER_PROPERTIES,
   BUILDER_MIX_EXTEND,
   BUILDER_MIX_EXTEND_RESPECTIVE,
-  BUILDER_MIX_STYLES
+  BUILDER_MIX_STYLES,
+  ID_ATTRS
 } from './component_map';
 import {
   componentCollection,
@@ -986,6 +987,39 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
+  let posOfNode: ts.LineAndCharacter;
+  let curFileName: string;
+  let line: number = 1;
+  let col: number = 1;
+  if (newsupplement.isAcceleratePreview) {
+    posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+    curFileName = newsupplement.fileName;
+    if (posOfNode.line === 0) {
+      col = newsupplement.column - 15;
+    }
+    line = newsupplement.line;
+  } else {
+    posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+    curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+  }
+
+  if (propName === 'id') {
+    const literalString = temp.arguments[0].text;
+    const rLine: number = posOfNode.line + line;
+    const rCol: number = posOfNode.character + col;
+    const projectPath: string = projectConfig.projectPath;
+    const rPath: string = path.resolve(projectPath, curFileName).replace(/\\+/g, '/');
+    if (ID_ATTRS.has(literalString)) {
+      log.push({
+        type: LogType.ERROR,
+        message: `There should have a unique id at ${rPath} ${rLine}:${rCol}.`,
+        pos: node.pos
+      });
+    } else {
+      ID_ATTRS.set(literalString, new Set([rLine, rCol, rPath]));
+    }
+  }
+
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&

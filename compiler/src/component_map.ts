@@ -47,6 +47,8 @@ export const GESTURE_ATTRS: Set<string> = new Set([
   'gesture', 'parallelGesture', 'priorityGesture'
 ]);
 
+export const ID_ATTRS: Map<string, Set<string | number>> = new Map();
+
 export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperScroller',
   'VideoController', 'WebController', 'CustomDialogController', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
