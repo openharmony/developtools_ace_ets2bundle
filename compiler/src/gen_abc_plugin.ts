@@ -56,6 +56,7 @@ let isDebug: boolean = false;
 let arkDir: string;
 let nodeJs: string;
 
+let delayCount = 0;
 interface File {
   path: string,
   size: number
@@ -73,6 +74,7 @@ let buildPathInfo: string = '';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+const blue = '\u001b[34m';
 const hashFile: string = 'gen_hash.json';
 const ARK: string = '/ark/';
 
@@ -174,9 +176,12 @@ export class GenAbcPlugin {
 }
 
 function clearGlobalInfo() {
-  intermediateJsBundle = [];
+  // fix bug of multi trigger
+  if (delayCount <= 1) {
+    intermediateJsBundle = [];
+    moduleInfos = [];
+  }
   fileterIntermediateJsBundle = [];
-  moduleInfos = [];
   filterModuleInfos = [];
   commonJsModuleInfos = [];
   ESMModuleInfos = [];
@@ -184,7 +189,6 @@ function clearGlobalInfo() {
   hashJsonObject = {};
   moduleHashJsonObject = {};
   buildPathInfo = '';
-  process.env.compilerStatus = 'on';
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -317,7 +321,8 @@ function handleFinishModules(modules, callback): any {
     }
   });
 
-  invokeWorkersModuleToGenAbc(moduleInfos);
+
+  judgeWorkersToGenAbc(invokeWorkersModuleToGenAbc);
   processEntryToGenAbc(entryInfos);
 }
 
@@ -403,16 +408,7 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
   if (fs.existsSync(projectConfig.nodeModulesPath)) {
     fs.rmdirSync(projectConfig.nodeModulesPath, { recursive: true});
   }
-  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
-  filterModuleInfos.forEach(moduleInfo => {
-    if (moduleInfo.isCommonJs) {
-      commonJsModuleInfos.push(moduleInfo);
-    } else {
-      ESMModuleInfos.push(moduleInfo);
-    }
-  });
-
-  judgeWorkersToGenAbc(invokeCluterModuleToAbc);
+  invokeCluterModuleToAbc();
 }
 
 function initAbcEnv() : string[] {
@@ -436,6 +432,14 @@ function initAbcEnv() : string[] {
 }
 
 function invokeCluterModuleToAbc(): void {
+  filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
+  filterModuleInfos.forEach(moduleInfo => {
+    if (moduleInfo.isCommonJs) {
+      commonJsModuleInfos.push(moduleInfo);
+    } else {
+      ESMModuleInfos.push(moduleInfo);
+    }
+  });
   const abcArgs: string[] = initAbcEnv();
 
   const clusterNewApiVersion: number = 16;
@@ -454,6 +458,7 @@ function invokeCluterModuleToAbc(): void {
     }
 
     let totalWorkerNumber = 0;
+    commonJsModuleInfos = Array.from(new Set(commonJsModuleInfos));
     if (commonJsModuleInfos.length > 0) {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-c');
@@ -470,6 +475,8 @@ function invokeCluterModuleToAbc(): void {
         cluster.fork(workerData);
       }
     }
+
+    ESMModuleInfos = Array.from(new Set(ESMModuleInfos));
     if (ESMModuleInfos.length > 0) {
       const tempAbcArgs: string[] = abcArgs.slice(0);
       tempAbcArgs.push('-m');
@@ -489,13 +496,17 @@ function invokeCluterModuleToAbc(): void {
 
     let count_ = 0;
     cluster.on('exit', (worker, code, signal) => {
-      if (code === FAIL) {
+      if (code === FAIL || process.exitCode === FAIL) {
         process.exitCode = FAIL;
+        return;
       }
       count_++;
       if (count_ === totalWorkerNumber) {
         writeModuleHashJson();
         clearGlobalInfo();
+        if (projectConfig.isPreview) {
+          console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+        }
       }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
@@ -524,16 +535,13 @@ function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, workerNumber: numb
 }
 
 function judgeWorkersToGenAbc(callback: any): void {
-  let timeoutId: any = null;
-  if (process.env.compilerStatus && process.env.compilerStatus === 'on') {
-    callback();
-    process.env.compilerStatus = 'off';
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
+  const workerNum: number = Object.keys(cluster.workers).length;
+  if (workerNum === 0) {
+    callback(moduleInfos);
     return;
   } else {
-    timeoutId = setTimeout(judgeWorkersToGenAbc.bind(null, callback), 50);
+    delayCount++;
+    setTimeout(judgeWorkersToGenAbc.bind(null, callback, moduleInfos), 50);
   }
 }
 
@@ -581,13 +589,17 @@ function invokeWorkersToGenAbc(): void {
 
     let count_ = 0;
     cluster.on('exit', (worker, code, signal) => {
-      if (code === FAIL) {
+      if (code === FAIL || process.exitCode === FAIL) {
         process.exitCode = FAIL;
+        return;
       }
       count_++;
       if (count_ === workerNumber) {
         writeHashJson();
         clearGlobalInfo();
+        if (projectConfig.isPreview) {
+          console.info(red, 'COMPILE RESULT:SUCCESS ', reset);
+        }
       }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
@@ -595,6 +607,15 @@ function invokeWorkersToGenAbc(): void {
 }
 
 function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Array<ModuleInfo>): void {
+  let tempModuleInfos = Array<ModuleInfo>();
+  moduleInfos.forEach((item) => {
+    let check = tempModuleInfos.every((newItem) => {
+      return item.tempFilePath != newItem.tempFilePath;
+    })
+    check ? tempModuleInfos.push(item) : ""
+  });
+  moduleInfos = tempModuleInfos;
+
   for (let i = 0; i < moduleInfos.length; ++i) {
     filterModuleInfos.push(moduleInfos[i]);
   }
@@ -665,10 +686,22 @@ function writeModuleHashJson(): void {
   if (hashFilePath.length === 0) {
     return;
   }
-  fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
+  // fix bug of multi trigger
+  if (delayCount <= 1) {
+    fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
+  }
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
+  let tempInputPaths = Array<File>();
+  inputPaths.forEach((item) => {
+    let check = tempInputPaths.every((newItem) => {
+      return item.path != newItem.path;
+    })
+    check ? tempInputPaths.push(item) : ""
+  });
+  inputPaths = tempInputPaths;
+
   for (let i = 0; i < inputPaths.length; ++i) {
     fileterIntermediateJsBundle.push(inputPaths[i]);
   }
@@ -729,7 +762,10 @@ function writeHashJson(): void {
   if (hashFilePath.length === 0) {
     return;
   }
-  fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
+  // fix bug of multi trigger
+  if (delayCount <= 1) {
+    fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
+  }
 }
 
 function genHashJsonPath(buildPath: string): string {
