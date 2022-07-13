@@ -1004,7 +1004,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   }
 
   if (propName === 'id') {
-    const literalString = temp.arguments[0].text;
+    const literalString: string = temp.arguments[0].text;
     const rLine: number = posOfNode.line + line;
     const rCol: number = posOfNode.character + col;
     const projectPath: string = projectConfig.projectPath;
