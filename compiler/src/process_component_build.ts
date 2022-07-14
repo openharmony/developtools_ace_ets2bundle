@@ -987,36 +987,25 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
-  let posOfNode: ts.LineAndCharacter;
-  let curFileName: string;
-  let line: number = 1;
-  let col: number = 1;
-  if (newsupplement.isAcceleratePreview) {
-    posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
-    curFileName = newsupplement.fileName;
-    if (posOfNode.line === 0) {
-      col = newsupplement.column - 15;
-    }
-    line = newsupplement.line;
-  } else {
-    posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-    curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-  }
 
   if (propName === 'id') {
     const literalString: string = temp.arguments[0].text;
-    const rLine: number = posOfNode.line + line;
-    const rCol: number = posOfNode.character + col;
-    const projectPath: string = projectConfig.projectPath;
-    const rPath: string = path.resolve(projectPath, curFileName).replace(/\\+/g, '/');
+    const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
+      .getLineAndCharacterOfPosition(getRealNodePos(node));
+    const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    const rLine: number = posOfNode.line + 1;
+    const rCol: number = posOfNode.character + 1;
+    const rPath: string = path.resolve(projectConfig.projectPath, curFileName).replace(/\\+/g, '/');
     if (ID_ATTRS.has(literalString)) {
+      const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
       log.push({
         type: LogType.ERROR,
-        message: `There should have a unique id at ${rPath} ${rLine}:${rCol}.`,
+        message: `The current component id at ${rPath}:${rLine}:${rCol} is duplicate with ` +
+          `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
         pos: node.pos
       });
     } else {
-      ID_ATTRS.set(literalString, new Set([rLine, rCol, rPath]));
+      ID_ATTRS.set(literalString, new Map().set('path', rPath).set('line', rLine).set('col', rCol));
     }
   }
 
