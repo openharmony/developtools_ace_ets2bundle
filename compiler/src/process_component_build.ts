@@ -59,7 +59,8 @@ import {
   BIND_DRAG_SET,
   BIND_POPUP_SET,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  ATTRIBUTE_ID
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -988,23 +989,35 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
 
-  if (propName === 'id') {
+  if (propName === ATTRIBUTE_ID) {
+    let posOfNode: ts.LineAndCharacter;
+    let curFileName: string;
+    let line: number = 1;
+    let col: number = 1;
+    if (newsupplement.isAcceleratePreview) {
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = newsupplement.fileName;
+      if (posOfNode.line === 0) {
+        col = newsupplement.column - 15;
+      }
+      line = newsupplement.line;
+    } else {
+      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    }
     const literalString: string = temp.arguments[0].text;
-    const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
-      .getLineAndCharacterOfPosition(getRealNodePos(node));
-    const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-    const rLine: number = posOfNode.line + 1;
-    const rCol: number = posOfNode.character + 1;
-    const rPath: string = path.resolve(projectConfig.projectPath, curFileName).replace(/\\+/g, '/');
     if (ID_ATTRS.has(literalString)) {
       const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
       log.push({
         type: LogType.ERROR,
-        message: `The current component id at ${rPath}:${rLine}:${rCol} is duplicate with ` +
+        message: `The current component id "${literalString}" is duplicate with ` +
           `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
         pos: node.pos
       });
     } else {
+      const rLine: number = posOfNode.line + line;
+      const rCol: number = posOfNode.character + col;
+      const rPath: string = path.resolve(projectConfig.projectPath, curFileName).replace(/\\+/g, '/');
       ID_ATTRS.set(literalString, new Map().set('path', rPath).set('line', rLine).set('col', rCol));
     }
   }
