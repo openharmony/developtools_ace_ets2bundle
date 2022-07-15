@@ -2,6 +2,6 @@
     "name": "GridRow",
     "children": ["GridCol"],
     "attrs": [
-      "verticalAlign", "horizontalAlign", "onBreakpointChange"
+      "onBreakpointChange"
     ]
 }
