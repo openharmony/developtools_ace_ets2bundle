@@ -27,9 +27,7 @@ import {
   CUSTOM_COMPONENT_DEFAULT,
   CUSTOM_DECORATOR_NAME,
   COMPONENT_DECORATOR_ENTRY,
-  COMPONENT_BUILDER_DECORATOR,
-  COMPONENT_EXTEND_DECORATOR,
-  COMPONENT_STYLES_DECORATOR
+  COMPONENT_BUILDER_DECORATOR
 } from './pre_define';
 import {
   propertyCollection,
@@ -50,13 +48,7 @@ import {
 import { hasDecorator, LogInfo, LogType, repeatLog } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
-import {
-  BUILDER_MIX_STYLES,
-  BUILDER_MIX_EXTEND,
-  BUILDER_MIX_EXTEND_RESPECTIVE,
-  CUSTOM_BUILDER_METHOD
-} from './component_map';
-import { isExtendFunction } from './process_ui_syntax';
+import { CUSTOM_BUILDER_METHOD } from './component_map';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -170,16 +162,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
     }
   }
   if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-    if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
-      collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
-        asExportCollection, BUILDER_MIX_EXTEND, BUILDER_MIX_EXTEND_RESPECTIVE);
-    } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-      collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
-        asExportCollection, BUILDER_MIX_STYLES);
-    } else {
-      collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
-        asExportCollection, CUSTOM_BUILDER_METHOD);
-    }
+    collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
+      asExportCollection, CUSTOM_BUILDER_METHOD);
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
@@ -276,52 +260,20 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
 
 function collectSpecialFunctionNode(node: ts.FunctionDeclaration, asNameFromParent: Map<string, string>,
   defaultNameFromParent: string, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
-  collection: Set<string>, specialCollection?: Map<string, Set<string>>): void {
+  collection: Set<string>): void {
   const name: string = node.name.getText();
   let componentName: string;
   if (asNameFromParent.has(name)) {
     collection.add(asNameFromParent.get(name));
-    if (specialCollection) {
-      componentName = isExtendFunction(node);
-      if (specialCollection.get(componentName)) {
-        specialCollection.get(componentName).add(asNameFromParent.get(name));
-      } else {
-        specialCollection.set(componentName, new Set([asNameFromParent.get(name)]));
-      }
-    }
   } else if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
     node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword && defaultNameFromParent &&
     asNameFromParent.has(defaultNameFromParent)) {
     collection.add(asNameFromParent.get(defaultNameFromParent));
-    if (specialCollection) {
-      componentName = isExtendFunction(node);
-      if (specialCollection.get(componentName)) {
-        specialCollection.get(componentName).add(asNameFromParent.get(name));
-      } else {
-        specialCollection.set(componentName, new Set([asNameFromParent.get(name)]));
-      }
-    }
   } else if (defaultCollection.has(name)) {
     collection.add(CUSTOM_COMPONENT_DEFAULT);
-    if (specialCollection) {
-      componentName = isExtendFunction(node);
-      if (specialCollection.get(componentName)) {
-        specialCollection.get(componentName).add(CUSTOM_COMPONENT_DEFAULT);
-      } else {
-        specialCollection.set(componentName, new Set([CUSTOM_COMPONENT_DEFAULT]));
-      }
-    }
   } else if (asExportCollection.has(name)) {
     collection.add(asExportCollection.get(name));
-    if (specialCollection) {
-      componentName = isExtendFunction(node);
-      if (specialCollection.get(componentName)) {
-        specialCollection.get(componentName).add(asExportCollection.get(name));
-      } else {
-        specialCollection.set(componentName, new Set([asExportCollection.get(name)]));
-      }
-    }
   }
 }
 
