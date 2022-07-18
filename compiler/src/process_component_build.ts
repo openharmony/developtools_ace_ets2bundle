@@ -76,9 +76,6 @@ import {
   GLOBAL_STYLE_FUNCTION,
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
-  BUILDER_MIX_EXTEND,
-  BUILDER_MIX_EXTEND_RESPECTIVE,
-  BUILDER_MIX_STYLES,
   ID_ATTRS
 } from './component_map';
 import {
@@ -137,17 +134,8 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
 
 function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
   let isValid: boolean = false;
-  const bodyStatements: ts.NodeArray<ts.Statement> = node.body.statements;
-  let length: number = bodyStatements.length;
-  bodyStatements.map(node => {
-    const nodeName: string = node.expression && node.expression.expression &&
-      node.expression.expression.escapedText || undefined;
-    if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
-      length--;
-    }
-  });
-  if (length === 1) {
-    const statement: ts.Statement = bodyStatements[0];
+  if (node.body.statements.length === 1) {
+    const statement: ts.Statement = node.body.statements[0];
     if (ts.isIfStatement(statement) || validateFirstNode(statement)) {
       isValid = true;
     }
@@ -158,7 +146,7 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     log.push({
       type: LogType.ERROR,
       message: `There should have a root container component.`,
-      pos: bodyStatements.pos
+      pos: node.body.statements.pos
     });
   }
   return isValid;
@@ -234,17 +222,13 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     sourceNode = ts.createSourceFile('', node.getText(), ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   }
   if (node.statements.length) {
-    let lastName: string;
-    let lastExpression: ts.Statement;
-    node.statements.forEach((item, index) => {
+    node.statements.forEach((item) => {
       if (ts.isExpressionStatement(item)) {
         checkEtsComponent(item, log);
         const name: string = getName(item);
         switch (getComponentType(item, log, name)) {
           case ComponentType.innerComponent:
             processInnerComponent(item, newStatements, log);
-            lastName = name;
-            lastExpression = item;
             break;
           case ComponentType.customComponent:
             if (!newsupplement.isAcceleratePreview) {
@@ -256,34 +240,18 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                 }
               }
               processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name);
-              lastName = name;
-              lastExpression = item;
             }
             break;
           case ComponentType.forEachComponent:
             processForEachComponent(item, newStatements, log);
-            lastName = name;
-            lastExpression = item;
             break;
           case ComponentType.customBuilderMethod:
           case ComponentType.builderParamMethod:
             newStatements.push(item);
-            lastName = name;
-            lastExpression = item;
-            break;
-          case ComponentType.builderMixExtendMethod:
-            processMixBuilder(lastName, name, index, lastExpression, log, newStatements, item,
-              ComponentType.builderMixExtendMethod);
-            break;
-          case ComponentType.builderMixStylesMethod:
-            processMixBuilder(lastName, name, index, lastExpression, log, newStatements, item,
-              ComponentType.builderMixStylesMethod);
             break;
         }
       } else if (ts.isIfStatement(item)) {
         processIfStatement(item, newStatements, log);
-        lastName = 'if';
-        lastExpression = undefined;
       } else if (!ts.isBlock(item)) {
         log.push({
           type: LogType.ERROR,
@@ -299,51 +267,6 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     column: 0,
     fileName: ''
   };
-}
-
-function processMixBuilder(lastName: string, name: string, index: number, lastExpression: ts.Statement, log: LogInfo[],
-  newStatements: ts.Statement[], item: ts.Statement, type: ComponentType): void {
-  let isMixExtend: boolean;
-  if (type === ComponentType.builderMixExtendMethod) {
-    isMixExtend = true;
-  } else {
-    isMixExtend = false;
-  }
-  if (lastName) {
-    if (index && (isMixExtend ? BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName) &&
-      BUILDER_MIX_EXTEND_RESPECTIVE.get(lastName).has(name) : true) &&
-      (getComponentType(lastExpression as ts.ExpressionStatement, log, lastName) ===
-      ComponentType.innerComponent || (isMixExtend ? undefined : getComponentType(
-      lastExpression as ts.ExpressionStatement, log, lastName) === ComponentType.customComponent))) {
-      if (newStatements.length && checkPop(newStatements[newStatements.length - 1])) {
-        newStatements.splice(newStatements.length - 1, 0, item);
-      } else {
-        newStatements.push(item);
-      }
-    } else {
-      log.push({
-        type: LogType.ERROR,
-        message: `@Builder & ${isMixExtend ? '@Extend' : '@Styles'} function '${name}' cannot decorate '${lastName}'`,
-        pos: item.getStart()
-      });
-    }
-  } else {
-    log.push({
-      type: LogType.ERROR,
-      message: `@Builder & ${isMixExtend ? '@Extend' : '@Styles'} function '${name}' should decorate a Component`,
-      pos: item.getStart()
-    });
-  }
-}
-
-function checkPop(node: ts.Statement): boolean {
-  if (ts.isExpressionStatement(node) && node.expression && ts.isCallExpression(node.expression) &&
-    node.expression.expression && ts.isPropertyAccessExpression(node.expression.expression) &&
-    node.expression.expression.name && ts.isIdentifier(node.expression.expression.name) &&
-    node.expression.expression.name.escapedText.toString() === COMPONENT_POP_FUNCTION) {
-    return true;
-  }
-  return false;
 }
 
 function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode: ts.Block,
@@ -1062,12 +985,6 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     statements.push(ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, argumentsArr)));
     lastStatement.kind = true;
-  } else if (BUILDER_MIX_EXTEND.has(propName) || BUILDER_MIX_STYLES.has(propName)) {
-    log.push({
-      type: LogType.ERROR,
-      message: `'${propName}' is a function, not attribute.`,
-      pos: node.getStart()
-    });
   } else {
     if (isStylesAttr) {
       if (!COMMON_ATTRS.has(propName)) {
@@ -1349,9 +1266,7 @@ enum ComponentType {
   customComponent,
   forEachComponent,
   customBuilderMethod,
-  builderParamMethod,
-  builderMixExtendMethod,
-  builderMixStylesMethod
+  builderParamMethod
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -1380,10 +1295,6 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     return ComponentType.forEachComponent;
   } else if (CUSTOM_BUILDER_METHOD.has(name)) {
     return ComponentType.customBuilderMethod;
-  } else if (BUILDER_MIX_EXTEND.has(name)) {
-    return ComponentType.builderMixExtendMethod;
-  } else if (BUILDER_MIX_STYLES.has(name)) {
-    return ComponentType.builderMixStylesMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;

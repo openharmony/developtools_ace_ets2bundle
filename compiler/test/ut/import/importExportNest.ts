@@ -38,10 +38,8 @@ struct ImportTest {
       Text(this.testText2)
       tStyles()
       Button(this.testText3)
-      globalExtend(Color.Blue)
       Text(this.testText4)
         .fontSize(50)
-      globalStyles()
 
       Base({
         testStr: $testState1,
@@ -54,20 +52,6 @@ struct ImportTest {
       })
     }
   }
-}
-
-@Builder
-@Extend(Button)
-function globalExtend(color: Color | string){
-  .backgroundColor(color)
-  .width(100)
-  .height(30)
-}
-
-@Builder
-@Styles
-function globalStyles(){
-  .backgroundColor('#abcdef')
 }
 `
 
@@ -188,17 +172,15 @@ class ImportTest extends View {
         Column.create();
         Text.create(this.testText1);
         Text.fontSize(50);
+        Text.pop();
         ImportNestAll_1.tExtend(20);
-        Text.pop();
         Text.create(this.testText2);
-        ImportNestAll_1.tStyles();
         Text.pop();
+        ImportNestAll_1.tStyles();
         Button.createWithLabel(this.testText3);
-        globalExtend(Color.Blue);
         Button.pop();
         Text.create(this.testText4);
         Text.fontSize(50);
-        globalStyles();
         Text.pop();
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
@@ -225,14 +207,6 @@ class ImportTest extends View {
         }
         Column.pop();
     }
-}
-function globalExtend(color) {
-    Button.backgroundColor(color);
-    Button.width(100);
-    Button.height(30);
-}
-function globalStyles() {
-    __Common__.backgroundColor('#abcdef');
 }
 loadDocument(new ImportTest("1", undefined, {}));
 `
