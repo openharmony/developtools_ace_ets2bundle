@@ -984,10 +984,8 @@ function updateArgumentFor$$(argument: any): ts.Expression {
   }
 }
 
-function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
-  statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
-  isStylesAttr: boolean, isGlobalStyles: boolean): void {
-  const propName: string = node.getText();
+function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
+  log: LogInfo[]): void {
   if (!newsupplement.isAcceleratePreview && propName === ATTRIBUTE_ID) {
     const literalString: string = temp.arguments[0].text;
     if (ID_ATTRS.has(literalString)) {
@@ -1002,11 +1000,20 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
         .getLineAndCharacterOfPosition(getRealNodePos(node));
       const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-      const rPath: string = path.resolve(projectConfig.projectPath, curFileName).replace(/\\+/g, '/');
-      ID_ATTRS.set(literalString, new Map().set('path', rPath).set('line', posOfNode.line + 1)
+      const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
+        .replace(/\\+/g, '/');
+      ID_ATTRS.set(literalString, new Map().set('path', rPath)
+        .set('line', posOfNode.line + 1)
         .set('col', posOfNode.character + 1));
     }
   }
+}
+
+function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
+  statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
+  isStylesAttr: boolean, isGlobalStyles: boolean): void {
+  const propName: string = node.getText();
+  verifyComponentId(temp, node, propName, log);
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&
