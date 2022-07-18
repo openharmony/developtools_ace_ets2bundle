@@ -300,7 +300,14 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(name);
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
+      let unknownBuilderDecorator: ts.Decorator[] = [];
+      if (Array.isArray(node.decorators)) {
+        unknownBuilderDecorator = node.decorators.filter((item) => {
+          return item.getText().replace(/\(.*\)$/, '').trim() !== COMPONENT_BUILDER_DECORATOR;
+        })
+      }
+      const removeBuilderDecorator: ts.Decorator[] = node.decorators.length === 1 ? undefined : unknownBuilderDecorator;
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, removeBuilderDecorator, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log));
       updateItem = processBuildMember(builderNode, context, log);
