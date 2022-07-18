@@ -572,14 +572,14 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
     ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
 }
 
-export function createCustomComponentNewExpression(node: ts.CallExpression, name: string)
+export function createCustomComponentNewExpression(node: ts.CallExpression, name: string, isInnerBuilder: boolean = false)
   : ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name);
+  return addCustomComponentId(newNode, name, isInnerBuilder);
 }
 
-function addCustomComponentId(node: ts.NewExpression, componentName: string): ts.NewExpression {
+function addCustomComponentId(node: ts.NewExpression, componentName: string, isInnerBuilder: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -593,7 +593,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string): ts
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
       argumentsArray.unshift(ts.factory.createStringLiteral((++componentInfo.id).toString()),
-        ts.factory.createThis());
+        isInnerBuilder ? ts.factory.createIdentifier('parent') : ts.factory.createThis());
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {

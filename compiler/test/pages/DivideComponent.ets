@@ -14,9 +14,8 @@
  */
 
 @Builder
-@Styles
 function textStyles(){
-  .backgroundColor(Color.Red)
+  Text('Builder').backgroundColor(Color.Red)
 }
 
 @Component
