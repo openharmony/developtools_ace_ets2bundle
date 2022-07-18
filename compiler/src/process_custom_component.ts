@@ -82,7 +82,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
-      componentNode, name);
+      componentNode, name, isInnerBuilder);
     let argumentsArray: ts.PropertyAssignment[];
     if (isHasChild(componentNode)) {
       // @ts-ignore
@@ -100,7 +100,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createNewExpression(componentNode.expression, componentNode.typeArguments,
             [ts.factory.createObjectLiteralExpression(argumentsArray, true)]));
         customComponentNewExpression = createCustomComponentNewExpression(
-          newNode.expression as ts.CallExpression, name);
+          newNode.expression as ts.CallExpression, name, isInnerBuilder);
       }
     }
     if (hasChainCall) {

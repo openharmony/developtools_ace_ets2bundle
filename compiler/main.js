@@ -98,7 +98,7 @@ function loadEntryObj(projectConfig) {
       const pages = manifest.pages;
       pages.forEach((element) => {
         const sourcePath = element.replace(/^\.\/ets\//, '');
-        const fileName = projectConfig.projectPath + path.sep + sourcePath + '.ets';
+        const fileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
         if (fs.existsSync(fileName)) {
           projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
@@ -116,7 +116,8 @@ function buildManifest(manifest, aceConfigPath) {
   try {
     const moduleConfigJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
-    if (moduleConfigJson.module && moduleConfigJson.module.uiSyntax === 'ets') {
+    if (moduleConfigJson.module &&
+      (moduleConfigJson.module.uiSyntax === 'ets' || moduleConfigJson.module.language === 'ets')) {
       manifest.pages = getPages(moduleConfigJson);
     } else {
       throw Error('\u001b[31m'+
@@ -225,8 +226,10 @@ function setAbilityFile(projectConfig, abilityPages) {
 function readAbilityEntrance(moduleJson) {
   let abilityPages = [];
   if (moduleJson.module) {
-    if (moduleJson.module.srcEntrance) {
-      abilityPages.push(moduleJson.module.srcEntrance);
+    const moduleSrcEntrance = moduleJson.module.srcEntrance;
+    if (moduleSrcEntrance) {
+      abilityPages.push(moduleSrcEntrance);
+      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -243,15 +246,19 @@ function setEntrance(abilityConfig, abilityPages) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        let finalPath = path.resolve(path.resolve(projectConfig.projectPath, '../'), ability.srcEntrance);
-        finalPath = finalPath.replace(/\\/g, '/');
-        if (fs.existsSync(finalPath)) {
-          abilityPagesFullPath.push(finalPath);
-        } else {
-          abilityPagesFullPath.push(ability.srcEntrance);
-        }
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
+  }
+}
+
+function getAbilityFullPath(projectPath, abilityPath) {
+  let finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
+  finalPath = finalPath.replace(/\\/g, '/');
+  if (fs.existsSync(finalPath)) {
+    return finalPath;
+  } else {
+    return abilityPath;
   }
 }
 
