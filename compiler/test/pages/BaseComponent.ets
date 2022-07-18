@@ -14,9 +14,8 @@
  */
 
 @Builder
-@Extend(Text)
 function textExtend(fontsize: number){
-  .fontSize(fontsize)
+  Text('Builder').fontSize(fontsize)
 }
 
 @Component

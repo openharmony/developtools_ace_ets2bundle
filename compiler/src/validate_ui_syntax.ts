@@ -61,10 +61,7 @@ import {
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
   STYLES_ATTRIBUTE,
-  CUSTOM_BUILDER_METHOD,
-  BUILDER_MIX_EXTEND,
-  BUILDER_MIX_EXTEND_RESPECTIVE,
-  BUILDER_MIX_STYLES
+  CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   LogType,
@@ -338,16 +335,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if ((ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
     hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-    if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR) && ts.isFunctionDeclaration(node)) {
-      const componentName: string = isExtendFunction(node);
-      BUILDER_MIX_EXTEND.add(node.name.getText());
-      collectExtend(BUILDER_MIX_EXTEND_RESPECTIVE, componentName, node.name.getText());
-    } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-      BUILDER_MIX_STYLES.add(node.name.getText());
-    } else {
       CUSTOM_BUILDER_METHOD.add(node.name.getText());
-    }
-  } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
+  }
+  if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
     const componentName: string = isExtendFunction(node);
     collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
   } else if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
@@ -453,19 +443,10 @@ function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: S
       return false;
     }
     if (BlockNode && BlockNode.statements) {
-      let length: number = BlockNode.statements.length;
+      const length: number = BlockNode.statements.length;
       if (!length) {
         return false;
       }
-      BlockNode.statements.map(node => {
-        const nodeName: string = ts.isExpressionStatement(node) &&
-          ts.isCallExpression(node.expression) &&
-          ts.isIdentifier(node.expression.expression) ?
-          node.expression.expression.escapedText.toString() : '';
-        if (BUILDER_MIX_STYLES.has(nodeName) || BUILDER_MIX_EXTEND.has(nodeName)) {
-          length--;
-        }
-      });
       if (length > 3) {
         return true;
       }
@@ -597,13 +578,13 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isBlock(item) && isNonspecificChildBlock(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression)) {
+      if (ts.isExpressionStatement(item)) {
         let newNode: any = item.expression;
         while (newNode.expression) {
           if (ts.isEtsComponentExpression(newNode) && ts.isIdentifier(newNode.expression) &&
           !isForEachComponent(newNode) && isComponent(newNode, allComponentNames)) {
             const isNonspecific: boolean =
-            isNonspecificChildNonForEach(item.expression, specificChildSet);
+            isNonspecificChildNonForEach(newNode, specificChildSet);
             if (isNonspecific) {
               return isNonspecific;
             }
@@ -849,20 +830,12 @@ export function preprocessExtend(content: string, extendCollection?: Set<string>
 
 export function preprocessNewExtend(content: string, extendCollection?: Set<string>): string {
   const REG_EXTEND: RegExp = /@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
-  content.replace(REG_EXTEND, (item, item1) => {
+  return content.replace(REG_EXTEND, (item, item1) => {
     if (extendCollection) {
       extendCollection.add(item1);
     }
     return item;
   });
-  const REG_BUILDER_EXTEND: RegExp = /@Builder\s*@Extend\s*\([^\)]+\)\s*function\s+([^\(\s]+)\s*\(/gm;
-  content.replace(REG_BUILDER_EXTEND, (item, item1) => {
-    if (extendCollection) {
-      extendCollection.delete(item1);
-    }
-    return item;
-  });
-  return content;
 }
 
 function getPackageInfo(configFile: string): Array<string> {
