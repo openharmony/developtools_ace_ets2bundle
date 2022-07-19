@@ -134,21 +134,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         INNER_STYLE_FUNCTION.clear();
       } else if (ts.isFunctionDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-          if (!hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-            if (node.parameters.length === 0) {
-              node = undefined;
-            } else {
-              transformLog.errors.push({
-                type: LogType.ERROR,
-                message: `@Styles can't have parameters.`,
-                pos: node.getStart()
-              });
-            }
-          } else {
-            node = processStyles(node, transformLog.errors);
-          }
-        } else if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
+        if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
           node = processExtend(node, transformLog.errors);
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
@@ -156,6 +142,16 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors));
+        } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          if (node.parameters.length === 0) {
+            node = undefined;
+          } else {
+            transformLog.errors.push({
+              type: LogType.ERROR,
+              message: `@Styles can't have parameters.`,
+              pos: node.getStart()
+            });
+          }
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -425,32 +421,6 @@ function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
   node.typeArguments, node.arguments);
 }
 
-function processStyles(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
-  const componentName: string = COMPONENT_COMMON;
-  if (node.body && node.body.statements.length) {
-    const statementArray: ts.Statement[] = [];
-    const attrSet: ts.CallExpression = node.body.statements[0].expression;
-    const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processStylesBody(attrSet));
-    bindComponentAttr(changeCompName as ts.ExpressionStatement,
-      ts.factory.createIdentifier(componentName), statementArray, log);
-    const stylesFunctionName: string = node.name.getText();
-    return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
-      ts.factory.createIdentifier(stylesFunctionName), node.typeParameters,
-      node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
-  }
-}
-
-function processStylesBody(node: ts.Node): ts.Expression {
-  switch (node.kind) {
-    case ts.SyntaxKind.CallExpression:
-      return ts.factory.createCallExpression(processStylesBody(node.expression), undefined, node.arguments);
-    case ts.SyntaxKind.PropertyAccessExpression:
-      return ts.factory.createPropertyAccessExpression(processStylesBody(node.expression), node.name);
-    case ts.SyntaxKind.Identifier:
-      return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
-  }
-}
-
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node);
   if (componentName && node.body && node.body.statements.length) {
@@ -460,16 +430,11 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     bindComponentAttr(changeCompName as ts.ExpressionStatement,
       ts.factory.createIdentifier(componentName), statementArray, log);
     let extendFunctionName: string;
-    const prefixCompName: string = '__' + componentName + '__';
-    if (!hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-      if (node.name.getText().startsWith(prefixCompName)) {
-        extendFunctionName = node.name.getText();
-      } else {
-        extendFunctionName = prefixCompName + node.name.getText();
-        collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
-      }
-    } else {
+    if (node.name.getText().startsWith('__' + componentName + '__')) {
       extendFunctionName = node.name.getText();
+    } else {
+      extendFunctionName = '__' + componentName + '__' + node.name.getText();
+      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
     }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
