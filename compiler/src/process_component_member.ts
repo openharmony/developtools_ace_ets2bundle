@@ -573,14 +573,15 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
     ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
 }
 
-export function createCustomComponentNewExpression(node: ts.CallExpression, name: string, isInnerBuilder: boolean = false)
-  : ts.NewExpression {
+export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
+  isInnerBuilder: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
   return addCustomComponentId(newNode, name, isInnerBuilder);
 }
 
-function addCustomComponentId(node: ts.NewExpression, componentName: string, isInnerBuilder: boolean = false): ts.NewExpression {
+function addCustomComponentId(node: ts.NewExpression, componentName: string,
+  isInnerBuilder: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -598,8 +599,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string, isI
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createToken(ts.SyntaxKind.QuestionToken),
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          ts.factory.createThis()
+          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
         ) : ts.factory.createThis());
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);

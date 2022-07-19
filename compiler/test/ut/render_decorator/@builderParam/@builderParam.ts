@@ -121,8 +121,8 @@ class CustomContainer extends View {
         Column.create();
         Text.create(this.header);
         Text.pop();
-        this.content();
-        this.callContent();
+        this.content(this);
+        this.callContent(this);
         Text.create(this.footer);
         Text.pop();
         Column.pop();
@@ -147,7 +147,7 @@ class CustomContainer2 extends View {
         Column.create();
         Text.create(this.header);
         Text.pop();
-        this.content();
+        this.content(this);
         Column.pop();
     }
 }
@@ -172,14 +172,14 @@ class CustomContainerUser extends View {
     set text(newValue) {
         this.__text.set(newValue);
     }
-    specificParam() {
+    specificParam(parent = undefined) {
         Column.create();
         Text.create("content");
         Text.fontSize(50);
         Text.pop();
         Column.pop();
     }
-    callSpecificParam(label1, label2) {
+    callSpecificParam(label1, label2, parent = undefined) {
         Column.create();
         Text.create(label1);
         Text.fontSize(50);
@@ -200,7 +200,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22");
+                    specificParam("111", "22", this);
                     Column.pop();
                 }
             }));
@@ -213,7 +213,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22");
+                    specificParam("111", "22", this);
                     Column.pop();
                 }
             });
@@ -249,7 +249,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    this.callSpecificParam("111", '222');
+                    this.callSpecificParam("111", '222', this);
                     Column.pop();
                 }
             }));
@@ -262,7 +262,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    this.callSpecificParam("111", '222');
+                    this.callSpecificParam("111", '222', this);
                     Column.pop();
                 }
             });

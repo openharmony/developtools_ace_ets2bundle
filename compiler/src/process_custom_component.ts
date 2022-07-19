@@ -369,8 +369,7 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createToken(ts.SyntaxKind.QuestionToken),
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          ts.factory.createThis()
+          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
         )) : ts.factory.createThis(), ts.factory.createIdentifier(
         `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
     ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))))], ts.NodeFlags.Let));
