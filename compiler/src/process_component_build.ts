@@ -59,7 +59,8 @@ import {
   BIND_DRAG_SET,
   BIND_POPUP_SET,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  ATTRIBUTE_ID
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -75,7 +76,8 @@ import {
   GLOBAL_STYLE_FUNCTION,
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
-  INNER_CUSTOM_BUILDER_METHOD
+  INNER_CUSTOM_BUILDER_METHOD,
+  ID_ATTRS
 } from './component_map';
 import {
   componentCollection,
@@ -244,7 +246,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             }
             break;
           case ComponentType.forEachComponent:
-            processForEachComponent(item, newStatements, log);
+            processForEachComponent(item, newStatements, log, isInnerBuilder);
             break;
           case ComponentType.customBuilderMethod:
             if (INNER_CUSTOM_BUILDER_METHOD.has(name)) {
@@ -258,7 +260,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
         }
       } else if (ts.isIfStatement(item)) {
-        processIfStatement(item, newStatements, log);
+        processIfStatement(item, newStatements, log, isInnerBuilder);
       } else if (!ts.isBlock(item)) {
         log.push({
           type: LogType.ERROR,
@@ -426,7 +428,7 @@ function getRealNodePos(node: ts.Node): number {
 }
 
 function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[]): void {
+  log: LogInfo[], isInnerBuilder: boolean = false): void {
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
     // @ts-ignore
     node.expression.expression as ts.Identifier,
@@ -444,7 +446,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
-    const newArrowNode: ts.ArrowFunction = processForEachBlock(node.expression, log);
+    const newArrowNode: ts.ArrowFunction = processForEachBlock(node.expression, log, isInnerBuilder);
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -462,7 +464,8 @@ function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
       ...forEachComponent.arguments]));
 }
 
-function processForEachBlock(node: ts.CallExpression, log: LogInfo[]): ts.ArrowFunction {
+function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
+  isInnerBuilder: boolean = false): ts.ArrowFunction {
   if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
@@ -484,7 +487,8 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[]): ts.ArrowF
     } else {
       return ts.factory.updateArrowFunction(
         arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(body, isLazy, log));
+        arrowNode.type, arrowNode.equalsGreaterThanToken,
+        processComponentBlock(body, isLazy, log, false, isInnerBuilder));
     }
   }
   return null;
@@ -502,14 +506,15 @@ function createRenderingInProgress(isTrue: boolean): ts.ExpressionStatement {
 }
 
 function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
-  log: LogInfo[]): void {
+  log: LogInfo[], isInnerBuilder: boolean = false): void {
   const ifCreate: ts.ExpressionStatement = createIfCreate();
-  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log);
+  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isInnerBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
   newStatements.push(ifCreate, newIfNode, ifPop);
 }
 
-function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[]): ts.IfStatement {
+function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[],
+  isInnerBuilder: boolean = false): ts.IfStatement {
   if (ts.isIdentifier(node.expression) && node.expression.originalKeywordKind === undefined &&
     !node.expression.escapedText) {
     log.push({
@@ -520,15 +525,15 @@ function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[
     node = ts.factory.updateIfStatement(node, ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
       node.thenStatement, node.elseStatement);
   }
-  const newThenStatement: ts.Statement = processThenStatement(node.thenStatement, id, log);
-  const newElseStatement: ts.Statement = processElseStatement(node.elseStatement, id, log);
+  const newThenStatement: ts.Statement = processThenStatement(node.thenStatement, id, log, isInnerBuilder);
+  const newElseStatement: ts.Statement = processElseStatement(node.elseStatement, id, log, isInnerBuilder);
   const newIfNode: ts.IfStatement = ts.factory.updateIfStatement(
     node, node.expression, newThenStatement, newElseStatement);
   return newIfNode;
 }
 
 function processThenStatement(thenStatement: ts.Statement, id: number,
-  log: LogInfo[]): ts.Statement {
+  log: LogInfo[], isInnerBuilder: boolean = false): ts.Statement {
   if (ts.isExpressionStatement(thenStatement) && ts.isIdentifier(thenStatement.expression) &&
     thenStatement.expression.originalKeywordKind === undefined &&
     !thenStatement.expression.escapedText) {
@@ -540,36 +545,36 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
   }
   if (thenStatement) {
     if (ts.isBlock(thenStatement)) {
-      thenStatement = processIfBlock(thenStatement, id, log);
+      thenStatement = processIfBlock(thenStatement, id, log, isInnerBuilder);
     } else if (ts.isIfStatement(thenStatement)) {
-      thenStatement = processInnerIfStatement(thenStatement, 0, log);
+      thenStatement = processInnerIfStatement(thenStatement, 0, log, isInnerBuilder);
       thenStatement = ts.factory.createBlock(
         [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()], true);
     } else {
       thenStatement = ts.factory.createBlock([thenStatement], true);
-      thenStatement = processIfBlock(thenStatement as ts.Block, id, log);
+      thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isInnerBuilder);
     }
   }
   return thenStatement;
 }
 
 function processElseStatement(elseStatement: ts.Statement, id: number,
-  log: LogInfo[]): ts.Statement {
+  log: LogInfo[], isInnerBuilder: boolean = false): ts.Statement {
   if (elseStatement) {
     if (ts.isBlock(elseStatement)) {
       elseStatement = processIfBlock(elseStatement, id + 1, log);
     } else if (ts.isIfStatement(elseStatement)) {
-      elseStatement = processInnerIfStatement(elseStatement, id + 1, log);
+      elseStatement = processInnerIfStatement(elseStatement, id + 1, log, isInnerBuilder);
     } else {
       elseStatement = ts.factory.createBlock([elseStatement], true);
-      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log);
+      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isInnerBuilder);
     }
   }
   return elseStatement;
 }
 
-function processIfBlock(block: ts.Block, id: number, log: LogInfo[]): ts.Block {
-  return addIfBranchId(id, processComponentBlock(block, false, log));
+function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isInnerBuilder: boolean = false): ts.Block {
+  return addIfBranchId(id, processComponentBlock(block, false, log, false, isInnerBuilder));
 }
 
 function addIfBranchId(id: number, container: ts.Block): ts.Block {
@@ -924,10 +929,36 @@ function updateArgumentFor$$(argument: any): ts.Expression {
   }
 }
 
+function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
+  log: LogInfo[]): void {
+  if (!newsupplement.isAcceleratePreview && propName === ATTRIBUTE_ID) {
+    const literalString: string = temp.arguments[0].text;
+    if (ID_ATTRS.has(literalString)) {
+      const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
+      log.push({
+        type: LogType.ERROR,
+        message: `The current component id "${literalString}" is duplicate with ` +
+          `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
+        pos: node.pos
+      });
+    } else {
+      const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
+        .getLineAndCharacterOfPosition(getRealNodePos(node));
+      const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+      const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
+        .replace(/\\+/g, '/');
+      ID_ATTRS.set(literalString, new Map().set('path', rPath)
+        .set('line', posOfNode.line + 1)
+        .set('col', posOfNode.character + 1));
+    }
+  }
+}
+
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
+  verifyComponentId(temp, node, propName, log);
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&

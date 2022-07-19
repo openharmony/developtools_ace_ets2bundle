@@ -56,7 +56,8 @@ import {
   COMPONENT_SET_AND_PROP,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   CUSTOM_COMPONENT,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -304,7 +305,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name)
       node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined, ts.factory.createIdentifier("undefined")));
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
+        ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)));
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
