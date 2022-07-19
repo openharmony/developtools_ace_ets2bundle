@@ -74,7 +74,8 @@ import {
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
   COMMON_ATTRS,
-  CUSTOM_BUILDER_PROPERTIES
+  CUSTOM_BUILDER_PROPERTIES,
+  INNER_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   componentCollection,
@@ -91,7 +92,6 @@ import {
 import { projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
-import { INNER_CUSTOM_BUILDER_METHOD } from './process_component_class';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -113,7 +113,8 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
   isTransition: boolean = false, isInnerBuilder: boolean = false): ts.Block {
   const newStatements: ts.Statement[] = [];
-  processComponentChild(node, newStatements, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder);
+  processComponentChild(node, newStatements, log,
+    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder);
   if (isLazy) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -209,8 +210,9 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
 
 let sourceNode: ts.SourceFile;
 
-export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
-  supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder: boolean = false): void {
+export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
+  log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
+  isInnerBuilder: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
