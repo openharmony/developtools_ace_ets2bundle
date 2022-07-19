@@ -50,7 +50,8 @@ import {
   TOGGLE_SWITCH,
   COMPONENT_BUTTON,
   COMPONENT_TOGGLE,
-  COMPONENT_BUILDERPARAM_DECORATOR
+  COMPONENT_BUILDERPARAM_DECORATOR,
+  ESMODULE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -967,7 +968,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
 
 function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string): string {
   // Do not replace relativePath to ohmUrl when building bundle
-  if (sourcePath && projectConfig.compileMode === 'esmodule') {
+  if (sourcePath && projectConfig.compileMode === ESMODULE) {
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
     const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
@@ -987,18 +988,26 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
-  const REG_IMPORT_DECL: RegExp = isProcessAllowList ? projectConfig.compileMode === 'esmodule' ?
+  if (isProcessAllowList && projectConfig.compileMode === ESMODULE) {
+    // remove the unused system api import decl like following when compile as [esmodule]
+    // in the result_process phase
+    // e.g. import "@ohos.application.xxx"
+    const REG_UNUSED_SYSTEM_IMPORT: RegExp = /import(?:\s*)['"]@(system|ohos)\.(\S+)['"]/g;
+    content = content.replace(REG_UNUSED_SYSTEM_IMPORT, '');
+  }
+
+  const REG_IMPORT_DECL: RegExp = isProcessAllowList ? projectConfig.compileMode === ESMODULE ?
     /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
     /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const systemValueCollection: Set<string> = new Set();
   const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    const importValue: string = isProcessAllowList ? projectConfig.compileMode === 'esmodule' ? item1 : item2 : item2 || item4;
+    const importValue: string = isProcessAllowList ? projectConfig.compileMode === ESMODULE ? item1 : item2 : item2 || item4;
 
     if (isProcessAllowList) {
       systemValueCollection.add(importValue);
-      if (projectConfig.compileMode !== 'esmodule') {
+      if (projectConfig.compileMode !== ESMODULE) {
         return replaceSystemApi(item, importValue, item4, item5);
       }
       return replaceSystemApi(item, importValue, item2, item3);
