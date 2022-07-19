@@ -41,8 +41,7 @@ import {
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
-  BUILD_SHARE_PATH,
-  ARK
+  BUILD_SHARE_PATH
 } from './pre_define';
 import {
   createLanguageService,
@@ -50,7 +49,6 @@ import {
   createWatchCompilerHost
 } from './ets_checker';
 import { globalProgram } from '../main';
-import cluster from 'cluster';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
