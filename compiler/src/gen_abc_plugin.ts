@@ -42,7 +42,6 @@ import {
   EXTNAME_CJS,
   EXTNAME_D_TS,
   EXTNAME_ABC,
-  SUCCESS,
   FAIL
 } from './pre_define';
 
@@ -320,7 +319,6 @@ function handleFinishModules(modules, callback): any {
       }
     }
   });
-
 
   judgeWorkersToGenAbc(invokeWorkersModuleToGenAbc);
   processEntryToGenAbc(entryInfos);
@@ -606,22 +604,22 @@ function invokeWorkersToGenAbc(): void {
 
     process.on('exit', (code) => {
       intermediateJsBundle.forEach((item) => {
-        let input = item.path;
+        const input = item.path;
         if (fs.existsSync(input)) {
           fs.unlinkSync(input);
         }
-      })
+      });
     });
   }
 }
 
 function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Array<ModuleInfo>): void {
-  let tempModuleInfos = Array<ModuleInfo>();
+  const tempModuleInfos = Array<ModuleInfo>();
   moduleInfos.forEach((item) => {
-    let check = tempModuleInfos.every((newItem) => {
-      return item.tempFilePath != newItem.tempFilePath;
-    })
-    check ? tempModuleInfos.push(item) : ""
+    const check = tempModuleInfos.every((newItem) => {
+      return item.tempFilePath !== newItem.tempFilePath;
+    });
+    check ? tempModuleInfos.push(item) : '';
   });
   moduleInfos = tempModuleInfos;
 
@@ -702,12 +700,12 @@ function writeModuleHashJson(): void {
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
-  let tempInputPaths = Array<File>();
+  const tempInputPaths = Array<File>();
   inputPaths.forEach((item) => {
-    let check = tempInputPaths.every((newItem) => {
-      return item.path != newItem.path;
-    })
-    check ? tempInputPaths.push(item) : ""
+    const check = tempInputPaths.every((newItem) => {
+      return item.path !== newItem.path;
+    });
+    check ? tempInputPaths.push(item) : '';
   });
   inputPaths = tempInputPaths;
 
