@@ -177,7 +177,7 @@ export class GenAbcPlugin {
 
 function clearGlobalInfo() {
   // fix bug of multi trigger
-  if (delayCount <= 1) {
+  if (!projectConfig.isPreview) {
     intermediateJsBundle = [];
     moduleInfos = [];
   }
@@ -603,6 +603,15 @@ function invokeWorkersToGenAbc(): void {
       }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
+
+    process.on('exit', (code) => {
+      intermediateJsBundle.forEach((item) => {
+        let input = item.path;
+        if (fs.existsSync(input)) {
+          fs.unlinkSync(input);
+        }
+      })
+    });
   }
 }
 
@@ -687,7 +696,7 @@ function writeModuleHashJson(): void {
     return;
   }
   // fix bug of multi trigger
-  if (delayCount <= 1) {
+  if (!projectConfig.isPreview || delayCount < 1) {
     fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
   }
 }
@@ -730,7 +739,9 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
         if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
-          fs.unlinkSync(input);
+          if (!projectConfig.isPreview) {
+            fs.unlinkSync(input);
+          }
         } else {
           fileterIntermediateJsBundle.push(inputPaths[i]);
         }
@@ -756,14 +767,16 @@ function writeHashJson(): void {
     const hashAbcContentData: any = toHashData(abcPath);
     hashJsonObject[input] = hashInputContentData;
     hashJsonObject[abcPath] = hashAbcContentData;
-    fs.unlinkSync(input);
+    if (!projectConfig.isPreview) {
+      fs.unlinkSync(input);
+    }
   }
   const hashFilePath: string = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
     return;
   }
   // fix bug of multi trigger
-  if (delayCount <= 1) {
+  if (!projectConfig.isPreview || delayCount < 1) {
     fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
   }
 }
