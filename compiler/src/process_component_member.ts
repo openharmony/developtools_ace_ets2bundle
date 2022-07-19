@@ -52,7 +52,8 @@ import {
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
-  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
+  COMPONENT_CONSTRUCTOR_PARENT
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -593,7 +594,13 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string, isI
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
       argumentsArray.unshift(ts.factory.createStringLiteral((++componentInfo.id).toString()),
-        isInnerBuilder ? ts.factory.createIdentifier('parent') : ts.factory.createThis());
+        isInnerBuilder ? ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken),
+          ts.factory.createThis()
+        ) : ts.factory.createThis());
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {

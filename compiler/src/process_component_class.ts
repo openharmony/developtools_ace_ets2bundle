@@ -55,14 +55,16 @@ import {
   COMPONENT_SET_AND_LINK,
   COMPONENT_SET_AND_PROP,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
-  CUSTOM_COMPONENT
+  CUSTOM_COMPONENT,
+  COMPONENT_CONSTRUCTOR_PARENT
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
   CUSTOM_BUILDER_METHOD,
   INNER_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  INNER_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   componentCollection,
@@ -276,7 +278,7 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
     ]
   );
 }
-export const INNER_CUSTOM_BUILDER_METHOD: Set<string> = new Set();
+
 function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
@@ -301,18 +303,11 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name)
-      node.parameters.push(ts.factory.createParameterDeclaration(
-        undefined,
-        undefined,
-        undefined,
-        ts.factory.createIdentifier("parent"),
-        undefined,
-        undefined,
-        undefined
-      ))
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
-        node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
-        node.type, processComponentBlock(node.body, false, log, false, true));
+      node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined, ts.factory.createIdentifier("undefined")));
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined,
+        node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
+        node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
