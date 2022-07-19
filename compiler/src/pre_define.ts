@@ -111,6 +111,7 @@ export const GLOBAL_CONTEXT: string = 'Context';
 export const ATTRIBUTE_ANIMATION: string = 'animation';
 export const ATTRIBUTE_ANIMATETO: string = 'animateTo';
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
+export const ATTRIBUTE_ID: string = 'id';
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';

@@ -59,7 +59,8 @@ import {
   BIND_DRAG_SET,
   BIND_POPUP_SET,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  ATTRIBUTE_ID
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -74,7 +75,8 @@ import {
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
   COMMON_ATTRS,
-  CUSTOM_BUILDER_PROPERTIES
+  CUSTOM_BUILDER_PROPERTIES,
+  ID_ATTRS
 } from './component_map';
 import {
   componentCollection,
@@ -905,10 +907,36 @@ function updateArgumentFor$$(argument: any): ts.Expression {
   }
 }
 
+function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
+  log: LogInfo[]): void {
+  if (!newsupplement.isAcceleratePreview && propName === ATTRIBUTE_ID) {
+    const literalString: string = temp.arguments[0].text;
+    if (ID_ATTRS.has(literalString)) {
+      const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
+      log.push({
+        type: LogType.ERROR,
+        message: `The current component id "${literalString}" is duplicate with ` +
+          `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
+        pos: node.pos
+      });
+    } else {
+      const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
+        .getLineAndCharacterOfPosition(getRealNodePos(node));
+      const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+      const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
+        .replace(/\\+/g, '/');
+      ID_ATTRS.set(literalString, new Map().set('path', rPath)
+        .set('line', posOfNode.line + 1)
+        .set('col', posOfNode.character + 1));
+    }
+  }
+}
+
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, isGlobalStyles: boolean): void {
   const propName: string = node.getText();
+  verifyComponentId(temp, node, propName, log);
   if (propName === ATTRIBUTE_ANIMATION) {
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&
