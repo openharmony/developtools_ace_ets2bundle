@@ -114,10 +114,9 @@ function loadEntryObj(projectConfig) {
 
 function buildManifest(manifest, aceConfigPath) {
   try {
-    const moduleConfigJson =  JSON.parse(fs.readFileSync(aceConfigPath).toString());
+    const moduleConfigJson = JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
-    if (moduleConfigJson.module &&
-      (moduleConfigJson.module.uiSyntax === 'ets' || moduleConfigJson.module.language === 'ets')) {
+    if (moduleConfigJson.module) {
       manifest.pages = getPages(moduleConfigJson);
     } else {
       throw Error('\u001b[31m'+
