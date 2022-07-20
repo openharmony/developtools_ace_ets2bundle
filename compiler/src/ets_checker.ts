@@ -33,7 +33,8 @@ import {
   COMPONENT_BUILD_FUNCTION,
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  REFRESH
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
@@ -291,7 +292,7 @@ function traverseBuild(node: ts.Node, index: number): void {
       parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
     }
     node = node.expression;
-    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body)) {
+    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) && node.expression.escapedText !== REFRESH) {
       node.body.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
       });
@@ -322,8 +323,8 @@ function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): v
           doubleDollarCollection(item);
         });
       }
-    } else if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments
-      && node.arguments.length) {
+    } else if ((ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments
+      && node.arguments.length) || (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) && node.expression.escapedText === REFRESH)) {
       node.arguments.forEach((item: ts.Node) => {
         if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
           item.properties.forEach((param: ts.Node) => {

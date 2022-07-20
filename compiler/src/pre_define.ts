@@ -215,6 +215,8 @@ export const RADIO: string = 'Radio';
 export const $$_VALUE: string = 'value';
 export const $$_CHANGE_EVENT: string = 'changeEvent';
 export const TEXT_TIMER: string = 'TextTimer';
+export const REFRESH: string = 'Refresh';
+export const REFRESHING: string = 'refreshing';
 export const FORMAT: string = 'format';
 export const IS_COUNT_DOWN: string = 'isCountDown';
 export const COUNT: string = 'count';
@@ -225,7 +227,7 @@ export const $$_VISIBILITY: string = 'visibility';
 
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
-  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])]
+  [RADIO, new Set([CHECKED])], [TEXT_TIMER,new Set([FORMAT, COUNT, IS_COUNT_DOWN])], [REFRESH,new Set([REFRESHING])]
 ]);
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
