@@ -187,7 +187,6 @@ function clearGlobalInfo() {
   entryInfos = new Map<string, EntryInfo>();
   hashJsonObject = {};
   moduleHashJsonObject = {};
-  buildPathInfo = '';
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -320,7 +319,7 @@ function handleFinishModules(modules, callback): any {
     }
   });
 
-  judgeWorkersToGenAbc(invokeWorkersModuleToGenAbc);
+  judgeModuleWorkersToGenAbc(invokeWorkersModuleToGenAbc);
   processEntryToGenAbc(entryInfos);
 }
 
@@ -532,14 +531,25 @@ function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, workerNumber: numb
   return result;
 }
 
-function judgeWorkersToGenAbc(callback: any): void {
+function judgeWorkersToGenAbc(callback): void {
+  const workerNum: number = Object.keys(cluster.workers).length;
+  if (workerNum === 0) {
+    callback();
+    return;
+  } else {
+    delayCount++;
+    setTimeout(judgeWorkersToGenAbc.bind(null, callback), 50);
+  }
+}
+
+function judgeModuleWorkersToGenAbc(callback): void {
   const workerNum: number = Object.keys(cluster.workers).length;
   if (workerNum === 0) {
     callback(moduleInfos);
     return;
   } else {
     delayCount++;
-    setTimeout(judgeWorkersToGenAbc.bind(null, callback, moduleInfos), 50);
+    setTimeout(judgeModuleWorkersToGenAbc.bind(null, callback), 50);
   }
 }
 
@@ -619,7 +629,9 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
     const check = tempModuleInfos.every((newItem) => {
       return item.tempFilePath !== newItem.tempFilePath;
     });
-    check ? tempModuleInfos.push(item) : '';
+    if (check) {
+      tempModuleInfos.push(item);
+    }
   });
   moduleInfos = tempModuleInfos;
 
@@ -705,7 +717,9 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
     const check = tempInputPaths.every((newItem) => {
       return item.path !== newItem.path;
     });
-    check ? tempInputPaths.push(item) : '';
+    if (check) {
+      tempInputPaths.push(item);
+    }
   });
   inputPaths = tempInputPaths;
 
