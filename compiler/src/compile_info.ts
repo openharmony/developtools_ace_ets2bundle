@@ -41,7 +41,8 @@ import {
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
-  BUILD_SHARE_PATH
+  BUILD_SHARE_PATH,
+  ARK
 } from './pre_define';
 import {
   createLanguageService,
@@ -49,6 +50,7 @@ import {
   createWatchCompilerHost
 } from './ets_checker';
 import { globalProgram } from '../main';
+import cluster from 'cluster';
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -301,11 +303,15 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      if (!(result === 'SUCCESS ' && projectConfig.isPreview)) {
+      if (result === 'SUCCESS ' && projectConfig.isPreview) {
+        this.printPreviewResult(resultInfo);
+      } else {
         logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
       }
     } else {
-      if (!projectConfig.isPreview) {
+      if (projectConfig.isPreview) {
+        this.printPreviewResult();
+      } else {
         console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
       }
     }
@@ -316,6 +322,24 @@ export class ResultStates {
     this.mErrorCount = 0;
     this.warningCount = 0;
     this.noteCount = 0;
+  }
+
+  private printPreviewResult(resultInfo: string = ''): void {
+    const workerNum: number = Object.keys(cluster.workers).length;
+    const printSuccessInfo = this.printSuccessInfo;
+    const blue: string = this.blue;
+    const reset: string = this.reset;
+    if (workerNum === 0) {
+      printSuccessInfo(blue, reset, resultInfo);
+    }
+  }
+
+  private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
+    if (resultInfo.length === 0) {
+      console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+    } else {
+      console.info(blue, 'COMPILE RESULT:SUCCESS ' + `{${resultInfo}}`, reset);
+    }
   }
 
   private printWarning(): void {
