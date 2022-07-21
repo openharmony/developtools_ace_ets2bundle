@@ -21,7 +21,7 @@ import { createHash } from 'crypto';
 import { processSystemApi } from './validate_ui_syntax';
 import {
   NODE_MODULES,
-  TEMPRARY,
+  TEMPORARY,
   MAIN,
   AUXILIARY,
   ZERO,
@@ -276,17 +276,17 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     let output: string = '';
     if (filePath.indexOf(fakeNodeModulesPath) === -1) {
       const sufStr: string = dataTmps[dataTmps.length - 1];
-      output = path.join(buildPath, TEMPRARY, NODE_MODULES, MAIN, sufStr);
+      output = path.join(buildPath, TEMPORARY, NODE_MODULES, MAIN, sufStr);
     } else {
       const sufStr: string = dataTmps[dataTmps.length - 1];
-      output = path.join(buildPath, TEMPRARY, NODE_MODULES, AUXILIARY, sufStr);
+      output = path.join(buildPath, TEMPORARY, NODE_MODULES, AUXILIARY, sufStr);
     }
     return output;
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
     const sufStr: string = filePath.replace(projectPath, '');
-    const output: string = path.join(buildPath, TEMPRARY, sufStr);
+    const output: string = path.join(buildPath, TEMPORARY, sufStr);
     return output;
   }
 
