@@ -326,20 +326,10 @@ export class ResultStates {
 
   private printPreviewResult(resultInfo: string = ''): void {
     const workerNum: number = Object.keys(cluster.workers).length;
-    let count_: number = 0;
     const printSuccessInfo = this.printSuccessInfo;
     const blue: string = this.blue;
     const reset: string = this.reset;
-    if (workerNum > 0) {
-      for (const worker of Object.values(cluster.workers)) {
-        worker.on('exit', function(code, signal) {
-          count_++;
-          if (count_ === workerNum) {
-            printSuccessInfo(blue, reset, resultInfo);
-          }
-        });
-      }
-    } else {
+    if (workerNum === 0) {
       printSuccessInfo(blue, reset, resultInfo);
     }
   }
