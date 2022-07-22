@@ -17,9 +17,9 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 
-import { 
+import {
   projectConfig,
-  systemModules 
+  systemModules
 } from '../main';
 import {
   processSystemApi,
@@ -292,7 +292,7 @@ function traverseBuild(node: ts.Node, index: number): void {
       parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
     }
     node = node.expression;
-    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) && 
+    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
       !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
       node.body.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
@@ -316,11 +316,12 @@ function traverseBuild(node: ts.Node, index: number): void {
 
 function isPropertiesAddDoubleDollar(node: ts.Node): boolean {
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments && node.arguments.length) {
-    return true; 
-  }
-  if(ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-  $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
     return true;
+  } else if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
+    $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+    return true;
+  } else {
+    return false;
   }
 }
 function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): void {
@@ -333,7 +334,7 @@ function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): v
           doubleDollarCollection(item);
         });
       }
-    } else if (Boolean(isPropertiesAddDoubleDollar(node))) {
+    } else if (isPropertiesAddDoubleDollar(node)) {
       node.arguments.forEach((item: ts.Node) => {
         if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
           item.properties.forEach((param: ts.Node) => {
