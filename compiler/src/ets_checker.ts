@@ -34,7 +34,7 @@ import {
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
-  BLOCK_INTERFACE_PROPERTIES_ADD_DOUBLE_DOLLAR
+  $$_BLOCK_INTERFACE
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
@@ -293,7 +293,7 @@ function traverseBuild(node: ts.Node, index: number): void {
     }
     node = node.expression;
     if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) && 
-      !BLOCK_INTERFACE_PROPERTIES_ADD_DOUBLE_DOLLAR.has(node.expression.escapedText.toString())) {
+      !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
       node.body.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
       });
@@ -319,7 +319,7 @@ function isPropertiesAddDoubleDollar(node: ts.Node): boolean {
     return true; 
   }
   if(ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-    BLOCK_INTERFACE_PROPERTIES_ADD_DOUBLE_DOLLAR.has(node.expression.escapedText.toString())) {
+  $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
     return true;
   }
 }
