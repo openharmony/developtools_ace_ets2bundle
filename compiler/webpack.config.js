@@ -347,7 +347,9 @@ module.exports = (env, argv) => {
   } else {
     projectConfig.isPreview = true;
     projectConfig.checkEntry = env.checkEntry;
-    setGenAbcPlugin(env, config);
+    if (env.compilerType && env.compilerType === 'ark') {
+      setGenAbcPlugin(env, config);
+    }
     let port;
     process.argv.forEach((val, index) => {
       if(val.startsWith('port=')){
