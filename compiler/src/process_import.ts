@@ -90,7 +90,13 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
     }
   }
   if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath) && !isOhmUrl(filePath)) {
-    filePath += EXTNAME_ETS;
+    const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+    if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
+      fs.existsSync(dirIndexPath)) {
+      filePath = dirIndexPath;
+    } else {
+      filePath += EXTNAME_ETS;
+    }
   }
 
   try {
@@ -99,7 +105,8 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
       fileResolvePath = resolveSourceFile(filePath);
     } else if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = path.resolve(pagesDir, filePath);
-    } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+    } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0 ||
+      fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       fileResolvePath = filePath;
     } else {
       fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
