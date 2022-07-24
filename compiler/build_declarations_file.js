@@ -34,9 +34,13 @@ generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
   const files = [];
   const globalTsFile = path.resolve(filePath, '../../global.d.ts');
+  const featureAbilityPath = path.resolve(filePath, '../../../common/full/featureability.d.ts');
   const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
     files.push(globalTsFile);
+  }
+  if (fs.existsSync(featureAbilityPath)) {
+    files.push(featureAbilityPath);
   }
   readFile(filePath, files);
   if (!fs.existsSync(output)) {
@@ -59,7 +63,7 @@ function generateTargetFile(filePath, output) {
   files.forEach((item) => {
     let content = fs.readFileSync(item, 'utf8');
     const fileName = path.resolve(output, path.basename(item));
-    if (item === globalTsFile) {
+    if (item === globalTsFile || item === featureAbilityPath) {
       content = license + '\n\n' + processsFile(content, fileName, true);
     }
     fs.writeFile(fileName, content, err => {
