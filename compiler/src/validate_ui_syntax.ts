@@ -137,6 +137,8 @@ export const isStaticViewCollection: Map<string, boolean> = new Map();
 
 export const packageCollection: Map<string, Array<string>> = new Map();
 export const useOSFiles: Set<string> = new Set();
+export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
+export const originalImportNamesMap: Map<string, string> = new Map();
 
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
@@ -809,6 +811,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   content = preprocessNewExtend(content);
   // process @system.
   content = processSystemApi(content, false, sourcePath);
+  CollectImportNames(content, sourcePath);
 
   return {
     content: content,
@@ -1006,8 +1009,10 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     if (isProcessAllowList) {
       systemValueCollection.add(importValue);
       if (projectConfig.compileMode !== ESMODULE) {
+        collectSourcemapNames(sourcePath, importValue, item5);
         return replaceSystemApi(item, importValue, item4, item5);
       }
+      collectSourcemapNames(sourcePath, importValue, item3);
       return replaceSystemApi(item, importValue, item2, item3);
     }
 
@@ -1034,6 +1039,51 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     return item;
   });
   return processInnerModule(processedContent, systemValueCollection);
+}
+
+function collectSourcemapNames(sourcePath: string, changedName: string, originalName: string): void {
+  const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
+  if (!sourcemapNamesCollection.has(cleanSourcePath)) {
+    return;
+  }
+
+  let map: Map<string, string> = sourcemapNamesCollection.get(cleanSourcePath);
+  if (map.has(changedName)) {
+    return;
+  }
+
+  for (let entry of originalImportNamesMap.entries()) {
+    const key: string = entry[0];
+    const value: string = entry[1];
+    if (value === '@ohos.' + originalName || value === '@system.' + originalName) {
+      map.set(changedName.trim(), key);
+      sourcemapNamesCollection.set(cleanSourcePath, map);
+      originalImportNamesMap.delete(key);
+      break;
+    }
+  }
+}
+
+export function CollectImportNames(content: string, sourcePath: string = null): void {
+  const REG_IMPORT_DECL: RegExp =
+    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+
+  const decls: string[] = content.match(REG_IMPORT_DECL);
+  if (decls != undefined) {
+    decls.forEach(decl => {
+      const parts: string[] = decl.split(' ');
+      if (parts.length === 4 && parts[0] === 'import' && parts[2] === 'from' && !parts[3].includes('.so')) {
+        originalImportNamesMap.set(parts[1], parts[3].replace(/'/g, ''));
+      }
+    })
+  }
+
+  if (sourcePath && sourcePath != null) {
+    const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
+    if (!sourcemapNamesCollection.has(cleanSourcePath)) {
+      sourcemapNamesCollection.set(cleanSourcePath, new Map());
+    }
+  }
 }
 
 function processInnerModule(content: string, systemValueCollection: Set<string>): string {

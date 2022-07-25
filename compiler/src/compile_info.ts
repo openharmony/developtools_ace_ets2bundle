@@ -29,7 +29,8 @@ import ConcatSource from 'webpack-sources/lib/ConcatSource';
 
 import { transformLog } from './process_ui_syntax';
 import {
-  useOSFiles
+  useOSFiles,
+  sourcemapNamesCollection
 } from './validate_ui_syntax';
 import { projectConfig } from '../main';
 import {
@@ -86,6 +87,17 @@ export class ResultStates {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
             assets[key]._value = assets[key]._value.toString().replace('.ts?entry', '.ts');
+
+            let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map','.js'));
+            if (sourcemapNamesCollection && absPath) {
+              let map: Map<string, string> = sourcemapNamesCollection.get(absPath);
+              if (map && map.size != 0) {
+                let names: Array<string> = Array.from(map).flat();
+                let sourcemapObj: any = JSON.parse(assets[key]._value);
+                sourcemapObj.names = names;
+                assets[key]._value = JSON.stringify(sourcemapObj);
+              }
+            }
           }
         });
       }
