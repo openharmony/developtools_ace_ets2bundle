@@ -55,7 +55,12 @@ import {
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   COMPONENT_CONSTRUCTOR_PARENT,
   EXTNAME_ETS,
-  _GENERATE_ID
+  _GENERATE_ID,
+  MARKDEPENDENTELEMENTSDIRTY,
+  RMELMTID,
+  PURGEDEPENDENCYONELMTID,
+  SETPROPERTYUNCHANGED,
+  BASICDECORATORS
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -80,6 +85,8 @@ import {
 } from './process_component_class';
 import { transformLog } from './process_ui_syntax';
 import { globalProgram, projectConfig } from '../main';
+
+import { compatibleSdkVersion } from '../main';
 
 export type ControllerType = {
   hasController: boolean
@@ -129,6 +136,10 @@ export class UpdateResult {
   private updateParams: ts.Statement;
   private deleteParams: boolean = false;
   private controllerSet: ts.MethodDeclaration;
+  private propertyUnchanged: ts.Statement;
+  private purgeVariableDepStatement: ts.Statement;
+  private rerenderStatement: ts.Statement;
+  private decoratorName: string;
 
   public setProperity(updateItem: ts.PropertyDeclaration) {
     this.itemUpdate = true;
@@ -164,6 +175,22 @@ export class UpdateResult {
     this.deleteParams = deleteParams;
   }
 
+  public setPropertyUnchanged(propertyUnchanged: ts.Statement) {
+    this.propertyUnchanged = propertyUnchanged;
+  }
+
+  public setPurgeVariableDepStatement(purgeVariableDepStatement: ts.Statement) {
+    this.purgeVariableDepStatement = purgeVariableDepStatement;
+  }
+
+  public setRerenderStatement(rerenderStatement: ts.Statement) {
+    this.rerenderStatement = rerenderStatement;
+  }
+
+  public setDecoratorName(decoratorName: string) {
+    this.decoratorName = decoratorName;
+  }
+
   public isItemUpdate(): boolean {
     return this.itemUpdate;
   }
@@ -184,12 +211,28 @@ export class UpdateResult {
     return this.updateParams;
   }
 
+  public getPropertyUnchanged(): ts.Statement {
+    return this.propertyUnchanged;
+  }
+
+  public getPurgeVariableDepStatement(): ts.Statement {
+    return this.purgeVariableDepStatement;
+  }
+
+  public getRerenderStatement(): ts.Statement {
+    return this.rerenderStatement;
+  }
+
   public getVariableGet(): ts.GetAccessorDeclaration {
     return this.variableGet;
   }
 
   public getVariableSet(): ts.SetAccessorDeclaration {
     return this.variableSet;
+  }
+
+  public getDecoratorName(): string {
+    return this.decoratorName;
   }
 
   public isDeleteParams(): boolean {
@@ -213,6 +256,9 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
         interfaceNode)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
+    if (compatibleSdkVersion === '9') {
+      updateResult.setDeleteParams(true);
+    }
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
@@ -317,6 +363,61 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
+  if (compatibleSdkVersion === '9' && BASICDECORATORS.has(decorator)) {
+    const variableWithUnderLink: string = '__' + name.escapedText.toString();
+    updateResult.setPropertyUnchanged(createPropertyUnchangedStatement(variableWithUnderLink));
+    updateResult.setDecoratorName(decorator);
+    updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink)); 
+    updateResult.setRerenderStatement(createRerenderStatement(variableWithUnderLink));
+  }
+}
+
+function createPropertyUnchangedStatement(variableWithUnderLink: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(variableWithUnderLink)
+        ),
+        ts.factory.createIdentifier(SETPROPERTYUNCHANGED)
+      ),
+      undefined,
+      []
+    )
+  );
+}
+
+function createPurgeVariableDepStatement(variableWithUnderLink: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(variableWithUnderLink)
+        ),
+        ts.factory.createIdentifier(PURGEDEPENDENCYONELMTID)
+      ),
+      undefined,
+      [ts.factory.createIdentifier(RMELMTID)]
+    )
+  );
+}
+
+function createRerenderStatement(variableWithUnderLink: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(variableWithUnderLink)
+        ),
+        ts.factory.createIdentifier(MARKDEPENDENTELEMENTSDIRTY)
+      ),
+      undefined,
+      [ts.factory.createThis()]
+    )
+  );
 }
 
 function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
@@ -422,6 +523,10 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
+      if (compatibleSdkVersion === '8') {
+        updateParamsNode = createUpdateParamsWithoutIf(name);
+      }
+      break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
       updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
