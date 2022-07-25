@@ -64,7 +64,14 @@ exports.expectResult =
         this.__counter.set(newValue);
     }
     render() {
-        Text.create(this.counter);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Text.create(this.counter);
+            if (!isInitialRender) {
+                Text.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         Text.pop();
     }
     rerender() {
@@ -105,7 +112,14 @@ class ParentComponent extends View {
         this.__value.set(newValue);
     }
     render() {
-        Column.create();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Column.create();
+            if (!isInitialRender) {
+                Column.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         let earlierCreatedChild_2 = this.findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
             View.create(new PropComponent("2", this, { counter: this.__value }));

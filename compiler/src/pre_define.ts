@@ -291,3 +291,9 @@ export const ABOUTTOBEDELETEDINTERNAL: string = 'aboutToBeDeletedInternal';
 export const UPDATEDIRTYELEMENTS: string ='updateDirtyElements';
 export const BASICDECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR, COMPONENT_PROP_DECORATOR,
   COMPONENT_LINK_DECORATOR]);
+export const ISINITIALRENDER: string = 'isInitialRender';
+export const ELMTID: string = 'elmtId';
+export const STARTGETACCESSRECORDINGFOR: string = 'StartGetAccessRecordingFor';
+export const STOPGETACCESSRECORDING: string = 'StopGetAccessRecording';
+export const VIEWSTACKPROCESSOR: string = 'ViewStackProcessor';
+export const OBSERVECOMPONENTCREATION: string = 'observeComponentCreation';

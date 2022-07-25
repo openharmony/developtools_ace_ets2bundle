@@ -59,8 +59,22 @@ exports.expectResult =
         this.__counter.set(newValue);
     }
     render() {
-        Column.create();
-        Text.create("counter:" + this.counter);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Column.create();
+            if (!isInitialRender) {
+                Column.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Text.create("counter:" + this.counter);
+            if (!isInitialRender) {
+                Text.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         Text.pop();
         Column.pop();
     }
