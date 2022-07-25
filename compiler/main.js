@@ -443,3 +443,4 @@ exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
 exports.checkAppResourcePath = checkAppResourcePath;
 exports.addSDKBuildDependencies = addSDKBuildDependencies;
+exports.compatibleSdkVersion = '8';

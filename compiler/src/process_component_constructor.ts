@@ -20,6 +20,7 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
+  COMPONENT_CONSTRUCTOR_INITIAL_PARAMS,
   COMPONENT_WATCH_FUNCTION,
   BASE_COMPONENT_NAME,
   INTERFACE_NAME_SUFFIX,
@@ -30,6 +31,8 @@ import {
   localStorageLinkCollection,
   localStoragePropCollection
 } from './validate_ui_syntax';
+
+import { compatibleSdkVersion } from '../main';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
 ): ts.ConstructorDeclaration {
@@ -83,9 +86,16 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   }
   const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
     localStoragePropCollection.get(parentComponentName.getText()).size;
-  const paramNames: Set<string> = new Set([COMPONENT_CONSTRUCTOR_ID, COMPONENT_CONSTRUCTOR_PARENT,
-    COMPONENT_CONSTRUCTOR_PARAMS, localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE :
-      COMPONENT_CONSTRUCTOR_PARAMS]);
+  const paramNames: Set<string> = compatibleSdkVersion === "8" ? new Set([
+    COMPONENT_CONSTRUCTOR_ID,
+    COMPONENT_CONSTRUCTOR_PARENT,
+    COMPONENT_CONSTRUCTOR_PARAMS,
+    localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE : COMPONENT_CONSTRUCTOR_PARAMS
+  ]) : new Set([
+    COMPONENT_CONSTRUCTOR_PARENT,
+    COMPONENT_CONSTRUCTOR_PARAMS,
+    localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE : COMPONENT_CONSTRUCTOR_PARAMS
+  ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
     // @ts-ignore
@@ -154,19 +164,42 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
       ));
     watchStatements.push(watchNode);
   });
-  const callSuperStatement: ts.Statement = ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
-      localStorageNum ?
-        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
-        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]
-    ));
-  const updateWithValueParamsStatement: ts.Statement = ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-      ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),
-    undefined, [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]));
+  const callSuperStatement: ts.Statement = createCallSuperStatement(localStorageNum);
+  const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
     [...watchStatements, updateWithValueParamsStatement], false, true, parentComponentName);
+}
+
+function createCallSuperStatement(localStorageNum: number): ts.Statement{
+  if (compatibleSdkVersion === '8') {
+    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createSuper(), undefined,
+        localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
+            [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+              ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
+  } else {
+    return (ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
+        localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] : 
+          [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)])));
+  }
+}
+
+// create updateWithValueParamsStatement
+function createUPdWithValStatement(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(
+          compatibleSdkVersion === '8' ? COMPONENT_CONSTRUCTOR_UPDATE_PARAMS : COMPONENT_CONSTRUCTOR_INITIAL_PARAMS
+        )
+      ),
+      undefined,
+      [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]
+    )
+  );
 }

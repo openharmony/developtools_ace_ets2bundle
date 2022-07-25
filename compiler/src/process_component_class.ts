@@ -33,10 +33,14 @@ import {
   BASE_COMPONENT_NAME,
   CREATE_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
+  COMPONENT_CONSTRUCTOR_INITIAL_PARAMS,
+  COMPONENT_CONSTRUCTOR_SET_STATE_UNCHANGED,
+  COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP,
   COMPONENT_CONSTRUCTOR_DELETE_PARAMS,
   COMPONENT_DECORATOR_PREVIEW,
   CREATE_CONSTRUCTOR_SUBSCRIBER_MANAGER,
   ABOUT_TO_BE_DELETE_FUNCTION_ID,
+  ABOUT_TO_BE_DELETE_FUNCTION_ID__,
   CREATE_CONSTRUCTOR_GET_FUNCTION,
   CREATE_CONSTRUCTOR_DELETE_FUNCTION,
   FOREACH_OBSERVED_OBJECT,
@@ -58,7 +62,13 @@ import {
   CUSTOM_COMPONENT,
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_IF_UNDEFINED,
-  INNER_COMPONENT_MEMBER_DECORATORS
+  INNER_COMPONENT_MEMBER_DECORATORS,
+  COMPONENT_RERENDER_FUNCTION,
+  SETONEWAYSYNCPROPERTIESUNCHANGED,
+  SETTWOWAYSYNCPROPERTIESUNCHANGED,
+  RMELMTID,
+  ABOUTTOBEDELETEDINTERNAL,
+  UPDATEDIRTYELEMENTS
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -72,7 +82,8 @@ import {
   componentCollection,
   linkCollection,
   localStorageLinkCollection,
-  localStoragePropCollection
+  localStoragePropCollection,
+  propCollection
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -96,6 +107,7 @@ import {
   LogInfo,
   hasDecorator
 } from './utils';
+import { compatibleSdkVersion } from '../main';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -130,6 +142,11 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const newMembers: ts.ClassElement[] = [];
   const watchMap: Map<string, ts.Node> = new Map();
   const updateParamsStatements: ts.Statement[] = [];
+  const setStateUnchangedStatements: ts.Statement[] = [];
+  const setOneWayUnchangedStatements: ts.Statement[] = [];
+  const setTwoWayUnchangedStatements: ts.Statement[] = [];
+  const purgeVariableDepStatements: ts.Statement[] = [];
+  const rerenderStatements: ts.Statement[] = [];
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
   const checkController: ControllerType =
     { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
@@ -169,6 +186,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
           newMembers.push(result.getControllerSet());
         }
       }
+      processPropertyUnchanged(result, setStateUnchangedStatements, setOneWayUnchangedStatements,
+        setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
     }
     if (ts.isMethodDeclaration(item) && item.name) {
       updateItem =
@@ -182,7 +201,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   validateBuildMethodCount(buildCount, parentComponentName, log);
   validateHasController(parentComponentName, checkController, log);
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
-  newMembers.unshift(addUpdateParamsFunc(updateParamsStatements, parentComponentName));
+  addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements, setStateUnchangedStatements,
+    setOneWayUnchangedStatements, setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   return newMembers;
 }
@@ -199,6 +219,58 @@ function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
         });
       }
     });
+  }
+}
+
+function processPropertyUnchanged(
+  result: UpdateResult,
+  setStateUnchangedStatements: ts.Statement[],
+  setOneWayUnchangedStatements: ts.Statement[],
+  setTwoWayUnchangedStatements: ts.Statement[],
+  purgeVariableDepStatements: ts.Statement[],
+  rerenderStatements: ts.Statement[]
+): void {
+  if (compatibleSdkVersion === '9') {
+    if(result.getPropertyUnchanged()) {
+      const propertyUnchanged: ts.Statement = result.getPropertyUnchanged();
+      if (result.getDecoratorName() === COMPONENT_STATE_DECORATOR) {
+        setStateUnchangedStatements.push(propertyUnchanged);
+      } else if (result.getDecoratorName() === COMPONENT_PROP_DECORATOR) {
+        setOneWayUnchangedStatements.push(propertyUnchanged);
+      } else if(result.getDecoratorName() === COMPONENT_LINK_DECORATOR) {
+        setTwoWayUnchangedStatements.push(propertyUnchanged);
+      }
+    }
+    if(result.getPurgeVariableDepStatement()) {
+      purgeVariableDepStatements.push(result.getPurgeVariableDepStatement());
+    }
+    if(result.getRerenderStatement()) {
+      rerenderStatements.push(result.getRerenderStatement());
+    }
+  }
+}
+
+function addIntoNewMembers(
+  newMembers: ts.ClassElement[],
+  parentComponentName: ts.Identifier,
+  updateParamsStatements: ts.Statement[],
+  setStateUnchangedStatements: ts.Statement[],
+  setOneWayUnchangedStatements: ts.Statement[],
+  setTwoWayUnchangedStatements: ts.Statement[],
+  purgeVariableDepStatements: ts.Statement[],
+  rerenderStatements: ts.Statement[]
+): void {
+  if (compatibleSdkVersion === '9') {
+    newMembers.unshift(
+      addInitialParamsFunc(updateParamsStatements, parentComponentName),
+      createStateUnchangedFunc(setStateUnchangedStatements),
+      createOneWaySyncUnchangedFunc(setOneWayUnchangedStatements),
+      createTwoWaySyncUnchangedFunc(setTwoWayUnchangedStatements),
+      addPurgeVariableDepFunc(purgeVariableDepStatements)
+    );  
+    newMembers.push(addRerenderFunc(rerenderStatements));
+  } else {
+    newMembers.unshift(addUpdateParamsFunc(updateParamsStatements, parentComponentName));
   }
 }
 
@@ -475,6 +547,7 @@ function judgmentParentType(node: ts.Node): boolean {
 
 export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
+  const propParentComponent: string[] = getParentNode(node, propCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
   const LINK_REG: RegExp = /^\$/g;
@@ -492,6 +565,9 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
         pos: initExpression.getStart()
       });
     }
+  } else if (compatibleSdkVersion === '9' && isMatchInitExpression(initExpression) &&
+    propParentComponent.includes(propertyName.escapedText.toString())) {
+    initText = initExpression.name.escapedText.toString();
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText);
@@ -539,15 +615,49 @@ function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts
   return createParamsInitBlock(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS, statements, parentComponentName);
 }
 
+function addInitialParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier): ts.MethodDeclaration {
+  return createParamsInitBlock(COMPONENT_CONSTRUCTOR_INITIAL_PARAMS, statements, parentComponentName);
+}
+
+function createStateUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_SET_STATE_UNCHANGED), undefined, undefined, [], undefined,
+    ts.factory.createBlock(statements, true));
+}
+
+// @Prop
+function createOneWaySyncUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(SETONEWAYSYNCPROPERTIESUNCHANGED), undefined, undefined, [],
+    undefined, ts.factory.createBlock(statements, true));
+}
+
+// @Link
+function createTwoWaySyncUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(
+    undefined, undefined, undefined, ts.factory.createIdentifier(SETTWOWAYSYNCPROPERTIESUNCHANGED),
+    undefined, undefined, [], undefined, ts.factory.createBlock(statements, true));
+}
+
+function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(
+    undefined, undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP),
+    undefined, undefined, [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      ts.factory.createIdentifier(RMELMTID), undefined, undefined, undefined)], undefined,
+      ts.factory.createBlock(statements, true));
+}
+
 function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDeclaration {
   const deleteStatements: ts.ExpressionStatement[] = [];
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
-    const paramsStatement: ts.ExpressionStatement = ts.factory.createExpressionStatement(
-      ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-        ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-          ts.factory.createIdentifier(`__${name.escapedText.toString()}`)),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_DELETE_PARAMS)), undefined, []));
+    let paramsStatement: ts.ExpressionStatement;
+    if (compatibleSdkVersion === '9' && !statement.decorators) {
+      paramsStatement = createParamsStatement(name);
+    } else {
+      paramsStatement = createParamsWithUnderlineStatement(name);
+    }
     deleteStatements.push(paramsStatement);
   });
   const defaultStatement: ts.ExpressionStatement =
@@ -558,12 +668,53 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
           ts.factory.createIdentifier(CREATE_CONSTRUCTOR_GET_FUNCTION)), undefined, []),
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_DELETE_FUNCTION)),
       undefined, [ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-        ts.factory.createThis(), ts.factory.createIdentifier(ABOUT_TO_BE_DELETE_FUNCTION_ID)),
+        ts.factory.createThis(), ts.factory.createIdentifier(
+            compatibleSdkVersion === '8' ?
+              ABOUT_TO_BE_DELETE_FUNCTION_ID : ABOUT_TO_BE_DELETE_FUNCTION_ID__)),
       undefined, [])]));
   deleteStatements.push(defaultStatement);
+  if (compatibleSdkVersion === '9') {
+    const aboutToBeDeletedInternalStatement: ts.ExpressionStatement = createDeletedInternalStatement();
+    deleteStatements.push(aboutToBeDeletedInternalStatement);
+  }
   const deleteParamsMethod: ts.MethodDeclaration =
     createParamsInitBlock(COMPONENT_CONSTRUCTOR_DELETE_PARAMS, deleteStatements);
   return deleteParamsMethod;
+}
+
+function createParamsStatement(name: ts.Identifier): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createThis(),
+      ts.factory.createIdentifier(`${name.escapedText.toString()}`)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+  ));
+}
+
+function createParamsWithUnderlineStatement(name: ts.Identifier): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
+        ts.factory.createIdentifier(`__${name.escapedText.toString()}`)),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_DELETE_PARAMS)), undefined, []));
+}
+
+function createDeletedInternalStatement(): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
+      ts.factory.createIdentifier(ABOUTTOBEDELETEDINTERNAL)), undefined, []));
+}
+
+function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+  let updateDirtyElementStatement: ts.Statement = ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
+  statements.push(updateDirtyElementStatement);
+  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
+    ts.factory.createBlock(statements, true));
 }
 
 function createParamsInitBlock(express: string, statements: ts.Statement[],

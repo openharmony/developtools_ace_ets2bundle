@@ -35,6 +35,9 @@ const {
   NATIVE_MODULE,
   SYSTEM_PLUGIN
 } = require('../lib/pre_define');
+const {
+  compatibleSdkVersion
+} = require('../main');
 
 function expectActual(name, filePath) {
   const content = require(filePath);
@@ -59,7 +62,8 @@ function expectActual(name, filePath) {
 }
 
 mocha.describe('compiler', () => {
-  const utPath = path.resolve(__dirname, './ut');
+  const utPath = compatibleSdkVersion === '8' ? 
+    path.resolve(__dirname, './ut') : path.resolve(__dirname, './utForPartialUpdate');
   const utFiles = [];
   readFile(utPath, utFiles);
   utFiles.forEach((item) => {
