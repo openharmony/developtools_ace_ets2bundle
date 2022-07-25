@@ -61,7 +61,13 @@ import {
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
   ATTRIBUTE_ID,
-  RESOURCE
+  RESOURCE,
+  ISINITIALRENDER,
+  ELMTID,
+  VIEWSTACKPROCESSOR,
+  STOPGETACCESSRECORDING,
+  STARTGETACCESSRECORDINGFOR,
+  OBSERVECOMPONENTCREATION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -92,7 +98,7 @@ import {
   componentInfo,
   createFunction
 } from './utils';
-import { projectConfig } from '../main';
+import { compatibleSdkVersion, projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 import { CUSTOM_COMPONENT } from '../lib/pre_define';
@@ -374,8 +380,9 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
   return { etsComponentNode: etsComponentNode, hasAttr: hasAttr };
 }
 
-function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
+function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined): void {
+  const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null };
@@ -424,14 +431,86 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processComponentChild(etsComponentResult.etsComponentNode.body, newStatements, log,
+    processInnerCompStatements(innerCompStatements, newStatements, node);
+    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
+    processInnerCompStatements(innerCompStatements, newStatements, node);
   }
   if (res.isContainerComponent || res.needPop) {
-    newStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
+    innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
   }
+}
+
+function processInnerCompStatements(
+  innerCompStatements: ts.Statement[],
+  newStatements: ts.Statement[],
+  node: ts.Statement
+): void {
+  if (compatibleSdkVersion === '8') {
+    innerCompStatements.push(...newStatements);
+  } else {
+    innerCompStatements.push(createComponentCreationStatement(node, newStatements));
+  }
+}
+
+function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[]): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+      ), undefined,
+      [ts.factory.createArrowFunction(undefined, undefined,
+        [
+          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+        ], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock(
+          [
+            createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+            ...innerStatements,
+            createInitRenderStatement(node),
+            createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+          ],
+          true
+        )
+      )]
+    )
+  );
+}
+
+function createViewStackProcessorStatement(propertyAccessName: string, elmtId?: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+        ts.factory.createIdentifier(propertyAccessName)
+      ),
+      undefined,
+      elmtId ? [ts.factory.createIdentifier(ELMTID)] : []
+    )
+  );
+}
+
+function createInitRenderStatement(node: ts.Statement): ts.Statement {
+  return ts.factory.createIfStatement(
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.ExclamationToken,
+      ts.factory.createIdentifier(ISINITIALRENDER)
+    ),
+    ts.factory.createBlock(
+      [
+        ts.isExpressionStatement(node) ? 
+          createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
+      ],
+      true
+    )
+  );
 }
 
 function getRealNodePos(node: ts.Node): number {
