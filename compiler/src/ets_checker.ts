@@ -219,7 +219,6 @@ function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
 }
 
 export const dollarCollection: Set<string> = new Set();
-export const appComponentCollection: Set<string> = new Set();
 export const decoratorParamsCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
@@ -229,21 +228,8 @@ function checkUISyntax(source: string, fileName: string): void {
     if (path.basename(fileName) !== 'app.ets') {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
-      collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
-    }
-  }
-}
-
-function collectComponents(node: ts.SourceFile): void {
-  // @ts-ignore
-  if (process.env.watchMode !== 'true' && node.identifiers && node.identifiers.size) {
-    // @ts-ignore
-    for (const key of node.identifiers.keys()) {
-      if (JS_BIND_COMPONENTS.has(key)) {
-        appComponentCollection.add(key);
-      }
     }
   }
 }
@@ -268,9 +254,6 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
         }
       });
     }
-  }
-  if (ts.isIfStatement(node)) {
-    appComponentCollection.add(COMPONENT_IF);
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION) {
     if (node.body && node.body.statements && node.body.statements.length) {
