@@ -67,7 +67,13 @@ import {
   VIEWSTACKPROCESSOR,
   STOPGETACCESSRECORDING,
   STARTGETACCESSRECORDINGFOR,
-  OBSERVECOMPONENTCREATION
+  OBSERVECOMPONENTCREATION,
+  ISLAZYCREATE,
+  DEEPRENDERFUNCTION,
+  ITEMCREATION,
+  OBSERVEDSHALLOWRENDER,
+  OBSERVEDDEEPRENDER,
+  ItemComponents
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -387,32 +393,19 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
-  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
-    let posOfNode: ts.LineAndCharacter;
-    let curFileName: string;
-    let line: number = 1;
-    let col: number = 1;
-    if (newsupplement.isAcceleratePreview) {
-      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
-      curFileName = newsupplement.fileName;
-      if (posOfNode.line === 0) {
-        col = newsupplement.column - 15;
-      }
-      line = newsupplement.line;
-    } else {
-      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-    }
-    const projectPath: string = projectConfig.projectPath;
-    const debugInfo: string =
-      `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
-      `(${posOfNode.line + line}:${posOfNode.character + col})`;
-    const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
-      createFunction(ts.factory.createIdentifier(nameResult.name),
-        ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
-        ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
-    newStatements.push(debugNode);
+  if (compatibleSdkVersion === '9' && ItemComponents.includes(nameResult.name)) {
+    processItemComponent(node, nameResult, innerCompStatements, log);
+  } else {
+    processNormalComponent(node, nameResult, innerCompStatements, log);
   }
+}
+
+function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
+  innerCompStatements: ts.Statement[], log: LogInfo[]): void {
+  const newStatements: ts.Statement[] = [];
+  const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+  newStatements.push(res.newNode);
+  processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
@@ -440,6 +433,34 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
+  }
+}
+
+function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[]): void {
+  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
+    let posOfNode: ts.LineAndCharacter;
+    let curFileName: string;
+    let line: number = 1;
+    let col: number = 1;
+    if (newsupplement.isAcceleratePreview) {
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = newsupplement.fileName;
+      if (posOfNode.line === 0) {
+        col = newsupplement.column - 15;
+      }
+      line = newsupplement.line;
+    } else {
+      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    }
+    const projectPath: string = projectConfig.projectPath;
+    const debugInfo: string = `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
+      `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+      createFunction(ts.factory.createIdentifier(nameResult.name),
+        ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
+        ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
+    newStatements.push(debugNode);
   }
 }
 
@@ -505,10 +526,254 @@ function createInitRenderStatement(node: ts.Statement): ts.Statement {
     ),
     ts.factory.createBlock(
       [
-        ts.isExpressionStatement(node) ? 
+        ts.isExpressionStatement(node) ?
           createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
       ],
       true
+    )
+  );
+}
+
+function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
+  log: LogInfo[]): void {
+  const itemRenderInnerStatements: ts.Statement[] = [];
+  const deepItemRenderInnerStatements: ts.Statement[] = [];
+  const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+  const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
+  itemRenderInnerStatements.push(itemCreateStatement);
+  processDebug(node, nameResult, innerCompStatements);
+  const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
+  if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
+    if (etsComponentResult.hasAttr) {
+      bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+    }
+    processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log);
+  } else {
+    bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+  }
+  innerCompStatements.push(createItemBlock(node, itemRenderInnerStatements, deepItemRenderInnerStatements));
+}
+
+function createItemCreate(nameResult: NameResult): ts.Statement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(nameResult.name),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
+    [ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createIdentifier(ISLAZYCREATE)]));
+}
+
+function createItemBlock(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[],
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.Block {
+  const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  let isLazyCreate: ts.BooleanLiteral = ts.factory.createTrue();
+  if (etsComponent && etsComponent.arguments[0]) {
+    if (etsComponent.arguments[0] as ts.StringLiteral.text === 'false') {
+      isLazyCreate = ts.factory.createFalse();
+    }
+  }
+  return ts.factory.createBlock(
+    [
+      ts.factory.createVariableStatement(
+        undefined,
+        ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+            undefined, undefined, isLazyCreate)],
+          ts.NodeFlags.Const
+        )
+      ),
+      createItemCreation(node, itemRenderInnerStatements),
+      createObservedShallowRender(node, itemRenderInnerStatements),
+      createObservedDeepRender(node, deepItemRenderInnerStatements),
+      createDeepRenderFunction(node, deepItemRenderInnerStatements),
+      ts.factory.createIfStatement(
+        ts.factory.createIdentifier(ISLAZYCREATE),
+        ts.factory.createBlock(
+          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, []))], true),
+        ts.factory.createBlock(
+          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))], true)
+      )
+    ],
+    true
+  );
+}
+
+function createItemCreation(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(ITEMCREATION), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+              ...itemRenderInnerStatements,
+              ts.factory.createIfStatement(
+                ts.factory.createPrefixUnaryExpression(
+                  ts.SyntaxKind.ExclamationToken,
+                  ts.factory.createIdentifier(ISINITIALRENDER)
+                ),
+                ts.factory.createBlock(
+                  [createComponent(node, COMPONENT_POP_FUNCTION).newNode],
+                  true
+                )
+              ),
+              createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createDeepRenderFunction(
+  node: ts.ExpressionStatement,
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(DEEPRENDERFUNCTION), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createIdentifier(ITEMCREATION), undefined,
+                [
+                  ts.factory.createIdentifier(ELMTID),
+                  ts.factory.createIdentifier(ISINITIALRENDER)
+                ]
+              )),
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createThis(),
+                    ts.factory.createIdentifier('updateFuncByElmtId')
+                  ),
+                  ts.factory.createIdentifier('set')
+                ), undefined,
+                [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
+              )),
+              ...deepItemRenderInnerStatements,
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createObservedShallowRender(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createThis(),
+                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+                ), undefined,
+                [ts.factory.createArrowFunction(undefined, undefined,
+                  [
+                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+                      ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+                      ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+                  ], undefined,
+                  ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                  ts.factory.createBlock(
+                    [createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+                      itemRenderInnerStatements[0],
+                      ts.factory.createIfStatement(
+                        ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken,
+                          ts.factory.createIdentifier(ISINITIALRENDER)),
+                        ts.factory.createBlock(
+                          [createComponent(node, COMPONENT_POP_FUNCTION).newNode], true)),
+                      createViewStackProcessorStatement(STOPGETACCESSRECORDING)], true
+                  )
+                )]
+              )),
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createObservedDeepRender(
+  node: ts.ExpressionStatement,
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(OBSERVEDDEEPRENDER),
+        undefined,
+        undefined,
+        ts.factory.createArrowFunction(
+          undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createThis(),
+                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+                ),
+                undefined,
+                [ts.factory.createIdentifier(ITEMCREATION)]
+              )),
+              ...deepItemRenderInnerStatements,
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
     )
   );
 }
@@ -609,7 +874,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   if (compatibleSdkVersion === '8') {
     newStatements.push(ifCreate, newIfNode, ifPop);
   } else {
-    newStatements.push(createComponentCreationStatement(node, [ifCreate,newIfNode]),ifPop);
+    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode]), ifPop);
   }
 }
 
