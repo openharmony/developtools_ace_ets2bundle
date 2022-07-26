@@ -606,7 +606,11 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   const ifCreate: ts.ExpressionStatement = createIfCreate();
   const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isInnerBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
-  newStatements.push(ifCreate, newIfNode, ifPop);
+  if (compatibleSdkVersion === '8') {
+    newStatements.push(ifCreate, newIfNode, ifPop);
+  } else {
+    newStatements.push(createComponentCreationStatement(node, [ifCreate,newIfNode]),ifPop);
+  }
 }
 
 function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[],
