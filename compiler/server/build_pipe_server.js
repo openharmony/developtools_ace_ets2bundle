@@ -100,7 +100,7 @@ function handlePluginCompileComponent(jsonData) {
   const sourceNode = ts.createSourceFile('preview.ets',
     'struct preview{build(){' + receivedMsg.data.script + '}}',
     ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
-  compileWithCheck = jsonData.data.compileWithCheck;
+  compileWithCheck = jsonData.data.compileWithCheck || 'true';
   if (previewCacheFilePath && fs.existsSync(previewCacheFilePath)
     && compileWithCheck === 'true') {
       writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
