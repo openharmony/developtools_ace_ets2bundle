@@ -135,7 +135,6 @@ export const localStoragePropCollection: Map<string, Map<string, Set<string>>> =
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
 export const packageCollection: Map<string, Array<string>> = new Map();
-export const moduleCollection: Set<string> = new Set();
 export const useOSFiles: Set<string> = new Set();
 
 export function validateUISyntax(source: string, content: string, filePath: string,
@@ -850,7 +849,6 @@ function getPackageInfo(configFile: string): Array<string> {
 }
 
 function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string): string {
-  moduleCollection.add(`${moduleType}.${systemKey}`);
   if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
     item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
   } else if (moduleType === SYSTEM_PLUGIN) {
