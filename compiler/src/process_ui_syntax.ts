@@ -484,9 +484,10 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
       return node;
     }
   } else {
-      const entryNode: ts.ExpressionStatement =
-        createEntryFunction(componentCollection.entryComponent, context);
-      return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
+    const entryNode: ts.ExpressionStatement =
+      createEntryFunction(componentCollection.entryComponent ||
+        Array.from(componentCollection.previewComponent)[0], context);
+    return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
   }
 }
 
