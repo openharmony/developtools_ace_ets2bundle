@@ -65,7 +65,7 @@ exports.expectResult =
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -154,7 +154,7 @@ class Banner extends View {
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -178,5 +178,7 @@ class Banner extends View {
         this.updateDirtyElements();
     }
 }
-loadDocument(new MyComponent("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new MyComponent(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

@@ -63,7 +63,7 @@ exports.expectResult =
     set counter(newValue) {
         this.__counter.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.counter);
@@ -111,7 +111,7 @@ class ParentComponent extends View {
     set value(newValue) {
         this.__value.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -133,5 +133,7 @@ class ParentComponent extends View {
         this.updateDirtyElements();
     }
 }
-loadDocument(new ParentComponent("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new ParentComponent(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

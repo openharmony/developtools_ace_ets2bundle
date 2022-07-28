@@ -58,7 +58,7 @@ exports.expectResult =
     set counter(newValue) {
         this.__counter.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -83,5 +83,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-loadDocument(new StatePage("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new StatePage(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

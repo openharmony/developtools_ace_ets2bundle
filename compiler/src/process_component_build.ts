@@ -79,7 +79,8 @@ import {
   _ITEM,
   FOREACHITEMIDFUNC,
   __LAZYFOREACHITEMIDFUNC,
-  FOREACHUPDATEFUNCTION
+  FOREACHUPDATEFUNCTION,
+  COMPONENT_INITIAl_RENDER_FUNCTION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -118,7 +119,12 @@ import { CUSTOM_COMPONENT } from '../lib/pre_define';
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
-  const renderNode: ts.Identifier = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
+  let renderNode: ts.Identifier;
+  if (compatibleSdkVersion === '8') {
+    renderNode = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
+  } else {
+    renderNode = ts.factory.createIdentifier(COMPONENT_INITIAl_RENDER_FUNCTION);
+  }
   if (node.body && node.body.statements && node.body.statements.length &&
     validateRootNode(node, log)) {
     newNode = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
@@ -834,7 +840,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
   log: LogInfo[]): void {
   const newForEachStatements: ts.Statement[] = [];
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
-    (node.expression as ts.CallExpression ).expression as ts.Identifier,
+    (node.expression as ts.CallExpression).expression as ts.Identifier,
     ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
   if (ts.isCallExpression(node.expression)) {
     const argumentsArray: ts.Expression[] = Array.from(node.expression.arguments);
@@ -842,7 +848,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         node.expression.expression as ts.Identifier,
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
-    const newArrowNode: ts.NodeArray<ts.Statement> = 
+    const newArrowNode: ts.NodeArray<ts.Statement> =
       processForEachBlock(node.expression, log) as ts.NodeArray<ts.Statement>;
     const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
       argumentsArray, newArrowNode);
@@ -937,7 +943,6 @@ function createItemIdFuncStatement(
       )
     );
   }
-  
 }
 
 function createUpdateFunctionStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {

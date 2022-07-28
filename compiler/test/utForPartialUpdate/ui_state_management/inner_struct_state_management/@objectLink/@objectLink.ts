@@ -97,7 +97,7 @@ class CustomText extends View {
     get model() {
         return this.__model.get();
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
@@ -159,7 +159,7 @@ class Parent extends View {
     set models(newValue) {
         this.__models.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -195,5 +195,7 @@ class Parent extends View {
         this.updateDirtyElements();
     }
 }
-loadDocument(new Parent("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new Parent(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `
