@@ -61,22 +61,30 @@ function addExtension(file: string, srcPath: string): string {
 }
 
 export function resolveSourceFile(ohmUrl: string): string {
+  if (!projectConfig.aceBuildJson) {
+    logger.error(red, `ETS:ERROR Failed to resolve OhmUrl because of aceBuildJson not existing `, reset);
+    return ohmUrl;
+  }
+
   const result: RegExpMatchArray = ohmUrl.match(REG_OHM_URL);
   const moduleName: string = result[2];
   const srcKind: string = result[3];
 
-  let file: string = '';
-
-  if (projectConfig.aceBuildJson) {
-    const modulePath: string = projectConfig.modulePathMap[moduleName];
-    file = path.join(modulePath, 'src/main', srcKind, result[4]);
-  } else {
-    logger.error(red, `ETS:ERROR Failed to resolve OhmUrl because of aceBuildJson not existing `, reset);
-  }
-
+  const modulePath: string = projectConfig.modulePathMap[moduleName];
+  const srcRoot: string = projectConfig.isOhosTest ? 'src/ohosTest' : 'src/main';
+  let file: string = path.join(modulePath, srcRoot, srcKind, result[4]);
   file = addExtension(file, result[4]);
 
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
+    if (projectConfig.isOhosTest) {
+      file = path.join(modulePath, 'src/main', srcKind, result[4]);
+      file = addExtension(file, result[4]);
+
+      if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+        return file;
+      }
+    }
+
     logger.error(red, `ETS:ERROR Failed to resolve existed file by this ohm url ${ohmUrl} `, reset);
   }
 
