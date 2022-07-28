@@ -44,7 +44,7 @@ exports.expectResult =
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    render() {
+    initialRender() {
         {
             const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
@@ -109,5 +109,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-loadDocument(new ParentView("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new ParentView(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

@@ -63,7 +63,7 @@ exports.expectResult =
     set arr(newValue) {
         this.__arr.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             List.create();
@@ -102,5 +102,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-loadDocument(new ParentView("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new ParentView(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

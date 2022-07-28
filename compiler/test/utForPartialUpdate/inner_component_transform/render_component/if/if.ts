@@ -95,7 +95,7 @@ exports.expectResult =
     set toggle3(newValue) {
         this.__toggle3.set(newValue);
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -170,5 +170,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-loadDocument(new IFView("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new IFView(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

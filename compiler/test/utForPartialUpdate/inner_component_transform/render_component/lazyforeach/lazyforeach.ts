@@ -196,7 +196,7 @@ class Test extends View {
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    render() {
+    initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Grid.create();
@@ -272,5 +272,7 @@ class Test extends View {
         this.updateDirtyElements();
     }
 }
-loadDocument(new Test("1", undefined, {}));
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new Test(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `
