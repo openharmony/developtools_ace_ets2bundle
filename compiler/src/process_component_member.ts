@@ -367,7 +367,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setPropertyUnchanged(createPropertyUnchangedStatement(variableWithUnderLink));
     updateResult.setDecoratorName(decorator);
-    updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink)); 
+    updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
     updateResult.setRerenderStatement(createRerenderStatement(variableWithUnderLink));
   }
 }
@@ -700,17 +700,21 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      ++componentInfo.id;
-      argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
-        ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
-        ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
-        ts.factory.createStringLiteral(componentInfo.id.toString()),
-      isInnerBuilder ? ts.factory.createConditionalExpression(
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-      ) : ts.factory.createThis());
+      if (compatibleSdkVersion === '8') {
+        ++componentInfo.id;
+        argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
+          ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
+          ts.factory.createStringLiteral(componentInfo.id.toString()),
+        isInnerBuilder ? ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
+        ) : ts.factory.createThis());
+      } else {
+        argumentsArray.unshift(ts.factory.createThis());
+      }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {

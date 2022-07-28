@@ -34,7 +34,13 @@ import {
   CUSTOM_COMPONENT_MARK_STATIC_FUNCTION,
   COMPONENT_COMMON,
   COMPONENT_CONSTRUCTOR_PARENT,
-  GENERATE_ID
+  GENERATE_ID,
+  ELMTID,
+  VIEWSTACKPROCESSOR,
+  STARTGETACCESSRECORDINGFOR,
+  STOPGETACCESSRECORDING,
+  ALLOCATENEWELMETIDFORNEXTCOMPONENT,
+  STATE_OBJECTLINK_DECORATORS
 } from './pre_define';
 import {
   propertyCollection,
@@ -64,6 +70,7 @@ import {
   createFunction
 } from './utils';
 import { bindComponentAttr } from './process_component_build';
+import { compatibleSdkVersion } from '../main';
 
 const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
@@ -155,10 +162,60 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   isInnerBuilder: boolean = false): void {
-  const id: string = componentInfo.id.toString();
-  newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
-    ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
-    ts.factory.createObjectLiteralExpression(props, true), name));
+  if (compatibleSdkVersion === '8') {
+    const id: string = componentInfo.id.toString();
+    newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
+      ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
+      ts.factory.createObjectLiteralExpression(props, true), name));
+  } else {
+    newStatements.push(createCustomComponent(newNode));
+  }
+}
+
+function createCustomComponent(newNode: ts.NewExpression): ts.Block {
+  return ts.factory.createBlock(
+    [
+      ts.factory.createVariableStatement(undefined,
+        ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(
+            ts.factory.createIdentifier(ELMTID), undefined, undefined,
+            ts.factory.createCallExpression(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+                ts.factory.createIdentifier(ALLOCATENEWELMETIDFORNEXTCOMPONENT)
+              ), undefined, []))],
+          ts.NodeFlags.Const
+        )
+      ),
+      ts.factory.createExpressionStatement(
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+            ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
+          ), undefined,
+          [ts.factory.createIdentifier(ELMTID)]
+        )
+      ),
+      ts.factory.createExpressionStatement(
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(BASE_COMPONENT_NAME),
+            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+          ), undefined,
+          [newNode]
+        )
+      ),
+      ts.factory.createExpressionStatement(
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+            ts.factory.createIdentifier(STOPGETACCESSRECORDING)
+          ), undefined, []
+        )
+      )
+    ],
+    true
+  );
 }
 
 function validateCustomComponentPrams(node: ts.CallExpression, name: string,
@@ -344,7 +401,9 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       }
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (parent === COMPONENT_STATE_DECORATOR) {
+      if (compatibleSdkVersion === '8' && parent === COMPONENT_STATE_DECORATOR) {
+        return true;
+      } else if (compatibleSdkVersion === '9' && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
         return true;
       }
       break;
