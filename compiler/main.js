@@ -98,7 +98,7 @@ function loadEntryObj(projectConfig) {
       const pages = manifest.pages;
       pages.forEach((element) => {
         const sourcePath = element.replace(/^\.\/ets\//, '');
-        const fileName = projectConfig.projectPath + path.sep + sourcePath + '.ets';
+        const fileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
         if (fs.existsSync(fileName)) {
           projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
