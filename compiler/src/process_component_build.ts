@@ -73,7 +73,13 @@ import {
   ITEMCREATION,
   OBSERVEDSHALLOWRENDER,
   OBSERVEDDEEPRENDER,
-  ItemComponents
+  ItemComponents,
+  FOREACHITEMGENFUNCTION,
+  __LAZYFOREACHITEMGENFUNCTION,
+  _ITEM,
+  FOREACHITEMIDFUNC,
+  __LAZYFOREACHITEMIDFUNC,
+  FOREACHUPDATEFUNCTION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -131,7 +137,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
     {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
-  if (isLazy) {
+  if (isLazy && compatibleSdkVersion === '8') {
     newStatements.unshift(createRenderingInProgress(true));
   }
   if (isTransition) {
@@ -142,7 +148,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
       createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
         ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
   }
-  if (isLazy) {
+  if (isLazy && compatibleSdkVersion === '8') {
     newStatements.push(createRenderingInProgress(false));
   }
   return ts.factory.updateBlock(node, newStatements);
@@ -266,7 +272,13 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.forEachComponent:
             parent = undefined;
-            processForEachComponent(item, newStatements, log, isInnerBuilder);
+            if (compatibleSdkVersion === '8') {
+              processForEachComponent(item, newStatements, log, isInnerBuilder);
+            } else {
+              processForEachComponentNew(item, newStatements, log);
+            }
+            lastName = name;
+            lastExpression = item;
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
@@ -807,7 +819,8 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
-    const newArrowNode: ts.ArrowFunction = processForEachBlock(node.expression, log, isInnerBuilder);
+    const newArrowNode: ts.ArrowFunction = 
+      processForEachBlock(node.expression, log, isInnerBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -815,6 +828,160 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
       node.expression, propertyNode, node.expression.typeArguments, argumentsArray)));
   }
   newStatements.push(node, popNode);
+}
+
+function processForEachComponentNew(node: ts.ExpressionStatement, newStatements: ts.Statement[],
+  log: LogInfo[]): void {
+  const newForEachStatements: ts.Statement[] = [];
+  const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
+    (node.expression as ts.CallExpression ).expression as ts.Identifier,
+    ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
+  if (ts.isCallExpression(node.expression)) {
+    const argumentsArray: ts.Expression[] = Array.from(node.expression.arguments);
+    const propertyNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+        node.expression.expression as ts.Identifier,
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    const newArrowNode: ts.NodeArray<ts.Statement> = 
+      processForEachBlock(node.expression, log) as ts.NodeArray<ts.Statement>;
+    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
+      argumentsArray, newArrowNode);
+    const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
+    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray);
+    const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
+    if (node.expression.expression.getText() === COMPONENT_FOREACH) {
+      if (argumentsArray[2]) {
+        newForEachStatements.push(propertyNode, itemGenFunctionStatement, itemIdFuncStatement, updateFunctionStatement);
+      } else {
+        newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
+      }
+      newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
+    } else {
+      if (argumentsArray[2]) {
+        newStatements.push(itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement, popNode);
+      } else {
+        newStatements.push(itemGenFunctionStatement, lazyForEachStatement, popNode);
+      }
+    }
+  }
+}
+
+function createItemGenFunctionStatement(
+  node: ts.CallExpression,
+  argumentsArray: ts.Expression[],
+  newArrowNode: ts.NodeArray<ts.Statement>
+): ts.VariableStatement {
+  if (argumentsArray[1] && ts.isArrowFunction(argumentsArray[1])) {
+    return ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
+            FOREACHITEMGENFUNCTION : __LAZYFOREACHITEMGENFUNCTION),
+          undefined, undefined,
+          ts.factory.createArrowFunction(
+            undefined, undefined,
+            [ts.factory.createParameterDeclaration(
+              undefined, undefined, undefined, ts.factory.createIdentifier(_ITEM))],
+            undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            ts.factory.createBlock(
+              [ts.factory.createVariableStatement(
+                undefined,
+                ts.factory.createVariableDeclarationList(
+                  [ts.factory.createVariableDeclaration(
+                    ts.factory.createIdentifier(
+                      argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier(_ITEM)
+                  )],
+                  ts.NodeFlags.Const
+                )
+              ),
+              ...newArrowNode
+              ],
+              true
+            )
+          )
+        )
+        ],
+        ts.NodeFlags.Const
+      )
+    );
+  }
+}
+
+function createItemIdFuncStatement(
+  node: ts.CallExpression,
+  argumentsArray: ts.Expression[]
+): ts.VariableStatement {
+  if (argumentsArray[2] && ts.isArrowFunction(argumentsArray[2])) {
+    return ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
+            FOREACHITEMIDFUNC : __LAZYFOREACHITEMIDFUNC), undefined, undefined,
+          ts.factory.createArrowFunction(
+            undefined, undefined,
+            [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(
+                argumentsArray[2].parameters[0] ? argumentsArray[2].parameters[0].name.escapedText : ''
+              )
+            )], undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            ts.factory.createIdentifier(argumentsArray[2].body ? argumentsArray[2].body.getText() : '')
+          )
+        )],
+        ts.NodeFlags.Const
+      )
+    );
+  }
+  
+}
+
+function createUpdateFunctionStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(FOREACHUPDATEFUNCTION)
+      ),
+      undefined,
+      addForEachIdFuncParameter(argumentsArray)
+    )
+  );
+}
+
+function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Identifier[] {
+  const addForEachIdFuncParameterArr: ts.Identifier[] = [];
+  addForEachIdFuncParameterArr.push(
+    ts.factory.createIdentifier(ELMTID),
+    ts.factory.createIdentifier(argumentsArray[0] && argumentsArray[0].getText())
+  );
+  if (argumentsArray[2]) {
+    addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
+  }
+  addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMGENFUNCTION));
+  return addForEachIdFuncParameterArr;
+}
+
+function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(COMPONENT_LAZYFOREACH),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+      ),
+      undefined,
+      [ts.factory.createStringLiteral(componentInfo.id.toString()),
+        ts.factory.createThis(),
+        argumentsArray[0],
+        ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION),
+        ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC)
+      ]
+    )
+  );
 }
 
 function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
@@ -826,7 +993,7 @@ function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
 }
 
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
-  isInnerBuilder: boolean = false): ts.ArrowFunction {
+  isInnerBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
   if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
@@ -842,14 +1009,22 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
       const blockNode: ts.Block = ts.factory.createBlock([statement], true);
       // @ts-ignore
       statement.parent = blockNode;
-      return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+      if (compatibleSdkVersion === '8') {
+        return ts.factory.updateArrowFunction(
+          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+      } else {
+        return processComponentBlock(blockNode, isLazy, log).statements;
+      }
     } else {
-      return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken,
-        processComponentBlock(body, isLazy, log, false, isInnerBuilder));
+      if (compatibleSdkVersion === '8') {
+        return ts.factory.updateArrowFunction(
+          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode.type, arrowNode.equalsGreaterThanToken,
+          processComponentBlock(body, isLazy, log, false, isInnerBuilder));
+      } else {
+        return processComponentBlock(body, isLazy, log).statements;
+      }
     }
   }
   return null;
