@@ -37,10 +37,6 @@ export function isOhmUrl(moduleRequest: string): boolean {
 }
 
 function addExtension(file: string, srcPath: string): string {
-  if (path.extname(file) !== '') {
-    return file;
-  }
-
   let extension: string = '.d.ts';
   if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
     extension = '.ets';
