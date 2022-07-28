@@ -173,15 +173,11 @@ class Parent extends View {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
-                let earlierCreatedChild_2 = this.findChildById("2");
-                if (earlierCreatedChild_2 == undefined) {
-                    View.create(new CustomText("2", this, { model: item }));
-                }
-                else {
-                    earlierCreatedChild_2.updateWithValueParams({
-                        model: item
-                    });
-                    View.create(earlierCreatedChild_2);
+                {
+                    const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
+                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    View.create(new CustomText(this, { model: item }));
+                    ViewStackProcessor.StopGetAccessRecording();
                 }
             };
             const forEachItemIdFunc = item => item.text;

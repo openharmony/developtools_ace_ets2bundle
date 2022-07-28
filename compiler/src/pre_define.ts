@@ -291,7 +291,7 @@ export const ABOUTTOBEDELETEDINTERNAL: string = 'aboutToBeDeletedInternal';
 export const UPDATEDIRTYELEMENTS: string = 'updateDirtyElements';
 export const BASICDECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR, COMPONENT_PROP_DECORATOR,
   COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
-export const LINKS_DECORATORS: Set<string> = new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR])
+export const LINKS_DECORATORS: Set<string> = new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
 export const ISINITIALRENDER: string = 'isInitialRender';
 export const ELMTID: string = 'elmtId';
 export const STARTGETACCESSRECORDINGFOR: string = 'StartGetAccessRecordingFor';
@@ -310,3 +310,5 @@ export const _ITEM: string = '_item';
 export const FOREACHITEMIDFUNC: string = 'forEachItemIdFunc';
 export const __LAZYFOREACHITEMIDFUNC: string = '__lazyForEachItemIdFunc';
 export const FOREACHUPDATEFUNCTION: string = 'forEachUpdateFunction';
+export const ALLOCATENEWELMETIDFORNEXTCOMPONENT: string = 'AllocateNewElmetIdForNextComponent';
+export const STATE_OBJECTLINK_DECORATORS: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];

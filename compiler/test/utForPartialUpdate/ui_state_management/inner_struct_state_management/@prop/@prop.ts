@@ -120,15 +120,11 @@ class ParentComponent extends View {
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        let earlierCreatedChild_2 = this.findChildById("2");
-        if (earlierCreatedChild_2 == undefined) {
-            View.create(new PropComponent("2", this, { counter: this.__value }));
-        }
-        else {
-            earlierCreatedChild_2.updateWithValueParams({
-                counter: this.__value
-            });
-            View.create(earlierCreatedChild_2);
+        {
+            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            View.create(new PropComponent(this, { counter: this.__value }));
+            ViewStackProcessor.StopGetAccessRecording();
         }
         Column.pop();
     }
