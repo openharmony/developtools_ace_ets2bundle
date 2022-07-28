@@ -365,6 +365,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.compileMode = buildJsonInfo.compileMode;
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
+    projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
     projectConfig.processTs = false;
     projectConfig.buildArkMode = envArgs.buildMode;
     if (buildJsonInfo.compileMode === 'esmodule') {

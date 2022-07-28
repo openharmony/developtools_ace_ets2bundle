@@ -912,7 +912,7 @@ function replaceOhmStartsWithOhos(url: string, item: string, importValue:string,
 }
 
 function replaceOhmStartsWithLocal(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
-  const result: RegExpMatchArray | null = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+  const result: RegExpMatchArray | null = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
   if (result && projectConfig.aceModuleJsonPath) {
     const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
     const urlResult: RegExpMatchArray | null = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
@@ -968,7 +968,7 @@ function replaceRelativePath(item:string, moduleRequest: string, sourcePath: str
   // Do not replace relativePath to ohmUrl when building bundle
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)main(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
       const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
       const projectRootPath: string = projectConfig.projectRootPath;
