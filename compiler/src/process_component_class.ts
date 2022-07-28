@@ -68,7 +68,8 @@ import {
   SETTWOWAYSYNCPROPERTIESUNCHANGED,
   RMELMTID,
   ABOUTTOBEDELETEDINTERNAL,
-  UPDATEDIRTYELEMENTS
+  UPDATEDIRTYELEMENTS,
+  LINKS_DECORATORS
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -237,7 +238,7 @@ function processPropertyUnchanged(
         setStateUnchangedStatements.push(propertyUnchanged);
       } else if (result.getDecoratorName() === COMPONENT_PROP_DECORATOR) {
         setOneWayUnchangedStatements.push(propertyUnchanged);
-      } else if(result.getDecoratorName() === COMPONENT_LINK_DECORATOR) {
+      } else if(LINKS_DECORATORS.has(result.getDecoratorName())) {
         setTwoWayUnchangedStatements.push(propertyUnchanged);
       }
     }
