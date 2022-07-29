@@ -283,8 +283,6 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             } else {
               processForEachComponentNew(item, newStatements, log);
             }
-            lastName = name;
-            lastExpression = item;
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
