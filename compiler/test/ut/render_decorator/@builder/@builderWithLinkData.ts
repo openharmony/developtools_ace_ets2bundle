@@ -82,10 +82,10 @@ class TestPage extends View {
     set value(newValue) {
         this.__value.set(newValue);
     }
-    TitleCompView() {
-        let earlierCreatedChild_2 = this.findChildById("2");
+    TitleCompView(parent = undefined) {
+        let earlierCreatedChild_2 = (parent ? parent : this).findChildById("2");
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new TitleComp("2", this, { title: this.__value }));
+            View.create(new TitleComp("2", parent ? parent : this, { title: this.__value }));
         }
         else {
             earlierCreatedChild_2.updateWithValueParams({});
@@ -94,7 +94,7 @@ class TestPage extends View {
     }
     render() {
         Flex.create();
-        this.TitleCompView();
+        this.TitleCompView(this);
         Flex.pop();
     }
 }

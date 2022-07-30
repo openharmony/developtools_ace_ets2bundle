@@ -185,12 +185,12 @@ class MyComponent extends View {
     set hideBar(newValue) {
         this.__hideBar.set(newValue);
     }
-    textBuilder() {
+    textBuilder(parent = undefined) {
         Text.create("文本");
         Text.fontSize(30);
         Text.pop();
     }
-    NavigationTitlePara(label) {
+    NavigationTitlePara(label, parent = undefined) {
         Column.create();
         Text.create(label);
         Text.width(80);
@@ -198,7 +198,7 @@ class MyComponent extends View {
         Text.pop();
         Column.pop();
     }
-    MenuBuilder() {
+    MenuBuilder(parent = undefined) {
         Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });
         Flex.width(100);
         Text.create('Test menu item 1');
