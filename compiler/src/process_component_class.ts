@@ -55,14 +55,17 @@ import {
   COMPONENT_SET_AND_LINK,
   COMPONENT_SET_AND_PROP,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
-  CUSTOM_COMPONENT
+  CUSTOM_COMPONENT,
+  COMPONENT_CONSTRUCTOR_PARENT,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
   CUSTOM_BUILDER_METHOD,
   INNER_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  INNER_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   componentCollection,
@@ -300,9 +303,13 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(name);
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined, node.modifiers,
-        node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
-        node.type, processComponentBlock(node.body, false, log));
+      INNER_CUSTOM_BUILDER_METHOD.add(name)
+      node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
+        ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)));
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined,
+        node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
+        node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
