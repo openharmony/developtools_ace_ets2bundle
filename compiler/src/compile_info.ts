@@ -338,7 +338,7 @@ export class ResultStates {
           const position: string = errors[index].issue.location
             ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
             : '';
-          const location: string = errors[index].issue.file + position;
+          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
           const detail: string = errors[index].issue.message;
           logger.error(this.red, 'ETS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
@@ -352,7 +352,7 @@ export class ResultStates {
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
             .replace(/^ERROR in /, 'ETS:ERROR File: ').replace(/\s{6}TS/g, ' TS')
-            .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2');
+            .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2').replace(/\\/g, '/');
           this.printErrorMessage(errorMessage, false, errors[index]);
         }
       }
