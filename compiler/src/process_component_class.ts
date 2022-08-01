@@ -284,6 +284,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
   context: ts.TransformationContext, log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
+  const customBuilder: ts.Decorator[] = [];
   if (name === COMPONENT_BUILD_FUNCTION) {
     buildCount.count = buildCount.count + 1;
     if (node.parameters.length) {
@@ -301,13 +302,13 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       updateItem = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
-    } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+    } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name)
       node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
         ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)));
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, undefined,
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       updateItem = processBuildMember(builderNode, context, log);
