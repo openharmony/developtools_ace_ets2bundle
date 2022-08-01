@@ -91,7 +91,7 @@ function loadEntryObj(projectConfig) {
       process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
     } else {
-      throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
+      throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath.replace(/\\/g, '/') +
         ' or module.json is lost or format is invalid. \u001b[39m').message;
     }
     if (manifest.pages) {
@@ -107,7 +107,8 @@ function loadEntryObj(projectConfig) {
         }
       });
     } else {
-      throw Error('\u001b[31m ERROR: missing pages attribute in ' + projectConfig.manifestFilePath +
+      throw Error('\u001b[31m ERROR: missing pages attribute in ' +
+        projectConfig.manifestFilePath.replace(/\\/g, '/') +
         '. \u001b[39m').message;
     }
   }
