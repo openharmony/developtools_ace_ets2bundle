@@ -102,7 +102,8 @@ function loadEntryObj(projectConfig) {
         if (fs.existsSync(fileName)) {
           projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
-          throw Error(`\u001b[31m ERROR: page '${fileName}' does not exist. \u001b[39m`).message;
+          throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
+            .message;
         }
       });
     } else {
@@ -150,7 +151,7 @@ function setEntryFile(projectConfig) {
   const entryFilePath = path.resolve(projectConfig.projectPath, entryFileRealPath);
   abilityConfig.abilityEntryFile = entryFilePath;
   if (!fs.existsSync(entryFilePath) && aceCompileMode === 'page') {
-    throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
+    throw Error(`\u001b[31m ERROR: missing ${entryFilePath.replace(/\\/g, '/')}. \u001b[39m`).message;
   }
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
 }
@@ -217,7 +218,9 @@ function setAbilityFile(projectConfig, abilityPages) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
     } else {
-      throw Error(`\u001b[31m ERROR: srcEntrance file '${projectAbilityPath}' does not exist. \u001b[39m`).message;
+      throw Error(
+        `\u001b[31m ERROR: srcEntrance file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
+      ).message;
     }
   });
 }
