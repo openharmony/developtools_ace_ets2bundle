@@ -35,7 +35,7 @@ import { abilityConfig } from '../main';
 
 module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
-  source = processSystemApi(source, true);
+  source = processSystemApi(source, true, this.resourcePath);
   if (/\.(ets|ts)$/.test(this.resourcePath)) {
     componentInfo.id = 0;
     propertyCollection.clear();
