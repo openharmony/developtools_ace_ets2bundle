@@ -172,8 +172,8 @@ function setFaTestRunnerFile(projectConfig) {
     const testRunnerFiles = [];
     readFile(testRunnerPath, testRunnerFiles);
     testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+      if (/\.(ts|js|ets)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
 		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
@@ -188,8 +188,8 @@ function setStageTestRunnerFile(projectConfig) {
     const testRunnerFiles = [];
     readFile(testRunnerPath, testRunnerFiles);
     testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+      if (/\.(ts|js|ets)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
 		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
