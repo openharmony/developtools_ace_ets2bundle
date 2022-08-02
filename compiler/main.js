@@ -380,6 +380,9 @@ function loadModuleInfo(projectConfig, envArgs) {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
     projectConfig.pandaMode = buildJsonInfo.pandaMode;
+    if (buildJsonInfo.compatibleSdkVersion) {
+      sdkVersion.compatibleSdkVersion = buildJsonInfo.compatibleSdkVersion.toString();
+    }
   }
 }
 
