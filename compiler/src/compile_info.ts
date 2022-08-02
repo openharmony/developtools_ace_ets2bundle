@@ -270,9 +270,7 @@ export class ResultStates {
       if (this.mErrorCount > 0) {
         resultInfo += `ERROR:${this.mErrorCount}`;
         result = 'FAIL ';
-        if (!/ets_loader_ark$/.test(path.resolve(__dirname, '..'))) {
-          process.exitCode = 1;
-        }
+        process.exitCode = 1;
       } else {
         result = 'SUCCESS ';
       }
