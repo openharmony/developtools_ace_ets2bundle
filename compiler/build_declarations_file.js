@@ -65,6 +65,8 @@ function generateTargetFile(filePath, output) {
     const fileName = path.resolve(output, path.basename(item));
     if (item === globalTsFile || item === featureAbilityPath) {
       content = license + '\n\n' + processsFile(content, fileName, true);
+    } else {
+      content = processImportType(content);
     }
     fs.writeFile(fileName, content, err => {
       if (err) {
@@ -73,6 +75,12 @@ function generateTargetFile(filePath, output) {
       }
     });
   });
+}
+
+function processImportType(content) {
+  return content.replace(/(import\s*\(("|'))(\.\.\/api\/[^("|')]*("|')\)\.)/g, (item, item1, item2, item3) => {
+    return item1 + '../../' + item3;
+  })
 }
 
 function readFile(dir, fileDir) {
