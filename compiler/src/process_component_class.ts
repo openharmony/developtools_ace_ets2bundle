@@ -108,7 +108,7 @@ import {
   LogInfo,
   hasDecorator
 } from './utils';
-import { compatibleSdkVersion } from '../main';
+import { sdkVersion } from '../main';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -231,7 +231,7 @@ function processPropertyUnchanged(
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
-  if (compatibleSdkVersion === '9') {
+  if (sdkVersion.compatibleSdkVersion === '9') {
     if(result.getPropertyUnchanged()) {
       const propertyUnchanged: ts.Statement = result.getPropertyUnchanged();
       if (result.getDecoratorName() === COMPONENT_STATE_DECORATOR) {
@@ -261,7 +261,7 @@ function addIntoNewMembers(
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
-  if (compatibleSdkVersion === '9') {
+  if (sdkVersion.compatibleSdkVersion === '9') {
     newMembers.unshift(
       addInitialParamsFunc(updateParamsStatements, parentComponentName),
       createStateUnchangedFunc(setStateUnchangedStatements),
@@ -566,7 +566,7 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
         pos: initExpression.getStart()
       });
     }
-  } else if (compatibleSdkVersion === '9' && isMatchInitExpression(initExpression) &&
+  } else if (sdkVersion.compatibleSdkVersion === '9' && isMatchInitExpression(initExpression) &&
     propParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString();
   }
@@ -654,7 +654,7 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
-    if (compatibleSdkVersion === '9' && !statement.decorators) {
+    if (sdkVersion.compatibleSdkVersion === '9' && !statement.decorators) {
       paramsStatement = createParamsStatement(name);
     } else {
       paramsStatement = createParamsWithUnderlineStatement(name);
@@ -670,11 +670,11 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_DELETE_FUNCTION)),
       undefined, [ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(), ts.factory.createIdentifier(
-            compatibleSdkVersion === '8' ?
+            sdkVersion.compatibleSdkVersion === '8' ?
               ABOUT_TO_BE_DELETE_FUNCTION_ID : ABOUT_TO_BE_DELETE_FUNCTION_ID__)),
       undefined, [])]));
   deleteStatements.push(defaultStatement);
-  if (compatibleSdkVersion === '9') {
+  if (sdkVersion.compatibleSdkVersion === '9') {
     const aboutToBeDeletedInternalStatement: ts.ExpressionStatement = createDeletedInternalStatement();
     deleteStatements.push(aboutToBeDeletedInternalStatement);
   }

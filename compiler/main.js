@@ -400,19 +400,20 @@ function checkAppResourcePath(appResourcePath, config) {
 }
 
 function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
-  let isSave = false;
-  if (fs.existsSync(appResourcePathSavePath)) {
-    const saveContent = fs.readFileSync(appResourcePathSavePath);
-    if (appResourcePath !== saveContent) {
+  if (!projectConfig.xtsMode) {
+    let isSave = false;
+    if (fs.existsSync(appResourcePathSavePath)) {
+      const saveContent = fs.readFileSync(appResourcePathSavePath);
+      if (appResourcePath !== saveContent) {
+        isSave = true;
+      }
+    } else {
       isSave = true;
     }
-  } else {
-    isSave = true;
+    if (isSave) {
+      fs.writeFileSync(appResourcePathSavePath, appResourcePath);
+    }
   }
-  if (isSave) {
-    fs.writeFileSync(appResourcePathSavePath, appResourcePath);
-  }
-}
 
 function addSDKBuildDependencies(config) {
   if (projectConfig.localPropertiesPath &&
@@ -430,6 +431,10 @@ const globalProgram = {
   watchProgram: null
 };
 
+const sdkVersion = {
+  compatibleSdkVersion: '8'
+};
+
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
@@ -443,4 +448,4 @@ exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
 exports.checkAppResourcePath = checkAppResourcePath;
 exports.addSDKBuildDependencies = addSDKBuildDependencies;
-exports.compatibleSdkVersion = '8';
+exports.sdkVersion = sdkVersion;
