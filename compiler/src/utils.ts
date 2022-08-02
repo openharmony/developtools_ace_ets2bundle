@@ -138,10 +138,13 @@ class ComponentInfo {
 export const componentInfo: ComponentInfo = new ComponentInfo();
 
 export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
-  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string): boolean {
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string, customBuilder?: ts.Decorator[]): boolean {
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; i++) {
       if (node.decorators[i].getText().replace(/\(.*\)$/, '').trim() === decortorName) {
+        if (customBuilder) {
+          customBuilder.push(...node.decorators.slice(i + 1), ...node.decorators.slice(0, i));
+        }
         return true;
       }
     }
