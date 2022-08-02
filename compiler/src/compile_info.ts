@@ -352,7 +352,7 @@ export class ResultStates {
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
             .replace(/^ERROR in /, 'ETS:ERROR File: ').replace(/\s{6}TS/g, ' TS')
-            .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2').replace(/\\/g, '/');
+            .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2');
           this.printErrorMessage(errorMessage, false, errors[index]);
         }
       }
@@ -360,10 +360,11 @@ export class ResultStates {
   }
   private printErrorMessage(errorMessage: string, lineFeed: boolean, errorInfo: Info): void {
     if (this.validateError(errorMessage)) {
+      const formatErrMsg = errorMessage.replace(/\\/g, '/');
       if (lineFeed) {
-        logger.error(this.red, errorMessage + '\n', this.reset);
+        logger.error(this.red, formatErrMsg + '\n', this.reset);
       } else {
-        logger.error(this.red, errorMessage, this.reset);
+        logger.error(this.red, formatErrMsg, this.reset);
       }
     } else {
       const errorsIndex = this.mStats.compilation.errors.indexOf(errorInfo);
