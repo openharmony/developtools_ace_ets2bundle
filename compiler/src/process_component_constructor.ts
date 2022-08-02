@@ -32,7 +32,7 @@ import {
   localStoragePropCollection
 } from './validate_ui_syntax';
 
-import { compatibleSdkVersion } from '../main';
+import { sdkVersion } from '../main';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
 ): ts.ConstructorDeclaration {
@@ -86,7 +86,7 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   }
   const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
     localStoragePropCollection.get(parentComponentName.getText()).size;
-  const paramNames: Set<string> = compatibleSdkVersion === "8" ? new Set([
+  const paramNames: Set<string> = sdkVersion.compatibleSdkVersion === "8" ? new Set([
     COMPONENT_CONSTRUCTOR_ID,
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
@@ -171,7 +171,7 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
 }
 
 function createCallSuperStatement(localStorageNum: number): ts.Statement{
-  if (compatibleSdkVersion === '8') {
+  if (sdkVersion.compatibleSdkVersion === '8') {
     return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createSuper(), undefined,
         localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
@@ -195,7 +195,8 @@ function createUPdWithValStatement(): ts.Statement {
       ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(),
         ts.factory.createIdentifier(
-          compatibleSdkVersion === '8' ? COMPONENT_CONSTRUCTOR_UPDATE_PARAMS : COMPONENT_CONSTRUCTOR_INITIAL_PARAMS
+          sdkVersion.compatibleSdkVersion === '8' ?
+            COMPONENT_CONSTRUCTOR_UPDATE_PARAMS : COMPONENT_CONSTRUCTOR_INITIAL_PARAMS
         )
       ),
       undefined,
