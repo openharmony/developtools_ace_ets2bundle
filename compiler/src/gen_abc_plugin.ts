@@ -42,7 +42,8 @@ import {
   EXTNAME_CJS,
   EXTNAME_D_TS,
   EXTNAME_ABC,
-  FAIL
+  FAIL,
+  EXTNAME_JS_MAP
 } from './pre_define';
 
 const firstFileEXT: string = '_.js';
@@ -143,7 +144,7 @@ export class GenAbcPlugin {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === EXTNAME_JS) {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
             delete assets[key];
           }
         });
@@ -664,7 +665,9 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
           mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
-          fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
+          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(filterModuleInfos[i].tempFilePath)) {
+            fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
+          }
           fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
           if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
             fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
@@ -695,7 +698,9 @@ function writeModuleHashJson(): void {
     moduleHashJsonObject[input] = hashInputContentData;
     moduleHashJsonObject[abcPath] = hashAbcContentData;
     mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
-    fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
+    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(filterModuleInfos[i].tempFilePath)) {
+      fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
+    }
     fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
     if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
       fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
