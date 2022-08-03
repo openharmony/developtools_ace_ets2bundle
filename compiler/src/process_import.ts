@@ -272,11 +272,17 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration, asNameFromPare
   let componentName: string;
   if (asNameFromParent.has(name)) {
     collection.add(asNameFromParent.get(name));
-  } else if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
-    node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
-    node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword && defaultNameFromParent &&
-    asNameFromParent.has(defaultNameFromParent)) {
-    collection.add(asNameFromParent.get(defaultNameFromParent));
+  } else if (node.modifiers && node.modifiers.length >= 1 && node.modifiers[0] &&
+    node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
+    if (node.modifiers.length == 1) {
+      collection.add(name);
+    } else if (node.modifiers.length >= 2 && node.modifiers[1] && node.modifiers[1].kind ===
+      ts.SyntaxKind.DefaultKeyword) {
+      collection.add(CUSTOM_COMPONENT_DEFAULT);
+      if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
+        collection.add(asNameFromParent.get(defaultNameFromParent));
+      }
+    }
   } else if (defaultCollection.has(name)) {
     collection.add(CUSTOM_COMPONENT_DEFAULT);
   } else if (asExportCollection.has(name)) {
