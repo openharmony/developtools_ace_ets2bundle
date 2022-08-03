@@ -340,7 +340,7 @@ export class ResultStates {
           const position: string = errors[index].issue.location
             ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
             : '';
-          const location: string = errors[index].issue.file + position;
+          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
           const detail: string = errors[index].issue.message;
           logger.error(this.red, 'ETS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
@@ -362,10 +362,11 @@ export class ResultStates {
   }
   private printErrorMessage(errorMessage: string, lineFeed: boolean, errorInfo: Info): void {
     if (this.validateError(errorMessage)) {
+      const formatErrMsg = errorMessage.replace(/\\/g, '/');
       if (lineFeed) {
-        logger.error(this.red, errorMessage + '\n', this.reset);
+        logger.error(this.red, formatErrMsg + '\n', this.reset);
       } else {
-        logger.error(this.red, errorMessage, this.reset);
+        logger.error(this.red, formatErrMsg, this.reset);
       }
     } else {
       const errorsIndex = this.mStats.compilation.errors.indexOf(errorInfo);
