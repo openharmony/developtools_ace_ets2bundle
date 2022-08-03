@@ -256,7 +256,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
         interfaceNode)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
-    if (sdkVersion.compatibleSdkVersion === '9') {
+    if (sdkVersion.compatibleSdkVersion === 9) {
       updateResult.setDeleteParams(true);
     }
   } else if (!item.type) {
@@ -363,7 +363,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
-  if (sdkVersion.compatibleSdkVersion === '9' && BASICDECORATORS.has(decorator)) {
+  if (sdkVersion.compatibleSdkVersion === 9 && BASICDECORATORS.has(decorator)) {
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setPropertyUnchanged(createPropertyUnchangedStatement(variableWithUnderLink));
     updateResult.setDecoratorName(decorator);
@@ -523,7 +523,7 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
-      if (sdkVersion.compatibleSdkVersion === '8') {
+      if (sdkVersion.compatibleSdkVersion === 8) {
         updateParamsNode = createUpdateParamsWithoutIf(name);
       }
       break;
@@ -700,7 +700,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      if (sdkVersion.compatibleSdkVersion === '8') {
+      if (sdkVersion.compatibleSdkVersion === 8) {
         ++componentInfo.id;
         argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
           ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),

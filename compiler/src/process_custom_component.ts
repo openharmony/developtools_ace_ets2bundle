@@ -162,7 +162,7 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   isInnerBuilder: boolean = false): void {
-  if (sdkVersion.compatibleSdkVersion === '8') {
+  if (sdkVersion.compatibleSdkVersion === 8) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
@@ -401,9 +401,9 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       }
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (sdkVersion.compatibleSdkVersion === '8' && parent === COMPONENT_STATE_DECORATOR) {
+      if (sdkVersion.compatibleSdkVersion === 8 && parent === COMPONENT_STATE_DECORATOR) {
         return true;
-      } else if (sdkVersion.compatibleSdkVersion === '9' && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
+      } else if (sdkVersion.compatibleSdkVersion === 9 && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
         return true;
       }
       break;

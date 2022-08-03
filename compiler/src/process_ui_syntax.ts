@@ -586,7 +586,7 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
   if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
-      if (sdkVersion.compatibleSdkVersion === '8') {
+      if (sdkVersion.compatibleSdkVersion === 8) {
         const entryNode: ts.ExpressionStatement =
           createEntryFunction(componentCollection.entryComponent, context) as ts.ExpressionStatement;
         return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
@@ -630,7 +630,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext)
   if (localStorageName) {
     newArray.push(context.factory.createIdentifier(localStorageName));
   }
-  if (sdkVersion.compatibleSdkVersion === '8') {
+  if (sdkVersion.compatibleSdkVersion === 8) {
     const newExpressionStatement: ts.ExpressionStatement =
       context.factory.createExpressionStatement(context.factory.createCallExpression(
         context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,

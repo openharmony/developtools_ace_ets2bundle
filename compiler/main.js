@@ -381,7 +381,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     }
     projectConfig.pandaMode = buildJsonInfo.pandaMode;
     if (buildJsonInfo.compatibleSdkVersion) {
-      sdkVersion.compatibleSdkVersion = buildJsonInfo.compatibleSdkVersion.toString();
+      sdkVersion.compatibleSdkVersion = buildJsonInfo.compatibleSdkVersion;
     }
   }
 }
@@ -435,7 +435,7 @@ const globalProgram = {
 };
 
 const sdkVersion = {
-  compatibleSdkVersion: '8'
+  compatibleSdkVersion: 8
 };
 
 exports.globalProgram = globalProgram;
