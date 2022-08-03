@@ -64,7 +64,7 @@ function expectActual(name, filePath) {
 mocha.describe('compiler', () => {
   let utPath = path.resolve(__dirname, './ut');
   if (process.argv.includes('--partialUpdate')) {
-    sdkVersion.compatibleSdkVersion = '9';
+    sdkVersion.compatibleSdkVersion = 9;
     utPath = path.resolve(__dirname, './utForPartialUpdate');
   }
   const utFiles = [];
