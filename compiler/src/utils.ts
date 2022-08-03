@@ -408,10 +408,11 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): voi
     }
   }
   mkdirsSync(path.dirname(temporaryFile));
-  fs.writeFileSync(temporaryFile, mixedInfo.content);
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
+    mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(temporarySourceMapFile);
     fs.writeFileSync(temporarySourceMapFile, mixedInfo.sourceMapContent);
   }
+  fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
 
 function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any {
