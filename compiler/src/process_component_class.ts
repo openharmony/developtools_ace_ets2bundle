@@ -189,7 +189,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
 
 function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
   if (item.decorators && item.decorators.length) {
-    item.decorators.map((decorator) => {
+    item.decorators.map((decorator: ts.Decorator) => {
       const decoratorName: string = decorator.getText();
       if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
         log.push({
