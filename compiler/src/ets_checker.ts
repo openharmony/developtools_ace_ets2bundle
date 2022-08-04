@@ -181,7 +181,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
-  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function
+  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, isPipe: boolean = false
 ): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
   setCompilerOptions();
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
@@ -191,7 +191,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
     (diagnostic: ts.Diagnostic) => {
       // End of compilation in watch mode flag.
       if ([6193, 6194].includes(diagnostic.code)) {
-        process.env.watchTs = 'end';
+        if (!isPipe) {
+          process.env.watchTs = 'end';
+        }
         delayPrintLogCount();
       }
     });
