@@ -20,6 +20,6 @@
     "saturate", "geometryTransition",
     "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "bindContextMenu",
     "onFocus", "onBlur", "onFocusMove", "focusable", "tabIndex", "responseRegion", "alignRules", "onVisibleAreaChange",
-    "borderImage"
+    "borderImage", "hitTestBehavior"
   ]
 }
