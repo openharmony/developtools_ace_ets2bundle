@@ -688,7 +688,7 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
   return false;
 }
 
-export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolean {
+export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: LogInfo[]): boolean {
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
@@ -702,9 +702,17 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolea
     return true;
   } else if (ts.isUnionTypeNode(typeNode) && typeNode.types) {
     const types: ts.NodeArray<ts.TypeNode> = typeNode.types;
+    let basicType: boolean = false;
+    let referenceType: boolean = false;
     for (let i = 0; i < types.length; i++) {
       const enumType: ts.SyntaxKind = getEnumType(types[i], checker);
-      if (!simpleTypes.has(enumType || types[i].kind) && !isEnumtype(typeNode)) {
+      if (simpleTypes.has(enumType || types[i].kind) || isEnumtype(typeNode)) {
+        basicType = true;
+      } else {
+        referenceType = true;
+      }
+      if (basicType && referenceType && log) {
+        validateVariableType(typeNode, log);
         return false;
       }
     }
@@ -884,6 +892,14 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
     type: type,
     message: 'The parameter should be a string.',
     pos: pos
+  });
+}
+
+function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
+  log.push({
+    type: LogType.ERROR,
+    message: 'The state variable type of a struct component cannot be declared by both a simple type and an object type.',
+    pos: typeNode.getStart()
   });
 }
 

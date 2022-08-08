@@ -134,7 +134,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
-      addPropertyMember(item, newMembers, program, parentComponentName.getText());
+      addPropertyMember(item, newMembers, program, parentComponentName.getText(), log);
       const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
         ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
       if (result.isItemUpdate()) {
@@ -179,7 +179,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
 }
 
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
-  program: ts.Program, parentComponentName: string): void {
+  program: ts.Program, parentComponentName: string, log: LogInfo[]): void {
   const propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
   let decoratorName: string;
   let updatePropertyItem: ts.PropertyDeclaration;
@@ -195,13 +195,13 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       switch (decoratorName) {
         case COMPONENT_STATE_DECORATOR:
         case COMPONENT_PROVIDE_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
             OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type ||
               ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_LINK_DECORATOR:
         case COMPONENT_CONSUME_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
             SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
               ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
