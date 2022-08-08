@@ -57,7 +57,8 @@ import {
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   CUSTOM_COMPONENT,
   COMPONENT_CONSTRUCTOR_PARENT,
-  COMPONENT_IF_UNDEFINED
+  COMPONENT_IF_UNDEFINED,
+  INNER_COMPONENT_MEMBER_DECORATORS
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -137,31 +138,36 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
-      addPropertyMember(item, newMembers, program, parentComponentName.getText());
-      const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-        ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
-      if (result.isItemUpdate()) {
-        updateItem = result.getProperity();
+      if (/\bstatic\b/.test(item.getText())) {
+        newMembers.push(item);
+        validateDecorators(item, log);
       } else {
-        updateItem = item;
-      }
-      if (result.getVariableGet()) {
-        newMembers.push(result.getVariableGet());
-      }
-      if (result.getVariableSet()) {
-        newMembers.push(result.getVariableSet());
-      }
-      if (result.isCtorUpdate()) {
-        ctorNode = result.getCtor();
-      }
-      if (result.getUpdateParams()) {
-        updateParamsStatements.push(result.getUpdateParams());
-      }
-      if (result.isDeleteParams()) {
-        deleteParamsStatements.push(item);
-      }
-      if (result.getControllerSet()) {
-        newMembers.push(result.getControllerSet());
+        addPropertyMember(item, newMembers, program, parentComponentName.getText());
+        const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
+          ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
+        if (result.isItemUpdate()) {
+          updateItem = result.getProperity();
+        } else {
+          updateItem = item;
+        }
+        if (result.getVariableGet()) {
+          newMembers.push(result.getVariableGet());
+        }
+        if (result.getVariableSet()) {
+          newMembers.push(result.getVariableSet());
+        }
+        if (result.isCtorUpdate()) {
+          ctorNode = result.getCtor();
+        }
+        if (result.getUpdateParams()) {
+          updateParamsStatements.push(result.getUpdateParams());
+        }
+        if (result.isDeleteParams()) {
+          deleteParamsStatements.push(item);
+        }
+        if (result.getControllerSet()) {
+          newMembers.push(result.getControllerSet());
+        }
       }
     }
     if (ts.isMethodDeclaration(item) && item.name) {
@@ -179,6 +185,21 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   newMembers.unshift(addUpdateParamsFunc(updateParamsStatements, parentComponentName));
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   return newMembers;
+}
+
+function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
+  if (item.decorators && item.decorators.length) {
+    item.decorators.map((decorator: ts.Decorator) => {
+      const decoratorName: string = decorator.getText();
+      if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
+        log.push({
+          type: LogType.ERROR,
+          message: `The static variable of struct cannot be used together with built-in decorators.`,
+          pos: item.getStart()
+        });
+      }
+    });
+  }
 }
 
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
