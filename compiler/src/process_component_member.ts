@@ -698,7 +698,6 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
     let referenceType: boolean = false;
     for (let i = 0; i < types.length; i++) {
       const enumType: ts.SyntaxKind = getEnumType(types[i], checker);
-      // if (!simpleTypes.has(enumType || types[i].kind) && !isEnumtype(typeNode)) {
       if (simpleTypes.has(enumType || types[i].kind) || isEnumtype(typeNode)) {
         basicType = true;
       } else {
