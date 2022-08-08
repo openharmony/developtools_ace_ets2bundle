@@ -263,3 +263,6 @@ export const EXTNAME_ABC: string = '.abc';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
+
+export const TS2ABC: string = 'ts2abc';
+export const ES2ABC: string = 'es2abc';

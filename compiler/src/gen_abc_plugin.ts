@@ -43,7 +43,9 @@ import {
   EXTNAME_D_TS,
   EXTNAME_ABC,
   FAIL,
-  EXTNAME_JS_MAP
+  EXTNAME_JS_MAP,
+  TS2ABC,
+  ES2ABC
 } from './pre_define';
 
 const firstFileEXT: string = '_.js';
@@ -556,22 +558,39 @@ function judgeModuleWorkersToGenAbc(callback): void {
 
 function invokeWorkersToGenAbc(): void {
   let param: string = '';
-  if (isDebug) {
-    param += ' --debug';
-  }
+  let cmdPrefix: string = '';
 
-  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-  if (isWin) {
-    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
-  } else if (isMac) {
-    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+  if (process.env.panda === TS2ABC) {
+    if (isDebug) {
+      param += ' --debug';
+    }
+
+    let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+    if (isWin) {
+      js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+    } else if (isMac) {
+      js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+    }
+    cmdPrefix = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+    if (isDebug) {
+      param += ' --debug-info';
+    }
+    let es2abc: string = path.join(arkDir, 'build', 'bin', 'es2abc');
+    if (isWin) {
+      es2abc = path.join(arkDir, 'build-win', 'bin', 'es2abc.exe');
+    } else if (isMac) {
+      es2abc = path.join(arkDir, 'build-mac', 'bin', 'es2abc');
+    }
+    cmdPrefix = `"${es2abc}" ${param}`;
+  } else {
+    logger.error(red, `ETS:ERROR please set panda module`, reset);
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
   const maxWorkerNumber: number = 3;
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
-  const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
   const clusterNewApiVersion: number = 16;
   const currentNodeVersion: number = parseInt(process.version.split('.')[0]);

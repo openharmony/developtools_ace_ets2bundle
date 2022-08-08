@@ -375,6 +375,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
+    projectConfig.pandaMode = buildJsonInfo.pandaMode;
   }
 }
 
