@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import cluster from 'cluster';
 import process from 'process';
+import os from 'os';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 import {
@@ -412,20 +413,39 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
 }
 
 function initAbcEnv() : string[] {
-  let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-  if (isWin) {
-    js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
-  } else if (isMac) {
-    js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
-  }
+  let args: string[] = [];
+  if (process.env.panda === TS2ABC) {
+    let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
+    if (isWin) {
+      js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
+    } else if (isMac) {
+      js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
+    }
 
-  js2abc = '"' + js2abc + '"';
-  const args: string[] = [
-    '--expose-gc',
-    js2abc
-  ];
-  if (isDebug) {
-    args.push('--debug');
+    js2abc = '"' + js2abc + '"';
+    args = [
+      '--expose-gc',
+      js2abc
+    ];
+    if (isDebug) {
+      args.push('--debug');
+    }
+  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+    let es2abc: string = path.join(arkDir, 'build', 'bin', 'es2abc');
+    if (isWin) {
+      es2abc = path.join(arkDir, 'build-win', 'bin', 'es2abc.exe');
+    } else if (isMac) {
+      es2abc = path.join(arkDir, 'build-mac', 'bin', 'es2abc');
+    }
+
+    args = [
+      '"' + es2abc + '"'
+    ];
+    if (isDebug) {
+      args.push('--debug-info');
+    }
+  }  else {
+    logger.error(red, `ETS:ERROR please set panda module`, reset);
   }
 
   return args;
@@ -458,41 +478,11 @@ function invokeCluterModuleToAbc(): void {
     }
 
     let totalWorkerNumber = 0;
-    commonJsModuleInfos = Array.from(new Set(commonJsModuleInfos));
-    if (commonJsModuleInfos.length > 0) {
-      const tempAbcArgs: string[] = abcArgs.slice(0);
-      tempAbcArgs.push('-c');
-      const commonJsCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      let workerNumber: number = 3;
-      const splitedModules: any[] = splitModulesByNumber(commonJsModuleInfos, workerNumber);
-      workerNumber = splitedModules.length;
-      totalWorkerNumber += workerNumber;
-      for (let i = 0; i < workerNumber; i++) {
-        const workerData: any = {
-          'inputs': JSON.stringify(splitedModules[i]),
-          'cmd': commonJsCmdPrefix
-        };
-        cluster.fork(workerData);
-      }
-    }
+    let commonJsWorkerNumber: number = invokeClusterByModule(abcArgs, commonJsModuleInfos);
+    totalWorkerNumber += commonJsWorkerNumber;
 
-    ESMModuleInfos = Array.from(new Set(ESMModuleInfos));
-    if (ESMModuleInfos.length > 0) {
-      const tempAbcArgs: string[] = abcArgs.slice(0);
-      tempAbcArgs.push('-m');
-      const ESMCmdPrefix: any = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-      let workerNumber: number = 3;
-      const splitedModules: any[] = splitModulesByNumber(ESMModuleInfos, workerNumber);
-      workerNumber = splitedModules.length;
-      totalWorkerNumber += workerNumber;
-      for (let i = 0; i < workerNumber; i++) {
-        const workerData: any = {
-          'inputs': JSON.stringify(splitedModules[i]),
-          'cmd': ESMCmdPrefix
-        };
-        cluster.fork(workerData);
-      }
-    }
+    let esmWorkerNumber: number = invokeClusterByModule(abcArgs, ESMModuleInfos, true);
+    totalWorkerNumber += esmWorkerNumber;
 
     let count_ = 0;
     cluster.on('exit', (worker, code, signal) => {
@@ -511,6 +501,37 @@ function invokeCluterModuleToAbc(): void {
       logger.debug(`worker ${worker.process.pid} finished`);
     });
   }
+}
+
+function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>, isModule: Boolean = false) {
+  moduleInfos = Array.from(new Set(moduleInfos));
+  let workerNumber: number = 0;
+  if (moduleInfos.length > 0) {
+    let cmdPrefix: any = "";
+    const tempAbcArgs: string[] = abcArgs.slice(0);
+    if (process.env.panda === TS2ABC) {
+      workerNumber = 3;
+      isModule ? tempAbcArgs.push('-m') : tempAbcArgs.push('-c');
+      cmdPrefix = `${nodeJs} ${tempAbcArgs.join(' ')}`;
+    } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+      workerNumber = os.cpus().length;
+      isModule ? tempAbcArgs.push('--module') : tempAbcArgs.push('--commonjs');
+      cmdPrefix = `${tempAbcArgs.join(' ')}`;
+    } else {
+      logger.error(red, `ETS:ERROR please set panda module`, reset);
+    }
+    const splitedModules: any[] = splitModulesByNumber(moduleInfos, workerNumber);
+    workerNumber = splitedModules.length;
+    for (let i = 0; i < workerNumber; i++) {
+      const workerData: any = {
+        'inputs': JSON.stringify(splitedModules[i]),
+        'cmd': cmdPrefix
+      };
+      cluster.fork(workerData);
+    }
+  }
+
+  return workerNumber;
 }
 
 function splitModulesByNumber(moduleInfos: Array<ModuleInfo>, workerNumber: number): any[] {
@@ -557,38 +578,20 @@ function judgeModuleWorkersToGenAbc(callback): void {
 }
 
 function invokeWorkersToGenAbc(): void {
-  let param: string = '';
   let cmdPrefix: string = '';
+  let maxWorkerNumber: number = 3;
 
+  const abcArgs: string[] = initAbcEnv();
   if (process.env.panda === TS2ABC) {
-    if (isDebug) {
-      param += ' --debug';
-    }
-
-    let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
-    if (isWin) {
-      js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
-    } else if (isMac) {
-      js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
-    }
-    cmdPrefix = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
+    cmdPrefix = `${nodeJs} ${abcArgs.join(' ')}`;
   } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-    if (isDebug) {
-      param += ' --debug-info';
-    }
-    let es2abc: string = path.join(arkDir, 'build', 'bin', 'es2abc');
-    if (isWin) {
-      es2abc = path.join(arkDir, 'build-win', 'bin', 'es2abc.exe');
-    } else if (isMac) {
-      es2abc = path.join(arkDir, 'build-mac', 'bin', 'es2abc');
-    }
-    cmdPrefix = `"${es2abc}" ${param}`;
+    maxWorkerNumber = os.cpus().length;
+    cmdPrefix = `${abcArgs.join(' ')}`;
   } else {
     logger.error(red, `ETS:ERROR please set panda module`, reset);
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
-  const maxWorkerNumber: number = 3;
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
 
