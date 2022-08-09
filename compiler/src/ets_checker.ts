@@ -41,6 +41,10 @@ import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
 import { props } from './compile_info';
 import { resolveSourceFile } from './resolve_ohm_url';
+import {
+  CacheFileName,
+  cache
+} from './compile_info';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -182,7 +186,30 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       }
     }
   }
+  if (process.env.watchMode !== 'true') {
+    createOrUpdateCache(resolvedModules, containingFile);
+  }
   return resolvedModules;
+}
+
+function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
+  const children: string[] = [];
+  const error: boolean = false;
+  resolvedModules.forEach(moduleObj => {
+    if (moduleObj && moduleObj.resolvedFileName && /(?<!\.d)\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
+      const file: string = path.resolve(moduleObj.resolvedFileName);
+      const mtimeMs: number = fs.statSync(file).mtimeMs;
+      children.push(file);
+      const value: CacheFileName = cache[file];
+      if (value) {
+        value.mtimeMs = mtimeMs;
+        value.error = error;
+      } else {
+        cache[file] = { mtimeMs, children: [], error };
+      }
+    }
+  });
+  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children, error };
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
