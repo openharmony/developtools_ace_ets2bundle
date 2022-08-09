@@ -435,7 +435,7 @@ const globalProgram = {
 };
 
 const sdkVersion = {
-  compatibleSdkVersion: 8
+  compatibleSdkVersion: 9
 };
 
 exports.globalProgram = globalProgram;
