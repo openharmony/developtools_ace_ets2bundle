@@ -1000,11 +1000,11 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
   const REG_IMPORT_DECL: RegExp = isProcessAllowList ? projectConfig.compileMode === ESMODULE ?
     /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
     /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
-    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+    /(import|export)\s+(?:(.+)|\{([\s\S]+)\})\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const systemValueCollection: Set<string> = new Set();
-  const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    const importValue: string = isProcessAllowList ? projectConfig.compileMode === ESMODULE ? item1 : item2 : item2 || item4;
+  const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5, item6) => {
+    const importValue: string = isProcessAllowList ? projectConfig.compileMode === ESMODULE ? item1 : item2 : item2 || item5;
 
     if (isProcessAllowList) {
       systemValueCollection.add(importValue);
@@ -1016,7 +1016,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
       return replaceSystemApi(item, importValue, item2, item3);
     }
 
-    const moduleRequest: string = item3 || item5;
+    const moduleRequest: string = item4 || item6;
     if (isOhmUrl(moduleRequest)) { // ohmURL
       return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
     } else if (/^@(system|ohos)\./.test(moduleRequest)) { // ohos/system.api
