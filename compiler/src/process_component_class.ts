@@ -186,9 +186,9 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
         if (result.getControllerSet()) {
           newMembers.push(result.getControllerSet());
         }
+        processPropertyUnchanged(result, setStateUnchangedStatements, setOneWayUnchangedStatements,
+          setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
       }
-      processPropertyUnchanged(result, setStateUnchangedStatements, setOneWayUnchangedStatements,
-        setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
     }
     if (ts.isMethodDeclaration(item) && item.name) {
       updateItem =
