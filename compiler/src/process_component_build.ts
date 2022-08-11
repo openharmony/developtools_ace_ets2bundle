@@ -80,7 +80,10 @@ import {
   FOREACHITEMIDFUNC,
   __LAZYFOREACHITEMIDFUNC,
   FOREACHUPDATEFUNCTION,
-  COMPONENT_INITIAl_RENDER_FUNCTION
+  COMPONENT_INITIAl_RENDER_FUNCTION,
+  GRIDITEM_COMPONENT,
+  GRID_COMPONENT,
+  WILLUSEPROXY
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -582,23 +585,9 @@ function createItemBlock(
   itemRenderInnerStatements: ts.Statement[],
   deepItemRenderInnerStatements: ts.Statement[]
 ): ts.Block {
-  const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
-  let isLazyCreate: ts.BooleanLiteral = ts.factory.createTrue();
-  if (etsComponent && etsComponent.arguments[0]) {
-    if (etsComponent.arguments[0] as ts.StringLiteral.text === 'false') {
-      isLazyCreate = ts.factory.createFalse();
-    }
-  }
   return ts.factory.createBlock(
     [
-      ts.factory.createVariableStatement(
-        undefined,
-        ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-            undefined, undefined, isLazyCreate)],
-          ts.NodeFlags.Const
-        )
-      ),
+      createIsLazyCreate(node),
       createItemCreation(node, itemRenderInnerStatements),
       createObservedShallowRender(node, itemRenderInnerStatements),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
@@ -615,6 +604,39 @@ function createItemBlock(
     ],
     true
   );
+}
+
+function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement {
+  const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  if (etsComponent) {
+    if ((etsComponent.expression as ts.Identifier).escapedText.toString() === GRIDITEM_COMPONENT) {
+      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+            undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
+      } else {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(
+              ts.factory.createTrue(), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+                  ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)
+                ), undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                ts.factory.createTrue()))))], ts.NodeFlags.Const));
+      }
+    } else {
+      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+            undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
+      } else {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+            undefined, undefined, ts.factory.createTrue())], ts.NodeFlags.Const));
+      }
+    }
+  }
 }
 
 function createItemCreation(
@@ -823,7 +845,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
-    const newArrowNode: ts.ArrowFunction = 
+    const newArrowNode: ts.ArrowFunction =
       processForEachBlock(node.expression, log, isInnerBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);

@@ -208,7 +208,7 @@ class Test extends View {
         const __lazyForEachItemGenFunction = _item => {
             const row = _item;
             {
-                const isLazyCreate = true;
+                const isLazyCreate = true && (Grid.willUseProxy() === true);
                 const itemCreation = (elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     GridItem.create(deepRenderFunction, isLazyCreate);

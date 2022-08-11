@@ -313,3 +313,6 @@ export const FOREACHUPDATEFUNCTION: string = 'forEachUpdateFunction';
 export const ALLOCATENEWELMETIDFORNEXTCOMPONENT: string = 'AllocateNewElmetIdForNextComponent';
 export const STATE_OBJECTLINK_DECORATORS: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 export const COMPONENT_INITIAl_RENDER_FUNCTION: string = 'initialRender';
+export const GRID_COMPONENT: string = 'Grid';
+export const GRIDITEM_COMPONENT: string = 'GridItem';
+export const WILLUSEPROXY: string = 'willUseProxy';
