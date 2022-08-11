@@ -18,9 +18,11 @@ exports.source = `
 @Component
 struct ParentView {
   build() {
-    GridItem('true') {
-      Text('xx').width(100)
-    }.width(200).height(100)
+    Grid() {
+      GridItem('true') {
+        Text('xx').width(100)
+      }.width(200).height(100)
+    }
   }
 }
 `
@@ -45,8 +47,16 @@ exports.expectResult =
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Grid.create();
+            if (!isInitialRender) {
+                Grid.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
-            const isLazyCreate = true;
+            const isLazyCreate = true && (Grid.willUseProxy() === true);
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 GridItem.create(deepRenderFunction, isLazyCreate);
@@ -104,6 +114,7 @@ exports.expectResult =
                 observedDeepRender();
             }
         }
+        Grid.pop();
     }
     rerender() {
         this.updateDirtyElements();
