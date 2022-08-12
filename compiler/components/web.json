@@ -9,6 +9,6 @@
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
     "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess",
     "webDebuggingAccess", "onShowFileSelector", "initialScale", "onResourceLoad", "onScaleChange", "onHttpAuthRequest",
-    "onPermissionRequest", "onContextMenuShow"
+    "onPermissionRequest", "onContextMenuShow", "textZoomRatio", "onScroll"
   ]
 }
