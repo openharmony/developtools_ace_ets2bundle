@@ -324,10 +324,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
       CUSTOM_BUILDER_METHOD.add(name);
-      INNER_CUSTOM_BUILDER_METHOD.add(name)
-      node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
-        ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)));
+      INNER_CUSTOM_BUILDER_METHOD.add(name);
+      node.parameters.push(createParentParameter());
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
@@ -349,6 +347,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     }
   }
   return updateItem;
+}
+
+export function createParentParameter(): ts.ParameterDeclaration {
+  return ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
 }
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
