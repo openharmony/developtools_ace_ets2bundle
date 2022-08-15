@@ -32,23 +32,23 @@ import {
   useOSFiles,
   sourcemapNamesCollection
 } from './validate_ui_syntax';
-import { projectConfig } from '../main';
 import {
   circularFile,
   mkDir,
-  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
-  ARK
 } from './pre_define';
 import {
   createLanguageService,
   createWatchCompilerHost
 } from './ets_checker';
-import { globalProgram } from '../main';
+import {
+  globalProgram,
+  projectConfig
+} from '../main';
 import cluster from 'cluster';
 
 configure({
@@ -67,6 +67,19 @@ interface Info {
     location: { start?: { line: number, column: number } }
   };
 }
+
+export interface CacheFileName {
+  mtimeMs: number,
+  children: string[],
+  error: boolean
+}
+
+interface NeedUpdateFlag {
+  flag: boolean;
+}
+
+export let cache: Cache;
+type Cache = Record<string, CacheFileName>;
 
 export class ResultStates {
   private mStats: Stats;
@@ -186,7 +199,16 @@ export class ResultStates {
           createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
             this.delayPrintLogCount.bind(this)));
       } else {
-        const languageService: ts.LanguageService = createLanguageService(rootFileNames);
+        let languageService: ts.LanguageService = null;
+        let cacheFile: string = null;
+        if (projectConfig.xtsMode) {
+          languageService = createLanguageService(rootFileNames);
+        } else {
+          cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+          cache = fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile).toString()) : {};
+          const filterFiles: string[] = filterInput(rootFileNames);
+          languageService = createLanguageService(filterFiles);
+        }
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
           .getSyntacticDiagnostics()
@@ -195,6 +217,9 @@ export class ResultStates {
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           this.printDiagnostic(diagnostic);
         });
+        if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+          fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+        }
       }
     });
 
@@ -219,6 +244,9 @@ export class ResultStates {
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
     const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
     if (this.validateError(message)) {
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+        updateErrorFileCache(diagnostic);
+      }
       this.mErrorCount += 1;
       if (diagnostic.file) {
         const { line, character }: ts.LineAndCharacter =
@@ -409,5 +437,40 @@ export class ResultStates {
       }
     }
     return message;
+  }
+}
+
+function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
+  if (diagnostic.file && cache[path.resolve(diagnostic.file.fileName)]) {
+    cache[path.resolve(diagnostic.file.fileName)].error = true;
+  }
+}
+
+function filterInput(rootFileNames: string[]): string[] {
+  return rootFileNames.filter((file: string) => {
+    const needUpdate: NeedUpdateFlag = { flag: false };
+    checkNeedUpdateFiles(path.resolve(file), needUpdate);
+    return needUpdate.flag;
+  });
+}
+
+function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag): void {
+  if (needUpdate.flag) {
+    return;
+  }
+
+  const value: CacheFileName = cache[file];
+  const mtimeMs: number = fs.statSync(file).mtimeMs;
+  if (value) {
+    if (value.error || value.mtimeMs !== mtimeMs) {
+      needUpdate.flag = true;
+      return;
+    }
+    for (let i = 0; i < value.children.length; ++i) {
+      checkNeedUpdateFiles(value.children[i], needUpdate);
+    }
+  } else {
+    cache[file] = { mtimeMs, children: [], error: false };
+    needUpdate.flag = true;
   }
 }
