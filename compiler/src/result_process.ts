@@ -51,8 +51,8 @@ module.exports = function resultProcess(source: string, map: any): void {
             item.column = posOfNode.character + 1;
           }
         } else {
-          item.line = undefined;
-          item.column = undefined;
+          item.line = item.line || undefined;
+          item.column = item.column || undefined;
         }
         if (!item.fileName) {
           item.fileName = sourceFile.fileName;
