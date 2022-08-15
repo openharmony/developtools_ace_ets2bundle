@@ -79,13 +79,6 @@ class CustomText extends View {
     setInitiallyProvidedValue(params) {
         this.__model.set(params.model);
     }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-        this.__model.SetPropertyUnchanged();
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__model.purgeDependencyOnElmtId(rmElmtId);
     }
@@ -136,13 +129,6 @@ class Parent extends View {
         if (params.models !== undefined) {
             this.models = params.models;
         }
-    }
-    setStateSourcePropertiesUnchanged() {
-        this.__models.SetPropertyUnchanged();
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__models.purgeDependencyOnElmtId(rmElmtId);

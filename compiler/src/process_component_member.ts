@@ -136,7 +136,6 @@ export class UpdateResult {
   private updateParams: ts.Statement;
   private deleteParams: boolean = false;
   private controllerSet: ts.MethodDeclaration;
-  private propertyUnchanged: ts.Statement;
   private purgeVariableDepStatement: ts.Statement;
   private rerenderStatement: ts.Statement;
   private decoratorName: string;
@@ -175,10 +174,6 @@ export class UpdateResult {
     this.deleteParams = deleteParams;
   }
 
-  public setPropertyUnchanged(propertyUnchanged: ts.Statement) {
-    this.propertyUnchanged = propertyUnchanged;
-  }
-
   public setPurgeVariableDepStatement(purgeVariableDepStatement: ts.Statement) {
     this.purgeVariableDepStatement = purgeVariableDepStatement;
   }
@@ -209,10 +204,6 @@ export class UpdateResult {
 
   public getUpdateParams(): ts.Statement {
     return this.updateParams;
-  }
-
-  public getPropertyUnchanged(): ts.Statement {
-    return this.propertyUnchanged;
   }
 
   public getPurgeVariableDepStatement(): ts.Statement {
@@ -365,27 +356,10 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   }
   if (sdkVersion.compatibleSdkVersion === 9 && BASICDECORATORS.has(decorator)) {
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
-    updateResult.setPropertyUnchanged(createPropertyUnchangedStatement(variableWithUnderLink));
     updateResult.setDecoratorName(decorator);
     updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
     updateResult.setRerenderStatement(createRerenderStatement(variableWithUnderLink));
   }
-}
-
-function createPropertyUnchangedStatement(variableWithUnderLink: string): ts.Statement {
-  return ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
-          ts.factory.createIdentifier(variableWithUnderLink)
-        ),
-        ts.factory.createIdentifier(SETPROPERTYUNCHANGED)
-      ),
-      undefined,
-      []
-    )
-  );
 }
 
 function createPurgeVariableDepStatement(variableWithUnderLink: string): ts.Statement {

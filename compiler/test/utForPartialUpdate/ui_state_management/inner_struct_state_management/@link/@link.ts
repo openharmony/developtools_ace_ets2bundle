@@ -42,13 +42,6 @@ exports.expectResult =
     }
     setInitiallyProvidedValue(params) {
     }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-        this.__counter.SetPropertyUnchanged();
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);
     }
@@ -89,13 +82,6 @@ class ParentComponent extends View {
         if (params.value !== undefined) {
             this.value = params.value;
         }
-    }
-    setStateSourcePropertiesUnchanged() {
-        this.__value.SetPropertyUnchanged();
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__value.purgeDependencyOnElmtId(rmElmtId);

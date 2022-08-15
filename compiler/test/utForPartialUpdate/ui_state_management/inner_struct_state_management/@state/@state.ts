@@ -37,13 +37,6 @@ exports.expectResult =
             this.counter = params.counter;
         }
     }
-    setStateSourcePropertiesUnchanged() {
-        this.__counter.SetPropertyUnchanged();
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);
     }

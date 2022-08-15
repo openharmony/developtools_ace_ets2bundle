@@ -63,12 +63,6 @@ exports.expectResult =
             this.controller = params.controller;
         }
     }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {

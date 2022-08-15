@@ -53,12 +53,6 @@ exports.expectResult =
     }
     setInitiallyProvidedValue(params) {
     }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
@@ -140,12 +134,6 @@ class Banner extends View {
         if (params.value !== undefined) {
             this.value = params.value;
         }
-    }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }

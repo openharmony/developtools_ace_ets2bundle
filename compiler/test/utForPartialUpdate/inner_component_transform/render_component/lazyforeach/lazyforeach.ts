@@ -183,12 +183,6 @@ class Test extends View {
             this.data = params.data;
         }
     }
-    setStateSourcePropertiesUnchanged() {
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
