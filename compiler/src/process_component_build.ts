@@ -83,7 +83,8 @@ import {
   COMPONENT_INITIAl_RENDER_FUNCTION,
   GRIDITEM_COMPONENT,
   GRID_COMPONENT,
-  WILLUSEPROXY
+  WILLUSEPROXY,
+  TABCONTENT_COMPONENT
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -414,6 +415,8 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
   if (sdkVersion.compatibleSdkVersion === 9 && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log);
+  } else if (sdkVersion.compatibleSdkVersion === 9 && TABCONTENT_COMPONENT.includes(nameResult.name)) {
+    processTabContent(node, innerCompStatements, log);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log);
   }
@@ -814,6 +817,36 @@ function createObservedDeepRender(
       ts.NodeFlags.Const
     )
   );
+}
+
+function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[], log: LogInfo[]): void {
+  const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  const TabContentBody: ts.Block = TabContentComp.body;
+  let tabContentCreation: ts.Statement;
+  const tabContentPop: ts.Statement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
+      ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)), undefined, []));
+  const tabAttrs: ts.Statement[] = [];
+  if (TabContentBody) {
+    const TabContentBodyChild = TabContentBody.statements[0] as ts.ExpressionStatement;
+    const newTabContentChildren: ts.Statement[] = [];
+    processInnerComponent(TabContentBodyChild, newTabContentChildren, log);
+    tabContentCreation = ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(TABCONTENT_COMPONENT), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
+      undefined, [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock([...newTabContentChildren], true))]));
+    bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+  } else {
+    tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+  }
+  innerCompStatements.push(tabContentPop);
 }
 
 function getRealNodePos(node: ts.Node): number {
