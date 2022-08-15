@@ -316,3 +316,4 @@ export const COMPONENT_INITIAl_RENDER_FUNCTION: string = 'initialRender';
 export const GRID_COMPONENT: string = 'Grid';
 export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
+export const TABCONTENT_COMPONENT: string = 'TabContent';
