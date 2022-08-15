@@ -278,9 +278,6 @@ export const _GENERATE_ID = '__generate__Id';
 
 export const COMPONENT_CONSTRUCTOR_INITIAL_PARAMS: string = 'setInitiallyProvidedValue';
 export const COMPONENT_RERENDER_FUNCTION: string = 'rerender';
-export const SETONEWAYSYNCPROPERTIESUNCHANGED: string = 'setOneWaySyncPropertiesUnchanged';
-export const SETTWOWAYSYNCPROPERTIESUNCHANGED: string = 'setTwoWaySyncPropertiesUnchanged';
-export const COMPONENT_CONSTRUCTOR_SET_STATE_UNCHANGED: string = 'setStateSourcePropertiesUnchanged';
 export const COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP: string = 'purgeVariableDependenciesOnElmtId';
 export const MARKDEPENDENTELEMENTSDIRTY: string = 'markDependentElementsDirty';
 export const ABOUT_TO_BE_DELETE_FUNCTION_ID__: string = 'id__';

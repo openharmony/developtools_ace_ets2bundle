@@ -42,13 +42,6 @@ exports.expectResult =
             this.arr = params.arr;
         }
     }
-    setStateSourcePropertiesUnchanged() {
-        this.__arr.SetPropertyUnchanged();
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
     }

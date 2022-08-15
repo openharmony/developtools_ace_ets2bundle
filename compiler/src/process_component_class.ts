@@ -34,7 +34,6 @@ import {
   CREATE_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
   COMPONENT_CONSTRUCTOR_INITIAL_PARAMS,
-  COMPONENT_CONSTRUCTOR_SET_STATE_UNCHANGED,
   COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP,
   COMPONENT_CONSTRUCTOR_DELETE_PARAMS,
   COMPONENT_DECORATOR_PREVIEW,
@@ -64,8 +63,6 @@ import {
   COMPONENT_IF_UNDEFINED,
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_RERENDER_FUNCTION,
-  SETONEWAYSYNCPROPERTIESUNCHANGED,
-  SETTWOWAYSYNCPROPERTIESUNCHANGED,
   RMELMTID,
   ABOUTTOBEDELETEDINTERNAL,
   UPDATEDIRTYELEMENTS,
@@ -143,9 +140,6 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const newMembers: ts.ClassElement[] = [];
   const watchMap: Map<string, ts.Node> = new Map();
   const updateParamsStatements: ts.Statement[] = [];
-  const setStateUnchangedStatements: ts.Statement[] = [];
-  const setOneWayUnchangedStatements: ts.Statement[] = [];
-  const setTwoWayUnchangedStatements: ts.Statement[] = [];
   const purgeVariableDepStatements: ts.Statement[] = [];
   const rerenderStatements: ts.Statement[] = [];
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
@@ -186,8 +180,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
         if (result.getControllerSet()) {
           newMembers.push(result.getControllerSet());
         }
-        processPropertyUnchanged(result, setStateUnchangedStatements, setOneWayUnchangedStatements,
-          setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
+        processPropertyUnchanged(result, purgeVariableDepStatements, rerenderStatements);
       }
     }
     if (ts.isMethodDeclaration(item) && item.name) {
@@ -202,8 +195,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   validateBuildMethodCount(buildCount, parentComponentName, log);
   validateHasController(parentComponentName, checkController, log);
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
-  addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements, setStateUnchangedStatements,
-    setOneWayUnchangedStatements, setTwoWayUnchangedStatements, purgeVariableDepStatements, rerenderStatements);
+  addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
+    purgeVariableDepStatements, rerenderStatements);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   return newMembers;
 }
@@ -225,23 +218,10 @@ function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
 
 function processPropertyUnchanged(
   result: UpdateResult,
-  setStateUnchangedStatements: ts.Statement[],
-  setOneWayUnchangedStatements: ts.Statement[],
-  setTwoWayUnchangedStatements: ts.Statement[],
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
   if (sdkVersion.compatibleSdkVersion === 9) {
-    if(result.getPropertyUnchanged()) {
-      const propertyUnchanged: ts.Statement = result.getPropertyUnchanged();
-      if (result.getDecoratorName() === COMPONENT_STATE_DECORATOR) {
-        setStateUnchangedStatements.push(propertyUnchanged);
-      } else if (result.getDecoratorName() === COMPONENT_PROP_DECORATOR) {
-        setOneWayUnchangedStatements.push(propertyUnchanged);
-      } else if(LINKS_DECORATORS.has(result.getDecoratorName())) {
-        setTwoWayUnchangedStatements.push(propertyUnchanged);
-      }
-    }
     if(result.getPurgeVariableDepStatement()) {
       purgeVariableDepStatements.push(result.getPurgeVariableDepStatement());
     }
@@ -255,18 +235,12 @@ function addIntoNewMembers(
   newMembers: ts.ClassElement[],
   parentComponentName: ts.Identifier,
   updateParamsStatements: ts.Statement[],
-  setStateUnchangedStatements: ts.Statement[],
-  setOneWayUnchangedStatements: ts.Statement[],
-  setTwoWayUnchangedStatements: ts.Statement[],
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
   if (sdkVersion.compatibleSdkVersion === 9) {
     newMembers.unshift(
       addInitialParamsFunc(updateParamsStatements, parentComponentName),
-      createStateUnchangedFunc(setStateUnchangedStatements),
-      createOneWaySyncUnchangedFunc(setOneWayUnchangedStatements),
-      createTwoWaySyncUnchangedFunc(setTwoWayUnchangedStatements),
       addPurgeVariableDepFunc(purgeVariableDepStatements)
     );  
     newMembers.push(addRerenderFunc(rerenderStatements));
@@ -618,26 +592,6 @@ function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts
 
 function addInitialParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier): ts.MethodDeclaration {
   return createParamsInitBlock(COMPONENT_CONSTRUCTOR_INITIAL_PARAMS, statements, parentComponentName);
-}
-
-function createStateUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
-  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_SET_STATE_UNCHANGED), undefined, undefined, [], undefined,
-    ts.factory.createBlock(statements, true));
-}
-
-// @Prop
-function createOneWaySyncUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
-  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
-    ts.factory.createIdentifier(SETONEWAYSYNCPROPERTIESUNCHANGED), undefined, undefined, [],
-    undefined, ts.factory.createBlock(statements, true));
-}
-
-// @Link
-function createTwoWaySyncUnchangedFunc(statements: ts.Statement[]): ts.MethodDeclaration {
-  return ts.factory.createMethodDeclaration(
-    undefined, undefined, undefined, ts.factory.createIdentifier(SETTWOWAYSYNCPROPERTIESUNCHANGED),
-    undefined, undefined, [], undefined, ts.factory.createBlock(statements, true));
 }
 
 function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclaration {

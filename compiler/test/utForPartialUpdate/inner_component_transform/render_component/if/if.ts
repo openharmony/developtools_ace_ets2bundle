@@ -56,15 +56,6 @@ exports.expectResult =
             this.toggle3 = params.toggle3;
         }
     }
-    setStateSourcePropertiesUnchanged() {
-        this.__toggle1.SetPropertyUnchanged();
-        this.__toggle2.SetPropertyUnchanged();
-        this.__toggle3.SetPropertyUnchanged();
-    }
-    setOneWaySyncPropertiesUnchanged() {
-    }
-    setTwoWaySyncPropertiesUnchanged() {
-    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__toggle1.purgeDependencyOnElmtId(rmElmtId);
         this.__toggle2.purgeDependencyOnElmtId(rmElmtId);
