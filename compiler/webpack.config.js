@@ -137,7 +137,7 @@ function initConfig(config) {
       new ResultStates()
     ]
   });
-  if (!/ets_loader_ark$/.test(__dirname)) {
+  if (!projectConfig.xtsMode) {
     config.cache = {
       type: "filesystem",
       cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')

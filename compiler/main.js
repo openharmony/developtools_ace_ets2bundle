@@ -58,13 +58,14 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath
+    process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
-    hashProjectPath(projectConfig.projectPath)
+    hashProjectPath(projectConfig.projectPath);
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
 }
 
 function loadEntryObj(projectConfig) {
