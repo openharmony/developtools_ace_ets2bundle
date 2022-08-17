@@ -724,8 +724,8 @@ function writeModuleHashJson(): void {
       fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);
     }
     fs.copyFileSync(genAbcFileName(filterModuleInfos[i].tempFilePath), genAbcFileName(filterModuleInfos[i].buildFilePath));
-    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
-      fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
+    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(filterModuleInfos[i].tempFilePath))) {
+      fs.copyFileSync(genSourceMapFileName(filterModuleInfos[i].tempFilePath), genSourceMapFileName(filterModuleInfos[i].buildFilePath));
     }
   }
   const hashFilePath: string = genHashJsonPath(buildPathInfo);
