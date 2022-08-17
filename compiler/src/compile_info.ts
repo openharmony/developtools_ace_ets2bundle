@@ -183,7 +183,7 @@ export class ResultStates {
                 return undefined;
               }\n` +
               `if (globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
-              ` && moduleId.indexOf("?name=") < 0 && isCommonModue(moduleId)) {\n` +
+              ` && String(moduleId).indexOf("?name=") < 0 && isCommonModue(moduleId)) {\n` +
               `  globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
               `[moduleId] = module;\n}`);
         });

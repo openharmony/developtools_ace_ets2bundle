@@ -202,7 +202,12 @@ function setProjectConfig(envArgs) {
 function setReleaseConfig(config) {
   const TerserPlugin = require('terser-webpack-plugin');
   config.mode = 'production';
-  config.optimization = {
+  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
+    config.optimization = config.optimization;
+  } else {
+    config.optimization = {};
+  }
+  Object.assign(config.optimization, {
     emitOnErrors: true,
     usedExports: false,
     minimize: true,
@@ -219,7 +224,7 @@ function setReleaseConfig(config) {
         }
       }
     })]
-  };
+  });
   config.output.sourceMapFilename = '_releaseMap/[name].js.map';
 }
 
