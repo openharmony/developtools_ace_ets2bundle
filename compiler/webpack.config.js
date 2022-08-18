@@ -106,7 +106,7 @@ function initConfig(config) {
                   '@babel/plugin-transform-modules-commonjs',
                   '@babel/plugin-proposal-class-properties'
                 ],
-                compact:false
+                compact: false
               },
             },
             { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
