@@ -119,6 +119,7 @@ function initConfig(config) {
     },
     resolve: {
       plugins: [new OHMResolverPlugin()],
+      symlinks: projectConfig.compileMode === 'esmodule' ? false : true,
       extensions: ['.js', '.ets', '.ts', '.d.ts'],
       modules: [
         projectPath,
