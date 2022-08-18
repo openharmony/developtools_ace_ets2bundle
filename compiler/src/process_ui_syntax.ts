@@ -80,7 +80,6 @@ import {
   projectConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
-import { isOriginalExtend } from './ets_checker'
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -142,7 +141,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
-            processComponentBlock(node.body, false, transformLog.errors));
+            processComponentBlock(node.body, false, transformLog.errors, false, false, node.name.getText()));
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
@@ -462,7 +461,19 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
   }
 }
 
-
+export function isOriginalExtend(node: ts.Block): boolean {
+  let innerNode: ts.Node = node.statements[0];
+  if (node.statements.length === 1 && ts.isExpressionStatement(innerNode)) {
+    while (innerNode.expression) {
+      innerNode = innerNode.expression;
+    }
+    if (ts.isIdentifier(innerNode) && innerNode.pos && innerNode.end && innerNode.pos === innerNode.end &&
+      innerNode.escapedText.toString().match(/Instance$/)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function isThisNode(node: ts.ExpressionStatement): boolean {
   let innerNode: ts.Node = node;

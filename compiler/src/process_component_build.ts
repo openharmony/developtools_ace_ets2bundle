@@ -114,10 +114,10 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 }
 
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false, isInnerBuilder: boolean = false): ts.Block {
+  isTransition: boolean = false, isInnerBuilder: boolean = false, parent: string = undefined): ts.Block {
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
-    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder);
+    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
   if (isLazy) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -1333,8 +1333,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
-  } else if (parent === 'Column' || parent === 'XComponent' && ts.isCallExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression)) {
+  } else if ((parent === 'Column' || parent === 'XComponent' || CUSTOM_BUILDER_METHOD.has(parent)) &&
+    ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
     return ComponentType.function;
   } else if (!isAttributeNode(node)) {
     log.push({
