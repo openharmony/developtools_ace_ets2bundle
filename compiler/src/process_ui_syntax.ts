@@ -76,7 +76,8 @@ import {
   EXTEND_ATTRIBUTE,
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
-  INTERFACE_NODE_SET
+  INTERFACE_NODE_SET,
+  ID_ATTRS
 } from './component_map';
 import {
   localStorageLinkCollection,
@@ -99,6 +100,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
         transformLog.sourceFile = node;
+        preprocessIdAttrs(node.fileName);
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
@@ -215,6 +217,14 @@ function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
       )
     )
   )
+}
+
+function preprocessIdAttrs(fileName: string): void {
+  for (const [id, idInfo] of ID_ATTRS) {
+    if (fileName === idInfo.get('path')) {
+      ID_ATTRS.delete(id);
+    }
+  }
 }
 
 function isCustomDialogController(node: ts.Expression) {
