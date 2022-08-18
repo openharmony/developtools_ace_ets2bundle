@@ -80,6 +80,7 @@ import {
   projectConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
+import { isOriginalExtend } from './ets_checker'
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -425,10 +426,15 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
   const componentName: string = isExtendFunction(node);
   if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
+    let bodynode: ts.Block;
     const attrSet: ts.CallExpression = node.body.statements[0].expression;
-    const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
-    bindComponentAttr(changeCompName as ts.ExpressionStatement,
-      ts.factory.createIdentifier(componentName), statementArray, log);
+    if (isOriginalExtend(node.body)) {
+      const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
+      bindComponentAttr(changeCompName as ts.ExpressionStatement,
+        ts.factory.createIdentifier(componentName), statementArray, log);
+    } else {
+      bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
+    }
     let extendFunctionName: string;
     if (node.name.getText().startsWith('__' + componentName + '__')) {
       extendFunctionName = node.name.getText();
@@ -438,18 +444,56 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
-      node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+      node.parameters, node.type, isOriginalExtend(node.body) ?
+      ts.factory.updateBlock(node.body, statementArray) : bodynode);
+  }
+  function traverseExtendExpression(node: ts.Node): ts.Node {
+    if (ts.isExpressionStatement(node) && isThisNode(node)) {
+      let changeCompName: ts.ExpressionStatement =
+        ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
+      const statementArray: ts.Statement[] = [];
+      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
+      return ts.factory.createCallExpression(
+        ts.factory.createParenthesizedExpression(ts.factory.createFunctionExpression(
+          undefined, undefined, undefined, undefined, [], undefined,
+          ts.factory.createBlock(statementArray, true))), undefined, []);
+    }
+    return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
 }
 
-function processExtendBody(node: ts.Node): ts.Expression {
+
+
+function isThisNode(node: ts.ExpressionStatement): boolean {
+  let innerNode: ts.Node = node;
+  while(innerNode.expression) {
+    innerNode = innerNode.expression;
+  }
+  if (innerNode.kind === ts.SyntaxKind.ThisKeyword) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function processExtendBody(node: ts.Node, componentName?: string): ts.Expression {
   switch (node.kind) {
     case ts.SyntaxKind.CallExpression:
-      return ts.factory.createCallExpression(processExtendBody(node.expression), undefined, node.arguments);
+      return ts.factory.createCallExpression(processExtendBody(node.expression, componentName),
+        undefined, node.arguments);
     case ts.SyntaxKind.PropertyAccessExpression:
-      return ts.factory.createPropertyAccessExpression(processExtendBody(node.expression), node.name);
+      return ts.factory.createPropertyAccessExpression(
+        processExtendBody(node.expression, componentName), node.name);
     case ts.SyntaxKind.Identifier:
-      return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+      if (!componentName) {
+        return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+      }
+      break;
+    case ts.SyntaxKind.ThisKeyword:
+      if (componentName) {
+        return ts.factory.createIdentifier(componentName);
+      }
+      break;
   }
 }
 
