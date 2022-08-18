@@ -45,7 +45,7 @@ import {
   cache
 } from './compile_info';
 import { hasDecorator } from './utils';
-import { isExtendFunction } from './process_ui_syntax';
+import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -325,20 +325,6 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
     }
   }
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
-}
-
-export function isOriginalExtend(node: ts.Block): boolean {
-  let innerNode: ts.Node = node.statements[0];
-  if (node.statements.length === 1 && ts.isExpressionStatement(innerNode)) {
-    while (innerNode.expression) {
-      innerNode = innerNode.expression;
-    }
-    if (ts.isIdentifier(innerNode) && innerNode.pos && innerNode.end && innerNode.pos === innerNode.end &&
-    innerNode.escapedText.toString().match(/Instance$/)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function traverseBuild(node: ts.Node, index: number): void {
