@@ -1,6 +1,5 @@
 {
   "name": "XComponent",
-  "atomic": true,
   "attrs": [
     "id", "type", "libraryname", "onLoad", "onDestroy"
   ]
