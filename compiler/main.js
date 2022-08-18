@@ -123,7 +123,7 @@ function buildManifest(manifest, aceConfigPath) {
       manifest.pages = getPages(moduleConfigJson);
     } else {
       throw Error('\u001b[31m'+
-        'EERROR: the config.json file miss key word module || module[abilities].' +
+        'ERROR: the config.json file miss key word module || module[abilities].' +
         '\u001b[39m').message;
     }
   } catch (e) {
