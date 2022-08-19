@@ -1160,9 +1160,9 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
-       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
-         validateStateStyleSyntax(temp, log);
-       } 
+      if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
+        validateStateStyleSyntax(temp, log);
+      }
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
@@ -1333,7 +1333,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
-  } else if ((parent === 'Column' || parent === 'XComponent' || CUSTOM_BUILDER_METHOD.has(parent)) &&
+  } else if ((['Column', 'XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
     ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
     return ComponentType.function;
   } else if (!isAttributeNode(node)) {
@@ -1356,7 +1356,7 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
 
 function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
   let current: any = node.expression;
-  while(current) {
+  while (current) {
     if (ts.isEtsComponentExpression(current)) {
       return current;
     }
@@ -1366,7 +1366,7 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
 }
 
 function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
-  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);   
+  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);
   if (etsComponentExpression) {
     checkAllNode(
       etsComponentExpression,
