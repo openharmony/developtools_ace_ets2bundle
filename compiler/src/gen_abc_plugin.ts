@@ -687,7 +687,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
           mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
-          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(filterModuleInfos[i].tempFilePath)) {
+          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(moduleInfos[i].tempFilePath)) {
             fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
           }
           fs.copyFileSync(genAbcFileName(moduleInfos[i].tempFilePath), genAbcFileName(moduleInfos[i].buildFilePath));
