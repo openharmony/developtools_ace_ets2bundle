@@ -363,7 +363,17 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
   return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
     [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(
       `${CUSTOM_COMPONENT_EARLIER_CREATE_CHILD}${id}`), undefined, ts.factory.createTypeReferenceNode(
-      ts.factory.createIdentifier(name)), ts.factory.createAsExpression(ts.factory.createCallExpression(
+      ts.factory.createIdentifier(name)), 
+      ts.factory.createConditionalExpression(
+        ts.factory.createParenthesizedExpression(
+        ts.factory.createBinaryExpression(
+          ts.factory.createThis(),
+          ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID)
+        ))),ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+      ts.factory.createAsExpression(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(isInnerBuilder ?
         ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
@@ -371,8 +381,10 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
         )) : ts.factory.createThis(), ts.factory.createIdentifier(
-        `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
-    ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))))], ts.NodeFlags.Let));
+        `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),   
+    ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+  ts.factory.createIdentifier("undefined")))], ts.NodeFlags.Let));
 }
 
 function createCustomComponentIfStatement(id: string, node: ts.ExpressionStatement,
