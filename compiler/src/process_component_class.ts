@@ -294,9 +294,8 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
         Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
           Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
-      ts.factory.createNumericLiteral(node.initializer ? node.initializer.getText() :
-        COMPONENT_CONSTRUCTOR_UNDEFINED), ts.factory.createThis(),
-      ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
+      node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
+      ts.factory.createThis(), ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
     ]
   );
 }
