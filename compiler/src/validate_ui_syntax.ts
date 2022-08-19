@@ -1042,6 +1042,9 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
 }
 
 function collectSourcemapNames(sourcePath: string, changedName: string, originalName: string): void {
+  if (sourcePath == null) {
+    return;
+  }
   const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
   if (!sourcemapNamesCollection.has(cleanSourcePath)) {
     return;
