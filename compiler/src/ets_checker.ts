@@ -107,7 +107,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
-        let extendFunctionInfo: extendInfo[] = [];
+        const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
         return ts.ScriptSnapshot.fromString(content);
       }
@@ -243,7 +243,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
       let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
-      let extendFunctionInfo: extendInfo[] = [];
+      const extendFunctionInfo: extendInfo[] = [];
       content = instanceInsteadThis(content, fileName, extendFunctionInfo);
       return content;
     }
@@ -255,13 +255,13 @@ export function createWatchCompilerHost(rootFileNames: string[],
 
 function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
   checkUISyntax(content, fileName, extendFunctionInfo);
-  extendFunctionInfo.reverse().forEach((item)=>{
-    let subStr: string = content.substring(item.start,item.end);
-    let insert: string = subStr.replace(/(\s)this(\.)/g, (origin, item1, item2)=>{
+  extendFunctionInfo.reverse().forEach((item) => {
+    const subStr: string = content.substring(item.start, item.end);
+    const insert: string = subStr.replace(/(\s)this(\.)/g, (origin, item1, item2) => {
       return item1 + item.compName + 'Instance' + item2;
-    })
+    });
     content = content.slice(0, item.start) + insert + content.slice(item.end);
-  })
+  });
   return content;
 }
 
@@ -320,8 +320,8 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
   }
   if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
     if (node.body && node.body.statements && node.body.statements.length &&
-      !(isOriginalExtend(node.body))) {
-      extendFunctionInfo.push({start:node.pos, end:node.end, compName: isExtendFunction(node)})
+      !isOriginalExtend(node.body)) {
+      extendFunctionInfo.push({start: node.pos, end: node.end, compName: isExtendFunction(node)});
     }
   }
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));

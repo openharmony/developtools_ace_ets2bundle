@@ -444,11 +444,11 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
       node.parameters, node.type, isOriginalExtend(node.body) ?
-      ts.factory.updateBlock(node.body, statementArray) : bodynode);
+        ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
     if (ts.isExpressionStatement(node) && isThisNode(node)) {
-      let changeCompName: ts.ExpressionStatement =
+      const changeCompName: ts.ExpressionStatement =
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
       bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
@@ -477,7 +477,7 @@ export function isOriginalExtend(node: ts.Block): boolean {
 
 function isThisNode(node: ts.ExpressionStatement): boolean {
   let innerNode: ts.Node = node;
-  while(innerNode.expression) {
+  while (innerNode.expression) {
     innerNode = innerNode.expression;
   }
   if (innerNode.kind === ts.SyntaxKind.ThisKeyword) {
