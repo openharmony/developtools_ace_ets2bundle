@@ -827,10 +827,9 @@ function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
       ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)), undefined, []));
   const tabAttrs: ts.Statement[] = [];
-  if (TabContentBody) {
-    const TabContentBodyChild = TabContentBody.statements[0] as ts.ExpressionStatement;
+  if (TabContentBody && TabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
-    processInnerComponent(TabContentBodyChild, newTabContentChildren, log);
+    processComponentChild(TabContentBody, newTabContentChildren, log);
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(TABCONTENT_COMPONENT), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
