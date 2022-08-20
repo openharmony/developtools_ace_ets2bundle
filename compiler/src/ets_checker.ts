@@ -257,7 +257,7 @@ function instanceInsteadThis(content: string, fileName: string, extendFunctionIn
   checkUISyntax(content, fileName, extendFunctionInfo);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
-    const insert: string = subStr.replace(/(\s)this(\.)/g, (origin, item1, item2) => {
+    const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
       return item1 + item.compName + 'Instance' + item2;
     });
     content = content.slice(0, item.start) + insert + content.slice(item.end);
