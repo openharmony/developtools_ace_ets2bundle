@@ -33,7 +33,8 @@ import {
   CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION,
   CUSTOM_COMPONENT_MARK_STATIC_FUNCTION,
   COMPONENT_COMMON,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  GENERATE_ID
 } from './pre_define';
 import {
   propertyCollection,
@@ -367,24 +368,27 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
     ts.factory.createConditionalExpression(
       ts.factory.createParenthesizedExpression(
         ts.factory.createBinaryExpression(
-          ts.factory.createThis(),
+          createConditionParent(isInnerBuilder),
           ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
           ts.factory.createPropertyAccessExpression(
-            ts.factory.createThis(),
+            createConditionParent(isInnerBuilder),
             ts.factory.createIdentifier(CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID)
           ))), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
       ts.factory.createAsExpression(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(isInnerBuilder ?
-          ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
-            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-            ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-            ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-          )) : ts.factory.createThis(), ts.factory.createIdentifier(
-          `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
+        ts.factory.createPropertyAccessExpression(createConditionParent(isInnerBuilder),
+        ts.factory.createIdentifier(`${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined,
+        [isInnerBuilder ? ts.factory.createCallExpression(ts.factory.createIdentifier(GENERATE_ID),
+          undefined, []) : ts.factory.createStringLiteral(id)]),
       ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))),
       ts.factory.createToken(ts.SyntaxKind.ColonToken),
       ts.factory.createIdentifier('undefined')))], ts.NodeFlags.Let));
+}
+
+function createConditionParent(isInnerBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
+  return isInnerBuilder ? ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createThis())) : ts.factory.createThis();
 }
 
 function createCustomComponentIfStatement(id: string, node: ts.ExpressionStatement,
