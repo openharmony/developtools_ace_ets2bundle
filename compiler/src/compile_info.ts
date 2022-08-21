@@ -223,6 +223,24 @@ export class ResultStates {
       }
     });
 
+    compiler.hooks.watchRun.tap('WatchRun', (comp) => {
+      if (process.env.watchMode && projectConfig.outChangedFileList && (comp.modifiedFiles || comp.removedFiles) &&
+        !(comp.modifiedFiles && [...comp.modifiedFiles].length === 1 && [...comp.modifiedFiles][0] == projectConfig.projectPath)) {
+        const filesObj = {
+          modifiedFiles: [...comp.modifiedFiles].filter((file) => {
+            return fs.statSync(file).isFile();
+          }),
+          removedFiles: [...comp.removedFiles]
+        };
+        if (fs.existsSync(path.dirname(projectConfig.outChangedFileList))) {
+          fs.writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
+        } else {
+          fs.mkdirSync(path.dirname(projectConfig.outChangedFileList));
+          fs.writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
+        }
+      }
+    })
+
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {

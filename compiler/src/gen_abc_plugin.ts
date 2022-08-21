@@ -180,7 +180,7 @@ export class GenAbcPlugin {
 
 function clearGlobalInfo() {
   // fix bug of multi trigger
-  if (!projectConfig.isPreview) {
+  if (!process.env.watchMode) {
     intermediateJsBundle = [];
     moduleInfos = [];
   }
@@ -494,7 +494,7 @@ function invokeCluterModuleToAbc(): void {
       if (count_ === totalWorkerNumber) {
         writeModuleHashJson();
         clearGlobalInfo();
-        if (projectConfig.isPreview) {
+        if (process.env.watchMode) {
           console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
         }
       }
@@ -628,7 +628,7 @@ function invokeWorkersToGenAbc(): void {
       if (count_ === workerNumber) {
         writeHashJson();
         clearGlobalInfo();
-        if (projectConfig.isPreview) {
+        if (process.env.watchMode) {
           console.info(red, 'COMPILE RESULT:SUCCESS ', reset);
         }
       }
@@ -733,7 +733,7 @@ function writeModuleHashJson(): void {
     return;
   }
   // fix bug of multi trigger
-  if (!projectConfig.isPreview || delayCount < 1) {
+  if (!process.env.watchMode || delayCount < 1) {
     fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
   }
 }
@@ -778,7 +778,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
         if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[abcPath] = hashAbcContentData;
-          if (!projectConfig.isPreview) {
+          if (!process.env.watchMode) {
             fs.unlinkSync(input);
           }
         } else {
@@ -806,7 +806,7 @@ function writeHashJson(): void {
     const hashAbcContentData: any = toHashData(abcPath);
     hashJsonObject[input] = hashInputContentData;
     hashJsonObject[abcPath] = hashAbcContentData;
-    if (!projectConfig.isPreview) {
+    if (!process.env.watchMode) {
       fs.unlinkSync(input);
     }
   }
@@ -815,7 +815,7 @@ function writeHashJson(): void {
     return;
   }
   // fix bug of multi trigger
-  if (!projectConfig.isPreview || delayCount < 1) {
+  if (!process.env.watchMode || delayCount < 1) {
     fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
   }
 }

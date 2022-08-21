@@ -198,6 +198,9 @@ function setProjectConfig(envArgs) {
   if (envArgs.cachePath) {
     projectConfig.cachePath = envArgs.cachePath;
   }
+  if (envArgs.watchMode) {
+    projectConfig.watchMode = envArgs.watchMode;
+  }
 }
 
 function setReleaseConfig(config) {
