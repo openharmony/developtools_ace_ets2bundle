@@ -37,7 +37,11 @@ struct LongPressGestureExample {
 }`
 
 exports.expectResult =
-`class LongPressGestureExample extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "longPressGesture_" + ++__generate__Id;
+}
+class LongPressGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__count = new ObservedPropertySimple(0, this, "count");

@@ -48,7 +48,11 @@ struct MyComponent {
 }
 `
 exports.expectResult =
-`let varA = AppStorage.Link('varA');
+`let __generate__Id = 0;
+function generateId() {
+    return "appStorage_" + ++__generate__Id;
+}
+let varA = AppStorage.Link('varA');
 let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {

@@ -56,7 +56,11 @@ struct EntryComponent {
 }
 `
 exports.expectResult =
-`class Model {
+`let __generate__Id = 0;
+function generateId() {
+    return "@state_" + ++__generate__Id;
+}
+class Model {
     constructor(value) {
         this.value = value;
     }
@@ -134,7 +138,7 @@ class EntryComponent extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new MyComponent("2", this, { count: 1, increaseBy: 2 }));
         }
@@ -144,7 +148,7 @@ class EntryComponent extends View {
             });
             View.create(earlierCreatedChild_2);
         }
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new MyComponent("3", this, { title: { value: 'Hello, World 2' }, count: 7 }));
         }

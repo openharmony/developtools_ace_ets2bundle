@@ -58,6 +58,10 @@ exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FancyUseExp = void 0;
+let __generate__Id = 0;
+function generateId() {
+    return "@stylesExport_" + ++__generate__Id;
+}
 class FancyUseExp extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);

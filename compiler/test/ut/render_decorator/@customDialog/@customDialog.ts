@@ -99,7 +99,11 @@ struct CustomDialogUser {
 `
 
 exports.expectResult =
-`class DialogExample extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "@customDialog_" + ++__generate__Id;
+}
+class DialogExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__count = new SynchedPropertySimpleOneWay(params.count, this, "count");
