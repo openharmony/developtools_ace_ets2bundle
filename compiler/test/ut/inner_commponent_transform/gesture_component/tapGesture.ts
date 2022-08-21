@@ -35,7 +35,11 @@ struct TapGestureExample {
 }`
 
 exports.expectResult =
-`class TapGestureExample extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "tapGesture_" + ++__generate__Id;
+}
+class TapGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__value = new ObservedPropertySimple('', this, "value");

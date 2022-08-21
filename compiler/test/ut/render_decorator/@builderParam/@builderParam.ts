@@ -96,6 +96,10 @@ struct CustomContainerUser {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "@builderParam_" + ++__generate__Id;
+}
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
@@ -191,7 +195,7 @@ class CustomContainerUser extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new TestComponent_1.CustomContainerExport("2", this, {
                 header: this.text,
@@ -220,7 +224,7 @@ class CustomContainerUser extends View {
             View.create(earlierCreatedChild_2);
         }
         Row.create();
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new CustomContainer("3", this, {
                 header: this.text,
@@ -240,7 +244,7 @@ class CustomContainerUser extends View {
         }
         Row.pop();
         Row.create();
-        let earlierCreatedChild_4 = this.findChildById("4");
+        let earlierCreatedChild_4 = (this && this.findChildById) ? this.findChildById("4") : undefined;
         if (earlierCreatedChild_4 == undefined) {
             View.create(new CustomContainer2("4", this, {
                 header: this.text,

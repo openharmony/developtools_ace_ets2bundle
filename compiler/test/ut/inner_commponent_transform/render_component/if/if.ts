@@ -54,6 +54,10 @@ struct MyComponent {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "if_" + ++__generate__Id;
+}
 const TestComponent_1 = require("./test/pages/TestComponent");
 const TsModule_1 = require("./test/pages/TsModule");
 class MyComponent extends View {
@@ -112,7 +116,7 @@ class MyComponent extends View {
         If.create();
         if (TsModule_1.Animal.Dog) {
             If.branchId(0);
-            let earlierCreatedChild_2 = this.findChildById("2");
+            let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
             if (earlierCreatedChild_2 == undefined) {
                 View.create(new TestComponent_1.TestComponent("2", this, { content: 'if (import enum)' }));
             }

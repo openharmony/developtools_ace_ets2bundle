@@ -46,7 +46,11 @@ struct PageTransitionExample1 {
 `
 
 exports.expectResult =
-`class PageTransitionExample1 extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "pageTransition_" + ++__generate__Id;
+}
+class PageTransitionExample1 extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__scale = new ObservedPropertySimple(1, this, "scale");

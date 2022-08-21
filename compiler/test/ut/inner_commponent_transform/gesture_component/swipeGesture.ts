@@ -39,7 +39,11 @@ struct SwipeGestureExample {
 }`
 
 exports.expectResult =
-`class SwipeGestureExample extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "swipeGesture_" + ++__generate__Id;
+}
+class SwipeGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__rotateAngle = new ObservedPropertySimple(0, this, "rotateAngle");
