@@ -266,3 +266,6 @@ export const FAIL: number = 1;
 
 export const TS2ABC: string = 'ts2abc';
 export const ES2ABC: string = 'es2abc';
+
+export const GENERATE_ID = 'generateId';
+export const _GENERATE_ID = '__generate__Id';

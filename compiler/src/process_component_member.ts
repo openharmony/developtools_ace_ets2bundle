@@ -14,6 +14,7 @@
  */
 
 import ts from 'typescript';
+const path = require('path');
 
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
@@ -53,7 +54,9 @@ import {
   COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  EXTNAME_ETS,
+  _GENERATE_ID
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -76,6 +79,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
+import { transformLog } from './process_ui_syntax';
 import { globalProgram, projectConfig } from '../main';
 
 export type ControllerType = {
@@ -594,13 +598,17 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      argumentsArray.unshift(ts.factory.createStringLiteral((++componentInfo.id).toString()),
-        isInnerBuilder ? ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-        ) : ts.factory.createThis());
+      ++componentInfo.id;
+      argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
+        ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
+        ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
+        ts.factory.createStringLiteral(componentInfo.id.toString()),
+      isInnerBuilder ? ts.factory.createConditionalExpression(
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
+      ) : ts.factory.createThis());
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {
@@ -704,7 +712,7 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
         referenceType = true;
       }
       if (basicType && referenceType && log) {
-        validateVariableType(typeNode, log); 
+        validateVariableType(typeNode, log);
         return false;
       }
     }
