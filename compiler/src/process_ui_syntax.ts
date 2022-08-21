@@ -17,7 +17,10 @@ import ts from 'typescript';
 import path from 'path';
 
 import { componentCollection } from './validate_ui_syntax';
-import { processComponentClass } from './process_component_class';
+import {
+  processComponentClass,
+  createParentParameter
+} from './process_component_class';
 import processImport from './process_import';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
@@ -48,7 +51,10 @@ import {
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   ESMODULE,
   ARK,
-  COMPONENT_COMMON
+  COMPONENT_COMMON,
+  EXTNAME_ETS,
+  GENERATE_ID,
+  _GENERATE_ID
 } from './pre_define';
 import {
   componentInfo,
@@ -107,6 +113,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
+        generateId(statements, node);
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
@@ -139,9 +146,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
+          node.parameters.push(createParentParameter());
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
-            processComponentBlock(node.body, false, transformLog.errors, false, false, node.name.getText()));
+            processComponentBlock(node.body, false, transformLog.errors, false, true, node.name.getText()));
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
@@ -171,6 +179,41 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       return ts.visitEachChild(node, processResourceNode, context);
     }
   };
+}
+
+function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
+  statements.unshift(
+    ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(_GENERATE_ID),
+          undefined,
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+          ts.factory.createNumericLiteral("0")
+        )],
+        ts.NodeFlags.Let
+      )
+    ),
+    ts.factory.createFunctionDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      ts.factory.createIdentifier(GENERATE_ID),
+      undefined,
+      [],
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+      ts.factory.createBlock(
+        [ts.factory.createReturnStatement(ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral(path.basename(node.fileName, EXTNAME_ETS)+'_'),
+          ts.factory.createToken(ts.SyntaxKind.PlusToken),ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.PlusPlusToken,
+          ts.factory.createIdentifier(_GENERATE_ID)
+        )))],
+        true
+      )
+    )
+  )
 }
 
 function isCustomDialogController(node: ts.Expression) {
@@ -331,7 +374,7 @@ function getResourceDataNode(node: ts.CallExpression): ts.Node {
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
   ts.ObjectLiteralExpression {
-  const propertyArray: Array[ts.PropertyAssignment] = [
+  const propertyArray: Array<ts.PropertyAssignment> = [
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
