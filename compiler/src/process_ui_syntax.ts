@@ -447,7 +447,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
         ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
-    if (ts.isExpressionStatement(node) && isThisNode(node)) {
+    if (ts.isExpressionStatement(node) && isDollarNode(node)) {
       const changeCompName: ts.ExpressionStatement =
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
@@ -475,12 +475,12 @@ export function isOriginalExtend(node: ts.Block): boolean {
   return false;
 }
 
-function isThisNode(node: ts.ExpressionStatement): boolean {
+function isDollarNode(node: ts.ExpressionStatement): boolean {
   let innerNode: ts.Node = node;
   while (innerNode.expression) {
     innerNode = innerNode.expression;
   }
-  if (innerNode.kind === ts.SyntaxKind.ThisKeyword) {
+  if (ts.isIdentifier(innerNode) && innerNode.getText() === '$') {
     return true;
   } else {
     return false;
@@ -498,13 +498,9 @@ function processExtendBody(node: ts.Node, componentName?: string): ts.Expression
     case ts.SyntaxKind.Identifier:
       if (!componentName) {
         return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
-      }
-      break;
-    case ts.SyntaxKind.ThisKeyword:
-      if (componentName) {
+      } else {
         return ts.factory.createIdentifier(componentName);
       }
-      break;
   }
 }
 
