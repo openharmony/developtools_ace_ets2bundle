@@ -65,6 +65,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.outChangedFileList = (projectConfig.watchMode && projectConfig.watchMode.outChangedFileList) ?
+    projectConfig.watchMode.outChangedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
 }
 
