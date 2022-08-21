@@ -30,22 +30,14 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
   for (let i = 0; i < inputPaths.length; ++i) {
     const input: string = inputPaths[i].path;
-    const singleCmd: any = `${cmd} "${input}"`;
+    const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
+    const cacheAbcFilePath: string = cacheOutputPath.replace(/\_.js$/, ".abc");
+    const singleCmd: any = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${input}"`;
     logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
       logger.error(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
-      process.exit(FAIL);
-    }
-
-    const abcFile: string = input.replace(/\.js$/, '.abc');
-    if (fs.existsSync(abcFile)) {
-      const abcFileNew: string = abcFile.replace(/_.abc$/, '.abc');
-      fs.copyFileSync(abcFile, abcFileNew);
-      fs.unlinkSync(abcFile);
-    } else {
-      logger.error(red, `ETS:ERROR ${abcFile} is lost`, reset);
       process.exit(FAIL);
     }
   }
