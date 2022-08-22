@@ -17,7 +17,7 @@ const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
-const process = require('child_process');
+const pipeProcess = require('child_process');
 
 const { processComponentChild } = require('../lib/process_component_build');
 const { createWatchCompilerHost } = require('../lib/ets_checker');
@@ -145,7 +145,7 @@ function es2abc(receivedMsg) {
   const cmd = es2abcFilePath + ' --base64Input ' +
     Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
   try {
-    process.exec(cmd, (error, stdout, stderr) => {
+    pipeProcess.exec(cmd, (error, stdout, stderr) => {
       if (stdout) {
         receivedMsg.data.script = stdout;
       } else {
