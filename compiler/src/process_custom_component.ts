@@ -33,7 +33,8 @@ import {
   CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION,
   CUSTOM_COMPONENT_MARK_STATIC_FUNCTION,
   COMPONENT_COMMON,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  GENERATE_ID
 } from './pre_define';
 import {
   propertyCollection,
@@ -371,7 +372,8 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
         )) : ts.factory.createThis(), ts.factory.createIdentifier(
-        `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [ts.factory.createStringLiteral(id)]),
+        `${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined, [isInnerBuilder ? ts.factory.createCallExpression(
+        ts.factory.createIdentifier(GENERATE_ID), undefined, []) : ts.factory.createStringLiteral(id)]),
     ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))))], ts.NodeFlags.Let));
 }
 

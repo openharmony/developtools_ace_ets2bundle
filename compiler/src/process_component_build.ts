@@ -249,7 +249,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             processForEachComponent(item, newStatements, log, isInnerBuilder);
             break;
           case ComponentType.customBuilderMethod:
-            if (INNER_CUSTOM_BUILDER_METHOD.has(name)) {
+            if (CUSTOM_BUILDER_METHOD.has(name)) {
               newStatements.push(addInnerBuilderParameter(item));
             } else {
               newStatements.push(item);
