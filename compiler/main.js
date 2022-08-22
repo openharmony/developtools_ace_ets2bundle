@@ -380,6 +380,37 @@ function loadModuleInfo(projectConfig, envArgs) {
   }
 }
 
+function checkAppResourcePath(appResourcePath, config) {
+  if (appResourcePath) {
+    const appResourcePathSavePath = path.resolve(projectConfig.cachePath, 'resource_path.txt');
+    saveAppResourcePath(appResourcePath, appResourcePathSavePath);
+    readAppResource(resources, appResourcePath);
+    if (fs.existsSync(appResourcePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePath);
+    }
+    if (fs.existsSync(appResourcePathSavePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePathSavePath);
+    }
+  }
+}
+
+function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
+  if (!projectConfig.xtsMode) {
+    let isSave = false;
+    if (fs.existsSync(appResourcePathSavePath)) {
+      const saveContent = fs.readFileSync(appResourcePathSavePath);
+      if (appResourcePath !== saveContent) {
+        isSave = true;
+      }
+    } else {
+      isSave = true;
+    }
+    if (isSave) {
+      fs.writeFileSync(appResourcePathSavePath, appResourcePath);
+    }
+  }
+}
+
 const globalProgram = {
   program: null,
   watchProgram: null
@@ -396,3 +427,4 @@ exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
+exports.checkAppResourcePath = checkAppResourcePath;
