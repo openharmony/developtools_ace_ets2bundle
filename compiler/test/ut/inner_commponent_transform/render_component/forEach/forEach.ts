@@ -102,7 +102,11 @@ struct MyComponent {
 }`
 
 exports.expectResult =
-`class Month {
+`let __generate__Id = 0;
+function generateId() {
+    return "forEach_" + ++__generate__Id;
+}
+class Month {
     constructor(year, month, days) {
         this.year = year;
         this.month = month;

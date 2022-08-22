@@ -65,7 +65,11 @@ struct CompA {
 }
 `
 exports.expectResult =
-`class CompA extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "@watch_" + ++__generate__Id;
+}
+class CompA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__shopBasket = new ObservedPropertyObject([7, 12, 47, 3], this, "shopBasket");

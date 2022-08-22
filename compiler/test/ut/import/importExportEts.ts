@@ -58,6 +58,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "importExportEts_" + ++__generate__Id;
+}
 const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
@@ -116,7 +120,7 @@ class ImportTest extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new ExportStarComponent_1.AllStarComponent.ExportComponent("2", this, {
                 ExportComponent1Link1: this.__myState1,
@@ -138,7 +142,7 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_2);
         }
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new ExportStarComponent_1.AllStarComponent.default("3", this, {
                 ExportComponent4Link1: this.__myState1,

@@ -58,6 +58,10 @@ struct ImportTest {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "importExportNest_" + ++__generate__Id;
+}
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
@@ -173,16 +177,16 @@ class ImportTest extends View {
         Text.create(this.testText1);
         Text.fontSize(50);
         Text.pop();
-        ImportNestAll_1.tExtend(20);
+        ImportNestAll_1.tExtend(20, this);
         Text.create(this.testText2);
         Text.pop();
-        ImportNestAll_1.tStyles();
+        ImportNestAll_1.tStyles(this);
         Button.createWithLabel(this.testText3);
         Button.pop();
         Text.create(this.testText4);
         Text.fontSize(50);
         Text.pop();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new ImportNestAll_1.Base("2", this, {
                 testStr: this.__testState1,
@@ -194,7 +198,7 @@ class ImportTest extends View {
             earlierCreatedChild_2.updateWithValueParams({});
             View.create(earlierCreatedChild_2);
         }
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new ImportNestAll_1.DivideTest("3", this, {
                 testNum1: this.__testState4,

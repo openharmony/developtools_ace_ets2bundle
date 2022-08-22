@@ -54,7 +54,11 @@ struct FancyUse {
 }
 `
 exports.expectResult =
-`function __Text__fancy(color) {
+`let __generate__Id = 0;
+function generateId() {
+    return "@extend_" + ++__generate__Id;
+}
+function __Text__fancy(color) {
     Text.backgroundColor(color);
 }
 function __Text__superFancy(size) {

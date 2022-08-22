@@ -142,13 +142,17 @@ struct MyComponent {
 }
 `
 exports.expectResult =
-`function noParam() {
+`let __generate__Id = 0;
+function generateId() {
+    return "@builder_" + ++__generate__Id;
+}
+function noParam(parent = undefined) {
     Row.create();
     Text.create('this is a no param builder');
     Text.pop();
     Row.pop();
 }
-function specificParam(label1, label2) {
+function specificParam(label1, label2, parent = undefined) {
     Column.create();
     Text.create(label1);
     Text.pop();
@@ -223,7 +227,7 @@ class MyComponent extends View {
             console.log('Text onDragStarts, ' + extraParams);
         });
         Text.pop();
-        specificParam('test1', 'test2');
+        specificParam('test1', 'test2', this);
         Row.pop();
         Row.create();
         Row.padding(10);

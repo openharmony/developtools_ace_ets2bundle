@@ -41,7 +41,11 @@ struct PinchGestureExample {
 }`
 
 exports.expectResult =
-`class PinchGestureExample extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "pinchGesture_" + ++__generate__Id;
+}
+class PinchGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__scale = new ObservedPropertySimple(1, this, "scale");
