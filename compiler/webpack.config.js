@@ -28,7 +28,8 @@ const {
   abilityConfig,
   readWorkerFile,
   loadModuleInfo,
-  checkAppResourcePath
+  checkAppResourcePath,
+  addSDKBuildDependencies
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
