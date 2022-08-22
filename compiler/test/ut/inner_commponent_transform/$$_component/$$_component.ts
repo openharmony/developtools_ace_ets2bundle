@@ -74,7 +74,11 @@ struct HomeComponent {
 }`
 
 exports.expectResult =
-`const value5 = [true, false];
+`let __generate__Id = 0;
+function generateId() {
+    return "$$_component_" + ++__generate__Id;
+}
+const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
 class HomeComponent extends View {

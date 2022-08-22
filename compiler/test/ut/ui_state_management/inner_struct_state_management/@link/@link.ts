@@ -68,7 +68,11 @@ struct linkPage {
 }
 `
 exports.expectResult =
-`class linkComp extends View {
+`let __generate__Id = 0;
+function generateId() {
+    return "@link_" + ++__generate__Id;
+}
+class linkComp extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__buttonPlaying = new SynchedPropertySimpleTwoWay(params.buttonPlaying, this, "buttonPlaying");
@@ -184,7 +188,7 @@ class linkPage extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new linkComp("2", this, { buttonPlaying: this.__isPlaying, items: this.__itemsArr, obj: this.__peoples }));
         }
