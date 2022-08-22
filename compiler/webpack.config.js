@@ -385,6 +385,7 @@ module.exports = (env, argv) => {
 
   const appResourcePath = env.appResource || process.env.appResource;
   checkAppResourcePath(appResourcePath, config);
+  addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
