@@ -315,3 +315,4 @@ export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
 export const TABCONTENT_COMPONENT: string = 'TabContent';
 export const BASE_COMPONENT_NAME_PU: string = 'ViewPU';
+export const GLOBAL_THIS: string = 'globalThis';

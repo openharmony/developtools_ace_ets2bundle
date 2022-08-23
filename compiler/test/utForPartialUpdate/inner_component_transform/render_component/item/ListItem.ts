@@ -18,9 +18,11 @@ exports.source = `
 @Component
 struct ParentView {
   build() {
-    ListItem('true') {
-      Text('xx').width(100)
-    }.width(200).height(100)
+    List() {
+      ListItem('true') {
+        Text('xx').width(100)
+      }.width(200).height(100)
+    }
   }
 }
 `
@@ -39,6 +41,14 @@ exports.expectResult =
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            List.create();
+            if (!isInitialRender) {
+                List.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
@@ -98,6 +108,7 @@ exports.expectResult =
                 observedDeepRender();
             }
         }
+        List.pop();
     }
     rerender() {
         this.updateDirtyElements();

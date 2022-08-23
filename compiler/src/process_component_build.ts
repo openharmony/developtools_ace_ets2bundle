@@ -84,7 +84,8 @@ import {
   GRIDITEM_COMPONENT,
   GRID_COMPONENT,
   WILLUSEPROXY,
-  TABCONTENT_COMPONENT
+  TABCONTENT_COMPONENT,
+  GLOBAL_THIS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -614,9 +615,22 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
   if (etsComponent) {
     if ((etsComponent.expression as ts.Identifier).escapedText.toString() === GRIDITEM_COMPONENT) {
       if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return createIsLazyWithValue(false);
+      } else if (isLazyForEachChild(node)) {
         return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-            undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(ts.factory.createBinaryExpression(
+              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(GLOBAL_THIS),
+                ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
+                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                  ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+                      ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)),
+                      undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                      ts.factory.createTrue()))))],ts.NodeFlags.Const));
       } else {
         return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
           [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
@@ -630,13 +644,18 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
       }
     } else {
       if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return createIsLazyWithValue(false);
+      } else if (isLazyForEachChild(node)) {
         return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-            undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(ts.factory.createParenthesizedExpression(
+              ts.factory.createBinaryExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(
+                GLOBAL_THIS), ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
+                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
+                  ts.NodeFlags.Const));
       } else {
-        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-            undefined, undefined, ts.factory.createTrue())], ts.NodeFlags.Const));
+        return createIsLazyWithValue(true);
       }
     }
   }
@@ -1982,5 +2001,28 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
         return;
       }
     }
+  }
+}
+
+function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
+  let temp: any = node.parent;
+  while(!ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
+    temp = temp.parent;
+  }
+  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
+    return true;
+  }
+  return false;
+}
+
+function createIsLazyWithValue(value: boolean): ts.VariableStatement {
+  if (value) {
+    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+        undefined, undefined, ts.factory.createTrue())], ts.NodeFlags.Const));
+  } else {
+    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+        undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
   }
 }
