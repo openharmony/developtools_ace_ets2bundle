@@ -232,7 +232,10 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
         const name: string = getName(item);
         switch (getComponentType(item, log, name, parent)) {
           case ComponentType.innerComponent:
-            parent = name;
+            const etsExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
+            if (ts.isIdentifier(etsExpression.expression)) {
+              parent = etsExpression.expression.escapedText.toString();
+            }
             processInnerComponent(item, newStatements, log, parent);
             break;
           case ComponentType.customComponent:

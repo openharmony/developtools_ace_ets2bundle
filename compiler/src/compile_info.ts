@@ -449,12 +449,19 @@ function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
 function filterInput(rootFileNames: string[]): string[] {
   return rootFileNames.filter((file: string) => {
     const needUpdate: NeedUpdateFlag = { flag: false };
-    checkNeedUpdateFiles(path.resolve(file), needUpdate);
+    const alreadyCheckedFiles: Set<string> = new Set();
+    checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
     return needUpdate.flag;
   });
 }
 
-function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag): void {
+function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyCheckedFiles: Set<string>): void {
+  if (alreadyCheckedFiles.has(file)) {
+    return;
+  } else {
+    alreadyCheckedFiles.add(file);
+  }
+
   if (needUpdate.flag) {
     return;
   }
@@ -467,7 +474,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag): void {
       return;
     }
     for (let i = 0; i < value.children.length; ++i) {
-      checkNeedUpdateFiles(value.children[i], needUpdate);
+      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
     }
   } else {
     cache[file] = { mtimeMs, children: [], error: false };
