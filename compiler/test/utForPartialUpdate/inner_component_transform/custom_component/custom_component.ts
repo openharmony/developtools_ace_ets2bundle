@@ -46,7 +46,7 @@ struct Banner {
 }`
 
 exports.expectResult =
-`class MyComponent extends View {
+`class MyComponent extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.setInitiallyProvidedValue(params);
@@ -71,7 +71,7 @@ exports.expectResult =
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, {}));
+            ViewPU.create(new Banner(this, {}));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.create();
@@ -79,7 +79,7 @@ exports.expectResult =
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, {}));
+            ViewPU.create(new Banner(this, {}));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.pop();
@@ -89,14 +89,14 @@ exports.expectResult =
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, {}));
+            ViewPU.create(new Banner(this, {}));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.pop();
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, { value: "Hello" }));
+            ViewPU.create(new Banner(this, { value: "Hello" }));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.create();
@@ -104,7 +104,7 @@ exports.expectResult =
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, { value: "Hello" }));
+            ViewPU.create(new Banner(this, { value: "Hello" }));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.pop();
@@ -114,7 +114,7 @@ exports.expectResult =
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new Banner(this, { value: "Hello" }));
+            ViewPU.create(new Banner(this, { value: "Hello" }));
             ViewStackProcessor.StopGetAccessRecording();
         }
         __Common__.pop();
@@ -124,7 +124,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-class Banner extends View {
+class Banner extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.value = "Hello";

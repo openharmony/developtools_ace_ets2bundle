@@ -70,7 +70,7 @@ let Model = class Model {
 Model = __decorate([
     Observed
 ], Model);
-class CustomText extends View {
+class CustomText extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.__model = new SynchedPropertyNesedObject(params.model, this, "model");
@@ -115,7 +115,7 @@ class CustomText extends View {
         this.updateDirtyElements();
     }
 }
-class Parent extends View {
+class Parent extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.nextId = 1;
@@ -162,7 +162,7 @@ class Parent extends View {
                 {
                     const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    View.create(new CustomText(this, { model: item }));
+                    ViewPU.create(new CustomText(this, { model: item }));
                     ViewStackProcessor.StopGetAccessRecording();
                 }
             };

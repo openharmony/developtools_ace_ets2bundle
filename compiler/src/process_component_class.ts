@@ -66,7 +66,8 @@ import {
   RMELMTID,
   ABOUTTOBEDELETEDINTERNAL,
   UPDATEDIRTYELEMENTS,
-  LINKS_DECORATORS
+  LINKS_DECORATORS,
+  BASE_COMPONENT_NAME_PU
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -477,10 +478,7 @@ function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[])
     });
   }
   const result:ts.HeritageClause[] = [];
-  const heritageClause:ts.HeritageClause = ts.factory.createHeritageClause(
-    ts.SyntaxKind.ExtendsKeyword,
-    [ts.factory.createExpressionWithTypeArguments(
-      ts.factory.createIdentifier(BASE_COMPONENT_NAME), [])]);
+  const heritageClause:ts.HeritageClause = createHeritageClause();
   result.push(heritageClause);
   return ts.factory.createNodeArray(result);
 }
@@ -706,4 +704,17 @@ function validateHasController(componentName: ts.Identifier, checkController: Co
       pos: componentName.pos
     });
   }
+}
+
+function createHeritageClause(): ts.HeritageClause {
+  if (sdkVersion.compatibleSdkVersion === 9) {
+    return ts.factory.createHeritageClause(
+      ts.SyntaxKind.ExtendsKeyword,
+      [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU), [])]
+    );
+  }
+  return ts.factory.createHeritageClause(
+    ts.SyntaxKind.ExtendsKeyword,
+    [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier(BASE_COMPONENT_NAME), [])]
+  );
 }

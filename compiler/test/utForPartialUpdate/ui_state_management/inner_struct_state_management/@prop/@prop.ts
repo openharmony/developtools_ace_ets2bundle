@@ -34,7 +34,7 @@ struct ParentComponent {
 }
 `
 exports.expectResult =
-`class PropComponent extends View {
+`class PropComponent extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.__counter = new SynchedPropertySimpleOneWay(params.counter, this, "counter");
@@ -72,7 +72,7 @@ exports.expectResult =
         this.updateDirtyElements();
     }
 }
-class ParentComponent extends View {
+class ParentComponent extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.__value = new ObservedPropertySimple('first init content', this, "value");
@@ -109,7 +109,7 @@ class ParentComponent extends View {
         {
             const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            View.create(new PropComponent(this, { counter: this.__value }));
+            ViewPU.create(new PropComponent(this, { counter: this.__value }));
             ViewStackProcessor.StopGetAccessRecording();
         }
         Column.pop();

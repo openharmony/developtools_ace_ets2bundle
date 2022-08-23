@@ -40,7 +40,8 @@ import {
   STARTGETACCESSRECORDINGFOR,
   STOPGETACCESSRECORDING,
   ALLOCATENEWELMETIDFORNEXTCOMPONENT,
-  STATE_OBJECTLINK_DECORATORS
+  STATE_OBJECTLINK_DECORATORS,
+  BASE_COMPONENT_NAME_PU
 } from './pre_define';
 import {
   propertyCollection,
@@ -199,7 +200,7 @@ function createCustomComponent(newNode: ts.NewExpression): ts.Block {
       ts.factory.createExpressionStatement(
         ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier(BASE_COMPONENT_NAME),
+            ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
             ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
           ), undefined,
           [newNode]

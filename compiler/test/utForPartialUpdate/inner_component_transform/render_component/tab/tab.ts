@@ -52,7 +52,7 @@ struct TabSimple {
 }
 `
 exports.expectResult =
-`class TabSimple extends View {
+`class TabSimple extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.controller = new TabsController();

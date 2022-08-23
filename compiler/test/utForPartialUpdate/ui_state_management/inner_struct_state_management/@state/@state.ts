@@ -26,7 +26,7 @@ struct StatePage {
 }
 `
 exports.expectResult =
-`class StatePage extends View {
+`class StatePage extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.__counter = new ObservedPropertySimple(0, this, "counter");

@@ -27,7 +27,7 @@ struct ParentView {
 }
 `
 exports.expectResult =
-`class ParentView extends View {
+`class ParentView extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.setInitiallyProvidedValue(params);
