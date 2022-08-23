@@ -24,10 +24,10 @@ const {
   projectConfig,
   loadEntryObj,
   readAppResource,
-  resources,
   loadWorker,
   abilityConfig,
-  readWorkerFile
+  readWorkerFile,
+  checkAppResourcePath
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -349,12 +349,7 @@ module.exports = (env, argv) => {
   }
 
   const appResourcePath = env.appResource || process.env.appResource;
-  if (appResourcePath) {
-    readAppResource(resources, appResourcePath);
-    if (fs.existsSync(appResourcePath) && config.cache) {
-      config.cache.buildDependencies.config.push(appResourcePath)
-    }
-  }
+  checkAppResourcePath(appResourcePath, config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
