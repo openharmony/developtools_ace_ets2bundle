@@ -65,6 +65,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
 }
 
 function loadEntryObj(projectConfig) {
@@ -337,6 +338,36 @@ function hashProjectPath(projectPath) {
   return process.env.hashProjectPath;
 }
 
+function checkAppResourcePath(appResourcePath, config) {
+  if (appResourcePath) {
+    readAppResource(resources, appResourcePath);
+    if (fs.existsSync(appResourcePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePath);
+    }
+    if (!projectConfig.xtsMode) {
+      saveAppResourcePath(appResourcePath, appResourcePathSavePath);
+      if (fs.existsSync(appResourcePathSavePath) && config.cache) {
+        config.cache.buildDependencies.config.push(appResourcePathSavePath);
+      }
+    }
+  }
+}
+
+function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
+  let isSave = false;
+  if (fs.existsSync(appResourcePathSavePath)) {
+    const saveContent = fs.readFileSync(appResourcePathSavePath);
+    if (appResourcePath !== saveContent) {
+      isSave = true;
+    }
+  } else {
+    isSave = true;
+  }
+  if (isSave) {
+    fs.writeFileSync(appResourcePathSavePath, appResourcePath);
+  }
+}
+
 const globalProgram = {
   program: null,
   watchProgram: null
@@ -351,3 +382,4 @@ exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
 exports.systemModules = systemModules;
+exports.checkAppResourcePath = checkAppResourcePath;
