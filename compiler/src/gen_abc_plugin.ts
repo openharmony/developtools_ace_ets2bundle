@@ -357,7 +357,8 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
   }
-  const sufStr: string = output.replace(projectConfig.buildPath, '');
+  let buildParentPath: string = path.join(projectConfig.buildPath, '..');
+  let sufStr: string = output.replace(buildParentPath, '');
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
     cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, sufStr);
