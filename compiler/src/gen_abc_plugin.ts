@@ -687,8 +687,10 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
         if (jsonObject[cacheOutputPath] === hashInputContentData && jsonObject[cacheAbcFilePath] === hashAbcContentData) {
           updateJsonObject[cacheOutputPath] = hashInputContentData;
           updateJsonObject[cacheAbcFilePath] = hashAbcContentData;
-          mkdirsSync(path.dirname(abcPath));
-          fs.copyFileSync(cacheAbcFilePath, abcPath);
+          if (!fs.existsSync(abcPath)) {
+            mkdirsSync(path.dirname(abcPath));
+            fs.copyFileSync(cacheAbcFilePath, abcPath);
+          }
         } else {
           fileterIntermediateJsBundle.push(inputPaths[i]);
         }
@@ -724,8 +726,13 @@ function writeHashJson(): void {
       process.exitCode = FAIL;
       break;
     }
-    mkdirsSync(path.dirname(abcFile));
-    fs.copyFileSync(cacheAbcFilePath, abcFile);
+    if (!fs.existsSync(abcFile)) {
+      mkdirsSync(path.dirname(abcFile));
+      fs.copyFileSync(cacheAbcFilePath, abcFile);
+    }
+    if (fs.existsSync(intermediateJsBundle[i].path)) {
+      fs.unlinkSync(intermediateJsBundle[i].path);
+    }
   }
   const hashFilePath: string = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
