@@ -120,7 +120,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
-        generateId(statements, node);
+        if (sdkVersion.compatibleSdkVersion === 8) {
+          generateId(statements, node);
+        }
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
