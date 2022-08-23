@@ -418,12 +418,12 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   } else if (sdkVersion.compatibleSdkVersion === 9 && TABCONTENT_COMPONENT.includes(nameResult.name)) {
     processTabContent(node, innerCompStatements, log);
   } else {
-    processNormalComponent(node, nameResult, innerCompStatements, log);
+    processNormalComponent(node, nameResult, innerCompStatements, log, parent);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
-  innerCompStatements: ts.Statement[], log: LogInfo[]): void {
+  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
