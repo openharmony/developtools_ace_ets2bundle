@@ -345,6 +345,7 @@ function checkAppResourcePath(appResourcePath, config) {
       config.cache.buildDependencies.config.push(appResourcePath);
     }
     if (!projectConfig.xtsMode) {
+      const appResourcePathSavePath = path.resolve(projectConfig.cachePath, 'resource_path.txt');
       saveAppResourcePath(appResourcePath, appResourcePathSavePath);
       if (fs.existsSync(appResourcePathSavePath) && config.cache) {
         config.cache.buildDependencies.config.push(appResourcePathSavePath);
