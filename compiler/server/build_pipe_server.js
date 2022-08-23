@@ -40,7 +40,7 @@ const pluginCommandChannelMessageHandlers = {
   'compileComponent': handlePluginCompileComponent,
   'default': () => {}
 };
-const es2abcFilePath = path.join(__dirname, '../bin/ark/build-win/bin/es2abc');
+let es2abcFilePath = path.join(__dirname, '../bin/ark/build-win/bin/es2abc');
 
 let previewCacheFilePath;
 const messages = [];
@@ -137,6 +137,11 @@ function handlePluginCompileComponent(jsonData) {
   receivedMsg.data.log = log;
   if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
     es2abc(receivedMsg);
+  } else {
+    es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
+    if (fs.existsSync(es2abcFilePath)) {
+      es2abc(receivedMsg);
+    }
   }
 }
 
