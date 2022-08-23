@@ -19,13 +19,7 @@ import cluster from 'cluster';
 import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
-import {
-  toUnixPath,
-  toHashData,
-  compareNodeVersion,
-  removeDir
-} from './utils';
-import { NODE_MODULES } from './pre_define';
+import { toUnixPath, toHashData } from './utils';
 
 const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
@@ -38,8 +32,7 @@ let nodeJs: string;
 
 interface File {
   path: string,
-  size: number,
-  cacheOutputPath: string
+  size: number
 }
 const intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
@@ -72,14 +65,7 @@ export class GenAbcPlugin {
       }
     }
 
-    if (!checkNodeModules()) {
-      return;
-    }
-
-    removeDir(output);
-
     compiler.hooks.emit.tap('GenAbcPlugin', (compilation) => {
-      buildPathInfo = output;
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
         if (output && path.extname(key) === '.js') {
@@ -98,27 +84,14 @@ export class GenAbcPlugin {
 }
 
 function writeFileSync(inputString: string, output: string, jsBundleFile: string): void {
-  let parent: string = path.join(output, '..');
+  const parent: string = path.join(output, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
   }
-
-  let buildParentPath: string = path.join(buildPathInfo, '..');
-  let sufStr: string = output.replace(buildParentPath, '');
-  let cacheOutputPath: string = "";
-  if (process.env.cachePath) {
-    cacheOutputPath = path.join(process.env.cachePath, "temporary", sufStr);
-  } else {
-    cacheOutputPath = output;
-  }
-  parent = path.join(cacheOutputPath, '..');
-  if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-    mkDir(parent);
-  }
-  fs.writeFileSync(cacheOutputPath, inputString);
-  if (fs.existsSync(cacheOutputPath)) {
-    const fileSize: any = fs.statSync(cacheOutputPath).size;
-    intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
+  fs.writeFileSync(output, inputString);
+  if (fs.existsSync(output)) {
+    const fileSize = fs.statSync(output).size;
+    intermediateJsBundle.push({path: output, size: fileSize});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
   }
@@ -187,7 +160,8 @@ function invokeWorkersToGenAbc() {
   const cmdPrefix: string = `${nodeJs} --expose-gc "${js2abc}" ${param} `;
 
   const clusterNewApiVersion = 16;
-  const useNewApi = compareNodeVersion(clusterNewApiVersion);
+  const currentNodeVersion = parseInt(process.version.split('.')[0]);
+  const useNewApi = currentNodeVersion >= clusterNewApiVersion;
 
   if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
     if (useNewApi) {
@@ -236,23 +210,17 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
     for (let i = 0; i < inputPaths.length; ++i) {
       const input = inputPaths[i].path;
       const abcPath = input.replace(/_.js$/, '.abc');
-      const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
-      const cacheAbcFilePath: string = cacheOutputPath.replace(/\_.js$/, '.abc');
-      if (!fs.existsSync(cacheOutputPath)) {
-        logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+      if (!fs.existsSync(input)) {
+        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
         continue;
       }
-      if (fs.existsSync(cacheAbcFilePath)) {
-        const hashInputContentData: any = toHashData(cacheOutputPath);
-        const hashAbcContentData: any = toHashData(cacheAbcFilePath);
-        if (jsonObject[cacheOutputPath] === hashInputContentData && jsonObject[cacheAbcFilePath] === hashAbcContentData) {
-          updateJsonObject[cacheOutputPath] = hashInputContentData;
-          updateJsonObject[cacheAbcFilePath] = hashAbcContentData;
-          let parent: string = path.join(abcPath, '..');
-          if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-            mkDir(parent);
-          }
-          fs.copyFileSync(cacheAbcFilePath, abcPath);
+      if (fs.existsSync(abcPath)) {
+        const hashInputContentData = toHashData(input);
+        const hashAbcContentData = toHashData(abcPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+          updateJsonObject[input] = hashInputContentData;
+          updateJsonObject[abcPath] = hashAbcContentData;
+          fs.unlinkSync(input);
         } else {
           fileterIntermediateJsBundle.push(inputPaths[i]);
         }
@@ -269,29 +237,15 @@ function writeHashJson() {
   for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
     const input = fileterIntermediateJsBundle[i].path;
     const abcPath = input.replace(/_.js$/, '.abc');
-    const cacheOutputPath: string = fileterIntermediateJsBundle[i].cacheOutputPath;
-    const cacheAbcFilePath: string = cacheOutputPath.replace(/\_.js$/, '.abc');
-    if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
       continue;
     }
-    const hashInputContentData: any = toHashData(cacheOutputPath);
-    const hashAbcContentData: any = toHashData(cacheAbcFilePath);
-    hashJsonObject[cacheOutputPath] = hashInputContentData;
-    hashJsonObject[cacheAbcFilePath] = hashAbcContentData;
-  }
-  for (let i = 0; i < intermediateJsBundle.length; ++i) {
-    const abcFile: string = intermediateJsBundle[i].path.replace(/\_.js$/, ".abc");
-    const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\_.js$/, ".abc");
-    if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
-      break;
-    }
-    let parent: string = path.join(abcFile, '..');
-    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-      mkDir(parent);
-    }
-    fs.copyFileSync(cacheAbcFilePath, abcFile);
+    const hashInputContentData = toHashData(input);
+    const hashAbcContentData = toHashData(abcPath);
+    hashJsonObject[input] = hashInputContentData;
+    hashJsonObject[abcPath] = hashAbcContentData;
+    fs.unlinkSync(input);
   }
   const hashFilePath = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
@@ -320,21 +274,4 @@ function genHashJsonPath(buildPath: string) {
     logger.debug(red, `ETS:ERROR not cache exist`, reset);
     return '';
   }
-}
-
-function checkNodeModules() {
-  let arkEntryPath: string = path.join(arkDir, 'build');
-  if (isWin) {
-    arkEntryPath = path.join(arkDir, 'build-win');
-  } else if (isMac) {
-    arkEntryPath = path.join(arkDir, 'build-mac');
-  }
-  let nodeModulesPath: string = path.join(arkEntryPath, NODE_MODULES);
-  if (!(fs.existsSync(nodeModulesPath) && fs.statSync(nodeModulesPath).isDirectory())) {
-    logger.error(red, `ERROR: node_modules for ark compiler not found.
-      Please make sure switch to non-root user before runing "npm install" for safity requirements and try re-run "npm install" under ${arkEntryPath}`, reset);
-    return false;
-  }
-
-  return true;
 }
