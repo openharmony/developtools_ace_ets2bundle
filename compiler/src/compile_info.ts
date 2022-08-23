@@ -357,7 +357,7 @@ export class ResultStates {
             .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
             .replace(/^ERROR/, 'ETS:ERROR');
           this.printErrorMessage(errorMessage, true, errors[index]);
-        } else {
+        } else if (!/TS[0-9]+:/.test(errors[index].message.toString())) {
           let errorMessage: string = `${errors[index].message.replace(/\[tsl\]\s*/, '')
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
