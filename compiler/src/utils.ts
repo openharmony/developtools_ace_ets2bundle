@@ -234,21 +234,3 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
-export function compareNodeVersion(nodeVersion: number = 16): boolean {
-  const currentNodeVersion: number = parseInt(process.versions.node.split('.')[0]);
-  if (currentNodeVersion >= nodeVersion) {
-    return true;
-  }
-
-  return false;
-}
-
-export function removeDir(dirName: string): void {
-  if (fs.existsSync(dirName)) {
-    if (compareNodeVersion()) {
-      fs.rmSync(dirName, { recursive: true});
-    } else {
-      fs.rmdirSync(dirName, { recursive: true});
-    }
-  }
-}
