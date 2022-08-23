@@ -172,7 +172,7 @@ class MyDataSource extends BasicDataSource {
         this.notifyDataAdd(this.dataArray.length - 1);
     }
 }
-class Test extends View {
+class Test extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.data = new MyDataSource();

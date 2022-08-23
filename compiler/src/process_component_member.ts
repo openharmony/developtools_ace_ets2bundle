@@ -60,7 +60,8 @@ import {
   RMELMTID,
   PURGEDEPENDENCYONELMTID,
   SETPROPERTYUNCHANGED,
-  BASICDECORATORS
+  BASICDECORATORS,
+  BASE_COMPONENT_NAME_PU
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -649,6 +650,10 @@ function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaratio
 }
 
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
+  if (sdkVersion.compatibleSdkVersion === 9) {
+    return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
+  }
   return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME),
     ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
 }

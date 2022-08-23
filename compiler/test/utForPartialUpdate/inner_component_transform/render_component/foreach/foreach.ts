@@ -31,7 +31,7 @@ struct ParentView {
 }
 `
 exports.expectResult =
-`class ParentView extends View {
+`class ParentView extends ViewPU {
     constructor(parent, params) {
         super(parent);
         this.__arr = new ObservedPropertyObject(['1', '2', '3'], this, "arr");
