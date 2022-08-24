@@ -81,7 +81,7 @@ exports.expectResult =
                 Text.pop();
             };
             const forEachItemIdFunc = item => item.toString();
-            this.forEachUpdateFunction(elmtId, this.arr, forEachItemIdFunc, forEachItemGenFunction);
+            this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, forEachItemIdFunc);
             if (!isInitialRender) {
                 ForEach.pop();
             }

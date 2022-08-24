@@ -167,7 +167,7 @@ class Parent extends ViewPU {
                 }
             };
             const forEachItemIdFunc = item => item.text;
-            this.forEachUpdateFunction(elmtId, this.models, forEachItemIdFunc, forEachItemGenFunction);
+            this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, forEachItemIdFunc);
             if (!isInitialRender) {
                 ForEach.pop();
             }
