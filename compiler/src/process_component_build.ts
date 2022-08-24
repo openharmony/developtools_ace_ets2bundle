@@ -1035,10 +1035,10 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Identifi
     ts.factory.createIdentifier(ELMTID),
     ts.factory.createIdentifier(argumentsArray[0] && argumentsArray[0].getText())
   );
+  addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMGENFUNCTION));
   if (argumentsArray[2]) {
     addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
   }
-  addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMGENFUNCTION));
   return addForEachIdFuncParameterArr;
 }
 
