@@ -37,7 +37,7 @@ exports.expectResult =
 `class LinkComponent extends ViewPU {
     constructor(parent, params) {
         super(parent);
-        this.__counter = new SynchedPropertySimpleTwoWay(params.counter, this, "counter");
+        this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
@@ -75,7 +75,7 @@ exports.expectResult =
 class ParentComponent extends ViewPU {
     constructor(parent, params) {
         super(parent);
-        this.__value = new ObservedPropertySimple('first init content', this, "value");
+        this.__value = new ObservedPropertySimplePU('first init content', this, "value");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

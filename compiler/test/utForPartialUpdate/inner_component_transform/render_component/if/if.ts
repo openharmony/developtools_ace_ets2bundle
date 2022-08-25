@@ -40,9 +40,9 @@ exports.expectResult =
 `class IFView extends ViewPU {
     constructor(parent, params) {
         super(parent);
-        this.__toggle1 = new ObservedPropertySimple(false, this, "toggle1");
-        this.__toggle2 = new ObservedPropertySimple(false, this, "toggle2");
-        this.__toggle3 = new ObservedPropertySimple(false, this, "toggle3");
+        this.__toggle1 = new ObservedPropertySimplePU(false, this, "toggle1");
+        this.__toggle2 = new ObservedPropertySimplePU(false, this, "toggle2");
+        this.__toggle3 = new ObservedPropertySimplePU(false, this, "toggle3");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

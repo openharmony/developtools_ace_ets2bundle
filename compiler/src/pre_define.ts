@@ -316,3 +316,11 @@ export const WILLUSEPROXY: string = 'willUseProxy';
 export const TABCONTENT_COMPONENT: string = 'TabContent';
 export const BASE_COMPONENT_NAME_PU: string = 'ViewPU';
 export const GLOBAL_THIS: string = 'globalThis';
+export const OBSERVED_PROPERTY_SIMPLE_PU: string = 'ObservedPropertySimplePU';
+export const OBSERVED_PROPERTY_OBJECT_PU: string = 'ObservedPropertyObjectPU';
+export const SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU: string = 'SynchedPropertySimpleOneWayPU';
+export const SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU: string = 'SynchedPropertySimpleTwoWayPU';
+export const SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU: string = 'SynchedPropertyObjectTwoWayPU';
+export const SYNCHED_PROPERTY_NESED_OBJECT_PU: string = 'SynchedPropertyNesedObjectPU';
+export const OBSERVED_PROPERTY_ABSTRACT_PU:string = 'ObservedPropertyAbstractPU';
+

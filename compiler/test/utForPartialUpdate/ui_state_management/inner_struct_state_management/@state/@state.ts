@@ -29,7 +29,7 @@ exports.expectResult =
 `class StatePage extends ViewPU {
     constructor(parent, params) {
         super(parent);
-        this.__counter = new ObservedPropertySimple(0, this, "counter");
+        this.__counter = new ObservedPropertySimplePU(0, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
