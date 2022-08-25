@@ -28,7 +28,8 @@ const {
   abilityConfig,
   readWorkerFile,
   loadModuleInfo,
-  checkAppResourcePath
+  checkAppResourcePath,
+  addSDKBuildDependencies
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -384,6 +385,7 @@ module.exports = (env, argv) => {
 
   const appResourcePath = env.appResource || process.env.appResource;
   checkAppResourcePath(appResourcePath, config);
+  addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
