@@ -23,7 +23,7 @@ const addTSInterfaceSet = ['ForEach', 'LazyForEach', 'TapGesture', 'LongPressGes
 const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'Button', 'Calendar', 'Canvas',
   'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
   'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
-  'ImageAnimator', 'Line', 'List', 'ListItem', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
+  'ImageAnimator', 'Line', 'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
   'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
   'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
