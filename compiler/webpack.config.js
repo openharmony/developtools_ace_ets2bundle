@@ -99,6 +99,16 @@ function initConfig(config) {
         {
           test: /\.js$/,
           use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                plugins: [
+                  '@babel/plugin-transform-modules-commonjs',
+                  '@babel/plugin-proposal-class-properties'
+                ],
+                compact: false
+              },
+            },
             { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
             { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
           ]
