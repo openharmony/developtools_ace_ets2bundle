@@ -372,6 +372,8 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize: any = fs.statSync(cacheOutputPath).size;
+    output = toUnixPath(output);
+    cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
