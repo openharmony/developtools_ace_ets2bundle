@@ -66,7 +66,7 @@ function initProjectConfig(projectConfig) {
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
-  projectConfig.localProertiesPath = projectConfig.localProertiesPath || process.env.localProertiesPath
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
 }
 
@@ -414,9 +414,9 @@ function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
 }
 
 function addSDKBuildDependencies(config) {
-  if (projectConfig.localProertiesPath &&
-    fs.existsSync(projectConfig.localProertiesPath) && config.cache) {
-    config.cache.buildDependencies.config.push(projectConfig.localProertiesPath)
+  if (projectConfig.localPropertiesPath &&
+    fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
   }
   if (projectConfig.projectProfilePath &&
     fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
