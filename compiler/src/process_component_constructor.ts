@@ -24,7 +24,8 @@ import {
   COMPONENT_WATCH_FUNCTION,
   BASE_COMPONENT_NAME,
   INTERFACE_NAME_SUFFIX,
-  COMPONENT_CONSTRUCTOR_LOCALSTORAGE
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
+  BASE_COMPONENT_NAME_PU
 } from './pre_define';
 
 import {
@@ -127,7 +128,8 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
       case COMPONENT_CONSTRUCTOR_PARENT:
         parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
           item.dotDotDotToken, item.name, item.questionToken,
-          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(BASE_COMPONENT_NAME), undefined),
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
+            sdkVersion.compatibleSdkVersion === 8 ? BASE_COMPONENT_NAME : BASE_COMPONENT_NAME_PU), undefined),
           item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_PARAMS:

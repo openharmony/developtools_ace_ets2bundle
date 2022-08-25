@@ -61,7 +61,13 @@ import {
   PURGEDEPENDENCYONELMTID,
   SETPROPERTYUNCHANGED,
   BASICDECORATORS,
-  BASE_COMPONENT_NAME_PU
+  BASE_COMPONENT_NAME_PU,
+  OBSERVED_PROPERTY_SIMPLE_PU,
+  OBSERVED_PROPERTY_OBJECT_PU,
+  SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
+  SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU,
+  SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+  SYNCHED_PROPERTY_NESED_OBJECT_PU
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -444,15 +450,19 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
-      updateState = updateObservedProperty(node, name, type, program);
+      updateState = sdkVersion.compatibleSdkVersion === 8 ?
+          updateObservedProperty(node, name, type, program) : updateObservedPropertyPU(node, name, type, program);
       break;
     case COMPONENT_LINK_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_LINK_DECORATOR, hasPreview, log);
-      updateState = updateSynchedPropertyTwoWay(name, type, program);
+      updateState = sdkVersion.compatibleSdkVersion === 8 ?
+        updateSynchedPropertyTwoWay(name, type, program) : updateSynchedPropertyTwoWayPU(name, type, program);
       break;
     case COMPONENT_PROP_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_PROP_DECORATOR, hasPreview, log);
-      updateState = updateSynchedPropertyOneWay(name, type, decorator, log, program);
+      updateState = sdkVersion.compatibleSdkVersion === 8
+        ? updateSynchedPropertyOneWay(name, type, decorator, log, program)
+        : updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
@@ -461,7 +471,9 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateStoragePropAndLinkProperty(node, name, setFuncName, log);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      updateState = updateSynchedPropertyNesedObject(name, type, decorator, log);
+      updateState = sdkVersion.compatibleSdkVersion === 8
+        ? updateSynchedPropertyNesedObject(name, type, decorator, log)
+        : updateSynchedPropertyNesedObjectPU(name, type, decorator, log);
       break;
     case COMPONENT_CONSUME_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
@@ -988,3 +1000,42 @@ function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
   });
 }
 
+function updateObservedPropertyPU(item: ts.PropertyDeclaration, name: ts.Identifier,
+  type: ts.TypeNode, program: ts.Program): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    createPropertyAccessExpressionWithThis(`__${name.getText()}`),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createNewExpression(
+      ts.factory.createIdentifier(isSimpleType(type, program) ? OBSERVED_PROPERTY_SIMPLE_PU :
+        OBSERVED_PROPERTY_OBJECT_PU), undefined, [item.initializer, ts.factory.createThis(),
+        ts.factory.createStringLiteral(name.escapedText.toString())])));
+}
+
+function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
+  program: ts.Program): ts.ExpressionStatement {
+  const name: string = nameIdentifier.escapedText.toString();
+  const functionName: string = isSimpleType(type, program) ?
+    SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU : SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU;
+  return createInitExpressionStatementForDecorator(name, functionName,
+    createPropertyAccessExpressionWithParams(name));
+}
+
+function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
+  decoractor: string, log: LogInfo[], program: ts.Program): ts.ExpressionStatement {
+  const name: string = nameIdentifier.escapedText.toString();
+  if (isSimpleType(type, program)) {
+    return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+      createPropertyAccessExpressionWithParams(name));
+  } else {
+    validateNonSimpleType(nameIdentifier, decoractor, log);
+  }
+}
+
+function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
+  type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
+  if (isObservedClassType(type)) {
+    return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
+      createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
+  } else {
+    validateNonObservedClassType(nameIdentifier, decoractor, log);
+  }
+}

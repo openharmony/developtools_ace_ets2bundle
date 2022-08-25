@@ -34,7 +34,7 @@ exports.expectResult =
 `class ParentView extends ViewPU {
     constructor(parent, params) {
         super(parent);
-        this.__arr = new ObservedPropertyObject(['1', '2', '3'], this, "arr");
+        this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

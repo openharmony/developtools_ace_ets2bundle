@@ -67,7 +67,13 @@ import {
   ABOUTTOBEDELETEDINTERNAL,
   UPDATEDIRTYELEMENTS,
   LINKS_DECORATORS,
-  BASE_COMPONENT_NAME_PU
+  BASE_COMPONENT_NAME_PU,
+  OBSERVED_PROPERTY_SIMPLE_PU,
+  OBSERVED_PROPERTY_OBJECT_PU,
+  SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
+  SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+  SYNCHED_PROPERTY_NESED_OBJECT_PU,
+  OBSERVED_PROPERTY_ABSTRACT_PU
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -264,38 +270,16 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       let newType: ts.TypeNode;
       decoratorName = propertyItem.decorators[i].getText().replace(/\(.*\)$/, '').trim();
       let isLocalStorage: boolean = false;
-      switch (decoratorName) {
-        case COMPONENT_STATE_DECORATOR:
-        case COMPONENT_PROVIDE_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
-            OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type ||
-              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          break;
-        case COMPONENT_LINK_DECORATOR:
-        case COMPONENT_CONSUME_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
-            SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
-              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          break;
-        case COMPONENT_PROP_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
-            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          break;
-        case COMPONENT_OBJECT_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(SYNCHED_PROPERTY_NESED_OBJECT, [type ||
-            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          break;
-        case COMPONENT_STORAGE_PROP_DECORATOR:
-        case COMPONENT_STORAGE_LINK_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
-            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          break;
-        case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
-        case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [type ||
-            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
-          isLocalStorage = true;
-          break;
+      if (sdkVersion.compatibleSdkVersion === 8) {
+        newType = createTypeReference(decoratorName, type, log, program);
+      } else {
+        newType = createTypeReferencePU(decoratorName, type, log, program);
+      }
+      if (
+        decoratorName === COMPONENT_LOCAL_STORAGE_LINK_DECORATOR ||
+        decoratorName === COMPONENT_LOCAL_STORAGE_PROP_DECORATOR
+      ) {
+        isLocalStorage = true;
       }
       updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false,
         isLocalStorage, parentComponentName);
@@ -717,4 +701,104 @@ function createHeritageClause(): ts.HeritageClause {
     ts.SyntaxKind.ExtendsKeyword,
     [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier(BASE_COMPONENT_NAME), [])]
   );
+}
+
+function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogInfo[],
+  program: ts.Program): ts.TypeNode {
+  let newType: ts.TypeNode;
+  switch (decoratorName) {
+    case COMPONENT_STATE_DECORATOR:
+    case COMPONENT_PROVIDE_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        isSimpleType(type, program, log)
+          ? OBSERVED_PROPERTY_SIMPLE
+          : OBSERVED_PROPERTY_OBJECT,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_LINK_DECORATOR:
+    case COMPONENT_CONSUME_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        isSimpleType(type, program, log)
+          ? SYNCHED_PROPERTY_SIMPLE_TWO_WAY
+          : SYNCHED_PROPERTY_SIMPLE_ONE_WAY,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_PROP_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        SYNCHED_PROPERTY_SIMPLE_ONE_WAY,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_OBJECT_LINK_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        SYNCHED_PROPERTY_NESED_OBJECT,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_STORAGE_PROP_DECORATOR:
+    case COMPONENT_STORAGE_LINK_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+      ]);
+      break;
+    case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
+    case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+      ]);
+      break;
+  }
+  return newType;
+}
+
+function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: LogInfo[],
+  program: ts.Program): ts.TypeNode {
+  let newType: ts.TypeNode;
+  switch (decoratorName) {
+    case COMPONENT_STATE_DECORATOR:
+    case COMPONENT_PROVIDE_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        isSimpleType(type, program, log)
+          ? OBSERVED_PROPERTY_SIMPLE_PU
+          : OBSERVED_PROPERTY_OBJECT_PU,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_LINK_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        isSimpleType(type, program, log)
+          ? SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU
+          : SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_PROP_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_OBJECT_LINK_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(
+        SYNCHED_PROPERTY_NESED_OBJECT_PU,
+        [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
+      );
+      break;
+    case COMPONENT_CONSUME_DECORATOR:
+    case COMPONENT_STORAGE_PROP_DECORATOR:
+    case COMPONENT_STORAGE_LINK_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT_PU, [
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+      ]);
+      break;
+    case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
+    case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+      newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT_PU, [
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+      ]);
+      break;
+  }
+  return newType;
 }
