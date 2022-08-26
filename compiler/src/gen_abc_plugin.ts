@@ -142,6 +142,11 @@ export class GenAbcPlugin {
       return;
     }
 
+    removeDir(output);
+    if (projectConfig.compileMode === ESMODULE) {
+      removeDir(projectConfig.nodeModulesPath);
+    }
+
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
       if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
         return;
@@ -167,7 +172,6 @@ export class GenAbcPlugin {
       if (projectConfig.compileMode === ESMODULE) {
         return;
       }
-      removeDir(output);
       Object.keys(compilation.assets).forEach(key => {
         // choose *.js
         if (output && path.extname(key) === EXTNAME_JS) {
@@ -361,8 +365,6 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   let sufStr: string = output.replace(buildParentPath, '');
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
-    output = toUnixPath(output);
-    cacheOutputPath = toUnixPath(cacheOutputPath);
     cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, sufStr);
   } else {
     cacheOutputPath = output;
@@ -374,6 +376,8 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize: any = fs.statSync(cacheOutputPath).size;
+    output = toUnixPath(output);
+    cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
@@ -427,8 +431,6 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): an
 }
 
 function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
-  removeDir(buildPathInfo);
-  removeDir(projectConfig.nodeModulesPath);
   invokeCluterModuleToAbc();
 }
 
@@ -843,7 +845,7 @@ function writeHashJson(): void {
       mkdirsSync(path.dirname(abcFile));
       fs.copyFileSync(cacheAbcFilePath, abcFile);
     }
-    if (fs.existsSync(intermediateJsBundle[i].path)) {
+    if (process.env.cachePath === undefined && fs.existsSync(intermediateJsBundle[i].path)) {
       fs.unlinkSync(intermediateJsBundle[i].path);
     }
   }
