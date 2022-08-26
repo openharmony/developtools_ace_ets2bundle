@@ -199,67 +199,69 @@ class Test extends ViewPU {
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        const __lazyForEachItemGenFunction = _item => {
-            const row = _item;
-            {
-                const isLazyCreate = (globalThis.__lazyForEachItemGenFunction !== undefined) && true && (Grid.willUseProxy() === true);
-                const itemCreation = (elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    GridItem.create(deepRenderFunction, isLazyCreate);
-                    if (!isInitialRender) {
-                        GridItem.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                };
-                const observedShallowRender = () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
+        {
+            const __lazyForEachItemGenFunction = _item => {
+                const row = _item;
+                {
+                    const isLazyCreate = (globalThis.__lazyForEachItemGenFunction !== undefined) && true && (Grid.willUseProxy() === true);
+                    const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                         GridItem.create(deepRenderFunction, isLazyCreate);
                         if (!isInitialRender) {
                             GridItem.pop();
                         }
                         ViewStackProcessor.StopGetAccessRecording();
-                    });
-                    GridItem.pop();
-                };
-                const observedDeepRender = () => {
-                    this.observeComponentCreation(itemCreation);
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        Text.create(row);
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
-                    Text.pop();
-                    GridItem.pop();
-                };
-                const deepRenderFunction = (elmtId, isInitialRender) => {
-                    itemCreation(elmtId, isInitialRender);
-                    this.updateFuncByElmtId.set(elmtId, itemCreation);
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        Text.create(row);
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
-                    Text.pop();
-                    GridItem.pop();
-                };
-                if (isLazyCreate) {
-                    observedShallowRender();
+                    };
+                    const observedShallowRender = () => {
+                        this.observeComponentCreation((elmtId, isInitialRender) => {
+                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            GridItem.create(deepRenderFunction, isLazyCreate);
+                            if (!isInitialRender) {
+                                GridItem.pop();
+                            }
+                            ViewStackProcessor.StopGetAccessRecording();
+                        });
+                        GridItem.pop();
+                    };
+                    const observedDeepRender = () => {
+                        this.observeComponentCreation(itemCreation);
+                        this.observeComponentCreation((elmtId, isInitialRender) => {
+                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            Text.create(row);
+                            if (!isInitialRender) {
+                                Text.pop();
+                            }
+                            ViewStackProcessor.StopGetAccessRecording();
+                        });
+                        Text.pop();
+                        GridItem.pop();
+                    };
+                    const deepRenderFunction = (elmtId, isInitialRender) => {
+                        itemCreation(elmtId, isInitialRender);
+                        this.updateFuncByElmtId.set(elmtId, itemCreation);
+                        this.observeComponentCreation((elmtId, isInitialRender) => {
+                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            Text.create(row);
+                            if (!isInitialRender) {
+                                Text.pop();
+                            }
+                            ViewStackProcessor.StopGetAccessRecording();
+                        });
+                        Text.pop();
+                        GridItem.pop();
+                    };
+                    if (isLazyCreate) {
+                        observedShallowRender();
+                    }
+                    else {
+                        observedDeepRender();
+                    }
                 }
-                else {
-                    observedDeepRender();
-                }
-            }
-        };
-        const __lazyForEachItemIdFunc = row => row;
-        LazyForEach.create("1", this, this.data, __lazyForEachItemGenFunction, __lazyForEachItemIdFunc);
-        LazyForEach.pop();
+            };
+            const __lazyForEachItemIdFunc = row => row;
+            LazyForEach.create("1", this, this.data, __lazyForEachItemGenFunction, __lazyForEachItemIdFunc);
+            LazyForEach.pop();
+        }
         Grid.pop();
     }
     rerender() {
