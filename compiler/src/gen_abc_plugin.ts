@@ -142,7 +142,6 @@ export class GenAbcPlugin {
       return;
     }
 
-    removeDir(output);
     if (projectConfig.compileMode === ESMODULE) {
       removeDir(projectConfig.nodeModulesPath);
     }
