@@ -361,6 +361,8 @@ function writeFileSync(inputString: string, output: string, jsBundleFile: string
   let sufStr: string = output.replace(buildParentPath, '');
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
+    output = toUnixPath(output);
+    cacheOutputPath = toUnixPath(cacheOutputPath);
     cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, sufStr);
   } else {
     cacheOutputPath = output;
