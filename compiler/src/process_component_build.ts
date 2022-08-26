@@ -935,9 +935,10 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
       newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
     } else {
       if (argumentsArray[2]) {
-        newStatements.push(itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement, popNode);
+        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement,
+          popNode], true));
       } else {
-        newStatements.push(itemGenFunctionStatement, lazyForEachStatement, popNode);
+        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, lazyForEachStatement, popNode], true));
       }
     }
   }
