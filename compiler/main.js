@@ -65,6 +65,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
 }
 
 function loadEntryObj(projectConfig) {
@@ -377,6 +379,17 @@ function loadModuleInfo(projectConfig, envArgs) {
   }
 }
 
+function addSDKBuildDependencies(config) {
+  if (projectConfig.localPropertiesPath &&
+    fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
+  }
+  if (projectConfig.projectProfilePath &&
+    fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
+  }
+}
+
 const globalProgram = {
   program: null,
   watchProgram: null
@@ -393,3 +406,4 @@ exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
+exports.addSDKBuildDependencies = addSDKBuildDependencies;
