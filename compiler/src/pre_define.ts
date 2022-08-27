@@ -68,9 +68,8 @@ export const INITIALIZE_CONSUME_FUNCTION: string = 'initializeConsume';
 export const ADD_PROVIDED_VAR: string = 'addProvidedVar';
 
 export const APP_STORAGE: string = 'AppStorage';
-export const APP_STORAGE_SET_AND_PROP: string = 'setAndProp';
-export const APP_STORAGE_SET_AND_LINK: string = 'setAndLink';
-export const APP_STORAGE_GET_OR_SET: string = 'GetOrCreate';
+export const APP_STORAGE_SET_AND_PROP: string = 'SetAndProp';
+export const APP_STORAGE_SET_AND_LINK: string = 'SetAndLink';
 
 export const PAGE_ENTRY_FUNCTION_NAME: string = 'loadDocument';
 export const STORE_PREVIEW_COMPONENTS: string = 'storePreviewComponents';
