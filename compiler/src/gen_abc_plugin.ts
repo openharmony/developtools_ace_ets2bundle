@@ -733,7 +733,7 @@ function writeHashJson(): void {
       mkdirsSync(path.dirname(abcFile));
       fs.copyFileSync(cacheAbcFilePath, abcFile);
     }
-    if (fs.existsSync(intermediateJsBundle[i].path)) {
+    if (process.env.cachePath === undefined && fs.existsSync(intermediateJsBundle[i].path)) {
       fs.unlinkSync(intermediateJsBundle[i].path);
     }
   }
