@@ -17,6 +17,7 @@ const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
+const  { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
 const { OHMResolverPlugin } = require('./lib/resolve_ohm_url');
 const buildPipeServer = require('./server/build_pipe_server');
@@ -344,6 +345,28 @@ function setGenAbcPlugin(env, config) {
   }
 }
 
+function setCleanWebpackPlugin(workerFile, config) {
+  if (projectConfig.compileMode === 'esmodule') {
+    return;
+  }
+  let cleanPath = [];
+  cleanPath.push(projectConfig.buildPath);
+  if (workerFile) {
+    let workerFilesPath = Object.keys(workerFile);
+    for (let workerFilePath of workerFilesPath) {
+      cleanPath.push(path.join(projectConfig.buildPath, workerFilePath, '..'));
+    }
+  }
+
+  config.plugins.push(
+    new CleanWebpackPlugin({
+      dry: false,
+      dangerouslyAllowCleanPatternsOutsideProject: true,
+      cleanOnceBeforeBuildPatterns: cleanPath
+    })
+  );
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
@@ -354,6 +377,7 @@ module.exports = (env, argv) => {
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
+  setCleanWebpackPlugin(workerFile, config);
 
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
