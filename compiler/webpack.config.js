@@ -30,7 +30,8 @@ const {
   loadWorker,
   abilityConfig,
   readWorkerFile,
-  loadModuleInfo
+  loadModuleInfo,
+  addSDKBuildDependencies
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -407,6 +408,7 @@ module.exports = (env, argv) => {
       config.cache.buildDependencies.config.push(appResourcePath)
     }
   }
+  addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
