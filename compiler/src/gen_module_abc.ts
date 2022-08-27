@@ -60,7 +60,7 @@ function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   for (let i = 0; i < inputPaths.length; ++i) {
     const input: string = inputPaths[i].tempFilePath;
     const abcFile: string = input.replace(/\.js$/, '.abc');
-    const singleCmd: any = `${cmd} "${input}" --output "${abcFile}"`;
+    const singleCmd: any = `${cmd} "${input}" --output "${abcFile}" --source-file "${input}"`;
     logger.debug('gen abc cmd is: ', singleCmd);
     try {
       childProcess.execSync(singleCmd);
