@@ -25,7 +25,8 @@ const reset: string = '\u001b[39m';
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths = JSON.parse(jsonInput);
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input = inputPaths[i].path;
+    // for matching debug info mechanism
+    const input = inputPaths[i].path.replace(/\.temp\.js$/, "_.js");
     const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     const singleCmd: any = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${input}"`;

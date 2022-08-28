@@ -21,7 +21,6 @@ import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 import { toUnixPath, toHashData } from './utils';
 
-const firstFileEXT: string = '_.js';
 const genAbcScript = 'gen_abc.js';
 let output: string;
 let isWin: boolean = false;
@@ -71,7 +70,7 @@ export class GenAbcPlugin {
         // choose *.js
         if (output && path.extname(key) === '.js') {
           const newContent: string = compilation.assets[key].source();
-          const keyPath: string = key.replace(/\.js$/, firstFileEXT);
+          const keyPath: string = key.replace(/\.js$/, ".temp.js");
           writeFileSync(newContent, output, keyPath, key);
         }
       });
@@ -92,10 +91,9 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   }
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
-    let temporaryKeyPath = keyPath.replace(/\_.js$/, '.temp.js');
-    cacheOutputPath = path.join(process.env.cachePath, "temporary", temporaryKeyPath);
+    cacheOutputPath = path.join(process.env.cachePath, "temporary", keyPath);
   } else {
-    cacheOutputPath = output.replace(/\_.js$/, '.temp.js');
+    cacheOutputPath = output;
   }
   parent = path.join(cacheOutputPath, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
@@ -222,8 +220,6 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
     jsonObject = JSON.parse(jsonFile);
     fileterIntermediateJsBundle = [];
     for (let i = 0; i < inputPaths.length; ++i) {
-      const input = inputPaths[i].path;
-      const abcPath = input.replace(/_.js$/, '.abc');
       const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
       const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
       if (!fs.existsSync(cacheOutputPath)) {
@@ -250,12 +246,10 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
 
 function writeHashJson() {
   for (let i = 0; i < fileterIntermediateJsBundle.length; ++i) {
-    const input = fileterIntermediateJsBundle[i].path;
-    const abcPath = input.replace(/_.js$/, '.abc');
     const cacheOutputPath: string = fileterIntermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
       continue;
     }
     const hashInputContentData: any = toHashData(cacheOutputPath);
@@ -294,8 +288,7 @@ function genHashJsonPath(buildPath: string) {
 
 function copyFileCachePathToBuildPath() {
   for (let i = 0; i < intermediateJsBundle.length; ++i) {
-    const inputPath: string = intermediateJsBundle[i].path;
-    const abcFile: string = intermediateJsBundle[i].path.replace(/\_.js$/, ".abc");
+    const abcFile: string = intermediateJsBundle[i].path.replace(/\.temp\.js$/, ".abc");
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
