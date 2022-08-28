@@ -16,6 +16,7 @@
 const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const Webpack = require('webpack');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
 const buildPipeServer = require('./server/build_pipe_server');
@@ -301,6 +302,25 @@ function setOptimizationConfig(config, workerFile) {
   }
 }
 
+function setCleanWebpackPlugin(workerFile, config) {
+  const cleanPath = [];
+  cleanPath.push(projectConfig.buildPath);
+  if (workerFile) {
+    const workerFilesPath = Object.keys(workerFile);
+    for (const workerFilePath of workerFilesPath) {
+      cleanPath.push(path.resolve(projectConfig.buildPath, workerFilePath, '..'));
+    }
+  }
+
+  config.plugins.push(
+    new CleanWebpackPlugin({
+      dry: false,
+      dangerouslyAllowCleanPatternsOutsideProject: true,
+      cleanOnceBeforeBuildPatterns: cleanPath
+    })
+  );
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
@@ -309,6 +329,7 @@ module.exports = (env, argv) => {
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
+  setCleanWebpackPlugin(workerFile, config);
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark') {
