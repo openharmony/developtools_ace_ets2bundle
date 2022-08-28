@@ -200,6 +200,7 @@ function invokeWorkersToGenAbc() {
 
     process.on('exit', (code) => {
       writeHashJson();
+      copyFileCachePathToBuildPath()
     });
   }
 }
@@ -234,13 +235,6 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
         if (jsonObject[cacheOutputPath] === hashInputContentData && jsonObject[cacheAbcFilePath] === hashAbcContentData) {
           updateJsonObject[cacheOutputPath] = hashInputContentData;
           updateJsonObject[cacheAbcFilePath] = hashAbcContentData;
-          let parent: string = path.join(abcPath, '..');
-          if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-            mkDir(parent);
-          }
-          if (!fs.existsSync(abcPath)) {
-            fs.copyFileSync(cacheAbcFilePath, abcPath);
-          }
         } else {
           fileterIntermediateJsBundle.push(inputPaths[i]);
         }
@@ -268,21 +262,6 @@ function writeHashJson() {
     hashJsonObject[cacheOutputPath] = hashInputContentData;
     hashJsonObject[cacheAbcFilePath] = hashAbcContentData;
   }
-  for (let i = 0; i < intermediateJsBundle.length; ++i) {
-    const abcFile: string = intermediateJsBundle[i].path.replace(/\_.js$/, ".abc");
-    const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\_.js$/, ".abc");
-    if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
-      break;
-    }
-    let parent: string = path.join(abcFile, '..');
-    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-      mkDir(parent);
-    }
-    if (!fs.existsSync(abcFile)) {
-      fs.copyFileSync(cacheAbcFilePath, abcFile);
-    }
-  }
   const hashFilePath = genHashJsonPath(buildPathInfo);
   if (hashFilePath.length === 0) {
     return;
@@ -309,5 +288,27 @@ function genHashJsonPath(buildPath: string) {
   } else {
     logger.debug(red, `ETS:ERROR not cache exist`, reset);
     return '';
+  }
+}
+
+function copyFileCachePathToBuildPath() {
+  for (let i = 0; i < intermediateJsBundle.length; ++i) {
+    const inputPath: string = intermediateJsBundle[i].path;
+    const abcFile: string = intermediateJsBundle[i].path.replace(/\_.js$/, ".abc");
+    const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\_.js$/, ".abc");
+    if (!fs.existsSync(cacheAbcFilePath)) {
+      logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      break;
+    }
+    let parent: string = path.join(abcFile, '..');
+    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+      mkDir(parent);
+    }
+    if (!fs.existsSync(abcFile)) {
+      fs.copyFileSync(cacheAbcFilePath, abcFile);
+    }
+    if (process.env.cachePath === undefined && fs.existsSync(inputPath)) {
+      fs.unlinkSync(inputPath);
+    }
   }
 }
