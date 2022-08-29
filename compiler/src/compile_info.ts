@@ -71,6 +71,7 @@ interface Info {
 export interface CacheFileName {
   mtimeMs: number,
   children: string[],
+  parent: string[],
   error: boolean
 }
 
@@ -78,7 +79,8 @@ interface NeedUpdateFlag {
   flag: boolean;
 }
 
-export let cache: Cache;
+export let cache: Cache = {};
+export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
 
 export class ResultStates {
@@ -223,6 +225,18 @@ export class ResultStates {
       }
     });
 
+    compiler.hooks.watchRun.tap('WatchRun', (comp) => {
+      comp.modifiedFiles = comp.modifiedFiles || [];
+      comp.removedFiles = comp.removedFiles || [];
+      const changedFiles: string[] = [...comp.modifiedFiles, ...comp.removedFiles];
+      if (changedFiles.length) {
+        shouldResolvedFiles.clear();
+      }
+      changedFiles.forEach((file) => {
+        this.judgeFileShouldResolved(file, shouldResolvedFiles)
+      })
+    })
+
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
@@ -239,6 +253,25 @@ export class ResultStates {
       }
       this.printResult();
     });
+  }
+
+  private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
+    if (shouldResolvedFiles.has(file)) {
+      return;
+    }
+    shouldResolvedFiles.add(file);
+    if (cache && cache[file] && cache[file].parent) {
+      cache[file].parent.forEach((item)=>{
+        this.judgeFileShouldResolved(item, shouldResolvedFiles);
+      })
+      cache[file].parent = [];
+    }
+    if (cache && cache[file] && cache[file].children) {
+      cache[file].children.forEach((item)=>{
+        this.judgeFileShouldResolved(item, shouldResolvedFiles);
+      })
+      cache[file].children = [];
+    }
   }
 
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
