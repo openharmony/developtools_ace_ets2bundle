@@ -34,7 +34,8 @@ struct ButtonExample {
 }
 `
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "button_" + ++__generate__Id;
 }

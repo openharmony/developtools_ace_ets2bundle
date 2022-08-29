@@ -45,7 +45,8 @@ struct PanGestureExample {
 `
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "panGestrue_" + ++__generate__Id;
 }
