@@ -57,8 +57,8 @@ let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
-        this.__varA = AppStorage.GetOrCreate().setAndLink('varA', 2, this);
-        this.__lang = AppStorage.GetOrCreate().setAndProp('languageCode', 'en', this);
+        this.__varA = AppStorage.SetAndLink('varA', 2, this, "varA");
+        this.__lang = AppStorage.SetAndProp('languageCode', 'en', this, "lang");
         this.label = 'count';
         this.updateWithValueParams(params);
     }
