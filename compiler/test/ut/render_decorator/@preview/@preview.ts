@@ -37,7 +37,8 @@ struct HomePreviewComponent_Preview {
 `
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "@preview_" + ++__generate__Id;
 }

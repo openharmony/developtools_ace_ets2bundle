@@ -38,7 +38,8 @@ struct TestPage{
 }
 `
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "@builderWithLinkData_" + ++__generate__Id;
 }

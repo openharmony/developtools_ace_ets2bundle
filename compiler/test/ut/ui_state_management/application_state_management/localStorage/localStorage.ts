@@ -43,7 +43,8 @@ struct LocalStorageComponent {
 }
 `
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "localStorage_" + ++__generate__Id;
 }
