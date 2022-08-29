@@ -417,6 +417,7 @@ function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
       fs.writeFileSync(appResourcePathSavePath, appResourcePath);
     }
   }
+}
 
 function addSDKBuildDependencies(config) {
   if (projectConfig.localPropertiesPath &&
