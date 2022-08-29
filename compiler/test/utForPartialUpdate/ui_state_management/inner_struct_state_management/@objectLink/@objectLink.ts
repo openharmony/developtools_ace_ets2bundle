@@ -71,8 +71,8 @@ Model = __decorate([
     Observed
 ], Model);
 class CustomText extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.__model = new SynchedPropertyNesedObjectPU(params.model, this, "model");
         this.setInitiallyProvidedValue(params);
     }
@@ -116,8 +116,8 @@ class CustomText extends ViewPU {
     }
 }
 class Parent extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.nextId = 1;
         this.__models = new ObservedPropertyObjectPU([new Model('0', '#ffffff'), new Model('1', '#fff456')], this, "models");
         this.setInitiallyProvidedValue(params);

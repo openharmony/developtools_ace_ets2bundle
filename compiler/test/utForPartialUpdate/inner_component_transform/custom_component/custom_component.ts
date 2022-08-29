@@ -47,8 +47,8 @@ struct Banner {
 
 exports.expectResult =
 `class MyComponent extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
@@ -125,8 +125,8 @@ exports.expectResult =
     }
 }
 class Banner extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.value = "Hello";
         this.setInitiallyProvidedValue(params);
     }

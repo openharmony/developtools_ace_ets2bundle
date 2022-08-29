@@ -35,8 +35,8 @@ struct ParentComponent {
 `
 exports.expectResult =
 `class LinkComponent extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
@@ -73,8 +73,8 @@ exports.expectResult =
     }
 }
 class ParentComponent extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.__value = new ObservedPropertySimplePU('first init content', this, "value");
         this.setInitiallyProvidedValue(params);
     }

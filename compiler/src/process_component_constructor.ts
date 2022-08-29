@@ -25,7 +25,9 @@ import {
   BASE_COMPONENT_NAME,
   INTERFACE_NAME_SUFFIX,
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
-  BASE_COMPONENT_NAME_PU
+  BASE_COMPONENT_NAME_PU,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU
 } from './pre_define';
 
 import {
@@ -95,7 +97,7 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   ]) : new Set([
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
-    localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE : COMPONENT_CONSTRUCTOR_PARAMS
+    COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU
   ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
@@ -137,6 +139,11 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
             parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU:
+        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers, item.dotDotDotToken,
+          item.name, ts.factory.createToken(ts.SyntaxKind.QuestionToken), ts.factory.createTypeReferenceNode(
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU), undefined), item.initializer);
         break;
     }
     newTSPara.push(parameter);
@@ -184,9 +191,8 @@ function createCallSuperStatement(localStorageNum: number): ts.Statement{
   } else {
     return (ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
-        localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] : 
-          [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)])));
+        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU)])));
   }
 }
 
