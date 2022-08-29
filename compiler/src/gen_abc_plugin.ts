@@ -49,7 +49,8 @@ import {
   EXTNAME_JS_MAP,
   TS2ABC,
   ES2ABC,
-  TEMPORARY
+  TEMPORARY,
+  SUCCESS
 } from './pre_define';
 
 const genAbcScript: string = 'gen_abc.js';
@@ -472,6 +473,9 @@ function initAbcEnv() : string[] {
 }
 
 function invokeCluterModuleToAbc(): void {
+  if (projectConfig.isPreview) {
+    process.exitCode = SUCCESS;
+  }
   filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
   filterModuleInfos.forEach(moduleInfo => {
     if (moduleInfo.isCommonJs) {
@@ -597,6 +601,9 @@ function judgeModuleWorkersToGenAbc(callback): void {
 }
 
 function invokeWorkersToGenAbc(): void {
+  if (projectConfig.isPreview) {
+    process.exitCode = SUCCESS;
+  }
   let cmdPrefix: string = '';
   let maxWorkerNumber: number = 3;
 
@@ -888,7 +895,8 @@ function copyFileCachePathToBuildPath() {
     if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
       mkDir(parent);
     }
-    if (!fs.existsSync(abcFile)) {
+    // for preview mode, cache path and old abc file both exist, should copy abc file for updating
+    if (process.env.cachePath !== undefined) {
       fs.copyFileSync(cacheAbcFilePath, abcFile);
     }
     if (process.env.cachePath === undefined && fs.existsSync(cacheOutputPath)) {
