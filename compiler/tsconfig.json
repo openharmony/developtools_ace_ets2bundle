@@ -551,7 +551,8 @@
     "typeRoots": [],
     "lib": [
       "es2020"
-    ]
+    ],
+    "alwaysStrict": true
   },
   "exclude": [
     "node_modules"
