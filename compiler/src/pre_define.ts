@@ -323,4 +323,5 @@ export const SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU: string = 'SynchedPropertySimple
 export const SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU: string = 'SynchedPropertyObjectTwoWayPU';
 export const SYNCHED_PROPERTY_NESED_OBJECT_PU: string = 'SynchedPropertyNesedObjectPU';
 export const OBSERVED_PROPERTY_ABSTRACT_PU:string = 'ObservedPropertyAbstractPU';
-
+export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU: string = '__localStorage';
+export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU: string = 'LocalStorage';

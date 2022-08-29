@@ -173,8 +173,8 @@ class MyDataSource extends BasicDataSource {
     }
 }
 class Test extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.data = new MyDataSource();
         this.setInitiallyProvidedValue(params);
     }

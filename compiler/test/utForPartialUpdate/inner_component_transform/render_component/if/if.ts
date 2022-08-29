@@ -38,8 +38,8 @@ struct IFView {
 `
 exports.expectResult =
 `class IFView extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.__toggle1 = new ObservedPropertySimplePU(false, this, "toggle1");
         this.__toggle2 = new ObservedPropertySimplePU(false, this, "toggle2");
         this.__toggle3 = new ObservedPropertySimplePU(false, this, "toggle3");

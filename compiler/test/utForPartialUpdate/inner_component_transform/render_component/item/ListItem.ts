@@ -28,8 +28,8 @@ struct ParentView {
 `
 exports.expectResult =
 `class ParentView extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

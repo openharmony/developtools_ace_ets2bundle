@@ -53,8 +53,8 @@ struct TabSimple {
 `
 exports.expectResult =
 `class TabSimple extends ViewPU {
-    constructor(parent, params) {
-        super(parent);
+    constructor(parent, params, __localStorage) {
+        super(parent, __localStorage);
         this.controller = new TabsController();
         this.setInitiallyProvidedValue(params);
     }
