@@ -15,7 +15,6 @@
 
 import * as childProcess from 'child_process';
 import * as process from 'process';
-import * as fs from 'fs';
 import cluster from 'cluster';
 import { logger } from './compile_info';
 import {
