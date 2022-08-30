@@ -243,9 +243,15 @@ export const COMPONENT_TOGGLE: string = 'Toggle';
 export const TTOGGLE_CHECKBOX: string = 'Checkbox';
 export const TOGGLE_SWITCH: string = 'Switch';
 
+export const ENTRY_TXT: string = 'entry.txt';
+export const FILESINFO_TXT: string = 'filesInfo.txt';
+export const NPMENTRIES_TXT: string = 'npmEntries.txt';
+export const MODULES_CACHE: string = 'modules.cache';
+export const MODULES_ABC: string = 'modules.abc';
+export const MODULELIST_JSON: string = 'moduleList.json';
+
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
-export const ENTRY_TXT: string = 'entry.txt';
 export const ARK: string = 'ark';
 export const TEMPORARY: string = 'temporary';
 export const MAIN: string = 'main';
@@ -260,6 +266,7 @@ export const EXTNAME_MJS: string = '.mjs';
 export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
 export const EXTNAME_ABC: string = '.abc';
+export const EXTNAME_PROTO_BIN: string = '.protoBin';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
