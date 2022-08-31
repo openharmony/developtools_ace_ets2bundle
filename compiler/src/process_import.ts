@@ -174,9 +174,6 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
-    if (projectConfig.isPreview && entryCollection.has(node.expression.escapedText.toString())) {
-      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
-    }
     if (defaultNameFromParent) {
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
@@ -310,10 +307,6 @@ function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollectio
         existEntry = true;
         break;
       }
-    }
-    if (existEntry && (existExport || defaultCollection.has(node.name.escapedText.toString()) ||
-      exportCollection.has(node.name.escapedText.toString()))) {
-      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
     }
   }
 }
