@@ -44,14 +44,16 @@ import {
   EXTNAME_MJS,
   EXTNAME_CJS,
   EXTNAME_D_TS,
-  EXTNAME_ABC,
   FAIL,
   EXTNAME_JS_MAP,
   TS2ABC,
   ES2ABC,
   TEMPORARY,
-  SUCCESS
+  SUCCESS,
+  MODULELIST_JSON
 } from './pre_define';
+import { getOhmUrlByFilepath } from './resolve_ohm_url';
+import { generateMergedAbc } from './gen_merged_abc';
 
 const genAbcScript: string = 'gen_abc.js';
 const genModuleAbcScript: string = 'gen_module_abc.js';
@@ -78,6 +80,7 @@ let entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
 let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo: string = '';
+let buildMapFileList: Array<string> = [];
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -85,12 +88,13 @@ const blue = '\u001b[34m';
 const hashFile: string = 'gen_hash.json';
 const ARK: string = '/ark/';
 
-class ModuleInfo {
+export class ModuleInfo {
   filePath: string;
   tempFilePath: string;
   buildFilePath: string;
   abcFilePath: string;
   isCommonJs: boolean;
+  recordName: string;
 
   constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
     this.filePath = filePath;
@@ -98,10 +102,11 @@ class ModuleInfo {
     this.buildFilePath = buildFilePath;
     this.abcFilePath = abcFilePath;
     this.isCommonJs = isCommonJs;
+    this.recordName = getOhmUrlByFilepath(filePath);
   }
 }
 
-class EntryInfo {
+export class EntryInfo {
   npmInfo: string;
   abcFileName: string;
   buildPath: string;
@@ -142,9 +147,15 @@ export class GenAbcPlugin {
       return;
     }
 
+    // case ESMODULE
+    //        | --- merge -- debug -- not removeDir
+    //        | --- merge -- release -- removeDir
+    //        | --- unmerge -- removeDir
     if (projectConfig.compileMode === ESMODULE) {
-      removeDir(output);
-      removeDir(projectConfig.nodeModulesPath);
+      if (!projectConfig.processMergeabc || projectConfig.buildArkMode !== 'debug') {
+        removeDir(output);
+        removeDir(projectConfig.nodeModulesPath);
+      }
     }
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
@@ -254,8 +265,7 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
-
-  return;
+  buildMapFileList.push(genSourceMapFileName(buildFilePath));
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -273,6 +283,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
+  buildMapFileList.push(genSourceMapFileName(buildFilePath));
 }
 
 function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -291,6 +302,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
+  buildMapFileList.push(genSourceMapFileName(buildFilePath));
 }
 
 function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -307,6 +319,39 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   } else {
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
+  }
+  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+}
+
+
+function getCachedModuleList(): Array<string> {
+  const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
+  if (!fs.existsSync(CACHED_MODULELIST_FILE)) {
+    return [];
+  }
+  const data: any = JSON.parse(fs.readFileSync(CACHED_MODULELIST_FILE).toString());
+  const moduleList: Array<string> = data.list;
+  return moduleList;
+}
+
+function updateCachedModuleList(moduleList: Array<string>): void {
+  const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
+  let cachedJson: Object = {};
+  cachedJson["list"] = moduleList;
+  fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write module list.`, reset);
+      }
+    }
+  );
+}
+
+function eliminateUnusedFiles(moduleList: Array<string>): void{
+  let cachedModuleList: Array<string> = getCachedModuleList();
+  if (cachedModuleList.length !== 0) {
+    const eliminateFiles: Array<string> = cachedModuleList.filter(m => !moduleList.includes(m));
+    eliminateFiles.forEach((file) => {fs.unlinkSync(file);});
   }
 }
 
@@ -337,8 +382,16 @@ function handleFinishModules(modules, callback): any {
     }
   });
 
-  judgeModuleWorkersToGenAbc(invokeWorkersModuleToGenAbc);
-  processEntryToGenAbc(entryInfos);
+  if (projectConfig.processMergeabc) {
+    if (projectConfig.buildArkMode === 'debug') {
+      eliminateUnusedFiles(buildMapFileList);
+      updateCachedModuleList(buildMapFileList);
+    }
+    generateMergedAbc(moduleInfos, entryInfos);
+  } else {
+    judgeModuleWorkersToGenAbc(invokeWorkersModuleToGenAbc);
+    processEntryToGenAbc(entryInfos);
+  }
 }
 
 function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
@@ -433,7 +486,7 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
   invokeCluterModuleToAbc();
 }
 
-function initAbcEnv() : string[] {
+export function initAbcEnv() : string[] {
   let args: string[] = [];
   if (process.env.panda === TS2ABC) {
     let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
@@ -464,6 +517,9 @@ function initAbcEnv() : string[] {
     ];
     if (isDebug) {
       args.push('--debug-info');
+    }
+    if (projectConfig.processMergeabc) {
+      args.push('--merge-abc');
     }
   }  else {
     logger.error(red, `ETS:ERROR please set panda module`, reset);
@@ -701,18 +757,18 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
     filterModuleInfos = [];
     for (let i = 0; i < moduleInfos.length; ++i) {
       const input: string = moduleInfos[i].tempFilePath;
-      const abcPath: string = moduleInfos[i].abcFilePath;
+      let outputPath: string = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
         logger.error(red, `ETS:ERROR ${input} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
-      if (fs.existsSync(abcPath)) {
+      if (fs.existsSync(outputPath)) {
         const hashInputContentData: any = toHashData(input);
-        const hashAbcContentData: any = toHashData(abcPath);
-        if (jsonObject[input] === hashInputContentData && jsonObject[abcPath] === hashAbcContentData) {
+        const hashAbcContentData: any = toHashData(outputPath);
+        if (jsonObject[input] === hashInputContentData && jsonObject[outputPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
-          updateJsonObject[abcPath] = hashAbcContentData;
+          updateJsonObject[outputPath] = hashAbcContentData;
           mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
           if (projectConfig.buildArkMode === 'debug' && fs.existsSync(moduleInfos[i].tempFilePath)) {
             fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
@@ -736,16 +792,16 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
 function writeModuleHashJson(): void {
   for (let i = 0; i < filterModuleInfos.length; ++i) {
     const input: string = filterModuleInfos[i].tempFilePath;
-    const abcPath: string = filterModuleInfos[i].abcFilePath;
-    if (!fs.existsSync(input) || !fs.existsSync(abcPath)) {
+    let outputPath: string = filterModuleInfos[i].abcFilePath;
+    if (!fs.existsSync(input) || !fs.existsSync(outputPath)) {
       logger.error(red, `ETS:ERROR ${input} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
     const hashInputContentData: any = toHashData(input);
-    const hashAbcContentData: any = toHashData(abcPath);
+    const hashAbcContentData: any = toHashData(outputPath);
     moduleHashJsonObject[input] = hashInputContentData;
-    moduleHashJsonObject[abcPath] = hashAbcContentData;
+    moduleHashJsonObject[outputPath] = hashAbcContentData;
     mkdirsSync(path.dirname(filterModuleInfos[i].buildFilePath));
     if (projectConfig.buildArkMode === 'debug' && fs.existsSync(filterModuleInfos[i].tempFilePath)) {
       fs.copyFileSync(filterModuleInfos[i].tempFilePath, filterModuleInfos[i].buildFilePath);

@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from './compile_info';
+import { NODE_MODULES, ONE, ZERO } from './pre_define';
+import { toUnixPath, getPackageInfo } from './utils';
 const { projectConfig } = require('../main');
 
 const red: string = '\u001b[31m';
@@ -85,4 +87,41 @@ export function resolveSourceFile(ohmUrl: string): string {
   }
 
   return file;
+}
+
+export function getOhmUrlByFilepath(filePath: string): string {
+  let unixFilePath: string = toUnixPath(filePath);
+  unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
+  const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
+
+  const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+  const bundleName: string = packageInfo[0];
+  const moduleName: string = packageInfo[1];
+  const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
+  const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
+  // case1: /entry/src/main/ets/xxx/yyy
+  // case2: /node_modules/xxx/yyy
+  // case3: /entry/node_modules/xxx/yyy
+  const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
+
+  const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
+  if (result && result[1].indexOf(NODE_MODULES) === -1) {
+    return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+  }
+
+  if (projectFilePath.indexOf(NODE_MODULES) !== -1) {
+
+    const tryProjectNPM: string = toUnixPath(path.join(projectRootPath, NODE_MODULES));
+    if (unixFilePath.indexOf(tryProjectNPM) !== -1) {
+      return unixFilePath.replace(tryProjectNPM, `${NODE_MODULES}/${ONE}`);
+    }
+
+    const tryModuleNPM: string = toUnixPath(path.join(moduleRootPath, NODE_MODULES));
+    if (unixFilePath.indexOf(tryModuleNPM) !== -1) {
+      return unixFilePath.replace(tryModuleNPM, `${NODE_MODULES}/${ZERO}`);
+    }
+  }
+
+  logger.error(red, `ETS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
+  return filePath;
 }
