@@ -168,5 +168,5 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
       ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),
     undefined, [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]));
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
+    [...watchStatements, updateWithValueParamsStatement], false, true, parentComponentName);
 }
