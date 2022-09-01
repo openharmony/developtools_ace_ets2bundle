@@ -37,7 +37,8 @@ struct LongPressGestureExample {
 }`
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "longPressGesture_" + ++__generate__Id;
 }

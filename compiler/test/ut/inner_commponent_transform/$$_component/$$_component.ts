@@ -74,7 +74,8 @@ struct HomeComponent {
 }`
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "$$_component_" + ++__generate__Id;
 }

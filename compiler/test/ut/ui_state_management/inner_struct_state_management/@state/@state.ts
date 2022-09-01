@@ -56,7 +56,8 @@ struct EntryComponent {
 }
 `
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "@state_" + ++__generate__Id;
 }
