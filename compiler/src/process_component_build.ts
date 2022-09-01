@@ -94,6 +94,7 @@ import {
 import { projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
+import { CUSTOM_COMPONENT } from '../lib/pre_define';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -113,10 +114,10 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 }
 
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false, isInnerBuilder: boolean = false): ts.Block {
+  isTransition: boolean = false, isInnerBuilder: boolean = false, parent: string = undefined): ts.Block {
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
-    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder);
+    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
   if (isLazy) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -214,7 +215,7 @@ let sourceNode: ts.SourceFile;
 
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-  isInnerBuilder: boolean = false): void {
+  isInnerBuilder: boolean = false, parent: string = undefined): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -229,11 +230,16 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       if (ts.isExpressionStatement(item)) {
         checkEtsComponent(item, log);
         const name: string = getName(item);
-        switch (getComponentType(item, log, name)) {
+        switch (getComponentType(item, log, name, parent)) {
           case ComponentType.innerComponent:
-            processInnerComponent(item, newStatements, log);
+            const etsExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
+            if (ts.isIdentifier(etsExpression.expression)) {
+              parent = etsExpression.expression.escapedText.toString();
+            }
+            processInnerComponent(item, newStatements, log, parent);
             break;
           case ComponentType.customComponent:
+            parent = undefined;
             if (!newsupplement.isAcceleratePreview) {
               if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
                 const expressionResult: ts.ExpressionStatement =
@@ -246,17 +252,24 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             }
             break;
           case ComponentType.forEachComponent:
+            parent = undefined;
             processForEachComponent(item, newStatements, log, isInnerBuilder);
             break;
           case ComponentType.customBuilderMethod:
-            if (INNER_CUSTOM_BUILDER_METHOD.has(name)) {
+            parent = undefined;
+            if (CUSTOM_BUILDER_METHOD.has(name)) {
               newStatements.push(addInnerBuilderParameter(item));
             } else {
               newStatements.push(item);
             }
             break;
           case ComponentType.builderParamMethod:
+            parent = undefined;
             newStatements.push(addInnerBuilderParameter(item));
+            break;
+          case ComponentType.function:
+            parent = undefined;
+            newStatements.push(item);
             break;
         }
       } else if (ts.isIfStatement(item)) {
@@ -360,7 +373,8 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
   return { etsComponentNode: etsComponentNode, hasAttr: hasAttr };
 }
 
-function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[], log: LogInfo[]): void {
+function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
+  log: LogInfo[], parent: string = undefined): void {
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null };
@@ -408,7 +422,8 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processComponentChild(etsComponentResult.etsComponentNode.body, newStatements, log);
+    processComponentChild(etsComponentResult.etsComponentNode.body, newStatements, log,
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
   }
@@ -932,24 +947,30 @@ function updateArgumentFor$$(argument: any): ts.Expression {
 function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
   log: LogInfo[]): void {
   if (!newsupplement.isAcceleratePreview && propName === ATTRIBUTE_ID) {
-    const literalString: string = temp.arguments[0].text;
-    if (ID_ATTRS.has(literalString)) {
-      const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
-      log.push({
-        type: LogType.ERROR,
-        message: `The current component id "${literalString}" is duplicate with ` +
-          `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
-        pos: node.pos
-      });
+    const id: string = temp.arguments[0].text;
+    const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
+      .getLineAndCharacterOfPosition(getRealNodePos(node));
+    const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
+      .replace(/\\+/g, '/');
+    const rLine: number = posOfNode.line + 1;
+    const rCol: number = posOfNode.character + 1;
+    if (ID_ATTRS.has(id)) {
+      const idInfo: Map<string, string | number> = ID_ATTRS.get(id);
+      if (!(idInfo.get('path') === rPath &&
+        idInfo.get('line') === rLine &&
+        idInfo.get('col') === rCol)) {
+        log.push({
+          type: LogType.WARN,
+          message: `The current component id "${id}" is duplicate with ` +
+            `${idInfo.get('path')}:${idInfo.get('line')}:${idInfo.get('col')}.`,
+          pos: node.pos
+        });
+      }
     } else {
-      const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
-        .getLineAndCharacterOfPosition(getRealNodePos(node));
-      const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-      const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
-        .replace(/\\+/g, '/');
-      ID_ATTRS.set(literalString, new Map().set('path', rPath)
-        .set('line', posOfNode.line + 1)
-        .set('col', posOfNode.character + 1));
+      ID_ATTRS.set(id, new Map().set('path', rPath)
+        .set('line', rLine)
+        .set('col', rCol));
     }
   }
 }
@@ -1148,9 +1169,9 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
     } else {
-       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
-         validateStateStyleSyntax(temp, log);
-       } 
+      if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
+        validateStateStyleSyntax(temp, log);
+      }
     }
     if (item.name) {
       statements.push(createViewStackProcessor(item, false));
@@ -1288,7 +1309,8 @@ enum ComponentType {
   customComponent,
   forEachComponent,
   customBuilderMethod,
-  builderParamMethod
+  builderParamMethod,
+  function
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -1304,7 +1326,7 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 }
 
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
-  name: string): ComponentType {
+  name: string, parent: string): ComponentType {
   if (isEtsComponent(node)) {
     if (componentCollection.customComponents.has(name)) {
       return ComponentType.customComponent;
@@ -1320,6 +1342,9 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
+  } else if ((['Column', 'XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
+    ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
+    return ComponentType.function;
   } else if (!isAttributeNode(node)) {
     log.push({
       type: LogType.ERROR,
@@ -1340,7 +1365,7 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
 
 function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
   let current: any = node.expression;
-  while(current) {
+  while (current) {
     if (ts.isEtsComponentExpression(current)) {
       return current;
     }
@@ -1350,7 +1375,7 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
 }
 
 function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
-  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);   
+  const etsComponentExpression: ts.EtsComponentExpression = getEtsComponentExpression(node);
   if (etsComponentExpression) {
     checkAllNode(
       etsComponentExpression,

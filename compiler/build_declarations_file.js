@@ -23,7 +23,7 @@ const addTSInterfaceSet = ['ForEach', 'LazyForEach', 'TapGesture', 'LongPressGes
 const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'Button', 'Calendar', 'Canvas',
   'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
   'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
-  'ImageAnimator', 'Line', 'List', 'ListItem', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
+  'ImageAnimator', 'Line', 'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
   'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
   'QRCode', 'Radio', 'Rating', 'Rect', 'Refresh', 'Row', 'RowSplit', 'Scroll', 'ScrollBar', 'Search',
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
@@ -33,7 +33,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
   const files = [];
-  const globalTsFile = path.resolve(filePath, '../../global.d.ts');
+  const globalTsFile = path.resolve(filePath, '../../ets/global.d.ts');
   const featureAbilityPath = path.resolve(filePath, '../../../common/full/featureability.d.ts');
   const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
@@ -65,6 +65,8 @@ function generateTargetFile(filePath, output) {
     const fileName = path.resolve(output, path.basename(item));
     if (item === globalTsFile || item === featureAbilityPath) {
       content = license + '\n\n' + processsFile(content, fileName, true);
+    } else {
+      content = processImportType(content);
     }
     fs.writeFile(fileName, content, err => {
       if (err) {
@@ -73,6 +75,12 @@ function generateTargetFile(filePath, output) {
       }
     });
   });
+}
+
+function processImportType(content) {
+  return content.replace(/(import\s*\(("|'))(\.\.\/api\/[^("|')]*("|')\)\.)/g, (item, item1, item2, item3) => {
+    return item1 + '../../' + item3;
+  })
 }
 
 function readFile(dir, fileDir) {

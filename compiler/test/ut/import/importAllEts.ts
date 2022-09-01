@@ -91,6 +91,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "importAllEts_" + ++__generate__Id;
+}
 const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
@@ -149,7 +153,7 @@ class ImportTest extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new AllComponent.NamespaceComponent1("2", this, {
                 NamespaceComponent1Link1: this.__myState1,
@@ -169,7 +173,7 @@ class ImportTest extends View {
         }
         __Common__.create();
         __Common__.width(100);
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new AllComponent.NamespaceComponent1("3", this, {
                 NamespaceComponent1Link1: this.__myState1,
@@ -188,7 +192,7 @@ class ImportTest extends View {
             View.create(earlierCreatedChild_3);
         }
         __Common__.pop();
-        let earlierCreatedChild_4 = this.findChildById("4");
+        let earlierCreatedChild_4 = (this && this.findChildById) ? this.findChildById("4") : undefined;
         if (earlierCreatedChild_4 == undefined) {
             View.create(new AllComponent.default("4", this, {
                 NamespaceComponent3Link1: this.__myState1,
@@ -208,7 +212,7 @@ class ImportTest extends View {
         }
         __Common__.create();
         __Common__.height(200);
-        let earlierCreatedChild_5 = this.findChildById("5");
+        let earlierCreatedChild_5 = (this && this.findChildById) ? this.findChildById("5") : undefined;
         if (earlierCreatedChild_5 == undefined) {
             View.create(new AllComponent.default("5", this, {
                 NamespaceComponent3Link1: this.__myState1,

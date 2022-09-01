@@ -38,7 +38,12 @@ struct TestPage{
 }
 `
 exports.expectResult =
-`class TitleComp extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@builderWithLinkData_" + ++__generate__Id;
+}
+class TitleComp extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__title = new SynchedPropertySimpleTwoWay(params.title, this, "title");
@@ -83,9 +88,9 @@ class TestPage extends View {
         this.__value.set(newValue);
     }
     TitleCompView(parent = undefined) {
-        let earlierCreatedChild_2 = (parent ? parent : this).findChildById("2");
+        let earlierCreatedChild_2 = ((parent ? parent : this) && (parent ? parent : this).findChildById) ? (parent ? parent : this).findChildById(generateId()) : undefined;
         if (earlierCreatedChild_2 == undefined) {
-            View.create(new TitleComp("2", parent ? parent : this, { title: this.__value }));
+            View.create(new TitleComp("@builderWithLinkData_" + __generate__Id, parent ? parent : this, { title: this.__value }));
         }
         else {
             earlierCreatedChild_2.updateWithValueParams({});

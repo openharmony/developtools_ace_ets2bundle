@@ -41,6 +41,7 @@
         "Line",
         "List",
         "ListItem",
+        "ListItemGroup",
         "LoadingProgress",
         "Marquee",
         "Menu",
@@ -269,6 +270,11 @@
             "name": "ListItem",
             "type": "ListItemAttribute",
             "instance": "ListItemInstance"
+          },
+          {
+            "name": "ListItemGroup",
+            "type": "ListItemGroupAttribute",
+            "instance": "ListItemGroupInstance"
           },
           {
             "name": "LoadingProgress",
@@ -576,7 +582,8 @@
     "typeRoots": [],
     "lib": [
       "es2020"
-    ]
+    ],
+    "alwaysStrict": true
   },
   "exclude": [
     "node_modules"

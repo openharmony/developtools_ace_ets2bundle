@@ -54,7 +54,12 @@ struct FancyUse {
 }`
 
 exports.expectResult =
-`class FancyUse extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@styles_" + ++__generate__Id;
+}
+class FancyUse extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__enable = new ObservedPropertySimple(true, this, "enable");

@@ -29,25 +29,26 @@ import ConcatSource from 'webpack-sources/lib/ConcatSource';
 
 import { transformLog } from './process_ui_syntax';
 import {
-  useOSFiles
+  useOSFiles,
+  sourcemapNamesCollection
 } from './validate_ui_syntax';
-import { projectConfig } from '../main';
 import {
   circularFile,
   mkDir,
-  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
-  ARK
 } from './pre_define';
 import {
   createLanguageService,
   createWatchCompilerHost
 } from './ets_checker';
-import { globalProgram } from '../main';
+import {
+  globalProgram,
+  projectConfig
+} from '../main';
 import cluster from 'cluster';
 
 configure({
@@ -66,6 +67,19 @@ interface Info {
     location: { start?: { line: number, column: number } }
   };
 }
+
+export interface CacheFileName {
+  mtimeMs: number,
+  children: string[],
+  error: boolean
+}
+
+interface NeedUpdateFlag {
+  flag: boolean;
+}
+
+export let cache: Cache;
+type Cache = Record<string, CacheFileName>;
 
 export class ResultStates {
   private mStats: Stats;
@@ -86,6 +100,17 @@ export class ResultStates {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
             assets[key]._value = assets[key]._value.toString().replace('.ts?entry', '.ts');
+
+            let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map','.js'));
+            if (sourcemapNamesCollection && absPath) {
+              let map: Map<string, string> = sourcemapNamesCollection.get(absPath);
+              if (map && map.size != 0) {
+                let names: Array<string> = Array.from(map).flat();
+                let sourcemapObj: any = JSON.parse(assets[key]._value);
+                sourcemapObj.names = names;
+                assets[key]._value = JSON.stringify(sourcemapObj);
+              }
+            }
           }
         });
       }
@@ -158,7 +183,7 @@ export class ResultStates {
                 return undefined;
               }\n` +
               `if (globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
-              ` && moduleId.indexOf("?name=") < 0 && isCommonModue(moduleId)) {\n` +
+              ` && String(moduleId).indexOf("?name=") < 0 && isCommonModue(moduleId)) {\n` +
               `  globalThis["__common_module_cache__${projectConfig.hashProjectPath}"]` +
               `[moduleId] = module;\n}`);
         });
@@ -174,7 +199,16 @@ export class ResultStates {
           createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
             this.delayPrintLogCount.bind(this)));
       } else {
-        const languageService: ts.LanguageService = createLanguageService(rootFileNames);
+        let languageService: ts.LanguageService = null;
+        let cacheFile: string = null;
+        if (projectConfig.xtsMode) {
+          languageService = createLanguageService(rootFileNames);
+        } else {
+          cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+          cache = fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile).toString()) : {};
+          const filterFiles: string[] = filterInput(rootFileNames);
+          languageService = createLanguageService(filterFiles);
+        }
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
           .getSyntacticDiagnostics()
@@ -183,6 +217,9 @@ export class ResultStates {
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           this.printDiagnostic(diagnostic);
         });
+        if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+          fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+        }
       }
     });
 
@@ -207,6 +244,9 @@ export class ResultStates {
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
     const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
     if (this.validateError(message)) {
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+        updateErrorFileCache(diagnostic);
+      }
       this.mErrorCount += 1;
       if (diagnostic.file) {
         const { line, character }: ts.LineAndCharacter =
@@ -258,9 +298,7 @@ export class ResultStates {
       if (this.mErrorCount > 0) {
         resultInfo += `ERROR:${this.mErrorCount}`;
         result = 'FAIL ';
-        if (!/ets_loader_ark$/.test(path.resolve(__dirname, '..'))) {
-          process.exitCode = 1;
-        }
+        process.exitCode = 1;
       } else {
         result = 'SUCCESS ';
       }
@@ -338,7 +376,7 @@ export class ResultStates {
           const position: string = errors[index].issue.location
             ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
             : '';
-          const location: string = errors[index].issue.file + position;
+          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
           const detail: string = errors[index].issue.message;
           logger.error(this.red, 'ETS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
@@ -347,7 +385,7 @@ export class ResultStates {
             .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
             .replace(/^ERROR/, 'ETS:ERROR');
           this.printErrorMessage(errorMessage, true, errors[index]);
-        } else {
+        } else if (!/TS[0-9]+:/.test(errors[index].message.toString())) {
           let errorMessage: string = `${errors[index].message.replace(/\[tsl\]\s*/, '')
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
@@ -360,10 +398,11 @@ export class ResultStates {
   }
   private printErrorMessage(errorMessage: string, lineFeed: boolean, errorInfo: Info): void {
     if (this.validateError(errorMessage)) {
+      const formatErrMsg = errorMessage.replace(/\\/g, '/');
       if (lineFeed) {
-        logger.error(this.red, errorMessage + '\n', this.reset);
+        logger.error(this.red, formatErrMsg + '\n', this.reset);
       } else {
-        logger.error(this.red, errorMessage, this.reset);
+        logger.error(this.red, formatErrMsg, this.reset);
       }
     } else {
       const errorsIndex = this.mStats.compilation.errors.indexOf(errorInfo);
@@ -398,5 +437,47 @@ export class ResultStates {
       }
     }
     return message;
+  }
+}
+
+function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
+  if (diagnostic.file && cache[path.resolve(diagnostic.file.fileName)]) {
+    cache[path.resolve(diagnostic.file.fileName)].error = true;
+  }
+}
+
+function filterInput(rootFileNames: string[]): string[] {
+  return rootFileNames.filter((file: string) => {
+    const needUpdate: NeedUpdateFlag = { flag: false };
+    const alreadyCheckedFiles: Set<string> = new Set();
+    checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
+    return needUpdate.flag;
+  });
+}
+
+function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyCheckedFiles: Set<string>): void {
+  if (alreadyCheckedFiles.has(file)) {
+    return;
+  } else {
+    alreadyCheckedFiles.add(file);
+  }
+
+  if (needUpdate.flag) {
+    return;
+  }
+
+  const value: CacheFileName = cache[file];
+  const mtimeMs: number = fs.statSync(file).mtimeMs;
+  if (value) {
+    if (value.error || value.mtimeMs !== mtimeMs) {
+      needUpdate.flag = true;
+      return;
+    }
+    for (let i = 0; i < value.children.length; ++i) {
+      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
+    }
+  } else {
+    cache[file] = { mtimeMs, children: [], error: false };
+    needUpdate.flag = true;
   }
 }

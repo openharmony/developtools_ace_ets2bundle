@@ -35,7 +35,7 @@ import { abilityConfig } from '../main';
 
 module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
-  source = processSystemApi(source, true);
+  source = processSystemApi(source, true, this.resourcePath);
   if (/\.(ets|ts)$/.test(this.resourcePath)) {
     componentInfo.id = 0;
     propertyCollection.clear();
@@ -51,8 +51,8 @@ module.exports = function resultProcess(source: string, map: any): void {
             item.column = posOfNode.character + 1;
           }
         } else {
-          item.line = undefined;
-          item.column = undefined;
+          item.line = item.line || undefined;
+          item.column = item.column || undefined;
         }
         if (!item.fileName) {
           item.fileName = sourceFile.fileName;

@@ -17,13 +17,13 @@ import ts from 'typescript';
 import {
   BUILD_ON
 } from './pre_define';
-import { writeFileSyncByNode } from './utils';
+import { generateSourceFilesToTemporary } from './utils';
 
 export function processJs(program: ts.Program, ut = false): Function {
   return (context: ts.TransformationContext) => {
     return (node: ts.SourceFile) => {
       if (process.env.compiler === BUILD_ON) {
-        writeFileSyncByNode(node, false);
+        generateSourceFilesToTemporary(node);
         return node;
       } else {
         return node;
