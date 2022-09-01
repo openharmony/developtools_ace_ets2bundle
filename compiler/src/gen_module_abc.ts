@@ -19,7 +19,9 @@ import cluster from 'cluster';
 import { logger } from './compile_info';
 import {
   SUCCESS,
-  FAIL
+  FAIL,
+  TS2ABC,
+  ES2ABC
 } from './pre_define';
 
 const red: string = '\u001b[31m';
@@ -53,10 +55,37 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   return;
 }
 
+function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
+  const inputPaths: any = JSON.parse(jsonInput);
+  for (let i = 0; i < inputPaths.length; ++i) {
+    const input: string = inputPaths[i].tempFilePath;
+    const abcFile: string = input.replace(/\.js$/, '.abc');
+    const singleCmd: any = `${cmd} "${input}" --output "${abcFile}" --source-file "${input}"`;
+    logger.debug('gen abc cmd is: ', singleCmd);
+    try {
+      childProcess.execSync(singleCmd);
+    } catch (e) {
+      logger.error(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
+      process.exit(FAIL);
+    }
+  }
+
+  return;
+}
+
+
 logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
-  js2abcByWorkers(process.env['inputs'], process.env['cmd']);
+
+  if (process.env.panda === TS2ABC) {
+    js2abcByWorkers(process.env['inputs'], process.env['cmd']);
+  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+    es2abcByWorkers(process.env['inputs'], process.env['cmd']);
+  } else {
+    logger.error(red, `ETS:ERROR please set panda module`, reset);
+    process.exit(FAIL);
+  }
   process.exit(SUCCESS);
 }

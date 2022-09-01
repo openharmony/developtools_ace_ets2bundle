@@ -14,6 +14,7 @@
  */
 
 import ts from 'typescript';
+const path = require('path');
 
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
@@ -43,7 +44,6 @@ import {
   APP_STORAGE,
   APP_STORAGE_SET_AND_PROP,
   APP_STORAGE_SET_AND_LINK,
-  APP_STORAGE_GET_OR_SET,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   SET_CONTROLLER_METHOD,
   SET_CONTROLLER_CTR,
@@ -53,7 +53,9 @@ import {
   COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  EXTNAME_ETS,
+  _GENERATE_ID
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -76,6 +78,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
+import { transformLog } from './process_ui_syntax';
 import { globalProgram, projectConfig } from '../main';
 
 export type ControllerType = {
@@ -505,11 +508,9 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
     return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
       createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
-            ts.factory.createIdentifier(APP_STORAGE_GET_OR_SET)), undefined, []),
-        ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
-          node.initializer, ts.factory.createThis()])));
+        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
+          ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
+          node.initializer, ts.factory.createThis(), ts.factory.createStringLiteral(name.getText())])));
   } else {
     validateAppStorageDecoractorsNonSingleKey(node, log);
   }
@@ -594,13 +595,17 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      argumentsArray.unshift(ts.factory.createStringLiteral((++componentInfo.id).toString()),
-        isInnerBuilder ? ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-        ) : ts.factory.createThis());
+      ++componentInfo.id;
+      argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
+        ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
+        ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
+        ts.factory.createStringLiteral(componentInfo.id.toString()),
+      isInnerBuilder ? ts.factory.createConditionalExpression(
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
+      ) : ts.factory.createThis());
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {
@@ -680,7 +685,7 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
   return false;
 }
 
-export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolean {
+export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: LogInfo[]): boolean {
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
@@ -694,9 +699,17 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program): boolea
     return true;
   } else if (ts.isUnionTypeNode(typeNode) && typeNode.types) {
     const types: ts.NodeArray<ts.TypeNode> = typeNode.types;
+    let basicType: boolean = false;
+    let referenceType: boolean = false;
     for (let i = 0; i < types.length; i++) {
       const enumType: ts.SyntaxKind = getEnumType(types[i], checker);
-      if (!simpleTypes.has(enumType || types[i].kind) && !isEnumtype(typeNode)) {
+      if (simpleTypes.has(enumType || types[i].kind) || isEnumtype(typeNode)) {
+        basicType = true;
+      } else {
+        referenceType = true;
+      }
+      if (basicType && referenceType && log) {
+        validateVariableType(typeNode, log);
         return false;
       }
     }
@@ -876,6 +889,14 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
     type: type,
     message: 'The parameter should be a string.',
     pos: pos
+  });
+}
+
+function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
+  log.push({
+    type: LogType.ERROR,
+    message: 'The state variable type of a struct component cannot be declared by both a simple type and an object type.',
+    pos: typeNode.getStart()
   });
 }
 

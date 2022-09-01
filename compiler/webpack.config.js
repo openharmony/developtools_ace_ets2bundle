@@ -17,6 +17,7 @@ const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
+const  { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
 const { OHMResolverPlugin } = require('./lib/resolve_ohm_url');
 const buildPipeServer = require('./server/build_pipe_server');
@@ -24,12 +25,12 @@ const buildPipeServer = require('./server/build_pipe_server');
 const {
   projectConfig,
   loadEntryObj,
-  readAppResource,
-  resources,
   loadWorker,
   abilityConfig,
   readWorkerFile,
-  loadModuleInfo
+  loadModuleInfo,
+  checkAppResourcePath,
+  addSDKBuildDependencies
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -99,6 +100,16 @@ function initConfig(config) {
         {
           test: /\.js$/,
           use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                plugins: [
+                  '@babel/plugin-transform-modules-commonjs',
+                  '@babel/plugin-proposal-class-properties'
+                ],
+                compact: false
+              },
+            },
             { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
             { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
           ]
@@ -128,7 +139,7 @@ function initConfig(config) {
       new ResultStates()
     ]
   });
-  if (!/ets_loader_ark$/.test(__dirname)) {
+  if (!projectConfig.xtsMode) {
     config.cache = {
       type: "filesystem",
       cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
@@ -193,7 +204,12 @@ function setProjectConfig(envArgs) {
 function setReleaseConfig(config) {
   const TerserPlugin = require('terser-webpack-plugin');
   config.mode = 'production';
-  config.optimization = {
+  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
+    config.optimization = config.optimization;
+  } else {
+    config.optimization = {};
+  }
+  Object.assign(config.optimization, {
     emitOnErrors: true,
     usedExports: false,
     minimize: true,
@@ -210,7 +226,7 @@ function setReleaseConfig(config) {
         }
       }
     })]
-  };
+  });
   config.output.sourceMapFilename = '_releaseMap/[name].js.map';
 }
 
@@ -312,6 +328,7 @@ function setTsConfigFile() {
 
 function setGenAbcPlugin(env, config) {
   process.env.compilerType = 'ark';
+  process.env.panda = projectConfig.pandaMode;
   let arkDir = path.join(__dirname, 'bin', 'ark');
   if (env.arkFrontendDir) {
     arkDir = env.arkFrontendDir;
@@ -328,6 +345,28 @@ function setGenAbcPlugin(env, config) {
   }
 }
 
+function setCleanWebpackPlugin(workerFile, config) {
+  if (projectConfig.compileMode === 'esmodule') {
+    return;
+  }
+  let cleanPath = [];
+  cleanPath.push(projectConfig.buildPath);
+  if (workerFile) {
+    let workerFilesPath = Object.keys(workerFile);
+    for (let workerFilePath of workerFilesPath) {
+      cleanPath.push(path.join(projectConfig.buildPath, workerFilePath, '..'));
+    }
+  }
+
+  config.plugins.push(
+    new CleanWebpackPlugin({
+      dry: false,
+      dangerouslyAllowCleanPatternsOutsideProject: true,
+      cleanOnceBeforeBuildPatterns: cleanPath
+    })
+  );
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
@@ -338,6 +377,7 @@ module.exports = (env, argv) => {
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCopyPluginConfig(config);
+  setCleanWebpackPlugin(workerFile, config);
 
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
@@ -368,12 +408,8 @@ module.exports = (env, argv) => {
   }
 
   const appResourcePath = env.appResource || process.env.appResource;
-  if (appResourcePath) {
-    readAppResource(resources, appResourcePath);
-    if (fs.existsSync(appResourcePath) && config.cache) {
-      config.cache.buildDependencies.config.push(appResourcePath)
-    }
-  }
+  checkAppResourcePath(appResourcePath, config);
+  addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }

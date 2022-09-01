@@ -57,7 +57,8 @@ import {
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   CUSTOM_COMPONENT,
   COMPONENT_CONSTRUCTOR_PARENT,
-  COMPONENT_IF_UNDEFINED
+  COMPONENT_IF_UNDEFINED,
+  INNER_COMPONENT_MEMBER_DECORATORS
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -137,31 +138,36 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
-      addPropertyMember(item, newMembers, program, parentComponentName.getText());
-      const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-        ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
-      if (result.isItemUpdate()) {
-        updateItem = result.getProperity();
+      if (/\bstatic\b/.test(item.getText())) {
+        newMembers.push(item);
+        validateDecorators(item, log);
       } else {
-        updateItem = item;
-      }
-      if (result.getVariableGet()) {
-        newMembers.push(result.getVariableGet());
-      }
-      if (result.getVariableSet()) {
-        newMembers.push(result.getVariableSet());
-      }
-      if (result.isCtorUpdate()) {
-        ctorNode = result.getCtor();
-      }
-      if (result.getUpdateParams()) {
-        updateParamsStatements.push(result.getUpdateParams());
-      }
-      if (result.isDeleteParams()) {
-        deleteParamsStatements.push(item);
-      }
-      if (result.getControllerSet()) {
-        newMembers.push(result.getControllerSet());
+        addPropertyMember(item, newMembers, program, parentComponentName.getText(), log);
+        const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
+          ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
+        if (result.isItemUpdate()) {
+          updateItem = result.getProperity();
+        } else {
+          updateItem = item;
+        }
+        if (result.getVariableGet()) {
+          newMembers.push(result.getVariableGet());
+        }
+        if (result.getVariableSet()) {
+          newMembers.push(result.getVariableSet());
+        }
+        if (result.isCtorUpdate()) {
+          ctorNode = result.getCtor();
+        }
+        if (result.getUpdateParams()) {
+          updateParamsStatements.push(result.getUpdateParams());
+        }
+        if (result.isDeleteParams()) {
+          deleteParamsStatements.push(item);
+        }
+        if (result.getControllerSet()) {
+          newMembers.push(result.getControllerSet());
+        }
       }
     }
     if (ts.isMethodDeclaration(item) && item.name) {
@@ -181,8 +187,23 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   return newMembers;
 }
 
+function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
+  if (item.decorators && item.decorators.length) {
+    item.decorators.map((decorator: ts.Decorator) => {
+      const decoratorName: string = decorator.getText();
+      if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
+        log.push({
+          type: LogType.ERROR,
+          message: `The static variable of struct cannot be used together with built-in decorators.`,
+          pos: item.getStart()
+        });
+      }
+    });
+  }
+}
+
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
-  program: ts.Program, parentComponentName: string): void {
+  program: ts.Program, parentComponentName: string, log: LogInfo[]): void {
   const propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
   let decoratorName: string;
   let updatePropertyItem: ts.PropertyDeclaration;
@@ -198,13 +219,13 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       switch (decoratorName) {
         case COMPONENT_STATE_DECORATOR:
         case COMPONENT_PROVIDE_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
             OBSERVED_PROPERTY_SIMPLE : OBSERVED_PROPERTY_OBJECT, [type ||
               ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
         case COMPONENT_LINK_DECORATOR:
         case COMPONENT_CONSUME_DECORATOR:
-          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program) ?
+          newType = ts.factory.createTypeReferenceNode(isSimpleType(type, program, log) ?
             SYNCHED_PROPERTY_SIMPLE_TWO_WAY : SYNCHED_PROPERTY_SIMPLE_ONE_WAY, [type ||
               ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]);
           break;
@@ -273,9 +294,8 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
         Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
           Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
-      ts.factory.createNumericLiteral(node.initializer ? node.initializer.getText() :
-        COMPONENT_CONSTRUCTOR_UNDEFINED), ts.factory.createThis(),
-      ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
+      node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
+      ts.factory.createThis(), ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
     ]
   );
 }
@@ -304,10 +324,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
       CUSTOM_BUILDER_METHOD.add(name);
-      INNER_CUSTOM_BUILDER_METHOD.add(name)
-      node.parameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
-        ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)));
+      INNER_CUSTOM_BUILDER_METHOD.add(name);
+      node.parameters.push(createParentParameter());
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
@@ -329,6 +347,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     }
   }
   return updateItem;
+}
+
+export function createParentParameter(): ts.ParameterDeclaration {
+  return ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
+    ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
 }
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,

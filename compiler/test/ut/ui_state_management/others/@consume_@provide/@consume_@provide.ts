@@ -59,7 +59,12 @@ struct CompC {
 }
 `
 exports.expectResult =
-`class CompA extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@consume_@provide_" + ++__generate__Id;
+}
+class CompA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__reviewVotes = new ObservedPropertySimple(0, this, "reviewVotes");
@@ -84,7 +89,7 @@ exports.expectResult =
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new CompB("2", this, {}));
         }
@@ -118,7 +123,7 @@ class CompB extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new CompC("3", this, {}));
         }

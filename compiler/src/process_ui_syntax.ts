@@ -17,7 +17,10 @@ import ts from 'typescript';
 import path from 'path';
 
 import { componentCollection } from './validate_ui_syntax';
-import { processComponentClass } from './process_component_class';
+import {
+  processComponentClass,
+  createParentParameter
+} from './process_component_class';
 import processImport from './process_import';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
@@ -48,7 +51,10 @@ import {
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   ESMODULE,
   ARK,
-  COMPONENT_COMMON
+  COMPONENT_COMMON,
+  EXTNAME_ETS,
+  GENERATE_ID,
+  _GENERATE_ID
 } from './pre_define';
 import {
   componentInfo,
@@ -69,7 +75,8 @@ import {
   EXTEND_ATTRIBUTE,
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
-  INTERFACE_NODE_SET
+  INTERFACE_NODE_SET,
+  ID_ATTRS
 } from './component_map';
 import {
   localStorageLinkCollection,
@@ -92,6 +99,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
         transformLog.sourceFile = node;
+        preprocessIdAttrs(node.fileName);
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
@@ -107,6 +115,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
+        generateId(statements, node);
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
@@ -139,9 +148,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
+          node.parameters.push(createParentParameter());
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
-            processComponentBlock(node.body, false, transformLog.errors));
+            processComponentBlock(node.body, false, transformLog.errors, false, true, node.name.getText()));
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
@@ -171,6 +181,49 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       return ts.visitEachChild(node, processResourceNode, context);
     }
   };
+}
+
+function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
+  statements.unshift(
+    ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(_GENERATE_ID),
+          undefined,
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+          ts.factory.createNumericLiteral("0")
+        )],
+        ts.NodeFlags.Let
+      )
+    ),
+    ts.factory.createFunctionDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      ts.factory.createIdentifier(GENERATE_ID),
+      undefined,
+      [],
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+      ts.factory.createBlock(
+        [ts.factory.createReturnStatement(ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral(path.basename(node.fileName, EXTNAME_ETS)+'_'),
+          ts.factory.createToken(ts.SyntaxKind.PlusToken),ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.PlusPlusToken,
+          ts.factory.createIdentifier(_GENERATE_ID)
+        )))],
+        true
+      )
+    )
+  )
+}
+
+function preprocessIdAttrs(fileName: string): void {
+  for (const [id, idInfo] of ID_ATTRS) {
+    if (fileName === idInfo.get('path')) {
+      ID_ATTRS.delete(id);
+    }
+  }
 }
 
 function isCustomDialogController(node: ts.Expression) {
@@ -331,7 +384,7 @@ function getResourceDataNode(node: ts.CallExpression): ts.Node {
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
   ts.ObjectLiteralExpression {
-  const propertyArray: Array[ts.PropertyAssignment] = [
+  const propertyArray: Array<ts.PropertyAssignment> = [
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
@@ -425,10 +478,15 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
   const componentName: string = isExtendFunction(node);
   if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
+    let bodynode: ts.Block;
     const attrSet: ts.CallExpression = node.body.statements[0].expression;
-    const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
-    bindComponentAttr(changeCompName as ts.ExpressionStatement,
-      ts.factory.createIdentifier(componentName), statementArray, log);
+    if (isOriginalExtend(node.body)) {
+      const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
+      bindComponentAttr(changeCompName as ts.ExpressionStatement,
+        ts.factory.createIdentifier(componentName), statementArray, log);
+    } else {
+      bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
+    }
     let extendFunctionName: string;
     if (node.name.getText().startsWith('__' + componentName + '__')) {
       extendFunctionName = node.name.getText();
@@ -438,18 +496,64 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
-      node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+      node.parameters, node.type, isOriginalExtend(node.body) ?
+        ts.factory.updateBlock(node.body, statementArray) : bodynode);
+  }
+  function traverseExtendExpression(node: ts.Node): ts.Node {
+    if (ts.isExpressionStatement(node) && isDollarNode(node)) {
+      const changeCompName: ts.ExpressionStatement =
+        ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
+      const statementArray: ts.Statement[] = [];
+      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
+      return ts.factory.createCallExpression(
+        ts.factory.createParenthesizedExpression(ts.factory.createFunctionExpression(
+          undefined, undefined, undefined, undefined, [], undefined,
+          ts.factory.createBlock(statementArray, true))), undefined, []);
+    }
+    return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
 }
 
-function processExtendBody(node: ts.Node): ts.Expression {
+export function isOriginalExtend(node: ts.Block): boolean {
+  let innerNode: ts.Node = node.statements[0];
+  if (node.statements.length === 1 && ts.isExpressionStatement(innerNode)) {
+    while (innerNode.expression) {
+      innerNode = innerNode.expression;
+    }
+    if (ts.isIdentifier(innerNode) && innerNode.pos && innerNode.end && innerNode.pos === innerNode.end &&
+      innerNode.escapedText.toString().match(/Instance$/)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isDollarNode(node: ts.ExpressionStatement): boolean {
+  let innerNode: ts.Node = node;
+  while (innerNode.expression) {
+    innerNode = innerNode.expression;
+  }
+  if (ts.isIdentifier(innerNode) && innerNode.getText() === '$') {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function processExtendBody(node: ts.Node, componentName?: string): ts.Expression {
   switch (node.kind) {
     case ts.SyntaxKind.CallExpression:
-      return ts.factory.createCallExpression(processExtendBody(node.expression), undefined, node.arguments);
+      return ts.factory.createCallExpression(processExtendBody(node.expression, componentName),
+        undefined, node.arguments);
     case ts.SyntaxKind.PropertyAccessExpression:
-      return ts.factory.createPropertyAccessExpression(processExtendBody(node.expression), node.name);
+      return ts.factory.createPropertyAccessExpression(
+        processExtendBody(node.expression, componentName), node.name);
     case ts.SyntaxKind.Identifier:
-      return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+      if (!componentName) {
+        return ts.factory.createIdentifier(node.escapedText.toString().replace(INSTANCE, ''));
+      } else {
+        return ts.factory.createIdentifier(componentName);
+      }
   }
 }
 

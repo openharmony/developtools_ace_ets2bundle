@@ -58,13 +58,16 @@ function initProjectConfig(projectConfig) {
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath
+    process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
-    hashProjectPath(projectConfig.projectPath)
+    hashProjectPath(projectConfig.projectPath);
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
 }
 
 function loadEntryObj(projectConfig) {
@@ -91,7 +94,7 @@ function loadEntryObj(projectConfig) {
       process.env.compileMode = 'moduleJson';
       buildManifest(manifest, projectConfig.aceModuleJsonPath);
     } else {
-      throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath +
+      throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath.replace(/\\/g, '/') +
         ' or module.json is lost or format is invalid. \u001b[39m').message;
     }
     if (manifest.pages) {
@@ -102,11 +105,13 @@ function loadEntryObj(projectConfig) {
         if (fs.existsSync(fileName)) {
           projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
         } else {
-          throw Error(`\u001b[31m ERROR: page '${fileName}' does not exist. \u001b[39m`).message;
+          throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
+            .message;
         }
       });
     } else {
-      throw Error('\u001b[31m ERROR: missing pages attribute in ' + projectConfig.manifestFilePath +
+      throw Error('\u001b[31m ERROR: missing pages attribute in ' +
+        projectConfig.manifestFilePath.replace(/\\/g, '/') +
         '. \u001b[39m').message;
     }
   }
@@ -120,7 +125,7 @@ function buildManifest(manifest, aceConfigPath) {
       manifest.pages = getPages(moduleConfigJson);
     } else {
       throw Error('\u001b[31m'+
-        'EERROR: the config.json file miss key word module || module[abilities].' +
+        'ERROR: the config.json file miss key word module || module[abilities].' +
         '\u001b[39m').message;
     }
   } catch (e) {
@@ -150,7 +155,7 @@ function setEntryFile(projectConfig) {
   const entryFilePath = path.resolve(projectConfig.projectPath, entryFileRealPath);
   abilityConfig.abilityEntryFile = entryFilePath;
   if (!fs.existsSync(entryFilePath) && aceCompileMode === 'page') {
-    throw Error(`\u001b[31m ERROR: missing ${entryFilePath}. \u001b[39m`).message;
+    throw Error(`\u001b[31m ERROR: missing ${entryFilePath.replace(/\\/g, '/')}. \u001b[39m`).message;
   }
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
 }
@@ -172,8 +177,8 @@ function setFaTestRunnerFile(projectConfig) {
     const testRunnerFiles = [];
     readFile(testRunnerPath, testRunnerFiles);
     testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+      if (/\.(ts|js|ets)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
 		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
@@ -188,8 +193,8 @@ function setStageTestRunnerFile(projectConfig) {
     const testRunnerFiles = [];
     readFile(testRunnerPath, testRunnerFiles);
     testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js)$/, '');
+      if (/\.(ts|js|ets)$/.test(item)) {
+        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
 		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
@@ -217,7 +222,9 @@ function setAbilityFile(projectConfig, abilityPages) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
     } else {
-      throw Error(`\u001b[31m ERROR: srcEntrance file '${projectAbilityPath}' does not exist. \u001b[39m`).message;
+      throw Error(
+        `\u001b[31m ERROR: srcEntrance file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
+      ).message;
     }
   });
 }
@@ -367,10 +374,54 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
     projectConfig.processTs = false;
+    projectConfig.processMergeabc = false;
     projectConfig.buildArkMode = envArgs.buildMode;
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
+    projectConfig.pandaMode = buildJsonInfo.pandaMode;
+  }
+}
+
+function checkAppResourcePath(appResourcePath, config) {
+  if (appResourcePath) {
+    readAppResource(resources, appResourcePath);
+    if (fs.existsSync(appResourcePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePath);
+    }
+    if (!projectConfig.xtsMode) {
+      const appResourcePathSavePath = path.resolve(projectConfig.cachePath, 'resource_path.txt');
+      saveAppResourcePath(appResourcePath, appResourcePathSavePath);
+      if (fs.existsSync(appResourcePathSavePath) && config.cache) {
+        config.cache.buildDependencies.config.push(appResourcePathSavePath);
+      }
+    }
+  }
+}
+
+function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
+  let isSave = false;
+  if (fs.existsSync(appResourcePathSavePath)) {
+    const saveContent = fs.readFileSync(appResourcePathSavePath);
+    if (appResourcePath !== saveContent) {
+      isSave = true;
+    }
+  } else {
+    isSave = true;
+  }
+  if (isSave) {
+    fs.writeFileSync(appResourcePathSavePath, appResourcePath);
+  }
+}
+
+function addSDKBuildDependencies(config) {
+  if (projectConfig.localPropertiesPath &&
+    fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
+  }
+  if (projectConfig.projectProfilePath &&
+    fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
   }
 }
 
@@ -390,3 +441,5 @@ exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
+exports.checkAppResourcePath = checkAppResourcePath;
+exports.addSDKBuildDependencies = addSDKBuildDependencies;

@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-import { processSystemApi } from './validate_ui_syntax';
+import {
+  processSystemApi,
+  CollectImportNames
+} from './validate_ui_syntax';
 import { systemModules } from '../main';
 
 module.exports = function processSystemModule(source: string): string {
@@ -31,5 +34,6 @@ module.exports = function processSystemModule(source: string): string {
     return item;
   });
   source = processSystemApi(source, false, this.resourcePath, true);
+  CollectImportNames(source, this.resourcePath);
   return source;
 };

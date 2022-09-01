@@ -13,8 +13,13 @@
 
 import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
+import("//build/ohos_var.gni")
 import("//foundation/arkui/ace_engine/ace_config.gni")
-import("//interface/sdk-js/interface_config.gni")
+if (sdk_build_public) {
+  import("//out/sdk-public/public_interface/sdk-js/interface_config.gni")
+} else {
+  import("//interface/sdk-js/interface_config.gni")
+}
 
 ets_loader_lib_dir =
     get_label_info(":build_ets_loader_library", "target_out_dir") + "/lib"
@@ -49,6 +54,10 @@ action("build_ets_loader_library") {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
+  if (sdk_build_public) {
+    _declarations_file_dir =
+        "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
+  }
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
@@ -284,7 +293,12 @@ ohos_copy("ets_loader_ark_codegen") {
 }
 
 ohos_copy("ohos_declaration_ets_ark") {
-  deps = [ "//interface/sdk-js:ohos_declaration_ets" ]
+  deps = []
+  if (sdk_build_public) {
+    deps += [ "//out/sdk-public/public_interface/sdk-js:ohos_declaration_ets" ]
+  } else {
+    deps += [ "//interface/sdk-js:ohos_declaration_ets" ]
+  }
 
   sources = [ root_out_dir + "/ohos_declaration/ohos_declaration_ets" ]
 

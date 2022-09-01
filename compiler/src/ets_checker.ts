@@ -28,19 +28,24 @@ import {
 } from './validate_ui_syntax';
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
-  COMPONENT_IF,
   COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
-  $$_BLOCK_INTERFACE
+  $$_BLOCK_INTERFACE,
+  COMPONENT_EXTEND_DECORATOR
 } from './pre_define';
-import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
 import { props } from './compile_info';
 import { resolveSourceFile } from './resolve_ohm_url';
+import {
+  CacheFileName,
+  cache
+} from './compile_info';
+import { hasDecorator } from './utils';
+import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -83,6 +88,12 @@ function setCompilerOptions() {
   });
 }
 
+interface extendInfo {
+  start: number,
+  end: number,
+  compName: string
+}
+
 export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
   setCompilerOptions();
   const files: ts.MapLike<{ version: number }> = {};
@@ -95,8 +106,9 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        const content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
-        checkUISyntax(content, fileName);
+        let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
+        const extendFunctionInfo: extendInfo[] = [];
+        content = instanceInsteadThis(content, fileName, extendFunctionInfo);
         return ts.ScriptSnapshot.fromString(content);
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
@@ -144,7 +156,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       } else {
         resolvedModules.push(null);
       }
-    } else if (/^@(system|ohos)/i.test(moduleName.trim())) {
+    } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
       if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
         resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
@@ -169,20 +181,47 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
       const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
       const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
+      const fileModulePath: string =
+        path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
       if (ts.sys.fileExists(modulePath)) {
         resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
       } else if (ts.sys.fileExists(jsModulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.js'));
+        resolvedModules.push(getResolveModule(jsModulePath, '.js'));
+      } else if (ts.sys.fileExists(fileModulePath)) {
+        resolvedModules.push(getResolveModule(fileModulePath, '.js'));
       } else {
         resolvedModules.push(null);
       }
     }
   }
+  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+    createOrUpdateCache(resolvedModules, containingFile);
+  }
   return resolvedModules;
 }
 
+function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
+  const children: string[] = [];
+  const error: boolean = false;
+  resolvedModules.forEach(moduleObj => {
+    if (moduleObj && moduleObj.resolvedFileName && /(?<!\.d)\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
+      const file: string = path.resolve(moduleObj.resolvedFileName);
+      const mtimeMs: number = fs.statSync(file).mtimeMs;
+      children.push(file);
+      const value: CacheFileName = cache[file];
+      if (value) {
+        value.mtimeMs = mtimeMs;
+        value.error = error;
+      } else {
+        cache[file] = { mtimeMs, children: [], error };
+      }
+    }
+  });
+  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children, error };
+}
+
 export function createWatchCompilerHost(rootFileNames: string[],
-  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function
+  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, isPipe: boolean = false
 ): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
   setCompilerOptions();
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
@@ -192,7 +231,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
     (diagnostic: ts.Diagnostic) => {
       // End of compilation in watch mode flag.
       if ([6193, 6194].includes(diagnostic.code)) {
-        process.env.watchTs = 'end';
+        if (!isPipe) {
+          process.env.watchTs = 'end';
+        }
         delayPrintLogCount();
       }
     });
@@ -201,14 +242,27 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      const content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
-      checkUISyntax(content, fileName);
+      let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
+      const extendFunctionInfo: extendInfo[] = [];
+      content = instanceInsteadThis(content, fileName, extendFunctionInfo);
       return content;
     }
     return fs.readFileSync(fileName).toString();
   };
   host.resolveModuleNames = resolveModuleNames;
   return host;
+}
+
+function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
+  checkUISyntax(content, fileName, extendFunctionInfo);
+  extendFunctionInfo.reverse().forEach((item) => {
+    const subStr: string = content.substring(item.start, item.end);
+    const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
+      return item1 + item.compName + 'Instance' + item2;
+    });
+    content = content.slice(0, item.start) + insert + content.slice(item.end);
+  });
+  return content;
 }
 
 function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
@@ -224,18 +278,18 @@ export const decoratorParamsCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
-function checkUISyntax(source: string, fileName: string): void {
+function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[]): void {
   if (/\.ets$/.test(fileName)) {
     if (path.basename(fileName) !== 'app.ets') {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
-      parseAllNode(sourceFile, sourceFile);
+      parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
   }
 }
 
-function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
+function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFunctionInfo: extendInfo[]): void {
   if (ts.isStructDeclaration(node)) {
     if (node.members) {
       node.members.forEach(item => {
@@ -264,7 +318,13 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile): void {
       });
     }
   }
-  node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode));
+  if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
+    if (node.body && node.body.statements && node.body.statements.length &&
+      !isOriginalExtend(node.body)) {
+      extendFunctionInfo.push({start: node.pos, end: node.end, compName: isExtendFunction(node)});
+    }
+  }
+  node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
 }
 
 function traverseBuild(node: ts.Node, index: number): void {

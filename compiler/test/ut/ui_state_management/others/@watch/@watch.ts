@@ -65,16 +65,21 @@ struct CompA {
 }
 `
 exports.expectResult =
-`class CompA extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@watch_" + ++__generate__Id;
+}
+class CompA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__shopBasket = new ObservedPropertyObject([7, 12, 47, 3], this, "shopBasket");
         this.__totalPurchase = new ObservedPropertySimple(0, this, "totalPurchase");
         this.__defArray = new ObservedPropertyObject(['c', 'g', 't', 'z'], this, "defArray");
         this.__resultTip = new ObservedPropertySimple('', this, "resultTip");
-        this.updateWithValueParams(params);
         this.declareWatch("shopBasket", this.onBasketUpdated);
         this.declareWatch("defArray", this.onPutItem);
+        this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
         if (params.shopBasket !== undefined) {

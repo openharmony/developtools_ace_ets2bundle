@@ -70,7 +70,7 @@ import {
   componentInfo,
   addLog,
   hasDecorator,
-  toUnixPath
+  getPackageInfo
 } from './utils';
 import { projectConfig, abilityPagesFullPath } from '../main';
 import { collectExtend } from './process_ui_syntax';
@@ -135,8 +135,9 @@ export const localStoragePropCollection: Map<string, Map<string, Set<string>>> =
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
-export const packageCollection: Map<string, Array<string>> = new Map();
 export const useOSFiles: Set<string> = new Set();
+export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
+export const originalImportNamesMap: Map<string, string> = new Map();
 
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
@@ -809,6 +810,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   content = preprocessNewExtend(content);
   // process @system.
   content = processSystemApi(content, false, sourcePath);
+  CollectImportNames(content, sourcePath);
 
   return {
     content: content,
@@ -836,17 +838,6 @@ export function preprocessNewExtend(content: string, extendCollection?: Set<stri
     }
     return item;
   });
-}
-
-function getPackageInfo(configFile: string): Array<string> {
-  if (packageCollection.has(configFile)) {
-    return packageCollection.get(configFile);
-  }
-  const data: any = JSON.parse(fs.readFileSync(configFile).toString());
-  const bundleName: string = data.app.bundleName;
-  const moduleName: string = data.module.name;
-  packageCollection.set(configFile, [bundleName, moduleName]);
-  return [bundleName, moduleName];
 }
 
 function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string): string {
@@ -964,26 +955,6 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
   return item;
 }
 
-function replaceRelativePath(item:string, moduleRequest: string, sourcePath: string): string {
-  // Do not replace relativePath to ohmUrl when building bundle
-  if (sourcePath && projectConfig.compileMode === ESMODULE) {
-    const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
-    if (result && projectConfig.aceModuleJsonPath) {
-      const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
-      const projectRootPath: string = projectConfig.projectRootPath;
-      if (npmModuleIdx == -1 || npmModuleIdx == projectRootPath.search(/(\/|\\)node_modules(\/|\\)/)) {
-        const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
-        const bundleName: string = packageInfo[0];
-        const moduleName: string = packageInfo[1];
-        moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-      }
-    }
-  }
-  return item;
-}
-
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
   sourcePath: string = null, isSystemModule: boolean = false): string {
   if (isProcessAllowList && projectConfig.compileMode === ESMODULE) {
@@ -997,21 +968,23 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
   const REG_IMPORT_DECL: RegExp = isProcessAllowList ? projectConfig.compileMode === ESMODULE ?
     /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g :
     /(import|const)\s+(.+)\s*=\s*(\_\_importDefault\()?require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)(\))?/g :
-    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+    /(import|export)\s+(?:(.+)|\{([\s\S]+)\})\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const systemValueCollection: Set<string> = new Set();
-  const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5) => {
-    const importValue: string = isProcessAllowList ? projectConfig.compileMode === ESMODULE ? item1 : item2 : item2 || item4;
+  const processedContent: string = content.replace(REG_IMPORT_DECL, (item, item1, item2, item3, item4, item5, item6) => {
+    const importValue: string = isProcessAllowList ? projectConfig.compileMode === ESMODULE ? item1 : item2 : item2 || item5;
 
     if (isProcessAllowList) {
       systemValueCollection.add(importValue);
       if (projectConfig.compileMode !== ESMODULE) {
+        collectSourcemapNames(sourcePath, importValue, item5);
         return replaceSystemApi(item, importValue, item4, item5);
       }
+      collectSourcemapNames(sourcePath, importValue, item3);
       return replaceSystemApi(item, importValue, item2, item3);
     }
 
-    const moduleRequest: string = item3 || item5;
+    const moduleRequest: string = item4 || item6;
     if (isOhmUrl(moduleRequest)) { // ohmURL
       return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
     } else if (/^@(system|ohos)\./.test(moduleRequest)) { // ohos/system.api
@@ -1023,17 +996,62 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
       const moduleType: string = result[1];
       const apiName: string = result[2];
       return replaceSystemApi(item, importValue, moduleType, apiName);
-    } else if (/^(\.|\.\.)\//.test(moduleRequest)) { // relativePath
-      return replaceRelativePath(item, moduleRequest, sourcePath);
     } else if (/^lib(\S+)\.so$/.test(moduleRequest)) { // libxxx.so
       const result: RegExpMatchArray = moduleRequest.match(/^lib(\S+)\.so$/);
       const libSoKey: string = result[1];
       return replaceLibSo(importValue, libSoKey, sourcePath);
     }
-    // node_modules
     return item;
   });
   return processInnerModule(processedContent, systemValueCollection);
+}
+
+function collectSourcemapNames(sourcePath: string, changedName: string, originalName: string): void {
+  if (sourcePath == null) {
+    return;
+  }
+  const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
+  if (!sourcemapNamesCollection.has(cleanSourcePath)) {
+    return;
+  }
+
+  let map: Map<string, string> = sourcemapNamesCollection.get(cleanSourcePath);
+  if (map.has(changedName)) {
+    return;
+  }
+
+  for (let entry of originalImportNamesMap.entries()) {
+    const key: string = entry[0];
+    const value: string = entry[1];
+    if (value === '@ohos.' + originalName || value === '@system.' + originalName) {
+      map.set(changedName.trim(), key);
+      sourcemapNamesCollection.set(cleanSourcePath, map);
+      originalImportNamesMap.delete(key);
+      break;
+    }
+  }
+}
+
+export function CollectImportNames(content: string, sourcePath: string = null): void {
+  const REG_IMPORT_DECL: RegExp =
+    /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
+
+  const decls: string[] = content.match(REG_IMPORT_DECL);
+  if (decls != undefined) {
+    decls.forEach(decl => {
+      const parts: string[] = decl.split(' ');
+      if (parts.length === 4 && parts[0] === 'import' && parts[2] === 'from' && !parts[3].includes('.so')) {
+        originalImportNamesMap.set(parts[1], parts[3].replace(/'/g, ''));
+      }
+    })
+  }
+
+  if (sourcePath && sourcePath != null) {
+    const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
+    if (!sourcemapNamesCollection.has(cleanSourcePath)) {
+      sourcemapNamesCollection.set(cleanSourcePath, new Map());
+    }
+  }
 }
 
 function processInnerModule(content: string, systemValueCollection: Set<string>): string {
