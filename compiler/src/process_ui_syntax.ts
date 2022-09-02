@@ -89,7 +89,7 @@ import {
 import {
   resources,
   projectConfig,
-  sdkVersion
+  partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
@@ -120,7 +120,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
-        if (sdkVersion.compatibleSdkVersion === 8) {
+        if (!partialUpdateConfig.partialUpdateMode) {
           generateId(statements, node);
         }
         INTERFACE_NODE_SET.forEach(item => {
@@ -588,7 +588,7 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
   if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         const entryNode: ts.ExpressionStatement =
           createEntryFunction(componentCollection.entryComponent, context) as ts.ExpressionStatement;
         return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
@@ -632,7 +632,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext)
   if (localStorageName) {
     newArray.push(context.factory.createIdentifier(localStorageName));
   }
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     const newExpressionStatement: ts.ExpressionStatement =
       context.factory.createExpressionStatement(context.factory.createCallExpression(
         context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,

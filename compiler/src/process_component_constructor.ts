@@ -35,7 +35,7 @@ import {
   localStoragePropCollection
 } from './validate_ui_syntax';
 
-import { sdkVersion } from '../main';
+import { partialUpdateConfig } from '../main';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
 ): ts.ConstructorDeclaration {
@@ -89,7 +89,7 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   }
   const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
     localStoragePropCollection.get(parentComponentName.getText()).size;
-  const paramNames: Set<string> = sdkVersion.compatibleSdkVersion === 8 ? new Set([
+  const paramNames: Set<string> = !partialUpdateConfig.partialUpdateMode ? new Set([
     COMPONENT_CONSTRUCTOR_ID,
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
@@ -131,7 +131,7 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
         parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
-            sdkVersion.compatibleSdkVersion === 8 ? BASE_COMPONENT_NAME : BASE_COMPONENT_NAME_PU), undefined),
+            !partialUpdateConfig.partialUpdateMode ? BASE_COMPONENT_NAME : BASE_COMPONENT_NAME_PU), undefined),
           item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_PARAMS:
@@ -180,7 +180,7 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
 }
 
 function createCallSuperStatement(localStorageNum: number): ts.Statement{
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createSuper(), undefined,
         localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
@@ -202,7 +202,7 @@ function createUPdWithValStatement(): ts.Statement {
       ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(),
         ts.factory.createIdentifier(
-          sdkVersion.compatibleSdkVersion === 8 ?
+          !partialUpdateConfig.partialUpdateMode ?
             COMPONENT_CONSTRUCTOR_UPDATE_PARAMS : COMPONENT_CONSTRUCTOR_INITIAL_PARAMS
         )
       ),

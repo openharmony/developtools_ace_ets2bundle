@@ -116,7 +116,7 @@ import {
   componentInfo,
   createFunction
 } from './utils';
-import { sdkVersion, projectConfig } from '../main';
+import { partialUpdateConfig, projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 import { CUSTOM_COMPONENT } from '../lib/pre_define';
@@ -125,7 +125,7 @@ export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
   let renderNode: ts.Identifier;
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     renderNode = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
   } else {
     renderNode = ts.factory.createIdentifier(COMPONENT_INITIAl_RENDER_FUNCTION);
@@ -148,7 +148,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
     {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
-  if (isLazy && sdkVersion.compatibleSdkVersion === 8) {
+  if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
   if (isTransition) {
@@ -159,7 +159,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
       createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
         ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
   }
-  if (isLazy && sdkVersion.compatibleSdkVersion === 8) {
+  if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.push(createRenderingInProgress(false));
   }
   return ts.factory.updateBlock(node, newStatements);
@@ -283,7 +283,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.forEachComponent:
             parent = undefined;
-            if (sdkVersion.compatibleSdkVersion === 8) {
+            if (!partialUpdateConfig.partialUpdateMode) {
               processForEachComponent(item, newStatements, log, isInnerBuilder);
             } else {
               processForEachComponentNew(item, newStatements, log);
@@ -414,9 +414,9 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
-  if (sdkVersion.compatibleSdkVersion === 9 && ItemComponents.includes(nameResult.name)) {
+  if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log);
-  } else if (sdkVersion.compatibleSdkVersion === 9 && TABCONTENT_COMPONENT.includes(nameResult.name)) {
+  } else if (partialUpdateConfig.partialUpdateMode && TABCONTENT_COMPONENT.includes(nameResult.name)) {
     processTabContent(node, innerCompStatements, log);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent);
@@ -492,7 +492,7 @@ function processInnerCompStatements(
   newStatements: ts.Statement[],
   node: ts.Statement
 ): void {
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
     innerCompStatements.push(createComponentCreationStatement(node, newStatements));
@@ -1086,7 +1086,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
       const blockNode: ts.Block = ts.factory.createBlock([statement], true);
       // @ts-ignore
       statement.parent = blockNode;
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
@@ -1094,7 +1094,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
         return processComponentBlock(blockNode, isLazy, log).statements;
       }
     } else {
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
@@ -1123,7 +1123,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   const ifCreate: ts.ExpressionStatement = createIfCreate();
   const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isInnerBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     newStatements.push(ifCreate, newIfNode, ifPop);
   } else {
     newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode]), ifPop);
