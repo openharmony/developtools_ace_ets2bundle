@@ -232,7 +232,10 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
         const name: string = getName(item);
         switch (getComponentType(item, log, name, parent)) {
           case ComponentType.innerComponent:
-            parent = name;
+            const etsExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
+            if (ts.isIdentifier(etsExpression.expression)) {
+              parent = etsExpression.expression.escapedText.toString();
+            }
             processInnerComponent(item, newStatements, log, parent);
             break;
           case ComponentType.customComponent:
@@ -944,24 +947,30 @@ function updateArgumentFor$$(argument: any): ts.Expression {
 function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
   log: LogInfo[]): void {
   if (!newsupplement.isAcceleratePreview && propName === ATTRIBUTE_ID) {
-    const literalString: string = temp.arguments[0].text;
-    if (ID_ATTRS.has(literalString)) {
-      const errInfo: Map<string, string | number> = ID_ATTRS.get(literalString);
-      log.push({
-        type: LogType.ERROR,
-        message: `The current component id "${literalString}" is duplicate with ` +
-          `${errInfo.get('path')}:${errInfo.get('line')}:${errInfo.get('col')}.`,
-        pos: node.pos
-      });
+    const id: string = temp.arguments[0].text;
+    const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
+      .getLineAndCharacterOfPosition(getRealNodePos(node));
+    const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
+      .replace(/\\+/g, '/');
+    const rLine: number = posOfNode.line + 1;
+    const rCol: number = posOfNode.character + 1;
+    if (ID_ATTRS.has(id)) {
+      const idInfo: Map<string, string | number> = ID_ATTRS.get(id);
+      if (!(idInfo.get('path') === rPath &&
+        idInfo.get('line') === rLine &&
+        idInfo.get('col') === rCol)) {
+        log.push({
+          type: LogType.WARN,
+          message: `The current component id "${id}" is duplicate with ` +
+            `${idInfo.get('path')}:${idInfo.get('line')}:${idInfo.get('col')}.`,
+          pos: node.pos
+        });
+      }
     } else {
-      const posOfNode: ts.LineAndCharacter = transformLog.sourceFile
-        .getLineAndCharacterOfPosition(getRealNodePos(node));
-      const curFileName: string = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-      const rPath: string = path.resolve(projectConfig.projectPath, curFileName)
-        .replace(/\\+/g, '/');
-      ID_ATTRS.set(literalString, new Map().set('path', rPath)
-        .set('line', posOfNode.line + 1)
-        .set('col', posOfNode.character + 1));
+      ID_ATTRS.set(id, new Map().set('path', rPath)
+        .set('line', rLine)
+        .set('col', rCol));
     }
   }
 }

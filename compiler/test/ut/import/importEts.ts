@@ -123,6 +123,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+let __generate__Id = 0;
+function generateId() {
+    return "importEts_" + ++__generate__Id;
+}
 const LinkComponent_1 = __importStar(require("./test/pages/LinkComponent"));
 const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponent"));
 const AMDComponentDefault = require("./test/pages/AMDComponent");
@@ -183,7 +187,7 @@ class ImportTest extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new LinkComponent_1.LinkComponent2("2", this, {
                 LinkComponent2Link1: this.__myState1,
@@ -209,7 +213,7 @@ class ImportTest extends View {
         Text.fontSize(20);
         Text.fontColor(Color.Red);
         Text.pop();
-        let earlierCreatedChild_3 = this.findChildById("3");
+        let earlierCreatedChild_3 = (this && this.findChildById) ? this.findChildById("3") : undefined;
         if (earlierCreatedChild_3 == undefined) {
             View.create(new LinkComponent_1.LinkComponent("3", this, {
                 LinkComponent1Link1: this.__myState1,
@@ -231,7 +235,7 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_3);
         }
-        let earlierCreatedChild_4 = this.findChildById("4");
+        let earlierCreatedChild_4 = (this && this.findChildById) ? this.findChildById("4") : undefined;
         if (earlierCreatedChild_4 == undefined) {
             View.create(new DefaultComponent_1.default("4", this, {
                 DefaultComponentLink1: this.__myState1,
@@ -249,7 +253,7 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_4);
         }
-        let earlierCreatedChild_5 = this.findChildById("5");
+        let earlierCreatedChild_5 = (this && this.findChildById) ? this.findChildById("5") : undefined;
         if (earlierCreatedChild_5 == undefined) {
             View.create(new LinkComponent_1.default("5", this, {
                 LinkComponent3Link1: this.__myState1,
@@ -271,7 +275,7 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_5);
         }
-        let earlierCreatedChild_6 = this.findChildById("6");
+        let earlierCreatedChild_6 = (this && this.findChildById) ? this.findChildById("6") : undefined;
         if (earlierCreatedChild_6 == undefined) {
             View.create(new AMDComponentDefault("6", this, {
                 AMDComponentLink1: this.__myState1,
@@ -289,7 +293,7 @@ class ImportTest extends View {
             });
             View.create(earlierCreatedChild_6);
         }
-        let earlierCreatedChild_7 = this.findChildById("7");
+        let earlierCreatedChild_7 = (this && this.findChildById) ? this.findChildById("7") : undefined;
         if (earlierCreatedChild_7 == undefined) {
             View.create(new LinkComponent_1.LinkComponent3("7", this, {
                 LinkComponent3Link1: this.__myState1,

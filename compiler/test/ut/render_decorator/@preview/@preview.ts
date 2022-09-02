@@ -37,7 +37,12 @@ struct HomePreviewComponent_Preview {
 `
 
 exports.expectResult =
-`class HomePreviewComponent extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@preview_" + ++__generate__Id;
+}
+class HomePreviewComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.value = "hello world";
@@ -69,7 +74,7 @@ class HomePreviewComponent_Preview extends View {
     }
     render() {
         Column.create();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new HomePreviewComponent("2", this, {}));
         }

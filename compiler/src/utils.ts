@@ -33,7 +33,8 @@ import {
   EXTNAME_ABC,
   EXTNAME_ETS,
   EXTNAME_TS_MAP,
-  EXTNAME_JS_MAP
+  EXTNAME_JS_MAP,
+  ESMODULE
 } from './pre_define';
 
 export enum LogType {
@@ -261,7 +262,7 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
-export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
     filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
@@ -270,19 +271,17 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
   }
   projectPath = toUnixPath(projectPath);
-  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
-  const tempFilePath: string = filePath.replace(hapPath, '');
 
   if (checkNodeModulesFile(filePath, projectPath)) {
-    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
-    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
     let output: string = '';
     if (filePath.indexOf(fakeNodeModulesPath) === -1) {
-      const sufStr: string = dataTmps[dataTmps.length - 1];
+      const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+      const tempFilePath: string = filePath.replace(hapPath, '');
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
       output = path.join(buildPath, TEMPORARY, NODE_MODULES, MAIN, sufStr);
     } else {
-      const sufStr: string = dataTmps[dataTmps.length - 1];
-      output = path.join(buildPath, TEMPORARY, NODE_MODULES, AUXILIARY, sufStr);
+      output = filePath.replace(fakeNodeModulesPath, path.join(buildPath, TEMPORARY, NODE_MODULES, AUXILIARY));
     }
     return output;
   }
@@ -296,7 +295,7 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   return '';
 }
 
-export function genBuildPath(filePath: string, projectPath: string, buildPath: string, toTsFile: boolean = true): string {
+export function genBuildPath(filePath: string, projectPath: string, buildPath: string): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
     filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
@@ -305,20 +304,18 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
     filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
   }
   projectPath = toUnixPath(projectPath);
-  const hapPath: string = toUnixPath(projectConfig.projectRootPath);
-  const tempFilePath: string = filePath.replace(hapPath, '');
 
   if (checkNodeModulesFile(filePath, projectPath)) {
     filePath = toUnixPath(filePath);
-    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
-    const dataTmps: string[] = tempFilePath.split(NODE_MODULES);
+    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
     let output: string = '';
     if (filePath.indexOf(fakeNodeModulesPath) === -1) {
-      const sufStr: string = dataTmps[dataTmps.length - 1];
+      const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+      const tempFilePath: string = filePath.replace(hapPath, '');
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
       output = path.join(projectConfig.nodeModulesPath, ZERO, sufStr);
     } else {
-      const sufStr: string = dataTmps[dataTmps.length - 1];
-      output = path.join(projectConfig.nodeModulesPath, ONE, sufStr);
+      output = filePath.replace(fakeNodeModulesPath, path.join(projectConfig.nodeModulesPath, ONE));
     }
     return output;
   }
@@ -367,14 +364,87 @@ export function mkdirsSync(dirname: string): boolean {
   return false;
 }
 
-export function writeFileSyncByString(sourcePath: string, sourceCode: string, toTsFile: boolean): void {
-  const temporaryFile: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, toTsFile);
-  if (temporaryFile.length === 0) {
+export function writeFileSyncByString(sourcePath: string, sourceCode: string): void {
+  const jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
+  if (jsFilePath.length === 0) {
     return;
   }
-  mkdirsSync(path.dirname(temporaryFile));
-  fs.writeFileSync(temporaryFile, sourceCode);
+  mkdirsSync(path.dirname(jsFilePath));
+  fs.writeFileSync(jsFilePath, sourceCode);
   return;
+}
+
+export const packageCollection: Map<string, Array<string>> = new Map();
+
+export function getPackageInfo(configFile: string): Array<string> {
+  if (packageCollection.has(configFile)) {
+    return packageCollection.get(configFile);
+  }
+  const data: any = JSON.parse(fs.readFileSync(configFile).toString());
+  const bundleName: string = data.app.bundleName;
+  const moduleName: string = data.module.name;
+  packageCollection.set(configFile, [bundleName, moduleName]);
+  return [bundleName, moduleName];
+}
+
+function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string): string {
+  if (sourcePath && projectConfig.compileMode === ESMODULE) {
+    const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
+    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    if (result && projectConfig.aceModuleJsonPath) {
+      const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
+      const projectRootPath: string = projectConfig.projectRootPath;
+      if (npmModuleIdx === -1 || npmModuleIdx === projectRootPath.search(/(\/|\\)node_modules(\/|\\)/)) {
+        const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+        const bundleName: string = packageInfo[0];
+        const moduleName: string = packageInfo[1];
+        moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
+        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+      }
+    }
+  }
+  return item;
+}
+
+function generateSourceMap(jsFilePath: string, sourceMapContent: string): void {
+  let buildFilePath: string = genBuildPath(jsFilePath, projectConfig.projectPath, projectConfig.buildPath);
+  if (buildFilePath.length === 0) {
+    return;
+  }
+  if (buildFilePath.endsWith(EXTNAME_ETS)) {
+    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
+  } else {
+    buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
+  }
+  let buildSourceMapFile: string = genSourceMapFileName(buildFilePath);
+  mkdirsSync(path.dirname(buildSourceMapFile));
+  fs.writeFileSync(buildSourceMapFile, sourceMapContent);
+}
+
+export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
+  const mixedInfo: {content: string, sourceMapContent: string} = genContentAndSourceMapInfo(node, false);
+  let jsFilePath: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath);
+  if (jsFilePath.length === 0) {
+    return;
+  }
+  if (jsFilePath.endsWith(EXTNAME_ETS)) {
+    jsFilePath = jsFilePath.replace(/\.ets$/, EXTNAME_JS);
+  } else {
+    jsFilePath = jsFilePath.replace(/\.ts$/, EXTNAME_JS);
+  }
+  let sourceMapFile: string = genSourceMapFileName(jsFilePath);
+  mkdirsSync(path.dirname(jsFilePath));
+  if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
+    mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(sourceMapFile);
+    generateSourceMap(node.fileName, mixedInfo.sourceMapContent);
+  }
+  // replace relative moduleSpecifier with ohmURl
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
+  mixedInfo.content = mixedInfo.content.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, node.fileName);
+  });
+
+  fs.writeFileSync(jsFilePath, mixedInfo.content);
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
@@ -478,4 +548,23 @@ export function genSourceMapFileName(temporaryFile: string): string {
     abcFile = temporaryFile.replace(/\.js$/, EXTNAME_JS_MAP);
   }
   return abcFile;
+}
+
+export function compareNodeVersion(nodeVersion: number = 16): boolean {
+  const currentNodeVersion: number = parseInt(process.versions.node.split('.')[0]);
+  if (currentNodeVersion >= nodeVersion) {
+    return true;
+  }
+
+  return false;
+}
+
+export function removeDir(dirName: string): void {
+  if (fs.existsSync(dirName)) {
+    if (compareNodeVersion()) {
+      fs.rmSync(dirName, { recursive: true});
+    } else {
+      fs.rmdirSync(dirName, { recursive: true});
+    }
+  }
 }

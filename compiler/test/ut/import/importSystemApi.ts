@@ -36,7 +36,12 @@ import hello from 'libhello.so'
 import world = require('libworld.so')`
 
 exports.expectResult =
-`var { router1, router2 } = globalThis.requireNativeModule('system.router');
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "importSystemApi_" + ++__generate__Id;
+}
+var { router1, router2 } = globalThis.requireNativeModule('system.router');
 var { app } = globalThis.requireNativeModule('system.router');
 var { fetch } = isSystemplugin('fetch', 'system') ? globalThis.systemplugin.fetch : globalThis.requireNapi('fetch');
 var { router1, router2, router3 } = globalThis.requireNativeModule('system.router');

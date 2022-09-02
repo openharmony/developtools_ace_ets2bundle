@@ -58,7 +58,12 @@ struct TransitionExample {
 `
 
 exports.expectResult =
-`class TransitionExample extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "animateTo_" + ++__generate__Id;
+}
+class TransitionExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__btnW = new ObservedPropertySimple(50, this, "btnW");

@@ -326,13 +326,13 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      if (result === 'SUCCESS ' && projectConfig.isPreview) {
+      if (result === 'SUCCESS ' && process.env.watchMode) {
         this.printPreviewResult(resultInfo);
       } else {
         logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
       }
     } else {
-      if (projectConfig.isPreview) {
+      if (process.env.watchMode) {
         this.printPreviewResult();
       } else {
         console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
@@ -403,7 +403,7 @@ export class ResultStates {
             .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
             .replace(/^ERROR/, 'ETS:ERROR');
           this.printErrorMessage(errorMessage, true, errors[index]);
-        } else {
+        } else if (!/TS[0-9]+:/.test(errors[index].message.toString())) {
           let errorMessage: string = `${errors[index].message.replace(/\[tsl\]\s*/, '')
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
@@ -467,12 +467,19 @@ function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
 function filterInput(rootFileNames: string[]): string[] {
   return rootFileNames.filter((file: string) => {
     const needUpdate: NeedUpdateFlag = { flag: false };
-    checkNeedUpdateFiles(path.resolve(file), needUpdate);
+    const alreadyCheckedFiles: Set<string> = new Set();
+    checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
     return needUpdate.flag;
   });
 }
 
-function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag): void {
+function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyCheckedFiles: Set<string>): void {
+  if (alreadyCheckedFiles.has(file)) {
+    return;
+  } else {
+    alreadyCheckedFiles.add(file);
+  }
+
   if (needUpdate.flag) {
     return;
   }
@@ -485,7 +492,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag): void {
       return;
     }
     for (let i = 0; i < value.children.length; ++i) {
-      checkNeedUpdateFiles(value.children[i], needUpdate);
+      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
     }
   } else {
     cache[file] = { mtimeMs, children: [], error: false };

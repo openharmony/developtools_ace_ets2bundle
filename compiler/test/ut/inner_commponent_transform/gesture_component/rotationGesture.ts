@@ -41,7 +41,12 @@ struct RotationGestureExample {
 }`
 
 exports.expectResult =
-`class RotationGestureExample extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "rotationGesture_" + ++__generate__Id;
+}
+class RotationGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__angle = new ObservedPropertySimple(0, this, "angle");

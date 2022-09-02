@@ -34,7 +34,12 @@ struct ButtonExample {
 }
 `
 exports.expectResult =
-`class ButtonExample extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "button_" + ++__generate__Id;
+}
+class ButtonExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);

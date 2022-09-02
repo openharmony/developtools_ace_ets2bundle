@@ -68,6 +68,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.outChangedFileList = (projectConfig.watchMode && projectConfig.watchMode.outChangedFileList) ?
     projectConfig.watchMode.outChangedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
 }
 
 function loadEntryObj(projectConfig) {
@@ -374,11 +376,54 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
     projectConfig.processTs = false;
+    projectConfig.processMergeabc = false;
     projectConfig.buildArkMode = envArgs.buildMode;
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
     projectConfig.pandaMode = buildJsonInfo.pandaMode;
+  }
+}
+
+function checkAppResourcePath(appResourcePath, config) {
+  if (appResourcePath) {
+    readAppResource(resources, appResourcePath);
+    if (fs.existsSync(appResourcePath) && config.cache) {
+      config.cache.buildDependencies.config.push(appResourcePath);
+    }
+    if (!projectConfig.xtsMode) {
+      const appResourcePathSavePath = path.resolve(projectConfig.cachePath, 'resource_path.txt');
+      saveAppResourcePath(appResourcePath, appResourcePathSavePath);
+      if (fs.existsSync(appResourcePathSavePath) && config.cache) {
+        config.cache.buildDependencies.config.push(appResourcePathSavePath);
+      }
+    }
+  }
+}
+
+function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
+  let isSave = false;
+  if (fs.existsSync(appResourcePathSavePath)) {
+    const saveContent = fs.readFileSync(appResourcePathSavePath);
+    if (appResourcePath !== saveContent) {
+      isSave = true;
+    }
+  } else {
+    isSave = true;
+  }
+  if (isSave) {
+    fs.writeFileSync(appResourcePathSavePath, appResourcePath);
+  }
+}
+
+function addSDKBuildDependencies(config) {
+  if (projectConfig.localPropertiesPath &&
+    fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
+  }
+  if (projectConfig.projectProfilePath &&
+    fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
+    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
   }
 }
 
@@ -398,3 +443,5 @@ exports.readWorkerFile = readWorkerFile;
 exports.abilityPagesFullPath = abilityPagesFullPath;
 exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
+exports.checkAppResourcePath = checkAppResourcePath;
+exports.addSDKBuildDependencies = addSDKBuildDependencies;

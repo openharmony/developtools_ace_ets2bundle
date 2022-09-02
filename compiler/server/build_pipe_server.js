@@ -17,6 +17,7 @@ const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
+const pipeProcess = require('child_process');
 
 const { processComponentChild } = require('../lib/process_component_build');
 const { createWatchCompilerHost } = require('../lib/ets_checker');
@@ -39,6 +40,7 @@ const pluginCommandChannelMessageHandlers = {
   'compileComponent': handlePluginCompileComponent,
   'default': () => {}
 };
+let es2abcFilePath = path.join(__dirname, '../bin/ark/build-win/bin/es2abc');
 
 let previewCacheFilePath;
 const messages = [];
@@ -133,10 +135,32 @@ function handlePluginCompileComponent(jsonData) {
     }
   }
   receivedMsg.data.log = log;
-  if (pluginSocket.readyState === WebSocket.OPEN){
-    compileStatus = true;
-    receivedMsg_ = receivedMsg;
-    responseToPlugin();
+  if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
+    es2abc(receivedMsg);
+  } else {
+    es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
+    if (fs.existsSync(es2abcFilePath)) {
+      es2abc(receivedMsg);
+    }
+  }
+}
+
+
+function es2abc(receivedMsg) {
+  const cmd = es2abcFilePath + ' --base64Input ' +
+    Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
+  try {
+    pipeProcess.exec(cmd, (error, stdout, stderr) => {
+      if (stdout) {
+        receivedMsg.data.script = stdout;
+      } else {
+        receivedMsg.data.script = "";
+      }
+      compileStatus = true;
+      receivedMsg_ = receivedMsg;
+      responseToPlugin();
+    })
+  } catch (e) {
   }
 }
 

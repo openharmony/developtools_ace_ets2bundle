@@ -43,7 +43,12 @@ struct LocalStorageComponent {
 }
 `
 exports.expectResult =
-`let storage = LocalStorage.GetShared();
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "localStorage_" + ++__generate__Id;
+}
+let storage = LocalStorage.GetShared();
 class ClassA {
     constructor(a) {
         this.id = 1;

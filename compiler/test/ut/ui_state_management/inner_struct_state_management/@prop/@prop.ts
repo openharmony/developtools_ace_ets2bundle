@@ -64,7 +64,12 @@ struct PageComponent {
 }
 `
 exports.expectResult =
-`class ctComponent extends View {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@prop_" + ++__generate__Id;
+}
+class ctComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__name = new SynchedPropertySimpleOneWay(params.name, this, "name");
@@ -178,7 +183,7 @@ class PageComponent extends View {
         Text.create('-1  - Nuggets in New Game');
         Text.pop();
         Button.pop();
-        let earlierCreatedChild_2 = this.findChildById("2");
+        let earlierCreatedChild_2 = (this && this.findChildById) ? this.findChildById("2") : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new ctComponent("2", this, { name: 'xiaoming', canPlay: true, count: this.countDownStartValue, costOfOneAttempt: 2 }));
         }
