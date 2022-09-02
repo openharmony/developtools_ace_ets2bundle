@@ -70,7 +70,8 @@ struct CompA {
 }`
 
 exports.expectResult =
-`class CompA extends View {
+`"use strict";
+class CompA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.size = 100;

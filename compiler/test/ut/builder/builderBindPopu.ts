@@ -38,7 +38,8 @@ struct Banner {
 }
 `
 exports.expectResult =
-`class Banner extends View {
+`"use strict";
+class Banner extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);

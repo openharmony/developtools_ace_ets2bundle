@@ -43,7 +43,8 @@ struct Parent {
 `
 
 exports.expectResult =
-`class GrandChild extends View {
+`"use strict";
+class GrandChild extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__arr = this.initializeConsume("arr", "arr");

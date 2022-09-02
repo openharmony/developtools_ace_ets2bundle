@@ -20,7 +20,8 @@ struct MyComponent {
 }`
 
 exports.expectResult =
-`class MyComponent extends View {
+`"use strict";
+class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);

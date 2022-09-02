@@ -31,7 +31,8 @@ struct MyLinkComponent {
 }`
 
 exports.expectResult =
-`class MyLinkComponent extends View {
+`"use strict";
+class MyLinkComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__myLink1 = new SynchedPropertyObjectTwoWay(params.myLink1, this, "myLink1");

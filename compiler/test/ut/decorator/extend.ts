@@ -44,7 +44,8 @@ struct FancyText {
 }`
 
 exports.expectResult =
-`function __Text__fancy(color) {
+`"use strict";
+function __Text__fancy(color) {
     Text.backgroundColor(color);
 }
 function __Text__superFancy(size) {
