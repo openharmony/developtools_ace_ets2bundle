@@ -200,6 +200,17 @@ export class ResultStates {
       this.printResult();
     });
 
+    compiler.hooks.watchRun.tap('Listening State', (compiler: Compiler) => {
+      if (compiler.modifiedFiles) {
+        const isTsAndEtsFile: boolean = [...compiler.modifiedFiles].some((item: string) => {
+          return /.(ts|ets)$/.test(item);
+        });
+        if (!isTsAndEtsFile) {
+          process.env.watchTs = 'end';
+        }
+      }
+    });
+
     if (!projectConfig.isPreview) {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
