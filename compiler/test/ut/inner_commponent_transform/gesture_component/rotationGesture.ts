@@ -41,7 +41,8 @@ struct RotationGestureExample {
 }`
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "rotationGesture_" + ++__generate__Id;
 }

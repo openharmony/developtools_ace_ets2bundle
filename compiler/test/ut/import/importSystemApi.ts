@@ -36,7 +36,8 @@ import hello from 'libhello.so'
 import world = require('libworld.so')`
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "importSystemApi_" + ++__generate__Id;
 }
