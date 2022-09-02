@@ -46,7 +46,8 @@ struct PageTransitionExample1 {
 `
 
 exports.expectResult =
-`let __generate__Id = 0;
+`"use strict";
+let __generate__Id = 0;
 function generateId() {
     return "pageTransition_" + ++__generate__Id;
 }

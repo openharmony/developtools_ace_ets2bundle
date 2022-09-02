@@ -253,6 +253,17 @@ export class ResultStates {
       }
       this.printResult();
     });
+
+    compiler.hooks.watchRun.tap('Listening State', (compiler: Compiler) => {
+      if (compiler.modifiedFiles) {
+        const isTsAndEtsFile: boolean = [...compiler.modifiedFiles].some((item: string) => {
+          return /.(ts|ets)$/.test(item);
+        });
+        if (!isTsAndEtsFile) {
+          process.env.watchTs = 'end';
+        }
+      }
+    });
   }
 
   private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {

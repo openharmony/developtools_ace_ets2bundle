@@ -8,7 +8,7 @@ import {
 module.exports = function processjs2file(source: string): string {
   if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false
       && process.env.compilerType && process.env.compilerType === ARK) {
-    writeFileSyncByString(this.resourcePath, source, false);
+    writeFileSyncByString(this.resourcePath, source);
   }
   return source;
 };
