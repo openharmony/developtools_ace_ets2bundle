@@ -196,7 +196,6 @@ function createCallSuperStatement(localStorageNum: number): ts.Statement{
   }
 }
 
-// create updateWithValueParamsStatement
 function createUPdWithValStatement(): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
