@@ -36,7 +36,7 @@ const {
   SYSTEM_PLUGIN
 } = require('../lib/pre_define');
 const {
-  sdkVersion
+  partialUpdateConfig
 } = require('../main');
 
 function expectActual(name, filePath) {
@@ -64,7 +64,7 @@ function expectActual(name, filePath) {
 mocha.describe('compiler', () => {
   let utPath = path.resolve(__dirname, './ut');
   if (process.argv.includes('--partialUpdate')) {
-    sdkVersion.compatibleSdkVersion = 9;
+    partialUpdateConfig.partialUpdateMode = true;
     utPath = path.resolve(__dirname, './utForPartialUpdate');
   }
   const utFiles = [];

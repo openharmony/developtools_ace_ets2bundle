@@ -93,7 +93,7 @@ import {
 import { transformLog } from './process_ui_syntax';
 import { globalProgram, projectConfig } from '../main';
 
-import { sdkVersion } from '../main';
+import { partialUpdateConfig } from '../main';
 
 export type ControllerType = {
   hasController: boolean
@@ -254,7 +254,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
         interfaceNode)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
-    if (sdkVersion.compatibleSdkVersion === 9) {
+    if (partialUpdateConfig.partialUpdateMode) {
       updateResult.setDeleteParams(true);
     }
   } else if (!item.type) {
@@ -361,7 +361,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
-  if (sdkVersion.compatibleSdkVersion === 9 && BASICDECORATORS.has(decorator)) {
+  if (partialUpdateConfig.partialUpdateMode && BASICDECORATORS.has(decorator)) {
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setDecoratorName(decorator);
     updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
@@ -450,17 +450,17 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
-      updateState = sdkVersion.compatibleSdkVersion === 8 ?
+      updateState = !partialUpdateConfig.partialUpdateMode ?
           updateObservedProperty(node, name, type, program) : updateObservedPropertyPU(node, name, type, program);
       break;
     case COMPONENT_LINK_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_LINK_DECORATOR, hasPreview, log);
-      updateState = sdkVersion.compatibleSdkVersion === 8 ?
+      updateState = !partialUpdateConfig.partialUpdateMode ?
         updateSynchedPropertyTwoWay(name, type, program) : updateSynchedPropertyTwoWayPU(name, type, program);
       break;
     case COMPONENT_PROP_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_PROP_DECORATOR, hasPreview, log);
-      updateState = sdkVersion.compatibleSdkVersion === 8
+      updateState = !partialUpdateConfig.partialUpdateMode
         ? updateSynchedPropertyOneWay(name, type, decorator, log, program)
         : updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
       break;
@@ -471,7 +471,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateStoragePropAndLinkProperty(node, name, setFuncName, log);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      updateState = sdkVersion.compatibleSdkVersion === 8
+      updateState = !partialUpdateConfig.partialUpdateMode
         ? updateSynchedPropertyNesedObject(name, type, decorator, log)
         : updateSynchedPropertyNesedObjectPU(name, type, decorator, log);
       break;
@@ -510,7 +510,7 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         updateParamsNode = createUpdateParamsWithoutIf(name);
       }
       break;
@@ -662,7 +662,7 @@ function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaratio
 }
 
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
-  if (sdkVersion.compatibleSdkVersion === 9) {
+  if (partialUpdateConfig.partialUpdateMode) {
     return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
       ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
   }
@@ -691,7 +691,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         ++componentInfo.id;
         argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
           ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),

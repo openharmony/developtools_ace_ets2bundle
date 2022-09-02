@@ -112,7 +112,7 @@ import {
   LogInfo,
   hasDecorator
 } from './utils';
-import { sdkVersion } from '../main';
+import { partialUpdateConfig } from '../main';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -228,7 +228,7 @@ function processPropertyUnchanged(
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
-  if (sdkVersion.compatibleSdkVersion === 9) {
+  if (partialUpdateConfig.partialUpdateMode) {
     if(result.getPurgeVariableDepStatement()) {
       purgeVariableDepStatements.push(result.getPurgeVariableDepStatement());
     }
@@ -245,7 +245,7 @@ function addIntoNewMembers(
   purgeVariableDepStatements: ts.Statement[],
   rerenderStatements: ts.Statement[]
 ): void {
-  if (sdkVersion.compatibleSdkVersion === 9) {
+  if (partialUpdateConfig.partialUpdateMode) {
     newMembers.unshift(
       addInitialParamsFunc(updateParamsStatements, parentComponentName),
       addPurgeVariableDepFunc(purgeVariableDepStatements)
@@ -270,7 +270,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       let newType: ts.TypeNode;
       decoratorName = propertyItem.decorators[i].getText().replace(/\(.*\)$/, '').trim();
       let isLocalStorage: boolean = false;
-      if (sdkVersion.compatibleSdkVersion === 8) {
+      if (!partialUpdateConfig.partialUpdateMode) {
         newType = createTypeReference(decoratorName, type, log, program);
       } else {
         newType = createTypeReferencePU(decoratorName, type, log, program);
@@ -522,7 +522,7 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
         pos: initExpression.getStart()
       });
     }
-  } else if (sdkVersion.compatibleSdkVersion === 9 && isMatchInitExpression(initExpression) &&
+  } else if (partialUpdateConfig.partialUpdateMode && isMatchInitExpression(initExpression) &&
     propParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString();
   }
@@ -590,7 +590,7 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
-    if (sdkVersion.compatibleSdkVersion === 9 && !statement.decorators) {
+    if (partialUpdateConfig.partialUpdateMode && !statement.decorators) {
       paramsStatement = createParamsStatement(name);
     } else {
       paramsStatement = createParamsWithUnderlineStatement(name);
@@ -606,11 +606,11 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_DELETE_FUNCTION)),
       undefined, [ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(), ts.factory.createIdentifier(
-            sdkVersion.compatibleSdkVersion === 8 ?
+            !partialUpdateConfig.partialUpdateMode ?
               ABOUT_TO_BE_DELETE_FUNCTION_ID : ABOUT_TO_BE_DELETE_FUNCTION_ID__)),
       undefined, [])]));
   deleteStatements.push(defaultStatement);
-  if (sdkVersion.compatibleSdkVersion === 9) {
+  if (partialUpdateConfig.partialUpdateMode) {
     const aboutToBeDeletedInternalStatement: ts.ExpressionStatement = createDeletedInternalStatement();
     deleteStatements.push(aboutToBeDeletedInternalStatement);
   }
@@ -691,7 +691,7 @@ function validateHasController(componentName: ts.Identifier, checkController: Co
 }
 
 function createHeritageClause(): ts.HeritageClause {
-  if (sdkVersion.compatibleSdkVersion === 9) {
+  if (partialUpdateConfig.partialUpdateMode) {
     return ts.factory.createHeritageClause(
       ts.SyntaxKind.ExtendsKeyword,
       [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU), [])]

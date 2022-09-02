@@ -71,7 +71,7 @@ import {
   createFunction
 } from './utils';
 import { bindComponentAttr } from './process_component_build';
-import { sdkVersion } from '../main';
+import { partialUpdateConfig } from '../main';
 
 const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
@@ -163,7 +163,7 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   isInnerBuilder: boolean = false): void {
-  if (sdkVersion.compatibleSdkVersion === 8) {
+  if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
@@ -402,9 +402,9 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       }
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (sdkVersion.compatibleSdkVersion === 8 && parent === COMPONENT_STATE_DECORATOR) {
+      if (!partialUpdateConfig.partialUpdateMode && parent === COMPONENT_STATE_DECORATOR) {
         return true;
-      } else if (sdkVersion.compatibleSdkVersion === 9 && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
+      } else if (partialUpdateConfig.partialUpdateMode && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
         return true;
       }
       break;
