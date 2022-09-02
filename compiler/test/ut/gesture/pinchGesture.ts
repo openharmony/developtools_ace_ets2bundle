@@ -51,7 +51,8 @@ struct MyComponent {
 }`
 
 exports.expectResult =
-`var router = globalThis.requireNativeModule('system.router');
+`"use strict";
+var router = globalThis.requireNativeModule('system.router');
 var app = globalThis.requireNativeModule('system.app');
 class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {

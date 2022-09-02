@@ -67,7 +67,8 @@ struct BasketModifier {
 }`
 
 exports.expectResult =
-`class PurchaseItem {
+`"use strict";
+class PurchaseItem {
     constructor(price) {
         this.id = PurchaseItem.NextId++;
         this.price = price;

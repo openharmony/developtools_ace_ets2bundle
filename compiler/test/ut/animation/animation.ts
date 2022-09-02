@@ -59,7 +59,8 @@ struct Animation {
 }`
 
 exports.expectResult =
-`class Animation extends View {
+`"use strict";
+class Animation extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.bgColor = "#8888ff";

@@ -57,7 +57,8 @@ struct HomePreviewComponent_Preview {
 `
 
 exports.expectResult =
-`class HomePreviewComponent extends View {
+`"use strict";
+class HomePreviewComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.value1 = "hello world 1";

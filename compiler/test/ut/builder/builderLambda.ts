@@ -54,7 +54,8 @@ struct CustomContainerUser {
 }
 `
 exports.expectResult =
-`class CustomContainer extends View {
+`"use strict";
+class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.header = "";

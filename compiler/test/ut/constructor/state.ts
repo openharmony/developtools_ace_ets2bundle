@@ -36,7 +36,8 @@ struct MyStateComponent {
 }`
 
 exports.expectResult =
-`class DataModel {
+`"use strict";
+class DataModel {
     constructor() {
         this.myData1 = 0;
     }
