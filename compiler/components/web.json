@@ -7,6 +7,7 @@
     "onPageEnd", "onPageBegin", "onProgressChange", "onTitleReceive", "onGeolocationHide", "onGeolocationShow",
     "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
+    "onFullScreenExit", "onFullScreenEnter",
     "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess",
     "webDebuggingAccess", "onShowFileSelector", "initialScale", "onResourceLoad", "onScaleChange", "onHttpAuthRequest",
     "onPermissionRequest", "onContextMenuShow", "textZoomRatio", "onScroll"
