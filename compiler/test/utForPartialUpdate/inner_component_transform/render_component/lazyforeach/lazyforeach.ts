@@ -103,7 +103,8 @@ build() {
 }
 `
 exports.expectResult =
-`class BasicDataSource {
+`"use strict";
+class BasicDataSource {
     constructor() {
         this.listeners = [];
     }

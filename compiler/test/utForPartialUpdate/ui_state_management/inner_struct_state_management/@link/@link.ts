@@ -34,7 +34,8 @@ struct ParentComponent {
 }
 `
 exports.expectResult =
-`class LinkComponent extends ViewPU {
+`"use strict";
+class LinkComponent extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
         this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");

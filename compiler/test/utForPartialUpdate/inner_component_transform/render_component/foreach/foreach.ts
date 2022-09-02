@@ -31,7 +31,8 @@ struct ParentView {
 }
 `
 exports.expectResult =
-`class ParentView extends ViewPU {
+`"use strict";
+class ParentView extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");

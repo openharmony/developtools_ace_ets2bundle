@@ -46,7 +46,8 @@ struct Banner {
 }`
 
 exports.expectResult =
-`class MyComponent extends ViewPU {
+`"use strict";
+class MyComponent extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
         this.setInitiallyProvidedValue(params);
