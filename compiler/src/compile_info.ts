@@ -35,11 +35,13 @@ import {
 import {
   circularFile,
   mkDir,
+  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
+  ESMODULE
 } from './pre_define';
 import {
   createLanguageService,
@@ -224,20 +226,26 @@ export class ResultStates {
     });
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
-      if (process.env.watchMode && projectConfig.outChangedFileList && (comp.modifiedFiles || comp.removedFiles) &&
-        !(comp.modifiedFiles && [...comp.modifiedFiles].length === 1 && [...comp.modifiedFiles][0] == projectConfig.projectPath)) {
-        const filesObj = {
+      if (comp.modifiedFiles) {
+        const isTsAndEtsFile: boolean = [...comp.modifiedFiles].some((item: string) => {
+          return /.(ts|ets)$/.test(item);
+        });
+        if (!isTsAndEtsFile) {
+          process.env.watchTs = 'end';
+        }
+      }
+      if (this.shouldWriteChangedList(comp)) {
+        interface filesObj {
+          modifiedFiles: string[],
+          removedFiles: string[]
+        }
+        const filesObj: filesObj = {
           modifiedFiles: [...comp.modifiedFiles].filter((file) => {
             return fs.statSync(file).isFile();
           }),
           removedFiles: [...comp.removedFiles]
         };
-        if (fs.existsSync(path.dirname(projectConfig.outChangedFileList))) {
-          fs.writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
-        } else {
-          fs.mkdirSync(path.dirname(projectConfig.outChangedFileList));
-          fs.writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
-        }
+        writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
       }
     })
 
@@ -257,17 +265,13 @@ export class ResultStates {
       }
       this.printResult();
     });
+  }
 
-    compiler.hooks.watchRun.tap('Listening State', (compiler: Compiler) => {
-      if (compiler.modifiedFiles) {
-        const isTsAndEtsFile: boolean = [...compiler.modifiedFiles].some((item: string) => {
-          return /.(ts|ets)$/.test(item);
-        });
-        if (!isTsAndEtsFile) {
-          process.env.watchTs = 'end';
-        }
-      }
-    });
+  private shouldWriteChangedList(comp): boolean {
+    return projectConfig.compileMode === ESMODULE && process.env.watchMode && !projectConfig.isPreview &&
+      projectConfig.outChangedFileList && (comp.modifiedFiles || comp.removedFiles) &&
+      !(comp.modifiedFiles && [...comp.modifiedFiles].length === 1 &&
+      [...comp.modifiedFiles][0] == projectConfig.projectPath);
   }
 
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
