@@ -59,7 +59,8 @@ import {
   BIND_DRAG_SET,
   BIND_POPUP_SET,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  RESOURCE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -366,6 +367,7 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
   }
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (res.isButton) {
+      checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
       if (projectConfig.isPreview) {
         newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
       } else {
@@ -1261,4 +1263,21 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
     message: `.stateStyles doesn't conform standard.`,
     pos: temp.getStart()
   });
+}
+
+function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[]): void {
+  if (node.arguments && node.arguments.length !== 0) {
+    for (let i = 0; i < node.arguments.length; i++) {
+      let argument: ts.Expression = node.arguments[i];
+      if (ts.isStringLiteral(argument) || (ts.isCallExpression(argument) && ts.isIdentifier(argument.expression) &&
+        (argument.expression.escapedText.toString() === RESOURCE))) {
+        log.push({
+          type: LogType.ERROR,
+          message: "The Button component with a label parameter can not have any child.",
+          pos: node.getStart(),
+        });
+        return;
+      }
+    }
+  }
 }
