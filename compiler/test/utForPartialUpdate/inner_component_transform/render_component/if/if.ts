@@ -37,7 +37,8 @@ struct IFView {
 }
 `
 exports.expectResult =
-`class IFView extends ViewPU {
+`"use strict";
+class IFView extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
         this.__toggle1 = new ObservedPropertySimplePU(false, this, "toggle1");

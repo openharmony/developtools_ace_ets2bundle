@@ -52,7 +52,8 @@ struct TabSimple {
 }
 `
 exports.expectResult =
-`class TabSimple extends ViewPU {
+`"use strict";
+class TabSimple extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
         this.controller = new TabsController();
