@@ -68,9 +68,8 @@ export const INITIALIZE_CONSUME_FUNCTION: string = 'initializeConsume';
 export const ADD_PROVIDED_VAR: string = 'addProvidedVar';
 
 export const APP_STORAGE: string = 'AppStorage';
-export const APP_STORAGE_SET_AND_PROP: string = 'setAndProp';
-export const APP_STORAGE_SET_AND_LINK: string = 'setAndLink';
-export const APP_STORAGE_GET_OR_SET: string = 'GetOrCreate';
+export const APP_STORAGE_SET_AND_PROP: string = 'SetAndProp';
+export const APP_STORAGE_SET_AND_LINK: string = 'SetAndLink';
 
 export const PAGE_ENTRY_FUNCTION_NAME: string = 'loadDocument';
 export const STORE_PREVIEW_COMPONENTS: string = 'storePreviewComponents';
@@ -243,9 +242,15 @@ export const COMPONENT_TOGGLE: string = 'Toggle';
 export const TTOGGLE_CHECKBOX: string = 'Checkbox';
 export const TOGGLE_SWITCH: string = 'Switch';
 
+export const ENTRY_TXT: string = 'entry.txt';
+export const FILESINFO_TXT: string = 'filesInfo.txt';
+export const NPMENTRIES_TXT: string = 'npmEntries.txt';
+export const MODULES_CACHE: string = 'modules.cache';
+export const MODULES_ABC: string = 'modules.abc';
+export const MODULELIST_JSON: string = 'moduleList.json';
+
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
-export const ENTRY_TXT: string = 'entry.txt';
 export const ARK: string = 'ark';
 export const TEMPORARY: string = 'temporary';
 export const MAIN: string = 'main';
@@ -260,6 +265,7 @@ export const EXTNAME_MJS: string = '.mjs';
 export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
 export const EXTNAME_ABC: string = '.abc';
+export const EXTNAME_PROTO_BIN: string = '.protoBin';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;

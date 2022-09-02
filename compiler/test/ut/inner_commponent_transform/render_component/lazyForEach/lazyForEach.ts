@@ -107,7 +107,12 @@ struct MyComponent {
 }`
 
 exports.expectResult =
-`class BasicDataSource {
+`"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "lazyForEach_" + ++__generate__Id;
+}
+class BasicDataSource {
     constructor() {
         this.listeners = [];
     }
