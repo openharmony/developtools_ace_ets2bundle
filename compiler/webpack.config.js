@@ -200,7 +200,7 @@ function setProjectConfig(envArgs) {
     projectConfig.cachePath = envArgs.cachePath;
   }
   if (envArgs.watchMode) {
-    projectConfig.watchMode = envArgs.watchMode;
+    projectConfig.hotReloadWatch = envArgs.watchMode;
   }
 }
 
