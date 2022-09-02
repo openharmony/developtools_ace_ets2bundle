@@ -403,19 +403,17 @@ function checkAppResourcePath(appResourcePath, config) {
 }
 
 function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
-  if (!projectConfig.xtsMode) {
-    let isSave = false;
-    if (fs.existsSync(appResourcePathSavePath)) {
-      const saveContent = fs.readFileSync(appResourcePathSavePath);
-      if (appResourcePath !== saveContent) {
-        isSave = true;
-      }
-    } else {
+  let isSave = false;
+  if (fs.existsSync(appResourcePathSavePath)) {
+    const saveContent = fs.readFileSync(appResourcePathSavePath);
+    if (appResourcePath !== saveContent) {
       isSave = true;
     }
-    if (isSave) {
-      fs.writeFileSync(appResourcePathSavePath, appResourcePath);
-    }
+  } else {
+    isSave = true;
+  }
+  if (isSave) {
+    fs.writeFileSync(appResourcePathSavePath, appResourcePath);
   }
 }
 
