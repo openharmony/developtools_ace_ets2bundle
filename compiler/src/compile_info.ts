@@ -35,11 +35,13 @@ import {
 import {
   circularFile,
   mkDir,
+  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
+  ESMODULE
 } from './pre_define';
 import {
   createLanguageService,
@@ -228,7 +230,30 @@ export class ResultStates {
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
-      const changedFiles: string[] = [...comp.modifiedFiles, ...comp.removedFiles];
+      const watchModifiedFiles: string[] = [...comp.modifiedFiles];
+      const watchRemovedFiles: string[] = [...comp.removedFiles];
+      if (watchModifiedFiles.length) {
+        const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
+          return /.(ts|ets)$/.test(item);
+        });
+        if (!isTsAndEtsFile) {
+          process.env.watchTs = 'end';
+        }
+      }
+      if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
+        interface filesObj {
+          modifiedFiles: string[],
+          removedFiles: string[]
+        }
+        const filesObj: filesObj = {
+          modifiedFiles: watchModifiedFiles.filter((file) => {
+            return fs.statSync(file).isFile();
+          }),
+          removedFiles: watchRemovedFiles
+        };
+        writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
+      }
+      const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
       if (changedFiles.length) {
         shouldResolvedFiles.clear();
       }
@@ -253,17 +278,12 @@ export class ResultStates {
       }
       this.printResult();
     });
+  }
 
-    compiler.hooks.watchRun.tap('Listening State', (compiler: Compiler) => {
-      if (compiler.modifiedFiles) {
-        const isTsAndEtsFile: boolean = [...compiler.modifiedFiles].some((item: string) => {
-          return /.(ts|ets)$/.test(item);
-        });
-        if (!isTsAndEtsFile) {
-          process.env.watchTs = 'end';
-        }
-      }
-    });
+  private shouldWriteChangedList(watchModifiedFiles: string[], watchRemovedFiles: string[]): boolean {
+    return projectConfig.compileMode === ESMODULE && process.env.watchMode && !projectConfig.isPreview &&
+      projectConfig.outChangedFileList && (watchRemovedFiles.length + watchModifiedFiles.length) &&
+      !(watchModifiedFiles.length === 1 && watchModifiedFiles[0] == projectConfig.projectPath);
   }
 
   private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
@@ -352,13 +372,13 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      if (result === 'SUCCESS ' && projectConfig.isPreview) {
+      if (result === 'SUCCESS ' && process.env.watchMode) {
         this.printPreviewResult(resultInfo);
       } else {
         logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
       }
     } else {
-      if (projectConfig.isPreview) {
+      if (process.env.watchMode) {
         this.printPreviewResult();
       } else {
         console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);

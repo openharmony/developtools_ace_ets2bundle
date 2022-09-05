@@ -174,9 +174,6 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
-    if (projectConfig.isPreview && entryCollection.has(node.expression.escapedText.toString())) {
-      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
-    }
     if (defaultNameFromParent) {
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
@@ -195,7 +192,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   if (ts.isExportDeclaration(node) && node.exportClause &&
     ts.isNamedExports(node.exportClause) && node.exportClause.elements) {
     node.exportClause.elements.forEach(item => {
-      if (projectConfig.isPreview) {
+      if (process.env.watchMode) {
         exportCollection.add((item.propertyName ? item.propertyName : item.name).escapedText.toString());
       }
       if (item.name && ts.isIdentifier(item.name)) {
@@ -225,7 +222,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   if (ts.isExportDeclaration(node) && node.moduleSpecifier &&
     ts.isStringLiteral(node.moduleSpecifier)) {
-    if (projectConfig.isPreview && node.exportClause && ts.isNamedExports(node.exportClause) &&
+    if (process.env.watchMode && node.exportClause && ts.isNamedExports(node.exportClause) &&
       node.exportClause.elements) {
       node.exportClause.elements.forEach(item => {
         exportCollection.add((item.propertyName ? item.propertyName : item.name).escapedText.toString());
@@ -293,7 +290,7 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration, asNameFromPare
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, fileResolvePath: string,
   sourceFile: ts.SourceFile): void {
-  if (projectConfig.isPreview && node && node.decorators) {
+  if (process.env.watchMode && node && node.decorators) {
     let existExport: boolean = false;
     let existEntry: boolean = false;
     if (node.modifiers) {
@@ -310,10 +307,6 @@ function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollectio
         existEntry = true;
         break;
       }
-    }
-    if (existEntry && (existExport || defaultCollection.has(node.name.escapedText.toString()) ||
-      exportCollection.has(node.name.escapedText.toString()))) {
-      remindExportEntryComponent(node, log, fileResolvePath, sourceFile);
     }
   }
 }
