@@ -24,7 +24,6 @@ const {
   configure,
   getLogger
 } = require('log4js');
-const { PARTIALUPDATESDKVERSIONS } = require('./lib/pre_define');
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
@@ -381,7 +380,7 @@ function loadModuleInfo(projectConfig, envArgs) {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
     projectConfig.pandaMode = buildJsonInfo.pandaMode;
-    if (PARTIALUPDATESDKVERSIONS.has(buildJsonInfo.compatibleSdkVersion)) {
+    if (buildJsonInfo.compatibleSdkVersion >= 9) {
       partialUpdateConfig.partialUpdateMode = true;
     }
   }
@@ -435,7 +434,7 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
-  partialUpdateMode: true
+  partialUpdateMode: false
 };
 
 exports.globalProgram = globalProgram;

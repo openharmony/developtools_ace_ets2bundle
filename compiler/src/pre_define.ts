@@ -325,4 +325,3 @@ export const SYNCHED_PROPERTY_NESED_OBJECT_PU: string = 'SynchedPropertyNesedObj
 export const OBSERVED_PROPERTY_ABSTRACT_PU:string = 'ObservedPropertyAbstractPU';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU: string = '__localStorage';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU: string = 'LocalStorage';
-export const PARTIALUPDATESDKVERSIONS: Set<Number> = new Set([9]);
