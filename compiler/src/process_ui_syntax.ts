@@ -54,7 +54,11 @@ import {
   COMPONENT_COMMON,
   EXTNAME_ETS,
   GENERATE_ID,
-  _GENERATE_ID
+  _GENERATE_ID,
+  VIEWSTACKPROCESSOR,
+  STARTGETACCESSRECORDINGFOR,
+  ALLOCATENEWELMETIDFORNEXTCOMPONENT,
+  STOPGETACCESSRECORDING
 } from './pre_define';
 import {
   componentInfo,
@@ -84,7 +88,8 @@ import {
 } from './validate_ui_syntax';
 import {
   resources,
-  projectConfig
+  projectConfig,
+  partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
@@ -115,7 +120,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
-        generateId(statements, node);
+        if (!partialUpdateConfig.partialUpdateMode) {
+          generateId(statements, node);
+        }
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
@@ -581,9 +588,15 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
   if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
-      const entryNode: ts.ExpressionStatement =
-        createEntryFunction(componentCollection.entryComponent, context);
-      return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
+      if (!partialUpdateConfig.partialUpdateMode) {
+        const entryNode: ts.ExpressionStatement =
+          createEntryFunction(componentCollection.entryComponent, context) as ts.ExpressionStatement;
+        return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
+      } else {
+        const entryNodes: ts.ExpressionStatement[] =
+          createEntryFunction(componentCollection.entryComponent, context) as ts.ExpressionStatement[];
+        return context.factory.updateSourceFile(node, [...node.statements, ...entryNodes]);
+      }
     } else {
       return node;
     }
@@ -595,7 +608,7 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
 }
 
 function createEntryFunction(name: string, context: ts.TransformationContext)
-  : ts.ExpressionStatement {
+  : ts.ExpressionStatement | ts.ExpressionStatement[] {
   let localStorageName: string;
   const localStorageNum: number = localStorageLinkCollection.get(name).size +
     localStoragePropCollection.get(name).size;
@@ -619,12 +632,71 @@ function createEntryFunction(name: string, context: ts.TransformationContext)
   if (localStorageName) {
     newArray.push(context.factory.createIdentifier(localStorageName));
   }
-  const newExpressionStatement: ts.ExpressionStatement =
-    context.factory.createExpressionStatement(context.factory.createCallExpression(
-      context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,
-      [context.factory.createNewExpression(context.factory.createIdentifier(name),
-        undefined, newArray)]));
-  return newExpressionStatement;
+  if (!partialUpdateConfig.partialUpdateMode) {
+    const newExpressionStatement: ts.ExpressionStatement =
+      context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME), undefined,
+        [context.factory.createNewExpression(context.factory.createIdentifier(name),
+          undefined, newArray)]));
+    return newExpressionStatement;
+  } else {
+    return [
+      createStartGetAccessRecording(context),
+      createLoadDocument(context, name),
+      createStopGetAccessRecording(context)
+    ];
+  }
+}
+
+function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
+  return context.factory.createExpressionStatement(
+    context.factory.createCallExpression(
+      context.factory.createPropertyAccessExpression(
+        context.factory.createIdentifier(VIEWSTACKPROCESSOR),
+        context.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
+      ),
+      undefined,
+      [context.factory.createCallExpression(
+        context.factory.createPropertyAccessExpression(
+          context.factory.createIdentifier(VIEWSTACKPROCESSOR),
+          context.factory.createIdentifier(ALLOCATENEWELMETIDFORNEXTCOMPONENT)
+        ),
+        undefined,
+        []
+      )]
+    )
+  );
+}
+
+function createLoadDocument(context: ts.TransformationContext, name: string): ts.ExpressionStatement {
+  return context.factory.createExpressionStatement(
+    context.factory.createCallExpression(
+      context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
+      undefined,
+      [context.factory.createNewExpression(
+        context.factory.createIdentifier(name),
+        undefined,
+        [context.factory.createIdentifier('undefined'),
+          context.factory.createObjectLiteralExpression(
+            [],
+            false
+          )]
+      )]
+    )
+  );
+}
+
+function createStopGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
+  return context.factory.createExpressionStatement(
+    context.factory.createCallExpression(
+      context.factory.createPropertyAccessExpression(
+        context.factory.createIdentifier(VIEWSTACKPROCESSOR),
+        context.factory.createIdentifier(STOPGETACCESSRECORDING)
+      ),
+      undefined,
+      []
+    )
+  );
 }
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext)

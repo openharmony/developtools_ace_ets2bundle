@@ -20,16 +20,22 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   COMPONENT_CONSTRUCTOR_PARAMS,
   COMPONENT_CONSTRUCTOR_UPDATE_PARAMS,
+  COMPONENT_CONSTRUCTOR_INITIAL_PARAMS,
   COMPONENT_WATCH_FUNCTION,
   BASE_COMPONENT_NAME,
   INTERFACE_NAME_SUFFIX,
-  COMPONENT_CONSTRUCTOR_LOCALSTORAGE
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
+  BASE_COMPONENT_NAME_PU,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU
 } from './pre_define';
 
 import {
   localStorageLinkCollection,
   localStoragePropCollection
 } from './validate_ui_syntax';
+
+import { partialUpdateConfig } from '../main';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
 ): ts.ConstructorDeclaration {
@@ -83,9 +89,16 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   }
   const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
     localStoragePropCollection.get(parentComponentName.getText()).size;
-  const paramNames: Set<string> = new Set([COMPONENT_CONSTRUCTOR_ID, COMPONENT_CONSTRUCTOR_PARENT,
-    COMPONENT_CONSTRUCTOR_PARAMS, localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE :
-      COMPONENT_CONSTRUCTOR_PARAMS]);
+  const paramNames: Set<string> = !partialUpdateConfig.partialUpdateMode ? new Set([
+    COMPONENT_CONSTRUCTOR_ID,
+    COMPONENT_CONSTRUCTOR_PARENT,
+    COMPONENT_CONSTRUCTOR_PARAMS,
+    localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE : COMPONENT_CONSTRUCTOR_PARAMS
+  ]) : new Set([
+    COMPONENT_CONSTRUCTOR_PARENT,
+    COMPONENT_CONSTRUCTOR_PARAMS,
+    COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU
+  ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
     // @ts-ignore
@@ -117,7 +130,8 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
       case COMPONENT_CONSTRUCTOR_PARENT:
         parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
           item.dotDotDotToken, item.name, item.questionToken,
-          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(BASE_COMPONENT_NAME), undefined),
+          ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
+            !partialUpdateConfig.partialUpdateMode ? BASE_COMPONENT_NAME : BASE_COMPONENT_NAME_PU), undefined),
           item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_PARAMS:
@@ -125,6 +139,11 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
             parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
+        break;
+      case COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU:
+        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers, item.dotDotDotToken,
+          item.name, ts.factory.createToken(ts.SyntaxKind.QuestionToken), ts.factory.createTypeReferenceNode(
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU), undefined), item.initializer);
         break;
     }
     newTSPara.push(parameter);
@@ -154,19 +173,41 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
       ));
     watchStatements.push(watchNode);
   });
-  const callSuperStatement: ts.Statement = ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
-      localStorageNum ?
-        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
-        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]
-    ));
-  const updateWithValueParamsStatement: ts.Statement = ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-      ts.factory.createThis(), ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UPDATE_PARAMS)),
-    undefined, [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]));
+  const callSuperStatement: ts.Statement = createCallSuperStatement(localStorageNum);
+  const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
     [...watchStatements, updateWithValueParamsStatement], false, true, parentComponentName);
+}
+
+function createCallSuperStatement(localStorageNum: number): ts.Statement{
+  if (!partialUpdateConfig.partialUpdateMode) {
+    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createSuper(), undefined,
+        localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
+            [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+              ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
+  } else {
+    return (ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
+        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU)])));
+  }
+}
+
+function createUPdWithValStatement(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(
+          !partialUpdateConfig.partialUpdateMode ?
+            COMPONENT_CONSTRUCTOR_UPDATE_PARAMS : COMPONENT_CONSTRUCTOR_INITIAL_PARAMS
+        )
+      ),
+      undefined,
+      [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]
+    )
+  );
 }
