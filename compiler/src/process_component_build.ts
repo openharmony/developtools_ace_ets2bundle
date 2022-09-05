@@ -2007,7 +2007,7 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
 
 function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
   let temp: any = node.parent;
-  while(!ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
+  while(temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
     temp = temp.parent;
   }
   if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
