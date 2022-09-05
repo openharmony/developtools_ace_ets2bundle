@@ -51,6 +51,7 @@ import {
   FAIL,
   MODULELIST_JSON,
   MODULES_ABC,
+  PREBUILDMODE_JSON,
   SUCCESS,
   SOURCEMAPS_JSON,
   SOURCEMAPS,
@@ -155,6 +156,19 @@ export class GenAbcPlugin {
     }
 
     if (projectConfig.compileMode === ESMODULE) {
+      if (projectConfig.cachePath && !projectConfig.xtsMode) {
+        let cachedJson: any = {};
+        const CACHED_BUILDMODE: string = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
+        cachedJson["buildMode"] = projectConfig.buildArkMode;
+        fs.writeFile(CACHED_BUILDMODE, JSON.stringify(cachedJson, null, 2), 'utf-8',
+        (err) => {
+          if (err) {
+            logger.error(red, `ETS:ERROR Failed to write buildMode.`, reset);
+          }
+        });
+      }
+
+      // clear output dir
       removeDir(output);
       removeDir(projectConfig.nodeModulesPath);
     }
@@ -363,14 +377,14 @@ function updateCachedModuleList(moduleList: Array<string>): void {
   let cachedJson: Object = {};
   cachedJson["list"] = moduleList;
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
-    (err)=>{
+    (err) => {
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write module list.`, reset);
       }
     }
   );
   fs.writeFile(CACHED_SOURCEMAPS, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
-    (err)=>{
+    (err) => {
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write cache sourceMaps json.`, reset);
       }
@@ -381,7 +395,7 @@ function updateCachedModuleList(moduleList: Array<string>): void {
 function writeSourceMaps(): void {
   mkdirsSync(projectConfig.buildPath);
   fs.writeFile(path.join(projectConfig.buildPath, SOURCEMAPS), JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
-    (err)=>{
+    (err) => {
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
       }
@@ -1064,7 +1078,7 @@ function handleHotReloadChangedFiles() {
 
   // write source maps
   fs.writeFile(path.join(projectConfig.patchAbcPath, SOURCEMAPS), JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8',
-    (err)=>{
+    (err) => {
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
       }
