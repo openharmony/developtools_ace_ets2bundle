@@ -199,6 +199,9 @@ function setProjectConfig(envArgs) {
   if (envArgs.cachePath) {
     projectConfig.cachePath = envArgs.cachePath;
   }
+  if (envArgs.watchMode) {
+    projectConfig.hotReloadWatch = envArgs.watchMode;
+  }
 }
 
 function setReleaseConfig(config) {
