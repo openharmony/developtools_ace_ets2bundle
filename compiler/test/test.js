@@ -35,6 +35,9 @@ const {
   NATIVE_MODULE,
   SYSTEM_PLUGIN
 } = require('../lib/pre_define');
+const {
+  partialUpdateConfig
+} = require('../main');
 
 function expectActual(name, filePath) {
   const content = require(filePath);
@@ -59,7 +62,11 @@ function expectActual(name, filePath) {
 }
 
 mocha.describe('compiler', () => {
-  const utPath = path.resolve(__dirname, './ut');
+  let utPath = path.resolve(__dirname, './ut');
+  if (process.argv.includes('--partialUpdate')) {
+    partialUpdateConfig.partialUpdateMode = true;
+    utPath = path.resolve(__dirname, './utForPartialUpdate');
+  }
   const utFiles = [];
   readFile(utPath, utFiles);
   utFiles.forEach((item) => {
