@@ -34,8 +34,8 @@ const {
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
-const { IGNORE_ERROR_CODE } = require('./lib/utils');
-const { BUILD_SHARE_PATH } = require('./lib/pre_define');
+const { IGNORE_ERROR_CODE, removeDir } = require('./lib/utils');
+const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
 const { processJs } = require('./lib/process_js_ast');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
@@ -381,12 +381,32 @@ function setCleanWebpackPlugin(workerFile, config) {
   );
 }
 
+function clearWebpackCacheByBuildMode() {
+  if (projectConfig.compileMode === 'jsbundle') {
+    return;
+  }
+
+  if (!projectConfig.cachePath || projectConfig.xtsMode) {
+    return;
+  }
+
+  // clear&update cache dir when buildMode is different from last time
+  const CACHED_BUILDMODE = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
+  if (fs.existsSync(CACHED_BUILDMODE)) {
+    let cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
+    if (cachedBuildMode !== projectConfig.buildArkMode) {
+      removeDir(path.resolve(projectConfig.cachePath, '.ets_cache'));
+    }
+  }
+}
+
 module.exports = (env, argv) => {
   const config = {};
   setProjectConfig(env);
   loadEntryObj(projectConfig);
   loadModuleInfo(projectConfig, env);
   setTsConfigFile();
+  clearWebpackCacheByBuildMode();
   initConfig(config);
   const workerFile = readWorkerFile(env.isPreview);
   setOptimizationConfig(config, workerFile);
@@ -416,7 +436,7 @@ module.exports = (env, argv) => {
     config.devtool = false;
   }
 
-  if (env.buildMode === 'release') {
+  if (env.buildMode === 'release' && projectConfig.compileMode === 'jsbundle') {
     setReleaseConfig(config);
   }
 

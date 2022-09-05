@@ -19,6 +19,7 @@ import fs from 'fs';
 import { projectConfig } from '../main';
 import { createHash } from 'crypto';
 import { processSystemApi } from './validate_ui_syntax';
+import { logger } from './compile_info';
 import {
   NODE_MODULES,
   TEMPORARY,
@@ -34,8 +35,10 @@ import {
   EXTNAME_ETS,
   EXTNAME_TS_MAP,
   EXTNAME_JS_MAP,
-  ESMODULE
+  ESMODULE,
+  FAIL
 } from './pre_define';
+import { minify, MinifyOutput } from 'terser';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -46,6 +49,9 @@ export const TEMPORARYS: string = 'temporarys';
 export const BUILD: string = 'build';
 export const SRC_MAIN: string = 'src/main';
 const TS_NOCHECK: string = '// @ts-nocheck';
+
+const red: string = '\u001b[31m';
+const reset: string = '\u001b[39m';
 
 export interface LogInfo {
   type: LogType,
@@ -364,14 +370,40 @@ export function mkdirsSync(dirname: string): boolean {
   return false;
 }
 
+async function writeMinimizedSourceCode(content: string, filePath: string): Promise<void> {
+  let result: MinifyOutput;
+  try {
+    result = await minify(content, {
+      compress: {
+        join_vars: false,
+        sequences: 0
+      },
+      format: {
+        semicolons: false,
+        beautify: true,
+        indent_level: 2
+      }
+    });
+  } catch {
+    logger.error(red, `ETS:ERROR Failed to source code obfuscation.`, reset);
+    process.exit(FAIL);
+  }
+  fs.writeFileSync(filePath, result.code);
+}
+
 export function writeFileSyncByString(sourcePath: string, sourceCode: string): void {
   const jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
   if (jsFilePath.length === 0) {
     return;
   }
+
   mkdirsSync(path.dirname(jsFilePath));
-  fs.writeFileSync(jsFilePath, sourceCode);
-  return;
+  if (projectConfig.buildArkMode === 'debug') {
+    fs.writeFileSync(jsFilePath, sourceCode);
+    return;
+  }
+
+  writeMinimizedSourceCode(sourceCode, jsFilePath);
 }
 
 export const packageCollection: Map<string, Array<string>> = new Map();
@@ -420,7 +452,6 @@ export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
     jsFilePath = jsFilePath.replace(/\.ts$/, EXTNAME_JS);
   }
   let sourceMapFile: string = genSourceMapFileName(jsFilePath);
-  mkdirsSync(path.dirname(jsFilePath));
   if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
     newSourceMaps[node.fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')] = mixedInfo.sourceMapJson;
   }
@@ -430,7 +461,13 @@ export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
     return replaceRelativeDependency(item, moduleRequest, node.fileName);
   });
 
-  fs.writeFileSync(jsFilePath, mixedInfo.content);
+  mkdirsSync(path.dirname(jsFilePath));
+  if (projectConfig.buildArkMode === 'debug') {
+    fs.writeFileSync(jsFilePath, mixedInfo.content);
+    return;
+  }
+
+  writeMinimizedSourceCode(mixedInfo.content, jsFilePath);
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
