@@ -61,7 +61,31 @@ import {
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
   ATTRIBUTE_ID,
-  RESOURCE
+  RESOURCE,
+  ISINITIALRENDER,
+  ELMTID,
+  VIEWSTACKPROCESSOR,
+  STOPGETACCESSRECORDING,
+  STARTGETACCESSRECORDINGFOR,
+  OBSERVECOMPONENTCREATION,
+  ISLAZYCREATE,
+  DEEPRENDERFUNCTION,
+  ITEMCREATION,
+  OBSERVEDSHALLOWRENDER,
+  OBSERVEDDEEPRENDER,
+  ItemComponents,
+  FOREACHITEMGENFUNCTION,
+  __LAZYFOREACHITEMGENFUNCTION,
+  _ITEM,
+  FOREACHITEMIDFUNC,
+  __LAZYFOREACHITEMIDFUNC,
+  FOREACHUPDATEFUNCTION,
+  COMPONENT_INITIAl_RENDER_FUNCTION,
+  GRIDITEM_COMPONENT,
+  GRID_COMPONENT,
+  WILLUSEPROXY,
+  TABCONTENT_COMPONENT,
+  GLOBAL_THIS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -92,7 +116,7 @@ import {
   componentInfo,
   createFunction
 } from './utils';
-import { projectConfig } from '../main';
+import { partialUpdateConfig, projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 import { CUSTOM_COMPONENT } from '../lib/pre_define';
@@ -100,7 +124,12 @@ import { CUSTOM_COMPONENT } from '../lib/pre_define';
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
-  const renderNode: ts.Identifier = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
+  let renderNode: ts.Identifier;
+  if (!partialUpdateConfig.partialUpdateMode) {
+    renderNode = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
+  } else {
+    renderNode = ts.factory.createIdentifier(COMPONENT_INITIAl_RENDER_FUNCTION);
+  }
   if (node.body && node.body.statements && node.body.statements.length &&
     validateRootNode(node, log)) {
     newNode = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
@@ -119,7 +148,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
     {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
-  if (isLazy) {
+  if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
   if (isTransition) {
@@ -130,7 +159,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
       createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
         ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
   }
-  if (isLazy) {
+  if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.push(createRenderingInProgress(false));
   }
   return ts.factory.updateBlock(node, newStatements);
@@ -254,7 +283,11 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.forEachComponent:
             parent = undefined;
-            processForEachComponent(item, newStatements, log, isInnerBuilder);
+            if (!partialUpdateConfig.partialUpdateMode) {
+              processForEachComponent(item, newStatements, log, isInnerBuilder);
+            } else {
+              processForEachComponentNew(item, newStatements, log);
+            }
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
@@ -374,38 +407,28 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
   return { etsComponentNode: etsComponentNode, hasAttr: hasAttr };
 }
 
-function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
+function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined): void {
+  const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
-  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
-    let posOfNode: ts.LineAndCharacter;
-    let curFileName: string;
-    let line: number = 1;
-    let col: number = 1;
-    if (newsupplement.isAcceleratePreview) {
-      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
-      curFileName = newsupplement.fileName;
-      if (posOfNode.line === 0) {
-        col = newsupplement.column - 15;
-      }
-      line = newsupplement.line;
-    } else {
-      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
-    }
-    const projectPath: string = projectConfig.projectPath;
-    const debugInfo: string =
-      `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
-      `(${posOfNode.line + line}:${posOfNode.character + col})`;
-    const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
-      createFunction(ts.factory.createIdentifier(nameResult.name),
-        ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
-        ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
-    newStatements.push(debugNode);
+  if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
+    processItemComponent(node, nameResult, innerCompStatements, log);
+  } else if (partialUpdateConfig.partialUpdateMode && TABCONTENT_COMPONENT.includes(nameResult.name)) {
+    processTabContent(node, innerCompStatements, log);
+  } else {
+    processNormalComponent(node, nameResult, innerCompStatements, log, parent);
   }
+}
+
+function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
+  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined): void {
+  const newStatements: ts.Statement[] = [];
+  const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+  newStatements.push(res.newNode);
+  processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
@@ -424,14 +447,424 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processComponentChild(etsComponentResult.etsComponentNode.body, newStatements, log,
+    processInnerCompStatements(innerCompStatements, newStatements, node);
+    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
+    processInnerCompStatements(innerCompStatements, newStatements, node);
   }
   if (res.isContainerComponent || res.needPop) {
-    newStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
+    innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
   }
+}
+
+function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[]): void {
+  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
+    let posOfNode: ts.LineAndCharacter;
+    let curFileName: string;
+    let line: number = 1;
+    let col: number = 1;
+    if (newsupplement.isAcceleratePreview) {
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = newsupplement.fileName;
+      if (posOfNode.line === 0) {
+        col = newsupplement.column - 15;
+      }
+      line = newsupplement.line;
+    } else {
+      posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+      curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
+    }
+    const projectPath: string = projectConfig.projectPath;
+    const debugInfo: string = `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
+      `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+      createFunction(ts.factory.createIdentifier(nameResult.name),
+        ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
+        ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
+    newStatements.push(debugNode);
+  }
+}
+
+function processInnerCompStatements(
+  innerCompStatements: ts.Statement[],
+  newStatements: ts.Statement[],
+  node: ts.Statement
+): void {
+  if (!partialUpdateConfig.partialUpdateMode) {
+    innerCompStatements.push(...newStatements);
+  } else {
+    innerCompStatements.push(createComponentCreationStatement(node, newStatements));
+  }
+}
+
+function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[]): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+      ), undefined,
+      [ts.factory.createArrowFunction(undefined, undefined,
+        [
+          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+        ], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock(
+          [
+            createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+            ...innerStatements,
+            createInitRenderStatement(node),
+            createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+          ],
+          true
+        )
+      )]
+    )
+  );
+}
+
+function createViewStackProcessorStatement(propertyAccessName: string, elmtId?: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+        ts.factory.createIdentifier(propertyAccessName)
+      ),
+      undefined,
+      elmtId ? [ts.factory.createIdentifier(ELMTID)] : []
+    )
+  );
+}
+
+function createInitRenderStatement(node: ts.Statement): ts.Statement {
+  return ts.factory.createIfStatement(
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.ExclamationToken,
+      ts.factory.createIdentifier(ISINITIALRENDER)
+    ),
+    ts.factory.createBlock(
+      [
+        ts.isExpressionStatement(node) ?
+          createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
+      ],
+      true
+    )
+  );
+}
+
+function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
+  log: LogInfo[]): void {
+  const itemRenderInnerStatements: ts.Statement[] = [];
+  const deepItemRenderInnerStatements: ts.Statement[] = [];
+  const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+  const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
+  itemRenderInnerStatements.push(itemCreateStatement);
+  processDebug(node, nameResult, innerCompStatements);
+  const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
+  if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
+    if (etsComponentResult.hasAttr) {
+      bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+    }
+    processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log);
+  } else {
+    bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+  }
+  innerCompStatements.push(createItemBlock(node, itemRenderInnerStatements, deepItemRenderInnerStatements));
+}
+
+function createItemCreate(nameResult: NameResult): ts.Statement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(nameResult.name),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
+    [ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createIdentifier(ISLAZYCREATE)]));
+}
+
+function createItemBlock(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[],
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.Block {
+  return ts.factory.createBlock(
+    [
+      createIsLazyCreate(node),
+      createItemCreation(node, itemRenderInnerStatements),
+      createObservedShallowRender(node, itemRenderInnerStatements),
+      createObservedDeepRender(node, deepItemRenderInnerStatements),
+      createDeepRenderFunction(node, deepItemRenderInnerStatements),
+      ts.factory.createIfStatement(
+        ts.factory.createIdentifier(ISLAZYCREATE),
+        ts.factory.createBlock(
+          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, []))], true),
+        ts.factory.createBlock(
+          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))], true)
+      )
+    ],
+    true
+  );
+}
+
+function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement {
+  const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  if (etsComponent) {
+    if ((etsComponent.expression as ts.Identifier).escapedText.toString() === GRIDITEM_COMPONENT) {
+      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return createIsLazyWithValue(false);
+      } else if (isLazyForEachChild(node)) {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(ts.factory.createBinaryExpression(
+              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(GLOBAL_THIS),
+                ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
+                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                  ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+                      ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)),
+                      undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                      ts.factory.createTrue()))))],ts.NodeFlags.Const));
+      } else {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(
+              ts.factory.createTrue(), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+                ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+                  ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)
+                ), undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                ts.factory.createTrue()))))], ts.NodeFlags.Const));
+      }
+    } else {
+      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
+        return createIsLazyWithValue(false);
+      } else if (isLazyForEachChild(node)) {
+        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
+            ts.factory.createBinaryExpression(ts.factory.createParenthesizedExpression(
+              ts.factory.createBinaryExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(
+                GLOBAL_THIS), ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
+                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
+                  ts.NodeFlags.Const));
+      } else {
+        return createIsLazyWithValue(true);
+      }
+    }
+  }
+}
+
+function createItemCreation(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(ITEMCREATION), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+              ...itemRenderInnerStatements,
+              ts.factory.createIfStatement(
+                ts.factory.createPrefixUnaryExpression(
+                  ts.SyntaxKind.ExclamationToken,
+                  ts.factory.createIdentifier(ISINITIALRENDER)
+                ),
+                ts.factory.createBlock(
+                  [createComponent(node, COMPONENT_POP_FUNCTION).newNode],
+                  true
+                )
+              ),
+              createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createDeepRenderFunction(
+  node: ts.ExpressionStatement,
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(DEEPRENDERFUNCTION), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createIdentifier(ITEMCREATION), undefined,
+                [
+                  ts.factory.createIdentifier(ELMTID),
+                  ts.factory.createIdentifier(ISINITIALRENDER)
+                ]
+              )),
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createThis(),
+                    ts.factory.createIdentifier('updateFuncByElmtId')
+                  ),
+                  ts.factory.createIdentifier('set')
+                ), undefined,
+                [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
+              )),
+              ...deepItemRenderInnerStatements,
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createObservedShallowRender(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createThis(),
+                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+                ), undefined,
+                [ts.factory.createArrowFunction(undefined, undefined,
+                  [
+                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+                      ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+                      ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+                  ], undefined,
+                  ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                  ts.factory.createBlock(
+                    [createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+                      itemRenderInnerStatements[0],
+                      ts.factory.createIfStatement(
+                        ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken,
+                          ts.factory.createIdentifier(ISINITIALRENDER)),
+                        ts.factory.createBlock(
+                          [createComponent(node, COMPONENT_POP_FUNCTION).newNode], true)),
+                      createViewStackProcessorStatement(STOPGETACCESSRECORDING)], true
+                  )
+                )]
+              )),
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createObservedDeepRender(
+  node: ts.ExpressionStatement,
+  deepItemRenderInnerStatements: ts.Statement[]
+): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(OBSERVEDDEEPRENDER),
+        undefined,
+        undefined,
+        ts.factory.createArrowFunction(
+          undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createThis(),
+                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+                ),
+                undefined,
+                [ts.factory.createIdentifier(ITEMCREATION)]
+              )),
+              ...deepItemRenderInnerStatements,
+              createComponent(node, COMPONENT_POP_FUNCTION).newNode
+            ],
+            true
+          )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[], log: LogInfo[]): void {
+  const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  const TabContentBody: ts.Block = TabContentComp.body;
+  let tabContentCreation: ts.Statement;
+  const tabContentPop: ts.Statement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
+      ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)), undefined, []));
+  const tabAttrs: ts.Statement[] = [];
+  if (TabContentBody && TabContentBody.statements.length) {
+    const newTabContentChildren: ts.Statement[] = [];
+    processComponentChild(TabContentBody, newTabContentChildren, log);
+    tabContentCreation = ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(TABCONTENT_COMPONENT), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
+      undefined, [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock([...newTabContentChildren], true))]));
+    bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+  } else {
+    tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+  }
+  innerCompStatements.push(tabContentPop);
 }
 
 function getRealNodePos(node: ts.Node): number {
@@ -463,7 +896,8 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
-    const newArrowNode: ts.ArrowFunction = processForEachBlock(node.expression, log, isInnerBuilder);
+    const newArrowNode: ts.ArrowFunction =
+      processForEachBlock(node.expression, log, isInnerBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -471,6 +905,160 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
       node.expression, propertyNode, node.expression.typeArguments, argumentsArray)));
   }
   newStatements.push(node, popNode);
+}
+
+function processForEachComponentNew(node: ts.ExpressionStatement, newStatements: ts.Statement[],
+  log: LogInfo[]): void {
+  const newForEachStatements: ts.Statement[] = [];
+  const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
+    (node.expression as ts.CallExpression).expression as ts.Identifier,
+    ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
+  if (ts.isCallExpression(node.expression)) {
+    const argumentsArray: ts.Expression[] = Array.from(node.expression.arguments);
+    const propertyNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+        node.expression.expression as ts.Identifier,
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    const newArrowNode: ts.NodeArray<ts.Statement> =
+      processForEachBlock(node.expression, log) as ts.NodeArray<ts.Statement>;
+    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
+      argumentsArray, newArrowNode);
+    const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
+    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray);
+    const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
+    if (node.expression.expression.getText() === COMPONENT_FOREACH) {
+      if (argumentsArray[2]) {
+        newForEachStatements.push(propertyNode, itemGenFunctionStatement, itemIdFuncStatement, updateFunctionStatement);
+      } else {
+        newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
+      }
+      newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
+    } else {
+      if (argumentsArray[2]) {
+        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement,
+          popNode], true));
+      } else {
+        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, lazyForEachStatement, popNode], true));
+      }
+    }
+  }
+}
+
+function createItemGenFunctionStatement(
+  node: ts.CallExpression,
+  argumentsArray: ts.Expression[],
+  newArrowNode: ts.NodeArray<ts.Statement>
+): ts.VariableStatement {
+  if (argumentsArray[1] && ts.isArrowFunction(argumentsArray[1])) {
+    return ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
+            FOREACHITEMGENFUNCTION : __LAZYFOREACHITEMGENFUNCTION),
+          undefined, undefined,
+          ts.factory.createArrowFunction(
+            undefined, undefined,
+            [ts.factory.createParameterDeclaration(
+              undefined, undefined, undefined, ts.factory.createIdentifier(_ITEM))],
+            undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            ts.factory.createBlock(
+              [ts.factory.createVariableStatement(
+                undefined,
+                ts.factory.createVariableDeclarationList(
+                  [ts.factory.createVariableDeclaration(
+                    ts.factory.createIdentifier(
+                      argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+                    undefined,
+                    undefined,
+                    ts.factory.createIdentifier(_ITEM)
+                  )],
+                  ts.NodeFlags.Const
+                )
+              ),
+              ...newArrowNode
+              ],
+              true
+            )
+          )
+        )
+        ],
+        ts.NodeFlags.Const
+      )
+    );
+  }
+}
+
+function createItemIdFuncStatement(
+  node: ts.CallExpression,
+  argumentsArray: ts.Expression[]
+): ts.VariableStatement {
+  if (argumentsArray[2] && ts.isArrowFunction(argumentsArray[2])) {
+    return ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
+            FOREACHITEMIDFUNC : __LAZYFOREACHITEMIDFUNC), undefined, undefined,
+          ts.factory.createArrowFunction(
+            undefined, undefined,
+            [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(
+                argumentsArray[2].parameters[0] ? argumentsArray[2].parameters[0].name.escapedText : ''
+              )
+            )], undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            ts.factory.createIdentifier(argumentsArray[2].body ? argumentsArray[2].body.getText() : '')
+          )
+        )],
+        ts.NodeFlags.Const
+      )
+    );
+  }
+}
+
+function createUpdateFunctionStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier(FOREACHUPDATEFUNCTION)
+      ),
+      undefined,
+      addForEachIdFuncParameter(argumentsArray)
+    )
+  );
+}
+
+function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Identifier[] {
+  const addForEachIdFuncParameterArr: ts.Identifier[] = [];
+  addForEachIdFuncParameterArr.push(
+    ts.factory.createIdentifier(ELMTID),
+    ts.factory.createIdentifier(argumentsArray[0] && argumentsArray[0].getText())
+  );
+  addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMGENFUNCTION));
+  if (argumentsArray[2]) {
+    addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
+  }
+  return addForEachIdFuncParameterArr;
+}
+
+function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(COMPONENT_LAZYFOREACH),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+      ),
+      undefined,
+      [ts.factory.createStringLiteral(componentInfo.id.toString()),
+        ts.factory.createThis(),
+        argumentsArray[0],
+        ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION),
+        ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC)
+      ]
+    )
+  );
 }
 
 function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
@@ -482,7 +1070,7 @@ function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
 }
 
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
-  isInnerBuilder: boolean = false): ts.ArrowFunction {
+  isInnerBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
   if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
@@ -498,14 +1086,22 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
       const blockNode: ts.Block = ts.factory.createBlock([statement], true);
       // @ts-ignore
       statement.parent = blockNode;
-      return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+      if (!partialUpdateConfig.partialUpdateMode) {
+        return ts.factory.updateArrowFunction(
+          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+      } else {
+        return processComponentBlock(blockNode, isLazy, log).statements;
+      }
     } else {
-      return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken,
-        processComponentBlock(body, isLazy, log, false, isInnerBuilder));
+      if (!partialUpdateConfig.partialUpdateMode) {
+        return ts.factory.updateArrowFunction(
+          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode.type, arrowNode.equalsGreaterThanToken,
+          processComponentBlock(body, isLazy, log, false, isInnerBuilder));
+      } else {
+        return processComponentBlock(body, isLazy, log).statements;
+      }
     }
   }
   return null;
@@ -527,7 +1123,11 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   const ifCreate: ts.ExpressionStatement = createIfCreate();
   const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isInnerBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
-  newStatements.push(ifCreate, newIfNode, ifPop);
+  if (!partialUpdateConfig.partialUpdateMode) {
+    newStatements.push(ifCreate, newIfNode, ifPop);
+  } else {
+    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode]), ifPop);
+  }
 }
 
 function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[],
@@ -1402,5 +2002,28 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
         return;
       }
     }
+  }
+}
+
+function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
+  let temp: any = node.parent;
+  while(temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
+    temp = temp.parent;
+  }
+  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
+    return true;
+  }
+  return false;
+}
+
+function createIsLazyWithValue(value: boolean): ts.VariableStatement {
+  if (value) {
+    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+        undefined, undefined, ts.factory.createTrue())], ts.NodeFlags.Const));
+  } else {
+    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
+        undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
   }
 }

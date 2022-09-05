@@ -55,7 +55,19 @@ import {
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   COMPONENT_CONSTRUCTOR_PARENT,
   EXTNAME_ETS,
-  _GENERATE_ID
+  _GENERATE_ID,
+  MARKDEPENDENTELEMENTSDIRTY,
+  RMELMTID,
+  PURGEDEPENDENCYONELMTID,
+  SETPROPERTYUNCHANGED,
+  BASICDECORATORS,
+  BASE_COMPONENT_NAME_PU,
+  OBSERVED_PROPERTY_SIMPLE_PU,
+  OBSERVED_PROPERTY_OBJECT_PU,
+  SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
+  SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU,
+  SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+  SYNCHED_PROPERTY_NESED_OBJECT_PU
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -80,6 +92,8 @@ import {
 } from './process_component_class';
 import { transformLog } from './process_ui_syntax';
 import { globalProgram, projectConfig } from '../main';
+
+import { partialUpdateConfig } from '../main';
 
 export type ControllerType = {
   hasController: boolean
@@ -129,6 +143,9 @@ export class UpdateResult {
   private updateParams: ts.Statement;
   private deleteParams: boolean = false;
   private controllerSet: ts.MethodDeclaration;
+  private purgeVariableDepStatement: ts.Statement;
+  private rerenderStatement: ts.Statement;
+  private decoratorName: string;
 
   public setProperity(updateItem: ts.PropertyDeclaration) {
     this.itemUpdate = true;
@@ -164,6 +181,18 @@ export class UpdateResult {
     this.deleteParams = deleteParams;
   }
 
+  public setPurgeVariableDepStatement(purgeVariableDepStatement: ts.Statement) {
+    this.purgeVariableDepStatement = purgeVariableDepStatement;
+  }
+
+  public setRerenderStatement(rerenderStatement: ts.Statement) {
+    this.rerenderStatement = rerenderStatement;
+  }
+
+  public setDecoratorName(decoratorName: string) {
+    this.decoratorName = decoratorName;
+  }
+
   public isItemUpdate(): boolean {
     return this.itemUpdate;
   }
@@ -184,12 +213,24 @@ export class UpdateResult {
     return this.updateParams;
   }
 
+  public getPurgeVariableDepStatement(): ts.Statement {
+    return this.purgeVariableDepStatement;
+  }
+
+  public getRerenderStatement(): ts.Statement {
+    return this.rerenderStatement;
+  }
+
   public getVariableGet(): ts.GetAccessorDeclaration {
     return this.variableGet;
   }
 
   public getVariableSet(): ts.SetAccessorDeclaration {
     return this.variableSet;
+  }
+
+  public getDecoratorName(): string {
+    return this.decoratorName;
   }
 
   public isDeleteParams(): boolean {
@@ -213,6 +254,9 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
         interfaceNode)]));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
+    if (partialUpdateConfig.partialUpdateMode) {
+      updateResult.setDeleteParams(true);
+    }
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
@@ -317,6 +361,44 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
+  if (partialUpdateConfig.partialUpdateMode && BASICDECORATORS.has(decorator)) {
+    const variableWithUnderLink: string = '__' + name.escapedText.toString();
+    updateResult.setDecoratorName(decorator);
+    updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
+    updateResult.setRerenderStatement(createRerenderStatement(variableWithUnderLink));
+  }
+}
+
+function createPurgeVariableDepStatement(variableWithUnderLink: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(variableWithUnderLink)
+        ),
+        ts.factory.createIdentifier(PURGEDEPENDENCYONELMTID)
+      ),
+      undefined,
+      [ts.factory.createIdentifier(RMELMTID)]
+    )
+  );
+}
+
+function createRerenderStatement(variableWithUnderLink: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(variableWithUnderLink)
+        ),
+        ts.factory.createIdentifier(MARKDEPENDENTELEMENTSDIRTY)
+      ),
+      undefined,
+      [ts.factory.createThis()]
+    )
+  );
 }
 
 function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
@@ -368,15 +450,19 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
-      updateState = updateObservedProperty(node, name, type, program);
+      updateState = !partialUpdateConfig.partialUpdateMode ?
+          updateObservedProperty(node, name, type, program) : updateObservedPropertyPU(node, name, type, program);
       break;
     case COMPONENT_LINK_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_LINK_DECORATOR, hasPreview, log);
-      updateState = updateSynchedPropertyTwoWay(name, type, program);
+      updateState = !partialUpdateConfig.partialUpdateMode ?
+        updateSynchedPropertyTwoWay(name, type, program) : updateSynchedPropertyTwoWayPU(name, type, program);
       break;
     case COMPONENT_PROP_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_PROP_DECORATOR, hasPreview, log);
-      updateState = updateSynchedPropertyOneWay(name, type, decorator, log, program);
+      updateState = !partialUpdateConfig.partialUpdateMode
+        ? updateSynchedPropertyOneWay(name, type, decorator, log, program)
+        : updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
@@ -385,7 +471,9 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateStoragePropAndLinkProperty(node, name, setFuncName, log);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      updateState = updateSynchedPropertyNesedObject(name, type, decorator, log);
+      updateState = !partialUpdateConfig.partialUpdateMode
+        ? updateSynchedPropertyNesedObject(name, type, decorator, log)
+        : updateSynchedPropertyNesedObjectPU(name, type, decorator, log);
       break;
     case COMPONENT_CONSUME_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
@@ -422,6 +510,10 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
+      if (!partialUpdateConfig.partialUpdateMode) {
+        updateParamsNode = createUpdateParamsWithoutIf(name);
+      }
+      break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
       updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
@@ -570,6 +662,10 @@ function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaratio
 }
 
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
+  if (partialUpdateConfig.partialUpdateMode) {
+    return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
+  }
   return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME),
     ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), ts.factory.createNodeArray([node]));
 }
@@ -595,17 +691,21 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
       }
-      ++componentInfo.id;
-      argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
-        ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
-        ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
-        ts.factory.createStringLiteral(componentInfo.id.toString()),
-      isInnerBuilder ? ts.factory.createConditionalExpression(
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-      ) : ts.factory.createThis());
+      if (!partialUpdateConfig.partialUpdateMode) {
+        ++componentInfo.id;
+        argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
+          ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
+          ts.factory.createStringLiteral(componentInfo.id.toString()),
+        isInnerBuilder ? ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
+        ) : ts.factory.createThis());
+      } else {
+        argumentsArray.unshift(ts.factory.createThis());
+      }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
     } else if (argumentsArray) {
@@ -900,3 +1000,42 @@ function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
   });
 }
 
+function updateObservedPropertyPU(item: ts.PropertyDeclaration, name: ts.Identifier,
+  type: ts.TypeNode, program: ts.Program): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    createPropertyAccessExpressionWithThis(`__${name.getText()}`),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createNewExpression(
+      ts.factory.createIdentifier(isSimpleType(type, program) ? OBSERVED_PROPERTY_SIMPLE_PU :
+        OBSERVED_PROPERTY_OBJECT_PU), undefined, [item.initializer, ts.factory.createThis(),
+        ts.factory.createStringLiteral(name.escapedText.toString())])));
+}
+
+function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
+  program: ts.Program): ts.ExpressionStatement {
+  const name: string = nameIdentifier.escapedText.toString();
+  const functionName: string = isSimpleType(type, program) ?
+    SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU : SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU;
+  return createInitExpressionStatementForDecorator(name, functionName,
+    createPropertyAccessExpressionWithParams(name));
+}
+
+function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
+  decoractor: string, log: LogInfo[], program: ts.Program): ts.ExpressionStatement {
+  const name: string = nameIdentifier.escapedText.toString();
+  if (isSimpleType(type, program)) {
+    return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+      createPropertyAccessExpressionWithParams(name));
+  } else {
+    validateNonSimpleType(nameIdentifier, decoractor, log);
+  }
+}
+
+function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
+  type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
+  if (isObservedClassType(type)) {
+    return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
+      createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
+  } else {
+    validateNonObservedClassType(nameIdentifier, decoractor, log);
+  }
+}

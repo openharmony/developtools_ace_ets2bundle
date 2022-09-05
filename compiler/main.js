@@ -380,6 +380,9 @@ function loadModuleInfo(projectConfig, envArgs) {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
     projectConfig.pandaMode = buildJsonInfo.pandaMode;
+    if (buildJsonInfo.compatibleSdkVersion >= 9) {
+      partialUpdateConfig.partialUpdateMode = true;
+    }
   }
 }
 
@@ -430,6 +433,10 @@ const globalProgram = {
   watchProgram: null
 };
 
+const partialUpdateConfig = {
+  partialUpdateMode: false
+};
+
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
@@ -443,3 +450,4 @@ exports.loadModuleInfo = loadModuleInfo;
 exports.systemModules = systemModules;
 exports.checkAppResourcePath = checkAppResourcePath;
 exports.addSDKBuildDependencies = addSDKBuildDependencies;
+exports.partialUpdateConfig = partialUpdateConfig;
