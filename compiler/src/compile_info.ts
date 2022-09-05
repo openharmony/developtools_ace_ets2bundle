@@ -35,11 +35,13 @@ import {
 import {
   circularFile,
   mkDir,
+  writeFileSync
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
+  ESMODULE
 } from './pre_define';
 import {
   createLanguageService,
@@ -223,6 +225,30 @@ export class ResultStates {
       }
     });
 
+    compiler.hooks.watchRun.tap('WatchRun', (comp) => {
+      if (comp.modifiedFiles) {
+        const isTsAndEtsFile: boolean = [...comp.modifiedFiles].some((item: string) => {
+          return /.(ts|ets)$/.test(item);
+        });
+        if (!isTsAndEtsFile) {
+          process.env.watchTs = 'end';
+        }
+      }
+      if (this.shouldWriteChangedList(comp)) {
+        interface filesObj {
+          modifiedFiles: string[],
+          removedFiles: string[]
+        }
+        const filesObj: filesObj = {
+          modifiedFiles: [...comp.modifiedFiles].filter((file) => {
+            return fs.statSync(file).isFile();
+          }),
+          removedFiles: [...comp.removedFiles]
+        };
+        writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
+      }
+    })
+
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
@@ -239,17 +265,13 @@ export class ResultStates {
       }
       this.printResult();
     });
+  }
 
-    compiler.hooks.watchRun.tap('Listening State', (compiler: Compiler) => {
-      if (compiler.modifiedFiles) {
-        const isTsAndEtsFile: boolean = [...compiler.modifiedFiles].some((item: string) => {
-          return /.(ts|ets)$/.test(item);
-        });
-        if (!isTsAndEtsFile) {
-          process.env.watchTs = 'end';
-        }
-      }
-    });
+  private shouldWriteChangedList(comp): boolean {
+    return projectConfig.compileMode === ESMODULE && process.env.watchMode && !projectConfig.isPreview &&
+      projectConfig.outChangedFileList && (comp.modifiedFiles || comp.removedFiles) &&
+      !(comp.modifiedFiles && [...comp.modifiedFiles].length === 1 &&
+      [...comp.modifiedFiles][0] == projectConfig.projectPath);
   }
 
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
@@ -319,13 +341,13 @@ export class ResultStates {
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
       }
-      if (result === 'SUCCESS ' && projectConfig.isPreview) {
+      if (result === 'SUCCESS ' && process.env.watchMode) {
         this.printPreviewResult(resultInfo);
       } else {
         logger.info(this.blue, 'COMPILE RESULT:' + result + `{${resultInfo}}`, this.reset);
       }
     } else {
-      if (projectConfig.isPreview) {
+      if (process.env.watchMode) {
         this.printPreviewResult();
       } else {
         console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
