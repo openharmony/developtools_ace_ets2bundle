@@ -43,7 +43,6 @@ import {
   APP_STORAGE,
   APP_STORAGE_SET_AND_PROP,
   APP_STORAGE_SET_AND_LINK,
-  APP_STORAGE_GET_OR_SET,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   SET_CONTROLLER_METHOD,
   SET_CONTROLLER_CTR,
@@ -504,11 +503,9 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
     return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
       createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
-            ts.factory.createIdentifier(APP_STORAGE_GET_OR_SET)), undefined, []),
-        ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
-          node.initializer, ts.factory.createThis()])));
+        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
+          ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
+          node.initializer, ts.factory.createThis(), ts.factory.createStringLiteral(name.getText())])));
   } else {
     validateAppStorageDecoractorsNonSingleKey(node, log);
   }
