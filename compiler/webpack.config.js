@@ -231,6 +231,9 @@ function setReleaseConfig(config) {
     })]
   });
   config.output.sourceMapFilename = '_releaseMap/[name].js.map';
+  config.performance = {
+    hints: false
+  };
 }
 
 function setCopyPluginConfig(config) {
