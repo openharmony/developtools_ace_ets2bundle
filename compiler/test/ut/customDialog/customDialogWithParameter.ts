@@ -61,7 +61,8 @@ struct MyComponent {
 `
 
 exports.expectResult =
-`class CustomDialogSample extends View {
+`"use strict";
+class CustomDialogSample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__title = new SynchedPropertySimpleTwoWay(params.title, this, "title");

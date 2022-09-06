@@ -66,7 +66,8 @@ struct Calendar {
 }`
 
 exports.expectResult =
-`// class without @Component convert tool will not process.
+`"use strict";
+// class without @Component convert tool will not process.
 class Month {
     constructor(year, month, days) {
         this.year = 2010; // why add assignment here, TS grammar required, if not it will omit by TSC.

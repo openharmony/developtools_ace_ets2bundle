@@ -52,7 +52,8 @@ struct LinkTest {
 }`
 
 exports.expectResult =
-`class MyLinkTestComponent extends View {
+`"use strict";
+class MyLinkTestComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__myLink1 = new SynchedPropertyObjectTwoWay(params.myLink1, this, "myLink1");

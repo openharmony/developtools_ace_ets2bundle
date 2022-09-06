@@ -40,7 +40,8 @@ struct MyComponent2 {
 }`
 
 exports.expectResult =
-`class MyComponent2 extends View {
+`"use strict";
+class MyComponent2 extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__arr = new ObservedPropertyObject([10, 20, 30], this, "arr");

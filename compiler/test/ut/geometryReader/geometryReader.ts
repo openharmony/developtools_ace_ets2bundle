@@ -31,7 +31,8 @@ struct GeometryReaderTest {
 `
 
 exports.expectResult =
-`class GeometryReaderTest extends View {
+`"use strict";
+class GeometryReaderTest extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.updateWithValueParams(params);
