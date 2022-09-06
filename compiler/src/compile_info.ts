@@ -73,6 +73,7 @@ interface Info {
 export interface CacheFileName {
   mtimeMs: number,
   children: string[],
+  parent: string[],
   error: boolean
 }
 
@@ -80,7 +81,8 @@ interface NeedUpdateFlag {
   flag: boolean;
 }
 
-export let cache: Cache;
+export let cache: Cache = {};
+export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
 
 export class ResultStates {
@@ -226,27 +228,38 @@ export class ResultStates {
     });
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
-      if (comp.modifiedFiles) {
-        const isTsAndEtsFile: boolean = [...comp.modifiedFiles].some((item: string) => {
+      comp.modifiedFiles = comp.modifiedFiles || [];
+      comp.removedFiles = comp.removedFiles || [];
+      const watchModifiedFiles: string[] = [...comp.modifiedFiles];
+      const watchRemovedFiles: string[] = [...comp.removedFiles];
+      if (watchModifiedFiles.length) {
+        const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
         });
         if (!isTsAndEtsFile) {
           process.env.watchTs = 'end';
         }
       }
-      if (this.shouldWriteChangedList(comp)) {
+      if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
         interface filesObj {
           modifiedFiles: string[],
           removedFiles: string[]
         }
         const filesObj: filesObj = {
-          modifiedFiles: [...comp.modifiedFiles].filter((file) => {
+          modifiedFiles: watchModifiedFiles.filter((file) => {
             return fs.statSync(file).isFile();
           }),
-          removedFiles: [...comp.removedFiles]
+          removedFiles: watchRemovedFiles
         };
         writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
       }
+      const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
+      if (changedFiles.length) {
+        shouldResolvedFiles.clear();
+      }
+      changedFiles.forEach((file) => {
+        this.judgeFileShouldResolved(file, shouldResolvedFiles)
+      })
     })
 
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
@@ -267,11 +280,29 @@ export class ResultStates {
     });
   }
 
-  private shouldWriteChangedList(comp): boolean {
+  private shouldWriteChangedList(watchModifiedFiles: string[], watchRemovedFiles: string[]): boolean {
     return projectConfig.compileMode === ESMODULE && process.env.watchMode && !projectConfig.isPreview &&
-      projectConfig.outChangedFileList && (comp.modifiedFiles || comp.removedFiles) &&
-      !(comp.modifiedFiles && [...comp.modifiedFiles].length === 1 &&
-      [...comp.modifiedFiles][0] == projectConfig.projectPath);
+      projectConfig.outChangedFileList && (watchRemovedFiles.length + watchModifiedFiles.length) &&
+      !(watchModifiedFiles.length === 1 && watchModifiedFiles[0] == projectConfig.projectPath);
+  }
+
+  private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
+    if (shouldResolvedFiles.has(file)) {
+      return;
+    }
+    shouldResolvedFiles.add(file);
+    if (cache && cache[file] && cache[file].parent) {
+      cache[file].parent.forEach((item)=>{
+        this.judgeFileShouldResolved(item, shouldResolvedFiles);
+      })
+      cache[file].parent = [];
+    }
+    if (cache && cache[file] && cache[file].children) {
+      cache[file].children.forEach((item)=>{
+        this.judgeFileShouldResolved(item, shouldResolvedFiles);
+      })
+      cache[file].children = [];
+    }
   }
 
   private printDiagnostic(diagnostic: ts.Diagnostic): void {
