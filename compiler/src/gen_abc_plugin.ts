@@ -148,14 +148,12 @@ export class GenAbcPlugin {
     }
 
     // case ESMODULE
-    //        | --- merge -- debug -- not removeDir
-    //        | --- merge -- release -- removeDir
-    //        | --- unmerge -- removeDir
-    if (projectConfig.compileMode === ESMODULE) {
-      if (!projectConfig.processMergeabc || projectConfig.buildArkMode !== 'debug') {
-        removeDir(output);
-        removeDir(projectConfig.nodeModulesPath);
-      }
+    //        | --- es2abc -- debug -- not removeDir
+    //        | --- es2abc -- release -- removeDir
+    //        | --- ts2abc -- removeDir
+    if (projectConfig.compileMode === ESMODULE && ((projectConfig.buildArkMode !== 'debug' && process.env.panda === ES2ABC) || process.env.panda === TS2ABC)) {
+      removeDir(output);
+      removeDir(projectConfig.nodeModulesPath);
     }
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
@@ -351,7 +349,11 @@ function eliminateUnusedFiles(moduleList: Array<string>): void{
   let cachedModuleList: Array<string> = getCachedModuleList();
   if (cachedModuleList.length !== 0) {
     const eliminateFiles: Array<string> = cachedModuleList.filter(m => !moduleList.includes(m));
-    eliminateFiles.forEach((file) => {fs.unlinkSync(file);});
+    eliminateFiles.forEach((file) => {
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file);
+      }
+    });
   }
 }
 
@@ -382,7 +384,7 @@ function handleFinishModules(modules, callback): any {
     }
   });
 
-  if (projectConfig.processMergeabc) {
+  if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
     if (projectConfig.buildArkMode === 'debug') {
       eliminateUnusedFiles(buildMapFileList);
       updateCachedModuleList(buildMapFileList);
@@ -518,7 +520,7 @@ export function initAbcEnv() : string[] {
     if (isDebug) {
       args.push('--debug-info');
     }
-    if (projectConfig.processMergeabc) {
+    if (projectConfig.compileMode === ESMODULE) {
       args.push('--merge-abc');
     }
   }  else {
