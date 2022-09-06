@@ -225,7 +225,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
+      message: `A page which is being previewed must have one and only one '@Entry' `
         + `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
