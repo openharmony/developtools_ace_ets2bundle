@@ -151,9 +151,11 @@ export class GenAbcPlugin {
     //        | --- es2abc -- debug -- not removeDir
     //        | --- es2abc -- release -- removeDir
     //        | --- ts2abc -- removeDir
-    if (projectConfig.compileMode === ESMODULE && ((projectConfig.buildArkMode !== 'debug' && process.env.panda === ES2ABC) || process.env.panda === TS2ABC)) {
-      removeDir(output);
-      removeDir(projectConfig.nodeModulesPath);
+    if (projectConfig.compileMode === ESMODULE) {
+      if ((projectConfig.buildArkMode !== 'debug' && process.env.panda === ES2ABC) || process.env.panda === TS2ABC) {
+        removeDir(output);
+        removeDir(projectConfig.nodeModulesPath);
+      }
     }
 
     compiler.hooks.compilation.tap('GenAbcPlugin', (compilation) => {
@@ -205,8 +207,8 @@ function clearGlobalInfo() {
   // fix bug of multi trigger
   if (!process.env.watchMode) {
     intermediateJsBundle = [];
-    moduleInfos = [];
   }
+  moduleInfos = [];
   fileterIntermediateJsBundle = [];
   filterModuleInfos = [];
   commonJsModuleInfos = [];
@@ -214,6 +216,7 @@ function clearGlobalInfo() {
   entryInfos = new Map<string, EntryInfo>();
   hashJsonObject = {};
   moduleHashJsonObject = {};
+  buildMapFileList = [];
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -390,6 +393,7 @@ function handleFinishModules(modules, callback): any {
       updateCachedModuleList(buildMapFileList);
     }
     generateMergedAbc(moduleInfos, entryInfos);
+    clearGlobalInfo();
   } else {
     judgeModuleWorkersToGenAbc(invokeWorkersModuleToGenAbc);
     processEntryToGenAbc(entryInfos);
