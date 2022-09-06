@@ -31,7 +31,8 @@ struct MyPropComponent {
 }`
 
 exports.expectResult =
-`class MyPropComponent extends View {
+`"use strict";
+class MyPropComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__myProp2 = new SynchedPropertySimpleOneWay(params.myProp2, this, "myProp2");

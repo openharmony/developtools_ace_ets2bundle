@@ -69,7 +69,8 @@ struct CustomDialogUser {
 `
 
 exports.expectResult =
-`class DialogExample extends View {
+`"use strict";
+class DialogExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.controller = undefined;

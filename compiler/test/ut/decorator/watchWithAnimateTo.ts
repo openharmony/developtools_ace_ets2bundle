@@ -48,7 +48,8 @@ struct DialogView {
 `
 
 exports.expectResult =
-`class ListComponent extends View {
+`"use strict";
+class ListComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.__dialogVis = new ObservedPropertySimple(false, this, "dialogVis");

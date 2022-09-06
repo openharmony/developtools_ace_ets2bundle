@@ -57,7 +57,8 @@ struct HomeComponent {
 }`
 
 exports.expectResult =
-`const value5 = [true, false];
+`"use strict";
+const value5 = [true, false];
 let value6 = { item1: true };
 class HomeComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {

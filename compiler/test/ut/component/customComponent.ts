@@ -44,7 +44,8 @@ struct Child {
 `
 
 exports.expectResult =
-`class Parent extends View {
+`"use strict";
+class Parent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
         this.regularToState = 'regularToState';
