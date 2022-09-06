@@ -42,7 +42,8 @@ import { props } from './compile_info';
 import { resolveSourceFile } from './resolve_ohm_url';
 import {
   CacheFileName,
-  cache
+  cache,
+  shouldResolvedFiles
 } from './compile_info';
 import { hasDecorator } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
@@ -136,68 +137,74 @@ function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string}
   return {modulePath, suffix};
 }
 
+const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
+
 function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   const resolvedModules: ts.ResolvedModuleFull[] = [];
-  for (const moduleName of moduleNames) {
-    const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
-      fileExists(fileName: string): boolean {
-        return ts.sys.fileExists(fileName);
-      },
-      readFile(fileName: string): string | undefined {
-        return ts.sys.readFile(fileName);
-      }
-    });
-    if (result.resolvedModule) {
-      resolvedModules.push(result.resolvedModule);
-    } else if (/^@bundle:/.test(moduleName.trim())) {
-      const module: {modulePath: string, suffix: string} = getOhmUrlFile(moduleName.trim());
-      if (ts.sys.fileExists(module.modulePath)) {
-        resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
+  if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))) {
+    for (const moduleName of moduleNames) {
+      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
+        fileExists(fileName: string): boolean {
+          return ts.sys.fileExists(fileName);
+        },
+        readFile(fileName: string): string | undefined {
+          return ts.sys.readFile(fileName);
+        }
+      });
+      if (result.resolvedModule) {
+        resolvedModules.push(result.resolvedModule);
+      } else if (/^@bundle:/.test(moduleName.trim())) {
+        const module: {modulePath: string, suffix: string} = getOhmUrlFile(moduleName.trim());
+        if (ts.sys.fileExists(module.modulePath)) {
+          resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
+        } else {
+          resolvedModules.push(null);
+        }
+      } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
+        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else {
+          resolvedModules.push(null);
+        }
+      } else if (/\.ets$/.test(moduleName)) {
+        const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.ets'));
+        } else {
+          resolvedModules.push(null);
+        }
+      } else if (/\.ts$/.test(moduleName)) {
+        const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.ts'));
+        } else {
+          resolvedModules.push(null);
+        }
       } else {
-        resolvedModules.push(null);
-      }
-    } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
-      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-      if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-      } else {
-        resolvedModules.push(null);
-      }
-    } else if (/\.ets$/.test(moduleName)) {
-      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.ets'));
-      } else {
-        resolvedModules.push(null);
-      }
-    } else if (/\.ts$/.test(moduleName)) {
-      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.ts'));
-      } else {
-        resolvedModules.push(null);
-      }
-    } else {
-      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-      const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
-      const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
-      const fileModulePath: string =
-        path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-      } else if (ts.sys.fileExists(jsModulePath)) {
-        resolvedModules.push(getResolveModule(jsModulePath, '.js'));
-      } else if (ts.sys.fileExists(fileModulePath)) {
-        resolvedModules.push(getResolveModule(fileModulePath, '.js'));
-      } else {
-        resolvedModules.push(null);
+        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
+        const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
+        const fileModulePath: string =
+          path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(jsModulePath)) {
+          resolvedModules.push(getResolveModule(jsModulePath, '.js'));
+        } else if (ts.sys.fileExists(fileModulePath)) {
+          resolvedModules.push(getResolveModule(fileModulePath, '.js'));
+        } else {
+          resolvedModules.push(null);
+        }
       }
     }
+    if (!projectConfig.xtsMode) {
+      createOrUpdateCache(resolvedModules, containingFile);
+    }
+    resolvedModulesCache[path.resolve(containingFile)] = resolvedModules
+    return resolvedModules;
   }
-  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-    createOrUpdateCache(resolvedModules, containingFile);
-  }
-  return resolvedModules;
+  return resolvedModulesCache[path.resolve(containingFile)];
 }
 
 function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
@@ -212,12 +219,16 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
       if (value) {
         value.mtimeMs = mtimeMs;
         value.error = error;
+        value.parent.push(path.resolve(containingFile));
+        value.parent = [...new Set(value.parent)];
       } else {
-        cache[file] = { mtimeMs, children: [], error };
+        cache[file] = { mtimeMs, children: [], parent: [containingFile], error };
       }
     }
   });
-  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children, error };
+  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children,
+    parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
+    cache[path.resolve(containingFile)].parent : [], error };
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
