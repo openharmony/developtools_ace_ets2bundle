@@ -234,8 +234,8 @@ export class ResultStates {
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       const watchRemovedFiles: string[] = [...comp.removedFiles];
-      if (comp.modifiedFiles) {
-        const isTsAndEtsFile: boolean = [...comp.modifiedFiles].some((item: string) => {
+      if (watchModifiedFiles.length) {
+        const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
         });
         if (!isTsAndEtsFile) {
