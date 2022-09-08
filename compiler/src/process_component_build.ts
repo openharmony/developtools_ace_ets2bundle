@@ -338,7 +338,7 @@ function processInnerComponent(node: ts.ExpressionStatement, newStatements: ts.S
     let curFileName: string;
     let line: number = 1;
     let col: number = 1;
-    if (newsupplement.isAcceleratePreview) {
+    if (sourceNode && newsupplement.isAcceleratePreview) {
       posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
       curFileName = newsupplement.fileName;
       if (posOfNode.line === 0) {
