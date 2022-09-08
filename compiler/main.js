@@ -65,15 +65,9 @@ function initProjectConfig(projectConfig) {
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
-  projectConfig.outChangedFileList = getChangedFileList(projectConfig);
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
-}
-
-function getChangedFileList(projectConfig) {
-  return (projectConfig.hotReloadWatch && projectConfig.hotReloadWatch.outChangedFileList) ?
-    projectConfig.hotReloadWatch.outChangedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
 }
 
 function loadEntryObj(projectConfig) {
@@ -299,7 +293,7 @@ function loadWorker(projectConfig, workerFileEntry) {
   }
 }
 
-function readWorkerFile() {
+function readWorkerFile(isPreview) {
   const workerFileEntry = {};
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
@@ -314,6 +308,12 @@ function readWorkerFile() {
         }
       });
       return workerFileEntry;
+    }
+    if (workerConfig.patchConfig) {
+      projectConfig.hotReload = process.env.watchMode === 'true' &&  isPreview !== 'true';
+      projectConfig.patchAbcPath = workerConfig.patchConfig.patchAbcPath;
+      projectConfig.changedFileList = workerConfig.patchConfig.changedFileList ?
+        workerConfig.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
     }
   }
   return null;
