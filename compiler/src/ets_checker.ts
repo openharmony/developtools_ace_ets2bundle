@@ -38,7 +38,12 @@ import {
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
-import { props } from './compile_info';
+import {
+  props,
+  CacheFileName,
+  cache,
+  shouldResolvedFiles
+} from './compile_info';
 
 function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -112,54 +117,89 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
 }
 
+const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
+
 function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   const resolvedModules: ts.ResolvedModuleFull[] = [];
-  for (const moduleName of moduleNames) {
-    const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
-      fileExists(fileName: string): boolean {
-        return ts.sys.fileExists(fileName);
-      },
-      readFile(fileName: string): string | undefined {
-        return ts.sys.readFile(fileName);
-      }
-    });
-    if (result.resolvedModule) {
-      resolvedModules.push(result.resolvedModule);
-    } else if (/^@(system|ohos)/i.test(moduleName.trim())) {
-      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-      if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+  if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
+    !resolvedModulesCache[path.resolve(containingFile)]) {
+    for (const moduleName of moduleNames) {
+      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
+        fileExists(fileName: string): boolean {
+          return ts.sys.fileExists(fileName);
+        },
+        readFile(fileName: string): string | undefined {
+          return ts.sys.readFile(fileName);
+        }
+      });
+      if (result.resolvedModule) {
+        resolvedModules.push(result.resolvedModule);
+      } else if (/^@(system|ohos)/i.test(moduleName.trim())) {
+        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else {
+          resolvedModules.push(null);
+        }
+      } else if (/\.ets$/.test(moduleName)) {
+        const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.ets'));
+        } else {
+          resolvedModules.push(null);
+        }
+      } else if (/\.ts$/.test(moduleName)) {
+        const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.ts'));
+        } else {
+          resolvedModules.push(null);
+        }
       } else {
-        resolvedModules.push(null);
-      }
-    } else if (/\.ets$/.test(moduleName)) {
-      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.ets'));
-      } else {
-        resolvedModules.push(null);
-      }
-    } else if (/\.ts$/.test(moduleName)) {
-      const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.ts'));
-      } else {
-        resolvedModules.push(null);
-      }
-    } else {
-      const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-      const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
-      const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
-      if (ts.sys.fileExists(modulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-      } else if (ts.sys.fileExists(jsModulePath)) {
-        resolvedModules.push(getResolveModule(modulePath, '.js'));
-      } else {
-        resolvedModules.push(null);
+        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
+        const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(jsModulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.js'));
+        } else {
+          resolvedModules.push(null);
+        }
       }
     }
+    if (!projectConfig.xtsMode) {
+      createOrUpdateCache(resolvedModules, containingFile);
+    }
+    resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
+    return resolvedModules;
   }
-  return resolvedModules;
+  return resolvedModulesCache[path.resolve(containingFile)];
+}
+
+function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
+  const children: string[] = [];
+  const error: boolean = false;
+  resolvedModules.forEach(moduleObj => {
+    if (moduleObj && moduleObj.resolvedFileName && /(?<!\.d)\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
+      const file: string = path.resolve(moduleObj.resolvedFileName);
+      const mtimeMs: number = fs.statSync(file).mtimeMs;
+      children.push(file);
+      const value: CacheFileName = cache[file];
+      if (value) {
+        value.mtimeMs = mtimeMs;
+        value.error = error;
+        value.parent = value.parent || [];
+        value.parent.push(path.resolve(containingFile));
+        value.parent = [...new Set(value.parent)];
+      } else {
+        cache[file] = { mtimeMs, children: [], parent: [containingFile], error };
+      }
+    }
+  });
+  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children,
+    parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
+    cache[path.resolve(containingFile)].parent : [], error };
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
