@@ -49,7 +49,8 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   let filesInfo: string = '';
   moduleInfos.forEach(info => {
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
-    filesInfo += `${info.tempFilePath};${info.recordName};${moduleType}\n`;
+    const sourceFile: string = info.filePath.replace(projectConfig.projectRootPath, '');
+    filesInfo += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(sourceFile)}\n`;
   });
   fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
 }
