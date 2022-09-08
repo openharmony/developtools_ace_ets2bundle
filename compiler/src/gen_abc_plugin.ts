@@ -31,7 +31,8 @@ import {
   genSourceMapFileName,
   checkNodeModulesFile,
   compareNodeVersion,
-  removeDir
+  removeDir,
+  newSourceMaps
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -39,20 +40,22 @@ import {
   JSBUNDLE,
   NODE_MODULES,
   ENTRY_TXT,
+  ES2ABC,
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_TS,
   EXTNAME_MJS,
   EXTNAME_CJS,
   EXTNAME_D_TS,
-  FAIL,
   EXTNAME_JS_MAP,
-  TS2ABC,
-  ES2ABC,
-  TEMPORARY,
-  SUCCESS,
+  FAIL,
   MODULELIST_JSON,
-  MODULES_ABC
+  MODULES_ABC,
+  SUCCESS,
+  SOURCEMAPS_JSON,
+  SOURCEMAPS,
+  TEMPORARY,
+  TS2ABC
 } from './pre_define';
 import { getOhmUrlByFilepath } from './resolve_ohm_url';
 import { generateMergedAbc } from './gen_merged_abc';
@@ -83,7 +86,7 @@ let entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
 let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo: string = '';
-let buildMapFileList: Array<string> = [];
+let buildMapFileList: Set<string> = new Set<string>();
 let isHotReloadFirstBuild: boolean = true;
 
 const red: string = '\u001b[31m';
@@ -228,7 +231,7 @@ function clearGlobalInfo() {
   ESMModuleInfos = [];
   hashJsonObject = {};
   moduleHashJsonObject = {};
-  buildMapFileList = [];
+  buildMapFileList = new Set<string>();
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -278,7 +281,7 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -296,7 +299,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -315,7 +318,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -333,9 +336,22 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
+var cachedSourceMaps: Object;
+
+function updateCachedSourceMaps(): void {
+  const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
+  if (!fs.existsSync(CACHED_SOURCEMAPS)) {
+    cachedSourceMaps = {};
+  } else {
+    cachedSourceMaps = JSON.parse(fs.readFileSync(CACHED_SOURCEMAPS).toString());
+  }
+  Object.keys(newSourceMaps).forEach(key => {
+    cachedSourceMaps[key] = newSourceMaps[key];
+  });
+}
 
 function getCachedModuleList(): Array<string> {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
@@ -349,12 +365,31 @@ function getCachedModuleList(): Array<string> {
 
 function updateCachedModuleList(moduleList: Array<string>): void {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
+  const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
   let cachedJson: Object = {};
   cachedJson["list"] = moduleList;
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
     (err)=>{
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write module list.`, reset);
+      }
+    }
+  );
+  fs.writeFile(CACHED_SOURCEMAPS, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write cache sourceMaps json.`, reset);
+      }
+    }
+  );
+}
+
+function writeSourceMaps(): void {
+  mkdirsSync(projectConfig.buildPath);
+  fs.writeFile(path.join(projectConfig.buildPath, SOURCEMAPS), JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
       }
     }
   );
@@ -365,9 +400,7 @@ function eliminateUnusedFiles(moduleList: Array<string>): void{
   if (cachedModuleList.length !== 0) {
     const eliminateFiles: Array<string> = cachedModuleList.filter(m => !moduleList.includes(m));
     eliminateFiles.forEach((file) => {
-      if (fs.existsSync(file)) {
-        fs.unlinkSync(file);
-      }
+      delete cachedSourceMaps[file];
     });
   }
 }
@@ -401,8 +434,11 @@ function handleFullModuleFiles(modules, callback): any {
 
   if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
     if (projectConfig.buildArkMode === 'debug') {
-      eliminateUnusedFiles(buildMapFileList);
-      updateCachedModuleList(buildMapFileList);
+      const moduleList: Array<string> = Array.from(buildMapFileList);
+      updateCachedSourceMaps();
+      eliminateUnusedFiles(moduleList);
+      updateCachedModuleList(moduleList);
+      writeSourceMaps();
     }
 
     const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
