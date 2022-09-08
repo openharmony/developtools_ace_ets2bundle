@@ -406,23 +406,10 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
   return item;
 }
 
-function generateSourceMap(jsFilePath: string, sourceMapContent: string): void {
-  let buildFilePath: string = genBuildPath(jsFilePath, projectConfig.projectPath, projectConfig.buildPath);
-  if (buildFilePath.length === 0) {
-    return;
-  }
-  if (buildFilePath.endsWith(EXTNAME_ETS)) {
-    buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
-  } else {
-    buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
-  }
-  let buildSourceMapFile: string = genSourceMapFileName(buildFilePath);
-  mkdirsSync(path.dirname(buildSourceMapFile));
-  fs.writeFileSync(buildSourceMapFile, sourceMapContent);
-}
+export var newSourceMaps: Object = {};
 
 export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
-  const mixedInfo: {content: string, sourceMapContent: string} = genContentAndSourceMapInfo(node, false);
+  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, false);
   let jsFilePath: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath);
   if (jsFilePath.length === 0) {
     return;
@@ -435,8 +422,7 @@ export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
   let sourceMapFile: string = genSourceMapFileName(jsFilePath);
   mkdirsSync(path.dirname(jsFilePath));
   if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(sourceMapFile);
-    generateSourceMap(node.fileName, mixedInfo.sourceMapContent);
+    newSourceMaps[node.fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')] = mixedInfo.sourceMapJson;
   }
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
@@ -458,8 +444,8 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): voi
 
     node = ts.factory.updateSourceFile(node, newStatements);
   }
-  const mixedInfo: {content: string, sourceMapContent: string} = genContentAndSourceMapInfo(node, toTsFile);
-  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath, toTsFile);
+  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, toTsFile);
+  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath);
   if (temporaryFile.length === 0) {
     return;
   }
@@ -480,7 +466,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): voi
   mkdirsSync(path.dirname(temporaryFile));
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
     mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(temporarySourceMapFile);
-    fs.writeFileSync(temporarySourceMapFile, mixedInfo.sourceMapContent);
+    fs.writeFileSync(temporarySourceMapFile, JSON.stringify(mixedInfo.sourceMapJson));
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
@@ -515,18 +501,17 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any
     ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
   printer['writeFile'](node, writer, sourceMapGenerator);
   const sourceMapJson: any = sourceMapGenerator.toJSON();
-  sourceMapJson['sources'] = [fileName];
+  sourceMapJson['sources'] = [fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
   const result: string = writer.getText();
   let content: string = result;
   content = processSystemApi(content, true);
   if (toTsFile) {
     content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
-  const sourceMapContent: string = JSON.stringify(sourceMapJson);
 
   return {
     content: content,
-    sourceMapContent: sourceMapContent
+    sourceMapJson: sourceMapJson
   };
 }
 
