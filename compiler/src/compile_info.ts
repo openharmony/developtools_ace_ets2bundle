@@ -70,6 +70,11 @@ interface Info {
   };
 }
 
+interface filesObj {
+  modifiedFiles: string[],
+  removedFiles: string[]
+}
+
 export interface CacheFileName {
   mtimeMs: number,
   children: string[],
@@ -84,6 +89,7 @@ interface NeedUpdateFlag {
 export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
+let allModifiedFiles: Set<string> = new Set();
 
 export class ResultStates {
   private mStats: Stats;
@@ -231,7 +237,7 @@ export class ResultStates {
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
-      const watchRemovedFiles: string[] = [...comp.removedFiles];
+      let watchRemovedFiles: string[] = [...comp.removedFiles];
       if (watchModifiedFiles.length) {
         const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
@@ -241,17 +247,16 @@ export class ResultStates {
         }
       }
       if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
-        interface filesObj {
-          modifiedFiles: string[],
-          removedFiles: string[]
-        }
+        watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
+        allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
+          .filter(file => fs.statSync(file).isFile())
+          .map(file => path.relative(projectConfig.projectPath, file))]
+          .filter(file => !watchRemovedFiles.includes(file)));
         const filesObj: filesObj = {
-          modifiedFiles: watchModifiedFiles.filter((file) => {
-            return fs.statSync(file).isFile();
-          }),
-          removedFiles: watchRemovedFiles
+          modifiedFiles: [...allModifiedFiles],
+          removedFiles: [...watchRemovedFiles]
         };
-        writeFileSync(projectConfig.outChangedFileList, JSON.stringify(filesObj));
+        writeFileSync(projectConfig.changedFileList, JSON.stringify(filesObj));
       }
       const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
       if (changedFiles.length) {
@@ -282,8 +287,8 @@ export class ResultStates {
 
   private shouldWriteChangedList(watchModifiedFiles: string[], watchRemovedFiles: string[]): boolean {
     return projectConfig.compileMode === ESMODULE && process.env.watchMode === 'true' && !projectConfig.isPreview &&
-      projectConfig.outChangedFileList && (watchRemovedFiles.length + watchModifiedFiles.length) &&
-      !(watchModifiedFiles.length === 1 && watchModifiedFiles[0] == projectConfig.projectPath);
+      projectConfig.changedFileList && (watchRemovedFiles.length + watchModifiedFiles.length) &&
+      !(watchModifiedFiles.length === 1 && watchModifiedFiles[0] == projectConfig.projectPath && !watchRemovedFiles.length);
   }
 
   private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
