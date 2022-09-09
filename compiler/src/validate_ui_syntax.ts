@@ -177,7 +177,7 @@ function checkComponentDecorator(source: string, filePath: string,
       if (ts.isStructDeclaration(item)) {
         if (item.name && ts.isIdentifier(item.name)) {
           if (item.decorators && item.decorators.length) {
-            checkDecorators(item.decorators, result, item.name, log, sourceFile);
+            checkDecorators(item.decorators, result, item.name, log, sourceFile, item);
           } else {
             const message: string = `A struct should use decorator '@Component'.`;
             addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
@@ -260,7 +260,7 @@ interface DecoratorResult {
 }
 
 function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: DecoratorResult,
-  component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile): void {
+  component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile, node: ts.StructDeclaration): void {
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
   decorators.forEach((element) => {
@@ -269,6 +269,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
       componentCollection.customComponents.add(componentName);
       switch (name) {
         case COMPONENT_DECORATOR_ENTRY:
+          checkEntryComponent(node, log);
           result.entryCount++;
           componentCollection.entryComponent = componentName;
           collectLocalStorageName(element);
@@ -1073,4 +1074,20 @@ export function resetComponentCollection() {
   componentCollection.entryComponent = null;
   componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = new Set([]);
+}
+
+function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[]): void {
+  if (node.modifiers) {
+    for (let i = 0; i < node.modifiers.length; i++) {
+      if (node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
+        log.push({
+          type: LogType.WARN,
+          message: `It's not a recommended way to export struct with @Entry decorator, ` +
+          `which may cause ACE Engine error in component preview mode.`,
+          pos: node.getStart()
+        });
+        break;
+      }
+    }
+  }
 }
