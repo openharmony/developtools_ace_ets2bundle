@@ -242,6 +242,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
+  validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
@@ -521,7 +522,7 @@ function validateNonExistentProperty(node: ts.ObjectLiteralElementLike,
   });
 }
 
-function validateMandatoryToAssignmentViaParam(node: ts.ExpressionStatement, customComponentName: string,
+function validateMandatoryToAssignmentViaParam(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
   if (builderParamObjectCollection.get(customComponentName) &&
     builderParamObjectCollection.get(customComponentName).size) {
