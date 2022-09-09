@@ -429,7 +429,7 @@ module.exports = (env, argv) => {
   if (env.isPreview == 'true') {
     addResourceTableWatch(config);
   }
-  addSDKBuildDependencies(config);
+  addSDKBuildDependencies(config, appResource);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
