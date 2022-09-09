@@ -284,6 +284,17 @@ function setCopyPluginConfig(config) {
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
 
+function addResourceTableWatch(config, appResource) {
+  if (appResource && fs.existsSync(appResource) && !projectConfig.xtsMode) {
+    const copyPluginPattrens = [];
+    copyPluginPattrens.push({
+      from: path.resolve(__dirname, appResource),
+      to: path.resolve(__dirname, projectConfig.cache)
+    });
+    config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
+  }
+}
+
 function excludeWorker(workerFile, name) {
   if (workerFile) {
     return Object.keys(workerFile).includes(name);
@@ -415,6 +426,9 @@ module.exports = (env, argv) => {
 
   const appResourcePath = env.appResource || process.env.appResource;
   checkAppResourcePath(appResourcePath, config);
+  if (env.isPreview == 'true') {
+    addResourceTableWatch(config);
+  }
   addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
