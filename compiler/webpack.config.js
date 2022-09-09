@@ -289,7 +289,7 @@ function addResourceTableWatch(config, appResource) {
     const copyPluginPattrens = [];
     copyPluginPattrens.push({
       from: path.resolve(__dirname, appResource),
-      to: path.resolve(__dirname, projectConfig.cache)
+      to: path.resolve(__dirname, projectConfig.cachePath)
     });
     config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
   }
