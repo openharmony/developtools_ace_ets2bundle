@@ -1,4 +1,4 @@
-# developtools_ace-ets2bundle
+# developtools_ace_ets2bundle
 
 #### Description
 Provide declarative paradigm syntax compilation conversion, syntax verification, rich and friendly syntax error prompting capabilities.

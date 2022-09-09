@@ -126,7 +126,7 @@ action("build_ets_loader_library") {
 
 action("build_ets_sysResource") {
   if (is_standard_system) {
-    script = "//developtools/ace-ets2bundle/generateSysResource.py"
+    script = "//developtools/ace_ets2bundle/generateSysResource.py"
   } else {
     script = "//foundation/ace/huawei_proprietary/tools/ets-loader/generateSysResource.py"
   }
@@ -323,6 +323,6 @@ ohos_copy("ets_loader_node_modules") {
     ":ets_loader_ark_server",
     ":ets_loader_ark_syntax",
   ]
-  sources = [ "//developtools/ace-ets2bundle/compiler/node_modules" ]
+  sources = [ "//developtools/ace_ets2bundle/compiler/node_modules" ]
   outputs = [ target_out_dir + "/ets_loader_ark/node_modules" ]
 }
