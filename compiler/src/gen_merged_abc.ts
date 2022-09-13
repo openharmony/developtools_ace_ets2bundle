@@ -23,7 +23,6 @@ import { projectConfig } from '../main';
 import {
   FAIL,
   FILESINFO_TXT,
-  MODULES_ABC,
   MODULES_CACHE,
   NPMENTRIES_TXT,
   NODE_MODULES
@@ -68,21 +67,20 @@ function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   fs.writeFileSync(npmEntriesInfoPath, entriesInfo, 'utf-8');
 }
 
-export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Map<string, EntryInfo>) {
+export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Map<string, EntryInfo>, outputABCPath: string) {
   generateCompileFilesInfo(moduleInfos);
   generateNpmEntriesInfo(entryInfos);
 
   const filesInfoPath: string = path.join(process.env.cachePath, FILESINFO_TXT);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   const cacheFilePath: string = path.join(process.env.cachePath, MODULES_CACHE);
-  const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   mkdirsSync(projectConfig.buildPath);
-  const gen_abc_cmd: string =
+  const genAbcCmd: string =
     `${initAbcEnv().join(' ')} "@${filesInfoPath}" --npm-module-entry-list "${npmEntriesInfoPath}" --cache-file "${cacheFilePath}" --output "${outputABCPath}" --file-threads "${fileThreads}"`;
-  logger.debug('gen abc cmd is: ', gen_abc_cmd);
+  logger.debug('gen abc cmd is: ', genAbcCmd);
   try {
-    const child = childProcess.exec(gen_abc_cmd);
+    const child = childProcess.exec(genAbcCmd);
     child.on('exit', (code: any) => {
         if (code === 1) {
             logger.error(red, "ETS:ERROR failed to execute es2abc", reset);
