@@ -260,3 +260,6 @@ export const EXTNAME_ABC: string = '.abc';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
+
+export const GENERATE_ID = 'generateId';
+export const _GENERATE_ID = '__generate__Id';
