@@ -445,7 +445,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
     cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
-    logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    logger.debug(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
     process.exitCode = FAIL;
   }
 }
@@ -768,7 +768,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
       const input: string = moduleInfos[i].tempFilePath;
       let outputPath: string = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
-        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        logger.debug(red, `ETS:ERROR ${input} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
@@ -953,7 +953,7 @@ function copyFileCachePathToBuildPath() {
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      logger.debug(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
       break;
     }
     let parent: string = path.join(abcFile, '..');
