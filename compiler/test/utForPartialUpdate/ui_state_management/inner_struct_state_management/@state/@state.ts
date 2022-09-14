@@ -73,7 +73,6 @@ class StatePage extends ViewPU {
         Column.pop();
     }
     rerender() {
-        this.__counter.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }

@@ -156,9 +156,6 @@ class IFView extends ViewPU {
         Column.pop();
     }
     rerender() {
-        this.__toggle1.markDependentElementsDirty(this);
-        this.__toggle2.markDependentElementsDirty(this);
-        this.__toggle3.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }

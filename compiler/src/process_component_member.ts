@@ -144,7 +144,6 @@ export class UpdateResult {
   private deleteParams: boolean = false;
   private controllerSet: ts.MethodDeclaration;
   private purgeVariableDepStatement: ts.Statement;
-  private rerenderStatement: ts.Statement;
   private decoratorName: string;
 
   public setProperity(updateItem: ts.PropertyDeclaration) {
@@ -185,10 +184,6 @@ export class UpdateResult {
     this.purgeVariableDepStatement = purgeVariableDepStatement;
   }
 
-  public setRerenderStatement(rerenderStatement: ts.Statement) {
-    this.rerenderStatement = rerenderStatement;
-  }
-
   public setDecoratorName(decoratorName: string) {
     this.decoratorName = decoratorName;
   }
@@ -215,10 +210,6 @@ export class UpdateResult {
 
   public getPurgeVariableDepStatement(): ts.Statement {
     return this.purgeVariableDepStatement;
-  }
-
-  public getRerenderStatement(): ts.Statement {
-    return this.rerenderStatement;
   }
 
   public getVariableGet(): ts.GetAccessorDeclaration {
@@ -365,7 +356,6 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setDecoratorName(decorator);
     updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
-    updateResult.setRerenderStatement(createRerenderStatement(variableWithUnderLink));
   }
 }
 
@@ -381,22 +371,6 @@ function createPurgeVariableDepStatement(variableWithUnderLink: string): ts.Stat
       ),
       undefined,
       [ts.factory.createIdentifier(RMELMTID)]
-    )
-  );
-}
-
-function createRerenderStatement(variableWithUnderLink: string): ts.Statement {
-  return ts.factory.createExpressionStatement(
-    ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
-          ts.factory.createIdentifier(variableWithUnderLink)
-        ),
-        ts.factory.createIdentifier(MARKDEPENDENTELEMENTSDIRTY)
-      ),
-      undefined,
-      [ts.factory.createThis()]
     )
   );
 }

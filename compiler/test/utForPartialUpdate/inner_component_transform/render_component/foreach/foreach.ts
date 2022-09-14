@@ -92,7 +92,6 @@ class ParentView extends ViewPU {
         List.pop();
     }
     rerender() {
-        this.__arr.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }
