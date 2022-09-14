@@ -187,7 +187,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
         if (result.getControllerSet()) {
           newMembers.push(result.getControllerSet());
         }
-        processPropertyUnchanged(result, purgeVariableDepStatements, rerenderStatements);
+        processPropertyUnchanged(result, purgeVariableDepStatements);
       }
     }
     if (ts.isMethodDeclaration(item) && item.name) {
@@ -225,15 +225,11 @@ function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
 
 function processPropertyUnchanged(
   result: UpdateResult,
-  purgeVariableDepStatements: ts.Statement[],
-  rerenderStatements: ts.Statement[]
+  purgeVariableDepStatements: ts.Statement[]
 ): void {
   if (partialUpdateConfig.partialUpdateMode) {
     if(result.getPurgeVariableDepStatement()) {
       purgeVariableDepStatements.push(result.getPurgeVariableDepStatement());
-    }
-    if(result.getRerenderStatement()) {
-      rerenderStatements.push(result.getRerenderStatement());
     }
   }
 }
