@@ -508,6 +508,10 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
   if (ts.isIdentifier(initExpression) &&
     initExpression.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.escapedText.toString().replace(LINK_REG, '');
+  } else if (ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
+    initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initExpression.name) && initExpression.name.escapedText.toString().match(LINK_REG)) {
+    initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
   } else if (isMatchInitExpression(initExpression) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
