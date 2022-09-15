@@ -21,6 +21,9 @@ import { processComponentClass } from './process_component_class';
 import processImport from './process_import';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
+  PREVIEW_COMPONENT_FUNCTION_NAME,
+  STORE_PREVIEW_COMPONENTS,
+  GET_PREVIEW_FLAG_FUNCTION_NAME,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   BUILD_ON,
   COMPONENT_BUILDER_DECORATOR,
@@ -65,7 +68,10 @@ import {
   localStorageLinkCollection,
   localStoragePropCollection
 } from './validate_ui_syntax'
-import { resources } from '../main';
+import {
+  resources,
+  projectConfig
+} from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 
 export const transformLog: FileLog = new FileLog();
@@ -435,16 +441,18 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
-  if (componentCollection.entryComponent) {
-    const entryNode: ts.ExpressionStatement =
-      createEntryFunction(componentCollection.entryComponent, context);
-    return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
-  } else if (componentCollection.previewComponent) {
-    const entryNode: ts.ExpressionStatement =
-      createEntryFunction(componentCollection.previewComponent, context);
-    return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
+  if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
+    if (componentCollection.entryComponent) {
+      const entryNode: ts.ExpressionStatement =
+        createEntryFunction(componentCollection.entryComponent, context);
+      return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
+    } else {
+      return node;
+    }
   } else {
-    return node;
+    const statementsArray: ts.Statement =
+      createPreviewComponentFunction(componentCollection.entryComponent, context);
+    return context.factory.updateSourceFile(node, [...node.statements, statementsArray]);
   }
 }
 
@@ -479,6 +487,63 @@ function createEntryFunction(name: string, context: ts.TransformationContext)
       [context.factory.createNewExpression(context.factory.createIdentifier(name),
         undefined, newArray)]));
   return newExpressionStatement;
+}
+
+function createPreviewComponentFunction(name: string, context: ts.TransformationContext)
+  : ts.Statement {
+  const newArray: ts.Expression[] = [
+    context.factory.createStringLiteral((++componentInfo.id).toString()),
+    context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    context.factory.createObjectLiteralExpression([], false)
+  ];
+  const argsArr: ts.Expression[] = [];
+  componentCollection.previewComponent.forEach(componentName => {
+    const newExpression: ts.Expression = context.factory.createNewExpression(
+      context.factory.createIdentifier(componentName),
+      undefined,
+      newArray
+    );
+    argsArr.push(context.factory.createStringLiteral(componentName));
+    argsArr.push(newExpression);
+  });
+  const ifStatement: ts.Statement = context.factory.createIfStatement(
+    context.factory.createCallExpression(
+      context.factory.createIdentifier(GET_PREVIEW_FLAG_FUNCTION_NAME),
+      undefined,
+      []
+    ),
+    context.factory.createBlock(
+      [context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(PREVIEW_COMPONENT_FUNCTION_NAME),
+        undefined,
+        []
+      ))],
+      true
+    ),
+    context.factory.createBlock(
+      [
+        context.factory.createExpressionStatement(context.factory.createCallExpression(
+          context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+          undefined,
+          [
+            context.factory.createNumericLiteral(componentCollection.previewComponent.size),
+            ...argsArr
+          ]
+        )),
+        name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
+          context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
+          undefined,
+          [context.factory.createNewExpression(
+            context.factory.createIdentifier(name),
+            undefined,
+            newArray
+          )]
+        )) : undefined
+      ],
+      true
+    )
+  );
+  return ifStatement;
 }
 
 export function resetLog(): void {
