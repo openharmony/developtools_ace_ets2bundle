@@ -69,7 +69,6 @@ class LinkComponent extends ViewPU {
         Text.pop();
     }
     rerender() {
-        this.__counter.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }
@@ -116,7 +115,6 @@ class ParentComponent extends ViewPU {
         Column.pop();
     }
     rerender() {
-        this.__value.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }

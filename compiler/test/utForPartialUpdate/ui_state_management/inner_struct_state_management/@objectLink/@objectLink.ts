@@ -112,7 +112,6 @@ class CustomText extends ViewPU {
         Row.pop();
     }
     rerender() {
-        this.__model.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }
@@ -178,7 +177,6 @@ class Parent extends ViewPU {
         Column.pop();
     }
     rerender() {
-        this.__models.markDependentElementsDirty(this);
         this.updateDirtyElements();
     }
 }
