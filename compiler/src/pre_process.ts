@@ -61,7 +61,7 @@ function preProcess(source: string): string {
 
 function parseVisual(resourcePath: string, resourceQuery: string, content: string,
   log: LogInfo[], source: string): string {
-  if (!componentCollection.entryComponent || !projectConfig.aceSuperVisualPath) {
+  if (!(componentCollection.entryComponent || componentCollection.customComponents) || !projectConfig.aceSuperVisualPath) {
     return content;
   }
   const visualPath: string = findVisualFile(resourcePath);
@@ -100,8 +100,7 @@ function parseVisual(resourcePath: string, resourceQuery: string, content: strin
 
 function parseStatement(statement: ts.Statement, content: string, log: LogInfo[],
   visualContent: any): string {
-  if (statement.kind === ts.SyntaxKind.StructDeclaration &&
-    statement.name && statement.name.getText() === componentCollection.entryComponent) {
+  if (statement.kind === ts.SyntaxKind.StructDeclaration && statement.name) {
     if (statement.members) {
       statement.members.forEach(member => {
         if (member.kind && member.kind === ts.SyntaxKind.MethodDeclaration) {
@@ -260,7 +259,7 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   const visualDirPath: string = path.parse(resourcePath).dir;
   const etsDirPath: string = path.parse(projectConfig.projectPath).dir;
   const visualMapDirPath: string = path.resolve(process.env.cachePath, SUPERVISUAL +
-      visualDirPath.replace(etsDirPath, ''));
+    (visualDirPath.includes(etsDirPath) ? visualDirPath.replace(etsDirPath, '') : ''));
   if (!(fs.existsSync(visualMapDirPath) && fs.statSync(visualMapDirPath).isDirectory())) {
     mkDir(visualMapDirPath);
   }
@@ -274,7 +273,7 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
 function findVisualFile(filePath: string): string {
   const visualPath: string = filePath.replace(projectConfig.projectPath,
     projectConfig.aceSuperVisualPath).replace('.ets', '.visual');
-  return visualPath;
+  return visualPath.replace('ets', 'supervisual');
 }
 
 function getVisualContent(visualPath: string, log: LogInfo[]): any {
