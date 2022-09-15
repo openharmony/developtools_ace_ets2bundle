@@ -126,9 +126,6 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
-    if (projectConfig.isPreview && entryCollection.has(node.expression.escapedText.toString())) {
-      remindExportEntryComponent(node, log);
-    }
     if (defaultNameFromParent) {
       setDependencies(defaultNameFromParent,
         linkCollection.get(node.expression.escapedText.toString()),
@@ -140,10 +137,6 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
   if (ts.isExportDeclaration(node) && node.exportClause &&
     ts.isNamedExports(node.exportClause) && node.exportClause.elements) {
     node.exportClause.elements.forEach(item => {
-      if (projectConfig.isPreview &&
-        entryCollection.has((item.propertyName ? item.propertyName : item.name).escapedText.toString())) {
-        remindExportEntryComponent(node, log);
-      }
       if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
         ts.isIdentifier(item.propertyName) && hasCollection(item.propertyName)) {
         let asExportName: string = item.name.escapedText.toString();
@@ -191,19 +184,7 @@ function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollectio
         break;
       }
     }
-    if (existEntry && existExport || exportCollection.has(node.name.escapedText.toString())) {
-      remindExportEntryComponent(node, log);
-    }
   }
-}
-
-function remindExportEntryComponent(node: ts.Node, log: LogInfo[]): void {
-  log.push({
-    type: LogType.WARN,
-    message: `It's not a recommended way to export struct with @Entry decorator, ` +
-      `which may cause ACE Engine error in component preview mode.`,
-    pos: node.getStart()
-  });
 }
 
 function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: string,
