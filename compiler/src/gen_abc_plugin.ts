@@ -197,6 +197,9 @@ export class GenAbcPlugin {
       if (projectConfig.compileMode === ESMODULE) {
         return;
       }
+      if (intermediateJsBundle.length === 0) {
+        return;
+      }
       buildPathInfo = output;
       judgeWorkersToGenAbc(invokeWorkersToGenAbc);
     });
@@ -423,9 +426,9 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   }
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
-    let buildDirArr = projectConfig.buildPath.split(path.sep);
-    let buildDirPath = buildDirArr[buildDirArr.length - 1];
-    cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, buildDirPath, keyPath);
+    let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
+    let abilityDir: string = buildDirArr[buildDirArr.length - 1];
+    cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, abilityDir, keyPath);
   } else {
     cacheOutputPath = output;
   }
@@ -912,9 +915,9 @@ function genHashJsonPath(buildPath: string): string {
       logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
-    let buildDirArr = projectConfig.buildPath.split(path.sep);
-    let buildDirPath = buildDirArr[buildDirArr.length - 1];
-    let hashJsonPath = path.join(process.env.cachePath, TEMPORARY, buildDirPath, hashFile);
+    let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
+    let abilityDir: string = buildDirArr[buildDirArr.length - 1];
+    let hashJsonPath: string = path.join(process.env.cachePath, TEMPORARY, abilityDir, hashFile);
     mkdirsSync(path.dirname(hashJsonPath));
     return hashJsonPath;
   } else if (buildPath.indexOf(ARK) >= 0) {
