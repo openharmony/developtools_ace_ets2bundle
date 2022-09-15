@@ -289,7 +289,10 @@ function isThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<stri
 
 function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<string>): boolean {
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
-    node.initializer.escapedText && node.initializer.escapedText.includes('$')) {
+    (node.initializer.escapedText && node.initializer.escapedText.includes('$') ||
+    ts.isPropertyAccessExpression(node.initializer) && node.initializer.expression &&
+    node.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(node.initializer.name) && node.initializer.name.escapedText.toString().includes('$'))) {
     return false;
   }
   if (ts.isPropertyAssignment(node) && ts.isIdentifier(node.name) &&
