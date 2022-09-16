@@ -236,7 +236,7 @@ function setReleaseConfig(config) {
   };
 }
 
-function setCopyPluginConfig(config) {
+function setCopyPluginConfig(config, appResource, isPreview) {
   const copyPluginPattrens = [];
   copyPluginPattrens.push({
     from: '**/*',
@@ -281,19 +281,17 @@ function setCopyPluginConfig(config) {
       });
     }
   }
-  config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
-}
-
-function addResourceTableWatch(config, appResource) {
-  if (appResource && fs.existsSync(appResource) && !projectConfig.xtsMode) {
-    const copyPluginPattrens = [];
+  if (appResource && fs.existsSync(appResource) && !projectConfig.xtsMode &&
+    isPreview == 'true') {
     copyPluginPattrens.push({
       from: path.resolve(__dirname, appResource),
       to: path.resolve(__dirname, projectConfig.cachePath)
     });
-    config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
   }
+  config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
+
+
 
 function excludeWorker(workerFile, name) {
   if (workerFile) {
@@ -393,7 +391,7 @@ module.exports = (env, argv) => {
   initConfig(config);
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
-  setCopyPluginConfig(config);
+  
   setCleanWebpackPlugin(workerFile, config);
 
   if (env.isPreview !== "true") {
@@ -426,9 +424,7 @@ module.exports = (env, argv) => {
 
   const appResourcePath = env.appResource || process.env.appResource;
   checkAppResourcePath(appResourcePath, config);
-  if (env.isPreview == 'true') {
-    addResourceTableWatch(config);
-  }
+  setCopyPluginConfig(config, appResourcePath, env.isPreview);
   addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
