@@ -230,3 +230,6 @@ export const SUPERVISUAL: string = './supervisual';
 export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
 
 export const INSTANCE: string = 'Instance';
+
+export const SUCCESS: number = 0;
+export const FAIL: number = 1;

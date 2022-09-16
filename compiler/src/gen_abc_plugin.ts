@@ -20,6 +20,9 @@ import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
 import { toUnixPath, toHashData } from './utils';
+import {
+  FAIL
+} from './pre_define';
 
 const genAbcScript = 'gen_abc.js';
 let output: string;
@@ -60,6 +63,7 @@ export class GenAbcPlugin {
       } else {
         if (!fs.existsSync(path.resolve(arkDir, 'build'))) {
           logger.error(red, 'ETS:ERROR find build fail', reset);
+          process.exitCode = FAIL;
           return;
         }
       }
@@ -105,6 +109,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
     logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    process.exitCode = FAIL;
   }
 }
 
@@ -194,6 +199,10 @@ function invokeWorkersToGenAbc() {
     }
 
     cluster.on('exit', (worker, code, signal) => {
+      if (code === FAIL || process.exitCode === FAIL) {
+        process.exitCode = FAIL;
+        return;
+      }
       logger.debug(`worker ${worker.process.pid} finished`);
     });
 
@@ -224,6 +233,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
       const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
       if (!fs.existsSync(cacheOutputPath)) {
         logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+        process.exitCode = FAIL;
         continue;
       }
       if (fs.existsSync(cacheAbcFilePath)) {
@@ -250,6 +260,7 @@ function writeHashJson() {
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
       logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+      process.exitCode = FAIL;
       continue;
     }
     const hashInputContentData: any = toHashData(cacheOutputPath);
@@ -268,7 +279,7 @@ function genHashJsonPath(buildPath: string) {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
-      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
     return path.join(process.env.cachePath, hashFile);
@@ -276,7 +287,7 @@ function genHashJsonPath(buildPath: string) {
     const dataTmps = buildPath.split(ARK);
     const hashPath = path.join(dataTmps[0], ARK);
     if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
-      logger.error(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
     return path.join(hashPath, hashFile);
@@ -293,6 +304,7 @@ function copyFileCachePathToBuildPath() {
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
       logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      process.exitCode = FAIL;
       break;
     }
     let parent: string = path.join(abcFile, '..');
