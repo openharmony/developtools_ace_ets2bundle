@@ -62,9 +62,12 @@ import {
   hasDecorator
 } from './utils';
 import { projectConfig } from '../main';
-import { collectExtend } from './process_ui_syntax';
+import { 
+  collectExtend, 
+  isExtendFunction, 
+  transformLog 
+} from './process_ui_syntax';
 import { importModuleCollection } from './ets_checker';
-import { isExtendFunction } from './process_ui_syntax';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -688,6 +691,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
         }
       }
       if (ts.isMethodDeclaration(item) && item.name && ts.isIdentifier(item.name)) {
+        validateStateVariable(item);
         currentMethodCollection.add(item.name.getText());
       }
     });
@@ -845,6 +849,21 @@ function processInnerModule(content: string, systemValueCollection: Set<string>)
     }
   });
   return content;
+}
+
+function validateStateVariable(node: ts.MethodDeclaration): void {
+  if (node.decorators && node.decorators.length) {
+    for (let i = 0; i < node.decorators.length; i++) {
+      const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/,'').trim();
+      if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
+        transformLog.errors.push({
+          type: LogType.ERROR,
+          message: `'${node.decorators[i].getText()}' can not decorate the method.`,
+          pos: node.decorators[i].getStart()
+        });
+      }
+    }
+  }
 }
 
 const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
