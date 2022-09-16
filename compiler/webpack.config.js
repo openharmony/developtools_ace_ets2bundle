@@ -382,7 +382,7 @@ function setCleanWebpackPlugin(workerFile, config) {
 
 module.exports = (env, argv) => {
   const config = {};
-  setProjectConfig(env, appResourcePath);
+  setProjectConfig(env);
   loadEntryObj(projectConfig);
   loadModuleInfo(projectConfig, env);
   setTsConfigFile();
