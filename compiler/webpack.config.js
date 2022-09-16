@@ -282,7 +282,7 @@ function setCopyPluginConfig(config, appResource, isPreview) {
     }
   }
   if (appResource && fs.existsSync(appResource) && !projectConfig.xtsMode &&
-    isPreview == 'true') {
+    isPreview === 'true') {
     copyPluginPattrens.push({
       from: path.resolve(__dirname, appResource),
       to: path.resolve(__dirname, projectConfig.cachePath)
