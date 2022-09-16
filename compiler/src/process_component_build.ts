@@ -1044,6 +1044,15 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Identifi
 }
 
 function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+  const parameterList: ts.Expression[] = [
+    ts.factory.createStringLiteral(componentInfo.id.toString()),
+    ts.factory.createThis(),
+    argumentsArray[0],
+    ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)
+  ];
+  if (argumentsArray.length >= 3 && argumentsArray[2]) {
+    parameterList.push(ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC));
+  }
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1051,12 +1060,7 @@ function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.Express
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
       ),
       undefined,
-      [ts.factory.createStringLiteral(componentInfo.id.toString()),
-        ts.factory.createThis(),
-        argumentsArray[0],
-        ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION),
-        ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC)
-      ]
+      parameterList
     )
   );
 }
