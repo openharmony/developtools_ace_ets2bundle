@@ -386,7 +386,6 @@ function setCleanWebpackPlugin(workerFile, config) {
 
 module.exports = (env, argv) => {
   const config = {};
-  setProjectConfig(env);
   loadEntryObj(projectConfig);
   loadModuleInfo(projectConfig, env);
   setTsConfigFile();
@@ -427,7 +426,7 @@ module.exports = (env, argv) => {
   const appResourcePath = env.appResource || process.env.appResource;
   checkAppResourcePath(appResourcePath, config);
   addSDKBuildDependencies(config);
-  addResourceTableWatch(appResourcePath, config)
+  setProjectConfig(env, appResourcePath);
   config.output.library = projectConfig.hashProjectPath;
   return config;
 }
