@@ -291,8 +291,6 @@ function setCopyPluginConfig(config, appResource, isPreview) {
   config.plugins.push(new CopyPlugin({ patterns: copyPluginPattrens }));
 }
 
-
-
 function excludeWorker(workerFile, name) {
   if (workerFile) {
     return Object.keys(workerFile).includes(name);
@@ -391,7 +389,6 @@ module.exports = (env, argv) => {
   initConfig(config);
   const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
-  
   setCleanWebpackPlugin(workerFile, config);
 
   if (env.isPreview !== "true") {
