@@ -233,3 +233,5 @@ export const INSTANCE: string = 'Instance';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
+
+export const TEMPORARY: string = 'temporary';
