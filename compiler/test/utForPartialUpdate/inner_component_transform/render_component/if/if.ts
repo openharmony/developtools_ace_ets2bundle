@@ -100,52 +100,56 @@ class IFView extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             If.create();
             if (this.toggle1) {
-                If.branchId(0);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('toggle1');
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('toggle1');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
                 });
-                Text.pop();
             }
             else if (this.toggle2) {
-                If.branchId(1);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('toggle2');
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
+                this.ifElseBranchUpdateFunction(1, () => {
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('toggle2');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
                 });
-                Text.pop();
             }
             else if (this.toggle3) {
-                If.branchId(2);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('toggle3');
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
+                this.ifElseBranchUpdateFunction(2, () => {
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('toggle3');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
                 });
-                Text.pop();
             }
             else {
-                If.branchId(3);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('toggle no thing');
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
+                this.ifElseBranchUpdateFunction(3, () => {
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('toggle no thing');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
                 });
-                Text.pop();
             }
             if (!isInitialRender) {
                 If.pop();
