@@ -85,7 +85,8 @@ import {
   GRID_COMPONENT,
   WILLUSEPROXY,
   TABCONTENT_COMPONENT,
-  GLOBAL_THIS
+  GLOBAL_THIS,
+  IFELSEBRANCHUPDATEFUNCTION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1170,7 +1171,11 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
     } else if (ts.isIfStatement(thenStatement)) {
       thenStatement = processInnerIfStatement(thenStatement, 0, log, isInnerBuilder);
       thenStatement = ts.factory.createBlock(
-        [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()], true);
+        partialUpdateConfig.partialUpdateMode
+          ? [createIfCreate(), createIfBranchFunc(id, [thenStatement]), createIfPop()]
+          : [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()],
+        true
+      );
     } else {
       thenStatement = ts.factory.createBlock([thenStatement], true);
       thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isInnerBuilder);
@@ -1199,7 +1204,13 @@ function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isInnerBuil
 }
 
 function addIfBranchId(id: number, container: ts.Block): ts.Block {
-  return ts.factory.updateBlock(container, [createIfBranchId(id), ...container.statements]);
+  let containerStatements: ts.Statement[];
+  if (partialUpdateConfig.partialUpdateMode) {
+    containerStatements = [createIfBranchFunc(id, [...container.statements])];
+  } else {
+    containerStatements = [createIfBranchId(id), ...container.statements];
+  }
+  return ts.factory.updateBlock(container, containerStatements);
 }
 
 function createIf(): ts.Identifier {
@@ -1220,6 +1231,13 @@ function createIfBranchId(id: number): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(createFunction(createIf(),
     ts.factory.createIdentifier(COMPONENT_IF_BRANCH_ID_FUNCTION),
     ts.factory.createNodeArray([ts.factory.createNumericLiteral(id)])));
+}
+
+function createIfBranchFunc(id: number, innerStatements: ts.Statement[]): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+    ts.factory.createThis(), ts.factory.createIdentifier(IFELSEBRANCHUPDATEFUNCTION)), undefined,
+      [ts.factory.createNumericLiteral(id), ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock(innerStatements, true))]));
 }
 
 interface CreateResult {
