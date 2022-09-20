@@ -23,8 +23,6 @@ if (sdk_build_public) {
 
 ets_loader_lib_dir =
     get_label_info(":build_ets_loader_library", "target_out_dir") + "/lib"
-ets_loader_syntax_dir = get_label_info(":build_ets_loader_library",
-                                       "target_out_dir") + "/syntax_parser/dist"
 ets_loader_declarations_dir = get_label_info(":build_ets_loader_library",
                                              "target_out_dir") + "/declarations"
 ets_loader_component_config_file =
@@ -42,7 +40,6 @@ action("build_ets_loader_library") {
   depfile = "$target_gen_dir/$target_name.d"
   outputs = [
     ets_loader_lib_dir,
-    ets_loader_syntax_dir,
     ets_loader_declarations_dir,
     ets_loader_component_config_file,
   ]
@@ -62,14 +59,12 @@ action("build_ets_loader_library") {
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
   _uglify_source_js = _ace_config_dir + "/uglify-source.js"
-  _build_parser_js = _ace_config_dir + "/build_parser.js"
   _build_declarations_file_js = _ace_config_dir + "/build_declarations_file.js"
 
   inputs = [
     _babel_config_js,
     _babel_js,
     _uglify_source_js,
-    _build_parser_js,
     _build_declarations_file_js,
   ]
 
@@ -101,18 +96,12 @@ action("build_ets_loader_library") {
     rebase_path(_babel_js, root_build_dir),
     "--ets-loader-src-dir",
     rebase_path(_ets_loader_dir + "/src", root_build_dir),
-    "--ets-loader-syntax-src-dir",
-    rebase_path(_ets_loader_dir + "/syntax_parser/src", root_build_dir),
     "--babel-config-js",
     rebase_path(_babel_config_js, root_build_dir),
     "--uglify-source-js",
     rebase_path(_uglify_source_js, root_build_dir),
-    "--build-parser-js",
-    rebase_path(_build_parser_js, root_build_dir),
     "--output-dir",
     rebase_path(ets_loader_lib_dir, root_build_dir),
-    "--output-syntax-dir",
-    rebase_path(ets_loader_syntax_dir, root_build_dir),
     "--declarations-file-dir",
     rebase_path(_declarations_file_dir, root_build_dir),
     "--build-declarations-file-js",
@@ -193,14 +182,6 @@ ohos_copy("ets_loader_library") {
   module_install_name = ""
 }
 
-ohos_copy("ets_loader_syntax") {
-  deps = [ ":build_ets_loader_library" ]
-  sources = [ ets_loader_syntax_dir ]
-  outputs = [ target_out_dir + "/$target_name" ]
-  module_source_dir = target_out_dir + "/$target_name"
-  module_install_name = ""
-}
-
 ohos_copy("components") {
   sources = [ "compiler/components" ]
   outputs = [ target_out_dir + "/$target_name" ]
@@ -254,15 +235,6 @@ ohos_copy("ets_loader_ark_declaration") {
   ]
   sources = [ ets_loader_declarations_dir ]
   outputs = [ target_out_dir + "/ets_loader_ark/declarations" ]
-}
-
-ohos_copy("ets_loader_ark_syntax") {
-  deps = [
-    ":build_ets_loader_library",
-    ":ets_loader_ark",
-  ]
-  sources = [ ets_loader_syntax_dir ]
-  outputs = [ target_out_dir + "/ets_loader_ark/syntax_parser/dist" ]
 }
 
 ohos_copy("ets_loader_ark_components") {
@@ -321,7 +293,6 @@ ohos_copy("ets_loader_node_modules") {
     ":ets_loader_ark_declaration",
     ":ets_loader_ark_lib",
     ":ets_loader_ark_server",
-    ":ets_loader_ark_syntax",
   ]
   sources = [ "//developtools/ace_ets2bundle/compiler/node_modules" ]
   outputs = [ target_out_dir + "/ets_loader_ark/node_modules" ]
