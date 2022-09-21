@@ -50,7 +50,8 @@ import {
   ES2ABC,
   TEMPORARY,
   SUCCESS,
-  MODULELIST_JSON
+  MODULELIST_JSON,
+  MODULES_ABC
 } from './pre_define';
 import { getOhmUrlByFilepath } from './resolve_ohm_url';
 import { generateMergedAbc } from './gen_merged_abc';
@@ -81,6 +82,7 @@ let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo: string = '';
 let buildMapFileList: Array<string> = [];
+let isHotReloadFirstBuild: boolean = true;
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -363,7 +365,7 @@ function eliminateUnusedFiles(moduleList: Array<string>): void{
   }
 }
 
-function handleFinishModules(modules, callback): any {
+function handleFullModuleFiles(modules, callback): any {
   const nodeModulesFile: Array<string> = [];
   modules.forEach(module => {
     if (module !== undefined && module.resourceResolveData !== undefined) {
@@ -395,7 +397,9 @@ function handleFinishModules(modules, callback): any {
       eliminateUnusedFiles(buildMapFileList);
       updateCachedModuleList(buildMapFileList);
     }
-    generateMergedAbc(moduleInfos, entryInfos);
+
+    const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
+    generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
     clearGlobalInfo();
   } else {
     judgeModuleWorkersToGenAbc(invokeWorkersModuleToGenAbc);
@@ -981,4 +985,53 @@ function processExtraAssetForBundle() {
   writeHashJson();
   copyFileCachePathToBuildPath();
   clearGlobalInfo();
+}
+
+function handleHotReloadChangedFiles() {
+  let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
+  let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
+
+  const nodeModulesFile: Array<string> = [];
+  for (let file of changedFileList) {
+    let filePath: string = path.join(projectConfig.projectPath, file);
+    let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+    if (tempFilePath.length === 0) {
+      return;
+    }
+    let buildFilePath: string = "";
+    tempFilePath = toUnixPath(tempFilePath);
+
+    if (file.endsWith(EXTNAME_ETS)) {
+      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+    } else if (file.endsWith(EXTNAME_D_TS)) {
+      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+    } else if (file.endsWith(EXTNAME_TS)) {
+      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+    } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
+      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+    } else {
+      logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+      process.exitCode = FAIL;
+    }
+  }
+
+  if (!fs.existsSync(projectConfig.patchAbcPath)) {
+    mkdirsSync(projectConfig.patchAbcPath);
+  }
+
+  const outputABCPath: string = path.join(projectConfig.patchAbcPath, MODULES_ABC);
+  generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
+}
+
+function handleFinishModules(modules, callback) {
+  if (projectConfig.hotReload && !isHotReloadFirstBuild) {
+    handleHotReloadChangedFiles();
+    return;
+  }
+
+  handleFullModuleFiles(modules, callback);
+
+  if (projectConfig.hotReload) {
+    isHotReloadFirstBuild = false;
+  }
 }
