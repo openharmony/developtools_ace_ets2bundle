@@ -199,6 +199,9 @@ function setProjectConfig(envArgs) {
   if (envArgs.cachePath) {
     projectConfig.cachePath = envArgs.cachePath;
   }
+  if (envArgs.isPreview === "true") {
+    projectConfig.isPreview = true;
+  }
 }
 
 function setReleaseConfig(config) {
