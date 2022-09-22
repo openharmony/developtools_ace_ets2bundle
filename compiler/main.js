@@ -66,8 +66,10 @@ function initProjectConfig(projectConfig) {
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
-  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
-  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
+  projectConfig.isPreview = projectConfig.isPreview ||
+    (process.env.isPreview === 'true' ? true : process.env.isPreview);
 }
 
 function loadEntryObj(projectConfig) {
@@ -438,6 +440,9 @@ function addSDKBuildDependencies(config) {
 
 function partialUpdateController(minAPIVersion) {
   if (partialUpdateConfig.alwaysClose) {
+    return;
+  }
+  if (projectConfig.isPreview) {
     return;
   }
   if (minAPIVersion >= 9) {
