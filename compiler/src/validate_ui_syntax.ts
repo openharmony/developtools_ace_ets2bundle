@@ -73,8 +73,11 @@ import {
   getPackageInfo
 } from './utils';
 import { projectConfig, abilityPagesFullPath } from '../main';
-import { collectExtend } from './process_ui_syntax';
-import { isExtendFunction } from './process_ui_syntax';
+import { 
+  collectExtend, 
+  isExtendFunction, 
+  transformLog 
+} from './process_ui_syntax';
 import { isOhmUrl } from './resolve_ohm_url';
 import { logger } from './compile_info';
 
@@ -739,6 +742,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
         }
       }
       if (ts.isMethodDeclaration(item) && item.name && ts.isIdentifier(item.name)) {
+        validateStateVariable(item);
         currentMethodCollection.add(item.name.getText());
       }
     });
@@ -1087,6 +1091,21 @@ function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[]): void {
           pos: node.getStart()
         });
         break;
+      }
+    }
+  }
+}
+
+function validateStateVariable(node: ts.MethodDeclaration): void {
+  if (node.decorators && node.decorators.length) {
+    for (let i = 0; i < node.decorators.length; i++) {
+      const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/,'').trim();
+      if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
+        transformLog.errors.push({
+          type: LogType.ERROR,
+          message: `'${node.decorators[i].getText()}' can not decorate the method.`,
+          pos: node.decorators[i].getStart()
+        });
       }
     }
   }
