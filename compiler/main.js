@@ -275,8 +275,8 @@ function readWorkerFile() {
           const workerKey = relativePath.replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
           if (workerFileEntry[workerKey]) {
             throw Error(
-              '\u001b[31m ERROR: The worker file cannot use the same file name: ' +
-              workerKey + '. \u001b[39m'
+              '\u001b[31m ERROR: The worker file cannot use the same file name: \n' +
+              workerFileEntry[workerKey] + '\n' + worker + '\u001b[39m'
             ).message;
           } else {
             workerFileEntry[workerKey] = worker;
