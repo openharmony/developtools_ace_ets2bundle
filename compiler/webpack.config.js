@@ -360,9 +360,6 @@ function setGenAbcPlugin(env, config) {
 }
 
 function setCleanWebpackPlugin(workerFile, config) {
-  if (projectConfig.compileMode === 'esmodule') {
-    return;
-  }
   let cleanPath = [];
   cleanPath.push(projectConfig.buildPath);
   if (workerFile) {
