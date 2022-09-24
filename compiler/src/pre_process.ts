@@ -259,7 +259,7 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   const visualDirPath: string = path.parse(resourcePath).dir;
   const etsDirPath: string = path.parse(projectConfig.projectPath).dir;
   const visualMapDirPath: string = path.resolve(process.env.cachePath, SUPERVISUAL +
-    (visualDirPath.includes(etsDirPath) ? visualDirPath.replace(etsDirPath, '') : ''));
+    visualDirPath.replace(etsDirPath, ''));
   if (!(fs.existsSync(visualMapDirPath) && fs.statSync(visualMapDirPath).isDirectory())) {
     mkDir(visualMapDirPath);
   }
@@ -271,9 +271,11 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
 }
 
 function findVisualFile(filePath: string): string {
-  const visualPath: string = filePath.replace(projectConfig.projectPath,
-    projectConfig.aceSuperVisualPath).replace('.ets', '.visual');
-  return visualPath.replace('ets', 'supervisual');
+  const etsDirPath: string = path.parse(projectConfig.projectPath).dir;
+  const visualDirPath: string = path.parse(projectConfig.aceSuperVisualPath).dir;
+  return filePath
+    .replace(projectConfig.projectPath, projectConfig.aceSuperVisualPath)
+    .replace(etsDirPath, visualDirPath).replace(/\.ets$/, '.visual');
 }
 
 function getVisualContent(visualPath: string, log: LogInfo[]): any {
