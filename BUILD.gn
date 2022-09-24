@@ -132,7 +132,7 @@ action("build_ets_sysResource") {
   }
   outputs = [ ets_sysResource ]
 
-  _id_defined_json = "//utils/system_resources/systemres/main/resources/base/element/id_defined.json"
+  _id_defined_json = "//base/global/system_resources/systemres/main/resources/base/element/id_defined.json"
   inputs = [ _id_defined_json ]
 
   args = [
