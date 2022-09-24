@@ -154,17 +154,6 @@ export class GenAbcPlugin {
       return;
     }
 
-    // case ESMODULE
-    //        | --- es2abc -- debug -- not removeDir
-    //        | --- es2abc -- release -- removeDir
-    //        | --- ts2abc -- removeDir
-    if (projectConfig.compileMode === ESMODULE) {
-      if ((projectConfig.buildArkMode !== 'debug' && process.env.panda !== TS2ABC) || process.env.panda === TS2ABC) {
-        removeDir(output);
-        removeDir(projectConfig.nodeModulesPath);
-      }
-    }
-
     // for preview mode max listeners
     events.EventEmitter.defaultMaxListeners = 100;
 
