@@ -546,7 +546,24 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
 
 export function initAbcEnv() : string[] {
   let args: string[] = [];
-  if (process.env.panda === TS2ABC) {
+  if (process.env.minPlatformVersion === "8") {
+    process.env.panda = TS2ABC;
+    let js2abc: string = path.join(arkDir, 'build', 'legacy_api8', 'src', 'index.js');
+    if (isWin) {
+      js2abc = path.join(arkDir, 'build-win', 'legacy_api8', 'src', 'index.js');
+    } else if (isMac) {
+      js2abc = path.join(arkDir, 'build-mac', 'legacy_api8', 'src', 'index.js');
+    }
+
+    js2abc = '"' + js2abc + '"';
+    args = [
+      '--expose-gc',
+      js2abc
+    ];
+    if (isDebug) {
+      args.push('--debug');
+    }
+  } else if (process.env.panda === TS2ABC) {
     let js2abc: string = path.join(arkDir, 'build', 'src', 'index.js');
     if (isWin) {
       js2abc = path.join(arkDir, 'build-win', 'src', 'index.js');
