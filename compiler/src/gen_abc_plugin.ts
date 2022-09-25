@@ -203,6 +203,9 @@ export class GenAbcPlugin {
       if (projectConfig.compileMode === ESMODULE) {
         return;
       }
+      if (intermediateJsBundle.length === 0) {
+        return;
+      }
       buildPathInfo = output;
       previewCount++;
       invokeWorkersToGenAbc();
@@ -430,7 +433,9 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   }
   let cacheOutputPath: string = "";
   if (process.env.cachePath) {
-    cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, keyPath);
+    let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
+    let abilityDir: string = buildDirArr[buildDirArr.length - 1];
+    cacheOutputPath = path.join(process.env.cachePath, TEMPORARY, abilityDir, keyPath);
   } else {
     cacheOutputPath = output;
   }
@@ -445,7 +450,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
     cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
-    logger.error(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    logger.debug(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
     process.exitCode = FAIL;
   }
 }
@@ -768,7 +773,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
       const input: string = moduleInfos[i].tempFilePath;
       let outputPath: string = moduleInfos[i].abcFilePath;
       if (!fs.existsSync(input)) {
-        logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+        logger.debug(red, `ETS:ERROR ${input} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
@@ -913,7 +918,11 @@ function genHashJsonPath(buildPath: string): string {
       logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
-    return path.join(process.env.cachePath, hashFile);
+    let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
+    let abilityDir: string = buildDirArr[buildDirArr.length - 1];
+    let hashJsonPath: string = path.join(process.env.cachePath, TEMPORARY, abilityDir, hashFile);
+    mkdirsSync(path.dirname(hashJsonPath));
+    return hashJsonPath;
   } else if (buildPath.indexOf(ARK) >= 0) {
     const dataTmps: string[] = buildPath.split(ARK);
     const hashPath: string = path.join(dataTmps[0], ARK);
@@ -953,7 +962,8 @@ function copyFileCachePathToBuildPath() {
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      logger.debug(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      process.exitCode = FAIL;
       break;
     }
     let parent: string = path.join(abcFile, '..');
