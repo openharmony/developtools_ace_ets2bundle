@@ -93,6 +93,7 @@ function loadEntryObj(projectConfig) {
       manifest = JSON.parse(jsonString);
       if (manifest && manifest.minPlatformVersion) {
         partialUpdateController(manifest.minPlatformVersion);
+        process.env.minPlatformVersion = manifest.minPlatformVersion;
       }
       projectConfig.pagesJsonFileName = 'config.json';
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
