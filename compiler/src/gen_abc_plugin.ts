@@ -154,6 +154,11 @@ export class GenAbcPlugin {
       return;
     }
 
+    if (projectConfig.compileMode === ESMODULE) {
+      removeDir(output);
+      removeDir(projectConfig.nodeModulesPath);
+    }
+
     // for preview mode max listeners
     events.EventEmitter.defaultMaxListeners = 100;
 
