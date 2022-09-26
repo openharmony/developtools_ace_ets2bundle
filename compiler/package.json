@@ -10,12 +10,11 @@
   ],
   "scripts": {
     "lint": "eslint --fix ./src --ext .ts",
-    "build": "npm run generateSyntaxParser && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
+    "build": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
     "create": "node ./lib/create.js --env projectName",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
     "test": "npm run build && mocha -r mocha-context/register test/test.js && mocha -r mocha-context/register test/test.js --partialUpdate",
     "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib",
-    "generateSyntaxParser": "node build_parser.js ./syntax_parser/dist",
     "postinstall": "node npm-install.js"
   },
   "devDependencies": {
@@ -32,7 +31,6 @@
     "file-loader": "^6.2.0",
     "mocha": "^8.2.1",
     "mocha-context": "^0.1.5",
-    "pegjs": "^0.10.0",
     "ts-node": "^9.1.1",
     "uglify-js": "^3.13.0",
     "url-loader": "^4.1.1"
