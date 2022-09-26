@@ -1023,8 +1023,12 @@ function processExtraAssetForBundle() {
 function handleHotReloadChangedFiles() {
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
+  let relativeProjectPath = projectConfig.projectPath.slice(projectConfig.projectRootPath.length + path.sep.length);
 
   const nodeModulesFile: Array<string> = [];
+  let hotReloadSourceMap: Object = {};
+  moduleInfos = [];
+
   for (let file of changedFileList) {
     let filePath: string = path.join(projectConfig.projectPath, file);
     let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
@@ -1035,17 +1039,20 @@ function handleHotReloadChangedFiles() {
     tempFilePath = toUnixPath(tempFilePath);
 
     if (file.endsWith(EXTNAME_ETS)) {
-      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else if (file.endsWith(EXTNAME_D_TS)) {
-      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else if (file.endsWith(EXTNAME_TS)) {
-      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
-      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else {
       logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
       process.exitCode = FAIL;
     }
+
+    let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
+    hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
   }
 
   if (!fs.existsSync(projectConfig.patchAbcPath)) {
@@ -1054,6 +1061,15 @@ function handleHotReloadChangedFiles() {
 
   const outputABCPath: string = path.join(projectConfig.patchAbcPath, MODULES_ABC);
   generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
+
+  // write source maps
+  fs.writeFile(path.join(projectConfig.patchAbcPath, SOURCEMAPS), JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
+      }
+    }
+  );
 }
 
 function handleFinishModules(modules, callback) {
