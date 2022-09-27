@@ -96,7 +96,9 @@
         "Web",
         "XComponent",
         "GridRow",
-        "GridCol"
+        "GridCol",
+        "WaterFlow",
+        "FlowItem"
       ],
       "extend": {
         "decorator": "Extend",
@@ -550,6 +552,16 @@
             "name": "GridCol",
             "type": "GridColAttribute",
             "instance": "GridColInterface"
+          },
+          {
+            "name": "WaterFlow",
+            "type": "WaterFlowAttribute",
+            "instance": "WaterFlowInterface"
+          },
+          {
+            "name": "FlowItem",
+            "type": "FlowItemAttribute",
+            "instance": "FlowItemInterface"
           }
         ]
       },
