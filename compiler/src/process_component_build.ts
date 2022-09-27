@@ -107,10 +107,12 @@ export function processComponentBuild(node: ts.MethodDeclaration,
   return newNode;
 }
 
-export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false): ts.Block {
+export function processComponentBlock(node: ts.Block,
+  isLazy: boolean, log: LogInfo[], isTransition: boolean = false,
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ts.Block {
   const newStatements: ts.Statement[] = [];
-  processComponentChild(node, newStatements, log);
+  processComponentChild(node, newStatements, log,
+    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, forEachParameters);
   if (isLazy) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -206,8 +208,9 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
 
 let sourceNode: ts.SourceFile;
 
-export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[], log: LogInfo[],
-  supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}): void {
+export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
+  log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -221,7 +224,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     node.statements.forEach((item) => {
       if (ts.isExpressionStatement(item)) {
         const name: string = getName(item);
-        switch (getComponentType(item, log, name)) {
+        switch (getComponentType(item, log, name, forEachParameters)) {
           case ComponentType.innerComponent:
             processInnerComponent(item, newStatements, log);
             break;
@@ -450,12 +453,14 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[]): ts.ArrowF
       // @ts-ignore
       statement.parent = blockNode;
       return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+        arrowNode, arrowNode.modifiers, arrowNode.typeParameters,
+        arrowNode.parameters, arrowNode.type, arrowNode.equalsGreaterThanToken,
+        processComponentBlock(blockNode, isLazy, log, false, arrowNode.parameters));
     } else {
       return ts.factory.updateArrowFunction(
-        arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-        arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(body, isLazy, log));
+        arrowNode, arrowNode.modifiers, arrowNode.typeParameters,
+        arrowNode.parameters, arrowNode.type, arrowNode.equalsGreaterThanToken,
+        processComponentBlock(body, isLazy, log, false, arrowNode.parameters));
     }
   }
   return null;
@@ -1213,8 +1218,22 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
   return isEtsComponent;
 }
 
+function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
+  return Array.isArray(forEachParameters) && 
+    forEachParameters.some((item)=>{ return item.name.escapedText.toString() === name});
+}
+
+function isParamFunction(node: ts.ExpressionStatement): boolean {
+  return node.expression && ts.isCallExpression(node.expression) && 
+    node.expression.expression && ts.isIdentifier(node.expression.expression);
+}
+
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
-  name: string): ComponentType {
+  name: string, forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ComponentType {
+  let isBuilderName: boolean = true;
+  if(forEachParameters && isSomeName(forEachParameters, name) && isParamFunction(node)) {
+    isBuilderName = false;
+  }
   if (isEtsComponent(node)) {
     if (componentCollection.customComponents.has(name)) {
       return ComponentType.customComponent;
@@ -1225,7 +1244,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
-  } else if (CUSTOM_BUILDER_METHOD.has(name)) {
+  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
