@@ -84,7 +84,7 @@ export function emitLogInfo(loader: any, infos: LogInfo[]) {
     infos.forEach((item) => {
       switch (item.type) {
         case LogType.ERROR:
-          loader.emitError(getMessage(loader.resourcePath, item));
+          loader.emitError(getMessage(item.fileName || loader.resourcePath, item));
           break;
         case LogType.WARN:
           loader.emitWarning(getMessage(item.fileName || loader.resourcePath, item));

@@ -48,7 +48,7 @@ import {
 import { hasDecorator, LogInfo, LogType, repeatLog } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
-import { CUSTOM_BUILDER_METHOD } from './component_map';
+import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -71,6 +71,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
       node.importClause.namedBindings.elements && isEntryPage) {
       node.importClause.namedBindings.elements.forEach(item => {
         if (item.name && ts.isIdentifier(item.name)) {
+          validateModuleName(item.name, log);
           if (item.propertyName && ts.isIdentifier(item.propertyName) && asName) {
             asName.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
           } else {
@@ -199,6 +200,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         if (!item.propertyName) {
           asExportCollection.set(item.name.escapedText.toString(), item.name.escapedText.toString());
         } else if (item.propertyName && ts.isIdentifier(item.propertyName)) {
+          validateModuleName(item.name, log, sourceFile, fileResolvePath);
           if (hasCollection(item.propertyName)) {
             let asExportName: string = item.name.escapedText.toString();
             const asExportPropertyName: string = item.propertyName.escapedText.toString();
@@ -476,4 +478,27 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
     curPageDir = path.dirname(curPageDir);
   }
   return fileResolvePath;
+}
+
+function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFile?: ts.SourceFile,
+  fileResolvePath?: string): void {
+  const moduleName: string = moduleNode.escapedText.toString();
+  if (INNER_COMPONENT_NAMES.has(moduleName)) {
+    const error: LogInfo = {
+      type: LogType.ERROR,
+      message: `The module name '${moduleName}' can not be the same as the inner component name.`,
+      pos: moduleNode.getStart()
+    }
+    if (sourceFile && fileResolvePath) {
+      const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
+      const line: number = posOfNode.line + 1;
+      const column: number = posOfNode.character + 1;
+      Object.assign(error, {
+        fileName: fileResolvePath,
+        line: line,
+        column: column
+      })
+    }
+    log.push(error);
+  }
 }
