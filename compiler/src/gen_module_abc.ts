@@ -23,31 +23,27 @@ import {
   TS2ABC,
   ES2ABC
 } from './pre_define';
+import {
+  genProtoFileName,
+} from './utils';
+import { projectConfig } from '../main';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
-  const result: any[] = [];
-  const chunkSize = 5;
-  for (let i = 0; i < inputPaths.length; i += chunkSize) {
-    result.push(inputPaths.slice(i, i + chunkSize));
-  }
-
-  for (let i = 0; i < result.length; i++) {
-    const inputs = [];
-    for (let j = 0; j < result[i].length; j++) {
-      const input: string = result[i][j].tempFilePath;
-      inputs.push('"' + input + '"');
-    }
-    const inputsStr: string = inputs.join(' ');
-    const singleCmd: any = `${cmd} ${inputsStr}`;
+  for (let i = 0; i < inputPaths.length; ++i) {
+    const input: string = inputPaths[i].tempFilePath;
+    const ohmURL: string = inputPaths[i].recordName;
+    const protoFileName: string = genProtoFileName(input);
+    const sourceFile: string = inputPaths[i].filePath.replace(projectConfig.projectRootPath, '');
+    const singleCmd: any = `${cmd} "${input}" --record-name "${ohmURL}" --source-file "${sourceFile}" --output-proto "${protoFileName}"`;
     logger.debug('gen abc cmd is: ', singleCmd);
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
-      logger.debug(red, `ETS:ERROR Failed to convert file ${inputsStr} to abc `, reset);
+      logger.debug(red, `ETS:ERROR Failed to convert file ${input} to proto `, reset);
       process.exit(FAIL);
     }
   }

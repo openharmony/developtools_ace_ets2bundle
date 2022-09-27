@@ -40,7 +40,10 @@ import {
   FAIL,
   CARD_LOG_TYPE_COMPONENTS,
   CARD_LOG_TYPE_DECORATORS,
-  CARD_LOG_TYPE_IMPORT
+  CARD_LOG_TYPE_IMPORT,
+  TS2ABC,
+  ES2ABC,
+  EXTNAME_PROTO_BIN
 } from './pre_define';
 import { minify, MinifyOutput } from 'terser';
 import { resourceFileName } from './process_ui_syntax';
@@ -675,4 +678,36 @@ export function validateFilePathLength(filePath: string): boolean {
     process.exitCode = FAIL;
     return false;
   }
+}
+
+export function isEs2Abc(): boolean {
+  if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+    return true;
+  }
+  return false;
+}
+
+export function isTs2Abc(): boolean {
+  if (process.env.panda === TS2ABC) {
+    return true;
+  }
+  return false;
+}
+
+export function genProtoFileName(temporaryFile: string): string {
+  let protoFile: string = temporaryFile;
+  if (temporaryFile.endsWith(EXTNAME_TS)) {
+    protoFile = temporaryFile.replace(/\.ts$/, EXTNAME_PROTO_BIN);
+  } else {
+    protoFile = temporaryFile.replace(/\.js$/, EXTNAME_PROTO_BIN);
+  }
+  return protoFile;
+}
+
+export function genMergeProtoFileName(temporaryFile: string): string {
+  let protoTempPathArr: string[] = temporaryFile.split(TEMPORARY);
+  const sufStr: string = protoTempPathArr[protoTempPathArr.length - 1];
+  let protoBuildPath: string = path.join(process.env.cachePath, "protos", sufStr);
+
+  return protoBuildPath;
 }
