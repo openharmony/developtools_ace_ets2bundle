@@ -55,7 +55,7 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
 }
 
-function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
+export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   let entriesInfo: string = '';
   for (const value of entryInfos.values()) {
