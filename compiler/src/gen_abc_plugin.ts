@@ -31,7 +31,8 @@ import {
   genSourceMapFileName,
   checkNodeModulesFile,
   compareNodeVersion,
-  removeDir
+  removeDir,
+  newSourceMaps
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -39,19 +40,22 @@ import {
   JSBUNDLE,
   NODE_MODULES,
   ENTRY_TXT,
+  ES2ABC,
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_TS,
   EXTNAME_MJS,
   EXTNAME_CJS,
   EXTNAME_D_TS,
-  FAIL,
   EXTNAME_JS_MAP,
-  TS2ABC,
-  ES2ABC,
-  TEMPORARY,
+  FAIL,
+  MODULELIST_JSON,
+  MODULES_ABC,
   SUCCESS,
-  MODULELIST_JSON
+  SOURCEMAPS_JSON,
+  SOURCEMAPS,
+  TEMPORARY,
+  TS2ABC
 } from './pre_define';
 import { getOhmUrlByFilepath } from './resolve_ohm_url';
 import { generateMergedAbc } from './gen_merged_abc';
@@ -82,7 +86,8 @@ let entryInfos: Map<string, EntryInfo> = new Map<string, EntryInfo>();
 let hashJsonObject = {};
 let moduleHashJsonObject = {};
 let buildPathInfo: string = '';
-let buildMapFileList: Array<string> = [];
+let buildMapFileList: Set<string> = new Set<string>();
+let isHotReloadFirstBuild: boolean = true;
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -149,15 +154,9 @@ export class GenAbcPlugin {
       return;
     }
 
-    // case ESMODULE
-    //        | --- es2abc -- debug -- not removeDir
-    //        | --- es2abc -- release -- removeDir
-    //        | --- ts2abc -- removeDir
     if (projectConfig.compileMode === ESMODULE) {
-      if ((projectConfig.buildArkMode !== 'debug' && process.env.panda === ES2ABC) || process.env.panda === TS2ABC) {
-        removeDir(output);
-        removeDir(projectConfig.nodeModulesPath);
-      }
+      removeDir(output);
+      removeDir(projectConfig.nodeModulesPath);
     }
 
     // for preview mode max listeners
@@ -226,7 +225,7 @@ function clearGlobalInfo() {
   ESMModuleInfos = [];
   hashJsonObject = {};
   moduleHashJsonObject = {};
-  buildMapFileList = [];
+  buildMapFileList = new Set<string>();
 }
 
 function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
@@ -276,7 +275,7 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -294,7 +293,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -313,7 +312,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
 function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -331,9 +330,22 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.push(genSourceMapFileName(buildFilePath));
+  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath, '')));
 }
 
+var cachedSourceMaps: Object;
+
+function updateCachedSourceMaps(): void {
+  const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
+  if (!fs.existsSync(CACHED_SOURCEMAPS)) {
+    cachedSourceMaps = {};
+  } else {
+    cachedSourceMaps = JSON.parse(fs.readFileSync(CACHED_SOURCEMAPS).toString());
+  }
+  Object.keys(newSourceMaps).forEach(key => {
+    cachedSourceMaps[key] = newSourceMaps[key];
+  });
+}
 
 function getCachedModuleList(): Array<string> {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
@@ -347,12 +359,31 @@ function getCachedModuleList(): Array<string> {
 
 function updateCachedModuleList(moduleList: Array<string>): void {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
+  const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
   let cachedJson: Object = {};
   cachedJson["list"] = moduleList;
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
     (err)=>{
       if (err) {
         logger.error(red, `ETS:ERROR Failed to write module list.`, reset);
+      }
+    }
+  );
+  fs.writeFile(CACHED_SOURCEMAPS, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write cache sourceMaps json.`, reset);
+      }
+    }
+  );
+}
+
+function writeSourceMaps(): void {
+  mkdirsSync(projectConfig.buildPath);
+  fs.writeFile(path.join(projectConfig.buildPath, SOURCEMAPS), JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
       }
     }
   );
@@ -363,14 +394,12 @@ function eliminateUnusedFiles(moduleList: Array<string>): void{
   if (cachedModuleList.length !== 0) {
     const eliminateFiles: Array<string> = cachedModuleList.filter(m => !moduleList.includes(m));
     eliminateFiles.forEach((file) => {
-      if (fs.existsSync(file)) {
-        fs.unlinkSync(file);
-      }
+      delete cachedSourceMaps[file];
     });
   }
 }
 
-function handleFinishModules(modules, callback): any {
+function handleFullModuleFiles(modules, callback): any {
   const nodeModulesFile: Array<string> = [];
   modules.forEach(module => {
     if (module !== undefined && module.resourceResolveData !== undefined) {
@@ -399,10 +428,15 @@ function handleFinishModules(modules, callback): any {
 
   if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
     if (projectConfig.buildArkMode === 'debug') {
-      eliminateUnusedFiles(buildMapFileList);
-      updateCachedModuleList(buildMapFileList);
+      const moduleList: Array<string> = Array.from(buildMapFileList);
+      updateCachedSourceMaps();
+      eliminateUnusedFiles(moduleList);
+      updateCachedModuleList(moduleList);
+      writeSourceMaps();
     }
-    generateMergedAbc(moduleInfos, entryInfos);
+
+    const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
+    generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
     clearGlobalInfo();
   } else {
     invokeWorkersModuleToGenAbc(moduleInfos);
@@ -984,4 +1018,69 @@ function processExtraAssetForBundle() {
   writeHashJson();
   copyFileCachePathToBuildPath();
   clearGlobalInfo();
+}
+
+function handleHotReloadChangedFiles() {
+  let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
+  let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
+  let relativeProjectPath = projectConfig.projectPath.slice(projectConfig.projectRootPath.length + path.sep.length);
+
+  const nodeModulesFile: Array<string> = [];
+  let hotReloadSourceMap: Object = {};
+  moduleInfos = [];
+
+  for (let file of changedFileList) {
+    let filePath: string = path.join(projectConfig.projectPath, file);
+    let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+    if (tempFilePath.length === 0) {
+      return;
+    }
+    let buildFilePath: string = "";
+    tempFilePath = toUnixPath(tempFilePath);
+
+    if (file.endsWith(EXTNAME_ETS)) {
+      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+    } else if (file.endsWith(EXTNAME_D_TS)) {
+      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+    } else if (file.endsWith(EXTNAME_TS)) {
+      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+    } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
+      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+    } else {
+      logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+      process.exitCode = FAIL;
+    }
+
+    let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
+    hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
+  }
+
+  if (!fs.existsSync(projectConfig.patchAbcPath)) {
+    mkdirsSync(projectConfig.patchAbcPath);
+  }
+
+  const outputABCPath: string = path.join(projectConfig.patchAbcPath, MODULES_ABC);
+  generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
+
+  // write source maps
+  fs.writeFile(path.join(projectConfig.patchAbcPath, SOURCEMAPS), JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8',
+    (err)=>{
+      if (err) {
+        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
+      }
+    }
+  );
+}
+
+function handleFinishModules(modules, callback) {
+  if (projectConfig.hotReload && !isHotReloadFirstBuild) {
+    handleHotReloadChangedFiles();
+    return;
+  }
+
+  handleFullModuleFiles(modules, callback);
+
+  if (projectConfig.hotReload) {
+    isHotReloadFirstBuild = false;
+  }
 }

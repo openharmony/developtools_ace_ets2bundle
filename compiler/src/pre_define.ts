@@ -248,6 +248,8 @@ export const NPMENTRIES_TXT: string = 'npmEntries.txt';
 export const MODULES_CACHE: string = 'modules.cache';
 export const MODULES_ABC: string = 'modules.abc';
 export const MODULELIST_JSON: string = 'moduleList.json';
+export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
+export const SOURCEMAPS: string = 'sourceMaps.map';
 
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
