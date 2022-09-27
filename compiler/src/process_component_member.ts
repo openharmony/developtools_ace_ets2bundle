@@ -760,6 +760,7 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
 }
 
 export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: LogInfo[]): boolean {
+  typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
@@ -796,6 +797,7 @@ function getEnumType(typeNode: ts.TypeNode, checker: ts.TypeChecker): ts.SyntaxK
   if (!checker) {
     return;
   }
+  typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
   if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
     const type: ts.Type =
       checker.getBaseTypeOfLiteralType(checker.getTypeAtLocation(typeNode.typeName));
