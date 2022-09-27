@@ -507,42 +507,68 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
     argsArr.push(newExpression);
   });
   const ifStatement: ts.Statement = context.factory.createIfStatement(
-    context.factory.createCallExpression(
-      context.factory.createIdentifier(GET_PREVIEW_FLAG_FUNCTION_NAME),
-      undefined,
-      []
+    context.factory.createBinaryExpression(
+      context.factory.createTypeOfExpression(context.factory.createIdentifier(GET_PREVIEW_FLAG_FUNCTION_NAME)),
+      context.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+      context.factory.createStringLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED)
     ),
     context.factory.createBlock(
-      [context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(PREVIEW_COMPONENT_FUNCTION_NAME),
-        undefined,
-        []
-      ))],
+      [
+        context.factory.createIfStatement(
+          context.factory.createCallExpression(
+            context.factory.createIdentifier(GET_PREVIEW_FLAG_FUNCTION_NAME),
+            undefined,
+            []
+          ),
+          context.factory.createBlock(
+            [context.factory.createExpressionStatement(context.factory.createCallExpression(
+              context.factory.createIdentifier(PREVIEW_COMPONENT_FUNCTION_NAME),
+              undefined,
+              []
+            ))],
+            true
+          ),
+          context.factory.createBlock(
+            [
+              context.factory.createExpressionStatement(context.factory.createCallExpression(
+                context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+                undefined,
+                [
+                  context.factory.createNumericLiteral(componentCollection.previewComponent.size),
+                  ...argsArr
+                ]
+              )),
+              name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
+                context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
+                undefined,
+                [context.factory.createNewExpression(
+                  context.factory.createIdentifier(name),
+                  undefined,
+                  newArray
+                )]
+              )) : undefined
+            ],
+            true
+          )
+        )
+      ],
       true
     ),
     context.factory.createBlock(
       [
         context.factory.createExpressionStatement(context.factory.createCallExpression(
-          context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+        context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
+        undefined,
+        [context.factory.createNewExpression(
+          context.factory.createIdentifier(name ? name : Array.from(componentCollection.previewComponent)[0]),
           undefined,
-          [
-            context.factory.createNumericLiteral(componentCollection.previewComponent.size),
-            ...argsArr
-          ]
-        )),
-        name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
-          context.factory.createIdentifier(PAGE_ENTRY_FUNCTION_NAME),
-          undefined,
-          [context.factory.createNewExpression(
-            context.factory.createIdentifier(name),
-            undefined,
-            newArray
-          )]
-        )) : undefined
+          newArray
+        )]
+        ))
       ],
       true
     )
-  );
+  )
   return ifStatement;
 }
 
