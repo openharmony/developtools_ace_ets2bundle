@@ -379,7 +379,7 @@ function setCleanWebpackPlugin(workerFile, config) {
 }
 
 function clearWebpackCacheByBuildMode() {
-  if (projectConfig.compileMode === 'jsbundle') {
+  if (projectConfig.compileMode !== 'esmodule') {
     return;
   }
 
@@ -433,7 +433,7 @@ module.exports = (env, argv) => {
     config.devtool = false;
   }
 
-  if (env.buildMode === 'release' && projectConfig.compileMode === 'jsbundle') {
+  if (env.buildMode === 'release' && projectConfig.compileMode !== 'esmodule') {
     setReleaseConfig(config);
   }
 
