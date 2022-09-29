@@ -450,15 +450,16 @@ function handleFullModuleFiles(modules, callback): any {
     }
   });
 
-  if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
-    if (projectConfig.buildArkMode === 'debug') {
-      const moduleList: Array<string> = Array.from(buildMapFileList);
-      updateCachedSourceMaps();
-      eliminateUnusedFiles(moduleList);
-      updateCachedModuleList(moduleList);
-      writeSourceMaps();
-    }
+  // for mergeabc source maps
+  if (projectConfig.buildArkMode === 'debug') {
+    const moduleList: Array<string> = Array.from(buildMapFileList);
+    updateCachedSourceMaps();
+    eliminateUnusedFiles(moduleList);
+    updateCachedModuleList(moduleList);
+    writeSourceMaps();
+  }
 
+  if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
     const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
     generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
     clearGlobalInfo();
@@ -666,8 +667,6 @@ function invokeClusterModuleToAbc(): void {
       }
       count_++;
       if (count_ === totalWorkerNumber) {
-        writeModuleHashJson();
-        clearGlobalInfo();
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
           processExtraAssetForBundle();
