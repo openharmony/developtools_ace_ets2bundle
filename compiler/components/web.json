@@ -8,7 +8,7 @@
     "onRequestSelected", "javaScriptAccess", "fileAccess", "onAlert", "onBeforeUnload", "onlineImageAccess",
     "domStorageAccess", "imageAccess", "mixedMode", "zoomAccess", "geolocationAccess", "javaScriptProxy",
     "onFullScreenExit", "onFullScreenEnter",
-    "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart", "fileFromUrlAccess",
+    "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart",
     "webDebuggingAccess", "onShowFileSelector", "initialScale", "onResourceLoad", "onScaleChange", "onHttpAuthRequest",
     "onPermissionRequest", "onContextMenuShow", "textZoomRatio", "onScroll", "mediaPlayGestureAccess", "onSslErrorEventReceive",
     "onClientAuthenticationRequest"
