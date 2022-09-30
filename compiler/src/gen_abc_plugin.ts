@@ -874,17 +874,6 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
         if (jsonObject[input] === hashInputContentData && jsonObject[outputPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[outputPath] = hashAbcContentData;
-          mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
-          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(moduleInfos[i].tempFilePath)) {
-            fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
-          }
-          let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
-          let protoBuildPath: string = genMergeProtoFileName(protoTempPath);
-          mkdirsSync(path.dirname(protoBuildPath));
-          fs.copyFileSync(protoTempPath, protoBuildPath);
-          if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
-            fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
-          }
         } else {
           filterModuleInfos.push(moduleInfos[i]);
         }
@@ -1154,10 +1143,6 @@ function copyModuleFileCachePathToBuildPath(): void {
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
   for (let i = 0; i < moduleInfos.length; ++i) {
-    mkdirsSync(path.dirname(moduleInfos[i].buildFilePath));
-    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(moduleInfos[i].tempFilePath)) {
-      fs.copyFileSync(moduleInfos[i].tempFilePath, moduleInfos[i].buildFilePath);
-    }
     let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
     let protoBuildPath: string = genMergeProtoFileName(protoTempPath);
     entriesInfo += `${toUnixPath(protoBuildPath)}\n`;
@@ -1178,6 +1163,7 @@ function mergeProtoToAbc(): void {
     mergeAbc = path.join(arkDir, 'build-mac', 'bin', 'merge_abc');
   }
   let mergeAbcName = "modules.abc";
+  mkdirsSync(projectConfig.buildPath);
   const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${mergeAbcName} --suffix protoBin`;
   try {
     childProcess.execSync(singleCmd);
