@@ -49,6 +49,7 @@ const abilityPagesFullPath = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
+  projectConfig.cardObj = {};
   projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
     path.join(process.cwd(), 'sample');
   projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
@@ -251,6 +252,7 @@ function readAbilityEntrance(moduleJson) {
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
       setEntrance(moduleJson.module.extensionAbilities, abilityPages);
+      setCardPages(moduleJson.module.extensionAbilities);
     }
   }
   return abilityPages;
@@ -264,6 +266,44 @@ function setEntrance(abilityConfig, abilityPages) {
         abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
+  }
+}
+
+function setCardPages(extensionAbilities) {
+  if (extensionAbilities && extensionAbilities.length > 0) {
+    extensionAbilities.forEach(extensionAbility => {
+      if (extensionAbility.metadata) {
+        extensionAbility.metadata.forEach(metadata => {
+          if (metadata.resource) {
+            readCardResource(metadata.resource);
+          }
+        })
+      }
+    });
+  }
+}
+
+function readCardResource(resource) {
+  const cardJsonFileName = `${resource.replace(/\$profile\:/, '')}.json`;
+  const modulePagePath = path.resolve(projectConfig.aceProfilePath, cardJsonFileName);
+  if (fs.existsSync(modulePagePath)) {
+    const cardConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
+    if (cardConfig.forms) {
+      cardConfig.forms.forEach(form => {
+        readCardForm(form);
+      })
+    }
+  }
+}
+
+function readCardForm(form) {
+  if (form.type && form.type ==='eTS') {
+    const sourcePath = form.src.replace(/\.ets$/,'');
+    const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
+    if (cardPath && fs.existsSync(cardPath)) {
+      projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
+      projectConfig.cardObj[cardPath] = sourcePath.replace(/^\.\//, '');
+    }
   }
 }
 

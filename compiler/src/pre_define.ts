@@ -329,3 +329,12 @@ export const OBSERVED_PROPERTY_ABSTRACT_PU:string = 'ObservedPropertyAbstractPU'
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU: string = '__localStorage';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU: string = 'LocalStorage';
 export const IFELSEBRANCHUPDATEFUNCTION = 'ifElseBranchUpdateFunction';
+
+export const CARD_ENTRY_FUNCTION_NAME: string = 'loadEtsCard';
+export const CARD_ENABLE_DECORATORS: Set<string> = new Set([
+  '@StorageLink', '@StorageProp', '@LocalStorageLink', '@LocalStorageProp'
+]);
+export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
+  'AbilityComponent', 'PluginComponent', 'FormComponent', 'RemoteWindow',
+  'XComponent', 'Web', 'RichText'
+]);

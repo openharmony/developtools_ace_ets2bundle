@@ -45,10 +45,16 @@ import {
   IComponentSet,
   builderParamObjectCollection
 } from './validate_ui_syntax';
-import { hasDecorator, LogInfo, LogType, repeatLog } from './utils';
+import {
+  hasDecorator,
+  LogInfo,
+  LogType,
+  repeatLog
+} from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
+import { pageResourcePath } from './pre_process';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -98,6 +104,14 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
     } else {
       filePath += EXTNAME_ETS;
     }
+  }
+
+  if (pageResourcePath && projectConfig.cardObj[pageResourcePath] && filePath) {
+    log.push({
+      type: LogType.ERROR,
+      message: `Card page cannot use import.`,
+      pos: node.getStart()
+    });
   }
 
   try {
