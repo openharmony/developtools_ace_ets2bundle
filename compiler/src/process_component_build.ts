@@ -1196,6 +1196,22 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
       elseStatement = ts.factory.createBlock([elseStatement], true);
       elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isInnerBuilder);
     }
+  } else if (partialUpdateConfig.partialUpdateMode && id === 0) {
+    elseStatement = ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier(COMPONENT_IF),
+              ts.factory.createIdentifier(COMPONENT_IF_BRANCH_ID_FUNCTION)
+            ),
+            undefined,
+            [ts.factory.createNumericLiteral(++id)]
+          )
+        ),
+      ],
+      true
+    );
   }
   return elseStatement;
 }
