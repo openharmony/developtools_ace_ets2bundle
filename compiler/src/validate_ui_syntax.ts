@@ -864,7 +864,9 @@ function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string 
   if (sourcePath) {
     useOSFiles.add(sourcePath);
   }
-  return `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
+  return projectConfig.bundleName && projectConfig.moduleName
+    ? `var ${importValue} = globalThis.requireNapi("${libSoKey}", true, "${projectConfig.bundleName}/${projectConfig.moduleName}");`
+    : `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
 }
 
 function replaceOhmStartsWithBundle(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
