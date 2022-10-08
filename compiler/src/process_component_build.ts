@@ -960,8 +960,7 @@ function createItemGenFunctionStatement(
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
-            [ts.factory.createParameterDeclaration(
-              undefined, undefined, undefined, ts.factory.createIdentifier(_ITEM))],
+            getParameters(argumentsArray[1]),
             undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             ts.factory.createBlock(
               [ts.factory.createVariableStatement(
@@ -990,6 +989,17 @@ function createItemGenFunctionStatement(
   }
 }
 
+function getParameters(node: ts.ArrowFunction): ts.ParameterDeclaration[] {
+  const parameterArr: ts.ParameterDeclaration[] = [
+    ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined, ts.factory.createIdentifier(_ITEM))
+  ];
+  if (node.parameters && node.parameters.length > 1) {
+    parameterArr.push(node.parameters[1]);
+  }
+  return parameterArr;
+}
+
 function createItemIdFuncStatement(
   node: ts.CallExpression,
   argumentsArray: ts.Expression[]
@@ -1001,16 +1011,7 @@ function createItemIdFuncStatement(
         [ts.factory.createVariableDeclaration(
           ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
             FOREACHITEMIDFUNC : __LAZYFOREACHITEMIDFUNC), undefined, undefined,
-          ts.factory.createArrowFunction(
-            undefined, undefined,
-            [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-              ts.factory.createIdentifier(
-                argumentsArray[2].parameters[0] ? argumentsArray[2].parameters[0].name.escapedText : ''
-              )
-            )], undefined,
-            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            ts.factory.createIdentifier(argumentsArray[2].body ? argumentsArray[2].body.getText() : '')
-          )
+          argumentsArray[2]
         )],
         ts.NodeFlags.Const
       )
@@ -1031,13 +1032,13 @@ function createUpdateFunctionStatement(argumentsArray: ts.Expression[]): ts.Expr
   );
 }
 
-function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Identifier[] {
-  const addForEachIdFuncParameterArr: ts.Identifier[] = [];
+function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expression[] {
+  const addForEachIdFuncParameterArr: ts.Expression[] = [];
   addForEachIdFuncParameterArr.push(
     ts.factory.createIdentifier(ELMTID),
-    ts.factory.createIdentifier(argumentsArray[0] && argumentsArray[0].getText())
+    argumentsArray[0],
+    ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
-  addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMGENFUNCTION));
   if (argumentsArray[2]) {
     addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
   }
