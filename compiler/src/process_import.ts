@@ -45,6 +45,7 @@ import {
 } from './validate_ui_syntax';
 import { LogInfo, LogType } from './utils';
 import { projectConfig } from '../main';
+import { INNER_COMPONENT_NAMES } from './component_map';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -67,6 +68,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
       node.importClause.namedBindings.elements && isEntryPage) {
       node.importClause.namedBindings.elements.forEach(item => {
         if (item.name && ts.isIdentifier(item.name)) {
+          validateModuleName(item.name, log);
           if (item.propertyName && ts.isIdentifier(item.propertyName) && asName) {
             asName.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
           } else {
@@ -119,17 +121,18 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
         sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
       }
-      visitAllNode(sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
-        new Set(), new Set(), new Map(), pathCollection);
+      visitAllNode(sourceFile, sourceFile, defaultName, asName, path.dirname(fileResolvePath), log, new Set(),
+        new Set(), new Set(), new Map(), pathCollection, fileResolvePath);
     }
   } catch (e) {
     // ignore
   }
 }
 
-function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
+function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string, asNameFromParent: Map<string, string>,
   pagesDir: string, log: LogInfo[], entryCollection: Set<string>, exportCollection: Set<string>,
-  defaultCollection: Set<string>, asExportCollection: Map<string, string>, pathCollection: Set<string>) {
+  defaultCollection: Set<string>, asExportCollection: Map<string, string>, pathCollection: Set<string>,
+  fileResolvePath: string) {
   if (isObservedClass(node)) {
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
@@ -181,6 +184,7 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
     node.exportClause.elements.forEach(item => {
       if (item.name && item.propertyName && ts.isIdentifier(item.name) &&
         ts.isIdentifier(item.propertyName)) {
+        validateModuleName(item.name, log, sourceFile, fileResolvePath);
         if (hasCollection(item.propertyName)) {
           let asExportName: string = item.name.escapedText.toString();
           const asExportPropertyName: string = item.propertyName.escapedText.toString();
@@ -237,9 +241,9 @@ function visitAllNode(node: ts.Node, defaultNameFromParent: string, asNameFromPa
       }
     }
   }
-  node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, defaultNameFromParent,
+  node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, sourceFile, defaultNameFromParent,
     asNameFromParent, pagesDir, log, entryCollection, exportCollection, defaultCollection,
-    asExportCollection, pathCollection));
+    asExportCollection, pathCollection, fileResolvePath));
 }
 
 function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
@@ -403,4 +407,27 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
     curPageDir = path.dirname(curPageDir);
   }
   return fileResolvePath;
+}
+
+function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFile?: ts.SourceFile,
+  fileResolvePath?: string): void {
+  const moduleName: string = moduleNode.escapedText.toString();
+  if (INNER_COMPONENT_NAMES.has(moduleName)) {
+    const error: LogInfo = {
+      type: LogType.ERROR,
+      message: `The module name '${moduleName}' can not be the same as the inner component name.`,
+      pos: moduleNode.getStart()
+    }
+    if (sourceFile && fileResolvePath) {
+      const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
+      const line: number = posOfNode.line + 1;
+      const column: number = posOfNode.character + 1;
+      Object.assign(error, {
+        fileName: fileResolvePath,
+        line: line,
+        column: column
+      })
+    }
+    log.push(error);
+  }
 }
