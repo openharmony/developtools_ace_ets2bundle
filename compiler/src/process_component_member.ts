@@ -52,7 +52,8 @@ import {
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
-  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
+  COMPONENT_CUSTOM_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -214,6 +215,8 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
+  } else if (validateCustomDecorator(item.decorators, log)) {
+    updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_CUSTOM_DECORATOR));
   } else {
     processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
       log, program, context, hasPreview, interfaceNode);
@@ -417,6 +420,7 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
     case COMPONENT_NON_DECORATOR:
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
+    case COMPONENT_CUSTOM_DECORATOR:
       updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_PROP_DECORATOR:
@@ -905,3 +909,28 @@ function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
   });
 }
 
+function validateCustomDecorator(decorators: ts.NodeArray<ts.Decorator>, log: LogInfo[]): boolean {
+  let hasInnerDecorator: boolean = false;
+  let hasCustomDecorator: boolean = false;
+  let innerDecorator: ts.Decorator;
+  for(let i = 0; i < decorators.length; i++) {
+    let decorator: ts.Decorator = decorators[i];
+    const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+    if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
+      hasInnerDecorator = true;
+      innerDecorator = innerDecorator ? innerDecorator : decorator;
+    } else {
+      hasCustomDecorator = true;
+    }
+  }
+  if (hasCustomDecorator && hasInnerDecorator) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The inner decorator ${innerDecorator.getText()} cannot be used together with custom decorator.`,
+      pos: innerDecorator.getStart()
+    });
+  } else if(!hasInnerDecorator) {
+    return true;
+  }
+  return false;
+}
