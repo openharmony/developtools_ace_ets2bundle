@@ -199,11 +199,7 @@ function validateContainerComponent(node: ts.Statement): boolean {
     (ts.isEtsComponentExpression(node.expression) || ts.isCallExpression(node.expression))) {
     const nameResult: NameResult = { name: null, node: null };
     validateEtsComponentNode(node.expression, nameResult);
-    if (nameResult.name && BUILDIN_CONTAINER_COMPONENT.has(nameResult.name) && (nameResult.name !== 'XComponent' ||
-    (nameResult.name === 'XComponent' && nameResult.node.arguments && nameResult.node.arguments.length &&
-    ts.isObjectLiteralExpression(nameResult.node.arguments[0]) && nameResult.node.arguments[0].properties &&
-    // @ts-ignore
-    checkComponentType(nameResult.node.arguments[0].properties)))) {
+    if (nameResult.name && checkContainer(nameResult.name, nameResult.node)) {
       return true;
     }
   }
@@ -1256,11 +1252,7 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     if (NEEDPOP_COMPONENT.has(temp.getText())) {
       res.needPop = true;
     }
-    if (BUILDIN_CONTAINER_COMPONENT.has(temp.getText()) && (temp.getText() !== 'XComponent' ||
-      (temp.getText() === 'XComponent' && temp.parent.arguments && temp.parent.arguments.length &&
-      ts.isObjectLiteralExpression(temp.parent.arguments[0]) && temp.parent.arguments[0].properties &&
-      // @ts-ignore
-      checkComponentType(temp.parent.arguments[0].properties)))) {
+    if (checkContainer(temp.getText(), temp.parent)) {
       res.isContainerComponent = true;
     }
     res.newNode = type === COMPONENT_POP_FUNCTION
@@ -1273,12 +1265,19 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
   return res;
 }
 
+function checkContainer(name: string, node: ts.Node): boolean {
+  return BUILDIN_CONTAINER_COMPONENT.has(name) && (name !== 'XComponent' ||
+    (node && node.arguments && node.arguments.length &&
+    ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties &&
+    checkComponentType(node.arguments[0].properties)));
+}
+
 function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
-  let flag  = false;
+  let flag: boolean = false;
   properties.forEach(item => {
     if (item.name && ts.isIdentifier(item.name) && item.name.getText() === 'type' && item.initializer &&
       ts.isStringLiteral(item.initializer) &&
-      (item.initializer.getText() == '"Component"' || item.initializer.getText() == "'Component'")) {
+      (item.initializer.getText() == '"component"' || item.initializer.getText() == "'component'")) {
       flag = true;
     }
   })
