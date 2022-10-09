@@ -32,6 +32,9 @@ struct IFView {
       } else {
         Text('toggle no thing')
       }
+      if (this.toggle1) {
+        Text('toggle1 Single')
+      }
     }
   }
 }
@@ -150,6 +153,31 @@ class IFView extends ViewPU {
                     });
                     Text.pop();
                 });
+            }
+            if (!isInitialRender) {
+                If.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        If.pop();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            If.create();
+            if (this.toggle1) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('toggle1 Single');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
+                });
+            }
+            else {
+                If.branchId(1);
             }
             if (!isInitialRender) {
                 If.pop();
