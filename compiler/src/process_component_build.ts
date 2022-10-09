@@ -1920,7 +1920,8 @@ function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, na
 }
 
 function isParamFunction(node: ts.ExpressionStatement): boolean {
-  return node.expression && ts.isCallExpression(node.expression);
+  return node.expression && ts.isCallExpression(node.expression) && 
+    node.expression.expression && ts.isIdentifier(node.expression.expression);
 }
 
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: string,
