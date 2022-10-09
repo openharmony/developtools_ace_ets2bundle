@@ -147,10 +147,11 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 }
 
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false, isInnerBuilder: boolean = false, parent: string = undefined): ts.Block {
+  isTransition: boolean = false, isInnerBuilder: boolean = false, parent: string = undefined,
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ts.Block {
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log,
-    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent);
+    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent, forEachParameters);
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -248,7 +249,8 @@ let sourceNode: ts.SourceFile;
 
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-  isInnerBuilder: boolean = false, parent: string = undefined): void {
+  isInnerBuilder: boolean = false, parent: string = undefined,
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -270,7 +272,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             pos: item.getStart()
           });
         }
-        switch (getComponentType(item, log, name, parent)) {
+        switch (getComponentType(item, log, name, parent, forEachParameters)) {
           case ComponentType.innerComponent:
             const etsExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
             if (ts.isIdentifier(etsExpression.expression)) {
@@ -1104,7 +1106,8 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
       if (!partialUpdateConfig.partialUpdateMode) {
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
-          arrowNode.type, arrowNode.equalsGreaterThanToken, processComponentBlock(blockNode, isLazy, log));
+          arrowNode.type, arrowNode.equalsGreaterThanToken,
+          processComponentBlock(blockNode, isLazy, log, false, false, undefined, arrowNode.parameters));
       } else {
         return processComponentBlock(blockNode, isLazy, log).statements;
       }
@@ -1113,7 +1116,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
-          processComponentBlock(body, isLazy, log, false, isInnerBuilder));
+          processComponentBlock(body, isLazy, log, false, isInnerBuilder, undefined, arrowNode.parameters));
       } else {
         return processComponentBlock(body, isLazy, log).statements;
       }
@@ -1959,8 +1962,22 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
   return isEtsComponent;
 }
 
-function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
-  name: string, parent: string): ComponentType {
+function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
+  return Array.isArray(forEachParameters) && 
+    forEachParameters.some((item)=>{ return item.name.escapedText.toString() === name});
+}
+
+function isParamFunction(node: ts.ExpressionStatement): boolean {
+  return node.expression && ts.isCallExpression(node.expression) && 
+    node.expression.expression && ts.isIdentifier(node.expression.expression);
+}
+
+function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: string,
+  parent: string, forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ComponentType {
+  let isBuilderName: boolean = true;
+  if(forEachParameters && isSomeName(forEachParameters, name) && isParamFunction(node)) {
+    isBuilderName = false;
+  }
   if (isEtsComponent(node)) {
     if (componentCollection.customComponents.has(name)) {
       return ComponentType.customComponent;
@@ -1971,7 +1988,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[],
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
-  } else if (CUSTOM_BUILDER_METHOD.has(name)) {
+  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
