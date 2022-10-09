@@ -1094,13 +1094,8 @@ function handleHotReloadChangedFiles() {
   generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
 
   // write source maps
-  fs.writeFile(path.join(projectConfig.patchAbcPath, SOURCEMAPS), JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8',
-    (err) => {
-      if (err) {
-        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
-      }
-    }
-  );
+  fs.writeFileSync(path.join(projectConfig.patchAbcPath, SOURCEMAPS),
+                   JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8');
 }
 
 function handleFinishModules(modules, callback) {

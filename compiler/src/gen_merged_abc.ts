@@ -81,22 +81,26 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
     `${initAbcEnv().join(' ')} "@${filesInfoPath}" --npm-module-entry-list "${npmEntriesInfoPath}" --cache-file "${cacheFilePath}" --output "${outputABCPath}" --file-threads "${fileThreads}"`;
   logger.debug('gen abc cmd is: ', genAbcCmd);
   try {
-    const child = childProcess.exec(genAbcCmd);
-    child.on('exit', (code: any) => {
-      if (code === 1) {
-        logger.debug(red, "ETS:ERROR failed to execute es2abc", reset);
+    if (process.env.watchMode === 'true') {
+      childProcess.execSync(genAbcCmd);
+    } else {
+      const child = childProcess.exec(genAbcCmd);
+      child.on('exit', (code: any) => {
+        if (code === 1) {
+          logger.debug(red, "ETS:ERROR failed to execute es2abc", reset);
+          process.exit(FAIL);
+        }
+      });
+
+      child.on('error', (err: any) => {
+        logger.debug(red, err.toString(), reset);
         process.exit(FAIL);
-      }
-    });
+      });
 
-    child.on('error', (err: any) => {
-      logger.debug(red, err.toString(), reset);
-      process.exit(FAIL);
-    });
-
-    child.stderr.on('data', (data: any) => {
-      logger.debug(red, data.toString(), reset);
-    });
+      child.stderr.on('data', (data: any) => {
+        logger.debug(red, data.toString(), reset);
+      });
+    }
   } catch (e) {
     logger.debug(red, `ETS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
     process.exit(FAIL);
