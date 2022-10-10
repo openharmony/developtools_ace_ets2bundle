@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,10 @@ const { createWatchCompilerHost } = require('../lib/ets_checker');
 const { writeFileSync } = require('../lib/utils');
 const { projectConfig } = require('../main');
 const { props } = require('../lib/compile_info');
+const {
+  isResource,
+  processResourceData
+} = require('../lib/process_ui_syntax');
 
 const WebSocketServer = WebSocket.Server;
 
@@ -50,6 +54,8 @@ let compileStatus = false;
 let receivedMsg_;
 let errorInfo;
 let compileWithCheck;
+let globalVariable = [];
+let propertyVariable = [];
 
 function init(port) {
   previewCacheFilePath =
@@ -90,7 +96,7 @@ function handlePluginCompileComponent(jsonData) {
   } else if (messages.length > 0){
     jsonData = messages[0];
   } else {
-    return
+    return;
   }
   start = true;
   const receivedMsg = jsonData;
@@ -103,10 +109,7 @@ function handlePluginCompileComponent(jsonData) {
     'struct preview{build(){' + receivedMsg.data.script + '}}',
     ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   compileWithCheck = jsonData.data.compileWithCheck || 'true';
-  if (previewCacheFilePath && fs.existsSync(previewCacheFilePath)
-    && compileWithCheck === 'true') {
-      writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
-  }
+  checkPreparation(receivedMsg);
   const previewStatements = [];
   const log = [];
   supplement = {
@@ -118,9 +121,65 @@ function handlePluginCompileComponent(jsonData) {
   processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
   supplement.isAcceleratePreview = false;
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
+  const transformedSourceFile = transformResourceNode(newSource);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const result = printer.printNode(ts.EmitHint.Unspecified, newSource, newSource);
+  const result = printer.printNode(ts.EmitHint.Unspecified, transformedSourceFile, transformedSourceFile);
   receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
+  processOffset(receivedMsg, log, sourceNode);
+  receivedMsg.data.log = log;
+  if (receivedMsg.data.viewID) {
+    receivedMsg.data.script = `function quickPreview(context) {
+      const fastPreview = function build(){
+        ${receivedMsg.data.script}
+      }.bind(context);
+    }
+    quickPreview(GetRootView(${receivedMsg.data.viewID}))`
+  }
+  callEs2abc(receivedMsg);
+}
+
+function transformResourceNode(newSource) {
+  const transformerFactory = (context) => {
+    return (rootNode) => {
+      function visit(node) {
+        node = ts.visitEachChild(node, visit, context);
+        return processResourceNode(node);
+      }
+      return ts.visitNode(rootNode, visit);
+    }
+  }  
+  const transformationResult = ts.transform(newSource, [transformerFactory]);
+  return transformationResult.transformed[0];
+}
+
+function processResourceNode(node) {
+  if (isResource(node)) {
+    return processResourceData(node);
+  } else {
+    return node;
+  }
+}
+
+function checkPreparation(receivedMsg) {
+  if (previewCacheFilePath && fs.existsSync(previewCacheFilePath) && compileWithCheck === 'true') {
+    globalVariable = receivedMsg.data.globalVariable || globalVariable;
+    propertyVariable = receivedMsg.data.propertyVariable || propertyVariable;
+    writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
+  }
+}
+
+function callEs2abc(receivedMsg) {
+  if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
+    es2abc(receivedMsg);
+  } else {
+    es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
+    if (fs.existsSync(es2abcFilePath)) {
+      es2abc(receivedMsg);
+    }
+  }
+}
+
+function processOffset(receivedMsg, log, sourceNode) {
   if (receivedMsg.data.offset) {
     for (let i = 0; i < log.length; i++) {
       let line = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).line);
@@ -134,17 +193,7 @@ function handlePluginCompileComponent(jsonData) {
       }
     }
   }
-  receivedMsg.data.log = log;
-  if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
-    es2abc(receivedMsg);
-  } else {
-    es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
-    if (fs.existsSync(es2abcFilePath)) {
-      es2abc(receivedMsg);
-    }
-  }
 }
-
 
 function es2abc(receivedMsg) {
   const cmd = es2abcFilePath + ' --base64Input ' +
@@ -212,8 +261,8 @@ function responseToPlugin() {
 function validateError(message) {
   const propInfoReg = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
   const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-  if (matchMessage(message, props, propInfoReg) ||
-    matchMessage(message, props, stateInfoReg)) {
+  if (matchMessage(message, [...globalVariable, ...props], propInfoReg) ||
+    matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
     return false;
   }
   return true;

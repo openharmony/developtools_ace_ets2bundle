@@ -351,7 +351,7 @@ function createCustomComponentBuilderArrowFunction(parent: ts.Expression,
   );
 }
 
-function isResource(node: ts.Node): boolean {
+export function isResource(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
     (node.expression.escapedText.toString() === RESOURCE ||
     node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
@@ -362,7 +362,7 @@ function isAnimateTo(node: ts.Node): boolean {
     node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
 }
 
-function processResourceData(node: ts.CallExpression): ts.Node {
+export function processResourceData(node: ts.CallExpression): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
     if (node.expression.getText() === RESOURCE_RAWFILE) {
       return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]]);
