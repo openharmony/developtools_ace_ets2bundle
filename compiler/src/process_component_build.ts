@@ -202,9 +202,9 @@ function validateFirstNode(node: ts.Statement): boolean {
 function validateContainerComponent(node: ts.Statement): boolean {
   if (ts.isExpressionStatement(node) && node.expression &&
     (ts.isEtsComponentExpression(node.expression) || ts.isCallExpression(node.expression))) {
-    const nameResult: NameResult = { name: null };
+    const nameResult: NameResult = { name: null, node: null };
     validateEtsComponentNode(node.expression, nameResult);
-    if (nameResult.name && BUILDIN_CONTAINER_COMPONENT.has(nameResult.name)) {
+    if (nameResult.name && checkContainer(nameResult.name, nameResult.node)) {
       return true;
     }
   }
@@ -226,7 +226,8 @@ let newsupplement: supplementType = {
 };
 
 type NameResult = {
-  name: string
+  name: string,
+  node?: ts.Node
 }
 
 function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
@@ -239,6 +240,7 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
   if (ts.isEtsComponentExpression(childNode)) {
     if (ts.isIdentifier(childNode.expression)) {
       result.name = childNode.expression.getText();
+      result.node = childNode;
     }
     return true;
   } else {
@@ -1298,7 +1300,7 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     if (NEEDPOP_COMPONENT.has(temp.getText())) {
       res.needPop = true;
     }
-    if (BUILDIN_CONTAINER_COMPONENT.has(temp.getText())) {
+    if (checkContainer(temp.getText(), temp.parent)) {
       res.isContainerComponent = true;
     }
     res.newNode = type === COMPONENT_POP_FUNCTION
@@ -1309,6 +1311,25 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     res.identifierNode = temp;
   }
   return res;
+}
+
+function checkContainer(name: string, node: ts.Node): boolean {
+  return BUILDIN_CONTAINER_COMPONENT.has(name) && (name !== 'XComponent' ||
+    (node && node.arguments && node.arguments.length &&
+    ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties &&
+    checkComponentType(node.arguments[0].properties)));
+}
+
+function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
+  let flag: boolean = false;
+  properties.forEach(item => {
+    if (item.name && ts.isIdentifier(item.name) && item.name.getText() === 'type' && item.initializer &&
+      ts.isStringLiteral(item.initializer) &&
+      (item.initializer.getText() == '"component"' || item.initializer.getText() == "'component'")) {
+      flag = true;
+    }
+  })
+  return flag;
 }
 
 interface AnimationInfo {
@@ -1990,7 +2011,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
-  } else if ((['Column', 'XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
+  } else if ((['XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
     ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
     return ComponentType.function;
   } else if (!isAttributeNode(node)) {
