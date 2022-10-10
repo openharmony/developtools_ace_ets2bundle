@@ -597,7 +597,8 @@ export function removeDir(dirName: string): void {
 
 export function validatorCard(log: any[], type: number, pos: number,
   name: string = ''): void {
-  if (resourceFileName && projectConfig.cardObj[resourceFileName]) {
+  if (projectConfig && projectConfig.cardObj && resourceFileName
+    && projectConfig.cardObj[resourceFileName]) {
     const logInfo: object = {
       type: LogType.ERROR,
       message: '',
