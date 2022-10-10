@@ -27,7 +27,8 @@ import {
   CUSTOM_COMPONENT_DEFAULT,
   CUSTOM_DECORATOR_NAME,
   COMPONENT_DECORATOR_ENTRY,
-  COMPONENT_BUILDER_DECORATOR
+  COMPONENT_BUILDER_DECORATOR,
+  CARD_LOG_TYPE_IMPORT
 } from './pre_define';
 import {
   propertyCollection,
@@ -49,12 +50,12 @@ import {
   hasDecorator,
   LogInfo,
   LogType,
-  repeatLog
+  repeatLog,
+  validatorCard
 } from './utils';
 import { projectConfig } from '../main';
 import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
-import { pageResourcePath } from './pre_process';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -106,12 +107,8 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
     }
   }
 
-  if (pageResourcePath && projectConfig.cardObj[pageResourcePath] && filePath) {
-    log.push({
-      type: LogType.ERROR,
-      message: `Card page cannot use import.`,
-      pos: node.getStart()
-    });
+  if (filePath) {
+    validatorCard(log, CARD_LOG_TYPE_IMPORT, node.getStart());
   }
 
   try {

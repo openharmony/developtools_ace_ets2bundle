@@ -36,9 +36,13 @@ import {
   EXTNAME_TS_MAP,
   EXTNAME_JS_MAP,
   ESMODULE,
-  FAIL
+  FAIL,
+  CARD_LOG_TYPE_COMPONENTS,
+  CARD_LOG_TYPE_DECORATORS,
+  CARD_LOG_TYPE_IMPORT
 } from './pre_define';
 import { minify, MinifyOutput } from 'terser';
+import { resourceFileName } from './process_ui_syntax';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -588,5 +592,28 @@ export function removeDir(dirName: string): void {
     } else {
       fs.rmdirSync(dirName, { recursive: true});
     }
+  }
+}
+
+export function validatorCard(log: any[], type: number, pos: number,
+  name: string = ''): void {
+  if (resourceFileName && projectConfig.cardObj[resourceFileName]) {
+    const logInfo: object = {
+      type: LogType.ERROR,
+      message: '',
+      pos: pos
+    }
+    switch(type) {
+      case CARD_LOG_TYPE_COMPONENTS:
+        logInfo.message = `Card page cannot use the component ${name}.`;
+        break;
+      case CARD_LOG_TYPE_DECORATORS:
+        logInfo.message = `Card page cannot use ${name}`;
+        break;
+      case CARD_LOG_TYPE_IMPORT:
+        logInfo.message = `Card page cannot use import.`;
+        break;
+    }
+    log.push(logInfo);
   }
 }

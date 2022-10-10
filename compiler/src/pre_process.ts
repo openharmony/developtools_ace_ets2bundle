@@ -42,11 +42,8 @@ import { genETS } from '../codegen/codegen_ets.js';
 const visualMap: Map<number, number> = new Map();
 const slotMap: Map<number, number> = new Map();
 
-export let pageResourcePath: string = '';
-
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
-  pageResourcePath = path.resolve(this.resourcePath);
   if (/\.ets$/.test(this.resourcePath)) {
     const result: ReplaceResult = sourceReplace(source, this.resourcePath);
     let newContent: string = result.content;

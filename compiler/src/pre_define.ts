@@ -339,3 +339,6 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
   'AbilityComponent', 'PluginComponent', 'FormComponent', 'RemoteWindow',
   'XComponent', 'Web', 'RichText'
 ]);
+export const CARD_LOG_TYPE_DECORATORS = 1; 
+export const CARD_LOG_TYPE_COMPONENTS = 2; 
+export const CARD_LOG_TYPE_IMPORT = 3;

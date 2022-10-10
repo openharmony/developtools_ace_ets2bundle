@@ -52,7 +52,8 @@ import {
   COMPONENT_TOGGLE,
   COMPONENT_BUILDERPARAM_DECORATOR,
   ESMODULE,
-  CARD_ENABLE_DECORATORS
+  CARD_ENABLE_DECORATORS,
+  CARD_LOG_TYPE_DECORATORS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -71,7 +72,8 @@ import {
   componentInfo,
   addLog,
   hasDecorator,
-  getPackageInfo
+  getPackageInfo,
+  validatorCard
 } from './utils';
 import { projectConfig, abilityPagesFullPath } from '../main';
 import { 
@@ -81,7 +83,6 @@ import {
 } from './process_ui_syntax';
 import { isOhmUrl } from './resolve_ohm_url';
 import { logger } from './compile_info';
-import { pageResourcePath } from './pre_process';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -1102,13 +1103,9 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; i++) {
       const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/,'').trim();
-      if (pageResourcePath && projectConfig.cardObj[pageResourcePath] &&
-        CARD_ENABLE_DECORATORS[decoratorName]) {
-        transformLog.errors.push({
-          type: LogType.ERROR,
-          message: `Card page cannot use ${decoratorName}`,
-          pos: node.decorators[i].getStart()
-        });  
+      if (CARD_ENABLE_DECORATORS[decoratorName]) {
+        validatorCard(transformLog.errors, CARD_LOG_TYPE_DECORATORS,
+          node.decorators[i].getStart(), decoratorName);
       }
       if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
         transformLog.errors.push({
