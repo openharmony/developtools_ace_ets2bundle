@@ -160,7 +160,9 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
       newStatements.unshift(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
           ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))) :
-      newStatements.unshift(createComponentCreationStatement(node, [ts.factory.createExpressionStatement(
+      newStatements.unshift(createComponentCreationStatement(ts.factory.createExpressionStatement(
+        createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
+          ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)), [ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
           ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))]));
     newStatements.push(ts.factory.createExpressionStatement(
