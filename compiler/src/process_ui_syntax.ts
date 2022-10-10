@@ -93,10 +93,10 @@ import {
   partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
-import { pageResourcePath } from './pre_process';
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
+export let resourceFileName: string = '';
 
 export function processUISyntax(program: ts.Program, ut = false): Function {
   return (context: ts.TransformationContext) => {
@@ -104,6 +104,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     let pagesDir: string;
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
+      resourceFileName = path.resolve(node.fileName);
       if (process.env.compiler === BUILD_ON) {
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
@@ -588,18 +589,18 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
-  const cardRelativePath: string = projectConfig.cardObj[pageResourcePath];
+  const cardRelativePath: string = projectConfig.cardObj[resourceFileName];
   if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
       if (!partialUpdateConfig.partialUpdateMode) {
         const entryNode: ts.ExpressionStatement =
           createEntryFunction(componentCollection.entryComponent, context,
-          cardRelativePath) as ts.ExpressionStatement;
+            cardRelativePath) as ts.ExpressionStatement;
         return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
       } else {
         const entryNodes: ts.ExpressionStatement[] =
           createEntryFunction(componentCollection.entryComponent, context,
-          cardRelativePath) as ts.ExpressionStatement[];
+            cardRelativePath) as ts.ExpressionStatement[];
         return context.factory.updateSourceFile(node, [...node.statements, ...entryNodes]);
       }
     } else {
@@ -639,7 +640,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
   }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
-    context.factory.createIdentifier(name),undefined, newArray)];
+      context.factory.createIdentifier(name),undefined, newArray)];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   if (!partialUpdateConfig.partialUpdateMode) {
     const newExpressionStatement: ts.ExpressionStatement =
@@ -724,7 +725,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
   });
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
-    context.factory.createIdentifier(name), undefined, newArray)];
+      context.factory.createIdentifier(name), undefined, newArray)];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   const ifStatement: ts.Statement = context.factory.createIfStatement(
     context.factory.createCallExpression(
@@ -752,7 +753,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
         )),
         name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
           context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-          PAGE_ENTRY_FUNCTION_NAME),undefined,newExpressionParams
+            PAGE_ENTRY_FUNCTION_NAME),undefined,newExpressionParams
         )) : undefined
       ],
       true
