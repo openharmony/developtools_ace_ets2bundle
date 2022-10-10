@@ -297,8 +297,8 @@ function readCardResource(resource) {
 }
 
 function readCardForm(form) {
-  if (form.type && form.type ==='eTS') {
-    const sourcePath = form.src.replace(/\.ets$/,'');
+  if (form.type && form.type === 'eTS') {
+    const sourcePath = form.src.replace(/\.ets$/, '');
     const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
     if (cardPath && fs.existsSync(cardPath)) {
       projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
