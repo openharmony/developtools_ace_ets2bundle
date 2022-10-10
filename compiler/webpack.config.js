@@ -133,7 +133,8 @@ function initConfig(config) {
   if (!projectConfig.xtsMode) {
     config.cache = {
       type: "filesystem",
-      cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache')
+      cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache',
+        path.basename(projectConfig.projectPath))
     };
   }
   if (!projectConfig.aceModuleJsonPath) {
