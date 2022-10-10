@@ -589,7 +589,10 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
-  const cardRelativePath: string = projectConfig.cardObj[resourceFileName];
+  let cardRelativePath: string = undefined;
+  if (projectConfig && projectConfig.cardObj) {
+    cardRelativePath = projectConfig.cardObj[resourceFileName];
+  }
   if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
       if (!partialUpdateConfig.partialUpdateMode) {
