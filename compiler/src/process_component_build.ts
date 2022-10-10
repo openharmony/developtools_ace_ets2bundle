@@ -156,21 +156,16 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
     newStatements.unshift(createRenderingInProgress(true));
   }
   if (isTransition) {
-    if (!partialUpdateConfig.partialUpdateMode) {
+    !partialUpdateConfig.partialUpdateMode ?
       newStatements.unshift(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
-          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
-      newStatements.push(ts.factory.createExpressionStatement(
-        createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
-          ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
-    } else {
+          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))) :
       newStatements.unshift(createComponentCreationStatement(node, [ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
           ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))]));
-      newStatements.push(createComponentCreationStatement(node, [ts.factory.createExpressionStatement(
-        createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
-          ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null))]));
-    }
+    newStatements.push(ts.factory.createExpressionStatement(
+      createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
+        ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
   }
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.push(createRenderingInProgress(false));
