@@ -87,7 +87,8 @@ import {
   TABCONTENT_COMPONENT,
   GLOBAL_THIS,
   IFELSEBRANCHUPDATEFUNCTION,
-  CARD_ENABLE_COMPONENTS
+  CARD_ENABLE_COMPONENTS,
+  CARD_LOG_TYPE_COMPONENTS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -116,13 +117,13 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  createFunction
+  createFunction,
+  validatorCard
 } from './utils';
 import { partialUpdateConfig, projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 import { CUSTOM_COMPONENT } from '../lib/pre_define';
-import { pageResourcePath } from './pre_process';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -265,12 +266,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       if (ts.isExpressionStatement(item)) {
         checkEtsComponent(item, log);
         const name: string = getName(item);
-        if (pageResourcePath && projectConfig.cardObj[pageResourcePath] && CARD_ENABLE_COMPONENTS.has(name)) {
-          log.push({
-            type: LogType.ERROR,
-            message: `Card page cannot use the component ${name}.`,
-            pos: item.getStart()
-          });
+        if (CARD_ENABLE_COMPONENTS.has(name)) {
+          validatorCard(log, CARD_LOG_TYPE_COMPONENTS, item.getStart(), name);
         }
         switch (getComponentType(item, log, name, parent, forEachParameters)) {
           case ComponentType.innerComponent:
