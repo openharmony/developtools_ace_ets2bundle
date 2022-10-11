@@ -63,6 +63,8 @@
         "LoadingProgress",
         "Marquee",
         "Menu",
+        "NavDestination",
+        "NavRouter",
         "Navigation",
         "Navigator",
         "Option",
@@ -308,6 +310,16 @@
             "name": "Menu",
             "type": "MenuAttribute",
             "instance": "MenuInstance"
+          },
+          {
+            "name": "NavDestination",
+            "type": "NavDestinationAttribute",
+            "instance": "NavDestinationInstance"
+          },
+          {
+            "name": "NavRouter",
+            "type": "NavRouterAttribute",
+            "instance": "NavRouterInstance"
           },
           {
             "name": "Navigation",
