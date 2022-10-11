@@ -78,6 +78,8 @@ export const PREVIEW_COMPONENT_FUNCTION_NAME: string = 'previewComponent';
 export const GET_PREVIEW_FLAG_FUNCTION_NAME: string = 'getPreviewComponentFlag';
 
 export const COMPONENT_DECORATOR_NAME_COMPONENT: string = 'Component';
+export const XCOMPONENT_SINGLE_QUOTATION: string = `'component'`;
+export const XCOMPONENT_DOUBLE_QUOTATION: string = `"component"`;
 export const COMPONENT_DECORATOR_NAME_CUSTOMDIALOG: string = 'CustomDialog';
 export const CUSTOM_DECORATOR_NAME: Set<string> = new Set([
   COMPONENT_DECORATOR_NAME_COMPONENT, COMPONENT_DECORATOR_NAME_CUSTOMDIALOG
