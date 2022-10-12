@@ -132,8 +132,9 @@ function handlePluginCompileComponent(jsonData) {
       const fastPreview = function build(){
         ${receivedMsg.data.script}
       }.bind(context);
+      fastPreview();
     }
-    quickPreview(GetRootView(${receivedMsg.data.viewID}))`
+    quickPreview(GetRootView().findChildByIdForPreview(${receivedMsg.data.viewID}))`
   }
   callEs2abc(receivedMsg);
 }
