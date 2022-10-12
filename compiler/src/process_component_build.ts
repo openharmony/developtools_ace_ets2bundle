@@ -89,7 +89,10 @@ import {
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
   CARD_LOG_TYPE_COMPONENTS,
-  COMPONENT_CONSTRUCTOR_PARENT
+  COMPONENT_CONSTRUCTOR_PARENT,
+  RESOURCE_NAME_TYPE,
+  XCOMPONENT_SINGLE_QUOTATION,
+  XCOMPONENT_DOUBLE_QUOTATION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1336,9 +1339,10 @@ function checkContainer(name: string, node: ts.Node): boolean {
 function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
   let flag: boolean = false;
   properties.forEach(item => {
-    if (item.name && ts.isIdentifier(item.name) && item.name.getText() === 'type' && item.initializer &&
-      ts.isStringLiteral(item.initializer) &&
-      (item.initializer.getText() == '"component"' || item.initializer.getText() == "'component'")) {
+    if (item.name && ts.isIdentifier(item.name) && item.name.getText() === RESOURCE_NAME_TYPE &&
+      item.initializer && ts.isStringLiteral(item.initializer) &&
+      (item.initializer.getText() == XCOMPONENT_SINGLE_QUOTATION ||
+      item.initializer.getText() == XCOMPONENT_DOUBLE_QUOTATION)) {
       flag = true;
     }
   })
