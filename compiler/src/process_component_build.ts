@@ -520,13 +520,8 @@ function createComponentCreationStatement(node: ts.Statement, innerStatements: t
   isGlobalBuilder: boolean = false): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        isGlobalBuilder ? ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-        ) : ts.factory.createThis(),
+      ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
+         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT) : ts.factory.createThis(),
         ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
       ), undefined,
       [ts.factory.createArrowFunction(undefined, undefined,
