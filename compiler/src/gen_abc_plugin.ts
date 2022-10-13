@@ -1058,10 +1058,19 @@ function processExtraAssetForBundle() {
 }
 
 function handleHotReloadChangedFiles() {
+  if (!fs.existsSync(projectConfig.changedFileList)) {
+    logger.info(blue, `ETS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
+    return;
+  }
+
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
-  let relativeProjectPath = projectConfig.projectPath.slice(projectConfig.projectRootPath.length + path.sep.length);
+  if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
+    logger.info(blue, `ETS: No changed files found, skip hot reload build`, reset);
+    return;
+  }
 
+  let relativeProjectPath = projectConfig.projectPath.slice(projectConfig.projectRootPath.length + path.sep.length);
   const nodeModulesFile: Array<string> = [];
   let hotReloadSourceMap: Object = {};
   moduleInfos = [];
@@ -1084,8 +1093,8 @@ function handleHotReloadChangedFiles() {
     } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
       processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else {
-      logger.debug(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
-      process.exitCode = FAIL;
+      logger.debug(red, `ETS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
+      return;
     }
 
     let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
