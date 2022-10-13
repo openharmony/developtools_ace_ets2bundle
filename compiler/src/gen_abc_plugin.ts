@@ -397,7 +397,7 @@ function writeSourceMaps(): void {
   fs.writeFile(path.join(projectConfig.buildPath, SOURCEMAPS), JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
     (err) => {
       if (err) {
-        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
+        logger.debug(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
       }
     }
   );
@@ -549,7 +549,7 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): an
 }
 
 function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
-  invokeCluterModuleToAbc();
+  invokeClusterModuleToAbc();
 }
 
 export function initAbcEnv() : string[] {
@@ -611,7 +611,7 @@ export function initAbcEnv() : string[] {
   return args;
 }
 
-function invokeCluterModuleToAbc(): void {
+function invokeClusterModuleToAbc(): void {
   if (process.env.watchMode === 'true') {
     process.exitCode = SUCCESS;
   }
@@ -653,7 +653,6 @@ function invokeCluterModuleToAbc(): void {
     cluster.on('exit', (worker, code, signal) => {
       if (code === FAIL || process.exitCode === FAIL) {
         process.exitCode = FAIL;
-        return;
       }
       count_++;
       if (count_ === totalWorkerNumber) {
@@ -661,7 +660,11 @@ function invokeCluterModuleToAbc(): void {
         clearGlobalInfo();
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
-          console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+          if (process.exitCode === SUCCESS) {
+            console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+          } else {
+            console.info(blue, 'COMPILE RESULT:FAIL ', reset);
+          }
           if (compileCount >= previewCount) {
             return;
           }
@@ -778,7 +781,6 @@ function invokeWorkersToGenAbc(): void {
     cluster.on('exit', (worker, code, signal) => {
       if (code === FAIL || process.exitCode === FAIL) {
         process.exitCode = FAIL;
-        return;
       }
       count_++;
       if (count_ === workerNumber) {
@@ -786,7 +788,11 @@ function invokeWorkersToGenAbc(): void {
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
           processExtraAssetForBundle();
-          console.info(red, 'COMPILE RESULT:SUCCESS ', reset);
+          if (process.exitCode === SUCCESS) {
+            console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+          } else {
+            console.info(blue, 'COMPILE RESULT:FAIL ', reset);
+          }
           if (compileCount >= previewCount) {
             return;
           }
@@ -873,7 +879,7 @@ function writeModuleHashJson(): void {
     const input: string = filterModuleInfos[i].tempFilePath;
     let outputPath: string = filterModuleInfos[i].abcFilePath;
     if (!fs.existsSync(input) || !fs.existsSync(outputPath)) {
-      logger.error(red, `ETS:ERROR ${input} is lost`, reset);
+      logger.debug(red, `ETS:ERROR ${input} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
@@ -930,7 +936,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
       const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
       const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
       if (!fs.existsSync(cacheOutputPath)) {
-        logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+        logger.debug(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
@@ -957,7 +963,7 @@ function writeHashJson(): void {
     const cacheOutputPath: string = fileterIntermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
-      logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+      logger.debug(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
@@ -1078,7 +1084,7 @@ function handleHotReloadChangedFiles() {
     } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
       processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else {
-      logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+      logger.debug(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
       process.exitCode = FAIL;
     }
 
