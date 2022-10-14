@@ -254,6 +254,7 @@ export const MODULELIST_JSON: string = 'moduleList.json';
 export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
 export const SOURCEMAPS: string = 'sourceMaps.map';
+export const PROTO_FILESINFO_TXT: string = 'protoFilesInfo.txt';
 
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
