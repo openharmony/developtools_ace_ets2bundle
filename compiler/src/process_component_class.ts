@@ -73,7 +73,9 @@ import {
   SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
   SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
   SYNCHED_PROPERTY_NESED_OBJECT_PU,
-  OBSERVED_PROPERTY_ABSTRACT_PU
+  OBSERVED_PROPERTY_ABSTRACT_PU,
+  CREATE_LOCAL_STORAGE_LINK,
+  CREATE_LOCAL_STORAGE_PROP
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -308,23 +310,33 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   parentComponentName: string): ts.CallExpression {
   const localStorageLink: Set<string> = localStorageLinkCollection.get(parentComponentName).get(name);
   const localStorageProp: Set<string> = localStoragePropCollection.get(parentComponentName).get(name);
+  let localFuncName: string;
+  const localValue: ts.Expression[] = [
+    ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
+      Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
+        Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
+    node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    ts.factory.createThis(), ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
+  ];
+  if (!partialUpdateConfig.partialUpdateMode) {
+    localFuncName = localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
+      COMPONENT_SET_AND_PROP;
+  } else {
+    localFuncName = localStorageLink && !localStorageProp ? CREATE_LOCAL_STORAGE_LINK :
+      CREATE_LOCAL_STORAGE_PROP;
+    localValue.splice(-2, 1);
+  }
   return ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
-      ts.factory.createPropertyAccessExpression(
-        ts.factory.createThis(),
-        ts.factory.createIdentifier(`${COMPONENT_CONSTRUCTOR_LOCALSTORAGE}_`)
-      ),
-      ts.factory.createIdentifier(localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
-        COMPONENT_SET_AND_PROP)
+      !partialUpdateConfig.partialUpdateMode ?
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(`${COMPONENT_CONSTRUCTOR_LOCALSTORAGE}_`)
+        ) : ts.factory.createThis(),
+      ts.factory.createIdentifier(localFuncName)
     ),
     [node.type],
-    [
-      ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
-        Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
-          Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
-      node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
-      ts.factory.createThis(), ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
-    ]
+    localValue
   );
 }
 
