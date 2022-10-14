@@ -35,7 +35,8 @@ import {
 import {
   circularFile,
   mkDir,
-  writeFileSync
+  writeFileSync,
+  parseErrorMessage
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -275,9 +276,6 @@ export class ResultStates {
       this.mStats = stats;
       this.warningCount = 0;
       this.noteCount = 0;
-      if (this.mStats.compilation.errors) {
-        this.mErrorCount += this.mStats.compilation.errors.length;
-      }
       if (this.mStats.compilation.warnings) {
         this.mWarningCount = this.mStats.compilation.warnings.length;
       }
@@ -438,10 +436,11 @@ export class ResultStates {
   }
 
   private printError(): void {
-    if (this.mErrorCount > 0) {
+    if (this.mStats.compilation.errors.length > 0) {
       const errors: Info[] = [...this.mStats.compilation.errors];
       for (let index = 0; index < errors.length; index++) {
         if (errors[index].issue) {
+          this.mErrorCount++;
           const position: string = errors[index].issue.location
             ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
             : '';
@@ -450,17 +449,20 @@ export class ResultStates {
           logger.error(this.red, 'ETS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
         } else if (/BUILDERROR/.test(errors[index].message)) {
+          this.mErrorCount++;
           const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
             .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
             .replace(/^ERROR/, 'ETS:ERROR');
           this.printErrorMessage(errorMessage, true, errors[index]);
-        } else if (!/TS[0-9]+:/.test(errors[index].message.toString())) {
+        } else if (!/TS[0-9]+:/.test(errors[index].message.toString()) &&
+          !/Module parse failed/.test(errors[index].message.toString())) {
+          this.mErrorCount++;
           let errorMessage: string = `${errors[index].message.replace(/\[tsl\]\s*/, '')
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
             .replace(/^ERROR in /, 'ETS:ERROR File: ').replace(/\s{6}TS/g, ' TS')
             .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2');
-          this.printErrorMessage(errorMessage, false, errors[index]);
+          this.printErrorMessage(parseErrorMessage(errorMessage), false, errors[index]);
         }
       }
     }
