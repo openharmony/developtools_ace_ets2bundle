@@ -60,7 +60,9 @@ import {
   SOURCEMAPS,
   TEMPORARY,
   TS2ABC,
-  FILESINFO_TXT
+  PROTO_FILESINFO_TXT,
+  NPMENTRIES_TXT,
+  EXTNAME_PROTO_BIN
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -470,17 +472,24 @@ function handleFullModuleFiles(modules, callback): any {
 }
 
 function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
-  for (const value of entryInfos.values()) {
-    const tempAbcFilePath: string = toUnixPath(path.resolve(value.npmInfo, ENTRY_TXT));
-    const buildAbcFilePath: string = toUnixPath(path.resolve(value.buildPath, ENTRY_TXT));
-    fs.writeFileSync(tempAbcFilePath, value.entry, 'utf-8');
-    if (!fs.existsSync(buildAbcFilePath)) {
-      const parent: string = path.join(buildAbcFilePath, '..');
-      if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
-        mkDir(parent);
-      }
-    }
-    fs.copyFileSync(tempAbcFilePath, buildAbcFilePath);
+  if (entryInfos.size <= 0) {
+    return;
+  }
+  generateNpmEntriesInfo(entryInfos);
+  const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
+  let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
+  const npmEntriesProtoFilePath = path.join(path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName));
+  let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
+  if (isWin) {
+    js2Abc = path.join(arkDir, 'build-win', 'bin', 'js2abc.exe');
+  } else if (isMac) {
+    js2Abc = path.join(arkDir, 'build-mac', 'bin', 'js2abc');
+  }
+  const singleCmd: any = `"${js2Abc}" --compile-npm-entries "${npmEntriesInfoPath}" "${npmEntriesProtoFilePath}`;
+  try {
+    childProcess.execSync(singleCmd);
+  } catch (e) {
+    logger.debug(red, `ETS:ERROR Failed to generate npm proto file to abc`, reset);
   }
 }
 
@@ -669,7 +678,7 @@ function invokeClusterModuleToAbc(): void {
       if (count_ === totalWorkerNumber) {
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
-          processExtraAssetForBundle();
+          processExtraAsset();
           if (process.exitCode === SUCCESS) {
             console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
           } else {
@@ -687,12 +696,12 @@ function invokeClusterModuleToAbc(): void {
 
     process.on('exit', (code) => {
       // for build options
-      processExtraAssetForBundle();
+      processExtraAsset();
     });
 
     // for preview of without incre compile
     if (totalWorkerNumber === 0 && process.env.watchMode === 'true') {
-      processExtraAssetForBundle();
+      processExtraAsset();
     }
   }
 }
@@ -807,7 +816,7 @@ function invokeWorkersToGenAbc(): void {
         // for preview of with incre compile
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
-          processExtraAssetForBundle();
+          processExtraAsset();
           if (process.exitCode === SUCCESS) {
             console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
           } else {
@@ -824,12 +833,12 @@ function invokeWorkersToGenAbc(): void {
 
     process.on('exit', (code) => {
       // for build options
-      processExtraAssetForBundle();
+      processExtraAsset();
     });
 
     // for preview of without incre compile
     if (workerNumber === 0 && process.env.watchMode === 'true') {
-      processExtraAssetForBundle();
+      processExtraAsset();
     }
   }
 }
@@ -1055,7 +1064,7 @@ function copyFileCachePathToBuildPath() {
   }
 }
 
-function processExtraAssetForBundle() {
+function processExtraAsset() {
   if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
     writeHashJson();
     copyFileCachePathToBuildPath();
@@ -1138,19 +1147,12 @@ function handleFinishModules(modules, callback) {
 }
 
 function copyModuleFileCachePathToBuildPath(): void {
-  protoFilePath = path.join(path.join(process.env.cachePath, "protos", FILESINFO_TXT));
-  removeDir(path.dirname(protoFilePath));
+  protoFilePath = path.join(path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT));
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
   for (let i = 0; i < moduleInfos.length; ++i) {
     let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
-    let protoBuildPath: string = genMergeProtoFileName(protoTempPath);
-    entriesInfo += `${toUnixPath(protoBuildPath)}\n`;
-    mkdirsSync(path.dirname(protoBuildPath));
-    fs.copyFileSync(protoTempPath, protoBuildPath);
-    if (projectConfig.buildArkMode === 'debug' && fs.existsSync(genSourceMapFileName(moduleInfos[i].tempFilePath))) {
-      fs.copyFileSync(genSourceMapFileName(moduleInfos[i].tempFilePath), genSourceMapFileName(moduleInfos[i].buildFilePath));
-    }
+    entriesInfo += `${toUnixPath(protoTempPath)}\n`;
   }
   fs.writeFileSync(protoFilePath, entriesInfo, 'utf-8');
 }
