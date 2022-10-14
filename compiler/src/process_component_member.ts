@@ -56,10 +56,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   EXTNAME_ETS,
   _GENERATE_ID,
-  MARKDEPENDENTELEMENTSDIRTY,
   RMELMTID,
   PURGEDEPENDENCYONELMTID,
-  SETPROPERTYUNCHANGED,
   BASICDECORATORS,
   BASE_COMPONENT_NAME_PU,
   OBSERVED_PROPERTY_SIMPLE_PU,
@@ -68,7 +66,10 @@ import {
   SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU,
   SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
   SYNCHED_PROPERTY_NESED_OBJECT_PU,
-  COMPONENT_CUSTOM_DECORATOR
+  COMPONENT_CUSTOM_DECORATOR,
+  THIS,
+  CREATE_STORAGE_LINK,
+  CREATE_STORAGE_PROP
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -443,9 +444,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
-      const setFuncName: string = decorator === COMPONENT_STORAGE_PROP_DECORATOR ?
-        APP_STORAGE_SET_AND_PROP : APP_STORAGE_SET_AND_LINK;
-      updateState = updateStoragePropAndLinkProperty(node, name, setFuncName, log);
+      updateState = updateStoragePropAndLinkProperty(node, name, decorator, log);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateState = !partialUpdateConfig.partialUpdateMode
@@ -573,14 +572,31 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
 }
 
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
-  setFuncName: string, log: LogInfo[]): ts.ExpressionStatement {
+  decorator: string, log: LogInfo[]): ts.ExpressionStatement {
   if (isSingleKey(node)) {
+    let setFuncName: string;
+    let storageFuncName: string;
+    const storageValue: ts.Expression[] = [
+      node.decorators[0].expression.arguments[0],
+      node.initializer,
+      ts.factory.createThis(),
+      ts.factory.createStringLiteral(name.getText())
+    ];
+    if (!partialUpdateConfig.partialUpdateMode) {
+      setFuncName = decorator === COMPONENT_STORAGE_PROP_DECORATOR ?
+        APP_STORAGE_SET_AND_PROP : APP_STORAGE_SET_AND_LINK;
+      storageFuncName = APP_STORAGE;
+    } else {
+      setFuncName = decorator === COMPONENT_STORAGE_PROP_DECORATOR ?
+        CREATE_STORAGE_PROP : CREATE_STORAGE_LINK;
+      storageFuncName = THIS;
+      storageValue.splice(2, 1);
+    }
     return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
       createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(APP_STORAGE),
-          ts.factory.createIdentifier(setFuncName)), undefined, [node.decorators[0].expression.arguments[0],
-          node.initializer, ts.factory.createThis(), ts.factory.createStringLiteral(name.getText())])));
+        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(storageFuncName),
+          ts.factory.createIdentifier(setFuncName)), undefined, storageValue)));
   } else {
     validateAppStorageDecoractorsNonSingleKey(node, log);
   }
