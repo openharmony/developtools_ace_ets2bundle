@@ -590,3 +590,14 @@ export function removeDir(dirName: string): void {
     }
   }
 }
+
+export function parseErrorMessage(message: string): string {
+  const messageArrary: string[] = message.split('\n');
+  let logContent: string = '';
+  messageArrary.forEach(element => {
+    if (!(/^at/.test(element.trim()))) {
+      logContent = logContent + element + '\n';
+    }
+  });
+  return logContent;
+}
