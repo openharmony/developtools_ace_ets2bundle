@@ -36,7 +36,8 @@ import {
   newSourceMaps,
   validateFilePathLength,
   genProtoFileName,
-  genMergeProtoFileName
+  genMergeProtoFileName,
+  removeDuplicateInfo
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -470,7 +471,7 @@ function handleFullModuleFiles(modules, callback): any {
     writeSourceMaps();
   }
 
-  if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
+  if (process.env.panda !== TS2ABC) {
     const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
     validateFilePathLength(outputABCPath);
     generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
@@ -489,7 +490,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   validateFilePathLength(npmEntriesInfoPath);
   let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
-  const npmEntriesProtoFilePath = path.join(path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName));
+  const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
   validateFilePathLength(npmEntriesProtoFilePath);
   let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
   if (isWin) {
@@ -497,6 +498,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   } else if (isMac) {
     js2Abc = path.join(arkDir, 'build-mac', 'bin', 'js2abc');
   }
+  validateFilePathLength(js2Abc);
   const singleCmd: any = `"${js2Abc}" --compile-npm-entries "${npmEntriesInfoPath}" "${npmEntriesProtoFilePath}`;
   try {
     childProcess.execSync(singleCmd);
@@ -1093,7 +1095,6 @@ function processExtraAsset() {
     writeModuleHashJson();
     copyModuleFileCachePathToBuildPath();
     mergeProtoToAbc();
-    generateNpmEntriesInfo(entryInfos);
   }
   clearGlobalInfo();
 }
@@ -1174,12 +1175,19 @@ function handleFinishModules(modules, callback) {
 }
 
 function copyModuleFileCachePathToBuildPath(): void {
-  protoFilePath = path.join(path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT));
+  protoFilePath = path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT);
+  validateFilePathLength(protoFilePath);
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
+  moduleInfos = removeDuplicateInfo(moduleInfos);
   for (let i = 0; i < moduleInfos.length; ++i) {
     let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
     entriesInfo += `${toUnixPath(protoTempPath)}\n`;
+  }
+  if (entryInfos.size > 0) {
+    let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
+    const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
+    entriesInfo += `${toUnixPath(npmEntriesProtoFilePath)}\n`;
   }
   fs.writeFileSync(protoFilePath, entriesInfo, 'utf-8');
 }
