@@ -664,3 +664,18 @@ export function genMergeProtoFileName(temporaryFile: string): string {
 
   return protoBuildPath;
 }
+
+export function removeDuplicateInfo(moduleInfos: Array<any>): Array<any> {
+  const tempModuleInfos: any[] = Array<any>();
+  moduleInfos.forEach((item) => {
+    let check: boolean = tempModuleInfos.every((newItem) => {
+      return item.tempFilePath !== newItem.tempFilePath;
+    });
+    if (check) {
+      tempModuleInfos.push(item);
+    }
+  });
+  moduleInfos = tempModuleInfos;
+
+  return moduleInfos;
+}

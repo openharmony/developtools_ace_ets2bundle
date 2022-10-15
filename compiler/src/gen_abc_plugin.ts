@@ -35,7 +35,8 @@ import {
   removeDir,
   newSourceMaps,
   genProtoFileName,
-  genMergeProtoFileName
+  genMergeProtoFileName,
+  removeDuplicateInfo
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -461,7 +462,7 @@ function handleFullModuleFiles(modules, callback): any {
     writeSourceMaps();
   }
 
-  if (projectConfig.compileMode === ESMODULE && process.env.panda !== TS2ABC) {
+  if (process.env.panda !== TS2ABC) {
     const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
     generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
     clearGlobalInfo();
@@ -478,7 +479,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   generateNpmEntriesInfo(entryInfos);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
-  const npmEntriesProtoFilePath = path.join(path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName));
+  const npmEntriesProtoFilePath: string = path.join(path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName));
   let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
   if (isWin) {
     js2Abc = path.join(arkDir, 'build-win', 'bin', 'js2abc.exe');
@@ -1072,7 +1073,6 @@ function processExtraAsset() {
     writeModuleHashJson();
     copyModuleFileCachePathToBuildPath();
     mergeProtoToAbc();
-    generateNpmEntriesInfo(entryInfos);
   }
   clearGlobalInfo();
 }
@@ -1150,9 +1150,15 @@ function copyModuleFileCachePathToBuildPath(): void {
   protoFilePath = path.join(path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT));
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
+  moduleInfos = removeDuplicateInfo(moduleInfos);
   for (let i = 0; i < moduleInfos.length; ++i) {
     let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
     entriesInfo += `${toUnixPath(protoTempPath)}\n`;
+  }
+  if (entryInfos.size > 0) {
+    let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
+    const npmEntriesProtoFilePath: string = path.join(path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName));
+    entriesInfo += `${toUnixPath(npmEntriesProtoFilePath)}\n`;
   }
   fs.writeFileSync(protoFilePath, entriesInfo, 'utf-8');
 }

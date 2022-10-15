@@ -39,7 +39,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     const ohmURL: string = inputPaths[i].recordName;
     const protoFileName: string = genProtoFileName(input);
     const sourceFile: string = toUnixPath(inputPaths[i].filePath.replace(projectConfig.projectRootPath, ''));
-    const singleCmd: any = `${cmd} "${input}" --record-name "${ohmURL}" --source-file "${sourceFile}" --output-proto`;
+    const singleCmd: any = `${cmd} "${input}" --record-name "${ohmURL}" --source-file "${sourceFile}" --output-proto --merge-abc`;
     logger.debug('gen abc cmd is: ', singleCmd);
     try {
       childProcess.execSync(singleCmd);
