@@ -41,7 +41,8 @@ import {
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
   STYLES,
   VALIDATE_MODULE,
-  COMPONENT_BUILDER_DECORATOR
+  COMPONENT_BUILDER_DECORATOR,
+  COMPONENT_BUILDERPARAM_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -68,6 +69,7 @@ import {
   transformLog 
 } from './process_ui_syntax';
 import { importModuleCollection } from './ets_checker';
+import { builderParamObjectCollection } from './process_component_member';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -92,6 +94,7 @@ export interface IComponentSet {
   objectLinks: Set<string>;
   localStorageLink: Map<string, Set<string>>;
   localStorageProp: Map<string, Set<string>>;
+  builderParams: Set<string>;
 }
 
 export const componentCollection: ComponentCollection = {
@@ -642,6 +645,7 @@ function collectComponentProps(node: ts.StructDeclaration): void {
   objectLinkCollection.set(componentName, ComponentSet.objectLinks);
   localStorageLinkCollection.set(componentName, ComponentSet.localStorageLink);
   localStoragePropCollection.set(componentName, ComponentSet.localStorageProp);
+  builderParamObjectCollection.set(componentName, ComponentSet.builderParams);
 }
 
 export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
@@ -657,11 +661,12 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const objectLinks: Set<string> = new Set();
   const localStorageLink: Map<string, Set<string>> = new Map();
   const localStorageProp: Map<string, Set<string>> = new Map();
+  const builderParams: Set<string> = new Set();
   traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
-    storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
+    storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp, builderParams);
   return {
     properties, regulars, states, links, props, storageProps, storageLinks, provides,
-    consumes, objectLinks, localStorageLink, localStorageProp
+    consumes, objectLinks, localStorageLink, localStorageProp, builderParams
   };
 }
 
@@ -669,7 +674,8 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
   regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
   consumes: Set<string>, objectLinks: Set<string>,
-  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
+  builderParams: Set<string>): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
@@ -686,7 +692,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
               collectionStates(item.decorators[i], decoratorName, propertyName, states, links, props, storageProps,
-                storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp);
+                storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp, builderParams);
             }
           }
         }
@@ -704,7 +710,8 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
 function collectionStates(node: ts.Decorator, decorator: string, name: string,
   states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
   storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
-  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>): void {
+  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
+  builderParams: Set<string>): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
       states.add(name);
@@ -729,6 +736,9 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       objectLinks.add(name);
+      break;
+    case COMPONENT_BUILDERPARAM_DECORATOR:
+      builderParams.add(name);
       break;
     case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR :
       collectionlocalStorageParam(node, name, localStorageLink);
