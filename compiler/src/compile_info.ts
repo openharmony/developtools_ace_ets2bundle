@@ -46,7 +46,8 @@ import {
 } from './pre_define';
 import {
   createLanguageService,
-  createWatchCompilerHost
+  createWatchCompilerHost,
+  readDeaclareFiles
 } from './ets_checker';
 import {
   globalProgram,
@@ -87,6 +88,7 @@ interface NeedUpdateFlag {
   flag: boolean;
 }
 
+export let hotReloadSupportFiles: Set<string> = new Set();
 export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
@@ -206,6 +208,11 @@ export class ResultStates {
         rootFileNames.push(fileName.replace('?entry', ''));
       });
       if (process.env.watchMode === 'true') {
+        if (projectConfig.hotReload) {
+          [...rootFileNames, ...readDeaclareFiles()].forEach(fileName => {
+            hotReloadSupportFiles.add(path.resolve(fileName));
+          })
+        }
         globalProgram.watchProgram = ts.createWatchProgram(
           createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
             this.delayPrintLogCount.bind(this)));
@@ -250,7 +257,7 @@ export class ResultStates {
       if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
         watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
         allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
-          .filter(file => fs.statSync(file).isFile())
+          .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
           .map(file => path.relative(projectConfig.projectPath, file))]
           .filter(file => !watchRemovedFiles.includes(file)));
         const filesObj: filesObj = {
