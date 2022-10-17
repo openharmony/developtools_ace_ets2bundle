@@ -17,7 +17,10 @@ const fs = require('fs');
 const path = require('path');
 const md5 = require('md5');
 
-const { readFile } = require('./lib/utils');
+const {
+  readFile,
+  writeFileSync
+} = require('./lib/utils');
 const { WORKERS_DIR } = require('./lib/pre_define');
 
 const {
@@ -323,6 +326,12 @@ function readWorkerFile(isPreview) {
       projectConfig.patchAbcPath = workerConfig.patchConfig.patchAbcPath;
       projectConfig.changedFileList = workerConfig.patchConfig.changedFileList ?
         workerConfig.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
+      if (projectConfig.hotReload) {
+        writeFileSync(projectConfig.changedFileList, JSON.stringify({
+          modifiedFiles: [],
+          removedFiles: []
+        }));
+      }
     }
   }
   return null;
