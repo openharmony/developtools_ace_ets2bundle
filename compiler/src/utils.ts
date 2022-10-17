@@ -234,3 +234,13 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
+export function parseErrorMessage(message: string): string {
+  const messageArrary: string[] = message.split('\n');
+  let logContent: string = '';
+  messageArrary.forEach(element => {
+    if (!(/^at/.test(element.trim()))) {
+      logContent = logContent + element + '\n';
+    }
+  });
+  return logContent;
+}
