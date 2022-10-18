@@ -16,6 +16,7 @@
 import path from 'path';
 import ts from 'typescript';
 import fs from 'fs';
+import os from 'os';
 import { projectConfig } from '../main';
 import { createHash } from 'crypto';
 import { processSystemApi } from './validate_ui_syntax';
@@ -56,6 +57,10 @@ const TS_NOCHECK: string = '// @ts-nocheck';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+
+const WINDOWS: string = 'Windows_NT';
+const LINUX: string = 'Linux';
+const MAC: string = 'Drawin';
 
 export interface LogInfo {
   type: LogType,
@@ -628,4 +633,46 @@ export function parseErrorMessage(message: string): string {
     }
   });
   return logContent;
+}
+
+export function isWindows(): boolean {
+  return os.type() === WINDOWS;
+}
+
+export function isLinux(): boolean {
+  return os.type() === LINUX;
+}
+
+export function isMac(): boolean {
+  return os.type() === MAC;
+}
+
+export function maxFilePathLength(): number {
+  if (isWindows()) {
+    return 259;
+  } else if (isLinux()) {
+    return 4095;
+  } else if (isMac()) {
+    return 1016;
+  } else {
+    return -1;
+  }
+}
+
+export function validateFilePathLength(filePath: string): boolean {
+  if (maxFilePathLength() < 0) {
+    logger.error("Unknown OS platform");
+    process.exitCode = FAIL;
+    return false;
+  } else if (filePath.length > 0 && filePath.length <= maxFilePathLength()) {
+    return true;
+  } else if (filePath.length > maxFilePathLength()) {
+    logger.error("The length of path exceeds the maximum length: " + maxFilePathLength());
+    process.exitCode = FAIL;
+    return false;
+  } else {
+    logger.error("Validate file path failed");
+    process.exitCode = FAIL;
+    return false;
+  }
 }
