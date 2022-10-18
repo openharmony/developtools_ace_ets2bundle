@@ -85,14 +85,14 @@ const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
     [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], name: string, isInnerBuilder: boolean = false): void {
+  log: LogInfo[], name: string, isBuilder: boolean = false): void {
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
     const hasChainCall: boolean = componentNode.parent &&
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
-      componentNode, name, isInnerBuilder);
+      componentNode, name, isBuilder);
     let argumentsArray: ts.PropertyAssignment[];
     if (isHasChild(componentNode)) {
       // @ts-ignore
@@ -110,7 +110,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createNewExpression(componentNode.expression, componentNode.typeArguments,
             [ts.factory.createObjectLiteralExpression(argumentsArray, true)]));
         customComponentNewExpression = createCustomComponentNewExpression(
-          newNode.expression as ts.CallExpression, name, isInnerBuilder);
+          newNode.expression as ts.CallExpression, name, isBuilder);
       }
     }
     if (hasChainCall) {
@@ -120,7 +120,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isInnerBuilder);
+      isBuilder);
     if (hasChainCall) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -152,20 +152,20 @@ function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
-  isInnerBuilder: boolean = false): void {
+  isBuilder: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isInnerBuilder);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isBuilder);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
-  isInnerBuilder: boolean = false): void {
+  isBuilder: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
-    newStatements.push(createFindChildById(id, name, isInnerBuilder), createCustomComponentIfStatement(id,
+    newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
@@ -424,7 +424,7 @@ function getPropertyDecoratorKind(propertyName: string, customComponentName: str
   }
 }
 
-function createFindChildById(id: string, name: string, isInnerBuilder: boolean = false): ts.VariableStatement {
+function createFindChildById(id: string, name: string, isBuilder: boolean = false): ts.VariableStatement {
   return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
     [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(
       `${CUSTOM_COMPONENT_EARLIER_CREATE_CHILD}${id}`), undefined, ts.factory.createTypeReferenceNode(
@@ -432,24 +432,24 @@ function createFindChildById(id: string, name: string, isInnerBuilder: boolean =
     ts.factory.createConditionalExpression(
       ts.factory.createParenthesizedExpression(
         ts.factory.createBinaryExpression(
-          createConditionParent(isInnerBuilder),
+          createConditionParent(isBuilder),
           ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
           ts.factory.createPropertyAccessExpression(
-            createConditionParent(isInnerBuilder),
+            createConditionParent(isBuilder),
             ts.factory.createIdentifier(CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID)
           ))), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
       ts.factory.createAsExpression(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(createConditionParent(isInnerBuilder),
+        ts.factory.createPropertyAccessExpression(createConditionParent(isBuilder),
         ts.factory.createIdentifier(`${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined,
-        [isInnerBuilder ? ts.factory.createCallExpression(ts.factory.createIdentifier(GENERATE_ID),
+        [isBuilder ? ts.factory.createCallExpression(ts.factory.createIdentifier(GENERATE_ID),
           undefined, []) : ts.factory.createStringLiteral(id)]),
       ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))),
       ts.factory.createToken(ts.SyntaxKind.ColonToken),
       ts.factory.createIdentifier('undefined')))], ts.NodeFlags.Let));
 }
 
-function createConditionParent(isInnerBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
-  return isInnerBuilder ? ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
+function createConditionParent(isBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
+  return isBuilder ? ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
     ts.factory.createThis())) : ts.factory.createThis();

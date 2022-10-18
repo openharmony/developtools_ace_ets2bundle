@@ -665,14 +665,14 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
 }
 
 export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
-  isInnerBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name, isInnerBuilder);
+  return addCustomComponentId(newNode, name, isBuilder);
 }
 
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
-  isInnerBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -687,11 +687,11 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       }
       if (!partialUpdateConfig.partialUpdateMode) {
         ++componentInfo.id;
-        argumentsArray.unshift(isInnerBuilder ? ts.factory.createBinaryExpression(
+        argumentsArray.unshift(isBuilder ? ts.factory.createBinaryExpression(
           ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
           ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
           ts.factory.createStringLiteral(componentInfo.id.toString()),
-        isInnerBuilder ? ts.factory.createConditionalExpression(
+        isBuilder ? ts.factory.createConditionalExpression(
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createToken(ts.SyntaxKind.QuestionToken),
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),

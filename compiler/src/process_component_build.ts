@@ -89,6 +89,7 @@ import {
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
   CARD_LOG_TYPE_COMPONENTS,
+  COMPONENT_CONSTRUCTOR_PARENT,
   RESOURCE_NAME_TYPE,
   XCOMPONENT_SINGLE_QUOTATION,
   XCOMPONENT_DOUBLE_QUOTATION
@@ -151,11 +152,11 @@ export function processComponentBuild(node: ts.MethodDeclaration,
 }
 
 export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogInfo[],
-  isTransition: boolean = false, isInnerBuilder: boolean = false, parent: string = undefined,
-  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ts.Block {
+  isTransition: boolean = false, isBuilder: boolean = false, parent: string = undefined,
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false): ts.Block {
   const newStatements: ts.Statement[] = [];
-  processComponentChild(node, newStatements, log,
-    {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isInnerBuilder, parent, forEachParameters);
+  processComponentChild(node, newStatements, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
+    isBuilder, parent, forEachParameters, isGlobalBuilder);
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -263,8 +264,8 @@ let sourceNode: ts.SourceFile;
 
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-  isInnerBuilder: boolean = false, parent: string = undefined,
-  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): void {
+  isBuilder: boolean = false, parent: string = undefined,
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -288,7 +289,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (ts.isIdentifier(etsExpression.expression)) {
               parent = etsExpression.expression.escapedText.toString();
             }
-            processInnerComponent(item, newStatements, log, parent);
+            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder);
             break;
           case ComponentType.customComponent:
             parent = undefined;
@@ -300,15 +301,15 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                   item = expressionResult;
                 }
               }
-              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name, isInnerBuilder);
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name, isBuilder);
             }
             break;
           case ComponentType.forEachComponent:
             parent = undefined;
             if (!partialUpdateConfig.partialUpdateMode) {
-              processForEachComponent(item, newStatements, log, isInnerBuilder);
+              processForEachComponent(item, newStatements, log, isBuilder);
             } else {
-              processForEachComponentNew(item, newStatements, log);
+              processForEachComponentNew(item, newStatements, log, isGlobalBuilder);
             }
             break;
           case ComponentType.customBuilderMethod:
@@ -329,7 +330,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
         }
       } else if (ts.isIfStatement(item)) {
-        processIfStatement(item, newStatements, log, isInnerBuilder);
+        processIfStatement(item, newStatements, log, isBuilder, isGlobalBuilder);
       } else if (!ts.isBlock(item)) {
         log.push({
           type: LogType.ERROR,
@@ -430,7 +431,7 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  log: LogInfo[], parent: string = undefined): void {
+  log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
@@ -439,14 +440,15 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log);
   } else if (partialUpdateConfig.partialUpdateMode && TABCONTENT_COMPONENT.includes(nameResult.name)) {
-    processTabContent(node, innerCompStatements, log);
+    processTabContent(node, innerCompStatements, log, isGlobalBuilder);
   } else {
-    processNormalComponent(node, nameResult, innerCompStatements, log, parent);
+    processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
-  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined): void {
+  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined,
+  isGlobalBuilder: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
@@ -469,12 +471,12 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processInnerCompStatements(innerCompStatements, newStatements, node);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder);
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent);
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
-    processInnerCompStatements(innerCompStatements, newStatements, node);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder);
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -512,20 +514,22 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
 function processInnerCompStatements(
   innerCompStatements: ts.Statement[],
   newStatements: ts.Statement[],
-  node: ts.Statement
+  node: ts.Statement,
+  isGlobalBuilder: boolean = false
 ): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
-    innerCompStatements.push(createComponentCreationStatement(node, newStatements));
+    innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder));
   }
 }
 
-function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[]): ts.Statement {
+function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
+  isGlobalBuilder: boolean = false): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        ts.factory.createThis(),
+      ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
+         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT) : ts.factory.createThis(),
         ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
       ), undefined,
       [ts.factory.createArrowFunction(undefined, undefined,
@@ -860,7 +864,8 @@ function createObservedDeepRender(
   );
 }
 
-function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[], log: LogInfo[]): void {
+function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
+  log: LogInfo[], isGlobalBuilder: boolean = false): void {
   const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const TabContentBody: ts.Block = TabContentComp.body;
   let tabContentCreation: ts.Statement;
@@ -878,13 +883,13 @@ function processTabContent(node: ts.ExpressionStatement, innerCompStatements: ts
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock([...newTabContentChildren], true))]));
     bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
-    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder);
   } else {
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(TABCONTENT_COMPONENT),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
     bindComponentAttr(node, ts.factory.createIdentifier(TABCONTENT_COMPONENT), tabAttrs, log);
-    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node);
+    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder);
   }
   innerCompStatements.push(tabContentPop);
 }
@@ -900,7 +905,7 @@ function getRealNodePos(node: ts.Node): number {
 }
 
 function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], isInnerBuilder: boolean = false): void {
+  log: LogInfo[], isBuilder: boolean = false): void {
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
     // @ts-ignore
     node.expression.expression as ts.Identifier,
@@ -919,7 +924,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
     const newArrowNode: ts.ArrowFunction =
-      processForEachBlock(node.expression, log, isInnerBuilder) as ts.ArrowFunction;
+      processForEachBlock(node.expression, log, isBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -930,7 +935,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
 }
 
 function processForEachComponentNew(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[]): void {
+  log: LogInfo[], isGlobalBuilder: boolean = false): void {
   const newForEachStatements: ts.Statement[] = [];
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
     (node.expression as ts.CallExpression).expression as ts.Identifier,
@@ -942,7 +947,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
         node.expression.expression as ts.Identifier,
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
     const newArrowNode: ts.NodeArray<ts.Statement> =
-      processForEachBlock(node.expression, log) as ts.NodeArray<ts.Statement>;
+      processForEachBlock(node.expression, log, false, isGlobalBuilder) as ts.NodeArray<ts.Statement>;
     const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
       argumentsArray, newArrowNode);
     const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
@@ -1097,7 +1102,7 @@ function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
 }
 
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
-  isInnerBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
   if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
@@ -1117,7 +1122,8 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
-          processComponentBlock(blockNode, isLazy, log, false, false, undefined, arrowNode.parameters));
+          processComponentBlock(blockNode, isLazy, log, false, false, undefined,
+            arrowNode.parameters, isGlobalBuilder));
       } else {
         return processComponentBlock(blockNode, isLazy, log).statements;
       }
@@ -1126,7 +1132,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
         return ts.factory.updateArrowFunction(
           arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
-          processComponentBlock(body, isLazy, log, false, isInnerBuilder, undefined, arrowNode.parameters));
+          processComponentBlock(body, isLazy, log, false, isBuilder, undefined, arrowNode.parameters));
       } else {
         return processComponentBlock(body, isLazy, log).statements;
       }
@@ -1147,9 +1153,9 @@ function createRenderingInProgress(isTrue: boolean): ts.ExpressionStatement {
 }
 
 function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
-  log: LogInfo[], isInnerBuilder: boolean = false): void {
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   const ifCreate: ts.ExpressionStatement = createIfCreate();
-  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isInnerBuilder);
+  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isBuilder, isGlobalBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
   if (!partialUpdateConfig.partialUpdateMode) {
     newStatements.push(ifCreate, newIfNode, ifPop);
@@ -1159,7 +1165,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
 }
 
 function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[],
-  isInnerBuilder: boolean = false): ts.IfStatement {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.IfStatement {
   if (ts.isIdentifier(node.expression) && node.expression.originalKeywordKind === undefined &&
     !node.expression.escapedText) {
     log.push({
@@ -1170,15 +1176,15 @@ function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[
     node = ts.factory.updateIfStatement(node, ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
       node.thenStatement, node.elseStatement);
   }
-  const newThenStatement: ts.Statement = processThenStatement(node.thenStatement, id, log, isInnerBuilder);
-  const newElseStatement: ts.Statement = processElseStatement(node.elseStatement, id, log, isInnerBuilder);
+  const newThenStatement: ts.Statement = processThenStatement(node.thenStatement, id, log, isBuilder, isGlobalBuilder);
+  const newElseStatement: ts.Statement = processElseStatement(node.elseStatement, id, log, isBuilder, isGlobalBuilder);
   const newIfNode: ts.IfStatement = ts.factory.updateIfStatement(
     node, node.expression, newThenStatement, newElseStatement);
   return newIfNode;
 }
 
 function processThenStatement(thenStatement: ts.Statement, id: number,
-  log: LogInfo[], isInnerBuilder: boolean = false): ts.Statement {
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.Statement {
   if (ts.isExpressionStatement(thenStatement) && ts.isIdentifier(thenStatement.expression) &&
     thenStatement.expression.originalKeywordKind === undefined &&
     !thenStatement.expression.escapedText) {
@@ -1190,9 +1196,9 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
   }
   if (thenStatement) {
     if (ts.isBlock(thenStatement)) {
-      thenStatement = processIfBlock(thenStatement, id, log, isInnerBuilder);
+      thenStatement = processIfBlock(thenStatement, id, log, isBuilder, isGlobalBuilder);
     } else if (ts.isIfStatement(thenStatement)) {
-      thenStatement = processInnerIfStatement(thenStatement, 0, log, isInnerBuilder);
+      thenStatement = processInnerIfStatement(thenStatement, 0, log, isBuilder, isGlobalBuilder);
       thenStatement = ts.factory.createBlock(
         partialUpdateConfig.partialUpdateMode
           ? [createIfCreate(), createIfBranchFunc(id, [thenStatement]), createIfPop()]
@@ -1201,22 +1207,22 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
       );
     } else {
       thenStatement = ts.factory.createBlock([thenStatement], true);
-      thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isInnerBuilder);
+      thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isBuilder, isGlobalBuilder);
     }
   }
   return thenStatement;
 }
 
 function processElseStatement(elseStatement: ts.Statement, id: number,
-  log: LogInfo[], isInnerBuilder: boolean = false): ts.Statement {
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.Statement {
   if (elseStatement) {
     if (ts.isBlock(elseStatement)) {
       elseStatement = processIfBlock(elseStatement, id + 1, log);
     } else if (ts.isIfStatement(elseStatement)) {
-      elseStatement = processInnerIfStatement(elseStatement, id + 1, log, isInnerBuilder);
+      elseStatement = processInnerIfStatement(elseStatement, id + 1, log, isBuilder, isGlobalBuilder);
     } else {
       elseStatement = ts.factory.createBlock([elseStatement], true);
-      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isInnerBuilder);
+      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isBuilder, isGlobalBuilder);
     }
   } else if (partialUpdateConfig.partialUpdateMode && id === 0) {
     elseStatement = ts.factory.createBlock(
@@ -1238,8 +1244,10 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
   return elseStatement;
 }
 
-function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isInnerBuilder: boolean = false): ts.Block {
-  return addIfBranchId(id, processComponentBlock(block, false, log, false, isInnerBuilder));
+function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
+  isGlobalBuilder: boolean = false): ts.Block {
+  return addIfBranchId(id,
+    processComponentBlock(block, false, log, false, isBuilder, undefined, undefined, isGlobalBuilder));
 }
 
 function addIfBranchId(id: number, container: ts.Block): ts.Block {
