@@ -426,18 +426,11 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
     case COMPONENT_PROP_DECORATOR:
       updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
+    case COMPONENT_BUILDERPARAM_DECORATOR:
+      updateParamsNode = createUpdateParamsWithoutIf(name);
+      break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
-      break;
-    case COMPONENT_BUILDERPARAM_DECORATOR:
-      if (decorator === COMPONENT_BUILDERPARAM_DECORATOR) {
-        if (!builderParamObjectCollection.get(componentCollection.currentClassName)) {
-          builderParamObjectCollection.set(componentCollection.currentClassName, new Set([]));
-        }
-        builderParamObjectCollection.get(componentCollection.currentClassName)
-          .add(name.escapedText.toString());
-      }
-      updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
   }
   return updateParamsNode;
