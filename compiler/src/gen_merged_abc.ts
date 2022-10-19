@@ -103,6 +103,8 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
     }
   } catch (e) {
     logger.debug(red, `ETS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
-    process.exit(FAIL);
+    if (process.env.watchMode !== 'true') {
+      process.exit(FAIL);
+    }
   }
 }
