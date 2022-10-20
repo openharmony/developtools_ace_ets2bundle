@@ -242,13 +242,18 @@ function clearGlobalInfo() {
   buildMapFileList = new Set<string>();
 }
 
-function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
+function getEntryInfo(filePath: string, tempFilePath: string, resourceResolveData: any): void {
   if (!resourceResolveData.descriptionFilePath) {
     return;
   }
-  const packageName: string = resourceResolveData.descriptionFileData['name'];
   const packageJsonPath: string = resourceResolveData.descriptionFilePath;
   let npmInfoPath: string = path.resolve(packageJsonPath, '..');
+
+  let entry: string = toUnixPath(filePath.replace(npmInfoPath, ''));
+  if (entry.startsWith('/')) {
+    entry = entry.slice(1, entry.length);
+  }
+
   const fakeEntryPath: string = path.resolve(npmInfoPath, 'fake.js');
   const tempFakeEntryPath: string = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
   const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
@@ -263,18 +268,12 @@ function getEntryInfo(tempFilePath: string, resourceResolveData: any): void {
   abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
   abcFileName = toUnixPath(abcFileName);
 
-  const packagePaths: string[] = tempFilePath.split(NODE_MODULES);
-  const entryPaths: string[] = packagePaths[packagePaths.length - 1].split(packageName);
-  let entry: string = toUnixPath(entryPaths[entryPaths.length - 1]);
-  if (entry.startsWith('/')) {
-    entry = entry.slice(1, entry.length);
-  }
   const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
   entryInfos.set(npmInfoPath, entryInfo);
 }
 
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
-  getEntryInfo(tempFilePath, module.resourceResolveData);
+  getEntryInfo(filePath, tempFilePath, module.resourceResolveData);
   const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
