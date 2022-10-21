@@ -19,7 +19,11 @@ import cluster from 'cluster';
 import process from 'process';
 import Compiler from 'webpack/lib/Compiler';
 import { logger } from './compile_info';
-import { toUnixPath, toHashData } from './utils';
+import {
+  toUnixPath,
+  toHashData,
+  validateFilePathLength
+} from './utils';
 import {
   TEMPORARY,
   NODE_MODULES,
@@ -100,6 +104,7 @@ export class GenAbcPlugin {
 
 function writeFileSync(inputString: string, buildPath: string, keyPath: string, jsBundleFile: string): void {
   let output = path.resolve(buildPath, keyPath);
+  validateFilePathLength(output);
   let parent: string = path.join(output, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
@@ -112,6 +117,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   } else {
     cacheOutputPath = output;
   }
+  validateFilePathLength(cacheOutputPath);
   parent = path.join(cacheOutputPath, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
@@ -181,6 +187,7 @@ function invokeWorkersToGenAbc() {
   } else if (isMac) {
     js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
   }
+  validateFilePathLength(js2abc);
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
   const maxWorkerNumber = 3;
@@ -298,6 +305,7 @@ function genHashJsonPath(buildPath: string) {
     let buildDirArr: string[] = buildPathInfo.split(path.sep);
     let abilityDir: string = buildDirArr[buildDirArr.length - 1];
     let hashJsonPath: string = path.join(process.env.cachePath, TEMPORARY, abilityDir, hashFile);
+    validateFilePathLength(hashJsonPath);
     let parent = path.join(hashJsonPath, '..');
     if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
       mkDir(parent);
@@ -310,7 +318,9 @@ function genHashJsonPath(buildPath: string) {
       logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
       return '';
     }
-    return path.join(hashPath, hashFile);
+    let hashJsonPath: string = path.join(hashPath, hashFile);
+    validateFilePathLength(hashJsonPath);
+    return hashJsonPath;
   } else {
     logger.debug(red, `ETS:ERROR not cache exist`, reset);
     return '';
@@ -325,6 +335,7 @@ function checkNodeModules() {
     arkEntryPath = path.join(arkDir, 'build-mac');
   }
   let nodeModulesPath: string = path.join(arkEntryPath, NODE_MODULES);
+  validateFilePathLength(nodeModulesPath);
   if (!(fs.existsSync(nodeModulesPath) && fs.statSync(nodeModulesPath).isDirectory())) {
     logger.error(red, `ERROR: node_modules for ark compiler not found.
       Please make sure switch to non-root user before runing "npm install" for safity requirements and try re-run "npm install" under ${arkEntryPath}`, reset);
