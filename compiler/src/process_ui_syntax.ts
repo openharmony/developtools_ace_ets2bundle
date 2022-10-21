@@ -605,7 +605,9 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
         const entryNodes: ts.ExpressionStatement[] =
           createEntryFunction(componentCollection.entryComponent, context,
             cardRelativePath) as ts.ExpressionStatement[];
-        return context.factory.updateSourceFile(node, [...node.statements, ...entryNodes]);
+        return entryNodes ?
+          context.factory.updateSourceFile(node, [...node.statements, ...entryNodes]) :
+          context.factory.updateSourceFile(node, [...node.statements]);
       }
     } else {
       return node;
@@ -655,7 +657,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
   } else {
     return [
       createStartGetAccessRecording(context),
-      createLoadDocument(context, name, cardRelativePath),
+      createLoadDocument(context, name, cardRelativePath, localStorageName),
       createStopGetAccessRecording(context)
     ];
   }
@@ -682,13 +684,18 @@ function createStartGetAccessRecording(context: ts.TransformationContext): ts.Ex
 }
 
 function createLoadDocument(context: ts.TransformationContext, name: string, 
-  cardRelativePath: string): ts.ExpressionStatement {
+  cardRelativePath: string, localStorageName: string): ts.ExpressionStatement {
+  const newArray: ts.Expression[] = [
+    context.factory.createIdentifier('undefined'),
+    context.factory.createObjectLiteralExpression([], false)
+  ];
+  if (localStorageName) {
+    newArray.push(context.factory.createIdentifier(localStorageName));
+  }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
     context.factory.createIdentifier(name),
-    undefined,
-    [context.factory.createIdentifier('undefined'),
-    context.factory.createObjectLiteralExpression([], false)])];
+    undefined, newArray)];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   return context.factory.createExpressionStatement(
     context.factory.createCallExpression(
