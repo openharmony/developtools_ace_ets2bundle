@@ -278,6 +278,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
           checkEntryComponent(node, log);
           result.entryCount++;
           componentCollection.entryComponent = componentName;
+          componentCollection.entryComponentPos = node.getStart();
           collectLocalStorageName(element);
           break;
         case COMPONENT_DECORATOR_PREVIEW:
@@ -316,7 +317,6 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
 
 function collectLocalStorageName(node: ts.Decorator): void {
   if (node && node.expression && ts.isCallExpression(node.expression)) {
-    componentCollection.entryComponentPos = node.expression.pos;
     if (node.expression.arguments && node.expression.arguments.length) {
       node.expression.arguments.forEach((item: ts.Node, index: number) => {
         if (ts.isIdentifier(item) && index === 0) {
