@@ -392,7 +392,7 @@ async function writeMinimizedSourceCode(content: string, filePath: string): Prom
       }
     });
   } catch {
-    logger.error(red, `ETS:ERROR Failed to source code obfuscation.`, reset);
+    logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
     process.exit(FAIL);
   }
   fs.writeFileSync(filePath, result.code);
