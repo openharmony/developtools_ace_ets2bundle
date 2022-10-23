@@ -112,6 +112,6 @@ class LocalStorageComponent extends ViewPU {
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new LocalStorageComponent(undefined, {}));
+loadDocument(new LocalStorageComponent(undefined, {}, storage));
 ViewStackProcessor.StopGetAccessRecording();
 `
