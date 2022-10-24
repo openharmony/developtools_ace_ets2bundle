@@ -2002,7 +2002,9 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 
 function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
   return Array.isArray(forEachParameters) && 
-    forEachParameters.some((item)=>{ return item.name.escapedText.toString() === name});
+    forEachParameters.some((item)=>{
+      return ts.isIdentifier(item.name) ? item.name.escapedText.toString() === name : false;
+    });
 }
 
 function isParamFunction(node: ts.ExpressionStatement): boolean {
