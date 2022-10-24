@@ -69,8 +69,9 @@ function initProjectConfig(projectConfig) {
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
-  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath
-  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
+  projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
 }
 
 function loadEntryObj(projectConfig) {
