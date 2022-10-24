@@ -56,8 +56,9 @@ let errorInfo;
 let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
-const maxConnectNum = 5;
 let connectNum = 0;
+const maxConnectNum = 8;
+
 function init(port) {
   previewCacheFilePath =
     path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
@@ -77,17 +78,11 @@ function init(port) {
       connectNum++;
       handlePluginConnect(ws);
     } else {
-      disconnect(ws);
+      ws.terminate();
     }
   });
 }
 
-function disconnect(ws) {
-  ws.on('close', function() {
-    connectNum--;
-  });
-  ws.terminate();
-}
 function handlePluginConnect(ws) {
   ws.on('message', function(message) {
     pluginSocket = ws;
