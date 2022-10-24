@@ -56,7 +56,8 @@ let errorInfo;
 let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
-
+const maxConnectNum = 5;
+let connectNum = 0;
 function init(port) {
   previewCacheFilePath =
     path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
@@ -69,17 +70,27 @@ function init(port) {
     createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount, true));
   const wss = new WebSocketServer({
     port: port,
-    host: '127.0.0.1',
-    backlog: 5
+    host: '127.0.0.1'
   });
   wss.on('connection', function(ws) {
-    pluginSocket = ws;
-    handlePluginConnect(ws);
+    if (connectNum < maxConnectNum) {
+      connectNum++;
+      handlePluginConnect(ws);
+    } else {
+      disconnect(ws);
+    }
   });
 }
 
+function disconnect(ws) {
+  ws.on('close', function() {
+    connectNum--;
+  });
+  ws.terminate();
+}
 function handlePluginConnect(ws) {
   ws.on('message', function(message) {
+    pluginSocket = ws;
     const jsonData = JSON.parse(message);
     handlePluginCommand(jsonData);
   });
