@@ -90,22 +90,7 @@ function initConfig(config) {
             { loader: path.resolve(__dirname, 'lib/pre_process.js') }
           ]
         },
-        {
-          test: /\.js$/,
-          use: [
-            {
-              loader: 'babel-loader',
-              options: {
-                plugins: [
-                  '@babel/plugin-transform-modules-commonjs',
-                  '@babel/plugin-proposal-class-properties'
-                ],
-                compact: false
-              },
-            },
-            { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
-          ]
-        }
+        setJsConfigRule()
       ]
     },
     node: {
@@ -152,6 +137,27 @@ function initConfig(config) {
     existsPackageJson(config, path.resolve(projectPath, '../../../../package.json'),
       path.resolve(projectPath, '../../../package.json'));
   }
+}
+
+function setJsConfigRule() {
+  const jsRule = {
+    test: /\.js$/,
+    use: [
+      {
+        loader: 'babel-loader',
+        options: {
+          plugins: ['@babel/plugin-proposal-class-properties'],
+          compact: false
+        }
+      },
+      { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
+    ]
+  };
+  if (projectConfig.compileMode !== 'esmodule') {
+    jsRule.type = 'javascript/auto';
+    jsRule.use[0].options.plugins.unshift('@babel/plugin-transform-modules-commonjs');
+  }
+  return jsRule;
 }
 
 function existsPackageJson(config, rootPackageJsonPath, modulePackageJsonPath) {
