@@ -43,12 +43,13 @@ import { resolveSourceFile } from './resolve_ohm_url';
 import {
   CacheFileName,
   cache,
-  shouldResolvedFiles
+  shouldResolvedFiles,
+  hotReloadSupportFiles
 } from './compile_info';
 import { hasDecorator } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 
-function readDeaclareFiles(): string[] {
+export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
   fs.readdirSync(path.resolve(__dirname, '../declarations'))
     .forEach((fileName: string) => {
@@ -198,11 +199,15 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
           resolvedModules.push(null);
         }
       }
+      if (projectConfig.hotReload && resolvedModules.length &&
+        resolvedModules[resolvedModules.length - 1]) {
+        hotReloadSupportFiles.add(path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName));
+      }
     }
     if (!projectConfig.xtsMode) {
       createOrUpdateCache(resolvedModules, containingFile);
     }
-    resolvedModulesCache[path.resolve(containingFile)] = resolvedModules
+    resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
     return resolvedModules;
   }
   return resolvedModulesCache[path.resolve(containingFile)];
