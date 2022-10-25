@@ -74,6 +74,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
   projectConfig.isPreview = projectConfig.isPreview ||
     (process.env.isPreview === 'true' ? true : process.env.isPreview);
+  projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
 }
 
 function loadEntryObj(projectConfig) {
