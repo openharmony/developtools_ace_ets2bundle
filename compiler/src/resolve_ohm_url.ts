@@ -45,13 +45,13 @@ function addExtension(file: string, srcPath: string): string {
   }
   if (fs.existsSync(file + '.ts') && fs.statSync(file + '.ts').isFile()) {
     if (extension !== '.d.ts') {
-      logger.error(red, `ETS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
+      logger.error(red, `ArkTS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
     }
     extension = '.ts';
   }
   if (fs.existsSync(file + '.js') && fs.statSync(file + '.js').isFile()) {
     if (extension !== '.d.ts') {
-      logger.error(red, `ETS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
+      logger.error(red, `ArkTS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
     }
     extension = '.js';
   }
@@ -60,7 +60,7 @@ function addExtension(file: string, srcPath: string): string {
 
 export function resolveSourceFile(ohmUrl: string): string {
   if (!projectConfig.aceBuildJson) {
-    logger.error(red, `ETS:ERROR Failed to resolve OhmUrl because of aceBuildJson not existing `, reset);
+    logger.error(red, `ArkTS:ERROR Failed to resolve OhmUrl because of aceBuildJson not existing `, reset);
     return ohmUrl;
   }
 
@@ -83,7 +83,7 @@ export function resolveSourceFile(ohmUrl: string): string {
       }
     }
 
-    logger.error(red, `ETS:ERROR Failed to resolve existed file by this ohm url ${ohmUrl} `, reset);
+    logger.error(red, `ArkTS:ERROR Failed to resolve existed file by this ohm url ${ohmUrl} `, reset);
   }
 
   return file;
@@ -121,6 +121,6 @@ export function getOhmUrlByFilepath(filePath: string): string {
     }
   }
 
-  logger.error(red, `ETS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
+  logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
 }

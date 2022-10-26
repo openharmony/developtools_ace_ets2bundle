@@ -232,9 +232,9 @@ function resolveDiagnostic(diagnostic) {
       const { line, character } =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
         errorInfo.push(
-          `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
     } else {
-      errorInfo.push(`ETS:ERROR: ${message}`);
+      errorInfo.push(`ArkTS:ERROR: ${message}`);
     }
   }
 }
