@@ -25,7 +25,8 @@ import {
   FILESINFO_TXT,
   MODULES_CACHE,
   NPMENTRIES_TXT,
-  NODE_MODULES
+  NODE_MODULES,
+  PATCH_SYMBOL_TABLE
 } from './pre_define';
 import {
   EntryInfo,
@@ -40,6 +41,9 @@ import {
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+
+projectConfig.patch = false
+projectConfig.enableMap = false
 
 function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   const tempModuleInfos: ModuleInfo[] = Array<ModuleInfo>();
@@ -88,8 +92,23 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   validateFilePathLength(cacheFilePath);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   mkdirsSync(projectConfig.buildPath);
-  const genAbcCmd: string =
-    `${initAbcEnv().join(' ')} "@${filesInfoPath}" --npm-module-entry-list "${npmEntriesInfoPath}" --cache-file "${cacheFilePath}" --output "${outputABCPath}" --file-threads "${fileThreads}"`;
+  let genAbcCmd: string =
+    `${initAbcEnv().join(' ')} "@${filesInfoPath}" --npm-module-entry-list "${npmEntriesInfoPath}" --output "${outputABCPath}" --file-threads "${fileThreads}"`;
+
+  projectConfig.inOldSymbolTablePath = projectConfig.projectRootPath;  // temp symbol table path for hot patch
+  if (projectConfig.patch) {
+    let oldHapSymbolTable = path.join(projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
+    genAbcCmd += ` --input-symbol-table "${oldHapSymbolTable}" --generate-patch`;
+  }
+
+  if (!projectConfig.enableMap) {
+    genAbcCmd += ` --cache-file "${cacheFilePath}"`;
+  } else {
+    // when generating map, cache is forbiden to avoid uncomplete symbol table
+    let oldHapSymbolTable = path.join(projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
+    genAbcCmd += ` --dump-symbol-table "${oldHapSymbolTable}"`;
+  }
+
   logger.debug('gen abc cmd is: ', genAbcCmd);
   try {
     if (process.env.watchMode === 'true') {
@@ -109,7 +128,13 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       });
 
       child.stderr.on('data', (data: any) => {
-        logger.debug(red, data.toString(), reset);
+        if (projectConfig.patch) {
+          let patchErr :string[] =
+            data.split(os.EOL).filter(line => line.includes("[Patch]") || line.includes("Error:"));
+          logger.error(red, patchErr.join(os.EOL), reset);
+        } else {
+          logger.debug(red, data.toString(), reset);
+        }
       });
     }
   } catch (e) {
