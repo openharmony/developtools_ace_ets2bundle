@@ -98,7 +98,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       const child = childProcess.exec(genAbcCmd);
       child.on('exit', (code: any) => {
         if (code === 1) {
-          logger.debug(red, "ETS:ERROR failed to execute es2abc", reset);
+          logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
           process.exit(FAIL);
         }
       });
@@ -113,7 +113,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       });
     }
   } catch (e) {
-    logger.debug(red, `ETS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);
     }
