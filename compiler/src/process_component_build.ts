@@ -307,7 +307,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           case ComponentType.forEachComponent:
             parent = undefined;
             if (!partialUpdateConfig.partialUpdateMode) {
-              processForEachComponent(item, newStatements, log, isBuilder);
+              processForEachComponent(item, newStatements, log, isBuilder, isGlobalBuilder);
             } else {
               processForEachComponentNew(item, newStatements, log, isGlobalBuilder);
             }
@@ -905,7 +905,7 @@ function getRealNodePos(node: ts.Node): number {
 }
 
 function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], isBuilder: boolean = false): void {
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
     // @ts-ignore
     node.expression.expression as ts.Identifier,
@@ -929,7 +929,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
       argumentsArray.splice(1, 1, newArrowNode);
     }
     node = addForEachId(ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
-      node.expression, propertyNode, node.expression.typeArguments, argumentsArray)));
+      node.expression, propertyNode, node.expression.typeArguments, argumentsArray)), isGlobalBuilder);
   }
   newStatements.push(node, popNode);
 }
@@ -1093,11 +1093,12 @@ function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.Express
   );
 }
 
-function addForEachId(node: ts.ExpressionStatement): ts.ExpressionStatement {
+function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   const forEachComponent: ts.CallExpression = node.expression as ts.CallExpression;
   return ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
     forEachComponent, forEachComponent.expression, forEachComponent.typeArguments,
-    [ts.factory.createStringLiteral((++componentInfo.id).toString()), ts.factory.createThis(),
+    [ts.factory.createStringLiteral((++componentInfo.id).toString()),
+      isGlobalBuilder ? ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT) : ts.factory.createThis(),
       ...forEachComponent.arguments]));
 }
 
@@ -1326,10 +1327,19 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
       ? ts.factory.updateExpressionStatement(node,
         createFunction(temp, identifierNode, null))
       : ts.factory.updateExpressionStatement(node,
-        createFunction(temp, identifierNode, temp.parent.arguments));
+        createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
+}
+
+function checkArguments(temp: ts.Identifier, type: string): ts.NodeArray<ts.Expression> {
+  return temp.getText() === 'XComponent' && type === COMPONENT_CREATE_FUNCTION &&
+    projectConfig.moduleName && projectConfig.bundleName ?
+    // @ts-ignore
+    temp.parent.arguments.concat([
+      ts.factory.createStringLiteral(`${projectConfig.bundleName}/${projectConfig.moduleName}`)
+    ]) : temp.parent.arguments
 }
 
 function checkContainer(name: string, node: ts.Node): boolean {
@@ -2002,7 +2012,9 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 
 function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
   return Array.isArray(forEachParameters) && 
-    forEachParameters.some((item)=>{ return item.name.escapedText.toString() === name});
+    forEachParameters.some((item)=>{
+      return ts.isIdentifier(item.name) ? item.name.escapedText.toString() === name : false;
+    });
 }
 
 function isParamFunction(node: ts.ExpressionStatement): boolean {
