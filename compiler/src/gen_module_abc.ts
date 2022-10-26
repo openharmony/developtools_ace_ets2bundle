@@ -44,7 +44,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
-      logger.debug(red, `ETS:ERROR Failed to convert file ${input} to proto `, reset);
+      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to proto `, reset);
       process.exit(FAIL);
     }
   }
@@ -62,7 +62,7 @@ function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
-      logger.debug(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
+      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc `, reset);
       process.exit(FAIL);
     }
   }
@@ -81,7 +81,7 @@ if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'
   } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
     es2abcByWorkers(process.env['inputs'], process.env['cmd']);
   } else {
-    logger.error(red, `ETS:ERROR please set panda module`, reset);
+    logger.error(red, `ArkTS:ERROR please set panda module`, reset);
     process.exit(FAIL);
   }
   process.exit(SUCCESS);

@@ -157,7 +157,7 @@ export class GenAbcPlugin {
         isMac = true;
       } else {
         if (!fs.existsSync(path.resolve(arkDir, 'build'))) {
-          logger.error(red, 'ETS:ERROR find build fail', reset);
+          logger.error(red, 'ArkTS:ERROR find build fail', reset);
           process.exitCode = FAIL;
           return;
         }
@@ -178,7 +178,7 @@ export class GenAbcPlugin {
         fs.writeFile(CACHED_BUILDMODE, JSON.stringify(cachedJson, null, 2), 'utf-8',
         (err) => {
           if (err) {
-            logger.error(red, `ETS:ERROR Failed to write buildMode.`, reset);
+            logger.error(red, `ArkTS:ERROR Failed to write buildMode.`, reset);
           }
         });
       }
@@ -397,14 +397,14 @@ function updateCachedModuleList(moduleList: Array<string>): void {
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
     (err) => {
       if (err) {
-        logger.error(red, `ETS:ERROR Failed to write module list.`, reset);
+        logger.error(red, `ArkTS:ERROR Failed to write module list.`, reset);
       }
     }
   );
   fs.writeFile(CACHED_SOURCEMAPS, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
     (err) => {
       if (err) {
-        logger.error(red, `ETS:ERROR Failed to write cache sourceMaps json.`, reset);
+        logger.error(red, `ArkTS:ERROR Failed to write cache sourceMaps json.`, reset);
       }
     }
   );
@@ -417,7 +417,7 @@ function writeSourceMaps(): void {
   fs.writeFile(sourceMapFilePath, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
     (err) => {
       if (err) {
-        logger.error(red, `ETS:ERROR Failed to write sourceMaps.`, reset);
+        logger.error(red, `ArkTS:ERROR Failed to write sourceMaps.`, reset);
       }
     }
   );
@@ -456,7 +456,7 @@ function handleFullModuleFiles(modules, callback): any {
       } else if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
         processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
       } else {
-        logger.error(red, `ETS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+        logger.error(red, `ArkTS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
         process.exitCode = FAIL;
       }
     }
@@ -504,7 +504,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ETS:ERROR Failed to generate npm proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to generate npm proto file to abc`, reset);
   }
 }
 
@@ -535,7 +535,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
     cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
-    logger.debug(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
     process.exitCode = FAIL;
   }
 }
@@ -645,7 +645,7 @@ export function initAbcEnv() : string[] {
       args.push('--merge-abc');
     }
   }  else {
-    logger.error(red, `ETS:ERROR please set panda module`, reset);
+    logger.error(red, `ArkTS:ERROR please set panda module`, reset);
   }
 
   return args;
@@ -741,7 +741,7 @@ function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>,
       isModule ? tempAbcArgs.push('--module') : tempAbcArgs.push('--commonjs');
       cmdPrefix = `${tempAbcArgs.join(' ')}`;
     } else {
-      logger.error(red, `ETS:ERROR please set panda module`, reset);
+      logger.error(red, `ArkTS:ERROR please set panda module`, reset);
     }
     const splitedModules: any[] = splitModulesByNumber(moduleInfos, workerNumber);
     workerNumber = splitedModules.length;
@@ -792,7 +792,7 @@ function invokeWorkersToGenAbc(): void {
     maxWorkerNumber = os.cpus().length;
     cmdPrefix = `${abcArgs.join(' ')}`;
   } else {
-    logger.error(red, `ETS:ERROR please set panda module`, reset);
+    logger.error(red, `ArkTS:ERROR please set panda module`, reset);
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
@@ -893,7 +893,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
       const input: string = moduleInfos[i].tempFilePath;
       let outputPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
       if (!fs.existsSync(input)) {
-        logger.debug(red, `ETS:ERROR ${input} is lost`, reset);
+        logger.debug(red, `ArkTS:ERROR ${input} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
@@ -920,7 +920,7 @@ function writeModuleHashJson(): void {
     const input: string = filterModuleInfos[i].tempFilePath;
     let outputPath: string = genProtoFileName(filterModuleInfos[i].tempFilePath);;
     if (!fs.existsSync(input) || !fs.existsSync(outputPath)) {
-      logger.debug(red, `ETS:ERROR ${input} is lost`, reset);
+      logger.debug(red, `ArkTS:ERROR ${input} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
@@ -969,7 +969,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
       const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
       const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
       if (!fs.existsSync(cacheOutputPath)) {
-        logger.debug(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+        logger.debug(red, `ArkTS:ERROR ${cacheOutputPath} is lost`, reset);
         process.exitCode = FAIL;
         break;
       }
@@ -996,7 +996,7 @@ function writeHashJson(): void {
     const cacheOutputPath: string = fileterIntermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
-      logger.debug(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+      logger.debug(red, `ArkTS:ERROR ${cacheOutputPath} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
@@ -1019,7 +1019,7 @@ function genHashJsonPath(buildPath: string): string {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
-      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ArkTS:ERROR hash path does not exist`, reset);
       return '';
     }
     let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
@@ -1032,14 +1032,14 @@ function genHashJsonPath(buildPath: string): string {
     const dataTmps: string[] = buildPath.split(ARK);
     const hashPath: string = path.join(dataTmps[0], ARK);
     if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
-      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ArkTS:ERROR hash path does not exist`, reset);
       return '';
     }
     let hashJsonPath: string = path.join(hashPath, hashFile);
     validateFilePathLength(hashJsonPath);
     return hashJsonPath;
   } else {
-    logger.debug(red, `ETS:ERROR not cache exist`, reset);
+    logger.debug(red, `ArkTS:ERROR not cache exist`, reset);
     return '';
   }
 }
@@ -1070,7 +1070,7 @@ function copyFileCachePathToBuildPath() {
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.debug(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      logger.debug(red, `ArkTS:ERROR ${cacheAbcFilePath} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
@@ -1102,14 +1102,14 @@ function processExtraAsset() {
 
 function handleHotReloadChangedFiles() {
   if (!fs.existsSync(projectConfig.changedFileList)) {
-    logger.info(blue, `ETS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
+    logger.info(blue, `ArkTS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
     return;
   }
 
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
   if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
-    logger.info(blue, `ETS: No changed files found, skip hot reload build`, reset);
+    logger.info(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
     return;
   }
 
@@ -1138,7 +1138,7 @@ function handleHotReloadChangedFiles() {
     } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
       processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
     } else {
-      logger.debug(red, `ETS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
+      logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
       return;
     }
 
@@ -1206,6 +1206,6 @@ function mergeProtoToAbc(): void {
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ETS:ERROR Failed to merge proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc`, reset);
   }
 }
