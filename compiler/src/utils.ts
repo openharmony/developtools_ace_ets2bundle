@@ -56,7 +56,7 @@ const reset: string = '\u001b[39m';
 
 const WINDOWS: string = 'Windows_NT';
 const LINUX: string = 'Linux';
-const MAC: string = 'Drawin';
+const MAC: string = 'Darwin';
 
 export interface LogInfo {
   type: LogType,
