@@ -428,7 +428,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
         resourceMap.set(resourceData[0], obj);
       }
     } else {
-      logger.warn(`\u001b[31m ETS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);
+      logger.warn(`\u001b[31m ArkTS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);
       break;
     }
   }
