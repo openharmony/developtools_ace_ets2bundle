@@ -27,8 +27,16 @@ import {
   NPMENTRIES_TXT,
   NODE_MODULES
 } from './pre_define';
-import { EntryInfo, ModuleInfo, initAbcEnv } from './gen_abc_plugin';
-import { mkdirsSync, toUnixPath } from './utils';
+import {
+  EntryInfo,
+  ModuleInfo,
+  initAbcEnv
+} from './gen_abc_plugin';
+import {
+  mkdirsSync,
+  toUnixPath,
+  validateFilePathLength
+} from './utils';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -46,6 +54,7 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   moduleInfos = tempModuleInfos;
 
   const filesInfoPath: string = path.join(process.env.cachePath, FILESINFO_TXT);
+  validateFilePathLength(filesInfoPath);
   let filesInfo: string = '';
   moduleInfos.forEach(info => {
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
@@ -57,6 +66,7 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
 
 export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
+  validateFilePathLength(npmEntriesInfoPath);
   let entriesInfo: string = '';
   for (const value of entryInfos.values()) {
     const buildPath: string = value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
@@ -75,6 +85,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   const filesInfoPath: string = path.join(process.env.cachePath, FILESINFO_TXT);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   const cacheFilePath: string = path.join(process.env.cachePath, MODULES_CACHE);
+  validateFilePathLength(cacheFilePath);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   mkdirsSync(projectConfig.buildPath);
   const genAbcCmd: string =
