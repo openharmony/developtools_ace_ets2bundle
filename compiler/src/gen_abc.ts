@@ -38,7 +38,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
-      logger.debug(red, `ETS:ERROR Failed to convert file ${input} to abc `, reset);
+      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc `, reset);
       process.exit(FAIL);
     }
   }

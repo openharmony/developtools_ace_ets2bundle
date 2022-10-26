@@ -68,7 +68,7 @@ export class GenAbcPlugin {
         isMac = true;
       } else {
         if (!fs.existsSync(path.resolve(arkDir, 'build'))) {
-          logger.debug(red, 'ETS:ERROR find build fail', reset);
+          logger.debug(red, 'ArkTS:ERROR find build fail', reset);
           process.exitCode = FAIL;
           return;
         }
@@ -127,7 +127,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
     const fileSize = fs.statSync(cacheOutputPath).size;
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
-    logger.debug(red, `ETS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
     process.exitCode = FAIL;
   }
 }
@@ -252,7 +252,7 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
       const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
       const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
       if (!fs.existsSync(cacheOutputPath)) {
-        logger.error(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+        logger.error(red, `ArkTS:ERROR ${cacheOutputPath} is lost`, reset);
         process.exitCode = FAIL;
         continue;
       }
@@ -279,7 +279,7 @@ function writeHashJson() {
     const cacheOutputPath: string = fileterIntermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheOutputPath) || !fs.existsSync(cacheAbcFilePath)) {
-      logger.debug(red, `ETS:ERROR ${cacheOutputPath} is lost`, reset);
+      logger.debug(red, `ArkTS:ERROR ${cacheOutputPath} is lost`, reset);
       process.exitCode = FAIL;
       continue;
     }
@@ -299,7 +299,7 @@ function genHashJsonPath(buildPath: string) {
   buildPath = toUnixPath(buildPath);
   if (process.env.cachePath) {
     if (!fs.existsSync(process.env.cachePath) || !fs.statSync(process.env.cachePath).isDirectory()) {
-      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ArkTS:ERROR hash path does not exist`, reset);
       return '';
     }
     let buildDirArr: string[] = buildPathInfo.split(path.sep);
@@ -315,14 +315,14 @@ function genHashJsonPath(buildPath: string) {
     const dataTmps = buildPath.split(ARK);
     const hashPath = path.join(dataTmps[0], ARK);
     if (!fs.existsSync(hashPath) || !fs.statSync(hashPath).isDirectory()) {
-      logger.debug(red, `ETS:ERROR hash path does not exist`, reset);
+      logger.debug(red, `ArkTS:ERROR hash path does not exist`, reset);
       return '';
     }
     let hashJsonPath: string = path.join(hashPath, hashFile);
     validateFilePathLength(hashJsonPath);
     return hashJsonPath;
   } else {
-    logger.debug(red, `ETS:ERROR not cache exist`, reset);
+    logger.debug(red, `ArkTS:ERROR not cache exist`, reset);
     return '';
   }
 }
@@ -351,7 +351,7 @@ function copyFileCachePathToBuildPath() {
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
     const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     if (!fs.existsSync(cacheAbcFilePath)) {
-      logger.debug(red, `ETS:ERROR ${cacheAbcFilePath} is lost`, reset);
+      logger.debug(red, `ArkTS:ERROR ${cacheAbcFilePath} is lost`, reset);
       process.exitCode = FAIL;
       break;
     }
