@@ -326,9 +326,9 @@ export class ResultStates {
         const { line, character }: ts.LineAndCharacter =
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
         logger.error(this.red,
-          `ETS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
       } else {
-        logger.error(this.red, `ETS:ERROR: ${message}`);
+        logger.error(this.red, `ArkTS:ERROR: ${message}`);
       }
     }
   }
@@ -433,7 +433,7 @@ export class ResultStates {
           logger.info(this.blue, message, this.reset, '\n');
         } else {
           this.warningCount++;
-          logger.warn(this.yellow, message.replace(/^WARN/, 'ETS:WARN'), this.reset, '\n');
+          logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
         }
       }
       if (this.mWarningCount > length) {
@@ -453,13 +453,13 @@ export class ResultStates {
             : '';
           const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
           const detail: string = errors[index].issue.message;
-          logger.error(this.red, 'ETS:ERROR File: ' + location, this.reset);
+          logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
         } else if (/BUILDERROR/.test(errors[index].message)) {
           this.mErrorCount++;
           const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
             .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
-            .replace(/^ERROR/, 'ETS:ERROR');
+            .replace(/^ERROR/, 'ArkTS:ERROR');
           this.printErrorMessage(errorMessage, true, errors[index]);
         } else if (!/TS[0-9]+:/.test(errors[index].message.toString()) &&
           !/Module parse failed/.test(errors[index].message.toString())) {
@@ -467,7 +467,7 @@ export class ResultStates {
           let errorMessage: string = `${errors[index].message.replace(/\[tsl\]\s*/, '')
             .replace(/\u001b\[.*?m/g, '').replace(/\.ets\.ts/g, '.ets').trim()}\n`;
           errorMessage = this.filterModuleError(errorMessage)
-            .replace(/^ERROR in /, 'ETS:ERROR File: ').replace(/\s{6}TS/g, ' TS')
+            .replace(/^ERROR in /, 'ArkTS:ERROR File: ').replace(/\s{6}TS/g, ' TS')
             .replace(/\(([0-9]+),([0-9]+)\)/, ':$1:$2');
           this.printErrorMessage(parseErrorMessage(errorMessage), false, errors[index]);
         }
