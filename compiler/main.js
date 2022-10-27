@@ -143,8 +143,12 @@ function buildManifest(manifest, aceConfigPath) {
         '\u001b[39m').message;
     }
   } catch (e) {
-    throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
-      "\x1B[39m").message;
+    if (/BUIDERROR/.test(e)) {
+      throw Error(e.replace('BUIDERROR', 'ERROR')).message;
+    } else {
+      throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
+        "\x1B[39m").message;
+    }
   }
 }
 
@@ -153,10 +157,15 @@ function getPages(configJson) {
   const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
   const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
-    const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
-    if (pagesConfig && pagesConfig.src) {
-      projectConfig.pagesJsonFileName = pagesJsonFileName;
-      return pagesConfig.src;
+    try {
+      const pagesConfig = JSON.parse(fs.readFileSync(modulePagePath, 'utf-8'));
+      if (pagesConfig && pagesConfig.src) {
+        projectConfig.pagesJsonFileName = pagesJsonFileName;
+        return pagesConfig.src;
+      }
+    } catch (e) {
+      throw Error("\x1B[31m" + `BUIDERROR: the ${modulePagePath} file format is invalid.` +
+        "\x1B[39m").message;
     }
   }
   return pages;
