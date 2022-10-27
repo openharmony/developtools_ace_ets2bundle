@@ -990,9 +990,7 @@ export function processSystemApi(content: string, isProcessAllowList: boolean = 
     }
 
     const moduleRequest: string = item4 || item6;
-    if (isOhmUrl(moduleRequest)) { // ohmURL
-      return replaceOhmUrl(isSystemModule, item, importValue, moduleRequest, sourcePath);
-    } else if (/^@(system|ohos)\./.test(moduleRequest)) { // ohos/system.api
+    if (/^@(system|ohos)\./.test(moduleRequest)) { // ohos/system.api
       // ets & ts file need compile with .d.ts, so do not replace at the phase of pre_process
       if (!isSystemModule) {
         return item;
