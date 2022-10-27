@@ -54,7 +54,6 @@ import {
   validatorCard
 } from './utils';
 import { projectConfig } from '../main';
-import { isOhmUrl, resolveSourceFile } from './resolve_ohm_url';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
@@ -97,7 +96,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
       }
     }
   }
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath) && !isOhmUrl(filePath)) {
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
     const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
     if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
       fs.existsSync(dirIndexPath)) {
@@ -113,9 +112,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
 
   try {
     let fileResolvePath: string;
-    if (isOhmUrl(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
-      fileResolvePath = resolveSourceFile(filePath);
-    } else if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+    if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
       fileResolvePath = path.resolve(pagesDir, filePath);
     } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0 ||
       fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
