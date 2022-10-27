@@ -108,7 +108,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
+        let content: string = processContent(fs.readFileSync(fileName).toString());
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
         return ts.ScriptSnapshot.fromString(content);
@@ -128,16 +128,6 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
 }
 
-function getOhmUrlFile(moduleName: string): {modulePath: string, suffix: string} {
-  const modulePath: string = resolveSourceFile(moduleName);
-  let suffix: string = path.extname(modulePath);
-  if (suffix === 'ts' && modulePath.endsWith('.d.ts')) {
-    suffix = '.d.ts';
-  }
-
-  return {modulePath, suffix};
-}
-
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
@@ -155,13 +145,6 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       });
       if (result.resolvedModule) {
         resolvedModules.push(result.resolvedModule);
-      } else if (/^@bundle:/.test(moduleName.trim())) {
-        const module: {modulePath: string, suffix: string} = getOhmUrlFile(moduleName.trim());
-        if (ts.sys.fileExists(module.modulePath)) {
-          resolvedModules.push(getResolveModule(module.modulePath, module.suffix));
-        } else {
-          resolvedModules.push(null);
-        }
       } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
         const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
         if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
@@ -260,7 +243,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
+      let content: string = processContent(fs.readFileSync(fileName).toString());
       const extendFunctionInfo: extendInfo[] = [];
       content = instanceInsteadThis(content, fileName, extendFunctionInfo);
       return content;
@@ -449,8 +432,8 @@ function processDraw(source: string): string {
   });
 }
 
-function processContent(source: string, sourcePath: string): string {
-  source = processSystemApi(source, false, sourcePath);
+function processContent(source: string): string {
+  source = processSystemApi(source, false);
   source = preprocessExtend(source, extendCollection);
   source = preprocessNewExtend(source, extendCollection);
   source = processDraw(source);
