@@ -960,7 +960,7 @@ function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: strin
       break;
     }
     default:
-      logger.error('\u001b[31m', `ETS:ERROR Incorrect OpenHarmony module kind: ${urlType}`, '\u001b[39m');
+      logger.error('\u001b[31m', `ArkTS:ERROR Incorrect OpenHarmony module kind: ${urlType}`, '\u001b[39m');
   }
   return item;
 }
