@@ -638,10 +638,14 @@ function createPropertyAccessExpressionWithThis(propertyName: string): ts.Proper
 function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
   decoratorName: string, updateState: ts.Statement[]): void {
   if (decoratorName === COMPONENT_PROVIDE_DECORATOR) {
+    let parameterName: string;
     if (isSingleKey(node)) {
-      updateState.push(createAddProvidedVar(getDecoratorKey(node), name));
+      parameterName = getDecoratorKey(node);
+      updateState.push(createAddProvidedVar(parameterName, name));
     }
-    updateState.push(createAddProvidedVar(name.getText(), name));
+    if (parameterName !== name.getText()) {
+      updateState.push(createAddProvidedVar(name.getText(), name));
+    }
   }
 }
 
