@@ -319,12 +319,14 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       }
     });
   }
-  newsupplement = {
-    isAcceleratePreview: false,
-    line: 0,
-    column: 0,
-    fileName: ''
-  };
+  if (supplement.isAcceleratePreview) {
+    newsupplement = {
+      isAcceleratePreview: false,
+      line: 0,
+      column: 0,
+      fileName: ''
+    };
+  }
 }
 
 function addInnerBuilderParameter(node: ts.ExpressionStatement): ts.ExpressionStatement {
@@ -468,10 +470,10 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     let line: number = 1;
     let col: number = 1;
     if (sourceNode && newsupplement.isAcceleratePreview) {
-      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node) - 22);
       curFileName = newsupplement.fileName;
       if (posOfNode.line === 0) {
-        col = newsupplement.column - 15;
+        col = newsupplement.column - 1;
       }
       line = newsupplement.line;
     } else {
