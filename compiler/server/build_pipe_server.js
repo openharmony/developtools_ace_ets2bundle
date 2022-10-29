@@ -131,19 +131,6 @@ function handlePluginCompileComponent(jsonData) {
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, newSource, newSource);
   receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
-  if (receivedMsg.data.offset) {
-    for (let i = 0; i < log.length; i++) {
-      let line = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).line);
-      let column = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).character);
-      if (line === 0) {
-        log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line);
-        log[i].column = parseInt(JSON.parse(receivedMsg.data.offset).column) + column - 15;
-      } else {
-        log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line) + line;
-        log[i].column = column;
-      }
-    }
-  }
   receivedMsg.data.log = log;
   if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
     es2abc(receivedMsg);
