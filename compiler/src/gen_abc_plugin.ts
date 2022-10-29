@@ -117,6 +117,7 @@ export class ModuleInfo {
   abcFilePath: string;
   isCommonJs: boolean;
   recordName: string;
+  sourceFile: string;
 
   constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
     this.filePath = filePath;
@@ -125,6 +126,7 @@ export class ModuleInfo {
     this.abcFilePath = abcFilePath;
     this.isCommonJs = isCommonJs;
     this.recordName = getOhmUrlByFilepath(filePath);
+    this.sourceFile = filePath.replace(projectConfig.projectRootPath + path.sep, '');
   }
 }
 
@@ -495,8 +497,8 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   validateFilePathLength(npmEntriesInfoPath);
   let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
   const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
-  validateFilePathLength(npmEntriesInfoPath);
-  mkdirsSync(npmEntriesProtoFilePath);
+  validateFilePathLength(npmEntriesProtoFilePath);
+  mkdirsSync(path.dirname(npmEntriesProtoFilePath));
   let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
   if (isWin) {
     js2Abc = path.join(arkDir, 'build-win', 'bin', 'js2abc.exe');
@@ -738,7 +740,6 @@ function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>,
     const tempAbcArgs: string[] = abcArgs.slice(0);
     if (process.env.panda === TS2ABC) {
       workerNumber = 3;
-      isModule ? tempAbcArgs.push('-m') : tempAbcArgs.push('-c');
       cmdPrefix = `${nodeJs} ${tempAbcArgs.join(' ')}`;
     } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
       workerNumber = os.cpus().length;
@@ -750,9 +751,12 @@ function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>,
     const splitedModules: any[] = splitModulesByNumber(moduleInfos, workerNumber);
     workerNumber = splitedModules.length;
     for (let i = 0; i < workerNumber; i++) {
+      let sn: number = i + 1;
+      let workerFileName: string = `filesInfo_${sn}.txt`;
       const workerData: any = {
         'inputs': JSON.stringify(splitedModules[i]),
-        'cmd': cmdPrefix
+        'cmd': cmdPrefix,
+        'workerFileName': workerFileName
       };
       cluster.fork(workerData);
     }

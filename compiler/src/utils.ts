@@ -587,12 +587,11 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any
   printer['writeFile'](node, writer, sourceMapGenerator);
   const sourceMapJson: any = sourceMapGenerator.toJSON();
   sourceMapJson['sources'] = [fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
-  const result: string = writer.getText();
-  let content: string = result;
-  content = processSystemApi(content, true);
+  let content: string = writer.getText();
   if (toTsFile) {
-    content = result.replace(`${TS_NOCHECK};`, TS_NOCHECK);
+    content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
+  content = processSystemApi(content, true);
 
   return {
     content: content,
