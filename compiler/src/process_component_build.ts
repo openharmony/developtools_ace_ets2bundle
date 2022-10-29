@@ -1328,10 +1328,19 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
       ? ts.factory.updateExpressionStatement(node,
         createFunction(temp, identifierNode, null))
       : ts.factory.updateExpressionStatement(node,
-        createFunction(temp, identifierNode, temp.parent.arguments));
+        createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
+}
+
+function checkArguments(temp: ts.Identifier, type: string): ts.NodeArray<ts.Expression> {
+  return temp.getText() === 'XComponent' && type === COMPONENT_CREATE_FUNCTION &&
+    projectConfig.moduleName && projectConfig.bundleName ?
+    // @ts-ignore
+    temp.parent.arguments.concat([
+      ts.factory.createStringLiteral(`${projectConfig.bundleName}/${projectConfig.moduleName}`)
+    ]) : temp.parent.arguments
 }
 
 function checkContainer(name: string, node: ts.Node): boolean {
