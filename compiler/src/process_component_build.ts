@@ -92,7 +92,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   RESOURCE_NAME_TYPE,
   XCOMPONENT_SINGLE_QUOTATION,
-  XCOMPONENT_DOUBLE_QUOTATION
+  XCOMPONENT_DOUBLE_QUOTATION,
+  BIND_OBJECT_PROPERTY
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1389,7 +1390,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           temp = processDragStartBuilder(temp);
           break;
         default:
-          temp = processCustomBuilderProperty(temp);
+          temp = processCustomBuilderProperty(temp, identifierNode, propertyName);
       }
       flag = true;
     }
@@ -1421,10 +1422,11 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
 }
 
-function processCustomBuilderProperty(node: ts.CallExpression): ts.CallExpression {
+function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: ts.Identifier,
+  propertyName: string): ts.CallExpression {
   const newArguments: ts.Expression[] = [];
   node.arguments.forEach((argument: ts.Expression | ts.Identifier, index: number) => {
-    if (index === 0 && isBuilderChangeNode(argument)) {
+    if (index === 0 && isBuilderChangeNode(argument, identifierNode, propertyName)) {
       newArguments.push(parseBuilderNode(argument));
     } else {
       newArguments.push(argument);
@@ -1434,13 +1436,15 @@ function processCustomBuilderProperty(node: ts.CallExpression): ts.CallExpressio
   return node;
 }
 
-function isBuilderChangeNode(argument: ts.Node): boolean {
+function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, propertyName: string): boolean {
   return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
     && CUSTOM_BUILDER_METHOD.has(argument.name.getText()) ||
     ts.isCallExpression(argument) && argument.expression && argument.expression.name &&
     ts.isIdentifier(argument.expression.name) &&
     CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
-    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString());
+    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()) ||
+    ts.isObjectLiteralExpression(argument) && BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
+    BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName);
 }
 
 function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
@@ -1450,7 +1454,31 @@ function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
     return processIdentifierBuilder(node);
   } else if (ts.isCallExpression(node)) {
     return getParsedBuilderAttrArgumentWithParams(node);
+  } else if (ts.isObjectLiteralExpression(node)) {
+    return processObjectPropertyBuilder(node);
   }
+}
+
+function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
+  const newProperties: ts.PropertyAssignment[] = [];
+  node.properties.forEach((property: ts.PropertyAssignment) => {
+    if (property.name && ts.isIdentifier(property.name) &&
+      property.name.escapedText.toString() === CUSTOM_DIALOG_CONTROLLER_BUILDER &&
+      property.initializer && isPropertyAccessExpressionNode(property.initializer)) {
+      newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            property.initializer,
+            ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+          ),
+          undefined,
+          [ts.factory.createThis()]
+        )));
+    } else {
+      newProperties.push(property);
+    }
+  });
+  return ts.factory.updateObjectLiteralExpression(node, newProperties);
 }
 
 function isPropertyAccessExpressionNode(node: ts.Node): boolean {
