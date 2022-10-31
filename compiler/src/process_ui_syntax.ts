@@ -363,20 +363,22 @@ function isAnimateTo(node: ts.Node): boolean {
     node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
 }
 
-export function processResourceData(node: ts.CallExpression): ts.Node {
+export function processResourceData(node: ts.CallExpression,
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
     if (node.expression.getText() === RESOURCE_RAWFILE) {
       return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]]);
     } else {
-      return getResourceDataNode(node);
+      return getResourceDataNode(node, previewLog);
     }
   }
   return node;
 }
 
-function getResourceDataNode(node: ts.CallExpression): ts.Node {
+function getResourceDataNode(node: ts.CallExpression,
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): ts.Node {
   const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
-  if (validateResourceData(resourceData, resources, node.arguments[0].getStart())) {
+  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog)) {
     const resourceType: number = RESOURCE_TYPE[resourceData[1]];
     if (resourceType === undefined) {
       transformLog.errors.push({
@@ -429,27 +431,36 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
   return resourceParams;
 }
 
-function validateResourceData(resourceData: string[], resources: object, pos: number): boolean {
+function preCheckResourceData(resourceData: string[], resources: object, pos: number,
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): boolean {
+  if (previewLog.isAcceleratePreview) {
+    return validateResourceData(resourceData, resources, pos, previewLog.log);
+  } else {
+    return validateResourceData(resourceData, resources, pos, transformLog.errors);
+  }
+}
+
+function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[]): boolean {
   if (resourceData.length !== 3) {
-    transformLog.errors.push({
+    log.push({
       type: LogType.ERROR,
       message: 'The input parameter is not supported.',
       pos: pos
     });
   } else if (!resources[resourceData[0]]) {
-    transformLog.errors.push({
+    log.push({
       type: LogType.ERROR,
       message: `The value of '${resourceData[0]}' is invalid.`,
       pos: pos
     });
   } else if (!resources[resourceData[0]][resourceData[1]]) {
-    transformLog.errors.push({
+    log.push({
       type: LogType.ERROR,
       message: `Value '${resourceData[1]}' does not exist on type 'typeof ${resourceData[0]}'.`,
       pos: pos
     });
   } else if (!resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
-    transformLog.errors.push({
+    log.push({
       type: LogType.ERROR,
       message: `Value '${resourceData[2]}' does not exist on type 'typeof ${resourceData[1]}'.`,
       pos: pos
