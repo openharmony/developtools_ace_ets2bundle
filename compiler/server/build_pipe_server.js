@@ -131,11 +131,10 @@ function handlePluginCompileComponent(jsonData) {
   processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
   supplement.isAcceleratePreview = false;
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
-  const transformedSourceFile = transformResourceNode(newSource);
+  const transformedSourceFile = transformResourceNode(newSource, log);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, transformedSourceFile, transformedSourceFile);
   receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
-  processOffset(receivedMsg, log, sourceNode);
   receivedMsg.data.log = log;
   if (receivedMsg.data.viewID) {
     receivedMsg.data.script = `function quickPreview(context) {
@@ -149,12 +148,12 @@ function handlePluginCompileComponent(jsonData) {
   callEs2abc(receivedMsg);
 }
 
-function transformResourceNode(newSource) {
+function transformResourceNode(newSource, log) {
   const transformerFactory = (context) => {
     return (rootNode) => {
       function visit(node) {
         node = ts.visitEachChild(node, visit, context);
-        return processResourceNode(node);
+        return processResourceNode(node, log);
       }
       return ts.visitNode(rootNode, visit);
     }
@@ -163,9 +162,9 @@ function transformResourceNode(newSource) {
   return transformationResult.transformed[0];
 }
 
-function processResourceNode(node) {
+function processResourceNode(node, log) {
   if (isResource(node)) {
-    return processResourceData(node);
+    return processResourceData(node, {isAcceleratePreview: true, log: log});
   } else {
     return node;
   }
@@ -186,22 +185,6 @@ function callEs2abc(receivedMsg) {
     es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
     if (fs.existsSync(es2abcFilePath)) {
       es2abc(receivedMsg);
-    }
-  }
-}
-
-function processOffset(receivedMsg, log, sourceNode) {
-  if (receivedMsg.data.offset) {
-    for (let i = 0; i < log.length; i++) {
-      let line = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).line);
-      let column = parseInt(sourceNode.getLineAndCharacterOfPosition(log[i].pos).character);
-      if (line === 0) {
-        log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line);
-        log[i].column = parseInt(JSON.parse(receivedMsg.data.offset).column) + column - 15;
-      } else {
-        log[i].line = parseInt(JSON.parse(receivedMsg.data.offset).line) + line;
-        log[i].column = column;
-      }
     }
   }
 }
