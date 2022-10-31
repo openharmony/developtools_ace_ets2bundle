@@ -93,7 +93,9 @@ import {
   RESOURCE_NAME_TYPE,
   XCOMPONENT_SINGLE_QUOTATION,
   XCOMPONENT_DOUBLE_QUOTATION,
-  BIND_OBJECT_PROPERTY
+  BIND_OBJECT_PROPERTY,
+  TRUE,
+  FALSE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -341,12 +343,14 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       }
     });
   }
-  newsupplement = {
-    isAcceleratePreview: false,
-    line: 0,
-    column: 0,
-    fileName: ''
-  };
+  if (supplement.isAcceleratePreview) {
+    newsupplement = {
+      isAcceleratePreview: false,
+      line: 0,
+      column: 0,
+      fileName: ''
+    };
+  }
 }
 
 function addInnerBuilderParameter(node: ts.ExpressionStatement): ts.ExpressionStatement {
@@ -491,10 +495,10 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     let line: number = 1;
     let col: number = 1;
     if (sourceNode && newsupplement.isAcceleratePreview) {
-      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node));
+      posOfNode = sourceNode.getLineAndCharacterOfPosition(getRealNodePos(node) - 22);
       curFileName = newsupplement.fileName;
       if (posOfNode.line === 0) {
-        col = newsupplement.column - 15;
+        col = newsupplement.column - 1;
       }
       line = newsupplement.line;
     } else {
@@ -955,11 +959,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
-      if (argumentsArray[2]) {
-        newForEachStatements.push(propertyNode, itemGenFunctionStatement, itemIdFuncStatement, updateFunctionStatement);
-      } else {
-        newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
-      }
+      newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
       newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
     } else {
       if (argumentsArray[2]) {
@@ -1066,12 +1066,29 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     argumentsArray[0],
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
-  if (argumentsArray[2]) {
-    addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
+  // @ts-ignore
+  if (argumentsArray[1] && argumentsArray[1].parameters[1]) {
+    if (!argumentsArray[2]) {
+      addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
+    } else {
+      // @ts-ignore
+      argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, TRUE)) :
+        addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, FALSE));
+    }
+  }
+  // @ts-ignore
+  if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
+    // @ts-ignore
+    argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
+      addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, FALSE));
   }
   return addForEachIdFuncParameterArr;
 }
 
+function addForEachParameter(forEachItemIdContent: ts.Expression, forEachItemGen: string, forEachItemId: string): ts.Expression[] {
+  return [forEachItemIdContent, ts.factory.createIdentifier(forEachItemGen),
+    ts.factory.createIdentifier(forEachItemId)];
+}
 function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
   const parameterList: ts.Expression[] = [
     ts.factory.createStringLiteral(componentInfo.id.toString()),
@@ -1802,7 +1819,8 @@ function loopEtscomponent(node: any, isStylesAttr: boolean): ts.Node {
     if (ts.isEtsComponentExpression(item)) {
       node.arguments[index] = ts.factory.createCallExpression(
         item.expression, undefined, item.arguments);
-    } else if (ts.isCallExpression(item) || ts.isNewExpression(item)) {
+    } else if ((ts.isCallExpression(item) || ts.isNewExpression(item)) &&
+      !newsupplement.isAcceleratePreview) {
       node.arguments[index] = ts.visitEachChild(item,
         changeEtsComponentKind, contextGlobal);
     }
