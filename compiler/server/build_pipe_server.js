@@ -17,6 +17,7 @@ const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
+const _ = require('lodash');
 
 const { processComponentChild } = require('../lib/process_component_build');
 const { createWatchCompilerHost } = require('../lib/ets_checker');
@@ -101,7 +102,7 @@ function handlePluginCompileComponent(jsonData) {
     return
   }
   start = true;
-  const receivedMsg = jsonData;
+  const receivedMsg = _.cloneDeep(jsonData);
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     Object.assign(compilerOptions, {
