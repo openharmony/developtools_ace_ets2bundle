@@ -108,8 +108,7 @@ class Index extends ViewPU {
                 });
                 Button.pop();
             };
-            const forEachItemIdFunc = item => item.toString();
-            this.forEachUpdateFunction(elmtId, this.WIDTH_AND_HEIGHT, forEachItemGenFunction, forEachItemIdFunc);
+            this.forEachUpdateFunction(elmtId, this.WIDTH_AND_HEIGHT, forEachItemGenFunction, item => item.toString(), false, false);
             if (!isInitialRender) {
                 ForEach.pop();
             }
