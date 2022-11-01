@@ -213,6 +213,9 @@ export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
 export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([['Navigation', new Set(['title'])]]);
+export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup']);
+export const HEADER: string = 'header';
+export const FOOTER: string = 'footer';
 
 export const CHECKED: string = 'checked';
 export const RADIO: string = 'Radio';
