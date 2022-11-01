@@ -85,14 +85,14 @@ const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
     [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], name: string, isBuilder: boolean = false): void {
+  log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
     const hasChainCall: boolean = componentNode.parent &&
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
-      componentNode, name, isBuilder);
+      componentNode, name, isBuilder, isGlobalBuilder);
     let argumentsArray: ts.PropertyAssignment[];
     if (isHasChild(componentNode)) {
       // @ts-ignore
@@ -448,7 +448,7 @@ function createFindChildById(id: string, name: string, isBuilder: boolean = fals
       ts.factory.createIdentifier('undefined')))], ts.NodeFlags.Let));
 }
 
-function createConditionParent(isBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
+export function createConditionParent(isBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
   return isBuilder ? ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
