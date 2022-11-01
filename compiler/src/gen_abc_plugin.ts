@@ -222,8 +222,12 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      previewCount++;
-      invokeWorkersToGenAbc();
+      if (previewCount == compileCount) {
+        previewCount++;
+        invokeWorkersToGenAbc();
+      } else {
+        previewCount++;
+      }
     });
   }
 }
@@ -782,51 +786,56 @@ function invokeWorkersToGenAbc(): void {
       });
     }
 
-    for (let i = 0; i < workerNumber; ++i) {
-      const workerData: any = {
-        'inputs': JSON.stringify(splitedBundles[i]),
-        'cmd': cmdPrefix
-      };
-      cluster.fork(workerData);
-    }
-
-    let count_ = 0;
-    if (process.env.watchMode === 'true') {
-      process.removeAllListeners("exit");
-      cluster.removeAllListeners("exit");
-    }
-    cluster.on('exit', (worker, code, signal) => {
-      if (code === FAIL || process.exitCode === FAIL) {
-        process.exitCode = FAIL;
-      }
-      count_++;
-      if (count_ === workerNumber) {
-        // for preview of with incre compile
-        if (process.env.watchMode === 'true' && compileCount < previewCount) {
-          compileCount++;
-          processExtraAssetForBundle();
-          if (process.exitCode === SUCCESS) {
-            console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
-          } else {
-            console.info(blue, 'COMPILE RESULT:FAIL ', reset);
-          }
-          if (compileCount >= previewCount) {
-            return;
-          }
-          invokeWorkersToGenAbc();
+    if (workerNumber === 0) {
+      if (process.env.watchMode === 'true' && compileCount < previewCount) {
+        compileCount++;
+        processExtraAssetForBundle();
+        if (compileCount >= previewCount) {
+          return;
         }
+        invokeWorkersToGenAbc();
       }
-      logger.debug(`worker ${worker.process.pid} finished`);
-    });
+    } else {
+      for (let i = 0; i < workerNumber; ++i) {
+        const workerData: any = {
+          'inputs': JSON.stringify(splitedBundles[i]),
+          'cmd': cmdPrefix
+        };
+        cluster.fork(workerData);
+      }
 
-    process.on('exit', (code) => {
-      // for build options
-      processExtraAssetForBundle();
-    });
+      let count_ = 0;
+      if (process.env.watchMode === 'true') {
+        process.removeAllListeners("exit");
+        cluster.removeAllListeners("exit");
+      }
+      cluster.on('exit', (worker, code, signal) => {
+        count_++;
+        if (count_ === workerNumber) {
+          // for preview of with incre compile
+          if (process.env.watchMode === 'true' && compileCount < previewCount) {
+            compileCount++;
+            processExtraAssetForBundle();
+            if (code === SUCCESS) {
+              console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
+            } else {
+              console.info(blue, 'COMPILE RESULT:FAIL ', reset);
+            }
+            if (compileCount >= previewCount) {
+              return;
+            }
+            invokeWorkersToGenAbc();
+          }
+        }
+        logger.debug(`worker ${worker.process.pid} finished`);
+      });
+    }
 
-    // for preview of without incre compile
-    if (workerNumber === 0 && process.env.watchMode === 'true') {
-      processExtraAssetForBundle();
+    if (process.env.watchMode !== 'true') {
+      process.on('exit', (code) => {
+        // for build options
+        processExtraAssetForBundle();
+      });
     }
   }
 }
@@ -917,10 +926,7 @@ function writeModuleHashJson(): void {
   if (hashFilePath.length === 0) {
     return;
   }
-  // fix bug of multi trigger
-  if (process.env.watchMode !== 'true' || previewCount < 1) {
-    fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
-  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(moduleHashJsonObject));
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
@@ -993,10 +999,7 @@ function writeHashJson(): void {
   if (hashFilePath.length === 0) {
     return;
   }
-  // fix bug of multi trigger
-  if (process.env.watchMode !== 'true' || previewCount < 1) {
-    fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
-  }
+  fs.writeFileSync(hashFilePath, JSON.stringify(hashJsonObject));
 }
 
 function genHashJsonPath(buildPath: string): string {
