@@ -94,6 +94,8 @@ import {
   XCOMPONENT_SINGLE_QUOTATION,
   XCOMPONENT_DOUBLE_QUOTATION,
   BIND_OBJECT_PROPERTY,
+  TRUE,
+  FALSE,
   HEADER,
   FOOTER
 } from './pre_define';
@@ -962,11 +964,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
-      if (argumentsArray[2]) {
-        newForEachStatements.push(propertyNode, itemGenFunctionStatement, itemIdFuncStatement, updateFunctionStatement);
-      } else {
-        newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
-      }
+      newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
       newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
     } else {
       if (argumentsArray[2]) {
@@ -1073,10 +1071,28 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     argumentsArray[0],
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
-  if (argumentsArray[2]) {
-    addForEachIdFuncParameterArr.push(ts.factory.createIdentifier(FOREACHITEMIDFUNC));
+  // @ts-ignore 
+  if (argumentsArray[1] && argumentsArray[1].parameters[1]) {
+    if (!argumentsArray[2]) {
+      addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
+    } else {
+      //@ts-ignore 
+      argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, TRUE)) :
+        addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, FALSE));
+    }
+  }
+  //@ts-ignore 
+  if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
+    //@ts-ignore 
+    argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
+      addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, FALSE));
   }
   return addForEachIdFuncParameterArr;
+}
+
+function addForEachParameter(forEachItemIdContent: ts.Expression, forEachItemGen: string, forEachItemId: string): ts.Expression[] {
+  return [forEachItemIdContent, ts.factory.createIdentifier(forEachItemGen),
+    ts.factory.createIdentifier(forEachItemId)];
 }
 
 function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
