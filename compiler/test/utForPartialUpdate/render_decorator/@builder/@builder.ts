@@ -144,7 +144,7 @@ struct MyComponent {
 exports.expectResult =
 `"use strict";
 function noParam(parent = undefined) {
-    parent.observeComponentCreation((elmtId, isInitialRender) => {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Row.create();
         if (!isInitialRender) {
@@ -152,7 +152,7 @@ function noParam(parent = undefined) {
         }
         ViewStackProcessor.StopGetAccessRecording();
     });
-    parent.observeComponentCreation((elmtId, isInitialRender) => {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Text.create('this is a no param builder');
         if (!isInitialRender) {
@@ -164,7 +164,7 @@ function noParam(parent = undefined) {
     Row.pop();
 }
 function specificParam(label1, label2, parent = undefined) {
-    parent.observeComponentCreation((elmtId, isInitialRender) => {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Column.create();
         if (!isInitialRender) {
@@ -172,7 +172,7 @@ function specificParam(label1, label2, parent = undefined) {
         }
         ViewStackProcessor.StopGetAccessRecording();
     });
-    parent.observeComponentCreation((elmtId, isInitialRender) => {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Text.create(label1);
         if (!isInitialRender) {
@@ -181,7 +181,7 @@ function specificParam(label1, label2, parent = undefined) {
         ViewStackProcessor.StopGetAccessRecording();
     });
     Text.pop();
-    parent.observeComponentCreation((elmtId, isInitialRender) => {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Text.create(label2);
         if (!isInitialRender) {
