@@ -43,10 +43,13 @@ import {
   CARD_LOG_TYPE_IMPORT,
   TS2ABC,
   ES2ABC,
-  EXTNAME_PROTO_BIN
+  EXTNAME_PROTO_BIN,
+  COMPONENT_CREATE_FUNCTION,
+  CREATE_BIND_COMPONENT
 } from './pre_define';
 import { minify, MinifyOutput } from 'terser';
 import { resourceFileName } from './process_ui_syntax';
+import { processObjectPropertyBuilder } from './process_component_build';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -195,14 +198,47 @@ export function readFile(dir: string, utFiles: string[]) {
 
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>): ts.CallExpression {
+  if (argumentsArr && argumentsArr.length) {
+    if (checkCreateArgumentBuilder(node, attrNode)) {
+      argumentsArr = transformBuilder(argumentsArr);
+    }
+  } else {
+    //@ts-ignore
+    argumentsArr = [];
+  }
   return ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
       node,
       attrNode
     ),
     undefined,
-    argumentsArr && argumentsArr.length ? argumentsArr : []
+    argumentsArr
   );
+}
+
+function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier): boolean {
+  if (attrNode.escapedText.toString() === COMPONENT_CREATE_FUNCTION &&
+    CREATE_BIND_COMPONENT.has(node.escapedText.toString())) {
+    return true;
+  }
+  return false;
+}
+
+function transformBuilder(argumentsArr: ts.NodeArray<ts.Expression>): ts.NodeArray<ts.Expression> {
+  const newArguments: ts.Expression[] = [];
+  argumentsArr.forEach((argument: ts.Expression) => {
+    newArguments.push(parseCreateParameterBuilder(argument));
+  })
+  //@ts-ignore
+  return newArguments;
+}
+
+function parseCreateParameterBuilder(argument: ts.Expression):ts.Expression {
+  if (ts.isObjectLiteralExpression(argument)) {
+    return processObjectPropertyBuilder(argument);
+  } else {
+    return argument;
+  }
 }
 
 export function circularFile(inputPath: string, outputPath: string): void {
