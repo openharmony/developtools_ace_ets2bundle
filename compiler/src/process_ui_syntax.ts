@@ -527,10 +527,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
       bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
-      return ts.factory.createCallExpression(
-        ts.factory.createParenthesizedExpression(ts.factory.createFunctionExpression(
-          undefined, undefined, undefined, undefined, [], undefined,
-          ts.factory.createBlock(statementArray, true))), undefined, []);
+      return ts.factory.createBlock(statementArray, true);
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
