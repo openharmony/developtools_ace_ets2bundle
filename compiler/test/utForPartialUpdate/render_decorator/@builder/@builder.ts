@@ -501,8 +501,7 @@ class MyComponent extends ViewPU {
                     }
                 }
             };
-            const forEachItemIdFunc = item => item;
-            this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, forEachItemIdFunc);
+            this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, item => item, false, false);
             if (!isInitialRender) {
                 ForEach.pop();
             }

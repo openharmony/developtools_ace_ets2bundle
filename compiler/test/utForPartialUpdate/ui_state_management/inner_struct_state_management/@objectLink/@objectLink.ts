@@ -166,8 +166,7 @@ class Parent extends ViewPU {
                     ViewStackProcessor.StopGetAccessRecording();
                 }
             };
-            const forEachItemIdFunc = (item) => item.text;
-            this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, forEachItemIdFunc);
+            this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, (item) => item.text, false, false);
             if (!isInitialRender) {
                 ForEach.pop();
             }
