@@ -119,7 +119,10 @@ import {
   builderParamObjectCollection,
   checkAllNode
 } from './validate_ui_syntax';
-import { processCustomComponent } from './process_custom_component';
+import {
+  processCustomComponent,
+  createConditionParent
+} from './process_custom_component';
 import {
   LogType,
   LogInfo,
@@ -304,7 +307,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                   item = expressionResult;
                 }
               }
-              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name, isBuilder);
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
+                isBuilder, isGlobalBuilder);
             }
             break;
           case ComponentType.forEachComponent:
@@ -533,8 +537,7 @@ function createComponentCreationStatement(node: ts.Statement, innerStatements: t
   isGlobalBuilder: boolean = false): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
-         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT) : ts.factory.createThis(),
+      ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
         ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
       ), undefined,
       [ts.factory.createArrowFunction(undefined, undefined,
