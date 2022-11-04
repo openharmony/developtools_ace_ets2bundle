@@ -94,6 +94,8 @@ import {
   XCOMPONENT_SINGLE_QUOTATION,
   XCOMPONENT_DOUBLE_QUOTATION,
   BIND_OBJECT_PROPERTY,
+  HEADER,
+  FOOTER,
   TRUE,
   FALSE
 } from './pre_define';
@@ -1488,11 +1490,11 @@ function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
   }
 }
 
-function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
+export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      property.name.escapedText.toString() === CUSTOM_DIALOG_CONTROLLER_BUILDER &&
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER].includes(property.name.escapedText.toString()) &&
       property.initializer && isPropertyAccessExpressionNode(property.initializer)) {
       newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
         ts.factory.createCallExpression(
