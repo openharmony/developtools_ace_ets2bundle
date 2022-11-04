@@ -665,14 +665,14 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
 }
 
 export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
-  isBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name, isBuilder);
+  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder);
 }
 
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
-  isBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -698,7 +698,10 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
         ) : ts.factory.createThis());
       } else {
-        argumentsArray.unshift(ts.factory.createThis());
+        argumentsArray.unshift(isGlobalBuilder ? ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
+          ts.factory.createThis()) : ts.factory.createThis());
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
