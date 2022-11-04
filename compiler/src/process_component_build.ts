@@ -992,24 +992,13 @@ function createItemGenFunctionStatement(
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
-            getParameters(argumentsArray[1]),
+            argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
+              getParameters(argumentsArray[1]) : [],
             undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             ts.factory.createBlock(
-              [ts.factory.createVariableStatement(
-                undefined,
-                ts.factory.createVariableDeclarationList(
-                  [ts.factory.createVariableDeclaration(
-                    ts.factory.createIdentifier(
-                      argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier(_ITEM)
-                  )],
-                  ts.NodeFlags.Const
-                )
-              ),
-              ...newArrowNode
-              ],
+              argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
+                isForEachItemGeneratorParam(argumentsArray, newArrowNode) :
+                [...newArrowNode],
               true
             )
           )
@@ -1019,6 +1008,25 @@ function createItemGenFunctionStatement(
       )
     );
   }
+}
+
+function isForEachItemGeneratorParam(argumentsArray: ts.Expression[], newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
+  return [
+    ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(
+            argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+          undefined,
+          undefined,
+          ts.factory.createIdentifier(_ITEM)
+        )],
+        ts.NodeFlags.Const
+      )
+    ),
+    ...newArrowNode
+  ];
 }
 
 function getParameters(node: ts.ArrowFunction): ts.ParameterDeclaration[] {
@@ -1071,19 +1079,19 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     argumentsArray[0],
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
-  // @ts-ignore 
+  // @ts-ignore
   if (argumentsArray[1] && argumentsArray[1].parameters[1]) {
     if (!argumentsArray[2]) {
       addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
     } else {
-      //@ts-ignore 
+      // @ts-ignore
       argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, TRUE)) :
         addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, FALSE));
     }
   }
-  //@ts-ignore 
+  // @ts-ignore
   if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
-    //@ts-ignore 
+    // @ts-ignore
     argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
       addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, FALSE));
   }
