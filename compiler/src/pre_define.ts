@@ -279,6 +279,7 @@ export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
 export const EXTNAME_ABC: string = '.abc';
 export const EXTNAME_PROTO_BIN: string = '.protoBin';
+export const PATCH_SYMBOL_TABLE: string = "symbol.txt";
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
