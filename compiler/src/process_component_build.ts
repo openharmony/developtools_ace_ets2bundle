@@ -449,7 +449,7 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   const nameResult: NameResult = { name: null };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
-    processItemComponent(node, nameResult, innerCompStatements, log);
+    processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder);
   } else if (partialUpdateConfig.partialUpdateMode && TABCONTENT_COMPONENT.includes(nameResult.name)) {
     processTabContent(node, innerCompStatements, log, isGlobalBuilder);
   } else {
@@ -594,7 +594,7 @@ function createInitRenderStatement(node: ts.Statement): ts.Statement {
 }
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
-  log: LogInfo[]): void {
+  log: LogInfo[], isGlobalBuilder: boolean = false): void {
   const itemRenderInnerStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
@@ -606,7 +606,8 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
     }
-    processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log);
+    processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log,
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, undefined, undefined, isGlobalBuilder);
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
   }
@@ -1125,7 +1126,7 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
       ...forEachComponent.arguments]));
 }
 
-export function parentConditionalExpression() {
+export function parentConditionalExpression(): ts.ConditionalExpression {
   return ts.factory.createConditionalExpression(
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
