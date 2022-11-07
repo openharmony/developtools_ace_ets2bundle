@@ -158,7 +158,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           node.parameters.push(createParentParameter());
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
-            processComponentBlock(node.body, false, transformLog.errors, false, true, node.name.getText()));
+            processComponentBlock(node.body, false, transformLog.errors, false, true,
+              node.name.getText(), undefined, true));
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
