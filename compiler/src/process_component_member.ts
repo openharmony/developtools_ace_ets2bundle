@@ -93,9 +93,12 @@ import {
   isProperty
 } from './process_component_class';
 import { transformLog } from './process_ui_syntax';
-import { globalProgram, projectConfig } from '../main';
-
-import { partialUpdateConfig } from '../main';
+import {
+  globalProgram,
+  projectConfig,
+  partialUpdateConfig
+} from '../main';
+import { parentConditionalExpression } from './process_component_build'
 
 export type ControllerType = {
   hasController: boolean
@@ -691,17 +694,9 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           ts.factory.createStringLiteral(path.basename(transformLog.sourceFile.fileName, EXTNAME_ETS) + '_'),
           ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createIdentifier(_GENERATE_ID)) :
           ts.factory.createStringLiteral(componentInfo.id.toString()),
-        isBuilder ? ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken), ts.factory.createThis()
-        ) : ts.factory.createThis());
+        isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
-        argumentsArray.unshift(isGlobalBuilder ? ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          ts.factory.createThis()) : ts.factory.createThis());
+        argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);

@@ -70,7 +70,10 @@ import {
   componentInfo,
   createFunction
 } from './utils';
-import { bindComponentAttr } from './process_component_build';
+import {
+  bindComponentAttr,
+  parentConditionalExpression
+} from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
 const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
@@ -449,10 +452,7 @@ function createFindChildById(id: string, name: string, isBuilder: boolean = fals
 }
 
 export function createConditionParent(isBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
-  return isBuilder ? ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), ts.factory.createToken(ts.SyntaxKind.ColonToken),
-    ts.factory.createThis())) : ts.factory.createThis();
+  return isBuilder ? ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis();
 }
 
 function createCustomComponentIfStatement(id: string, node: ts.ExpressionStatement,

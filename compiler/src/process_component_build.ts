@@ -1121,8 +1121,17 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
   return ts.factory.updateExpressionStatement(node, ts.factory.updateCallExpression(
     forEachComponent, forEachComponent.expression, forEachComponent.typeArguments,
     [ts.factory.createStringLiteral((++componentInfo.id).toString()),
-      isGlobalBuilder ? ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT) : ts.factory.createThis(),
+      isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis(),
       ...forEachComponent.arguments]));
+}
+
+export function parentConditionalExpression() {
+  return ts.factory.createConditionalExpression(
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createThis());
 }
 
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
