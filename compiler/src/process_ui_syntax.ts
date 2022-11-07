@@ -742,9 +742,8 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
     argsArr.push(context.factory.createStringLiteral(componentName));
     argsArr.push(newExpression);
   });
-  const newExpressionParams: any[] = [
-    context.factory.createNewExpression(
-      context.factory.createIdentifier(name), undefined, newArray)];
+  const newExpressionParams: any[] = name ? [context.factory.createNewExpression(
+    context.factory.createIdentifier(name), undefined, newArray)] : [];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   const ifStatement: ts.Statement = context.factory.createIfStatement(
     context.factory.createCallExpression(
