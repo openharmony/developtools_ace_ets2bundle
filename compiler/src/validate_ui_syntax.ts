@@ -190,9 +190,11 @@ function checkComponentDecorator(source: string, filePath: string,
       }
       if (ts.isFunctionDeclaration(item) && item.decorators && item.decorators.length === 1 &&
         item.decorators[0].expression && item.decorators[0].expression.getText() === STYLES) {
-        STYLES_ATTRIBUTE.add(item.name.getText());
-        GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
-        BUILDIN_STYLE_NAMES.add(item.name.getText());
+        if (ts.isBlock(item.body) && item.body.statements && item.body.statements.length) {
+          STYLES_ATTRIBUTE.add(item.name.getText());
+          GLOBAL_STYLE_FUNCTION.set(item.name.getText(), item.body);
+          BUILDIN_STYLE_NAMES.add(item.name.getText());
+        }
       }
     });
     validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview,
