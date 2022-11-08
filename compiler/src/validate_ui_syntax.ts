@@ -349,9 +349,11 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     const componentName: string = isExtendFunction(node);
     collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
   } else if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-    GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
-    STYLES_ATTRIBUTE.add(node.name.getText());
-    BUILDIN_STYLE_NAMES.add(node.name.getText());
+    if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+      GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
+      STYLES_ATTRIBUTE.add(node.name.getText());
+      BUILDIN_STYLE_NAMES.add(node.name.getText());
+    }
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
 }
