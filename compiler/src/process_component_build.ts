@@ -1149,7 +1149,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
           processComponentBlock(blockNode, isLazy, log, false, false, undefined,
             arrowNode.parameters, isGlobalBuilder));
       } else {
-        return processComponentBlock(blockNode, isLazy, log).statements;
+        return processComponentBlock(blockNode, isLazy, log, false, false, undefined, arrowNode.parameters).statements;
       }
     } else {
       if (!partialUpdateConfig.partialUpdateMode) {
@@ -1158,7 +1158,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
           arrowNode.type, arrowNode.equalsGreaterThanToken,
           processComponentBlock(body, isLazy, log, false, isBuilder, undefined, arrowNode.parameters));
       } else {
-        return processComponentBlock(body, isLazy, log).statements;
+        return processComponentBlock(body, isLazy, log, false, false, undefined, arrowNode.parameters).statements;
       }
     }
   }
