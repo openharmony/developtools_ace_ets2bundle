@@ -297,10 +297,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.type, processComponentBlock(node.body, false, log));
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
-        INNER_STYLE_FUNCTION.set(name, node.body);
-        STYLES_ATTRIBUTE.add(name);
-        BUILDIN_STYLE_NAMES.add(name);
-        decoratorParamSet.add(STYLES);
+        if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+          INNER_STYLE_FUNCTION.set(name, node.body);
+          STYLES_ATTRIBUTE.add(name);
+          BUILDIN_STYLE_NAMES.add(name);
+          decoratorParamSet.add(STYLES);
+        }
       } else {
         log.push({
           type: LogType.ERROR,
