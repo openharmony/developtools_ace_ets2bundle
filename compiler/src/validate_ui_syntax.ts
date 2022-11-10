@@ -275,7 +275,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
       componentCollection.customComponents.add(componentName);
       switch (name) {
         case COMPONENT_DECORATOR_ENTRY:
-          checkEntryComponent(node, log);
+          checkEntryComponent(node, log, sourceFile);
           result.entryCount++;
           componentCollection.entryComponent = componentName;
           componentCollection.entryComponentPos = node.getStart();
@@ -1085,16 +1085,13 @@ export function resetComponentCollection() {
   componentCollection.previewComponent = new Set([]);
 }
 
-function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[]): void {
+function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
   if (node.modifiers) {
     for (let i = 0; i < node.modifiers.length; i++) {
       if (node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
-        log.push({
-          type: LogType.WARN,
-          message: `It's not a recommended way to export struct with @Entry decorator, ` +
-          `which may cause ACE Engine error in component preview mode.`,
-          pos: node.getStart()
-        });
+        const message: string = `It's not a recommended way to export struct with @Entry decorator, ` +
+          `which may cause ACE Engine error in component preview mode.`;
+        addLog(LogType.WARN, message, node.getStart(), log, sourceFile);
         break;
       }
     }
