@@ -2,6 +2,24 @@
   "compileOnSave": false,
   "compilerOptions": {
    "ets": {
+      "propertyDecorators": [
+        {
+          "name": "Link",
+          "needInitialization": false
+        },
+        {
+          "name": "Prop",
+          "needInitialization": false
+        },
+        {
+          "name": "ObjectLink",
+          "needInitialization": false
+        },
+        {
+          "name": "Consume",
+          "needInitialization": false
+        }
+      ],
       "render": {
         "method": ["build", "pageTransition"],
         "decorator": "Builder"
