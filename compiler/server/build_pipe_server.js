@@ -53,7 +53,7 @@ let start = false;
 let checkStatus = false;
 let compileStatus = false;
 let receivedMsg_;
-let errorInfo;
+let errorInfo = [];
 let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
@@ -64,9 +64,7 @@ function init(port) {
   previewCacheFilePath =
     path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
   const rootFileNames = [];
-  if (!fs.existsSync(previewCacheFilePath)) {
-    writeFileSync(previewCacheFilePath, '');
-  }
+  writeFileSync(previewCacheFilePath, '');
   rootFileNames.push(previewCacheFilePath);
   ts.createWatchProgram(
     createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount, true));
@@ -209,7 +207,6 @@ function es2abc(receivedMsg) {
 }
 
 function resolveDiagnostic(diagnostic) {
-  errorInfo = [];
   const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (diagnostic.file) {
@@ -234,7 +231,7 @@ function responseToPlugin() {
   if ((compileWithCheck !== "true" && compileStatus == true) ||
     (compileWithCheck === "true" && compileStatus == true && checkStatus == true) ) {
     if (receivedMsg_) {
-      if (errorInfo) {
+      if (errorInfo && errorInfo.length) {
         receivedMsg_.data.log =  receivedMsg_.data.log || [];
         receivedMsg_.data.log.push(...errorInfo);
       }
@@ -242,7 +239,7 @@ function responseToPlugin() {
         start = false;
         checkStatus = false;
         compileStatus = false;
-        errorInfo = undefined;
+        errorInfo = [];
         receivedMsg_ = undefined;
         messages.shift();
         if (messages.length > 0) {
