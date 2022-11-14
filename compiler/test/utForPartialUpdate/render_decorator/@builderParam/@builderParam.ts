@@ -43,6 +43,13 @@ struct CustomContainer2 {
   }
 }
 
+@Builder function specificWithParam(label1: string, label2: string) {
+  Column() {
+    Text(label1).fontSize(50)
+    Text(label2).fontSize(50)
+  }
+}
+
 @Entry
 @Component
 struct CustomContainerUser {
@@ -65,7 +72,7 @@ struct CustomContainerUser {
         header: this.text,
       }){
         Column(){
-          specificParam("111", "22")
+          specificWithParam("111", "22")
         }.onClick(()=>{
           this.text = "changeHeader"
         })
@@ -201,6 +208,37 @@ class CustomContainer2 extends ViewPU {
         this.updateDirtyElements();
     }
 }
+function specificWithParam(label1, label2, parent = undefined) {
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
+        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        Column.create();
+        if (!isInitialRender) {
+            Column.pop();
+        }
+        ViewStackProcessor.StopGetAccessRecording();
+    });
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
+        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        Text.create(label1);
+        Text.fontSize(50);
+        if (!isInitialRender) {
+            Text.pop();
+        }
+        ViewStackProcessor.StopGetAccessRecording();
+    });
+    Text.pop();
+    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
+        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        Text.create(label2);
+        Text.fontSize(50);
+        if (!isInitialRender) {
+            Text.pop();
+        }
+        ViewStackProcessor.StopGetAccessRecording();
+    });
+    Text.pop();
+    Column.pop();
+}
 class CustomContainerUser extends ViewPU {
     constructor(parent, params, __localStorage) {
         super(parent, __localStorage);
@@ -304,7 +342,7 @@ class CustomContainerUser extends ViewPU {
                         }
                         ViewStackProcessor.StopGetAccessRecording();
                     });
-                    specificParam("111", "22", this);
+                    specificWithParam("111", "22", this);
                     Column.pop();
                 }
             }));
