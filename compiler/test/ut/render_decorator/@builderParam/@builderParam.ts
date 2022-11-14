@@ -43,6 +43,13 @@ struct CustomContainer2 {
   }
 }
 
+@Builder function specificWithParam(label1: string, label2: string) {
+  Column() {
+    Text(label1).fontSize(50)
+    Text(label2).fontSize(50)
+  }
+}
+
 @Entry
 @Component
 struct CustomContainerUser {
@@ -65,7 +72,7 @@ struct CustomContainerUser {
         header: this.text,
       }){
         Column(){
-          specificParam("111", "22")
+          specificWithParam("111", "22")
         }.onClick(()=>{
           this.text = "changeHeader"
         })
@@ -155,6 +162,16 @@ class CustomContainer2 extends View {
         Column.pop();
     }
 }
+function specificWithParam(label1, label2, parent = undefined) {
+    Column.create();
+    Text.create(label1);
+    Text.fontSize(50);
+    Text.pop();
+    Text.create(label2);
+    Text.fontSize(50);
+    Text.pop();
+    Column.pop();
+}
 class CustomContainerUser extends View {
     constructor(compilerAssignedUniqueChildId, parent, params) {
         super(compilerAssignedUniqueChildId, parent);
@@ -204,7 +221,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22", this);
+                    specificWithParam("111", "22", this);
                     Column.pop();
                 }
             }));
@@ -217,7 +234,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22", this);
+                    specificWithParam("111", "22", this);
                     Column.pop();
                 }
             });
