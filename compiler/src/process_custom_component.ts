@@ -41,7 +41,10 @@ import {
   STOPGETACCESSRECORDING,
   ALLOCATENEWELMETIDFORNEXTCOMPONENT,
   STATE_OBJECTLINK_DECORATORS,
-  BASE_COMPONENT_NAME_PU
+  BASE_COMPONENT_NAME_PU,
+  OBSERVECOMPONENTCREATION,
+  ISINITIALRENDER,
+  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID
 } from './pre_define';
 import {
   propertyCollection,
@@ -172,53 +175,77 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(newNode));
+    newStatements.push(createCustomComponent(node, newNode));
   }
 }
 
-function createCustomComponent(newNode: ts.NewExpression): ts.Block {
+function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression): ts.Block {
+  let componentParameter: ts.ObjectLiteralExpression;
+  if (node.expression && node.expression.arguments && node.expression.arguments.length) {
+    componentParameter = node.expression.arguments[0];
+  } else {
+    componentParameter = ts.factory.createObjectLiteralExpression([], false);
+  }
   return ts.factory.createBlock(
     [
-      ts.factory.createVariableStatement(undefined,
-        ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(
-            ts.factory.createIdentifier(ELMTID), undefined, undefined,
-            ts.factory.createCallExpression(
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-                ts.factory.createIdentifier(ALLOCATENEWELMETIDFORNEXTCOMPONENT)
-              ), undefined, []))],
-          ts.NodeFlags.Const
-        )
-      ),
-      ts.factory.createExpressionStatement(
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-            ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
-          ), undefined,
-          [ts.factory.createIdentifier(ELMTID)]
-        )
-      ),
-      ts.factory.createExpressionStatement(
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
-            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
-          ), undefined,
-          [newNode]
-        )
-      ),
-      ts.factory.createExpressionStatement(
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-            ts.factory.createIdentifier(STOPGETACCESSRECORDING)
-          ), undefined, []
-        )
-      )
-    ],
-    true
+      ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+        ), undefined,
+        [ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ELMTID)
+            ),
+            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER)
+            )
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [
+              ts.factory.createExpressionStatement(
+                ts.factory.createCallExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+                    ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
+                  ), undefined,
+                  [ts.factory.createIdentifier(ELMTID)]
+                )),
+              createIfCustomComponent(newNode, componentParameter),
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+                  ts.factory.createIdentifier(STOPGETACCESSRECORDING)
+                ),
+                undefined,
+                []
+              ))
+            ], true))]))
+    ], true);
+}
+
+function createIfCustomComponent(newNode: ts.NewExpression,
+  componentParameter: ts.ObjectLiteralExpression): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createIdentifier(ISINITIALRENDER),
+    ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+              ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+            ), undefined, [newNode]))
+      ], true),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
+        ), undefined,
+        [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
   );
 }
 

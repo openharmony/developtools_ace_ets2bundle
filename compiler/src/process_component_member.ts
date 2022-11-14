@@ -69,7 +69,8 @@ import {
   COMPONENT_CUSTOM_DECORATOR,
   THIS,
   CREATE_STORAGE_LINK,
-  CREATE_STORAGE_PROP
+  CREATE_STORAGE_PROP,
+  ELMTID
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -128,6 +129,8 @@ export const setUpdateParamsDecorators: Set<string> =
     COMPONENT_BUILDERPARAM_DECORATOR
   ]);
 
+export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
+
 export const immutableDecorators: Set<string> =
   new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
 
@@ -150,6 +153,7 @@ export class UpdateResult {
   private controllerSet: ts.MethodDeclaration;
   private purgeVariableDepStatement: ts.Statement;
   private decoratorName: string;
+  private stateVarsParams: ts.Statement;
 
   public setProperity(updateItem: ts.PropertyDeclaration) {
     this.itemUpdate = true;
@@ -179,6 +183,10 @@ export class UpdateResult {
 
   public setUpdateParams(updateParams: ts.Statement) {
     this.updateParams = updateParams;
+  }
+
+  public setStateVarsParams(stateVarsParams: ts.Statement) {
+    this.stateVarsParams = stateVarsParams;
   }
 
   public setDeleteParams(deleteParams: boolean) {
@@ -211,6 +219,10 @@ export class UpdateResult {
 
   public getUpdateParams(): ts.Statement {
     return this.updateParams;
+  }
+
+  public getStateVarsParams(): ts.Statement {
+    return this.stateVarsParams;
   }
 
   public getPurgeVariableDepStatement(): ts.Statement {
@@ -359,6 +371,9 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator));
   }
+  if (setStateVarsDecorators.has(decorator)) {
+    updateResult.setStateVarsParams(createStateVarsParams(name, decorator));
+  }
   if (partialUpdateConfig.partialUpdateMode && BASICDECORATORS.has(decorator)) {
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setDecoratorName(decorator);
@@ -497,6 +512,16 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
     case COMPONENT_BUILDERPARAM_DECORATOR:
       updateParamsNode = createUpdateParamsWithoutIf(name);
       break;
+    case COMPONENT_OBJECT_LINK_DECORATOR:
+      updateParamsNode = createUpdateParamsWithSet(name);
+      break;
+  }
+  return updateParamsNode;
+}
+
+function createStateVarsParams(name: ts.Identifier, decorator: string): ts.Statement {
+  let updateParamsNode: ts.Statement;
+  switch (decorator) {
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
       break;
@@ -697,6 +722,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
+        argumentsArray.push(ts.factory.createIdentifier(ELMTID));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
