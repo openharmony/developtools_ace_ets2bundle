@@ -993,24 +993,13 @@ function createItemGenFunctionStatement(
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
-            getParameters(argumentsArray[1]),
+            argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
+              getParameters(argumentsArray[1]) : [],
             undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             ts.factory.createBlock(
-              [ts.factory.createVariableStatement(
-                undefined,
-                ts.factory.createVariableDeclarationList(
-                  [ts.factory.createVariableDeclaration(
-                    ts.factory.createIdentifier(
-                      argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
-                    undefined,
-                    undefined,
-                    ts.factory.createIdentifier(_ITEM)
-                  )],
-                  ts.NodeFlags.Const
-                )
-              ),
-              ...newArrowNode
-              ],
+              argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
+                isForEachItemGeneratorParam(argumentsArray, newArrowNode) :
+                [...newArrowNode],
               true
             )
           )
@@ -1020,6 +1009,25 @@ function createItemGenFunctionStatement(
       )
     );
   }
+}
+
+function isForEachItemGeneratorParam(argumentsArray: ts.Expression[], newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
+  return [
+    ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(
+            argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+          undefined,
+          undefined,
+          ts.factory.createIdentifier(_ITEM)
+        )],
+        ts.NodeFlags.Const
+      )
+    ),
+    ...newArrowNode
+  ];
 }
 
 function getParameters(node: ts.ArrowFunction): ts.ParameterDeclaration[] {
