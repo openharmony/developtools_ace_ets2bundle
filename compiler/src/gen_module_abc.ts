@@ -15,6 +15,8 @@
 
 import * as childProcess from 'child_process';
 import * as process from 'process';
+import * as fs from 'fs';
+import * as path from 'path';
 import cluster from 'cluster';
 import { logger } from './compile_info';
 import {
@@ -24,29 +26,33 @@ import {
   ES2ABC
 } from './pre_define';
 import {
-  genProtoFileName,
   toUnixPath
 } from './utils';
-import { projectConfig } from '../main';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
+function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
+  // cmd `${cmd} --input-file xx --output-proto --merge-abc`
+  let filePath: string = path.join(process.env.cachePath, workerFileName);
+  let content: string = "";
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].tempFilePath;
-    const ohmURL: string = inputPaths[i].recordName;
-    const protoFileName: string = genProtoFileName(input);
-    const sourceFile: string = toUnixPath(inputPaths[i].filePath.replace(projectConfig.projectRootPath, ''));
-    const singleCmd: any = `${cmd} "${input}" --record-name "${ohmURL}" --source-file "${sourceFile}" --output-proto --merge-abc`;
-    logger.debug('gen abc cmd is: ', singleCmd);
-    try {
-      childProcess.execSync(singleCmd);
-    } catch (e) {
-      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to proto `, reset);
-      process.exit(FAIL);
+    let info: any = inputPaths[i];
+    const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
+    content += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(info.sourceFile)}`;
+    if (i < inputPaths.length - 1) {
+      content += "\n"
     }
+  }
+  fs.writeFileSync(filePath, content, "utf-8");
+  const singleCmd: any = `${cmd} --input-file "${filePath}" --output-proto --merge-abc`;
+  logger.debug('gen abc cmd is: ', singleCmd);
+  try {
+    childProcess.execSync(singleCmd);
+  } catch (e) {
+    logger.debug(red, `ArkTS:ERROR Failed to convert file to proto `, reset);
+    process.exit(FAIL);
   }
 
   return;
@@ -73,11 +79,12 @@ function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
 
 logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
-if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
+if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined
+    && process.env['workerFileName'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
 
   if (process.env.panda === TS2ABC) {
-    js2abcByWorkers(process.env['inputs'], process.env['cmd']);
+    js2abcByWorkers(process.env['inputs'], process.env['cmd'], process.env['workerFileName']);
   } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
     es2abcByWorkers(process.env['inputs'], process.env['cmd']);
   } else {
