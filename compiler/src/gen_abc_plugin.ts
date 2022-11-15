@@ -841,6 +841,9 @@ function invokeWorkersToGenAbc(): void {
         cluster.removeAllListeners("exit");
       }
       cluster.on('exit', (worker, code, signal) => {
+        if (code === FAIL) {
+          process.exitCode = FAIL;
+        }
         count_++;
         if (count_ === workerNumber) {
           // for preview of with incre compile
@@ -1125,10 +1128,10 @@ function handleHotReloadChangedFiles() {
     let filePath: string = path.join(projectConfig.projectPath, file);
     validateFilePathLength(filePath);
     let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
-    validateFilePathLength(tempFilePath);
     if (tempFilePath.length === 0) {
       return;
     }
+    validateFilePathLength(tempFilePath);
     let buildFilePath: string = "";
     tempFilePath = toUnixPath(tempFilePath);
 
