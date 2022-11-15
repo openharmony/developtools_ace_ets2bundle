@@ -675,17 +675,11 @@ export function parseErrorMessage(message: string): string {
 }
 
 export function isEs2Abc(): boolean {
-  if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-    return true;
-  }
-  return false;
+  return process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined;
 }
 
 export function isTs2Abc(): boolean {
-  if (process.env.panda === TS2ABC) {
-    return true;
-  }
-  return false;
+  return process.env.panda === TS2ABC;
 }
 
 export function genProtoFileName(temporaryFile: string): string {
@@ -760,5 +754,19 @@ export function validateFilePathLength(filePath: string): boolean {
     logger.error("Validate file path failed");
     process.exitCode = FAIL;
     return false;
+  }
+}
+
+export function buildCachePath(tailName: string): string {
+  let pathName: string = process.env.cachePath !== undefined ?
+      path.join(process.env.cachePath, tailName) : path.join(projectConfig.buildPath, tailName);
+  validateFilePathLength(pathName);
+
+  return pathName;
+}
+
+export function unlinkSync(filePath: string): void {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
   }
 }
