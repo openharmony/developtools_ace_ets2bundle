@@ -125,6 +125,8 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize = fs.statSync(cacheOutputPath).size;
+    output = toUnixPath(output);
+    cacheOutputPath = toUnixPath(cacheOutputPath);
     intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
   } else {
     logger.debug(red, `ArkTS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
