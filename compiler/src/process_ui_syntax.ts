@@ -518,7 +518,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     }
     return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
       ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
-      node.parameters, node.type, isOriginalExtend(node.body) ?
+      node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
         ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
