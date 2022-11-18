@@ -69,8 +69,7 @@ import {
   PROTO_FILESINFO_TXT,
   NPMENTRIES_TXT,
   EXTNAME_PROTO_BIN,
-  FILESINFO_TXT,
-  BUNDLE_CACHE
+  FILESINFO_TXT
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -1225,10 +1224,11 @@ function mergeProtoToAbc(): void {
 }
 
 function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
-  let [filesInfoPath, cacheFilePath] = generateFileOfBundle(inputPaths);
+  filterIntermediateJsBundleByHashJson(buildPathInfo, inputPaths);
+  let filesInfoPath = generateFileOfBundle(fileterIntermediateJsBundle);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   let genAbcCmd: string =
-      `${initAbcEnv().join(' ')} "@${filesInfoPath}" --file-threads "${fileThreads}" --cache-file "${cacheFilePath}"`;
+      `${initAbcEnv().join(' ')} "@${filesInfoPath}" --file-threads "${fileThreads}"`;
   logger.debug('gen abc cmd is: ', genAbcCmd);
   try {
     if (process.env.watchMode === 'true') {
@@ -1236,14 +1236,14 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
     } else {
       const child = childProcess.exec(genAbcCmd);
       child.on('exit', (code: any) => {
-        if (process.env.cachePath === undefined) {
-          unlinkSync(filesInfoPath);
-          unlinkSync(cacheFilePath);
-        }
         if (code === 1) {
           logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
           process.exit(FAIL);
         }
+        if (process.env.cachePath === undefined) {
+          unlinkSync(filesInfoPath);
+        }
+        processExtraAsset();
       });
 
       child.on('error', (err: any) => {
@@ -1261,16 +1261,17 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
       process.exit(FAIL);
     }
   } finally {
-    if (process.env.watchMode === 'true' && process.env.cachePath === undefined) {
-      unlinkSync(filesInfoPath);
-      unlinkSync(cacheFilePath);
+    if (process.env.watchMode === 'true') {
+      if (process.env.cachePath === undefined) {
+        unlinkSync(filesInfoPath);
+      }
+      processExtraAsset();
     }
   }
 }
 
 function generateFileOfBundle(inputPaths: File[]) {
   let filesInfoPath: string = buildCachePath(FILESINFO_TXT);
-  let cacheFilePath: string = buildCachePath(BUNDLE_CACHE);
   inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
 
   let filesInfo: string = '';
@@ -1279,12 +1280,12 @@ function generateFileOfBundle(inputPaths: File[]) {
     const recordName: string = 'null_recordName';
     const moduleType: string = 'script';
     const sourceFile: string = info.path.replace(/\.temp\.js$/, "_.js");
-    const abcFilePath: string = info.path.replace(/\.temp\.js$/, ".abc");
+    const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     filesInfo += `${cacheOutputPath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
   });
   fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
 
-  return [filesInfoPath, cacheFilePath];
+  return filesInfoPath;
 }
 
 function removeDuplicateInfoOfBundleList(inputPaths: File[]) {
