@@ -54,13 +54,15 @@ class ClassA {
     }
 }
 class LocalStorageComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__simpleVarName = this.createLocalStorageLink("storageSimpleProp", 0, "simpleVarName");
         this.__objectName = this.createLocalStorageProp("storageObjectProp", new ClassA("x"), "objectName");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }

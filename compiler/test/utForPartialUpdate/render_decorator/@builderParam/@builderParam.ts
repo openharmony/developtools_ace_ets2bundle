@@ -105,8 +105,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.header = "";
         this.footer = "";
         this.setInitiallyProvidedValue(params);
@@ -120,6 +120,8 @@ class CustomContainer extends ViewPU {
         if (params.footer !== undefined) {
             this.footer = params.footer;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
@@ -165,8 +167,8 @@ class CustomContainer extends ViewPU {
     }
 }
 class CustomContainer2 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.header = "";
         this.setInitiallyProvidedValue(params);
     }
@@ -175,6 +177,8 @@ class CustomContainer2 extends ViewPU {
             this.header = params.header;
         }
         this.content = params.content;
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
@@ -240,8 +244,8 @@ function specificWithParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class CustomContainerUser extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__text = new ObservedPropertySimplePU('header', this, "text");
         this.setInitiallyProvidedValue(params);
     }
@@ -249,6 +253,8 @@ class CustomContainerUser extends ViewPU {
         if (params.text !== undefined) {
             this.text = params.text;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__text.purgeDependencyOnElmtId(rmElmtId);
@@ -326,27 +332,50 @@ class CustomContainerUser extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new TestComponent_1.CustomContainerExport(this, {
-                header: this.text,
-                closer: () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        Column.create();
-                        Column.onClick(() => {
-                            this.text = "changeHeader";
-                        });
-                        if (!isInitialRender) {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new TestComponent_1.CustomContainerExport(this, {
+                        header: this.text,
+                        closer: () => {
+                            this.observeComponentCreation((elmtId, isInitialRender) => {
+                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                                if (!isInitialRender) {
+                                    Column.pop();
+                                }
+                                ViewStackProcessor.StopGetAccessRecording();
+                            });
+                            specificWithParam("111", "22", this);
                             Column.pop();
                         }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
-                    specificWithParam("111", "22", this);
-                    Column.pop();
+                    }, elmtId));
                 }
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        header: this.text,
+                        closer: () => {
+                            this.observeComponentCreation((elmtId, isInitialRender) => {
+                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                                if (!isInitialRender) {
+                                    Column.pop();
+                                }
+                                ViewStackProcessor.StopGetAccessRecording();
+                            });
+                            specificWithParam("111", "22", this);
+                            Column.pop();
+                        }
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -357,15 +386,26 @@ class CustomContainerUser extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new CustomContainer(this, {
-                header: this.text,
-                content: this.specificParam,
-                callContent: this.callSpecificParam("callContent1", 'callContent2'),
-                footer: "Footer",
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new CustomContainer(this, {
+                        header: this.text,
+                        content: this.specificParam,
+                        callContent: this.callSpecificParam("callContent1", 'callContent2'),
+                        footer: "Footer",
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        header: this.text,
+                        content: this.specificParam,
+                        callContent: this.callSpecificParam("callContent1", 'callContent2'),
+                        footer: "Footer",
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Row.pop();
         this.observeComponentCreation((elmtId, isInitialRender) => {
@@ -377,27 +417,50 @@ class CustomContainerUser extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new CustomContainer2(this, {
-                header: this.text,
-                content: () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        Column.create();
-                        Column.onClick(() => {
-                            this.text = "changeHeader";
-                        });
-                        if (!isInitialRender) {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new CustomContainer2(this, {
+                        header: this.text,
+                        content: () => {
+                            this.observeComponentCreation((elmtId, isInitialRender) => {
+                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                                if (!isInitialRender) {
+                                    Column.pop();
+                                }
+                                ViewStackProcessor.StopGetAccessRecording();
+                            });
+                            this.callSpecificParam("111", '222', this);
                             Column.pop();
                         }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
-                    this.callSpecificParam("111", '222', this);
-                    Column.pop();
+                    }, elmtId));
                 }
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        header: this.text,
+                        content: () => {
+                            this.observeComponentCreation((elmtId, isInitialRender) => {
+                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                                if (!isInitialRender) {
+                                    Column.pop();
+                                }
+                                ViewStackProcessor.StopGetAccessRecording();
+                            });
+                            this.callSpecificParam("111", '222', this);
+                            Column.pop();
+                        }
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Row.pop();
         Column.pop();

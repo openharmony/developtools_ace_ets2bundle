@@ -60,8 +60,8 @@ struct TransitionExample {
 exports.expectResult =
 `"use strict";
 class TransitionExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__btnW = new ObservedPropertySimplePU(50, this, "btnW");
         this.__btnH = new ObservedPropertySimplePU(50, this, "btnH");
         this.__btn1 = new ObservedPropertySimplePU(false, this, "btn1");
@@ -81,6 +81,8 @@ class TransitionExample extends ViewPU {
         if (params.show !== undefined) {
             this.show = params.show;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__btnW.purgeDependencyOnElmtId(rmElmtId);

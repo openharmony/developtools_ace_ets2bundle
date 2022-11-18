@@ -36,11 +36,13 @@ struct ButtonExample {
 exports.expectResult =
 `"use strict";
 class ButtonExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
