@@ -28,8 +28,8 @@ struct StatePage {
 exports.expectResult =
 `"use strict";
 class StatePage extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__counter = new ObservedPropertySimplePU(0, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
@@ -37,6 +37,8 @@ class StatePage extends ViewPU {
         if (params.counter !== undefined) {
             this.counter = params.counter;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);

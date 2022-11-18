@@ -193,8 +193,8 @@ function specificParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimplePU(true, this, "hideBar");
@@ -210,6 +210,8 @@ class MyComponent extends ViewPU {
         if (params.hideBar !== undefined) {
             this.hideBar = params.hideBar;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__hideBar.purgeDependencyOnElmtId(rmElmtId);

@@ -54,8 +54,8 @@ struct TabSimple {
 exports.expectResult =
 `"use strict";
 class TabSimple extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.controller = new TabsController();
         this.setInitiallyProvidedValue(params);
     }
@@ -63,6 +63,8 @@ class TabSimple extends ViewPU {
         if (params.controller !== undefined) {
             this.controller = params.controller;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
