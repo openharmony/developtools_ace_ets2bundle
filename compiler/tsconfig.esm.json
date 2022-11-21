@@ -609,7 +609,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "importsNotUsedAsValues": "preserve",
+    "importsNotUsedAsValues": "remove",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
