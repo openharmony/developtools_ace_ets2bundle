@@ -113,7 +113,8 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       });
     }
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.error(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    process.env.abcCompileSuccess = 'false';
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);
     }
