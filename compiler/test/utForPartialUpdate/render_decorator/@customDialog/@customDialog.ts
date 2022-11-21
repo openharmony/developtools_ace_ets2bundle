@@ -101,8 +101,8 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 class DialogExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__count = new SynchedPropertySimpleOneWayPU(params.count, this, "count");
         this.__isPlaying = new SynchedPropertySimpleTwoWayPU(params.isPlaying, this, "isPlaying");
         this.controller = undefined;
@@ -124,6 +124,8 @@ class DialogExample extends ViewPU {
         if (params.action2 !== undefined) {
             this.action2 = params.action2;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__count.purgeDependencyOnElmtId(rmElmtId);
@@ -247,8 +249,8 @@ class DialogExample extends ViewPU {
     }
 }
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__countInitValue = new ObservedPropertySimplePU(10, this, "countInitValue");
         this.__playingInitValue = new ObservedPropertySimplePU(false, this, "playingInitValue");
         this.dialogController = new CustomDialogController({
@@ -259,7 +261,7 @@ class CustomDialogUser extends ViewPU {
                     action2: this.existApp,
                     count: this.__countInitValue,
                     isPlaying: this.__playingInitValue
-                });
+                }, elmtId);
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },
@@ -278,6 +280,8 @@ class CustomDialogUser extends ViewPU {
         if (params.dialogController !== undefined) {
             this.dialogController = params.dialogController;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__countInitValue.purgeDependencyOnElmtId(rmElmtId);

@@ -39,8 +39,8 @@ struct HomePreviewComponent_Preview {
 exports.expectResult =
 `"use strict";
 class HomePreviewComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.value = "hello world";
         this.setInitiallyProvidedValue(params);
     }
@@ -48,6 +48,8 @@ class HomePreviewComponent extends ViewPU {
         if (params.value !== undefined) {
             this.value = params.value;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
@@ -73,11 +75,13 @@ class HomePreviewComponent extends ViewPU {
     }
 }
 class HomePreviewComponent_Preview extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
@@ -95,10 +99,16 @@ class HomePreviewComponent_Preview extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new HomePreviewComponent(this, {}));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new HomePreviewComponent(this, {}, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Column.pop();
     }
