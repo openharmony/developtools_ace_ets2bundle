@@ -126,7 +126,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isBuilder);
+      isBuilder, isGlobalBuilder);
     if (hasChainCall) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -158,28 +158,29 @@ function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
-  isBuilder: boolean = false): void {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isBuilder);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isBuilder, isGlobalBuilder);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
-  isBuilder: boolean = false): void {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(node, newNode));
+    newStatements.push(createCustomComponent(node, newNode, isGlobalBuilder));
   }
 }
 
-function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression): ts.Block {
+function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression,
+  isGlobalBuilder: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (node.expression && node.expression.arguments && node.expression.arguments.length) {
     componentParameter = node.expression.arguments[0];
@@ -189,8 +190,8 @@ function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpr
   return ts.factory.createBlock(
     [
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
+        ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
+          ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
           ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
         ), undefined,
         [ts.factory.createArrowFunction(undefined, undefined,
@@ -213,7 +214,7 @@ function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpr
                   ), undefined,
                   [ts.factory.createIdentifier(ELMTID)]
                 )),
-              createIfCustomComponent(newNode, componentParameter),
+              createIfCustomComponent(newNode, componentParameter, isGlobalBuilder),
               ts.factory.createExpressionStatement(ts.factory.createCallExpression(
                 ts.factory.createPropertyAccessExpression(
                   ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
@@ -226,8 +227,8 @@ function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpr
     ], true);
 }
 
-function createIfCustomComponent(newNode: ts.NewExpression,
-  componentParameter: ts.ObjectLiteralExpression): ts.IfStatement {
+function createIfCustomComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression,
+  isGlobalBuilder: boolean = false): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
@@ -241,8 +242,8 @@ function createIfCustomComponent(newNode: ts.NewExpression,
       ], true),
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
+        ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
+          ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
           ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
         ), undefined,
         [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
