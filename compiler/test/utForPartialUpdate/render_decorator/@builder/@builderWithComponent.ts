@@ -46,13 +46,13 @@ exports.expectResult =
 `"use strict";
 function myBuilder(parent = undefined) {
     {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
+        (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
                 ViewPU.create(new child(parent ? parent : this, {}, elmtId));
             }
             else {
-                this.updateStateVarsOfChildByElmtId(elmtId, {});
+                (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
