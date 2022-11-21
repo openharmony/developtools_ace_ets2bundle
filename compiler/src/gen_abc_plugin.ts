@@ -811,6 +811,10 @@ function invokeWorkersToGenAbc(): void {
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
+  if (fileterIntermediateJsBundle.length === 0) {
+    processExtraAsset();
+    return;
+  }
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
 
@@ -1218,6 +1222,10 @@ function mergeProtoToAbc(): void {
 
 function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
   filterIntermediateJsBundleByHashJson(buildPathInfo, inputPaths);
+  if (fileterIntermediateJsBundle.length === 0) {
+    processExtraAsset();
+    return;
+  }
   let filesInfoPath = generateFileOfBundle(fileterIntermediateJsBundle);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   let genAbcCmd: string =
@@ -1249,7 +1257,8 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
       });
     }
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.error(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    process.env.abcCompileSuccess = 'false';
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);
     }
