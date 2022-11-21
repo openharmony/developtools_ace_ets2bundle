@@ -535,7 +535,7 @@ function processInnerCompStatements(
   }
 }
 
-function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
+export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
   isGlobalBuilder: boolean = false): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
