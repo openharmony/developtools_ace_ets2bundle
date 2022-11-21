@@ -67,8 +67,8 @@ struct CompA {
 exports.expectResult =
 `"use strict";
 class CompA extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__shopBasket = new ObservedPropertyObjectPU([7, 12, 47, 3], this, "shopBasket");
         this.__totalPurchase = new ObservedPropertySimplePU(0, this, "totalPurchase");
         this.__defArray = new ObservedPropertyObjectPU(['c', 'g', 't', 'z'], this, "defArray");
@@ -90,6 +90,8 @@ class CompA extends ViewPU {
         if (params.resultTip !== undefined) {
             this.resultTip = params.resultTip;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__shopBasket.purgeDependencyOnElmtId(rmElmtId);
