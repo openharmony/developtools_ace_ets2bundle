@@ -80,8 +80,8 @@ const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
 class HomeComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.value1 = "hello world 1";
         this.value2 = "hello world 2";
         this.value3 = "hello world 3";
@@ -113,6 +113,8 @@ class HomeComponent extends ViewPU {
         if (params.format !== undefined) {
             this.format = params.format;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__format.purgeDependencyOnElmtId(rmElmtId);

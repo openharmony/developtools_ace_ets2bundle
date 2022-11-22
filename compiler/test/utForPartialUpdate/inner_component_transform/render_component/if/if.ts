@@ -42,8 +42,8 @@ struct IFView {
 exports.expectResult =
 `"use strict";
 class IFView extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__toggle1 = new ObservedPropertySimplePU(false, this, "toggle1");
         this.__toggle2 = new ObservedPropertySimplePU(false, this, "toggle2");
         this.__toggle3 = new ObservedPropertySimplePU(false, this, "toggle3");
@@ -59,6 +59,8 @@ class IFView extends ViewPU {
         if (params.toggle3 !== undefined) {
             this.toggle3 = params.toggle3;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__toggle1.purgeDependencyOnElmtId(rmElmtId);
