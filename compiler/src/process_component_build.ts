@@ -1513,21 +1513,49 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
       [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER].includes(property.name.escapedText.toString()) &&
-      property.initializer && isPropertyAccessExpressionNode(property.initializer)) {
-      newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
-        ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-            property.initializer,
-            ts.factory.createIdentifier(BUILDER_ATTR_BIND)
-          ),
-          undefined,
-          [ts.factory.createThis()]
-        )));
+      property.initializer) {
+      if (isPropertyAccessExpressionNode(property.initializer)) {
+        newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              property.initializer,
+              ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+            ),
+            undefined,
+            [ts.factory.createThis()]
+          )));
+      } else if (isGlobalBuilderCallExpressionNode(property.initializer) ||
+        isInnerBuilderCallExpressionNode(property.initializer)) {
+        newProperties.push(transformBuilderCallExpression(property));
+      } else {
+        newProperties.push(property);
+      }
     } else {
       newProperties.push(property);
     }
   });
   return ts.factory.updateObjectLiteralExpression(node, newProperties);
+}
+
+function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.PropertyAssignment {
+  return ts.factory.updatePropertyAssignment(property, property.name,
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        property.initializer.expression,
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+      ),
+      undefined,
+      [ts.factory.createThis(), ...(property.initializer.arguments || [])]
+    ))
+}
+
+function isInnerBuilderCallExpressionNode(node: ts.Node): boolean {
+  return ts.isCallExpression(node) && node.expression && isPropertyAccessExpressionNode(node.expression);
+}
+
+function isGlobalBuilderCallExpressionNode(node: ts.Node): boolean {
+  return ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    CUSTOM_BUILDER_METHOD.has(node.expression.escapedText.toString());
 }
 
 function isPropertyAccessExpressionNode(node: ts.Node): boolean {
