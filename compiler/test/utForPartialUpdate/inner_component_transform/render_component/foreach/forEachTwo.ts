@@ -42,8 +42,8 @@ struct Index {
 exports.expectResult =
 `"use strict";
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__WIDTH_AND_HEIGHT = new ObservedPropertyObjectPU([
             { w: 10, h: 10 },
             { w: 20, h: 20 },
@@ -57,6 +57,8 @@ class Index extends ViewPU {
         if (params.WIDTH_AND_HEIGHT !== undefined) {
             this.WIDTH_AND_HEIGHT = params.WIDTH_AND_HEIGHT;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__WIDTH_AND_HEIGHT.purgeDependencyOnElmtId(rmElmtId);

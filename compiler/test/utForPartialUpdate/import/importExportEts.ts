@@ -61,8 +61,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__myState1 = new ObservedPropertyObjectPU(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimplePU(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimplePU(false, this, "myState3");
@@ -82,6 +82,8 @@ class ImportTest extends ViewPU {
         if (params.myState4 !== undefined) {
             this.myState4 = params.myState4;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__myState1.purgeDependencyOnElmtId(rmElmtId);
@@ -131,34 +133,64 @@ class ImportTest extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new ExportStarComponent_1.AllStarComponent.ExportComponent(this, {
-                ExportComponent1Link1: this.__myState1,
-                ExportComponent1Link2: this.__myState2,
-                ExportComponent1Link3: this.__myState3,
-                ExportComponent1Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent1'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new ExportStarComponent_1.AllStarComponent.ExportComponent(this, {
+                        ExportComponent1Link1: this.__myState1,
+                        ExportComponent1Link2: this.__myState2,
+                        ExportComponent1Link3: this.__myState3,
+                        ExportComponent1Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent1'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        ExportComponent1Link1: this.__myState1,
+                        ExportComponent1Link2: this.__myState2,
+                        ExportComponent1Link3: this.__myState3,
+                        ExportComponent1Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent1'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new ExportStarComponent_1.AllStarComponent.default(this, {
-                ExportComponent4Link1: this.__myState1,
-                ExportComponent4Link2: this.__myState2,
-                ExportComponent4Link3: this.__myState3,
-                ExportComponent4Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'ExportComponent4'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new ExportStarComponent_1.AllStarComponent.default(this, {
+                        ExportComponent4Link1: this.__myState1,
+                        ExportComponent4Link2: this.__myState2,
+                        ExportComponent4Link3: this.__myState3,
+                        ExportComponent4Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent4'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        ExportComponent4Link1: this.__myState1,
+                        ExportComponent4Link2: this.__myState2,
+                        ExportComponent4Link3: this.__myState3,
+                        ExportComponent4Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent4'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Column.pop();
     }
