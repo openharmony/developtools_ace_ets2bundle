@@ -615,9 +615,7 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
-    if (partialUpdateConfig.partialUpdateMode && !statement.decorators) {
-      paramsStatement = createParamsStatement(name);
-    } else {
+    if (!partialUpdateConfig.partialUpdateMode || statement.decorators) {
       paramsStatement = createParamsWithUnderlineStatement(name);
     }
     deleteStatements.push(paramsStatement);
@@ -642,17 +640,6 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   const deleteParamsMethod: ts.MethodDeclaration =
     createParamsInitBlock(COMPONENT_CONSTRUCTOR_DELETE_PARAMS, deleteStatements);
   return deleteParamsMethod;
-}
-
-function createParamsStatement(name: ts.Identifier): ts.ExpressionStatement {
-  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createThis(),
-      ts.factory.createIdentifier(`${name.escapedText.toString()}`)
-    ),
-    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
-  ));
 }
 
 function createParamsWithUnderlineStatement(name: ts.Identifier): ts.ExpressionStatement {
