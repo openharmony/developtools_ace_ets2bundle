@@ -37,7 +37,11 @@ import {
   genProtoFileName,
   genMergeProtoFileName,
   removeDuplicateInfo,
-  validateFilePathLength
+  validateFilePathLength,
+  isTs2Abc,
+  isEs2Abc,
+  buildCachePath,
+  unlinkSync
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -64,7 +68,8 @@ import {
   TS2ABC,
   PROTO_FILESINFO_TXT,
   NPMENTRIES_TXT,
-  EXTNAME_PROTO_BIN
+  EXTNAME_PROTO_BIN,
+  FILESINFO_TXT
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -237,11 +242,17 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      if (previewCount == compileCount) {
-        previewCount++;
-        invokeWorkersToGenAbc();
+      if (isTs2Abc()) {
+        if (previewCount == compileCount) {
+          previewCount++;
+          invokeWorkersToGenAbc();
+        } else {
+          previewCount++;
+        }
+      } else if (isEs2Abc()){
+        generateAbcByEs2AbcOfBundleMode(intermediateJsBundle);
       } else {
-        previewCount++;
+        logger.error(red, `ArkTS:ERROR please set panda module`, reset);
       }
     });
   }
@@ -804,6 +815,10 @@ function invokeWorkersToGenAbc(): void {
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
+  if (fileterIntermediateJsBundle.length === 0) {
+    processExtraAsset();
+    return;
+  }
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
 
@@ -954,16 +969,7 @@ function writeModuleHashJson(): void {
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
-  const tempInputPaths = Array<File>();
-  inputPaths.forEach((item) => {
-    const check = tempInputPaths.every((newItem) => {
-      return item.path !== newItem.path;
-    });
-    if (check) {
-      tempInputPaths.push(item);
-    }
-  });
-  inputPaths = tempInputPaths;
+  inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
 
   for (let i = 0; i < inputPaths.length; ++i) {
     fileterIntermediateJsBundle.push(inputPaths[i]);
@@ -1219,4 +1225,89 @@ function mergeProtoToAbc(): void {
   } catch (e) {
     logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc`, reset);
   }
+}
+
+function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
+  filterIntermediateJsBundleByHashJson(buildPathInfo, inputPaths);
+  if (fileterIntermediateJsBundle.length === 0) {
+    processExtraAsset();
+    return;
+  }
+  let filesInfoPath = generateFileOfBundle(fileterIntermediateJsBundle);
+  const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
+  let genAbcCmd: string =
+      `${initAbcEnv().join(' ')} "@${filesInfoPath}" --file-threads "${fileThreads}"`;
+  logger.debug('gen abc cmd is: ', genAbcCmd);
+  try {
+    if (process.env.watchMode === 'true') {
+      childProcess.execSync(genAbcCmd);
+    } else {
+      const child = childProcess.exec(genAbcCmd);
+      child.on('exit', (code: any) => {
+        if (code === 1) {
+          logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
+          process.exit(FAIL);
+        }
+        if (process.env.cachePath === undefined) {
+          unlinkSync(filesInfoPath);
+        }
+        processExtraAsset();
+      });
+
+      child.on('error', (err: any) => {
+        logger.debug(red, err.toString(), reset);
+        process.exit(FAIL);
+      });
+
+      child.stderr.on('data', (data: any) => {
+        logger.debug(red, data.toString(), reset);
+      });
+    }
+  } catch (e) {
+    logger.error(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    process.env.abcCompileSuccess = 'false';
+    if (process.env.watchMode !== 'true') {
+      process.exit(FAIL);
+    }
+  } finally {
+    if (process.env.watchMode === 'true') {
+      if (process.env.cachePath === undefined) {
+        unlinkSync(filesInfoPath);
+      }
+      processExtraAsset();
+    }
+  }
+}
+
+function generateFileOfBundle(inputPaths: File[]): string {
+  let filesInfoPath: string = buildCachePath(FILESINFO_TXT);
+  inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
+
+  let filesInfo: string = '';
+  inputPaths.forEach(info => {
+    const cacheOutputPath: string = info.cacheOutputPath;
+    const recordName: string = 'null_recordName';
+    const moduleType: string = 'script';
+    const sourceFile: string = info.path.replace(/\.temp\.js$/, "_.js");
+    const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
+    filesInfo += `${cacheOutputPath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
+  });
+  fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
+
+  return filesInfoPath;
+}
+
+function removeDuplicateInfoOfBundleList(inputPaths: File[]) {
+  const tempInputPaths = Array<File>();
+  inputPaths.forEach((item) => {
+    const check = tempInputPaths.every((newItem) => {
+      return item.path !== newItem.path;
+    });
+    if (check) {
+      tempInputPaths.push(item);
+    }
+  });
+  inputPaths = tempInputPaths;
+
+  return inputPaths;
 }
