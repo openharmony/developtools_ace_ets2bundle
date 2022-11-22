@@ -106,8 +106,8 @@ struct ParentView5 {
 exports.expectResult =
 `"use strict";
 class ParentView extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -115,6 +115,8 @@ class ParentView extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
@@ -168,8 +170,8 @@ class ParentView extends ViewPU {
     }
 }
 class ParentView1 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -177,6 +179,8 @@ class ParentView1 extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
@@ -230,8 +234,8 @@ class ParentView1 extends ViewPU {
     }
 }
 class ParentView2 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -239,6 +243,8 @@ class ParentView2 extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
@@ -292,8 +298,8 @@ class ParentView2 extends ViewPU {
     }
 }
 class ParentView3 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -301,6 +307,8 @@ class ParentView3 extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
@@ -354,8 +362,8 @@ class ParentView3 extends ViewPU {
     }
 }
 class ParentView4 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -363,6 +371,8 @@ class ParentView4 extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);
@@ -416,8 +426,8 @@ class ParentView4 extends ViewPU {
     }
 }
 class ParentView5 extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -425,6 +435,8 @@ class ParentView5 extends ViewPU {
         if (params.arr !== undefined) {
             this.arr = params.arr;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__arr.purgeDependencyOnElmtId(rmElmtId);

@@ -128,8 +128,8 @@ const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponen
 const AMDComponentDefault = require("./test/pages/AMDComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__myState1 = new ObservedPropertyObjectPU(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimplePU(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimplePU(false, this, "myState3");
@@ -149,6 +149,8 @@ class ImportTest extends ViewPU {
         if (params.myState4 !== undefined) {
             this.myState4 = params.myState4;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__myState1.purgeDependencyOnElmtId(rmElmtId);
@@ -198,19 +200,34 @@ class ImportTest extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new LinkComponent_1.LinkComponent2(this, {
-                LinkComponent2Link1: this.__myState1,
-                LinkComponent2Link2: this.__myState2,
-                LinkComponent2Link3: this.__myState3,
-                LinkComponent2Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'LinkComponent2'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new LinkComponent_1.LinkComponent2(this, {
+                        LinkComponent2Link1: this.__myState1,
+                        LinkComponent2Link2: this.__myState2,
+                        LinkComponent2Link3: this.__myState3,
+                        LinkComponent2Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent2'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        LinkComponent2Link1: this.__myState1,
+                        LinkComponent2Link2: this.__myState2,
+                        LinkComponent2Link3: this.__myState3,
+                        LinkComponent2Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent2'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -224,75 +241,146 @@ class ImportTest extends ViewPU {
         });
         Text.pop();
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new LinkComponent_1.LinkComponent(this, {
-                LinkComponent1Link1: this.__myState1,
-                LinkComponent1Link2: this.__myState2,
-                LinkComponent1Link3: this.__myState3,
-                LinkComponent1Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'LinkComponent1'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new LinkComponent_1.LinkComponent(this, {
+                        LinkComponent1Link1: this.__myState1,
+                        LinkComponent1Link2: this.__myState2,
+                        LinkComponent1Link3: this.__myState3,
+                        LinkComponent1Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent1'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        LinkComponent1Link1: this.__myState1,
+                        LinkComponent1Link2: this.__myState2,
+                        LinkComponent1Link3: this.__myState3,
+                        LinkComponent1Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent1'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new DefaultComponent_1.default(this, {
-                DefaultComponentLink1: this.__myState1,
-                DefaultComponentLink2: this.__myState2,
-                DefaultComponentLink3: this.__myState3,
-                DefaultComponentLink4: this.__myState4,
-                myVar: 100,
-                myVar2: 100
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new DefaultComponent_1.default(this, {
+                        DefaultComponentLink1: this.__myState1,
+                        DefaultComponentLink2: this.__myState2,
+                        DefaultComponentLink3: this.__myState3,
+                        DefaultComponentLink4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 100
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        DefaultComponentLink1: this.__myState1,
+                        DefaultComponentLink2: this.__myState2,
+                        DefaultComponentLink3: this.__myState3,
+                        DefaultComponentLink4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 100
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new LinkComponent_1.default(this, {
-                LinkComponent3Link1: this.__myState1,
-                LinkComponent3Link2: this.__myState2,
-                LinkComponent3Link3: this.__myState3,
-                LinkComponent3Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'LinkComponent3'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new LinkComponent_1.default(this, {
+                        LinkComponent3Link1: this.__myState1,
+                        LinkComponent3Link2: this.__myState2,
+                        LinkComponent3Link3: this.__myState3,
+                        LinkComponent3Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent3'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        LinkComponent3Link1: this.__myState1,
+                        LinkComponent3Link2: this.__myState2,
+                        LinkComponent3Link3: this.__myState3,
+                        LinkComponent3Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent3'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new AMDComponentDefault(this, {
-                AMDComponentLink1: this.__myState1,
-                AMDComponentLink2: this.__myState2,
-                AMDComponentLink3: this.__myState3,
-                AMDComponentLink4: this.__myState4,
-                myVar: 100,
-                myVar2: 100
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new AMDComponentDefault(this, {
+                        AMDComponentLink1: this.__myState1,
+                        AMDComponentLink2: this.__myState2,
+                        AMDComponentLink3: this.__myState3,
+                        AMDComponentLink4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 100
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        AMDComponentLink1: this.__myState1,
+                        AMDComponentLink2: this.__myState2,
+                        AMDComponentLink3: this.__myState3,
+                        AMDComponentLink4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 100
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new LinkComponent_1.LinkComponent3(this, {
-                LinkComponent3Link1: this.__myState1,
-                LinkComponent3Link2: this.__myState2,
-                LinkComponent3Link3: this.__myState3,
-                LinkComponent3Link4: this.__myState4,
-                indexState1: { count: 1 },
-                indexState2: 1,
-                indexState3: true,
-                indexState4: 'LinkComponent1'
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new LinkComponent_1.LinkComponent3(this, {
+                        LinkComponent3Link1: this.__myState1,
+                        LinkComponent3Link2: this.__myState2,
+                        LinkComponent3Link3: this.__myState3,
+                        LinkComponent3Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent1'
+                    }, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        LinkComponent3Link1: this.__myState1,
+                        LinkComponent3Link2: this.__myState2,
+                        LinkComponent3Link3: this.__myState3,
+                        LinkComponent3Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'LinkComponent1'
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Column.pop();
     }

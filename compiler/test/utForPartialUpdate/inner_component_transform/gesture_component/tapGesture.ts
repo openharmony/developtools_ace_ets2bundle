@@ -37,8 +37,8 @@ struct TapGestureExample {
 exports.expectResult =
 `"use strict";
 class TapGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__value = new ObservedPropertySimplePU('', this, "value");
         this.setInitiallyProvidedValue(params);
     }
@@ -46,6 +46,8 @@ class TapGestureExample extends ViewPU {
         if (params.value !== undefined) {
             this.value = params.value;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__value.purgeDependencyOnElmtId(rmElmtId);

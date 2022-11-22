@@ -43,8 +43,8 @@ struct RotationGestureExample {
 exports.expectResult =
 `"use strict";
 class RotationGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__angle = new ObservedPropertySimplePU(0, this, "angle");
         this.setInitiallyProvidedValue(params);
     }
@@ -52,6 +52,8 @@ class RotationGestureExample extends ViewPU {
         if (params.angle !== undefined) {
             this.angle = params.angle;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__angle.purgeDependencyOnElmtId(rmElmtId);
