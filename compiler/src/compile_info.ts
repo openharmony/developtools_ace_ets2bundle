@@ -366,6 +366,7 @@ export class ResultStates {
   }
 
   private printLogCount(): void {
+    this.updateCountWithArkCompile();
     if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
@@ -397,10 +398,17 @@ export class ResultStates {
     this.clearCount();
   }
 
+  private updateCountWithArkCompile(): void {
+    if (process.env.abcCompileSuccess === 'false') {
+      this.mErrorCount += 1;
+    }
+  }
+
   private clearCount(): void {
     this.mErrorCount = 0;
     this.warningCount = 0;
     this.noteCount = 0;
+    process.env.abcCompileSuccess = 'true';
   }
 
   private printPreviewResult(resultInfo: string = ''): void {
