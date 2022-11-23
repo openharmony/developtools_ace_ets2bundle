@@ -120,12 +120,6 @@ class HomeComponent extends ViewPU {
         this.__format.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.value1 = undefined;
-        this.value2 = undefined;
-        this.value3 = undefined;
-        this.value4 = undefined;
-        this.count = undefined;
-        this.myTimeController = undefined;
         this.__format.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();

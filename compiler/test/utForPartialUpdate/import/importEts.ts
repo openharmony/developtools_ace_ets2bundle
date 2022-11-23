@@ -212,7 +212,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent2'
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -253,7 +253,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -281,7 +281,7 @@ class ImportTest extends ViewPU {
                         DefaultComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -309,7 +309,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent3'
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -337,7 +337,7 @@ class ImportTest extends ViewPU {
                         AMDComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -365,7 +365,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {

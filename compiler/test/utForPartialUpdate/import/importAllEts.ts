@@ -176,7 +176,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -191,8 +191,15 @@ class ImportTest extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.create();
-        __Common__.width(100);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -204,7 +211,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 100);
@@ -224,7 +231,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -239,8 +246,15 @@ class ImportTest extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.create();
-        __Common__.height(200);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.height(200);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -252,7 +266,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 200);

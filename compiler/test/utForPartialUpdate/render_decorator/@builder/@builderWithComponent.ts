@@ -49,7 +49,7 @@ function myBuilder(parent = undefined) {
         (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
-                ViewPU.create(new child(parent ? parent : this, {}, elmtId));
+                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId));
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -78,7 +78,7 @@ class Index extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new child(this, {}, elmtId));
+                    ViewPU.create(new child(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -102,7 +102,7 @@ class Index extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new child(this, {}, elmtId));
+                    ViewPU.create(new child(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
