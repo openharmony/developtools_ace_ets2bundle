@@ -290,6 +290,7 @@ export const GENERATE_ID = 'generateId';
 export const _GENERATE_ID = '__generate__Id';
 
 export const COMPONENT_CONSTRUCTOR_INITIAL_PARAMS: string = 'setInitiallyProvidedValue';
+export const COMPONENT_UPDATE_STATE_VARS: string = 'updateStateVars';
 export const COMPONENT_RERENDER_FUNCTION: string = 'rerender';
 export const COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP: string = 'purgeVariableDependenciesOnElmtId';
 export const MARKDEPENDENTELEMENTSDIRTY: string = 'markDependentElementsDirty';
@@ -306,6 +307,7 @@ export const ISINITIALRENDER: string = 'isInitialRender';
 export const ELMTID: string = 'elmtId';
 export const STARTGETACCESSRECORDINGFOR: string = 'StartGetAccessRecordingFor';
 export const STOPGETACCESSRECORDING: string = 'StopGetAccessRecording';
+export const UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID: string = 'updateStateVarsOfChildByElmtId';
 export const VIEWSTACKPROCESSOR: string = 'ViewStackProcessor';
 export const OBSERVECOMPONENTCREATION: string = 'observeComponentCreation';
 export const ISLAZYCREATE: string = 'isLazyCreate';

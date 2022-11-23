@@ -75,7 +75,8 @@ import {
   SYNCHED_PROPERTY_NESED_OBJECT_PU,
   OBSERVED_PROPERTY_ABSTRACT_PU,
   CREATE_LOCAL_STORAGE_LINK,
-  CREATE_LOCAL_STORAGE_PROP
+  CREATE_LOCAL_STORAGE_PROP,
+  COMPONENT_UPDATE_STATE_VARS
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -149,6 +150,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const newMembers: ts.ClassElement[] = [];
   const watchMap: Map<string, ts.Node> = new Map();
   const updateParamsStatements: ts.Statement[] = [];
+  const stateVarsStatements: ts.Statement[] = [];
   const purgeVariableDepStatements: ts.Statement[] = [];
   const rerenderStatements: ts.Statement[] = [];
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
@@ -183,6 +185,9 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
         if (result.getUpdateParams()) {
           updateParamsStatements.push(result.getUpdateParams());
         }
+        if (result.getStateVarsParams()) {
+          stateVarsStatements.push(result.getStateVarsParams());
+        }
         if (result.isDeleteParams()) {
           deleteParamsStatements.push(item);
         }
@@ -205,7 +210,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   validateHasController(parentComponentName, checkController, log);
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
-    purgeVariableDepStatements, rerenderStatements);
+    purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   return newMembers;
 }
@@ -241,13 +246,15 @@ function addIntoNewMembers(
   parentComponentName: ts.Identifier,
   updateParamsStatements: ts.Statement[],
   purgeVariableDepStatements: ts.Statement[],
-  rerenderStatements: ts.Statement[]
+  rerenderStatements: ts.Statement[],
+  stateVarsStatements: ts.Statement[]
 ): void {
   if (partialUpdateConfig.partialUpdateMode) {
     newMembers.unshift(
       addInitialParamsFunc(updateParamsStatements, parentComponentName),
+      addUpdateStateVarsFunc(stateVarsStatements, parentComponentName),
       addPurgeVariableDepFunc(purgeVariableDepStatements)
-    );  
+    );
     newMembers.push(addRerenderFunc(rerenderStatements));
   } else {
     newMembers.unshift(addUpdateParamsFunc(updateParamsStatements, parentComponentName));
@@ -588,6 +595,10 @@ function addUpdateParamsFunc(statements: ts.Statement[], parentComponentName: ts
 
 function addInitialParamsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier): ts.MethodDeclaration {
   return createParamsInitBlock(COMPONENT_CONSTRUCTOR_INITIAL_PARAMS, statements, parentComponentName);
+}
+
+function addUpdateStateVarsFunc(statements: ts.Statement[], parentComponentName: ts.Identifier): ts.MethodDeclaration {
+  return createParamsInitBlock(COMPONENT_UPDATE_STATE_VARS, statements, parentComponentName);
 }
 
 function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclaration {

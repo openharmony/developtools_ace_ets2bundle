@@ -27,7 +27,8 @@ import {
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE,
   BASE_COMPONENT_NAME_PU,
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
-  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU,
+  ELMTID
 } from './pre_define';
 
 import {
@@ -97,7 +98,8 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   ]) : new Set([
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
-    COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU
+    COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
+    ELMTID
   ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
@@ -105,9 +107,10 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
     newParameters.splice(0, newParameters.length);
   }
   paramNames.forEach((paramName: string) => {
-    // @ts-ignore
     newParameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-      ts.factory.createIdentifier(paramName), undefined, undefined, undefined));
+      ts.factory.createIdentifier(paramName), undefined, undefined,
+      paramName === ELMTID ? ts.factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.MinusToken, ts.factory.createNumericLiteral('1')) : undefined));
   });
 
   return ts.factory.updateConstructorDeclaration(node, undefined, node.modifiers, newParameters,
@@ -179,20 +182,21 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
     [...watchStatements, updateWithValueParamsStatement], false, true, parentComponentName);
 }
 
-function createCallSuperStatement(localStorageNum: number): ts.Statement{
+function createCallSuperStatement(localStorageNum: number): ts.Statement {
   if (!partialUpdateConfig.partialUpdateMode) {
     return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createSuper(), undefined,
-        localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-            ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
-            [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-              ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
+      ts.factory.createSuper(), undefined,
+      localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
+        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
   } else {
-    return (ts.factory.createExpressionStatement(
+    return ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
         [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU)])));
+          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU),
+          ts.factory.createIdentifier(ELMTID)]));
   }
 }
 
