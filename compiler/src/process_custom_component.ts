@@ -72,7 +72,8 @@ import {
 } from './utils';
 import {
   bindComponentAttr,
-  parentConditionalExpression
+  parentConditionalExpression,
+  createComponentCreationStatement
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
@@ -117,10 +118,19 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       }
     }
     if (hasChainCall) {
-      newStatements.push(ts.factory.createExpressionStatement(
-        createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+      if (partialUpdateConfig.partialUpdateMode) {
+        const commomComponentNode: ts.Statement[] = [ts.factory.createExpressionStatement(
+          createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))];
+        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode, log);
+        newStatements.push(createComponentCreationStatement(componentAttributes(), commomComponentNode));
+      } else {
+        newStatements.push(ts.factory.createExpressionStatement(
+          createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
           ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
-      bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
+        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
+      }
+      
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
       isBuilder);
@@ -130,6 +140,16 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     }
   }
+}
+
+function componentAttributes(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(COMPONENT_COMMON),
+        ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)
+      ), undefined, []
+    ));
 }
 
 function isHasChild(node: ts.CallExpression): boolean {
