@@ -97,6 +97,7 @@ let allModifiedFiles: Set<string> = new Set();
 export class ResultStates {
   private mStats: Stats;
   private mErrorCount: number = 0;
+  private tsErrorCount: number = 0;
   private mWarningCount: number = 0;
   private warningCount: number = 0;
   private noteCount: number = 0;
@@ -215,7 +216,7 @@ export class ResultStates {
         }
         globalProgram.watchProgram = ts.createWatchProgram(
           createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
-            this.delayPrintLogCount.bind(this)));
+            this.delayPrintLogCount.bind(this), this.resetTsErrorCount.bind(this)));
       } else {
         let languageService: ts.LanguageService = null;
         let cacheFile: string = null;
@@ -246,6 +247,7 @@ export class ResultStates {
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       let watchRemovedFiles: string[] = [...comp.removedFiles];
+      this.clearCount();
       if (watchModifiedFiles.length) {
         const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
@@ -321,7 +323,7 @@ export class ResultStates {
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
         updateErrorFileCache(diagnostic);
       }
-      this.mErrorCount += 1;
+      this.tsErrorCount += 1;
       if (diagnostic.file) {
         const { line, character }: ts.LineAndCharacter =
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
@@ -331,6 +333,10 @@ export class ResultStates {
         logger.error(this.red, `ArkTS:ERROR: ${message}`);
       }
     }
+  }
+
+  private resetTsErrorCount(): void {
+    this.tsErrorCount = 0;
   }
 
   private writeUseOSFiles(): void {
@@ -367,6 +373,7 @@ export class ResultStates {
 
   private printLogCount(): void {
     this.updateCountWithArkCompile();
+    this.mErrorCount += this.tsErrorCount;
     if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
@@ -396,6 +403,7 @@ export class ResultStates {
       }
     }
     this.clearCount();
+    this.resetTsErrorCount();
   }
 
   private updateCountWithArkCompile(): void {
