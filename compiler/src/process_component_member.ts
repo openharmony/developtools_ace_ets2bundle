@@ -70,7 +70,8 @@ import {
   THIS,
   CREATE_STORAGE_LINK,
   CREATE_STORAGE_PROP,
-  ELMTID
+  ELMTID,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -722,7 +723,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        argumentsArray.push(ts.factory.createIdentifier(ELMTID));
+        argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), ts.factory.createIdentifier(ELMTID));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
