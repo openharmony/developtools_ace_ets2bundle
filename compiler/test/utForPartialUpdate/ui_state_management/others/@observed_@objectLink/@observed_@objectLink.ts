@@ -177,7 +177,7 @@ class ViewB extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, elmtId));
+                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, { varA: this.varB.a });

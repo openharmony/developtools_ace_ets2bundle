@@ -239,7 +239,7 @@ class ImportTest extends ViewPU {
                         testStr: this.__testState1,
                         testNum: this.__testState2,
                         testObj: this.__testState3
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -258,7 +258,7 @@ class ImportTest extends ViewPU {
                     ViewPU.create(new ImportNestAll_1.DivideTest(this, {
                         testNum1: this.__testState4,
                         testNum2: this.__testState5
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {

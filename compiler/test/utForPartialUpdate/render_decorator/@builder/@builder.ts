@@ -217,8 +217,6 @@ class MyComponent extends ViewPU {
         this.__hideBar.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.arr = undefined;
-        this.controller = undefined;
         this.__hideBar.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();

@@ -114,7 +114,7 @@ class ParentComponent extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, elmtId));
+                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, { counter: this.__value });

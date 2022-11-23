@@ -139,7 +139,6 @@ class Parent extends ViewPU {
         this.__models.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.nextId = undefined;
         this.__models.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
@@ -168,7 +167,7 @@ class Parent extends ViewPU {
                     this.observeComponentCreation((elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                         if (isInitialRender) {
-                            ViewPU.create(new CustomText(this, { model: item }, elmtId));
+                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId));
                         }
                         else {
                             this.updateStateVarsOfChildByElmtId(elmtId, { model: item });
