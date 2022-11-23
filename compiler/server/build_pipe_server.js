@@ -67,7 +67,7 @@ function init(port) {
   writeFileSync(previewCacheFilePath, '');
   rootFileNames.push(previewCacheFilePath);
   ts.createWatchProgram(
-    createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount, true));
+    createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount, ()=>{}, true));
   const wss = new WebSocketServer({
     port: port,
     host: '127.0.0.1'

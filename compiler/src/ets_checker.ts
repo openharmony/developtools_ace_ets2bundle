@@ -222,14 +222,20 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
-  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, isPipe: boolean = false
-): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
+  reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, resetErrorCount: Function,
+  isPipe: boolean = false): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
   setCompilerOptions();
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
     [...rootFileNames, ...readDeaclareFiles()], compilerOptions,
     ts.sys, createProgram, reportDiagnostic,
     (diagnostic: ts.Diagnostic) => {
+      if ([6031, 6032].includes(diagnostic.code)) {
+        if (!isPipe) {
+          process.env.watchTs = 'start';
+          resetErrorCount();
+        }
+      }
       // End of compilation in watch mode flag.
       if ([6193, 6194].includes(diagnostic.code)) {
         if (!isPipe) {
