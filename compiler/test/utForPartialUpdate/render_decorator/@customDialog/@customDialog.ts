@@ -134,10 +134,6 @@ class DialogExample extends ViewPU {
     aboutToBeDeleted() {
         this.__count.aboutToBeDeleted();
         this.__isPlaying.aboutToBeDeleted();
-        this.controller = undefined;
-        this.termsToAccept = undefined;
-        this.action1 = undefined;
-        this.action2 = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -261,7 +257,7 @@ class CustomDialogUser extends ViewPU {
                     action2: this.existApp,
                     count: this.__countInitValue,
                     isPlaying: this.__playingInitValue
-                }, elmtId);
+                }, undefined, elmtId);
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },
@@ -290,7 +286,6 @@ class CustomDialogUser extends ViewPU {
     aboutToBeDeleted() {
         this.__countInitValue.aboutToBeDeleted();
         this.__playingInitValue.aboutToBeDeleted();
-        this.dialogController = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }

@@ -54,7 +54,6 @@ class HomePreviewComponent extends ViewPU {
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.value = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -102,7 +101,7 @@ class HomePreviewComponent_Preview extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new HomePreviewComponent(this, {}, elmtId));
+                    ViewPU.create(new HomePreviewComponent(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

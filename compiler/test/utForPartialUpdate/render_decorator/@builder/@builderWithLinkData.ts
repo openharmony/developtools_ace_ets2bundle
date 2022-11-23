@@ -110,7 +110,7 @@ class TestPage extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new TitleComp(this, { title: this.__value }, elmtId));
+                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, { title: this.__value });

@@ -126,8 +126,6 @@ class CustomContainer extends ViewPU {
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.header = undefined;
-        this.footer = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -183,7 +181,6 @@ class CustomContainer2 extends ViewPU {
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.header = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -352,7 +349,7 @@ class CustomContainerUser extends ViewPU {
                             specificWithParam("111", "22", this);
                             Column.pop();
                         }
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -394,7 +391,7 @@ class CustomContainerUser extends ViewPU {
                         content: this.specificParam,
                         callContent: this.callSpecificParam("callContent1", 'callContent2'),
                         footer: "Footer",
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -437,7 +434,7 @@ class CustomContainerUser extends ViewPU {
                             this.callSpecificParam("111", '222', this);
                             Column.pop();
                         }
-                    }, elmtId));
+                    }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
