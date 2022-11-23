@@ -71,7 +71,6 @@ class MyComponent extends ViewPU {
     aboutToBeDeleted() {
         this.__varA.aboutToBeDeleted();
         this.__lang.aboutToBeDeleted();
-        this.label = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }

@@ -101,7 +101,7 @@ class CompA extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new CompB(this, {}, elmtId));
+                    ViewPU.create(new CompB(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -165,7 +165,7 @@ class CompB extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new CompC(this, {}, elmtId));
+                    ViewPU.create(new CompC(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

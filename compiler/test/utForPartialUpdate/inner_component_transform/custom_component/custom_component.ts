@@ -75,7 +75,7 @@ class MyComponent extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, {}, elmtId));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -83,13 +83,20 @@ class MyComponent extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.create();
-        __Common__.width(100);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, {}, elmtId));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 100);
@@ -98,14 +105,21 @@ class MyComponent extends ViewPU {
             });
         }
         __Common__.pop();
-        __Common__.create();
-        __Common__.width(100);
-        __Common__.height(200);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            __Common__.height(200);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, {}, elmtId));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 200);
@@ -118,7 +132,7 @@ class MyComponent extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, { value: "Hello" }, elmtId));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, { value: "Hello" });
@@ -126,13 +140,20 @@ class MyComponent extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.create();
-        __Common__.width(100);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, { value: "Hello" }, elmtId));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 100);
@@ -141,14 +162,21 @@ class MyComponent extends ViewPU {
             });
         }
         __Common__.pop();
-        __Common__.create();
-        __Common__.width(100);
-        __Common__.height(200);
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            __Common__.height(200);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new Banner(this, { value: "Hello" }, elmtId));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, 200);
@@ -179,7 +207,6 @@ class Banner extends ViewPU {
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.value = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
