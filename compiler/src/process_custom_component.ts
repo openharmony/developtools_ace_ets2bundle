@@ -130,10 +130,9 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       } else {
         newStatements.push(ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
-          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
+            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
       }
-      
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
       isBuilder, isGlobalBuilder);
