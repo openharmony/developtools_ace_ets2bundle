@@ -372,7 +372,6 @@ export class ResultStates {
   }
 
   private printLogCount(): void {
-    this.updateCountWithArkCompile();
     this.mErrorCount += this.tsErrorCount;
     if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
@@ -383,6 +382,9 @@ export class ResultStates {
         process.exitCode = 1;
       } else {
         result = 'SUCCESS ';
+      }
+      if (process.env.abcCompileSuccess === 'false') {
+        result = 'FAIL ';
       }
       if (this.warningCount > 0) {
         resultInfo += ` WARN:${this.warningCount}`;
@@ -404,12 +406,6 @@ export class ResultStates {
     }
     this.clearCount();
     this.resetTsErrorCount();
-  }
-
-  private updateCountWithArkCompile(): void {
-    if (process.env.abcCompileSuccess === 'false') {
-      this.mErrorCount += 1;
-    }
   }
 
   private clearCount(): void {

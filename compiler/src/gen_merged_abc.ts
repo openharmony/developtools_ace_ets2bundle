@@ -109,11 +109,11 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       });
 
       child.stderr.on('data', (data: any) => {
-        logger.debug(red, data.toString(), reset);
+        logger.error(red, data.toString(), reset);
       });
     }
   } catch (e) {
-    logger.error(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath}. Error message: ${e}`, reset);
     process.env.abcCompileSuccess = 'false';
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);

@@ -38,26 +38,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     try {
       childProcess.execSync(singleCmd);
     } catch (e) {
-      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc `, reset);
-      process.exit(FAIL);
-    }
-  }
-
-  return;
-}
-
-function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
-  const inputPaths: any = JSON.parse(jsonInput);
-  for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].path.replace(/\.temp\.js$/, "_.js");
-    const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
-    const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
-    const singleCmd: any = `${cmd} "${cacheOutputPath}" --output "${cacheAbcFilePath}" --source-file "${input}"`;
-    logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
-    try {
-      childProcess.execSync(singleCmd);
-    } catch (e) {
-      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc `, reset);
+      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc. Error message: ${e} `, reset);
       process.exit(FAIL);
     }
   }
@@ -69,13 +50,6 @@ logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
-  if (process.env.panda === TS2ABC) {
-    js2abcByWorkers(process.env['inputs'], process.env['cmd']);
-  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-    es2abcByWorkers(process.env['inputs'], process.env['cmd']);
-  } else {
-    logger.debug(red, `ArkTS:ERROR please set panda module`, reset);
-    process.exit(FAIL);
-  }
+  js2abcByWorkers(process.env['inputs'], process.env['cmd']);
   process.exit(SUCCESS);
 }
