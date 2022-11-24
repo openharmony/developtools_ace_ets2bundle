@@ -97,7 +97,8 @@ import {
   TRUE,
   FALSE,
   HEADER,
-  FOOTER
+  FOOTER,
+  CALL
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1494,7 +1495,9 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
     CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
     argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()) ||
     ts.isObjectLiteralExpression(argument) && BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
-    BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName);
+    BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
+    ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
+    CUSTOM_BUILDER_METHOD.has(argument.expression.escapedText.toString());
 }
 
 function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
@@ -1670,7 +1673,10 @@ function processIdentifierBuilder(node: ts.Identifier): ts.ObjectLiteralExpressi
   return ts.factory.createObjectLiteralExpression([
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(BUILDER_ATTR_NAME),
-      node
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(node, ts.factory.createIdentifier(BUILDER_ATTR_BIND)),
+        undefined, [ts.factory.createThis()]
+      )
     )
   ]);
 }
@@ -1687,7 +1693,9 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
         undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock(
-          [ts.factory.createExpressionStatement(node)],
+          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
+          ), undefined, [ts.factory.createThis(), ...node.arguments]))],
           true
         )
       )
