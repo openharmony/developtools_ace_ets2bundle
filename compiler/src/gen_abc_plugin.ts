@@ -521,7 +521,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR Failed to generate npm proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to generate npm proto file to abc, Error message: ${e}`, reset);
   }
 }
 
@@ -1119,14 +1119,14 @@ function processExtraAsset() {
 
 function handleHotReloadChangedFiles() {
   if (!fs.existsSync(projectConfig.changedFileList)) {
-    logger.info(blue, `ArkTS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
+    logger.debug(blue, `ArkTS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
     return;
   }
 
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
   if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
-    logger.info(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
+    logger.debug(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
     return;
   }
 
@@ -1217,13 +1217,12 @@ function mergeProtoToAbc(): void {
   } else if (isMac) {
     mergeAbc = path.join(arkDir, 'build-mac', 'bin', 'merge_abc');
   }
-  let mergeAbcName = "modules.abc";
   mkdirsSync(projectConfig.buildPath);
-  const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${mergeAbcName} --suffix protoBin`;
+  const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${MODULES_ABC} --suffix protoBin`;
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc. Error message: ${e}`, reset);
   }
 }
 
@@ -1260,11 +1259,11 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
       });
 
       child.stderr.on('data', (data: any) => {
-        logger.debug(red, data.toString(), reset);
+        logger.error(red, data.toString(), reset);
       });
     }
   } catch (e) {
-    logger.error(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath}. Error message: ${e} `, reset);
     process.env.abcCompileSuccess = 'false';
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);
