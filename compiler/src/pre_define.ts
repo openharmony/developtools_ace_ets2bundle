@@ -358,3 +358,5 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
+
+export const CALL = 'call';
