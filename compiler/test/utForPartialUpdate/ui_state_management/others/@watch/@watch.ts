@@ -73,9 +73,9 @@ class CompA extends ViewPU {
         this.__totalPurchase = new ObservedPropertySimplePU(0, this, "totalPurchase");
         this.__defArray = new ObservedPropertyObjectPU(['c', 'g', 't', 'z'], this, "defArray");
         this.__resultTip = new ObservedPropertySimplePU('', this, "resultTip");
+        this.setInitiallyProvidedValue(params);
         this.declareWatch("shopBasket", this.onBasketUpdated);
         this.declareWatch("defArray", this.onPutItem);
-        this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
         if (params.shopBasket !== undefined) {
