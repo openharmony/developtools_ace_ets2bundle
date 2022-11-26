@@ -179,7 +179,7 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   const callSuperStatement: ts.Statement = createCallSuperStatement(localStorageNum);
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [...watchStatements, updateWithValueParamsStatement], false, true, parentComponentName);
+    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
 }
 
 function createCallSuperStatement(localStorageNum: number): ts.Statement {
