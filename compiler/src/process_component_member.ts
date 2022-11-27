@@ -693,14 +693,16 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
 }
 
 export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isCutomDialog: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder);
+  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder, isCutomDialog);
 }
 
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isCutomDialog: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -722,7 +724,9 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        argumentsArray.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier(ELMTID));
+        if (!isCutomDialog) {
+          argumentsArray.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier(ELMTID));
+        }
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
