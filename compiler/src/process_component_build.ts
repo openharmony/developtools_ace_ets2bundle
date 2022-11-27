@@ -1292,7 +1292,7 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
 }
 
 function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
-  if (partialUpdateConfig.partialUpdateMode && node && node.getText() &&
+  if (partialUpdateConfig.strictCheck && node && node.getText() &&
     node.getText().indexOf(THIS) >= 0) {
     const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
       componentCollection.currentClassName);
