@@ -44,6 +44,7 @@ class PropComponent extends ViewPU {
     setInitiallyProvidedValue(params) {
     }
     updateStateVars(params) {
+        this.__counter.reset(params.counter);
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);
@@ -114,10 +115,10 @@ class ParentComponent extends ViewPU {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new PropComponent(this, { counter: this.__value }, undefined, elmtId));
+                    ViewPU.create(new PropComponent(this, { counter: this.value }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, { counter: this.__value });
+                    this.updateStateVarsOfChildByElmtId(elmtId, { counter: this.value });
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

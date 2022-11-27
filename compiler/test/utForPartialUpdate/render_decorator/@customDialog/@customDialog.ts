@@ -126,6 +126,7 @@ class DialogExample extends ViewPU {
         }
     }
     updateStateVars(params) {
+        this.__count.reset(params.count);
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__count.purgeDependencyOnElmtId(rmElmtId);
@@ -255,7 +256,7 @@ class CustomDialogUser extends ViewPU {
                     termsToAccept: "Please accept the terms.",
                     action1: this.onAccept,
                     action2: this.existApp,
-                    count: this.__countInitValue,
+                    count: this.countInitValue,
                     isPlaying: this.__playingInitValue
                 }, undefined, elmtId);
                 jsDialog.setController(this.dialogController);

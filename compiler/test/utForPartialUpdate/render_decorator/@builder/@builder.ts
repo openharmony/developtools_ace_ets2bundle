@@ -316,7 +316,7 @@ class MyComponent extends ViewPU {
             Row.create();
             Row.padding(10);
             Row.bindMenu({ builder: () => {
-                    this.NavigationTitlePara("111");
+                    this.NavigationTitlePara.call(this, "111");
                 } });
             if (!isInitialRender) {
                 Row.pop();
@@ -396,7 +396,7 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Navigation.create();
-            Navigation.title({ builder: noParam });
+            Navigation.title({ builder: noParam.bind(this) });
             Navigation.menus({ builder: this.textBuilder.bind(this) });
             Navigation.toolBar({ items: [
                     { value: 'app', text: 'Grid', action: () => {
