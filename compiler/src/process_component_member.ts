@@ -80,7 +80,8 @@ import {
   observedClassCollection,
   enumCollection,
   componentCollection,
-  classMethodCollection
+  classMethodCollection,
+  stateCollection
 } from './validate_ui_syntax';
 import { updateConstructor } from './process_component_constructor';
 import {
@@ -837,6 +838,14 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
       }
     }
     return true;
+  }
+  if (stateCollection.has(typeNode.getText().toString()) &&
+    typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
   }
   return false;
 }
