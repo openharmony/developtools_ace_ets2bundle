@@ -513,8 +513,13 @@ function isPartialUpdate(metadata) {
       if (item.name && item.name === 'ArkTSPartialUpdate' &&
         item.value && item.value === 'true') {
         partialUpdateConfig.partialUpdateMode = true;
-        return true;
       }
+      if (item.name && item.name === 'partialUpdateStrictCheck' &&
+        item.value && item.value === 'true') {
+        partialUpdateConfig.strictCheck = true;
+      }
+      return partialUpdateConfig.partialUpdateMode &&
+        partialUpdateConfig.strictCheck; 
     });
   }
 }
@@ -534,6 +539,7 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
+  strictCheck: false,
   partialUpdateMode: false
 };
 
