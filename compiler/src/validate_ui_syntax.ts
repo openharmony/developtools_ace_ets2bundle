@@ -145,6 +145,8 @@ export const useOSFiles: Set<string> = new Set();
 export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
 export const originalImportNamesMap: Map<string, string> = new Map();
 
+const observedProperthCollection: Map<string,Set<string>> = new Map();
+
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
   let log: LogInfo[] = [];
@@ -1114,5 +1116,31 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
         });
       }
     }
+  }
+}
+
+export function getObservedPropertyCollection(className: string): Set<string> {
+  if (observedProperthCollection.get(className)) {
+    return observedProperthCollection.get(className);
+  } else {
+    observedProperthCollection.set(className, new Set([
+      ...stateCollection.get(className),
+      ...linkCollection.get(className),
+      ...propCollection.get(className),
+      ...storageLinkCollection.get(className),
+      ...storageLinkCollection.get(className),
+      ...provideCollection.get(className),
+      ...consumeCollection.get(className),
+      ...objectLinkCollection.get(className),
+    ]));
+    for(const key of
+      localStorageLinkCollection.get(className).keys()){
+      observedProperthCollection.get(className).add(key);
+    }
+    for(const key of
+      localStoragePropCollection.get(className).keys()){
+      observedProperthCollection.get(className).add(key);
+    }
+    return observedProperthCollection.get(className);
   }
 }
