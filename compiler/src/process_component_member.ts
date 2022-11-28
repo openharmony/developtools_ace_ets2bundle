@@ -843,7 +843,8 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
     componentCollection.currentClassName).has(typeNode.parent.name.escapedText.toString()) &&
     typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
-      type: LogType.ERROR,
+      type: partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode ?
+        LogType.ERROR : LogType.WARN,
       message: `Please define an explicit type, not any.`,
       pos: typeNode.getStart()
     });
