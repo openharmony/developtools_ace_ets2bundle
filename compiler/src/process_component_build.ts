@@ -1301,7 +1301,7 @@ function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
     const traverse: Function = (node: ts.Node) => {
       if (node && ts.isPropertyAccessExpression(node) && node.expression &&
         node.expression.kind === ts.SyntaxKind.ThisKeyword) {
-        const keyword: string = node.expression.escapedText.toString();
+        const keyword: string = node.name.escapedText.toString();
         if (currentObservedPropertyCollection.has(keyword)) {
           hasObservedKeyword = true;
           return;
