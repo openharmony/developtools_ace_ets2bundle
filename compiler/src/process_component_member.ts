@@ -839,7 +839,8 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
     }
     return true;
   }
-  if (stateCollection.has(typeNode.getText().toString()) &&
+  if (typeNode.parent && typeNode.parent.escapedText &&
+    stateCollection.has(typeNode.parent.escapedText.toString()) &&
     typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
       type: LogType.ERROR,
