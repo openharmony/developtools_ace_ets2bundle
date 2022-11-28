@@ -120,7 +120,8 @@ import {
 import {
   componentCollection,
   builderParamObjectCollection,
-  checkAllNode
+  checkAllNode,
+  getObservedPropertyCollection
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -1198,6 +1199,7 @@ function createRenderingInProgress(isTrue: boolean): ts.ExpressionStatement {
 
 function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  checkHasThisKeyword(node, log);
   const ifCreate: ts.ExpressionStatement = createIfCreate();
   const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isBuilder, isGlobalBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
@@ -1286,6 +1288,39 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
     );
   }
   return elseStatement;
+}
+
+function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
+  if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode &&
+    node && node.getText() && node.getText().indexOf(THIS) >= 0) {
+    const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
+      componentCollection.currentClassName);
+    let hasObservedKeyword: boolean = false;
+    const realKeywords: Set<string> = new Set();
+    const traverse: Function = (node: ts.Node) => {
+      if (node && ts.isPropertyAccessExpression(node) && node.expression &&
+        node.expression.kind === ts.SyntaxKind.ThisKeyword) {
+        const keyword: string = node.name.escapedText.toString();
+        if (currentObservedPropertyCollection.has(keyword)) {
+          hasObservedKeyword = true;
+          return;
+        } else {
+          realKeywords.add(keyword);
+        }
+      }
+      if (node && !ts.isBlock(node)) {
+        ts.forEachChild(node, node => traverse(node));
+      }
+    }
+    traverse(node);
+    if (!hasObservedKeyword && node && realKeywords.size > 0) {
+      log.push({
+        type: LogType.WARN,
+        message: `Only state variables can be used for condition judgment of the IF component.`,
+        pos: node.getStart() || node.pos
+      });
+    }
+  }
 }
 
 function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
