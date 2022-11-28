@@ -1128,12 +1128,10 @@ export function getObservedPropertyCollection(className: string): Set<string> {
     ...consumeCollection.get(className),
     ...objectLinkCollection.get(className),
   ])
-  for(const key of
-    localStorageLinkCollection.get(className).keys()){
+  for(const key of localStorageLinkCollection.get(className).keys()){
     observedProperthCollection.add(key);
   }
-  for(const key of
-    localStoragePropCollection.get(className).keys()){
+  for(const key of localStoragePropCollection.get(className).keys()){
     observedProperthCollection.add(key);
   }
   return observedProperthCollection;
