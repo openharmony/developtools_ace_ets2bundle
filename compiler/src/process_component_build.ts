@@ -923,6 +923,13 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     parseGesture(temp, propName, statements, log);
     lastStatement.kind = true;
   } else if (isExtendFunctionNode(identifierNode, propName)) {
+    if (newsupplement.isAcceleratePreview) {
+      log.push({
+        type: LogType.ERROR,
+        message: `Doesn't support Extend function now`,
+        pos: temp.getStart()
+      })
+    }
     statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
       undefined, temp.arguments)));
