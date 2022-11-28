@@ -80,7 +80,8 @@ import {
   observedClassCollection,
   enumCollection,
   componentCollection,
-  classMethodCollection
+  classMethodCollection,
+  stateCollection
 } from './validate_ui_syntax';
 import { updateConstructor } from './process_component_constructor';
 import {
@@ -841,6 +842,16 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
       }
     }
     return true;
+  }
+  if (typeNode.parent && typeNode.parent.name && stateCollection.get(
+    componentCollection.currentClassName).has(typeNode.parent.name.escapedText.toString()) &&
+    typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode ?
+        LogType.ERROR : LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
   }
   return false;
 }
