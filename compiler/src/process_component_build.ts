@@ -1261,7 +1261,6 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
 
 function processElseStatement(elseStatement: ts.Statement, id: number,
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.Statement {
-  checkHasThisKeyword(elseStatement, log);
   if (elseStatement) {
     if (ts.isBlock(elseStatement)) {
       elseStatement = processIfBlock(elseStatement, id + 1, log);
