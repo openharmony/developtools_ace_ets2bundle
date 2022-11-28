@@ -1309,7 +1309,7 @@ function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
           realKeywords.add(keyword);
         }
       }
-      if (node) {
+      if (node && !ts.isBlock(node)) {
         ts.forEachChild(node, node => traverse(node));
       }
     }
