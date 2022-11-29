@@ -35,7 +35,6 @@ const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
 const { IGNORE_ERROR_CODE, removeDir } = require('./lib/utils');
 const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
-const { processJs } = require('./lib/process_js_ast');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
@@ -84,10 +83,6 @@ function initConfig(config) {
                     before: [processUISyntax(program)],
                     after: []
                   };
-                  if (projectConfig.compileMode === 'esmodule' && projectConfig.processTs === false
-                  && process.env.compilerType && process.env.compilerType === 'ark') {
-                    transformerOperation.after.push(processJs(program));
-                  }
 
                   return transformerOperation;
                 },
