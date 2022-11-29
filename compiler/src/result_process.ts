@@ -15,7 +15,7 @@
 
 import ts from 'typescript';
 
-import { BUILD_OFF, ESMODULE } from './pre_define';
+import { BUILD_OFF, ESMODULE, JSBUNDLE } from './pre_define';
 import {
   resetLog,
   transformLog
@@ -64,7 +64,8 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
+  if (projectConfig.compileMode == JSBUNDLE &&
+    [abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
 
