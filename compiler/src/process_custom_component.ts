@@ -80,8 +80,8 @@ import {
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
-const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
-  COMPONENT_OBJECT_LINK_DECORATOR];
+const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 
 const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
   [[COMPONENT_STATE_DECORATOR, stateCollection],
