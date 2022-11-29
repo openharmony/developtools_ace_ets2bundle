@@ -98,7 +98,8 @@ import {
   FALSE,
   HEADER,
   FOOTER,
-  CALL
+  CALL,
+  CREATE_BIND_COMPONENT
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -131,13 +132,11 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  createFunction,
   validatorCard
 } from './utils';
 import { partialUpdateConfig, projectConfig } from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
-import { CUSTOM_COMPONENT } from '../lib/pre_define';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -2272,5 +2271,50 @@ function createIsLazyWithValue(value: boolean): ts.VariableStatement {
     return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
       [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
         undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
+  }
+}
+
+export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
+  argumentsArr: ts.NodeArray<ts.Expression>): ts.CallExpression {
+  if (argumentsArr && argumentsArr.length) {
+    if (checkCreateArgumentBuilder(node, attrNode)) {
+      argumentsArr = transformBuilder(argumentsArr);
+    }
+  } else {
+    //@ts-ignore
+    argumentsArr = [];
+  }
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      node,
+      attrNode
+    ),
+    undefined,
+    argumentsArr
+  );
+}
+
+function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier): boolean {
+  if (attrNode.escapedText.toString() === COMPONENT_CREATE_FUNCTION &&
+    CREATE_BIND_COMPONENT.has(node.escapedText.toString())) {
+    return true;
+  }
+  return false;
+}
+
+function transformBuilder(argumentsArr: ts.NodeArray<ts.Expression>): ts.NodeArray<ts.Expression> {
+  const newArguments: ts.Expression[] = [];
+  argumentsArr.forEach((argument: ts.Expression) => {
+    newArguments.push(parseCreateParameterBuilder(argument));
+  })
+  //@ts-ignore
+  return newArguments;
+}
+
+function parseCreateParameterBuilder(argument: ts.Expression):ts.Expression {
+  if (ts.isObjectLiteralExpression(argument)) {
+    return processObjectPropertyBuilder(argument);
+  } else {
+    return argument;
   }
 }

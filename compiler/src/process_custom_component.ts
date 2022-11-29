@@ -70,13 +70,13 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  createFunction
+  componentInfo
 } from './utils';
 import {
   bindComponentAttr,
   parentConditionalExpression,
-  createComponentCreationStatement
+  createComponentCreationStatement,
+  createFunction
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
@@ -610,7 +610,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
   log: LogInfo[]): void {
   log.push({
-    type: LogType.ERROR,
+    type: curPropertyKind === COMPONENT_STATE_DECORATOR ? LogType.WARN : LogType.ERROR,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
