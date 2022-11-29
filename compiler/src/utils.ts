@@ -455,7 +455,10 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
   let sourceMapFile: string = genSourceMapFileName(jsFilePath);
   if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
     let source = toUnixPath(sourcePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-    sourceMap['sources'] = [source];
+    // adjust sourceMap info
+    sourceMap.sources = [source];
+    sourceMap.file = path.basename(sourceMap.file);
+    delete sourceMap.sourcesContent;
     newSourceMaps[source] = sourceMap;
   }
   // replace relative moduleSpecifier with ohmURl
