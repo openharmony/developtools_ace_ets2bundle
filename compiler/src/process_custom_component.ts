@@ -63,7 +63,6 @@ import {
 import {
   propAndLinkDecorators,
   curPropMap,
-  observedPropertyDecorators,
   createViewCreate,
   createCustomComponentNewExpression
 } from './process_component_member';
