@@ -306,7 +306,7 @@ function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
 
 function processCustomDialogControllerBuilder(parent: ts.Expression,
   node: ts.CallExpression, componentName: string): ts.ArrowFunction {
-  const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName);
+  const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName, false, false, true);
   const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
   return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
 }

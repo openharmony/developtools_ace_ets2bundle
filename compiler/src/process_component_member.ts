@@ -82,7 +82,8 @@ import {
   observedClassCollection,
   enumCollection,
   componentCollection,
-  classMethodCollection
+  classMethodCollection,
+  stateCollection
 } from './validate_ui_syntax';
 import { updateConstructor } from './process_component_constructor';
 import {
@@ -715,14 +716,16 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
 }
 
 export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isCutomDialog: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder);
+  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder, isCutomDialog);
 }
 
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NewExpression {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isCutomDialog: boolean = false): ts.NewExpression {
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -744,7 +747,9 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        argumentsArray.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier(ELMTID));
+        if (!isCutomDialog) {
+          argumentsArray.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier(ELMTID));
+        }
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
@@ -859,6 +864,16 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
       }
     }
     return true;
+  }
+  if (typeNode.parent && typeNode.parent.name && stateCollection.get(
+    componentCollection.currentClassName).has(typeNode.parent.name.escapedText.toString()) &&
+    typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode ?
+        LogType.ERROR : LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
   }
   return false;
 }
