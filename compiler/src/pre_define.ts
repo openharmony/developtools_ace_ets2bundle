@@ -360,3 +360,7 @@ export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
 
 export const CALL = 'call';
+export const RESERT = 'reset';
+export const ARRAY = 'Array';
+export const JSON = 'JSON';
+export const STRINGIFY = 'stringify';
