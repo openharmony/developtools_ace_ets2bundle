@@ -100,6 +100,9 @@ import {
   FOOTER,
   CALL,
   CREATE_BIND_COMPONENT
+  ARRAY,
+  JSON,
+  STRINGIFY
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -134,7 +137,11 @@ import {
   componentInfo,
   validatorCard
 } from './utils';
-import { partialUpdateConfig, projectConfig } from '../main';
+import {
+  partialUpdateConfig,
+  projectConfig,
+  globalProgram
+} from '../main';
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 
@@ -316,6 +323,9 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.forEachComponent:
             parent = undefined;
+            if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode) {
+              checkoutForEachSameId(item, log);
+            }
             if (!partialUpdateConfig.partialUpdateMode) {
               processForEachComponent(item, newStatements, log, isBuilder, isGlobalBuilder);
             } else {
@@ -2316,5 +2326,206 @@ function parseCreateParameterBuilder(argument: ts.Expression):ts.Expression {
     return processObjectPropertyBuilder(argument);
   } else {
     return argument;
+  }
+}
+enum ReturnType {
+  notDefined,
+  notCompatible,
+  simple,
+  complex
+}
+
+function checkoutForEachSameId(node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments &&
+    node.expression.arguments.length) {
+    let targetArray: ts.Node = node.expression.arguments[0];
+    if (globalProgram.program && node.expression.arguments.length === 3 &&
+      !isReturnStringify(node.expression.arguments[2], log)) {
+      let TypeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker(true)
+      judgeTargetArrayType(targetArray, log, TypeChecker);
+    }
+  }
+}
+
+function judgeTargetArrayType(targetArray: ts.Node, log: LogInfo[], TypeChecker: ts.TypeChecker): void {
+  if (ts.isIdentifier(targetArray) && TypeChecker.getSymbolAtLocation(targetArray)) {
+    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray).declarations;
+    if (declarations && declarations.length) {
+      let declaration: ts.Node = declarations[0];
+      if (ts.isVariableDeclaration(declaration)) {
+        judgeDeclaration(declaration, targetArray, log);
+      }
+    }
+  } else if (ts.isPropertyAccessExpression(targetArray) && targetArray.expression &&
+    targetArray.expression.kind === ts.SyntaxKind.ThisKeyword && TypeChecker.getSymbolAtLocation(targetArray)) {
+    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray).declarations;
+    if (declarations && declarations.length) {
+      let declaration: ts.Node = declarations[0];
+      if (ts.isPropertyDeclaration(declaration)) {
+        judgeDeclaration(declaration, targetArray, log);
+      }
+    }
+  } else if (ts.isCallExpression(targetArray) && targetArray.expression &&
+    ts.isIdentifier(targetArray.expression) && TypeChecker.getSymbolAtLocation(targetArray.expression)) {
+      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray.expression).declarations;
+      if (declarations && declarations.length) {
+        let declaration: ts.Node = declarations[0];
+        if (ts.isFunctionDeclaration(declaration)) {
+          judgeDeclaration(declaration, targetArray, log);
+        }
+      }
+  } else if (ts.isCallExpression(targetArray) && targetArray.expression &&
+    ts.isPropertyAccessExpression(targetArray.expression) && targetArray.expression.expression &&
+    targetArray.expression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    TypeChecker.getSymbolAtLocation(targetArray.expression)) {
+      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray.expression).declarations;
+      if (declarations && declarations.length) {
+        let declaration: ts.Node = declarations[0];
+        if (ts.isMethodDeclaration(declaration)) {
+          judgeDeclaration(declaration, targetArray, log);
+        }
+      }
+  } else {
+    log.push({
+      type: LogType.WARN,
+      message: `If the type of array's each item is not a simple type, ` +
+        `use JSON.stringify to serialize the key generator in 3rd parameter of ForEach Component`,
+      pos: targetArray.getStart(),
+    })
+  }
+}
+
+function isReturnStringify(node: ts.Node, log: LogInfo[]): boolean {
+  return functionWithBlock(node, log) || functionWithoutBlock(node, log);
+}
+
+function hasJsonStringify(node: ts.Node): boolean {
+  return ts.isPropertyAccessExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    node.expression.escapedText.toString() === JSON && node.name && ts.isIdentifier(node.name) &&
+    node.name.escapedText.toString() === STRINGIFY;
+}
+
+function functionWithoutBlock(node: ts.Node, log: LogInfo[]): boolean {
+  if (ts.isArrowFunction(node)) {
+    if (judgeReturnType(node.type) === ReturnType.notDefined) {
+      log.push({
+        type: LogType.WARN,
+        message: "Better allocate a type of key generator function",
+        pos: node.getStart(),
+      })
+    } else if (judgeReturnType(node.type) === ReturnType.complex) {
+      log.push({
+        type: LogType.WARN,
+        message: "Return complex type, please use JSON.stringify to serialize it",
+        pos: node.getStart(),
+      })
+    }
+  }
+  return ts.isArrowFunction(node) && node.body && ts.isCallExpression(node.body) &&
+    node.body.expression && hasJsonStringify(node.body.expression);
+}
+
+function functionWithBlock(node: ts.Node, log: LogInfo[]): boolean {
+  if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+    if (judgeReturnType(node.type) === ReturnType.notDefined) {
+      let useStringify = [];
+      if (node.body && ts.isBlock(node.body)) {
+        ts.forEachChild(node, (node)=>{traverseReturnStatement(node, useStringify)})
+      }
+      log.push({
+        type: LogType.WARN,
+        message: "Better allocate a type of key generator function",
+        pos: node.getStart(),
+      })
+      return useStringify.length && useStringify[useStringify.length-1];
+    } else if (judgeReturnType(node.type) === ReturnType.complex) {
+      log.push({
+        type: LogType.WARN,
+        message: "Return complex type, please use JSON.stringify to serialize it",
+        pos: node.getStart(),
+      })
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+function traverseReturnStatement(childNode, useStringify): void {
+  if (useStringify.length && !useStringify[useStringify.length-1]) {
+    return;
+  }
+  if (ts.isReturnStatement(childNode) && childNode.expression) {
+    if (childNode.expression.expression && hasJsonStringify(childNode.expression.expression)) {
+      useStringify.push(true);
+    } else {
+      useStringify.push(false);
+    }
+  }
+  ts.forEachChild(childNode, (childNode)=>{traverseReturnStatement(childNode, useStringify)})
+}
+
+function judgeReturnType(type: ts.TypeNode): ReturnType {
+  if (type) {
+    return judgeType(type);
+  } else {
+    return ReturnType.notDefined;
+  }
+}
+
+function judgeDeclaration(declaration: ts.Node, targetArray: ts.Node, log: LogInfo[]): void {
+  switch (judgeArrayType(declaration.type)) {
+    case ReturnType.notDefined:
+      log.push({
+        type: LogType.WARN,
+        message: "Variable/function which used for ForEach component's 1st parameter should allocate a type",
+        pos: declaration.getStart(),
+      })
+      break;
+    case ReturnType.notCompatible:
+      log.push({
+        type: LogType.WARN,
+        message: "The first parameter in ForEach component should be an array",
+        pos: targetArray.getStart(),
+      })
+      break;
+    case ReturnType.complex:
+      log.push({
+        type: LogType.WARN,
+        message: "if key generator(return type of ForEach's 3rd parameter) is a complex type, " +
+          "should use JSON.stringify to serialize it",
+        pos: targetArray.getStart(),
+      })
+      break;
+  }
+}
+
+function judgeArrayType(type: ts.TypeNode): ReturnType {
+  if (type) {
+    if (ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName) &&
+      type.typeName.escapedText.toString() === ARRAY && type.typeArguments && type.typeArguments.length) {
+      return judgeType(type.typeArguments[0]);
+    } else if (ts.isArrayTypeNode(type) && type.elementType) {
+      return judgeType(type.elementType);
+    } else {
+      return ReturnType.notCompatible;
+    }
+  } else {
+    return ReturnType.notDefined;
+  }
+}
+
+function judgeType(type: ts.TypeNode): ReturnType {
+  switch (type.kind) {
+    case ts.SyntaxKind.StringKeyword:
+    case ts.SyntaxKind.NumberKeyword:
+    case ts.SyntaxKind.BooleanKeyword:
+    case ts.SyntaxKind.SymbolKeyword:
+    case ts.SyntaxKind.BigIntKeyword:
+    case ts.SyntaxKind.UndefinedKeyword:
+    case ts.SyntaxKind.NullKeyword:
+      return ReturnType.simple;
+    default:
+      return ReturnType.complex;
   }
 }
