@@ -258,7 +258,7 @@ class CustomDialogUser extends ViewPU {
                     action2: this.existApp,
                     count: this.countInitValue,
                     isPlaying: this.__playingInitValue
-                }, undefined, elmtId);
+                });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },
