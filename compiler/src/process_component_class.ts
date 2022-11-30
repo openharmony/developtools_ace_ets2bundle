@@ -543,9 +543,6 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
         pos: initExpression.getStart()
       });
     }
-  } else if (partialUpdateConfig.partialUpdateMode && isMatchInitExpression(initExpression) &&
-    propParentComponent.includes(propertyName.escapedText.toString())) {
-    initText = initExpression.name.escapedText.toString();
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText);
