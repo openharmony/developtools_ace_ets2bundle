@@ -118,7 +118,9 @@ class ParentComponent extends ViewPU {
                     ViewPU.create(new PropComponent(this, { counter: this.value }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, { counter: this.value });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        counter: this.value
+                    });
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

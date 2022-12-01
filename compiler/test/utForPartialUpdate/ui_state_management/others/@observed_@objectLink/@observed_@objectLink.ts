@@ -180,7 +180,9 @@ class ViewB extends ViewPU {
                     ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, { varA: this.varB.a });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        varA: this.varB.a
+                    });
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
