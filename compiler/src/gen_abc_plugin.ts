@@ -28,6 +28,7 @@ import {
   genTemporaryPath,
   genBuildPath,
   genAbcFileName,
+  getPackageInfo,
   mkdirsSync,
   genSourceMapFileName,
   checkNodeModulesFile,
@@ -123,12 +124,15 @@ export class ModuleInfo {
   isCommonJs: boolean;
   recordName: string;
   sourceFile: string;
+  packageName: string;
 
-  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
+  constructor(filePath: string, tempFilePath: string, buildFilePath: string,
+              abcFilePath: string, packageName: string, isCommonJs: boolean) {
     this.filePath = filePath;
     this.tempFilePath = tempFilePath;
     this.buildFilePath = buildFilePath;
     this.abcFilePath = abcFilePath;
+    this.packageName = packageName;
     this.isCommonJs = isCommonJs;
     this.recordName = getOhmUrlByFilepath(filePath);
     this.sourceFile = filePath.replace(projectConfig.projectRootPath + path.sep, '');
@@ -137,13 +141,11 @@ export class ModuleInfo {
 
 export class EntryInfo {
   npmInfo: string;
-  abcFileName: string;
   buildPath: string;
   entry: string;
 
-  constructor(npmInfo: string, abcFileName: string, buildPath: string, entry: string) {
+  constructor(npmInfo: string, buildPath: string, entry: string) {
     this.npmInfo = npmInfo;
-    this.abcFileName = abcFileName;
     this.buildPath = buildPath;
     this.entry = entry;
   }
@@ -274,7 +276,7 @@ function clearGlobalInfo() {
   buildMapFileList = new Set<string>();
 }
 
-function getEntryInfo(filePath: string, tempFilePath: string, resourceResolveData: any): void {
+function getEntryInfo(filePath: string, resourceResolveData: any): string {
   if (!resourceResolveData.descriptionFilePath) {
     return;
   }
@@ -291,32 +293,30 @@ function getEntryInfo(filePath: string, tempFilePath: string, resourceResolveDat
   const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
   const buildNpmInfoPath: string = toUnixPath(path.resolve(buildFakeEntryPath, '..'));
-  if (entryInfos.has(npmInfoPath)) {
-    return;
+  if (!entryInfos.has(npmInfoPath)) {
+    const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, buildNpmInfoPath, entry);
+    entryInfos.set(npmInfoPath, entryInfo);
   }
 
-  let abcFileName: string = genAbcFileName(tempFilePath);
-  const abcFilePaths: string[] = abcFileName.split(NODE_MODULES);
-  abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
-  abcFileName = toUnixPath(abcFileName);
-
-  const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
-  entryInfos.set(npmInfoPath, entryInfo);
+  return buildNpmInfoPath;
 }
 
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
-  getEntryInfo(filePath, tempFilePath, module.resourceResolveData);
+  let npmPkgPath: string = getEntryInfo(filePath, module.resourceResolveData);
+  const buildNpmPkgPath: string = npmPkgPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
+  const npmPkgName: string = toUnixPath(path.join(NODE_MODULES, buildNpmPkgPath));
+
   const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   } else if (filePath.endsWith(EXTNAME_MJS)) {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, true);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
@@ -335,7 +335,8 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
@@ -354,7 +355,8 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
@@ -372,7 +374,8 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
