@@ -1301,31 +1301,39 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
 
 function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
   if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode &&
-    node && node.getText() && node.getText().indexOf(THIS) >= 0) {
-    const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
-      componentCollection.currentClassName);
-    let hasObservedKeyword: boolean = false;
-    const realKeywords: Set<string> = new Set();
-    const traverse: Function = (node: ts.Node) => {
-      if (node && ts.isPropertyAccessExpression(node) && node.expression &&
-        node.expression.kind === ts.SyntaxKind.ThisKeyword) {
-        const keyword: string = node.name.escapedText.toString();
-        if (currentObservedPropertyCollection.has(keyword)) {
-          hasObservedKeyword = true;
-          return;
-        } else {
-          realKeywords.add(keyword);
+    node && node.getText()) {
+    if (node.getText().indexOf(THIS) >= 0) {
+      const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
+        componentCollection.currentClassName);
+      let hasObservedKeyword: boolean = false;
+      const realKeywords: Set<string> = new Set();
+      const traverse: Function = (node: ts.Node) => {
+        if (node && ts.isPropertyAccessExpression(node) && node.expression &&
+          node.expression.kind === ts.SyntaxKind.ThisKeyword) {
+          const keyword: string = node.name.escapedText.toString();
+          if (currentObservedPropertyCollection.has(keyword)) {
+            hasObservedKeyword = true;
+            return;
+          } else {
+            realKeywords.add(keyword);
+          }
+        }
+        if (node && !ts.isBlock(node)) {
+          ts.forEachChild(node, node => traverse(node));
         }
       }
-      if (node && !ts.isBlock(node)) {
-        ts.forEachChild(node, node => traverse(node));
+      traverse(node);
+      if (!hasObservedKeyword && node && realKeywords.size > 0) {
+        log.push({
+          type: LogType.WARN,
+          message: `It is recommended to use the state variable for condition judgment of the IF component.`,
+          pos: node.getStart() || node.pos
+        });
       }
-    }
-    traverse(node);
-    if (!hasObservedKeyword && node && realKeywords.size > 0) {
+    } else {
       log.push({
         type: LogType.WARN,
-        message: `Only state variables can be used for condition judgment of the IF component.`,
+        message: `It is recommended to use the state variable for condition judgment of the IF component.`,
         pos: node.getStart() || node.pos
       });
     }
