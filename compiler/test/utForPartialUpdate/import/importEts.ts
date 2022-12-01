@@ -215,16 +215,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        LinkComponent2Link1: this.__myState1,
-                        LinkComponent2Link2: this.__myState2,
-                        LinkComponent2Link3: this.__myState3,
-                        LinkComponent2Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'LinkComponent2'
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -256,16 +247,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        LinkComponent1Link1: this.__myState1,
-                        LinkComponent1Link2: this.__myState2,
-                        LinkComponent1Link3: this.__myState3,
-                        LinkComponent1Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'LinkComponent1'
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -284,14 +266,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        DefaultComponentLink1: this.__myState1,
-                        DefaultComponentLink2: this.__myState2,
-                        DefaultComponentLink3: this.__myState3,
-                        DefaultComponentLink4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 100
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -312,16 +287,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        LinkComponent3Link1: this.__myState1,
-                        LinkComponent3Link2: this.__myState2,
-                        LinkComponent3Link3: this.__myState3,
-                        LinkComponent3Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'LinkComponent3'
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -340,14 +306,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        AMDComponentLink1: this.__myState1,
-                        AMDComponentLink2: this.__myState2,
-                        AMDComponentLink3: this.__myState3,
-                        AMDComponentLink4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 100
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -368,16 +327,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        LinkComponent3Link1: this.__myState1,
-                        LinkComponent3Link2: this.__myState2,
-                        LinkComponent3Link3: this.__myState3,
-                        LinkComponent3Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'LinkComponent1'
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

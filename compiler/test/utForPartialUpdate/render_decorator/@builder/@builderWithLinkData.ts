@@ -113,7 +113,7 @@ class TestPage extends ViewPU {
                     ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, { title: this.__value });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

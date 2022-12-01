@@ -352,24 +352,7 @@ class CustomContainerUser extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        header: this.text,
-                        closer: () => {
-                            this.observeComponentCreation((elmtId, isInitialRender) => {
-                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                                Column.create();
-                                Column.onClick(() => {
-                                    this.text = "changeHeader";
-                                });
-                                if (!isInitialRender) {
-                                    Column.pop();
-                                }
-                                ViewStackProcessor.StopGetAccessRecording();
-                            });
-                            specificWithParam("111", "22", this);
-                            Column.pop();
-                        }
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -394,12 +377,7 @@ class CustomContainerUser extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        header: this.text,
-                        content: this.specificParam,
-                        callContent: this.callSpecificParam("callContent1", 'callContent2'),
-                        footer: "Footer",
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -437,24 +415,7 @@ class CustomContainerUser extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        header: this.text,
-                        content: () => {
-                            this.observeComponentCreation((elmtId, isInitialRender) => {
-                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                                Column.create();
-                                Column.onClick(() => {
-                                    this.text = "changeHeader";
-                                });
-                                if (!isInitialRender) {
-                                    Column.pop();
-                                }
-                                ViewStackProcessor.StopGetAccessRecording();
-                            });
-                            this.callSpecificParam("111", '222', this);
-                            Column.pop();
-                        }
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
