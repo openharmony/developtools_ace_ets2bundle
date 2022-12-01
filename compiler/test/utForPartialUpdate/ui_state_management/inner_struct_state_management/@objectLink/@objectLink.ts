@@ -170,7 +170,9 @@ class Parent extends ViewPU {
                             ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId));
                         }
                         else {
-                            this.updateStateVarsOfChildByElmtId(elmtId, { model: item });
+                            this.updateStateVarsOfChildByElmtId(elmtId, {
+                                model: item
+                            });
                         }
                         ViewStackProcessor.StopGetAccessRecording();
                     });
