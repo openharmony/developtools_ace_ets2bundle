@@ -99,7 +99,7 @@ class MyComponent extends ViewPU {
                     ViewPU.create(new Banner(this, {}, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 100);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -122,7 +122,7 @@ class MyComponent extends ViewPU {
                     ViewPU.create(new Banner(this, {}, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 200);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -135,7 +135,7 @@ class MyComponent extends ViewPU {
                     ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, { value: "Hello" });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -156,7 +156,7 @@ class MyComponent extends ViewPU {
                     ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 100);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -179,7 +179,7 @@ class MyComponent extends ViewPU {
                     ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 200);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

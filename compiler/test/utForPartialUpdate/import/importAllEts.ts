@@ -179,14 +179,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        NamespaceComponent1Link1: this.__myState1,
-                        NamespaceComponent1Link2: this.__myState2,
-                        NamespaceComponent1Link3: this.__myState3,
-                        NamespaceComponent1Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -214,7 +207,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 100);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -234,14 +227,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        NamespaceComponent3Link1: this.__myState1,
-                        NamespaceComponent3Link2: this.__myState2,
-                        NamespaceComponent3Link3: this.__myState3,
-                        NamespaceComponent3Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -269,7 +255,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, 200);
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });

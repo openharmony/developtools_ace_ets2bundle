@@ -242,11 +242,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        testStr: this.__testState1,
-                        testNum: this.__testState2,
-                        testObj: this.__testState3
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -261,10 +257,7 @@ class ImportTest extends ViewPU {
                     }, undefined, elmtId));
                 }
                 else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {
-                        testNum1: this.__testState4,
-                        testNum2: this.__testState5
-                    });
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
