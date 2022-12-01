@@ -193,15 +193,34 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(node, newNode, isGlobalBuilder));
+    newStatements.push(createCustomComponent(node, newNode, name, isGlobalBuilder));
   }
 }
 
-function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression,
+function createChildElmtId(node: ts.ExpressionStatement, name: string): ts.PropertyAssignment[] {
+  const propsAndObjectLinks: string[] = [];
+  const childParam: ts.PropertyAssignment[] = [];
+  if (propCollection.get(name)) {
+    propsAndObjectLinks.push(...propCollection.get(name));
+  }
+  if (objectLinkCollection.get(name)) {
+    propsAndObjectLinks.push(...objectLinkCollection.get(name));
+  }
+  if (node.expression.arguments[0].properties) {
+    node.expression.arguments[0].properties.forEach(item => {
+      if (item.name && item.name.escapedText.toString() && propsAndObjectLinks.includes(item.name.escapedText)) {
+        childParam.push(item);       
+      }
+    })
+  }
+  return childParam;
+}
+
+function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression, name: string,
   isGlobalBuilder: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (node.expression && node.expression.arguments && node.expression.arguments.length) {
-    componentParameter = node.expression.arguments[0];
+    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(node, name), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
