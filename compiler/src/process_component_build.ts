@@ -102,7 +102,8 @@ import {
   CREATE_BIND_COMPONENT,
   ARRAY,
   JSON,
-  STRINGIFY
+  STRINGIFY,
+  GETDATA
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -324,7 +325,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           case ComponentType.forEachComponent:
             parent = undefined;
             if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode) {
-              checkoutForEachSameId(item, log);
+              checkoutForEachSameId(item, log, name);
             }
             if (!partialUpdateConfig.partialUpdateMode) {
               processForEachComponent(item, newStatements, log, isBuilder, isGlobalBuilder);
@@ -2335,68 +2336,76 @@ enum ReturnType {
   complex
 }
 
-function checkoutForEachSameId(node: ts.ExpressionStatement, log: LogInfo[]): void {
+function checkoutForEachSameId(node: ts.ExpressionStatement, log: LogInfo[], name: string): void {
   if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments &&
     node.expression.arguments.length) {
-    let targetArray: ts.Node = node.expression.arguments[0];
+    let target: ts.Node = node.expression.arguments[0];
     if (globalProgram.program && node.expression.arguments.length === 3 &&
       !isReturnStringify(node.expression.arguments[2], log)) {
-      let TypeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker(true)
-      judgeTargetArrayType(targetArray, log, TypeChecker);
+      let TypeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker(true);
+      judgeTargetType(target, log, TypeChecker, name);
     }
   }
 }
 
-function judgeTargetArrayType(targetArray: ts.Node, log: LogInfo[], TypeChecker: ts.TypeChecker): void {
-  if (ts.isIdentifier(targetArray) && TypeChecker.getSymbolAtLocation(targetArray)) {
-    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray).declarations;
+function judgeTargetType(target: ts.Node, log: LogInfo[], TypeChecker: ts.TypeChecker, name: string): void {
+  if (ts.isIdentifier(target) && TypeChecker.getSymbolAtLocation(target)) {
+    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(target).declarations;
     if (declarations && declarations.length) {
       let declaration: ts.Node = declarations[0];
       if (ts.isVariableDeclaration(declaration)) {
-        judgeDeclaration(declaration, targetArray, log);
+        judgeDeclaration(declaration, target, log, name, TypeChecker);
       }
     }
-  } else if (ts.isPropertyAccessExpression(targetArray) && targetArray.expression &&
-    targetArray.expression.kind === ts.SyntaxKind.ThisKeyword && TypeChecker.getSymbolAtLocation(targetArray)) {
-    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray).declarations;
+  } else if (ts.isPropertyAccessExpression(target) && target.expression &&
+    target.expression.kind === ts.SyntaxKind.ThisKeyword && TypeChecker.getSymbolAtLocation(target)) {
+    let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(target).declarations;
     if (declarations && declarations.length) {
       let declaration: ts.Node = declarations[0];
       if (ts.isPropertyDeclaration(declaration)) {
-        judgeDeclaration(declaration, targetArray, log);
+        judgeDeclaration(declaration, target, log, name, TypeChecker);
       }
     }
-  } else if (ts.isCallExpression(targetArray) && targetArray.expression &&
-    ts.isIdentifier(targetArray.expression) && TypeChecker.getSymbolAtLocation(targetArray.expression)) {
-      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray.expression).declarations;
+  } else if (ts.isCallExpression(target) && target.expression &&
+    ts.isIdentifier(target.expression) && TypeChecker.getSymbolAtLocation(target.expression)) {
+      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(target.expression).declarations;
       if (declarations && declarations.length) {
         let declaration: ts.Node = declarations[0];
         if (ts.isFunctionDeclaration(declaration)) {
-          judgeDeclaration(declaration, targetArray, log);
+          judgeDeclaration(declaration, target, log, name, TypeChecker);
         }
       }
-  } else if (ts.isCallExpression(targetArray) && targetArray.expression &&
-    ts.isPropertyAccessExpression(targetArray.expression) && targetArray.expression.expression &&
-    targetArray.expression.expression.kind === ts.SyntaxKind.ThisKeyword &&
-    TypeChecker.getSymbolAtLocation(targetArray.expression)) {
-      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(targetArray.expression).declarations;
+  } else if (ts.isCallExpression(target) && target.expression &&
+    ts.isPropertyAccessExpression(target.expression) && target.expression.expression &&
+    target.expression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    TypeChecker.getSymbolAtLocation(target.expression)) {
+      let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(target.expression).declarations;
       if (declarations && declarations.length) {
         let declaration: ts.Node = declarations[0];
         if (ts.isMethodDeclaration(declaration)) {
-          judgeDeclaration(declaration, targetArray, log);
+          judgeDeclaration(declaration, target, log, name, TypeChecker);
         }
       }
   } else {
-    log.push({
-      type: LogType.WARN,
-      message: `If the type of array's each item is not a simple type, ` +
-        `use JSON.stringify to serialize the key generator in 3rd parameter of ForEach Component`,
-      pos: targetArray.getStart(),
-    })
+    if (name === COMPONENT_FOREACH) {
+      notRecognizeArrayType(log, target);
+    } else {
+      notRecognizeObjectType(log, target);
+    }
+  }
+}
+
+function judgeDeclaration(declaration: ts.Node, target: ts.Node, log: LogInfo[], name: string,
+  TypeChecker: ts.TypeChecker): void {
+  if (name === COMPONENT_FOREACH) {
+    judgeArrayDeclaration(declaration, target, log);
+  } else {
+    judgeClassDeclaration(declaration, target, log, TypeChecker);
   }
 }
 
 function isReturnStringify(node: ts.Node, log: LogInfo[]): boolean {
-  return functionWithBlock(node, log) || functionWithoutBlock(node, log);
+  return functionWithoutBlock(node, log) || functionWithBlock(node, log);
 }
 
 function hasJsonStringify(node: ts.Node): boolean {
@@ -2406,23 +2415,16 @@ function hasJsonStringify(node: ts.Node): boolean {
 }
 
 function functionWithoutBlock(node: ts.Node, log: LogInfo[]): boolean {
-  if (ts.isArrowFunction(node)) {
+  let withoutBlock: boolean = ts.isArrowFunction(node) && node.body && ts.isCallExpression(node.body) &&
+    node.body.expression && hasJsonStringify(node.body.expression);
+  if (ts.isArrowFunction(node) && withoutBlock) {
     if (judgeReturnType(node.type) === ReturnType.notDefined) {
-      log.push({
-        type: LogType.WARN,
-        message: "Better allocate a type of key generator function",
-        pos: node.getStart(),
-      })
+      allocateKeyGeneratorType(log, node);
     } else if (judgeReturnType(node.type) === ReturnType.complex) {
-      log.push({
-        type: LogType.WARN,
-        message: "Return complex type, please use JSON.stringify to serialize it",
-        pos: node.getStart(),
-      })
+      remindComplexOfKeyGeneratorType(log, node);
     }
   }
-  return ts.isArrowFunction(node) && node.body && ts.isCallExpression(node.body) &&
-    node.body.expression && hasJsonStringify(node.body.expression);
+  return withoutBlock;
 }
 
 function functionWithBlock(node: ts.Node, log: LogInfo[]): boolean {
@@ -2432,18 +2434,10 @@ function functionWithBlock(node: ts.Node, log: LogInfo[]): boolean {
       if (node.body && ts.isBlock(node.body)) {
         ts.forEachChild(node, (node)=>{traverseReturnStatement(node, useStringify)})
       }
-      log.push({
-        type: LogType.WARN,
-        message: "Better allocate a type of key generator function",
-        pos: node.getStart(),
-      })
+      allocateKeyGeneratorType(log, node);
       return useStringify.length && useStringify[useStringify.length-1];
     } else if (judgeReturnType(node.type) === ReturnType.complex) {
-      log.push({
-        type: LogType.WARN,
-        message: "Return complex type, please use JSON.stringify to serialize it",
-        pos: node.getStart(),
-      })
+      remindComplexOfKeyGeneratorType(log, node);
       return false;
     } else {
       return true;
@@ -2473,7 +2467,7 @@ function judgeReturnType(type: ts.TypeNode): ReturnType {
   }
 }
 
-function judgeDeclaration(declaration: ts.Node, targetArray: ts.Node, log: LogInfo[]): void {
+function judgeArrayDeclaration(declaration: ts.Node, targetArray: ts.Node, log: LogInfo[]): void {
   switch (judgeArrayType(declaration.type)) {
     case ReturnType.notDefined:
       log.push({
@@ -2498,6 +2492,81 @@ function judgeDeclaration(declaration: ts.Node, targetArray: ts.Node, log: LogIn
       })
       break;
   }
+}
+
+function judgeClassDeclaration(declaration: ts.Node, targetClass: ts.Node, log: LogInfo[],
+  TypeChecker: ts.TypeChecker): void {
+  if (declaration.type) {
+    if (ts.isTypeReferenceNode(declaration.type) && declaration.type.typeName &&
+      ts.isIdentifier(declaration.type.typeName)) {
+      let tsSymbol: ts.Symbol = TypeChecker.getSymbolAtLocation(declaration.type.typeName);
+      if (tsSymbol && tsSymbol.declarations && tsSymbol.declarations[0]) {
+        checkClassGetDataReturnType(tsSymbol.declarations[0], log, targetClass, TypeChecker);
+      }
+    } else if (ts.isTypeLiteralNode(declaration.type) && declaration.type.members &&
+      declaration.type.members.length) {
+      checkObjectGetDataReturnType(declaration.type, log);
+    } else {
+      notRecognizeObjectType(log, targetClass);
+    }
+  } else {
+    log.push({
+      type: LogType.WARN,
+      message: `Better allocate a type of this Object/Function/Method`,
+      pos: declaration.getStart(),
+    })
+    notRecognizeObjectType(log, targetClass);
+  }
+}
+
+function checkClassGetDataReturnType(declaration: ts.Node, log: LogInfo[], targetClass: ts.Node,
+  TypeChecker: ts.TypeChecker): void {
+  if ((ts.isInterfaceDeclaration(declaration) || ts.isClassDeclaration(declaration)) &&
+    declaration.members && declaration.members.length) {
+    let hasGetData: boolean = checkObjectGetDataReturnType(declaration, log);
+    if (!hasGetData && declaration.heritageClauses && declaration.heritageClauses.length &&
+      declaration.heritageClauses[0] && declaration.heritageClauses[0].types &&
+      declaration.heritageClauses[0].types.length && declaration.heritageClauses[0].types[0] &&
+      ts.isExpressionWithTypeArguments(declaration.heritageClauses[0].types[0]) &&
+      declaration.heritageClauses[0].types[0].expression &&
+      ts.isIdentifier(declaration.heritageClauses[0].types[0].expression)) {
+      let classSymbol: ts.Symbol = TypeChecker.getSymbolAtLocation(declaration.heritageClauses[0].types[0].expression);
+      if (classSymbol && classSymbol.declarations && classSymbol.declarations[0]) {
+        checkClassGetDataReturnType(classSymbol.declarations[0], log, targetClass, TypeChecker);
+      }
+    }
+  } else {
+    notRecognizeObjectType(log, targetClass);
+  }
+}
+
+function checkObjectGetDataReturnType(objectType: ts.TypeLiteralNode|ts.InterfaceDeclaration|ts.ClassDeclaration,
+  log: LogInfo[]): boolean {
+  let hasGetData: boolean = false;
+  objectType.members.forEach(member => {
+    if ((ts.isMethodSignature(member) || ts.isMethodDeclaration(member)) && member.name &&
+      ts.isIdentifier(member.name) && member.name.escapedText.toString() === GETDATA) {
+      hasGetData = true;
+      if (member.type) {
+        if (judgeType(member.type) === ReturnType.complex) {
+          remindComplexOfGetDataType(log, member);
+        }
+      } else {
+        allocateGetDataType(log, member);
+      }
+    } else if (ts.isPropertySignature(member) && member.name && ts.isIdentifier(member.name) &&
+      member.name.escapedText.toString() === GETDATA && member.type && ts.isFunctionTypeNode(member.type)) {
+      hasGetData = true;
+      if (member.type.type) {
+        if (judgeType(member.type.type) === ReturnType.complex) {
+          remindComplexOfGetDataType(log, member);
+        }
+      } else {
+        allocateGetDataType(log, member);
+      }
+    }
+  });
+  return hasGetData;
 }
 
 function judgeArrayType(type: ts.TypeNode): ReturnType {
@@ -2528,4 +2597,55 @@ function judgeType(type: ts.TypeNode): ReturnType {
     default:
       return ReturnType.complex;
   }
+}
+
+function notRecognizeArrayType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: `If the type of array's each item is not a simple type, ` +
+      `use JSON.stringify to serialize the key generator in 3rd parameter of ForEach Component`,
+    pos: target.getStart(),
+  })
+}
+
+function notRecognizeObjectType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: `If the return type of Object's method getData is not a simple type, ` +
+      `use JSON.stringify to serialize the key generator in 3rd parameter of LazyForEach Component`,
+    pos: target.getStart(),
+  })
+}
+
+function allocateGetDataType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: `Should allocate a type of getData`,
+    pos: target.getStart(),
+  })
+}
+
+function allocateKeyGeneratorType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: "Better allocate a type of key generator function",
+    pos: target.getStart(),
+  })
+}
+
+function remindComplexOfKeyGeneratorType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: "Return complex type, please use JSON.stringify to serialize it",
+    pos: target.getStart(),
+  })
+}
+
+function remindComplexOfGetDataType(log: LogInfo[], target: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: `If return type of getData is a complex type, ` +
+    `use JSON.stringify to serialize the key generator in 3rd parameter of LazyForEach Component`,
+    pos: target.getStart(),
+  })
 }
