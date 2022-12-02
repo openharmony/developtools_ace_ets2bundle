@@ -58,7 +58,8 @@ import {
   consumeCollection,
   objectLinkCollection,
   isStaticViewCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  getLocalStorageCollection
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -581,7 +582,9 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   const forbiddenToInitViaParamSet: Set<string> = new Set([
     ...getCollectionSet(customComponentName, storageLinkCollection),
     ...getCollectionSet(customComponentName, storagePropCollection),
-    ...getCollectionSet(customComponentName, consumeCollection)]);
+    ...getCollectionSet(customComponentName, consumeCollection)
+  ]);
+  getLocalStorageCollection(customComponentName, forbiddenToInitViaParamSet);
   if (isThisProperty(node, forbiddenToInitViaParamSet)) {
     log.push({
       type: LogType.ERROR,
