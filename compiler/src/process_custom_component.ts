@@ -314,7 +314,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
     });
     if (checkArray.length === nodeArgument.properties.length) {
       log.push({
-        type: LogType.ERROR,
+        type: LogType.WARN,
         message: `This component without state variable, UI of the component will not be update.`,
         pos: node.getStart() || node.pos
       });
