@@ -209,7 +209,7 @@ function createChildElmtId(node: ts.ExpressionStatement, name: string): ts.Prope
   }
   if (node.expression.arguments[0].properties) {
     node.expression.arguments[0].properties.forEach(item => {
-      if (item.name && item.name.escapedText.toString() && propsAndObjectLinks.includes(item.name.escapedText)) {
+      if (ts.isIdentifier(item.name) && propsAndObjectLinks.includes(item.name.escapedText.toString())) {
         childParam.push(item);       
       }
     })
