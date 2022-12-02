@@ -399,6 +399,12 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string): v
     return;
   }
 
+  // replace relative moduleSpecifier with ohmURl
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
+  sourceCode = sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
+  });
+
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
     fs.writeFileSync(jsFilePath, sourceCode);
@@ -422,9 +428,12 @@ export function getPackageInfo(configFile: string): Array<string> {
 }
 
 function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string): string {
+  const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    const filePathWithoutSuffix: string = filePath.replace(SUFFIX_REG, '');
+    const result: RegExpMatchArray | null =
+      filePathWithoutSuffix.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
       const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
       const projectRootPath: string = projectConfig.projectRootPath;
