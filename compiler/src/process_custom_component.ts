@@ -58,9 +58,7 @@ import {
   consumeCollection,
   objectLinkCollection,
   isStaticViewCollection,
-  builderParamObjectCollection,
-  getObservedPropertyCollection,
-  componentCollection
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -298,12 +296,11 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   if (nodeArguments && nodeArguments.length === 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
-    const checkArray: string[] = [];
     nodeArgument.properties.forEach(item => {
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      validateStateManagement(item, name, log, checkArray);
+      validateStateManagement(item, name, log);
       if (isNonThisProperty(item, linkSet)) {
         if (isToChange(item as ts.PropertyAssignment, name)) {
           item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
@@ -312,13 +309,6 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         props.push(item);
       }
     });
-    if (checkArray.length === nodeArgument.properties.length) {
-      log.push({
-        type: LogType.WARN,
-        message: `This component without state variable, UI of the component will not be update.`,
-        pos: node.getStart() || node.pos
-      });
-    }
   }
   validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
 }
@@ -381,43 +371,27 @@ function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<s
 }
 
 function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[], checkArray: string[]): void {
+  log: LogInfo[]): void {
   validateForbiddenToInitViaParam(node, customComponentName, log);
-  checkFromParentToChild(node, customComponentName, log, checkArray);
+  checkFromParentToChild(node, customComponentName, log);
 }
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[], checkArray: string[]): void {
-  let name: string;
-  if (node.initializer && node.initializer.name) {
-    name = node.initializer.name.escapedText.toString();
-  } else if (node.initializer.escapedText) {
-    name = node.initializer.escapedText.toString();
-  } else {
-    checkArray.push("warn");
-  }
-  if (name) {
-    const observedPropertyCollection: Set<string> =
-      getObservedPropertyCollection(componentCollection.currentClassName);
-    if (!observedPropertyCollection.has(name)) {
-      checkArray.push("warn");
-    }
-  }
-
+  log: LogInfo[]): void {
   let propertyName: string;
-  if (node.name && node.name.escapedText) {
-    // @ts-ignore
+  if (ts.isIdentifier(node.name)) {
     propertyName = node.name.escapedText.toString();
   }
   const curPropertyKind: string = getPropertyDecoratorKind(propertyName, customComponentName);
+  let parentPropertyName: string;
   if (curPropertyKind) {
     if (isInitFromParent(node)) {
-      const parentPropertyName: string =
+      parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
-      if (!parentPropertyName) {
-        return;
+      let parentPropertyKind: string = curPropMap.get(parentPropertyName);
+      if (!parentPropertyKind) {
+        parentPropertyKind = COMPONENT_NON_DECORATOR;
       }
-      const parentPropertyKind: string = curPropMap.get(parentPropertyName);
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
@@ -426,6 +400,14 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       if (!localArray.includes(curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
+      }
+    } else {
+      parentPropertyName =
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);;
+      const parentPropertyKind = COMPONENT_NON_DECORATOR;
+      if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
+        validateIllegalInitFromParent(
+          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
       }
     }
   }
@@ -453,8 +435,8 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
-  let parentPropertyName: string;
   const initExpression: ts.Expression = node.initializer;
+  let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
       // @ts-ignore
@@ -467,10 +449,13 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
     if (hasDollar(initExpression)) {
       validateNonLinkWithDollar(node, log);
     } else {
-    // @ts-ignore
-      parentPropertyName = node.initializer.name.getText();
+      // @ts-ignore
+      if (node.initializer && node.initializer.name) {
+        parentPropertyName = node.initializer.name.getText();
+      }
     }
   }
+
   return parentPropertyName;
 }
 
@@ -653,8 +638,13 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
   log: LogInfo[]): void {
+  let type: LogType = LogType.ERROR;
+  if ((parentPropertyKind === COMPONENT_NON_DECORATOR && !partialUpdateConfig.partialUpdateMode) ||
+    curPropertyKind === COMPONENT_PROP_DECORATOR) {
+    type = LogType.WARN;
+  }
   log.push({
-    type: curPropertyKind === COMPONENT_PROP_DECORATOR ? LogType.WARN : LogType.ERROR,
+    type: type,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
