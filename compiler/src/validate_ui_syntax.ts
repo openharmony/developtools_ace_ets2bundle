@@ -1126,13 +1126,21 @@ export function getObservedPropertyCollection(className: string): Set<string> {
     ...storageLinkCollection.get(className),
     ...provideCollection.get(className),
     ...consumeCollection.get(className),
-    ...objectLinkCollection.get(className),
+    ...objectLinkCollection.get(className)
   ]);
-  for(const key of localStorageLinkCollection.get(className).keys()){
-    observedProperthCollection.add(key);
-  }
-  for(const key of localStoragePropCollection.get(className).keys()){
-    observedProperthCollection.add(key);
-  }
+  getLocalStorageCollection(className, observedProperthCollection);
   return observedProperthCollection;
+}
+
+export function getLocalStorageCollection(componentName: string, collection: Set<string>): void {
+  if (localStorageLinkCollection.get(componentName)) {
+    for (const key of localStorageLinkCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+  }
+  if (localStoragePropCollection.get(componentName)) {
+    for (const key of localStoragePropCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+  }
 }
