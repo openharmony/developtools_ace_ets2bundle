@@ -364,3 +364,4 @@ export const RESERT = 'reset';
 export const ARRAY = 'Array';
 export const JSON = 'JSON';
 export const STRINGIFY = 'stringify';
+export const GETDATA = 'getData';
