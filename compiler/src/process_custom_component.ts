@@ -78,7 +78,10 @@ import {
   createComponentCreationStatement,
   createFunction
 } from './process_component_build';
-import { partialUpdateConfig } from '../main';
+import {
+  partialUpdateConfig,
+  projectConfig
+} from '../main';
 
 const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
@@ -297,11 +300,12 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   if (nodeArguments && nodeArguments.length === 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
+    const propertyObservedKinds: string[] = [];
     nodeArgument.properties.forEach(item => {
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      validateStateManagement(item, name, log);
+      validateStateManagement(item, name, log, propertyObservedKinds);
       if (isNonThisProperty(item, linkSet)) {
         if (isToChange(item as ts.PropertyAssignment, name)) {
           item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
@@ -309,7 +313,24 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         }
         props.push(item);
       }
+      if (partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck &&
+        item.initializer && ts.isCallExpression(item.initializer)) {
+        log.push({
+          type: LogType.WARN,
+          message: 'If method assignment is used here, the UI may not be updated.',
+          pos: item.initializer.getStart()
+        });
+      }
     });
+    if (propertyObservedKinds.length == 0 && nodeArgument.properties.length > 0 &&
+      partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck) {
+      log.push({
+        type: LogType.WARN,
+        message: `You do not use any state variables for the component '${name}', ` +
+          `UI of the component will not be update.`,
+        pos: node.getStart()
+      });
+    }
   }
   validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
 }
@@ -372,13 +393,13 @@ function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<s
 }
 
 function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], propertyObservedKinds: string[]): void {
   validateForbiddenToInitViaParam(node, customComponentName, log);
-  checkFromParentToChild(node, customComponentName, log);
+  checkFromParentToChild(node, customComponentName, log, propertyObservedKinds);
 }
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], propertyObservedKinds: string[]): void {
   let propertyName: string;
   if (ts.isIdentifier(node.name)) {
     propertyName = node.name.escapedText.toString();
@@ -392,6 +413,9 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       let parentPropertyKind: string = curPropMap.get(parentPropertyName);
       if (!parentPropertyKind) {
         parentPropertyKind = COMPONENT_NON_DECORATOR;
+      }
+      if (parentPropertyKind !== COMPONENT_NON_DECORATOR) {
+        propertyObservedKinds.push(parentPropertyKind);
       }
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
@@ -644,6 +668,10 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   let type: LogType = LogType.ERROR;
   if ((parentPropertyKind === COMPONENT_NON_DECORATOR && !partialUpdateConfig.partialUpdateMode) ||
     curPropertyKind === COMPONENT_PROP_DECORATOR) {
+    type = LogType.WARN;
+  }
+  if (projectConfig.xtsMode && parentPropertyKind === COMPONENT_STATE_DECORATOR &&
+    curPropertyKind === COMPONENT_STATE_DECORATOR) {
     type = LogType.WARN;
   }
   log.push({
