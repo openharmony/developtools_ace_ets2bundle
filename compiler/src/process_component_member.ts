@@ -72,7 +72,8 @@ import {
   CREATE_STORAGE_PROP,
   ELMTID,
   COMPONENT_CONSTRUCTOR_PARAMS,
-  RESERT
+  RESERT,
+  ARRAY
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -89,7 +90,8 @@ import { updateConstructor } from './process_component_constructor';
 import {
   LogType,
   LogInfo,
-  componentInfo
+  componentInfo,
+  hasDecorator
 } from './utils';
 import {
   createReference,
@@ -389,6 +391,9 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
+    if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode) {
+      checkStatePropertyType(node, log);
+    }
   }
   if (!immutableDecorators.has(decorator)) {
     updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD, node.type));
@@ -403,6 +408,97 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setDecoratorName(decorator);
     updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
+  }
+}
+
+function checkStatePropertyType(node: ts.PropertyDeclaration, log: LogInfo[]): void {
+  switch (isArrayTypeNode(node.type, log, true)) {
+    case 'TypeReference':
+      if (ts.isTypeReferenceNode(node.type.typeArguments[0]) && node.type.typeArguments[0].typeName &&
+        ts.isIdentifier(node.type.typeArguments[0].typeName)) {
+        judgeArrayType(node.type.typeArguments[0], log);
+      } else if (!isExactArrayType(node.type.typeArguments[0])) {
+        remindObserved(log, node.type.typeArguments[0]);
+      }
+      break;
+    case 'ArrayType':
+      if (ts.isArrayTypeNode(node.type) && node.type.elementType &&
+        ts.isTypeReferenceNode(node.type.elementType) && node.type.elementType.typeName &&
+        ts.isIdentifier(node.type.elementType.typeName)) {
+        judgeArrayType(node.type.elementType, log);
+      } else if (!isExactArrayType(node.type.elementType)) {
+        remindObserved(log, node.type.elementType);
+      }
+      break;
+  }
+}
+
+function judgeArrayType(node: ts.Node, log: LogInfo[]): void {
+  if (!observedClassCollection.has(node.typeName.escapedText.toString())) {
+    remindObserved(log, node);
+  }
+}
+
+function remindObserved(log: LogInfo[], node: ts.Node): void {
+  log.push({
+    type: LogType.WARN,
+    message: `Make sure this type is a Class with @Observed decorator, ` +
+      `or it's property may not update when you change this state variable`,
+    pos: node.getStart()
+  })
+}
+
+function isArrayTypeNode(type: ts.Node, log: LogInfo[], isSurface: boolean): string {
+  let isArrayType: string;
+  if (type) {
+    if (ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName) &&
+      type.typeName.escapedText.toString() === ARRAY && type.typeArguments && type.typeArguments.length) {
+      isArrayType = 'TypeReference';
+      isArrayTypeNodeCommon(isSurface, type.typeArguments[0], log);
+    } else if (ts.isArrayTypeNode(type) && type.elementType) {
+      isArrayType = 'ArrayType';
+      isArrayTypeNodeCommon(isSurface, type.elementType, log);
+    }
+  }
+  return isArrayType;
+}
+
+function isArrayTypeNodeCommon(isSurface: boolean, node: ts.Node, log: LogInfo[]): void {
+  if (isSurface) {
+    isObscureArrayType(node, log);
+    isArrayTypeNode(node, log, false);
+  } else {
+    log.push({
+      type: LogType.WARN,
+      message: `Better not nested Array in Array`,
+      pos: node.getStart()
+    })
+  }
+}
+
+function isExactArrayType(type: ts.Node): boolean {
+  switch(type.kind) {
+    case ts.SyntaxKind.StringKeyword:
+    case ts.SyntaxKind.NumberKeyword:
+    case ts.SyntaxKind.BooleanKeyword:
+    case ts.SyntaxKind.SymbolKeyword:
+    case ts.SyntaxKind.BigIntKeyword:
+      return true;
+    default:
+      return false;
+  }
+}
+
+function isObscureArrayType(type: ts.Node, log: LogInfo[]): void {
+  switch(type.kind) {
+    case ts.SyntaxKind.AnyKeyword:
+    case ts.SyntaxKind.TupleType:
+    case ts.SyntaxKind.VoidKeyword:
+      log.push({
+        type: LogType.WARN,
+        message: `Please give a exact type of Array`,
+        pos: type.getStart()
+      })
   }
 }
 
