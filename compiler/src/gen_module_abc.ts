@@ -40,7 +40,8 @@ function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string)
   for (let i = 0; i < inputPaths.length; ++i) {
     let info: any = inputPaths[i];
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
-    content += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(info.sourceFile)}`;
+    content +=
+      `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(info.sourceFile)};${info.packageName}`;
     if (i < inputPaths.length - 1) {
       content += "\n"
     }
