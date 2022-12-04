@@ -963,12 +963,10 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
     }
     return true;
   }
-  if (typeNode.parent && typeNode.parent.name && stateCollection.get(
-    componentCollection.currentClassName).has(typeNode.parent.name.escapedText.toString()) &&
+  if (typeNode.parent && typeNode.parent.name &&
     typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
-      type: partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode ?
-        LogType.ERROR : LogType.WARN,
+      type: partialUpdateConfig.partialUpdateMode ? LogType.ERROR : LogType.WARN,
       message: `Please define an explicit type, not any.`,
       pos: typeNode.getStart()
     });
@@ -1181,7 +1179,7 @@ function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.T
 function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
   decoractor: string, log: LogInfo[], program: ts.Program): ts.ExpressionStatement {
   const name: string = nameIdentifier.escapedText.toString();
-  if (isSimpleType(type, program)) {
+  if (isSimpleType(type, program, log)) {
     return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
       createPropertyAccessExpressionWithParams(name));
   } else {
