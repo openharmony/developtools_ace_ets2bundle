@@ -441,7 +441,7 @@ function judgeArrayType(node: ts.Node, log: LogInfo[]): void {
 
 function remindObserved(log: LogInfo[], node: ts.Node): void {
   log.push({
-    type: LogType.WARN,
+    type: LogType.NOTE,
     message: `Make sure this type is a Class with @Observed decorator, ` +
       `or it's property may not update when you change this state variable`,
     pos: node.getStart()
@@ -495,7 +495,7 @@ function isObscureArrayType(type: ts.Node, log: LogInfo[]): void {
     case ts.SyntaxKind.TupleType:
     case ts.SyntaxKind.VoidKeyword:
       log.push({
-        type: LogType.WARN,
+        type: LogType.NOTE,
         message: `Please give a exact type of Array`,
         pos: type.getStart()
       })
