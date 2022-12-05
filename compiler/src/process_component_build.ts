@@ -1552,7 +1552,7 @@ function checkComponentInitializer(name: string, node: ts.ExpressionStatement, l
         property.initializer.name.escapedText) {
         const observedPropertyCollection: Set<string> = getObservedPropertyCollection(
           componentCollection.currentClassName);
-        if (observedPropertyCollection.has(property.initializer.name.escapedText.tostring())) {
+        if (observedPropertyCollection.has(property.initializer.name.escapedText.toString())) {
           textLogFlag = false;
         }
       } else if (name === 'GridContainer' && property.name && ts.isIdentifier(property.name) &&
