@@ -392,7 +392,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
-    if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode) {
+    if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode) {
       checkStatePropertyType(node, log);
     }
   }
@@ -967,7 +967,7 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   if (typeNode.parent && typeNode.parent.name &&
     typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
-      type: partialUpdateConfig.partialUpdateMode ? LogType.ERROR : LogType.WARN,
+      type: LogType.WARN,
       message: `Please define an explicit type, not any.`,
       pos: typeNode.getStart()
     });
