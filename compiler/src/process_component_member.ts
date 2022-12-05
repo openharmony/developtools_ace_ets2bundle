@@ -65,6 +65,7 @@ import {
   SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
   SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU,
   SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+  SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU,
   SYNCHED_PROPERTY_NESED_OBJECT_PU,
   COMPONENT_CUSTOM_DECORATOR,
   THIS,
@@ -1183,7 +1184,8 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
     return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
       createPropertyAccessExpressionWithParams(name));
   } else {
-    validateNonSimpleType(nameIdentifier, decoractor, log);
+    return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU,
+      createPropertyAccessExpressionWithParams(name));
   }
 }
 
