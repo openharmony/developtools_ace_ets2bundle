@@ -184,24 +184,24 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isBuilder, isGlobalBuilder);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode, isBuilder, isGlobalBuilder);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  componentNode: ts.CallExpression, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(node, newNode, name, isGlobalBuilder));
+    newStatements.push(createCustomComponent(node, newNode, name, componentNode, isGlobalBuilder));
   }
 }
 
-function createChildElmtId(node: ts.ExpressionStatement, name: string): ts.PropertyAssignment[] {
+function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAssignment[] {
   const propsAndObjectLinks: string[] = [];
   const childParam: ts.PropertyAssignment[] = [];
   if (propCollection.get(name)) {
@@ -210,8 +210,8 @@ function createChildElmtId(node: ts.ExpressionStatement, name: string): ts.Prope
   if (objectLinkCollection.get(name)) {
     propsAndObjectLinks.push(...objectLinkCollection.get(name));
   }
-  if (node.expression.arguments[0].properties) {
-    node.expression.arguments[0].properties.forEach(item => {
+  if (node.arguments[0].properties) {
+    node.arguments[0].properties.forEach(item => {
       if (ts.isIdentifier(item.name) && propsAndObjectLinks.includes(item.name.escapedText.toString())) {
         childParam.push(item);       
       }
@@ -221,10 +221,10 @@ function createChildElmtId(node: ts.ExpressionStatement, name: string): ts.Prope
 }
 
 function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression, name: string,
-  isGlobalBuilder: boolean = false): ts.Block {
+  componentNode: ts.CallExpression, isGlobalBuilder: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
-  if (node.expression && node.expression.arguments && node.expression.arguments.length) {
-    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(node, name), true);
+  if (componentNode.arguments && componentNode.arguments.length) {
+    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
