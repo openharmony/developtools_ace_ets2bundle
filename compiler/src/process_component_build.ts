@@ -481,6 +481,11 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   newStatements.push(res.newNode);
   processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
+  if (res.identifierNode.escapedText && partialUpdateConfig.strictCheck === 'all' &&
+    partialUpdateConfig.partialUpdateMode) {
+    checkComponentInitializer(
+        res.identifierNode.escapedText.toString(), etsComponentResult.etsComponentNode, log);
+  }
   if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
     etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
@@ -1528,18 +1533,16 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (statements.length) {
     reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
   }
-  const componentName: string = identifierNode.escapedText.toString();
-  if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
-    checkComponents.has(componentName)) {
-    checkComponentInitializer(componentName, node, log);
-  }
 }
 
 function checkComponentInitializer(name: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (!checkComponents.has(name)) {
+    return;
+  }
   const textList: Set<string> = new Set(['TextArea', 'TextInput']);
-  if (node.expression && node.expression.arguments && node.expression.arguments.length &&
-    ts.isObjectLiteralExpression(node.expression.arguments[0])) {
-    node.expression.arguments[0].properties.forEach(property => {
+  if (node.arguments && node.arguments.length &&
+    ts.isObjectLiteralExpression(node.arguments[0])) {
+    node.arguments[0].properties.forEach(property => {
       if (textList.has(name) && property.name &&
         ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text') {
         let logFlag: boolean = true;
@@ -1563,7 +1566,7 @@ function checkComponentInitializer(name: string, node: ts.ExpressionStatement, l
         }
         return;
       } else if (name === 'GridContainer' && property.name && ts.isIdentifier(property.name) &&
-        property.name.escapedText === 'margin') {
+        property.name.escapedText && property.name.escapedText.toString() === 'margin') {
         log.push({
           type: LogType.NOTE,
           message: `In API9, the margin attribute of GridContainer takes effect.`,
