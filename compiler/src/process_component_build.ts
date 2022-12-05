@@ -1536,25 +1536,32 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
 }
 
 function checkComponentInitializer(name: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
-  let textLogFlag: boolean = false;
   const textList: Set<string> = new Set(['TextArea', 'TextInput']);
-  if (textList.has(name)) {
-    textLogFlag = true;
-  }
   if (node.expression && node.expression.arguments && node.expression.arguments.length &&
     ts.isObjectLiteralExpression(node.expression.arguments[0])) {
     node.expression.arguments[0].properties.forEach(property => {
       if (textList.has(name) && property.name &&
-        ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text' &&
-        property.initializer && ts.isPropertyAccessExpression(property.initializer) &&
-        property.initializer.expression &&
-        property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
-        property.initializer.name.escapedText) {
-        const observedPropertyCollection: Set<string> = getObservedPropertyCollection(
-          componentCollection.currentClassName);
-        if (observedPropertyCollection.has(property.initializer.name.escapedText.toString())) {
-          textLogFlag = false;
+        ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text') {
+        let logFlag: boolean = true;
+        if (property.initializer && ts.isPropertyAccessExpression(property.initializer) &&
+          property.initializer.expression &&
+          property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+          property.initializer.name.escapedText) {
+          const observedPropertyCollection: Set<string> = getObservedPropertyCollection(
+            componentCollection.currentClassName);
+          if (observedPropertyCollection.has(property.initializer.name.escapedText.toString())) {
+            logFlag = false;
+          }
         }
+        if (logFlag) {
+          log.push({
+            type: LogType.NOTE,
+            message: `If the text property value does not use the state variable,` +
+            ` the text content will not be updated.`,
+            pos: node.getStart()
+          });
+        }
+        return;
       } else if (name === 'GridContainer' && property.name && ts.isIdentifier(property.name) &&
         property.name.escapedText === 'margin') {
         log.push({
@@ -1565,14 +1572,6 @@ function checkComponentInitializer(name: string, node: ts.ExpressionStatement, l
         return;
       }
     });
-  }
-  if (textLogFlag) {
-    log.push({
-      type: LogType.NOTE,
-      message: `If the text property value does not use the state variable,` +
-        ` the text content will not be updated.`,
-      pos: node.getStart()
-    })
   }
 }
 
