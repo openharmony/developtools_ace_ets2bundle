@@ -316,7 +316,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       if (partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck &&
         item.initializer && ts.isCallExpression(item.initializer)) {
         log.push({
-          type: LogType.WARN,
+          type: LogType.NOTE,
           message: 'If method assignment is used here, the UI may not be updated.',
           pos: item.initializer.getStart()
         });
@@ -325,7 +325,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
     if (propertyObservedKinds.length == 0 && nodeArgument.properties.length > 0 &&
       partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck) {
       log.push({
-        type: LogType.WARN,
+        type: LogType.NOTE,
         message: `You do not use any state variables for the component '${name}', ` +
           `UI of the component will not be update.`,
         pos: node.getStart()

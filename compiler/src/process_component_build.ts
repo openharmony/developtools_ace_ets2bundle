@@ -1326,14 +1326,14 @@ function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
       traverse(node);
       if (!hasObservedKeyword && node && realKeywords.size > 0) {
         log.push({
-          type: LogType.WARN,
+          type: LogType.NOTE,
           message: `It is recommended to use the state variable for condition judgment of the IF component.`,
           pos: node.getStart() || node.pos
         });
       }
     } else {
       log.push({
-        type: LogType.WARN,
+        type: LogType.NOTE,
         message: `It is recommended to use the state variable for condition judgment of the IF component.`,
         pos: node.getStart() || node.pos
       });
@@ -2367,6 +2367,14 @@ function judgeTargetType(target: ts.Node, log: LogInfo[], TypeChecker: ts.TypeCh
     }
   } else if (ts.isPropertyAccessExpression(target) && target.expression &&
     target.expression.kind === ts.SyntaxKind.ThisKeyword && TypeChecker.getSymbolAtLocation(target)) {
+    if (name === COMPONENT_LAZYFOREACH && target.name && ts.isIdentifier(target.name) &&
+      getObservedPropertyCollection(componentCollection.currentClassName).has(target.name.escapedText.toString())) {
+      log.push({
+        type: LogType.WARN,
+        message: "LazyForEach's first parameter should not be state variable",
+        pos: target.getStart(),
+      })
+    }
     let declarations: ts.Node[] = TypeChecker.getSymbolAtLocation(target).declarations;
     if (declarations && declarations.length) {
       let declaration: ts.Node = declarations[0];
@@ -2426,9 +2434,7 @@ function functionWithoutBlock(node: ts.Node, log: LogInfo[]): boolean {
   let withoutBlock: boolean = ts.isArrowFunction(node) && node.body && ts.isCallExpression(node.body) &&
     node.body.expression && hasJsonStringify(node.body.expression);
   if (ts.isArrowFunction(node) && withoutBlock) {
-    if (judgeReturnType(node.type) === ReturnType.notDefined) {
-      allocateKeyGeneratorType(log, node);
-    } else if (judgeReturnType(node.type) === ReturnType.complex) {
+    if (judgeReturnType(node.type) === ReturnType.complex) {
       remindComplexOfKeyGeneratorType(log, node);
     }
   }
@@ -2442,7 +2448,6 @@ function functionWithBlock(node: ts.Node, log: LogInfo[]): boolean {
       if (node.body && ts.isBlock(node.body)) {
         ts.forEachChild(node, (node)=>{traverseReturnStatement(node, useStringify)})
       }
-      allocateKeyGeneratorType(log, node);
       return useStringify.length && useStringify[useStringify.length-1];
     } else if (judgeReturnType(node.type) === ReturnType.complex) {
       remindComplexOfKeyGeneratorType(log, node);
@@ -2482,13 +2487,6 @@ function judgeArrayDeclaration(declaration: ts.Node, targetArray: ts.Node, log: 
         type: LogType.WARN,
         message: "Variable/function which used for ForEach component's 1st parameter should allocate a type",
         pos: declaration.getStart(),
-      })
-      break;
-    case ReturnType.notCompatible:
-      log.push({
-        type: LogType.WARN,
-        message: "The first parameter in ForEach component should be an array",
-        pos: targetArray.getStart(),
       })
       break;
     case ReturnType.complex:
@@ -2609,18 +2607,18 @@ function judgeType(type: ts.TypeNode): ReturnType {
 
 function notRecognizeArrayType(log: LogInfo[], target: ts.Node): void {
   log.push({
-    type: LogType.WARN,
-    message: `If the type of array's each item is not a simple type, ` +
-      `use JSON.stringify to serialize the key generator in 3rd parameter of ForEach Component`,
+    type: LogType.NOTE,
+    message: `Make sure the key generator in 3rd parameter of ForEach Component is different when item needs to be updated, ` +
+      `If the type of the key generator is not a simple type, use JSON.stringify to serialize it instead of object.toString()`,
     pos: target.getStart(),
   })
 }
 
 function notRecognizeObjectType(log: LogInfo[], target: ts.Node): void {
   log.push({
-    type: LogType.WARN,
-    message: `If the return type of Object's method getData is not a simple type, ` +
-      `use JSON.stringify to serialize the key generator in 3rd parameter of LazyForEach Component`,
+    type: LogType.NOTE,
+    message: `Make sure the key generator in 3rd parameter of LazyForEach Component is different when item needs to be updated, ` +
+    `If the type of the key generator is not a simple type, use JSON.stringify to serialize it instead of object.toString()`,
     pos: target.getStart(),
   })
 }
@@ -2629,14 +2627,6 @@ function allocateGetDataType(log: LogInfo[], target: ts.Node): void {
   log.push({
     type: LogType.WARN,
     message: `Should allocate a type of getData`,
-    pos: target.getStart(),
-  })
-}
-
-function allocateKeyGeneratorType(log: LogInfo[], target: ts.Node): void {
-  log.push({
-    type: LogType.WARN,
-    message: "Better allocate a type of key generator function",
     pos: target.getStart(),
   })
 }

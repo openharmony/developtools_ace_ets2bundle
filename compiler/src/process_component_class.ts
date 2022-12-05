@@ -91,8 +91,7 @@ import {
   linkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  propCollection,
-  getObservedPropertyCollection
+  propCollection
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -423,9 +422,6 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
         ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
         ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
     }
-    if (partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck) {
-      checkJsonStringifyNode(node, log);
-    }
     return ts.visitEachChild(node, visitBuild, context);
   }
   function checkStateName(node: ts.PropertyAccessExpression): string {
@@ -433,25 +429,6 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
       return node.name.escapedText.toString();
     }
     return null;
-  }
-}
-
-function checkJsonStringifyNode(node: ts.Node, log: LogInfo[]): void {
-  if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) &&
-    isJsonStringifyNode(node.expression) && node.arguments.length) {
-    const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
-      componentCollection.currentClassName);
-    node.arguments.forEach((property: ts.Node) => {
-      if (ts.isPropertyAccessExpression(property) &&
-        property.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(property.name) &&
-        currentObservedPropertyCollection.has(property.name.escapedText.toString())) {
-        log.push({
-          type: LogType.WARN,
-          message: 'If the state variable is used as the parameter of the JSON.stringify method, UI is not refreshed.',
-          pos: property.getStart() || property.pos
-        });
-      }
-    });
   }
 }
 

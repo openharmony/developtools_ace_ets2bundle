@@ -445,7 +445,7 @@ export class ResultStates {
           .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '');
         if (/^NOTE/.test(message)) {
           this.noteCount++;
-          logger.info(this.blue, message, this.reset, '\n');
+          logger.info(this.blue, message.replace(/^NOTE/, 'ArkTS:NOTE'), this.reset, '\n');
         } else {
           this.warningCount++;
           logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
