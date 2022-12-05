@@ -244,7 +244,7 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      if (isTs2Abc()) {
+      if (isTs2Abc() || process.env.minPlatformVersion === "8") {
         if (previewCount == compileCount) {
           previewCount++;
           invokeWorkersToGenAbc();
@@ -818,10 +818,6 @@ function invokeWorkersToGenAbc(): void {
   }
 
   filterIntermediateJsBundleByHashJson(buildPathInfo, intermediateJsBundle);
-  if (fileterIntermediateJsBundle.length === 0) {
-    processExtraAsset();
-    return;
-  }
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, maxWorkerNumber);
   const workerNumber: number = maxWorkerNumber < splitedBundles.length ? maxWorkerNumber : splitedBundles.length;
 
