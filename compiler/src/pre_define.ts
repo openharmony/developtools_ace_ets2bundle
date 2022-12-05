@@ -334,6 +334,7 @@ export const GLOBAL_THIS: string = 'globalThis';
 export const OBSERVED_PROPERTY_SIMPLE_PU: string = 'ObservedPropertySimplePU';
 export const OBSERVED_PROPERTY_OBJECT_PU: string = 'ObservedPropertyObjectPU';
 export const SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU: string = 'SynchedPropertySimpleOneWayPU';
+export const SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU: string = 'SynchedPropertyObjectOneWayPU';
 export const SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU: string = 'SynchedPropertySimpleTwoWayPU';
 export const SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU: string = 'SynchedPropertyObjectTwoWayPU';
 export const SYNCHED_PROPERTY_NESED_OBJECT_PU: string = 'SynchedPropertyNesedObjectPU';
@@ -359,3 +360,4 @@ export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
 
 export const CALL = 'call';
+export const RESERT = 'reset';
