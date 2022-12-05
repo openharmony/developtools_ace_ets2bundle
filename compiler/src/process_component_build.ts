@@ -1528,21 +1528,23 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (statements.length) {
     reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
   }
+  const componentName: string = identifierNode.escapedText.toString();
   if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
-    checkComponents.has(identifierNode.escapedText.toString())) {
-    checkComponentInitializer(identifierNode.escapedText.toString(), node, log);
+    checkComponents.has(componentName)) {
+    checkComponentInitializer(componentName, node, log);
   }
 }
 
 function checkComponentInitializer(name: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
   let textLogFlag: boolean = false;
-  if (name === 'TextArea' || name === 'TextInput') {
+  const textList: Set<string> = new Set(['TextArea', 'TextInput']);
+  if (textList.has(name)) {
     textLogFlag = true;
   }
   if (node.expression && node.expression.arguments && node.expression.arguments.length &&
     ts.isObjectLiteralExpression(node.expression.arguments[0])) {
     node.expression.arguments[0].properties.forEach(property => {
-      if ((name === 'TextArea' || name === 'TextInput') && property.name &&
+      if (textList.has(name) && property.name &&
         ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text' &&
         property.initializer && ts.isPropertyAccessExpression(property.initializer) &&
         property.initializer.expression &&
