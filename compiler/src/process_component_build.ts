@@ -1561,7 +1561,8 @@ function checkComponentInitializer(name: string, node: ts.ExpressionStatement, l
           type: LogType.NOTE,
           message: `In API9, the margin attribute of GridContainer takes effect.`,
           pos: node.getStart()
-        })
+        });
+        return;
       }
     });
   }
