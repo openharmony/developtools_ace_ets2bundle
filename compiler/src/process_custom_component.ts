@@ -313,7 +313,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         }
         props.push(item);
       }
-      if (partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck &&
+      if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
         item.initializer && ts.isCallExpression(item.initializer)) {
         log.push({
           type: LogType.NOTE,
@@ -322,8 +322,8 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         });
       }
     });
-    if (propertyObservedKinds.length == 0 && nodeArgument.properties.length > 0 &&
-      partialUpdateConfig.partialUpdateMode && partialUpdateConfig.strictCheck) {
+    if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
+      propertyObservedKinds.length === 0 && nodeArgument.properties.length > 0) {
       log.push({
         type: LogType.NOTE,
         message: `You do not use any state variables for the component '${name}', ` +
@@ -670,7 +670,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     curPropertyKind === COMPONENT_PROP_DECORATOR) {
     type = LogType.WARN;
   }
-  if (projectConfig.xtsMode && parentPropertyKind === COMPONENT_STATE_DECORATOR &&
+  if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
     curPropertyKind === COMPONENT_STATE_DECORATOR) {
     type = LogType.WARN;
   }

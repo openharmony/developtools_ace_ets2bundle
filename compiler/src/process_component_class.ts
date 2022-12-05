@@ -432,11 +432,6 @@ function processBuildMember(node: ts.MethodDeclaration, context: ts.Transformati
   }
 }
 
-function isJsonStringifyNode(node: ts.PropertyAccessExpression): boolean {
-  return ts.isIdentifier(node.expression) && node.expression.escapedText.toString() === 'JSON' &&
-    ts.isIdentifier(node.name) && node.name.escapedText.toString() === 'stringify';
-}
-
 function isGeometryView(node: ts.Node): boolean {
   if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression)) {
     const call: ts.CallExpression = node.expression;

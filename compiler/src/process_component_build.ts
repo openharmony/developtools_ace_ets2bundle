@@ -146,6 +146,10 @@ import {
 import { transformLog, contextGlobal } from './process_ui_syntax';
 import { props } from './compile_info';
 
+const checkComponents: Set<string> = new Set([
+  "TextArea", "TextInput", "GridContainer"
+]);
+
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
@@ -1301,7 +1305,7 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
 }
 
 function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
-  if (partialUpdateConfig.strictCheck && partialUpdateConfig.partialUpdateMode &&
+  if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
     node && node.getText()) {
     if (node.getText().indexOf(THIS) >= 0) {
       const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
@@ -1523,6 +1527,49 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
   if (statements.length) {
     reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
+  }
+  if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
+    checkComponents.has(identifierNode.escapedText.toString())) {
+    checkComponentInitializer(identifierNode.escapedText.toString(), node, log);
+  }
+}
+
+function checkComponentInitializer(name: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
+  let textLogFlag: boolean = false;
+  if (name === 'TextArea' || name === 'TextInput') {
+    textLogFlag = true;
+  }
+  if (node.expression && node.expression.arguments && node.expression.arguments.length &&
+    ts.isObjectLiteralExpression(node.expression.arguments[0])) {
+    node.expression.arguments[0].properties.forEach(property => {
+      if ((name === 'TextArea' || name === 'TextInput') && property.name &&
+        ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text' &&
+        property.initializer && ts.isPropertyAccessExpression(property.initializer) &&
+        property.initializer.expression &&
+        property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+        property.initializer.name.escapedText) {
+        const observedPropertyCollection: Set<string> = getObservedPropertyCollection(
+          componentCollection.currentClassName);
+        if (observedPropertyCollection.has(property.initializer.name.escapedText.tostring())) {
+          textLogFlag = false;
+        }
+      } else if (name === 'GridContainer' && property.name && ts.isIdentifier(property.name) &&
+        property.name.escapedText === 'margin') {
+        log.push({
+          type: LogType.NOTE,
+          message: `In API9, the margin attribute of GridContainer takes effect.`,
+          pos: node.getStart()
+        })
+      }
+    });
+  }
+  if (textLogFlag) {
+    log.push({
+      type: LogType.NOTE,
+      message: `If the text property value does not use the state variable,` +
+        ` the text content will not be updated.`,
+      pos: node.getStart()
+    })
   }
 }
 
@@ -2402,7 +2449,7 @@ function judgeTargetType(target: ts.Node, log: LogInfo[], TypeChecker: ts.TypeCh
           judgeDeclaration(declaration, target, log, name, TypeChecker);
         }
       }
-  } else {
+  } else if (partialUpdateConfig.strictCheck === 'all') {
     if (name === COMPONENT_FOREACH) {
       notRecognizeArrayType(log, target);
     } else {
