@@ -86,8 +86,7 @@ import { updateConstructor } from './process_component_constructor';
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  createFunction
+  componentInfo
 } from './utils';
 import {
   createReference,
@@ -99,7 +98,10 @@ import {
   projectConfig,
   partialUpdateConfig
 } from '../main';
-import { parentConditionalExpression } from './process_component_build'
+import {
+  parentConditionalExpression,
+  createFunction
+} from './process_component_build'
 
 export type ControllerType = {
   hasController: boolean
