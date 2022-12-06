@@ -428,11 +428,11 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       }
     } else {
       parentPropertyName =
-        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);;
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
       const parentPropertyKind = COMPONENT_NON_DECORATOR;
       if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
-          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
+          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log, LogType.WARN);
       }
     }
   }
@@ -608,10 +608,11 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
     ...getCollectionSet(customComponentName, storagePropCollection),
     ...getCollectionSet(customComponentName, consumeCollection)
   ]);
-  getLocalStorageCollection(customComponentName, forbiddenToInitViaParamSet);
-  if (isThisProperty(node, forbiddenToInitViaParamSet)) {
+  const localStorageSet: Set<string> = new Set();
+  getLocalStorageCollection(customComponentName, localStorageSet);
+  if (isThisProperty(node, forbiddenToInitViaParamSet) || isThisProperty(node, localStorageSet)) {
     log.push({
-      type: LogType.ERROR,
+      type: localStorageSet.has(node.name.getText()) ? LogType.WARN : LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot initialize here (forbidden to specify).`,
       pos: node.name.getStart()
@@ -664,13 +665,14 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], inputType:LogType = undefined): void {
   let type: LogType = LogType.ERROR;
-  if ((parentPropertyKind === COMPONENT_NON_DECORATOR && !partialUpdateConfig.partialUpdateMode) ||
+  if (inputType) {
+    type = inputType;
+  } else if ((parentPropertyKind === COMPONENT_NON_DECORATOR && !partialUpdateConfig.partialUpdateMode) ||
     curPropertyKind === COMPONENT_PROP_DECORATOR) {
     type = LogType.WARN;
-  }
-  if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
+  } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
     curPropertyKind === COMPONENT_STATE_DECORATOR) {
     type = LogType.WARN;
   }
