@@ -85,8 +85,11 @@ function init(port) {
 function handlePluginConnect(ws) {
   ws.on('message', function(message) {
     pluginSocket = ws;
-    const jsonData = JSON.parse(message);
-    handlePluginCommand(jsonData);
+    try {
+      const jsonData = JSON.parse(message);
+      handlePluginCommand(jsonData);
+    } catch(e) {
+    }
   });
 }
 
