@@ -610,7 +610,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
   log: LogInfo[]): void {
   log.push({
-    type: curPropertyKind === COMPONENT_PROP_DECORATOR ? LogType.WARN : LogType.ERROR,
+    type: LogType.ERROR,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
