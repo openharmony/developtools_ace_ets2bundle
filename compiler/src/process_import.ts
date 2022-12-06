@@ -145,7 +145,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   if (ts.isEnumDeclaration(node) && node.name) {
     enumCollection.add(node.name.getText());
   }
-  if (ts.isClassDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
+  if ((ts.isClassDeclaration(node) || ts.isStructDeclaration(node)) && ts.isIdentifier(node.name) &&
+    isCustomComponent(node)) {
     addDependencies(node, defaultNameFromParent, asNameFromParent);
     isExportEntry(node, log, entryCollection, exportCollection);
     if (asExportCollection.has(node.name.getText())) {
@@ -334,7 +335,7 @@ function isModule(filePath: string): boolean {
   return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(NODE_MODULES) > -1;
 }
 
-function isCustomComponent(node: ts.ClassDeclaration): boolean {
+function isCustomComponent(node: ts.ClassDeclaration | ts.StructDeclaration): boolean {
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; ++i) {
       const decoratorName: ts.Identifier = node.decorators[i].expression as ts.Identifier;
