@@ -676,13 +676,6 @@ function invokeClusterModuleToAbc(): void {
     process.exitCode = SUCCESS;
   }
   filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
-  filterModuleInfos.forEach(moduleInfo => {
-    if (moduleInfo.isCommonJs) {
-      commonJsModuleInfos.push(moduleInfo);
-    } else {
-      ESMModuleInfos.push(moduleInfo);
-    }
-  });
   const abcArgs: string[] = initAbcEnv();
 
   const clusterNewApiVersion: number = 16;
@@ -699,12 +692,7 @@ function invokeClusterModuleToAbc(): void {
       });
     }
 
-    let totalWorkerNumber = 0;
-    let commonJsWorkerNumber: number = invokeClusterByModule(abcArgs, commonJsModuleInfos);
-    totalWorkerNumber += commonJsWorkerNumber;
-
-    let esmWorkerNumber: number = invokeClusterByModule(abcArgs, ESMModuleInfos, true);
-    totalWorkerNumber += esmWorkerNumber;
+    let workerNumber: number = invokeClusterByModule(abcArgs, filterModuleInfos);
 
     let count_ = 0;
     if (process.env.watchMode === 'true') {
@@ -715,7 +703,7 @@ function invokeClusterModuleToAbc(): void {
         process.exitCode = FAIL;
       }
       count_++;
-      if (count_ === totalWorkerNumber) {
+      if (count_ === workerNumber) {
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
           processExtraAsset();
@@ -740,7 +728,7 @@ function invokeClusterModuleToAbc(): void {
     });
 
     // for preview of without incre compile
-    if (totalWorkerNumber === 0 && process.env.watchMode === 'true') {
+    if (workerNumber === 0 && process.env.watchMode === 'true') {
       processExtraAsset();
     }
   }
@@ -755,10 +743,6 @@ function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>,
     if (process.env.panda === TS2ABC) {
       workerNumber = 3;
       cmdPrefix = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-    } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-      workerNumber = os.cpus().length;
-      isModule ? tempAbcArgs.push('--module') : tempAbcArgs.push('--commonjs');
-      cmdPrefix = `${tempAbcArgs.join(' ')}`;
     } else {
       logger.error(red, `ArkTS:ERROR please set panda module`, reset);
     }
