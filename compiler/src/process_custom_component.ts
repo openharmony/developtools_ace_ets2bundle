@@ -63,7 +63,6 @@ import {
 import {
   propAndLinkDecorators,
   curPropMap,
-  observedPropertyDecorators,
   createViewCreate,
   createCustomComponentNewExpression
 } from './process_component_member';
@@ -80,8 +79,8 @@ import {
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
-const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
-  COMPONENT_OBJECT_LINK_DECORATOR];
+const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 
 const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
   [[COMPONENT_STATE_DECORATOR, stateCollection],
@@ -610,7 +609,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
   log: LogInfo[]): void {
   log.push({
-    type: LogType.ERROR,
+    type: curPropertyKind === COMPONENT_PROP_DECORATOR ? LogType.WARN : LogType.ERROR,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
