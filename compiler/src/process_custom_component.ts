@@ -665,11 +665,11 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
-  log: LogInfo[], inputType:LogType = undefined): void {
+  log: LogInfo[], inputType: LogType = undefined): void {
   let type: LogType = LogType.ERROR;
   if (inputType) {
     type = inputType;
-  } else if ((parentPropertyKind === COMPONENT_NON_DECORATOR && !partialUpdateConfig.partialUpdateMode) ||
+  } else if (parentPropertyKind === COMPONENT_NON_DECORATOR &&
     curPropertyKind === COMPONENT_PROP_DECORATOR) {
     type = LogType.WARN;
   } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
