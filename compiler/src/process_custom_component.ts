@@ -75,8 +75,8 @@ import {
 import {
   bindComponentAttr,
   parentConditionalExpression,
-  createComponentCreationStatement
-  createFunction,
+  createComponentCreationStatement,
+  createFunction
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
