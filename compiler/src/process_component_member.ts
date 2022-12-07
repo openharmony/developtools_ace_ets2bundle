@@ -470,7 +470,7 @@ function isArrayTypeNodeCommon(isSurface: boolean, node: ts.Node, log: LogInfo[]
     isArrayTypeNode(node, log, false);
   } else {
     log.push({
-      type: LogType.WARN,
+      type: LogType.NOTE,
       message: `Better not nested Array in Array`,
       pos: node.getStart()
     })

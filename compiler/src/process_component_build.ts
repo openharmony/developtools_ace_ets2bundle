@@ -2536,14 +2536,14 @@ function judgeArrayDeclaration(declaration: ts.Node, targetArray: ts.Node, log: 
   switch (judgeArrayType(declaration.type)) {
     case ReturnType.notDefined:
       log.push({
-        type: LogType.WARN,
+        type: LogType.NOTE,
         message: "Variable/function which used for ForEach component's 1st parameter should allocate a type",
         pos: declaration.getStart(),
       })
       break;
     case ReturnType.complex:
       log.push({
-        type: LogType.WARN,
+        type: LogType.NOTE,
         message: "if key generator(return type of ForEach's 3rd parameter) is a complex type, " +
           "should use JSON.stringify to serialize it",
         pos: targetArray.getStart(),
@@ -2569,7 +2569,7 @@ function judgeClassDeclaration(declaration: ts.Node, targetClass: ts.Node, log: 
     }
   } else {
     log.push({
-      type: LogType.WARN,
+      type: LogType.NOTE,
       message: `Better allocate a type of this Object/Function/Method`,
       pos: declaration.getStart(),
     })
@@ -2677,7 +2677,7 @@ function notRecognizeObjectType(log: LogInfo[], target: ts.Node): void {
 
 function allocateGetDataType(log: LogInfo[], target: ts.Node): void {
   log.push({
-    type: LogType.WARN,
+    type: LogType.NOTE,
     message: `Should allocate a type of getData`,
     pos: target.getStart(),
   })
@@ -2685,7 +2685,7 @@ function allocateGetDataType(log: LogInfo[], target: ts.Node): void {
 
 function remindComplexOfKeyGeneratorType(log: LogInfo[], target: ts.Node): void {
   log.push({
-    type: LogType.WARN,
+    type: LogType.NOTE,
     message: "Return complex type, please use JSON.stringify to serialize it",
     pos: target.getStart(),
   })
@@ -2693,7 +2693,7 @@ function remindComplexOfKeyGeneratorType(log: LogInfo[], target: ts.Node): void 
 
 function remindComplexOfGetDataType(log: LogInfo[], target: ts.Node): void {
   log.push({
-    type: LogType.WARN,
+    type: LogType.NOTE,
     message: `If return type of getData is a complex type, ` +
     `use JSON.stringify to serialize the key generator in 3rd parameter of LazyForEach Component`,
     pos: target.getStart(),
