@@ -39,7 +39,6 @@ import {
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
 import { props } from './compile_info';
-import { resolveSourceFile } from './resolve_ohm_url';
 import {
   CacheFileName,
   cache,

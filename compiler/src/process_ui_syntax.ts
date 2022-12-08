@@ -22,6 +22,7 @@ import {
   createParentParameter
 } from './process_component_class';
 import processImport from './process_import';
+import { validateReExportType } from './process_import';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
   PREVIEW_COMPONENT_FUNCTION_NAME,
@@ -110,6 +111,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         preprocessIdAttrs(node.fileName);
         if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
+          if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false
+            && process.env.compilerType && process.env.compilerType === ARK) {
+              validateReExportType(node, pagesDir, transformLog.errors);
+          }
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
             && process.env.compilerType && process.env.compilerType === ARK) {
             writeFileSyncByNode(node, true);
@@ -118,6 +123,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         }
         node = createEntryNode(node, context);
         node = ts.visitEachChild(node, processAllNodes, context);
+        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false
+          && process.env.compilerType && process.env.compilerType === ARK) {
+            validateReExportType(node, pagesDir, transformLog.errors);
+        }
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
         });
