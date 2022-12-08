@@ -131,6 +131,21 @@ export class ResultStates {
       }
       );
 
+      compilation.hooks.succeedModule.tap('findModule', (module) => {
+        if (module && module.error) {
+          const errorLog: string = module.error.toString();
+          if (module.resourceResolveData && module.resourceResolveData.path &&
+            /Module parse failed/.test(errorLog) && /Invalid regular expression:/.test(errorLog)) {
+            this.mErrorCount++;
+            const errorInfos: string[] = errorLog.split('\n>')[1].split(';');
+            if (errorInfos && errorInfos.length > 0 && errorInfos[0]) {
+              const errorInformation: string = `ERROR in ${module.resourceResolveData.path}\n The following syntax is incorrect.\n > ${errorInfos[0]}`;
+              this.printErrorMessage(parseErrorMessage(errorInformation), false, module.error);
+            }
+          }
+        }
+      });
+
       compilation.hooks.buildModule.tap('findModule', (module) => {
         if (module.context) {
           if (module.context.indexOf(projectConfig.projectPath) >= 0) {
