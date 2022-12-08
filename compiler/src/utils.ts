@@ -399,11 +399,7 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string): v
     return;
   }
 
-  // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  sourceCode = sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
-  });
+  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
@@ -449,6 +445,14 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
   return item;
 }
 
+function transformModuleSpecifier(sourcePath: string, sourceCode: string): string {
+  // replace relative moduleSpecifier with ohmURl
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
+  return sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
+  });
+}
+
 export var newSourceMaps: Object = {};
 
 export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: any): void {
@@ -470,11 +474,7 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
     delete sourceMap.sourcesContent;
     newSourceMaps[source] = sourceMap;
   }
-  // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  sourceContent = sourceContent.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
-  });
+  sourceContent = transformModuleSpecifier(sourcePath, sourceContent);
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
