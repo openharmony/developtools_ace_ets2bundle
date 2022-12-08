@@ -504,8 +504,8 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): voi
   }
   mkdirsSync(path.dirname(temporaryFile));
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(temporarySourceMapFile);
-    fs.writeFileSync(temporarySourceMapFile, JSON.stringify(mixedInfo.sourceMapJson));
+    let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+    newSourceMaps[source] = mixedInfo.sourceMapJson;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
