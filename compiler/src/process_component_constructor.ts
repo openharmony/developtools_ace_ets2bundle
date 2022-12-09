@@ -88,13 +88,11 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   if (!ts.isIdentifier(parentComponentName)) {
     return;
   }
-  const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
-    localStoragePropCollection.get(parentComponentName.getText()).size;
   const paramNames: Set<string> = !partialUpdateConfig.partialUpdateMode ? new Set([
     COMPONENT_CONSTRUCTOR_ID,
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
-    localStorageNum ? COMPONENT_CONSTRUCTOR_LOCALSTORAGE : COMPONENT_CONSTRUCTOR_PARAMS
+    COMPONENT_CONSTRUCTOR_LOCALSTORAGE
   ]) : new Set([
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
@@ -157,8 +155,6 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
 export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   parentComponentName: ts.Identifier): ts.ConstructorDeclaration {
   const watchStatements: ts.ExpressionStatement[] = [];
-  const localStorageNum: number = localStorageLinkCollection.get(parentComponentName.getText()).size +
-    localStoragePropCollection.get(parentComponentName.getText()).size;
   watchMap.forEach((value, key) => {
     const watchNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(
@@ -176,21 +172,19 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
       ));
     watchStatements.push(watchNode);
   });
-  const callSuperStatement: ts.Statement = createCallSuperStatement(localStorageNum);
+  const callSuperStatement: ts.Statement = createCallSuperStatement();
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
     [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
 }
 
-function createCallSuperStatement(localStorageNum: number): ts.Statement {
+function createCallSuperStatement(): ts.Statement {
   if (!partialUpdateConfig.partialUpdateMode) {
     return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createSuper(), undefined,
-      localStorageNum ? [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
+      [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)] :
-        [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_ID),
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT)]));
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE)]));
   } else {
     return ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
