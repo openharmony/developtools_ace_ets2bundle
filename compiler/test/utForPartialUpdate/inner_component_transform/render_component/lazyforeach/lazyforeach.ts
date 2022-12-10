@@ -174,8 +174,8 @@ class MyDataSource extends BasicDataSource {
     }
 }
 class Test extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.data = new MyDataSource();
         this.setInitiallyProvidedValue(params);
     }
@@ -184,10 +184,11 @@ class Test extends ViewPU {
             this.data = params.data;
         }
     }
+    updateStateVars(params) {
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.data = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }

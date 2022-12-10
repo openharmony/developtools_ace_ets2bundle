@@ -49,7 +49,6 @@ import {
 } from './pre_define';
 import { minify, MinifyOutput } from 'terser';
 import { resourceFileName } from './process_ui_syntax';
-import { processObjectPropertyBuilder } from './process_component_build';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -193,51 +192,6 @@ export function readFile(dir: string, utFiles: string[]) {
     });
   } catch (e) {
     console.error('ETS ERROR: ' + e);
-  }
-}
-
-export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
-  argumentsArr: ts.NodeArray<ts.Expression>): ts.CallExpression {
-  if (argumentsArr && argumentsArr.length) {
-    if (checkCreateArgumentBuilder(node, attrNode)) {
-      argumentsArr = transformBuilder(argumentsArr);
-    }
-  } else {
-    //@ts-ignore
-    argumentsArr = [];
-  }
-  return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      node,
-      attrNode
-    ),
-    undefined,
-    argumentsArr
-  );
-}
-
-function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier): boolean {
-  if (attrNode.escapedText.toString() === COMPONENT_CREATE_FUNCTION &&
-    CREATE_BIND_COMPONENT.has(node.escapedText.toString())) {
-    return true;
-  }
-  return false;
-}
-
-function transformBuilder(argumentsArr: ts.NodeArray<ts.Expression>): ts.NodeArray<ts.Expression> {
-  const newArguments: ts.Expression[] = [];
-  argumentsArr.forEach((argument: ts.Expression) => {
-    newArguments.push(parseCreateParameterBuilder(argument));
-  })
-  //@ts-ignore
-  return newArguments;
-}
-
-function parseCreateParameterBuilder(argument: ts.Expression):ts.Expression {
-  if (ts.isObjectLiteralExpression(argument)) {
-    return processObjectPropertyBuilder(argument);
-  } else {
-    return argument;
   }
 }
 
@@ -488,9 +442,8 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 
 export var newSourceMaps: Object = {};
 
-export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, false);
-  let jsFilePath: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath);
+export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: any): void {
+  let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
   if (jsFilePath.length === 0) {
     return;
   }
@@ -501,21 +454,26 @@ export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
   }
   let sourceMapFile: string = genSourceMapFileName(jsFilePath);
   if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    newSourceMaps[node.fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')] = mixedInfo.sourceMapJson;
+    let source = toUnixPath(sourcePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+    // adjust sourceMap info
+    sourceMap.sources = [source];
+    sourceMap.file = path.basename(sourceMap.file);
+    delete sourceMap.sourcesContent;
+    newSourceMaps[source] = sourceMap;
   }
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  mixedInfo.content = mixedInfo.content.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, node.fileName);
+  sourceContent = sourceContent.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
   });
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(jsFilePath, mixedInfo.content);
+    fs.writeFileSync(jsFilePath, sourceContent);
     return;
   }
 
-  writeMinimizedSourceCode(mixedInfo.content, jsFilePath);
+  writeMinimizedSourceCode(sourceContent, jsFilePath);
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
@@ -550,8 +508,8 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): voi
   }
   mkdirsSync(path.dirname(temporaryFile));
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    mixedInfo.content += '\n' + "//# sourceMappingURL=" + path.basename(temporarySourceMapFile);
-    fs.writeFileSync(temporarySourceMapFile, JSON.stringify(mixedInfo.sourceMapJson));
+    let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+    newSourceMaps[source] = mixedInfo.sourceMapJson;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
@@ -674,17 +632,11 @@ export function parseErrorMessage(message: string): string {
 }
 
 export function isEs2Abc(): boolean {
-  if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-    return true;
-  }
-  return false;
+  return process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined;
 }
 
 export function isTs2Abc(): boolean {
-  if (process.env.panda === TS2ABC) {
-    return true;
-  }
-  return false;
+  return process.env.panda === TS2ABC;
 }
 
 export function genProtoFileName(temporaryFile: string): string {
@@ -759,5 +711,19 @@ export function validateFilePathLength(filePath: string): boolean {
     logger.error("Validate file path failed");
     process.exitCode = FAIL;
     return false;
+  }
+}
+
+export function buildCachePath(tailName: string): string {
+  let pathName: string = process.env.cachePath !== undefined ?
+      path.join(process.env.cachePath, tailName) : path.join(projectConfig.buildPath, tailName);
+  validateFilePathLength(pathName);
+
+  return pathName;
+}
+
+export function unlinkSync(filePath: string): void {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
   }
 }

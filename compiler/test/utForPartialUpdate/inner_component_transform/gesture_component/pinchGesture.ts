@@ -43,8 +43,8 @@ struct PinchGestureExample {
 exports.expectResult =
 `"use strict";
 class PinchGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__scale2 = new ObservedPropertySimplePU(1, this, "scale2");
         this.setInitiallyProvidedValue(params);
     }
@@ -52,6 +52,8 @@ class PinchGestureExample extends ViewPU {
         if (params.scale2 !== undefined) {
             this.scale2 = params.scale2;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__scale2.purgeDependencyOnElmtId(rmElmtId);

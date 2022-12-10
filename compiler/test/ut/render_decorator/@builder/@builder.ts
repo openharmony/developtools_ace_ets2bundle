@@ -221,7 +221,7 @@ class MyComponent extends View {
         Row.create();
         Row.padding(10);
         Row.bindMenu({ builder: () => {
-                this.NavigationTitlePara("111");
+                this.NavigationTitlePara.call(this, "111");
             } });
         Text.create("Drag Me");
         Text.onDragStart((event, extraParams) => {
@@ -252,7 +252,7 @@ class MyComponent extends View {
         Row.create();
         Row.padding(10);
         Navigation.create();
-        Navigation.title({ builder: noParam });
+        Navigation.title({ builder: noParam.bind(this) });
         Navigation.menus({ builder: this.textBuilder.bind(this) });
         Navigation.toolBar({ items: [
                 { value: 'app', text: 'Grid', action: () => {

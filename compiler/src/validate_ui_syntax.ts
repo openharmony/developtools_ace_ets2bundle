@@ -447,7 +447,7 @@ function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: S
   isCheckType: ParamType): boolean {
   const nodeName: ts.Identifier = node.expression as ts.Identifier;
   const BlockNode: ts.Block = getNextNode(node);
-  if ((SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType))
+  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType)
     && isCheckType.value === COMPONENT_BUTTON) {
     if (!BlockNode) {
       return false;
@@ -580,7 +580,7 @@ function isNonspecificChildBlock(blockNode: ts.Block, specificChildSet: Set<stri
       if (ts.isIfStatement(item) && isNonspecificChildIf(item, specificChildSet, allComponentNames)) {
         return true;
       }
-      if (ts.isExpressionStatement(item) && ts.isEtsComponentExpression(item.expression) &&
+      if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression) &&
         isForEachComponent(item.expression) &&
         isNonspecificChildForEach(item.expression, specificChildSet, allComponentNames)) {
         return true;
@@ -618,7 +618,7 @@ function isNonspecificChildIf(node: ts.IfStatement, specificChildSet: Set<string
 
 function isNonspecificChildForEach(node: ts.EtsComponentExpression, specificChildSet: Set<string>,
   allComponentNames: Set<string>): boolean {
-  if (ts.isEtsComponentExpression(node) && node.arguments &&
+  if (ts.isCallExpression(node) && node.arguments &&
     node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
     const arrowFunction: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
     const body: ts.Block | ts.EtsComponentExpression | ts.IfStatement =
@@ -1113,6 +1113,34 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
           pos: node.decorators[i].getStart()
         });
       }
+    }
+  }
+}
+
+export function getObservedPropertyCollection(className: string): Set<string> {
+  const observedProperthCollection: Set<string> = new Set([
+    ...stateCollection.get(className),
+    ...linkCollection.get(className),
+    ...propCollection.get(className),
+    ...storageLinkCollection.get(className),
+    ...storageLinkCollection.get(className),
+    ...provideCollection.get(className),
+    ...consumeCollection.get(className),
+    ...objectLinkCollection.get(className)
+  ]);
+  getLocalStorageCollection(className, observedProperthCollection);
+  return observedProperthCollection;
+}
+
+export function getLocalStorageCollection(componentName: string, collection: Set<string>): void {
+  if (localStorageLinkCollection.get(componentName)) {
+    for (const key of localStorageLinkCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+  }
+  if (localStoragePropCollection.get(componentName)) {
+    for (const key of localStoragePropCollection.get(componentName).keys()) {
+      collection.add(key);
     }
   }
 }

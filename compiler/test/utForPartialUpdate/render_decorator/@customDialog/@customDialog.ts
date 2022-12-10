@@ -101,8 +101,8 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 class DialogExample extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__count = new SynchedPropertySimpleOneWayPU(params.count, this, "count");
         this.__isPlaying = new SynchedPropertySimpleTwoWayPU(params.isPlaying, this, "isPlaying");
         this.controller = undefined;
@@ -125,6 +125,9 @@ class DialogExample extends ViewPU {
             this.action2 = params.action2;
         }
     }
+    updateStateVars(params) {
+        this.__count.reset(params.count);
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__count.purgeDependencyOnElmtId(rmElmtId);
         this.__isPlaying.purgeDependencyOnElmtId(rmElmtId);
@@ -132,10 +135,6 @@ class DialogExample extends ViewPU {
     aboutToBeDeleted() {
         this.__count.aboutToBeDeleted();
         this.__isPlaying.aboutToBeDeleted();
-        this.controller = undefined;
-        this.termsToAccept = undefined;
-        this.action1 = undefined;
-        this.action2 = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -247,8 +246,8 @@ class DialogExample extends ViewPU {
     }
 }
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__countInitValue = new ObservedPropertySimplePU(10, this, "countInitValue");
         this.__playingInitValue = new ObservedPropertySimplePU(false, this, "playingInitValue");
         this.dialogController = new CustomDialogController({
@@ -257,7 +256,7 @@ class CustomDialogUser extends ViewPU {
                     termsToAccept: "Please accept the terms.",
                     action1: this.onAccept,
                     action2: this.existApp,
-                    count: this.__countInitValue,
+                    count: this.countInitValue,
                     isPlaying: this.__playingInitValue
                 });
                 jsDialog.setController(this.dialogController);
@@ -279,6 +278,8 @@ class CustomDialogUser extends ViewPU {
             this.dialogController = params.dialogController;
         }
     }
+    updateStateVars(params) {
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__countInitValue.purgeDependencyOnElmtId(rmElmtId);
         this.__playingInitValue.purgeDependencyOnElmtId(rmElmtId);
@@ -286,7 +287,6 @@ class CustomDialogUser extends ViewPU {
     aboutToBeDeleted() {
         this.__countInitValue.aboutToBeDeleted();
         this.__playingInitValue.aboutToBeDeleted();
-        this.dialogController = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }

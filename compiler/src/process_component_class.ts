@@ -212,6 +212,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
+  curPropMap.clear();
   return newMembers;
 }
 
@@ -363,7 +364,6 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     }
     const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
     updateItem = processBuildMember(buildNode, context, log);
-    curPropMap.clear();
   } else if (node.body && ts.isBlock(node.body)) {
     if (name === COMPONENT_TRANSITION_FUNCTION) {
       updateItem = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
@@ -543,9 +543,6 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
         pos: initExpression.getStart()
       });
     }
-  } else if (partialUpdateConfig.partialUpdateMode && isMatchInitExpression(initExpression) &&
-    propParentComponent.includes(propertyName.escapedText.toString())) {
-    initText = initExpression.name.escapedText.toString();
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText);
@@ -615,9 +612,7 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
-    if (partialUpdateConfig.partialUpdateMode && !statement.decorators) {
-      paramsStatement = createParamsStatement(name);
-    } else {
+    if (!partialUpdateConfig.partialUpdateMode || statement.decorators) {
       paramsStatement = createParamsWithUnderlineStatement(name);
     }
     deleteStatements.push(paramsStatement);
@@ -642,17 +637,6 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   const deleteParamsMethod: ts.MethodDeclaration =
     createParamsInitBlock(COMPONENT_CONSTRUCTOR_DELETE_PARAMS, deleteStatements);
   return deleteParamsMethod;
-}
-
-function createParamsStatement(name: ts.Identifier): ts.ExpressionStatement {
-  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createThis(),
-      ts.factory.createIdentifier(`${name.escapedText.toString()}`)
-    ),
-    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
-  ));
 }
 
 function createParamsWithUnderlineStatement(name: ts.Identifier): ts.ExpressionStatement {

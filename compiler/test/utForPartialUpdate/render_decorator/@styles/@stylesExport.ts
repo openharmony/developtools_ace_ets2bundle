@@ -59,8 +59,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FancyUseExp = void 0;
 class FancyUseExp extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__enable = new ObservedPropertySimplePU(true, this, "enable");
         this.setInitiallyProvidedValue(params);
     }
@@ -68,6 +68,8 @@ class FancyUseExp extends ViewPU {
         if (params.enable !== undefined) {
             this.enable = params.enable;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__enable.purgeDependencyOnElmtId(rmElmtId);

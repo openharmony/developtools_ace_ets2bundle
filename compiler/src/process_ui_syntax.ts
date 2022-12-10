@@ -306,7 +306,7 @@ function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
 
 function processCustomDialogControllerBuilder(parent: ts.Expression,
   node: ts.CallExpression, componentName: string): ts.ArrowFunction {
-  const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName);
+  const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName, false, false, true);
   const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
   return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
 }
@@ -632,13 +632,12 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
   let localStorageName: string;
   const localStorageNum: number = localStorageLinkCollection.get(name).size +
     localStoragePropCollection.get(name).size;
-  if (componentCollection.entryComponent === name && componentCollection.localStorageName &&
-    localStorageNum) {
+  if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
     localStorageName = componentCollection.localStorageName;
   } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
     && localStorageNum) {
     transformLog.errors.push({
-      type: LogType.ERROR,
+      type: LogType.WARN,
       message: `@Entry should have a parameter, like '@Entry (storage)'.`,
       pos: componentCollection.entryComponentPos
     });

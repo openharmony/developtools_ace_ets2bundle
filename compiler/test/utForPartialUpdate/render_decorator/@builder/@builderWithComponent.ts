@@ -14,103 +14,71 @@
  */
 
 exports.source = `
-@Component
-struct TitleComp {
-  @Link title: string
-  build() {
-    Text(this.title)
-  }
+@Builder
+function myBuilder() {
+  child();
 }
 
 @Entry
 @Component
-struct TestPage{
-  @State value: string = 'hello world'
-  @Builder
-  TitleCompView() {
-    TitleComp({title: $value})
+struct Index {
+  @Builder Builder1() {
+    child()
   }
   build() {
-    Flex() {
-      this.TitleCompView()
+    Row() {
+      myBuilder();
+      this.Builder1();
+      child();
     }
+  }
+}
+
+@Component
+struct child{
+  build() {
+    Text('Hello')
   }
 }
 `
+
 exports.expectResult =
 `"use strict";
-class TitleComp extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
-        super(parent, __localStorage, elmtId);
-        this.__title = new SynchedPropertySimpleTwoWayPU(params.title, this, "title");
-        this.setInitiallyProvidedValue(params);
-    }
-    setInitiallyProvidedValue(params) {
-    }
-    updateStateVars(params) {
-    }
-    purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__title.purgeDependencyOnElmtId(rmElmtId);
-    }
-    aboutToBeDeleted() {
-        this.__title.aboutToBeDeleted();
-        SubscriberManager.Get().delete(this.id__());
-        this.aboutToBeDeletedInternal();
-    }
-    get title() {
-        return this.__title.get();
-    }
-    set title(newValue) {
-        this.__title.set(newValue);
-    }
-    initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
+function myBuilder(parent = undefined) {
+    {
+        (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Text.create(this.title);
-            if (!isInitialRender) {
-                Text.pop();
+            if (isInitialRender) {
+                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId));
+            }
+            else {
+                (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        Text.pop();
-    }
-    rerender() {
-        this.updateDirtyElements();
     }
 }
-class TestPage extends ViewPU {
+class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1) {
         super(parent, __localStorage, elmtId);
-        this.__value = new ObservedPropertySimplePU('hello world', this, "value");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
-        if (params.value !== undefined) {
-            this.value = params.value;
-        }
     }
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__value.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.__value.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    get value() {
-        return this.__value.get();
-    }
-    set value(newValue) {
-        this.__value.set(newValue);
-    }
-    TitleCompView(parent = undefined) {
+    Builder1(parent = undefined) {
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId));
+                    ViewPU.create(new child(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -122,20 +90,63 @@ class TestPage extends ViewPU {
     initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Flex.create();
+            Row.create();
             if (!isInitialRender) {
-                Flex.pop();
+                Row.pop();
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        this.TitleCompView(this);
-        Flex.pop();
+        myBuilder(this);
+        this.Builder1(this);
+        {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new child(this, {}, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
+        }
+        Row.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class child extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
+        this.setInitiallyProvidedValue(params);
+    }
+    setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    initialRender() {
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Text.create('Hello');
+            if (!isInitialRender) {
+                Text.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        Text.pop();
     }
     rerender() {
         this.updateDirtyElements();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new TestPage(undefined, {}));
+loadDocument(new Index(undefined, {}));
 ViewStackProcessor.StopGetAccessRecording();
 `

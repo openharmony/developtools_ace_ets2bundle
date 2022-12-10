@@ -58,29 +58,33 @@ import {
   consumeCollection,
   objectLinkCollection,
   isStaticViewCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  getLocalStorageCollection
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
   curPropMap,
-  observedPropertyDecorators,
   createViewCreate,
   createCustomComponentNewExpression
 } from './process_component_member';
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  createFunction
+  componentInfo
 } from './utils';
 import {
   bindComponentAttr,
-  parentConditionalExpression
+  parentConditionalExpression,
+  createComponentCreationStatement,
+  createFunction
 } from './process_component_build';
-import { partialUpdateConfig } from '../main';
+import {
+  partialUpdateConfig,
+  projectConfig
+} from '../main';
 
-const localArray: string[] = [...observedPropertyDecorators, COMPONENT_NON_DECORATOR,
-  COMPONENT_OBJECT_LINK_DECORATOR];
+const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 
 const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
   [[COMPONENT_STATE_DECORATOR, stateCollection],
@@ -120,10 +124,18 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       }
     }
     if (hasChainCall) {
-      newStatements.push(ts.factory.createExpressionStatement(
-        createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
-          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
-      bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
+      if (partialUpdateConfig.partialUpdateMode) {
+        const commomComponentNode: ts.Statement[] = [ts.factory.createExpressionStatement(
+          createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))];
+        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode, log);
+        newStatements.push(createComponentCreationStatement(componentAttributes(), commomComponentNode));
+      } else {
+        newStatements.push(ts.factory.createExpressionStatement(
+          createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+            ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)));
+        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
+      }
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
       isBuilder, isGlobalBuilder);
@@ -133,6 +145,16 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     }
   }
+}
+
+function componentAttributes(): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(COMPONENT_COMMON),
+        ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)
+      ), undefined, []
+    ));
 }
 
 function isHasChild(node: ts.CallExpression): boolean {
@@ -162,28 +184,47 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, isBuilder, isGlobalBuilder);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode, isBuilder, isGlobalBuilder);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  componentNode: ts.CallExpression, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(node, newNode, isGlobalBuilder));
+    newStatements.push(createCustomComponent(node, newNode, name, componentNode, isGlobalBuilder));
   }
 }
 
-function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression,
-  isGlobalBuilder: boolean = false): ts.Block {
+function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAssignment[] {
+  const propsAndObjectLinks: string[] = [];
+  const childParam: ts.PropertyAssignment[] = [];
+  if (propCollection.get(name)) {
+    propsAndObjectLinks.push(...propCollection.get(name));
+  }
+  if (objectLinkCollection.get(name)) {
+    propsAndObjectLinks.push(...objectLinkCollection.get(name));
+  }
+  if (node.arguments[0].properties) {
+    node.arguments[0].properties.forEach(item => {
+      if (ts.isIdentifier(item.name) && propsAndObjectLinks.includes(item.name.escapedText.toString())) {
+        childParam.push(item);       
+      }
+    })
+  }
+  return childParam;
+}
+
+function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression, name: string,
+  componentNode: ts.CallExpression, isGlobalBuilder: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
-  if (node.expression && node.expression.arguments && node.expression.arguments.length) {
-    componentParameter = node.expression.arguments[0];
+  if (componentNode.arguments && componentNode.arguments.length) {
+    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
@@ -259,11 +300,12 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   if (nodeArguments && nodeArguments.length === 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
+    const propertyObservedKinds: string[] = [];
     nodeArgument.properties.forEach(item => {
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      validateStateManagement(item, name, log);
+      validateStateManagement(item, name, log, propertyObservedKinds);
       if (isNonThisProperty(item, linkSet)) {
         if (isToChange(item as ts.PropertyAssignment, name)) {
           item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
@@ -271,7 +313,24 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         }
         props.push(item);
       }
+      if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
+        item.initializer && ts.isCallExpression(item.initializer)) {
+        log.push({
+          type: LogType.NOTE,
+          message: 'If method assignment is used here, the UI may not be updated.',
+          pos: item.initializer.getStart()
+        });
+      }
     });
+    if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
+      propertyObservedKinds.length === 0 && nodeArgument.properties.length > 0) {
+      log.push({
+        type: LogType.NOTE,
+        message: `You do not use any state variables for the component '${name}', ` +
+          `UI of the component will not be update.`,
+        pos: node.getStart()
+      });
+    }
   }
   validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
 }
@@ -334,27 +393,30 @@ function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<s
 }
 
 function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], propertyObservedKinds: string[]): void {
   validateForbiddenToInitViaParam(node, customComponentName, log);
-  checkFromParentToChild(node, customComponentName, log);
+  checkFromParentToChild(node, customComponentName, log, propertyObservedKinds);
 }
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], propertyObservedKinds: string[]): void {
   let propertyName: string;
-  if (node.name && node.name.escapedText) {
-    // @ts-ignore
+  if (ts.isIdentifier(node.name)) {
     propertyName = node.name.escapedText.toString();
   }
   const curPropertyKind: string = getPropertyDecoratorKind(propertyName, customComponentName);
+  let parentPropertyName: string;
   if (curPropertyKind) {
     if (isInitFromParent(node)) {
-      const parentPropertyName: string =
+      parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
-      if (!parentPropertyName) {
-        return;
+      let parentPropertyKind: string = curPropMap.get(parentPropertyName);
+      if (!parentPropertyKind) {
+        parentPropertyKind = COMPONENT_NON_DECORATOR;
       }
-      const parentPropertyKind: string = curPropMap.get(parentPropertyName);
+      if (parentPropertyKind !== COMPONENT_NON_DECORATOR) {
+        propertyObservedKinds.push(parentPropertyKind);
+      }
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
@@ -363,6 +425,14 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       if (!localArray.includes(curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
+      }
+    } else {
+      parentPropertyName =
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
+      const parentPropertyKind = COMPONENT_NON_DECORATOR;
+      if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
+        validateIllegalInitFromParent(
+          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log, LogType.WARN);
       }
     }
   }
@@ -390,8 +460,8 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
-  let parentPropertyName: string;
   const initExpression: ts.Expression = node.initializer;
+  let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
       // @ts-ignore
@@ -404,10 +474,13 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
     if (hasDollar(initExpression)) {
       validateNonLinkWithDollar(node, log);
     } else {
-    // @ts-ignore
-      parentPropertyName = node.initializer.name.getText();
+      // @ts-ignore
+      if (node.initializer && node.initializer.name) {
+        parentPropertyName = node.initializer.name.getText();
+      }
     }
   }
+
   return parentPropertyName;
 }
 
@@ -533,10 +606,13 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   const forbiddenToInitViaParamSet: Set<string> = new Set([
     ...getCollectionSet(customComponentName, storageLinkCollection),
     ...getCollectionSet(customComponentName, storagePropCollection),
-    ...getCollectionSet(customComponentName, consumeCollection)]);
-  if (isThisProperty(node, forbiddenToInitViaParamSet)) {
+    ...getCollectionSet(customComponentName, consumeCollection)
+  ]);
+  const localStorageSet: Set<string> = new Set();
+  getLocalStorageCollection(customComponentName, localStorageSet);
+  if (isThisProperty(node, forbiddenToInitViaParamSet) || isThisProperty(node, localStorageSet)) {
     log.push({
-      type: LogType.ERROR,
+      type: localStorageSet.has(node.name.getText()) ? LogType.WARN : LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot initialize here (forbidden to specify).`,
       pos: node.name.getStart()
@@ -589,9 +665,19 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], inputType: LogType = undefined): void {
+  let type: LogType = LogType.ERROR;
+  if (inputType) {
+    type = inputType;
+  } else if (parentPropertyKind === COMPONENT_NON_DECORATOR &&
+    curPropertyKind === COMPONENT_PROP_DECORATOR) {
+    type = LogType.WARN;
+  } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
+    curPropertyKind === COMPONENT_STATE_DECORATOR) {
+    type = LogType.WARN;
+  }
   log.push({
-    type: LogType.ERROR,
+    type: type,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore

@@ -15,7 +15,7 @@
 
 import ts from 'typescript';
 
-import { BUILD_OFF } from './pre_define';
+import { BUILD_OFF, ESMODULE, JSBUNDLE } from './pre_define';
 import {
   resetLog,
   transformLog
@@ -28,10 +28,11 @@ import {
 import {
   LogInfo,
   emitLogInfo,
-  componentInfo
+  componentInfo,
+  generateSourceFilesToTemporary
 } from './utils';
 import { resetComponentCollection } from './validate_ui_syntax';
-import { abilityConfig } from '../main';
+import { abilityConfig, projectConfig } from '../main';
 
 module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
@@ -63,8 +64,14 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  if ([abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
+  if (projectConfig.compileMode == JSBUNDLE &&
+    [abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
+  }
+
+  if (projectConfig.compileMode == ESMODULE && projectConfig.processTs === false
+    && process.env.compilerType && process.env.compilerType === 'ark') {
+    generateSourceFilesToTemporary(this.resourcePath, source, map);
   }
 
   this.callback(null, source, map);
