@@ -28,6 +28,7 @@ import {
   genTemporaryPath,
   genBuildPath,
   genAbcFileName,
+  getPackageInfo,
   mkdirsSync,
   genSourceMapFileName,
   checkNodeModulesFile,
@@ -37,7 +38,11 @@ import {
   genProtoFileName,
   genMergeProtoFileName,
   removeDuplicateInfo,
-  validateFilePathLength
+  validateFilePathLength,
+  isTs2Abc,
+  isEs2Abc,
+  buildCachePath,
+  unlinkSync
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -64,7 +69,8 @@ import {
   TS2ABC,
   PROTO_FILESINFO_TXT,
   NPMENTRIES_TXT,
-  EXTNAME_PROTO_BIN
+  EXTNAME_PROTO_BIN,
+  FILESINFO_TXT
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -118,12 +124,15 @@ export class ModuleInfo {
   isCommonJs: boolean;
   recordName: string;
   sourceFile: string;
+  packageName: string;
 
-  constructor(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, isCommonJs: boolean) {
+  constructor(filePath: string, tempFilePath: string, buildFilePath: string,
+              abcFilePath: string, packageName: string, isCommonJs: boolean) {
     this.filePath = filePath;
     this.tempFilePath = tempFilePath;
     this.buildFilePath = buildFilePath;
     this.abcFilePath = abcFilePath;
+    this.packageName = packageName;
     this.isCommonJs = isCommonJs;
     this.recordName = getOhmUrlByFilepath(filePath);
     this.sourceFile = filePath.replace(projectConfig.projectRootPath + path.sep, '');
@@ -132,13 +141,11 @@ export class ModuleInfo {
 
 export class EntryInfo {
   npmInfo: string;
-  abcFileName: string;
   buildPath: string;
   entry: string;
 
-  constructor(npmInfo: string, abcFileName: string, buildPath: string, entry: string) {
+  constructor(npmInfo: string, buildPath: string, entry: string) {
     this.npmInfo = npmInfo;
-    this.abcFileName = abcFileName;
     this.buildPath = buildPath;
     this.entry = entry;
   }
@@ -237,11 +244,17 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      if (previewCount == compileCount) {
-        previewCount++;
-        invokeWorkersToGenAbc();
+      if (isTs2Abc() || process.env.minPlatformVersion === "8") {
+        if (previewCount == compileCount) {
+          previewCount++;
+          invokeWorkersToGenAbc();
+        } else {
+          previewCount++;
+        }
+      } else if (isEs2Abc()){
+        generateAbcByEs2AbcOfBundleMode(intermediateJsBundle);
       } else {
-        previewCount++;
+        logger.error(red, `ArkTS:ERROR please set panda module`, reset);
       }
     });
   }
@@ -263,7 +276,7 @@ function clearGlobalInfo() {
   buildMapFileList = new Set<string>();
 }
 
-function getEntryInfo(filePath: string, tempFilePath: string, resourceResolveData: any): void {
+function getEntryInfo(filePath: string, resourceResolveData: any): string {
   if (!resourceResolveData.descriptionFilePath) {
     return;
   }
@@ -280,32 +293,30 @@ function getEntryInfo(filePath: string, tempFilePath: string, resourceResolveDat
   const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
   const buildNpmInfoPath: string = toUnixPath(path.resolve(buildFakeEntryPath, '..'));
-  if (entryInfos.has(npmInfoPath)) {
-    return;
+  if (!entryInfos.has(npmInfoPath)) {
+    const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, buildNpmInfoPath, entry);
+    entryInfos.set(npmInfoPath, entryInfo);
   }
 
-  let abcFileName: string = genAbcFileName(tempFilePath);
-  const abcFilePaths: string[] = abcFileName.split(NODE_MODULES);
-  abcFileName = [NODE_MODULES, abcFilePaths[abcFilePaths.length - 1]].join(path.sep);
-  abcFileName = toUnixPath(abcFileName);
-
-  const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, abcFileName, buildNpmInfoPath, entry);
-  entryInfos.set(npmInfoPath, entryInfo);
+  return buildNpmInfoPath;
 }
 
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
-  getEntryInfo(filePath, tempFilePath, module.resourceResolveData);
+  let npmPkgPath: string = getEntryInfo(filePath, module.resourceResolveData);
+  const buildNpmPkgPath: string = npmPkgPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
+  const npmPkgName: string = toUnixPath(path.join(NODE_MODULES, buildNpmPkgPath));
+
   const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   } else if (filePath.endsWith(EXTNAME_MJS)) {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, true);
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, true);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
@@ -324,7 +335,8 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
@@ -343,7 +355,8 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
@@ -361,7 +374,8 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
-    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, false);
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
@@ -510,7 +524,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR Failed to generate npm proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to generate npm proto file to abc, Error message: ${e}`, reset);
   }
 }
 
@@ -662,13 +676,6 @@ function invokeClusterModuleToAbc(): void {
     process.exitCode = SUCCESS;
   }
   filterIntermediateModuleByHashJson(buildPathInfo, moduleInfos);
-  filterModuleInfos.forEach(moduleInfo => {
-    if (moduleInfo.isCommonJs) {
-      commonJsModuleInfos.push(moduleInfo);
-    } else {
-      ESMModuleInfos.push(moduleInfo);
-    }
-  });
   const abcArgs: string[] = initAbcEnv();
 
   const clusterNewApiVersion: number = 16;
@@ -685,12 +692,7 @@ function invokeClusterModuleToAbc(): void {
       });
     }
 
-    let totalWorkerNumber = 0;
-    let commonJsWorkerNumber: number = invokeClusterByModule(abcArgs, commonJsModuleInfos);
-    totalWorkerNumber += commonJsWorkerNumber;
-
-    let esmWorkerNumber: number = invokeClusterByModule(abcArgs, ESMModuleInfos, true);
-    totalWorkerNumber += esmWorkerNumber;
+    let workerNumber: number = invokeClusterByModule(abcArgs, filterModuleInfos);
 
     let count_ = 0;
     if (process.env.watchMode === 'true') {
@@ -701,7 +703,7 @@ function invokeClusterModuleToAbc(): void {
         process.exitCode = FAIL;
       }
       count_++;
-      if (count_ === totalWorkerNumber) {
+      if (count_ === workerNumber) {
         if (process.env.watchMode === 'true' && compileCount < previewCount) {
           compileCount++;
           processExtraAsset();
@@ -726,7 +728,7 @@ function invokeClusterModuleToAbc(): void {
     });
 
     // for preview of without incre compile
-    if (totalWorkerNumber === 0 && process.env.watchMode === 'true') {
+    if (workerNumber === 0 && process.env.watchMode === 'true') {
       processExtraAsset();
     }
   }
@@ -741,10 +743,6 @@ function invokeClusterByModule(abcArgs:string[], moduleInfos: Array<ModuleInfo>,
     if (process.env.panda === TS2ABC) {
       workerNumber = 3;
       cmdPrefix = `${nodeJs} ${tempAbcArgs.join(' ')}`;
-    } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-      workerNumber = os.cpus().length;
-      isModule ? tempAbcArgs.push('--module') : tempAbcArgs.push('--commonjs');
-      cmdPrefix = `${tempAbcArgs.join(' ')}`;
     } else {
       logger.error(red, `ArkTS:ERROR please set panda module`, reset);
     }
@@ -954,16 +952,7 @@ function writeModuleHashJson(): void {
 }
 
 function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: File[]): void {
-  const tempInputPaths = Array<File>();
-  inputPaths.forEach((item) => {
-    const check = tempInputPaths.every((newItem) => {
-      return item.path !== newItem.path;
-    });
-    if (check) {
-      tempInputPaths.push(item);
-    }
-  });
-  inputPaths = tempInputPaths;
+  inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
 
   for (let i = 0; i < inputPaths.length; ++i) {
     fileterIntermediateJsBundle.push(inputPaths[i]);
@@ -1113,14 +1102,14 @@ function processExtraAsset() {
 
 function handleHotReloadChangedFiles() {
   if (!fs.existsSync(projectConfig.changedFileList)) {
-    logger.info(blue, `ArkTS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
+    logger.debug(blue, `ArkTS: Cannot find file: ${projectConfig.changedFileList}, skip hot reload build`, reset);
     return;
   }
 
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
   if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
-    logger.info(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
+    logger.debug(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
     return;
   }
 
@@ -1211,12 +1200,96 @@ function mergeProtoToAbc(): void {
   } else if (isMac) {
     mergeAbc = path.join(arkDir, 'build-mac', 'bin', 'merge_abc');
   }
-  let mergeAbcName = "modules.abc";
   mkdirsSync(projectConfig.buildPath);
-  const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${mergeAbcName} --suffix protoBin`;
+  const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${MODULES_ABC} --suffix protoBin`;
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc`, reset);
+    logger.debug(red, `ArkTS:ERROR Failed to merge proto file to abc. Error message: ${e}`, reset);
   }
+}
+
+function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
+  filterIntermediateJsBundleByHashJson(buildPathInfo, inputPaths);
+  if (fileterIntermediateJsBundle.length === 0) {
+    processExtraAsset();
+    return;
+  }
+  let filesInfoPath = generateFileOfBundle(fileterIntermediateJsBundle);
+  const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
+  let genAbcCmd: string =
+      `${initAbcEnv().join(' ')} "@${filesInfoPath}" --file-threads "${fileThreads}"`;
+  logger.debug('gen abc cmd is: ', genAbcCmd);
+  try {
+    if (process.env.watchMode === 'true') {
+      childProcess.execSync(genAbcCmd);
+    } else {
+      const child = childProcess.exec(genAbcCmd);
+      child.on('exit', (code: any) => {
+        if (code === 1) {
+          logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
+          process.exit(FAIL);
+        }
+        if (process.env.cachePath === undefined) {
+          unlinkSync(filesInfoPath);
+        }
+        processExtraAsset();
+      });
+
+      child.on('error', (err: any) => {
+        logger.debug(red, err.toString(), reset);
+        process.exit(FAIL);
+      });
+
+      child.stderr.on('data', (data: any) => {
+        logger.error(red, data.toString(), reset);
+      });
+    }
+  } catch (e) {
+    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath}. Error message: ${e} `, reset);
+    process.env.abcCompileSuccess = 'false';
+    if (process.env.watchMode !== 'true') {
+      process.exit(FAIL);
+    }
+  } finally {
+    if (process.env.watchMode === 'true') {
+      if (process.env.cachePath === undefined) {
+        unlinkSync(filesInfoPath);
+      }
+      processExtraAsset();
+    }
+  }
+}
+
+function generateFileOfBundle(inputPaths: File[]): string {
+  let filesInfoPath: string = buildCachePath(FILESINFO_TXT);
+  inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
+
+  let filesInfo: string = '';
+  inputPaths.forEach(info => {
+    const cacheOutputPath: string = info.cacheOutputPath;
+    const recordName: string = 'null_recordName';
+    const moduleType: string = 'script';
+    const sourceFile: string = info.path.replace(/\.temp\.js$/, "_.js");
+    const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
+    filesInfo += `${cacheOutputPath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
+  });
+  fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
+
+  return filesInfoPath;
+}
+
+function removeDuplicateInfoOfBundleList(inputPaths: File[]) {
+  const tempInputPaths = Array<File>();
+  inputPaths.forEach((item) => {
+    const check = tempInputPaths.every((newItem) => {
+      return item.path !== newItem.path;
+    });
+    if (check) {
+      tempInputPaths.push(item);
+    }
+  });
+  inputPaths = tempInputPaths;
+
+  return inputPaths;
 }

@@ -193,8 +193,8 @@ function specificParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimplePU(true, this, "hideBar");
@@ -211,12 +211,12 @@ class MyComponent extends ViewPU {
             this.hideBar = params.hideBar;
         }
     }
+    updateStateVars(params) {
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__hideBar.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.arr = undefined;
-        this.controller = undefined;
         this.__hideBar.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
@@ -316,7 +316,7 @@ class MyComponent extends ViewPU {
             Row.create();
             Row.padding(10);
             Row.bindMenu({ builder: () => {
-                    this.NavigationTitlePara("111");
+                    this.NavigationTitlePara.call(this, "111");
                 } });
             if (!isInitialRender) {
                 Row.pop();
@@ -396,7 +396,7 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Navigation.create();
-            Navigation.title({ builder: noParam });
+            Navigation.title({ builder: noParam.bind(this) });
             Navigation.menus({ builder: this.textBuilder.bind(this) });
             Navigation.toolBar({ items: [
                     { value: 'app', text: 'Grid', action: () => {

@@ -77,9 +77,9 @@ class CompA extends View {
         this.__totalPurchase = new ObservedPropertySimple(0, this, "totalPurchase");
         this.__defArray = new ObservedPropertyObject(['c', 'g', 't', 'z'], this, "defArray");
         this.__resultTip = new ObservedPropertySimple('', this, "resultTip");
+        this.updateWithValueParams(params);
         this.declareWatch("shopBasket", this.onBasketUpdated);
         this.declareWatch("defArray", this.onPutItem);
-        this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
         if (params.shopBasket !== undefined) {

@@ -40,7 +40,8 @@ function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string)
   for (let i = 0; i < inputPaths.length; ++i) {
     let info: any = inputPaths[i];
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
-    content += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(info.sourceFile)}`;
+    content +=
+      `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(info.sourceFile)};${info.packageName}`;
     if (i < inputPaths.length - 1) {
       content += "\n"
     }
@@ -58,38 +59,11 @@ function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string)
   return;
 }
 
-function es2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
-  const inputPaths: any = JSON.parse(jsonInput);
-  for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].tempFilePath;
-    const abcFile: string = input.replace(/\.js$/, '.abc');
-    const singleCmd: any = `${cmd} "${input}" --output "${abcFile}" --source-file "${input}"`;
-    logger.debug('gen abc cmd is: ', singleCmd);
-    try {
-      childProcess.execSync(singleCmd);
-    } catch (e) {
-      logger.debug(red, `ArkTS:ERROR Failed to convert file ${input} to abc `, reset);
-      process.exit(FAIL);
-    }
-  }
-
-  return;
-}
-
-
 logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined
     && process.env['workerFileName'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
-
-  if (process.env.panda === TS2ABC) {
-    js2abcByWorkers(process.env['inputs'], process.env['cmd'], process.env['workerFileName']);
-  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
-    es2abcByWorkers(process.env['inputs'], process.env['cmd']);
-  } else {
-    logger.error(red, `ArkTS:ERROR please set panda module`, reset);
-    process.exit(FAIL);
-  }
+  js2abcByWorkers(process.env['inputs'], process.env['cmd'], process.env['workerFileName']);
   process.exit(SUCCESS);
 }

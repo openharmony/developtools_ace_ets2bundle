@@ -72,12 +72,15 @@ Model = __decorate([
     Observed
 ], Model);
 class CustomText extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__model = new SynchedPropertyNesedObjectPU(params.model, this, "model");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+        this.__model.set(params.model);
+    }
+    updateStateVars(params) {
         this.__model.set(params.model);
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
@@ -116,8 +119,8 @@ class CustomText extends ViewPU {
     }
 }
 class Parent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.nextId = 1;
         this.__models = new ObservedPropertyObjectPU([new Model('0', '#ffffff'), new Model('1', '#fff456')], this, "models");
         this.setInitiallyProvidedValue(params);
@@ -130,11 +133,12 @@ class Parent extends ViewPU {
             this.models = params.models;
         }
     }
+    updateStateVars(params) {
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__models.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.nextId = undefined;
         this.__models.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
@@ -160,10 +164,18 @@ class Parent extends ViewPU {
             const forEachItemGenFunction = _item => {
                 const item = _item;
                 {
-                    const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    ViewPU.create(new CustomText(this, { model: item }));
-                    ViewStackProcessor.StopGetAccessRecording();
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        if (isInitialRender) {
+                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId));
+                        }
+                        else {
+                            this.updateStateVarsOfChildByElmtId(elmtId, {
+                                model: item
+                            });
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
                 }
             };
             this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, (item) => item.text, false, false);

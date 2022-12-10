@@ -63,7 +63,7 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   moduleInfos.forEach(info => {
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
     const sourceFile: string = info.filePath.replace(projectConfig.projectRootPath + path.sep, '');
-    filesInfo += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(sourceFile)}\n`;
+    filesInfo += `${info.tempFilePath};${info.recordName};${moduleType};${toUnixPath(sourceFile)};${info.packageName}\n`;
   });
   fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
 }
@@ -133,12 +133,13 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
             data.split(os.EOL).filter(line => line.includes("[Patch]") || line.includes("Error:"));
           logger.error(red, patchErr.join(os.EOL), reset);
         } else {
-          logger.debug(red, data.toString(), reset);
+          logger.error(red, data.toString(), reset);
         }
       });
     }
   } catch (e) {
-    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath} `, reset);
+    logger.debug(red, `ArkTS:ERROR failed to generate abc with filesInfo ${filesInfoPath}. Error message: ${e}`, reset);
+    process.env.abcCompileSuccess = 'false';
     if (process.env.watchMode !== 'true') {
       process.exit(FAIL);
     }

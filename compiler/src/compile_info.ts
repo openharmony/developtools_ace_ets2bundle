@@ -51,6 +51,7 @@ import {
 } from './ets_checker';
 import {
   globalProgram,
+  partialUpdateConfig,
   projectConfig
 } from '../main';
 import cluster from 'cluster';
@@ -102,6 +103,7 @@ let allModifiedFiles: Set<string> = new Set();
 export class ResultStates {
   private mStats: Stats;
   private mErrorCount: number = 0;
+  private tsErrorCount: number = 0;
   private mWarningCount: number = 0;
   private warningCount: number = 0;
   private noteCount: number = 0;
@@ -224,7 +226,7 @@ export class ResultStates {
         }
         globalProgram.watchProgram = ts.createWatchProgram(
           createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
-            this.delayPrintLogCount.bind(this)));
+            this.delayPrintLogCount.bind(this), this.resetTsErrorCount.bind(this)));
       } else {
         let languageService: ts.LanguageService = null;
         let cacheFile: string = null;
@@ -255,6 +257,7 @@ export class ResultStates {
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       let watchRemovedFiles: string[] = [...comp.removedFiles];
+      this.clearCount();
       if (watchModifiedFiles.length) {
         const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
@@ -331,7 +334,7 @@ export class ResultStates {
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
         updateErrorFileCache(diagnostic);
       }
-      this.mErrorCount += 1;
+      this.tsErrorCount += 1;
       if (diagnostic.file) {
         const { line, character }: ts.LineAndCharacter =
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
@@ -341,6 +344,10 @@ export class ResultStates {
         logger.error(this.red, `ArkTS:ERROR: ${message}`);
       }
     }
+  }
+
+  private resetTsErrorCount(): void {
+    this.tsErrorCount = 0;
   }
 
   private writeUseOSFiles(): void {
@@ -376,15 +383,21 @@ export class ResultStates {
   }
 
   private printLogCount(): void {
+    this.mErrorCount += this.tsErrorCount;
     if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
       if (this.mErrorCount > 0) {
         resultInfo += `ERROR:${this.mErrorCount}`;
         result = 'FAIL ';
-        process.exitCode = 1;
+        if (!partialUpdateConfig.strictCheck && !partialUpdateConfig.partialUpdateMode) {
+          process.exitCode = 1;
+        }
       } else {
         result = 'SUCCESS ';
+      }
+      if (process.env.abcCompileSuccess === 'false') {
+        result = 'FAIL ';
       }
       if (this.warningCount > 0) {
         resultInfo += ` WARN:${this.warningCount}`;
@@ -405,12 +418,14 @@ export class ResultStates {
       }
     }
     this.clearCount();
+    this.resetTsErrorCount();
   }
 
   private clearCount(): void {
     this.mErrorCount = 0;
     this.warningCount = 0;
     this.noteCount = 0;
+    process.env.abcCompileSuccess = 'true';
   }
 
   private printPreviewResult(resultInfo: string = ''): void {
@@ -444,7 +459,7 @@ export class ResultStates {
           .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '');
         if (/^NOTE/.test(message)) {
           this.noteCount++;
-          logger.info(this.blue, message, this.reset, '\n');
+          logger.info(this.blue, message.replace(/^NOTE/, 'ArkTS:NOTE'), this.reset, '\n');
         } else {
           this.warningCount++;
           logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');

@@ -36,12 +36,14 @@ struct ParentComponent {
 exports.expectResult =
 `"use strict";
 class LinkComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__counter.purgeDependencyOnElmtId(rmElmtId);
@@ -73,8 +75,8 @@ class LinkComponent extends ViewPU {
     }
 }
 class ParentComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__value = new ObservedPropertySimplePU('first init content', this, "value");
         this.setInitiallyProvidedValue(params);
     }
@@ -82,6 +84,8 @@ class ParentComponent extends ViewPU {
         if (params.value !== undefined) {
             this.value = params.value;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__value.purgeDependencyOnElmtId(rmElmtId);
@@ -107,10 +111,16 @@ class ParentComponent extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new LinkComponent(this, { counter: this.__value }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Column.pop();
     }

@@ -60,8 +60,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__testText1 = new ObservedPropertySimplePU('Hello', this, "testText1");
         this.__testText2 = new ObservedPropertySimplePU('World', this, "testText2");
         this.__testText3 = new ObservedPropertySimplePU('Test', this, "testText3");
@@ -101,6 +101,8 @@ class ImportTest extends ViewPU {
         if (params.testState5 !== undefined) {
             this.testState5 = params.testState5;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__testText1.purgeDependencyOnElmtId(rmElmtId);
@@ -230,23 +232,35 @@ class ImportTest extends ViewPU {
         });
         Text.pop();
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new ImportNestAll_1.Base(this, {
-                testStr: this.__testState1,
-                testNum: this.__testState2,
-                testObj: this.__testState3
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new ImportNestAll_1.Base(this, {
+                        testStr: this.__testState1,
+                        testNum: this.__testState2,
+                        testObj: this.__testState3
+                    }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new ImportNestAll_1.DivideTest(this, {
-                testNum1: this.__testState4,
-                testNum2: this.__testState5
-            }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new ImportNestAll_1.DivideTest(this, {
+                        testNum1: this.__testState4,
+                        testNum2: this.__testState5
+                    }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         Column.pop();
     }

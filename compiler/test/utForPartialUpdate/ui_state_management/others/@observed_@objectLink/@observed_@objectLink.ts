@@ -83,12 +83,15 @@ ClassB = __decorate([
     Observed
 ], ClassB);
 class ViewA extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__varA = new SynchedPropertyNesedObjectPU(params.varA, this, "varA");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+        this.__varA.set(params.varA);
+    }
+    updateStateVars(params) {
         this.__varA.set(params.varA);
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
@@ -127,8 +130,8 @@ class ViewA extends ViewPU {
     }
 }
 class ViewB extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.__varB = new ObservedPropertyObjectPU(new ClassB(new ClassA(0)), this, "varB");
         this.setInitiallyProvidedValue(params);
     }
@@ -136,6 +139,8 @@ class ViewB extends ViewPU {
         if (params.varB !== undefined) {
             this.varB = params.varB;
         }
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__varB.purgeDependencyOnElmtId(rmElmtId);
@@ -169,10 +174,18 @@ class ViewB extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new ViewA(this, { varA: this.varB.a }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {
+                        varA: this.varB.a
+                    });
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);

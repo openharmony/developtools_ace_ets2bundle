@@ -97,7 +97,6 @@ function loadEntryObj(projectConfig) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
       manifest = JSON.parse(jsonString);
       if (manifest && manifest.minPlatformVersion) {
-        partialUpdateController(manifest.minPlatformVersion);
         process.env.minPlatformVersion = manifest.minPlatformVersion;
       }
       projectConfig.pagesJsonFileName = 'config.json';
@@ -132,8 +131,10 @@ function buildManifest(manifest, aceConfigPath) {
   try {
     const moduleConfigJson = JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
-    if (moduleConfigJson && moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
-      partialUpdateController(moduleConfigJson.app.minAPIVersion);
+    if (moduleConfigJson && moduleConfigJson.module && moduleConfigJson.module.metadata &&
+      moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
+      partialUpdateController(moduleConfigJson.module.metadata,
+        moduleConfigJson.app.minAPIVersion);
     }
     if (moduleConfigJson.module) {
       manifest.pages = getPages(moduleConfigJson);
@@ -506,15 +507,28 @@ function addSDKBuildDependencies(config) {
   }
 }
 
-function partialUpdateController(minAPIVersion) {
-  if (partialUpdateConfig.alwaysClose) {
-    return;
+function isPartialUpdate(metadata) {
+  if (Array.isArray(metadata) && metadata.length) {
+    metadata.some(item => {
+      if (item.name && item.name === 'ArkTSPartialUpdate' &&
+        item.value && item.value === 'true') {
+        partialUpdateConfig.partialUpdateMode = true;
+      }
+      if (item.name && item.name === 'partialUpdateStrictCheck' && item.value) {
+        partialUpdateConfig.strictCheck = item.value;
+      }
+      return partialUpdateConfig.partialUpdateMode &&
+        partialUpdateConfig.strictCheck;
+    });
   }
+}
+
+function partialUpdateController(metadata, minAPIVersion) {
   if (projectConfig.isPreview) {
     return;
   }
   if (minAPIVersion >= 9) {
-    partialUpdateConfig.partialUpdateMode = true;
+    isPartialUpdate(metadata);
   }
 }
 
@@ -524,7 +538,7 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
-  alwaysClose: true,
+  strictCheck: undefined,
   partialUpdateMode: false
 };
 
