@@ -267,7 +267,7 @@ export class ResultStates {
         }
       }
       if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
-        this.hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().toLocaleString();
+        this.hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
         watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
         allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
           .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
@@ -439,7 +439,7 @@ export class ResultStates {
 
   private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
     if (projectConfig.hotReload) {
-      this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().toLocaleString();
+      this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().getTime().toString();
       console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime
         +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime);
     }
