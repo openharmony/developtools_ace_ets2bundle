@@ -1109,7 +1109,6 @@ function handleHotReloadChangedFiles() {
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
   if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
-    logger.debug(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
     return;
   }
 
