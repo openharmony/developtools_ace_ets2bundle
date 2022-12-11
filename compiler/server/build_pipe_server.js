@@ -57,7 +57,11 @@ let errorInfo = [];
 let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
+let globalDeclaration = new Map();
+let variableDoubleCheck = [];
+let compileVariable = false;
 let connectNum = 0;
+let script = '';
 const maxConnectNum = 8;
 
 function init(port) {
@@ -146,8 +150,16 @@ function handlePluginCompileComponent(jsonData) {
       fastPreview();
     }
     quickPreview(GetRootView().findChildByIdForPreview(${receivedMsg.data.viewID}))`
+    script = receivedMsg.data.script;
   }
   callEs2abc(receivedMsg);
+}
+
+function handlePluginCompileVariable() {
+  writeFileSync(previewCacheFilePath, receivedMsg_.data.variableScript);
+  receivedMsg_.data.script = ts.transpileModule(receivedMsg_.data.variableScript, {}).outputText + script;
+  script = '';
+  callEs2abc(receivedMsg_);
 }
 
 function transformResourceNode(newSource, log) {
@@ -174,7 +186,10 @@ function processResourceNode(node, log) {
 
 function checkPreparation(receivedMsg) {
   if (previewCacheFilePath && fs.existsSync(previewCacheFilePath) && compileWithCheck === 'true') {
-    globalVariable = receivedMsg.data.globalVariable || globalVariable;
+    globalVariable = receivedMsg.data.globalVariable.map((item)=>{
+      globalDeclaration[item.identifier] = item.declaration;
+      return item.identifier;
+    })
     propertyVariable = receivedMsg.data.propertyVariable || propertyVariable;
     writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
   }
@@ -196,10 +211,18 @@ function es2abc(receivedMsg) {
     Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
   try {
     pipeProcess.exec(cmd, (error, stdout, stderr) => {
-      if (stdout) {
-        receivedMsg.data.script = stdout;
+      if (compileVariable) {
+        if (stdout) {
+          receivedMsg.data.script = stdout;
+        } else {
+          receivedMsg.data.script = "";
+        }
       } else {
-        receivedMsg.data.script = "";
+        if (stdout) {
+          receivedMsg.data.script = stdout;
+        } else {
+          receivedMsg.data.script = "";
+        }
       }
       compileStatus = true;
       receivedMsg_ = receivedMsg;
@@ -238,17 +261,31 @@ function responseToPlugin() {
         receivedMsg_.data.log =  receivedMsg_.data.log || [];
         receivedMsg_.data.log.push(...errorInfo);
       }
-      pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
-        start = false;
+      if (!receivedMsg_.data.log.length && variableDoubleCheck.length && !compileVariable) {
+        compileVariable = true;
         checkStatus = false;
         compileStatus = false;
-        errorInfo = [];
-        receivedMsg_ = undefined;
-        messages.shift();
-        if (messages.length > 0) {
-          handlePluginCompileComponent();
-        }
-      });
+        let variableContent = '';
+        variableDoubleCheck.forEach((item)=>{
+          variableContent += globalDeclaration[item] + '\n';
+        })
+        receivedMsg_.data.variableScript = variableContent;
+        handlePluginCompileVariable();
+      } else {
+        pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
+          start = false;
+          checkStatus = false;
+          compileStatus = false;
+          errorInfo = [];
+          receivedMsg_ = undefined;
+          variableDoubleCheck = [];
+          compileVariable = false;
+          messages.shift();
+          if (messages.length > 0) {
+            handlePluginCompileComponent();
+          }
+        });
+      }
     }
   }
 }
@@ -256,17 +293,20 @@ function responseToPlugin() {
 function validateError(message) {
   const propInfoReg = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
   const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-  if (matchMessage(message, [...globalVariable, ...props], propInfoReg) ||
-    matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
+  if (!compileVariable && (matchMessage(message, [...globalVariable, ...props], propInfoReg, true) ||
+    matchMessage(message, [...propertyVariable, ...props], stateInfoReg))) {
     return false;
   }
   return true;
 }
 
-function matchMessage(message, nameArr, reg) {
+function matchMessage(message, nameArr, reg, isGlobalVariable = false) {
   if (reg.test(message)) {
     const match = message.match(reg);
     if (match[1] && nameArr.includes(match[1])) {
+      if (isGlobalVariable) {
+        variableDoubleCheck.push(match[1]);
+      }
       return true;
     }
   }
