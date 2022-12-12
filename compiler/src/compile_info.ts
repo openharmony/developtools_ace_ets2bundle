@@ -85,6 +85,11 @@ export interface CacheFileName {
   error: boolean
 }
 
+interface hotReloadIncrementalTime {
+  hotReloadIncrementalStartTime: string;
+  hotReloadIncrementalEndTime: string;
+}
+
 interface NeedUpdateFlag {
   flag: boolean;
 }
@@ -107,6 +112,10 @@ export class ResultStates {
   private blue: string = '\u001b[34m';
   private reset: string = '\u001b[39m';
   private moduleSharePaths: Set<string> = new Set([]);
+  private hotReloadIncrementalTime: hotReloadIncrementalTime = {
+    hotReloadIncrementalStartTime: '',
+    hotReloadIncrementalEndTime: ''
+  }
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
@@ -258,6 +267,7 @@ export class ResultStates {
         }
       }
       if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
+        this.hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
         watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
         allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
           .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
@@ -420,15 +430,19 @@ export class ResultStates {
 
   private printPreviewResult(resultInfo: string = ''): void {
     const workerNum: number = Object.keys(cluster.workers).length;
-    const printSuccessInfo = this.printSuccessInfo;
     const blue: string = this.blue;
     const reset: string = this.reset;
     if (workerNum === 0) {
-      printSuccessInfo(blue, reset, resultInfo);
+      this.printSuccessInfo(blue, reset, resultInfo);
     }
   }
 
   private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
+    if (projectConfig.hotReload) {
+      this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().getTime().toString();
+      console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime
+        +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime);
+    }
     if (resultInfo.length === 0) {
       console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
     } else {
