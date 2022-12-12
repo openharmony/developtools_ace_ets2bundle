@@ -204,7 +204,7 @@ function callEs2abc(receivedMsg) {
 }
 
 function es2abc(receivedMsg) {
-  const cmd = es2abcFilePath + ' --base64Input ' +
+  const cmd = '"' + es2abcFilePath + '"' + ' --base64Input ' +
     Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
   try {
     pipeProcess.exec(cmd, (error, stdout, stderr) => {
