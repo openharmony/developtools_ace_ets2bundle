@@ -257,6 +257,7 @@ export class ResultStates {
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       let watchRemovedFiles: string[] = [...comp.removedFiles];
+      process.env.watchEts = 'start';
       this.clearCount();
       if (watchModifiedFiles.length) {
         const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
@@ -377,8 +378,6 @@ export class ResultStates {
   private delayPrintLogCount() {
     if (process.env.watchEts === 'end' && process.env.watchTs === 'end') {
       this.printLogCount();
-      process.env.watchEts = 'start';
-      process.env.watchTs = 'start';
     }
   }
 
@@ -417,8 +416,6 @@ export class ResultStates {
         console.info(this.blue, 'COMPILE RESULT:SUCCESS ', this.reset);
       }
     }
-    this.clearCount();
-    this.resetTsErrorCount();
   }
 
   private clearCount(): void {
