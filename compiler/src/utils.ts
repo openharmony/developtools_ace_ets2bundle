@@ -442,9 +442,8 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 
 export var newSourceMaps: Object = {};
 
-export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, false);
-  let jsFilePath: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath);
+export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: any): void {
+  let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
   if (jsFilePath.length === 0) {
     return;
   }
@@ -455,21 +454,26 @@ export function generateSourceFilesToTemporary(node: ts.SourceFile): void {
   }
   let sourceMapFile: string = genSourceMapFileName(jsFilePath);
   if (sourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    newSourceMaps[node.fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')] = mixedInfo.sourceMapJson;
+    let source = toUnixPath(sourcePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+    // adjust sourceMap info
+    sourceMap.sources = [source];
+    sourceMap.file = path.basename(sourceMap.file);
+    delete sourceMap.sourcesContent;
+    newSourceMaps[source] = sourceMap;
   }
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  mixedInfo.content = mixedInfo.content.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, node.fileName);
+  sourceContent = sourceContent.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
   });
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(jsFilePath, mixedInfo.content);
+    fs.writeFileSync(jsFilePath, sourceContent);
     return;
   }
 
-  writeMinimizedSourceCode(mixedInfo.content, jsFilePath);
+  writeMinimizedSourceCode(sourceContent, jsFilePath);
 }
 
 export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean): void {
