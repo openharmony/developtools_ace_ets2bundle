@@ -65,12 +65,15 @@ import {
   SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU,
   SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU,
   SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+  SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU,
   SYNCHED_PROPERTY_NESED_OBJECT_PU,
   COMPONENT_CUSTOM_DECORATOR,
   THIS,
   CREATE_STORAGE_LINK,
   CREATE_STORAGE_PROP,
-  ELMTID
+  ELMTID,
+  COMPONENT_CONSTRUCTOR_PARAMS,
+  RESERT
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -276,7 +279,27 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
       log, program, context, hasPreview, interfaceNode);
   }
+  if (item.decorators && item.decorators.length && validatePropDecorator(item.decorators)) {
+    updateResult.setStateVarsParams(createStateVarsBody(name));
+  }
   return updateResult;
+}
+
+function createStateVarsBody(name: ts.Identifier): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createThis(),
+        ts.factory.createIdentifier("__"+name.escapedText.toString())
+      ),
+      ts.factory.createIdentifier(RESERT)
+    ),
+    undefined,
+    [ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
+      name
+    )]
+  ))
 }
 
 function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Identifier,
@@ -1056,7 +1079,8 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
     return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
       createPropertyAccessExpressionWithParams(name));
   } else {
-    validateNonSimpleType(nameIdentifier, decoractor, log);
+    return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU,
+      createPropertyAccessExpressionWithParams(name));
   }
 }
 
@@ -1092,6 +1116,17 @@ function validateCustomDecorator(decorators: ts.NodeArray<ts.Decorator>, log: Lo
     });
   } else if(!hasInnerDecorator) {
     return true;
+  }
+  return false;
+}
+
+function validatePropDecorator(decorators: ts.NodeArray<ts.Decorator>): boolean {
+  for(let i = 0; i < decorators.length; i++) {
+    let decorator: ts.Decorator = decorators[i];
+    const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+    if (COMPONENT_PROP_DECORATOR === decoratorName) {
+      return true;
+    }
   }
   return false;
 }
