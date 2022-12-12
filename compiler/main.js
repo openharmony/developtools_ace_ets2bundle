@@ -21,7 +21,11 @@ const {
   readFile,
   writeFileSync
 } = require('./lib/utils');
-const { WORKERS_DIR } = require('./lib/pre_define');
+
+const {
+  WORKERS_DIR,
+  TS2ABC
+} = require('./lib/pre_define');
 
 const {
   configure,
@@ -456,12 +460,18 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    projectConfig.processTs = false;
+    projectConfig.aotMode = buildJsonInfo.aotMode;
+    if (projectConfig.aotMode && projectConfig.compileMode === 'esmodule') {
+      projectConfig.processTs = true;
+      projectConfig.pandaMode = TS2ABC;
+    } else {
+      projectConfig.processTs = false;
+      projectConfig.pandaMode = buildJsonInfo.pandaMode;
+    }
     projectConfig.buildArkMode = envArgs.buildMode;
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
     }
-    projectConfig.pandaMode = buildJsonInfo.pandaMode;
   }
 }
 
