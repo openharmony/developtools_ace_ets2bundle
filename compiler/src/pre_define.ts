@@ -329,7 +329,6 @@ export const COMPONENT_INITIAl_RENDER_FUNCTION: string = 'initialRender';
 export const GRID_COMPONENT: string = 'Grid';
 export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
-export const TABCONTENT_COMPONENT: string = 'TabContent';
 export const BASE_COMPONENT_NAME_PU: string = 'ViewPU';
 export const GLOBAL_THIS: string = 'globalThis';
 export const OBSERVED_PROPERTY_SIMPLE_PU: string = 'ObservedPropertySimplePU';
@@ -356,6 +355,8 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
   'AbilityComponent', 'PluginComponent', 'FormComponent', 'RemoteWindow',
   'XComponent', 'Web', 'RichText'
 ]);
+export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
+  'NavDestination']);
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
