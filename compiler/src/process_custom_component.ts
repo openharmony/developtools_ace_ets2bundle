@@ -69,13 +69,13 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  createFunction
+  componentInfo
 } from './utils';
 import {
   bindComponentAttr,
   parentConditionalExpression,
-  createComponentCreationStatement
+  createComponentCreationStatement,
+  createFunction
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
