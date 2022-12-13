@@ -459,10 +459,10 @@ function handleFullModuleFiles(modules, callback): any {
     if (module !== undefined && module.resourceResolveData !== undefined) {
       const filePath: string = module.resourceResolveData.path;
       let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
-      validateFilePathLength(tempFilePath);
       if (tempFilePath.length === 0) {
         return;
       }
+      validateFilePathLength(tempFilePath);
       let buildFilePath: string = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
       validateFilePathLength(buildFilePath);
       tempFilePath = toUnixPath(tempFilePath);
