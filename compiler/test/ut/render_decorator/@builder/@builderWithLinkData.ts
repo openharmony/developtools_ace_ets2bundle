@@ -44,8 +44,8 @@ function generateId() {
     return "@builderWithLinkData_" + ++__generate__Id;
 }
 class TitleComp extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__title = new SynchedPropertySimpleTwoWay(params.title, this, "title");
         this.updateWithValueParams(params);
     }
@@ -67,8 +67,8 @@ class TitleComp extends View {
     }
 }
 class TestPage extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__value = new ObservedPropertySimple('hello world', this, "value");
         this.updateWithValueParams(params);
     }

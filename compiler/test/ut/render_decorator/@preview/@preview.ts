@@ -43,8 +43,8 @@ function generateId() {
     return "@preview_" + ++__generate__Id;
 }
 class HomePreviewComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.value = "hello world";
         this.updateWithValueParams(params);
     }
@@ -63,8 +63,8 @@ class HomePreviewComponent extends View {
     }
 }
 class HomePreviewComponent_Preview extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {

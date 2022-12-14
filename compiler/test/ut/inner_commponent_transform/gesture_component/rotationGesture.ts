@@ -47,8 +47,8 @@ function generateId() {
     return "rotationGesture_" + ++__generate__Id;
 }
 class RotationGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__angle = new ObservedPropertySimple(0, this, "angle");
         this.updateWithValueParams(params);
     }
