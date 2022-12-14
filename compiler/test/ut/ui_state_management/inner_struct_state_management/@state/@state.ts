@@ -67,8 +67,8 @@ class Model {
     }
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__title = new ObservedPropertyObject({ value: 'Hello World' }, this, "title");
         this.__count = new ObservedPropertySimple(0, this, "count");
         this.toggle = 'Hello World';
@@ -128,8 +128,8 @@ class MyComponent extends View {
     }
 }
 class EntryComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {

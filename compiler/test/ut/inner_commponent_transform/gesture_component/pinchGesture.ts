@@ -47,8 +47,8 @@ function generateId() {
     return "pinchGesture_" + ++__generate__Id;
 }
 class PinchGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__scale = new ObservedPropertySimple(1, this, "scale");
         this.updateWithValueParams(params);
     }

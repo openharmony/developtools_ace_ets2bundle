@@ -182,8 +182,8 @@ class MyDataSource extends BasicDataSource {
     }
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.data = new MyDataSource();
         this.updateWithValueParams(params);
     }

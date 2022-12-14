@@ -83,8 +83,8 @@ const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
 class HomeComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.value1 = "hello world 1";
         this.value2 = "hello world 2";
         this.value3 = "hello world 3";
