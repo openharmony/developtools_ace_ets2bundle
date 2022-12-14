@@ -46,8 +46,8 @@ function generateId() {
     return "forEachTwo_" + ++__generate__Id;
 }
 class Index extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__WIDTH_AND_HEIGHT = new ObservedPropertyObject([
             { w: 10, h: 10 },
             { w: 20, h: 20 },

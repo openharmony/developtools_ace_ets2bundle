@@ -41,8 +41,8 @@ function generateId() {
     return "tapGesture_" + ++__generate__Id;
 }
 class TapGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__value = new ObservedPropertySimple('', this, "value");
         this.updateWithValueParams(params);
     }

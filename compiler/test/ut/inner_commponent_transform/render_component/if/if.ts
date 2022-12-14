@@ -61,8 +61,8 @@ function generateId() {
 const TestComponent_1 = require("./test/pages/TestComponent");
 const TsModule_1 = require("./test/pages/TsModule");
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.pass = true;
         this.count = 10;
         this.updateWithValueParams(params);

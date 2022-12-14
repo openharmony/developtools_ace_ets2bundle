@@ -52,8 +52,8 @@ function generateId() {
     return "custom_component_" + ++__generate__Id;
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
@@ -153,8 +153,8 @@ class MyComponent extends View {
     }
 }
 class Banner extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.value = "Hello";
         this.updateWithValueParams(params);
     }

@@ -52,8 +52,8 @@ function generateId() {
     return "pageTransition_" + ++__generate__Id;
 }
 class PageTransitionExample1 extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__scale = new ObservedPropertySimple(1, this, "scale");
         this.__opacity = new ObservedPropertySimple(1, this, "opacity");
         this.__active = new ObservedPropertySimple(false, this, "active");

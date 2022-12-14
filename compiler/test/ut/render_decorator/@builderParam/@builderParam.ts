@@ -109,8 +109,8 @@ function generateId() {
 }
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
         this.footer = "";
         this.updateWithValueParams(params);
@@ -140,8 +140,8 @@ class CustomContainer extends View {
     }
 }
 class CustomContainer2 extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
         this.updateWithValueParams(params);
     }
@@ -173,8 +173,8 @@ function specificWithParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class CustomContainerUser extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__text = new ObservedPropertySimple('header', this, "text");
         this.updateWithValueParams(params);
     }

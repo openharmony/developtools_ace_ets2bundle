@@ -162,8 +162,8 @@ function specificParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimple(true, this, "hideBar");
