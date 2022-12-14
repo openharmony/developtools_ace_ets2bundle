@@ -399,6 +399,8 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string): v
     return;
   }
 
+  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
+
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
     fs.writeFileSync(jsFilePath, sourceCode);
@@ -422,9 +424,12 @@ export function getPackageInfo(configFile: string): Array<string> {
 }
 
 function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string): string {
+  const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    const filePathWithoutSuffix: string = filePath.replace(SUFFIX_REG, '');
+    const result: RegExpMatchArray | null =
+      filePathWithoutSuffix.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
       const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
       const projectRootPath: string = projectConfig.projectRootPath;
@@ -438,6 +443,14 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
     }
   }
   return item;
+}
+
+function transformModuleSpecifier(sourcePath: string, sourceCode: string): string {
+  // replace relative moduleSpecifier with ohmURl
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
+  return sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
+  });
 }
 
 export var newSourceMaps: Object = {};
@@ -461,11 +474,7 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
     delete sourceMap.sourcesContent;
     newSourceMaps[source] = sourceMap;
   }
-  // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  sourceContent = sourceContent.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
-  });
+  sourceContent = transformModuleSpecifier(sourcePath, sourceContent);
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
