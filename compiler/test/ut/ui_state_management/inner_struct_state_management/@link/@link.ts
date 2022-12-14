@@ -74,8 +74,8 @@ function generateId() {
     return "@link_" + ++__generate__Id;
 }
 class linkComp extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__buttonPlaying = new SynchedPropertySimpleTwoWay(params.buttonPlaying, this, "buttonPlaying");
         this.__items = new SynchedPropertyObjectTwoWay(params.items, this, "items");
         this.__obj = new SynchedPropertyObjectTwoWay(params.obj, this, "obj");
@@ -145,8 +145,8 @@ class linkComp extends View {
     }
 }
 class linkPage extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__isPlaying = new ObservedPropertySimple(false, this, "isPlaying");
         this.__itemsArr = new ObservedPropertyObject([1, 2, 3], this, "itemsArr");
         this.__peoples = new ObservedPropertyObject([{ name: 'xiaoming', age: 8 }], this, "peoples");

@@ -64,8 +64,8 @@ function generateId() {
     return "animateTo_" + ++__generate__Id;
 }
 class TransitionExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__btnW = new ObservedPropertySimple(50, this, "btnW");
         this.__btnH = new ObservedPropertySimple(50, this, "btnH");
         this.__btn1 = new ObservedPropertySimple(false, this, "btn1");

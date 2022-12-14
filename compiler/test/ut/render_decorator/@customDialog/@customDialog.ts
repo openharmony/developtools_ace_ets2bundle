@@ -105,8 +105,8 @@ function generateId() {
     return "@customDialog_" + ++__generate__Id;
 }
 class DialogExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__count = new SynchedPropertySimpleOneWay(params.count, this, "count");
         this.__isPlaying = new SynchedPropertySimpleTwoWay(params.isPlaying, this, "isPlaying");
         this.controller = undefined;
@@ -184,8 +184,8 @@ class DialogExample extends View {
     }
 }
 class CustomDialogUser extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__countInitValue = new ObservedPropertySimple(10, this, "countInitValue");
         this.__playingInitValue = new ObservedPropertySimple(false, this, "playingInitValue");
         this.dialogController = new CustomDialogController({

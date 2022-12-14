@@ -72,8 +72,8 @@ function __Button__fancybut(color) {
     Button.height(100);
 }
 class FancyUse extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
