@@ -94,7 +94,8 @@ let compileCount: number = 0;
 interface File {
   path: string,
   size: number,
-  cacheOutputPath: string
+  cacheOutputPath: string,
+  sourceFile: string
 }
 let intermediateJsBundle: Array<File> = [];
 let fileterIntermediateJsBundle: Array<File> = [];
@@ -551,9 +552,16 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize: any = fs.statSync(cacheOutputPath).size;
+    let sourceFile: string = output.replace(/\.temp\.js$/, "_.js");
+    if (!isDebug && projectConfig.projectRootPath) {
+      sourceFile = toUnixPath(sourceFile.replace(projectConfig.projectRootPath + path.sep, ''));
+    } else {
+      sourceFile = toUnixPath(sourceFile);
+    }
     output = toUnixPath(output);
     cacheOutputPath = toUnixPath(cacheOutputPath);
-    intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath});
+
+    intermediateJsBundle.push({path: output, size: fileSize, cacheOutputPath: cacheOutputPath, sourceFile: sourceFile});
   } else {
     logger.debug(red, `ArkTS:ERROR Failed to convert file ${jsBundleFile} to bin. ${output} is lost`, reset);
     process.exitCode = FAIL;
@@ -1269,7 +1277,7 @@ function generateFileOfBundle(inputPaths: File[]): string {
     const cacheOutputPath: string = info.cacheOutputPath;
     const recordName: string = 'null_recordName';
     const moduleType: string = 'script';
-    const sourceFile: string = info.path.replace(/\.temp\.js$/, "_.js");
+    const sourceFile: string = info.sourceFile;
     const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     filesInfo += `${cacheOutputPath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
   });

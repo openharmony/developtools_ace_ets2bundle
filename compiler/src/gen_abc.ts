@@ -19,9 +19,7 @@ import cluster from 'cluster';
 import { logger } from './compile_info';
 import {
   SUCCESS,
-  FAIL,
-  TS2ABC,
-  ES2ABC
+  FAIL
 } from './pre_define';
 
 const red: string = '\u001b[31m';
@@ -33,7 +31,8 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     const input: string = inputPaths[i].path.replace(/\.temp\.js$/, "_.js");
     const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
-    const singleCmd: any = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${input}"`;
+    const sourceFile: string = inputPaths[i].sourceFile;
+    const singleCmd: any = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
     logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
     try {
       childProcess.execSync(singleCmd);
