@@ -1225,7 +1225,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   if (!partialUpdateConfig.partialUpdateMode) {
     newStatements.push(ifCreate, newIfNode, ifPop);
   } else {
-    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode]), ifPop);
+    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode], isGlobalBuilder), ifPop);
   }
 }
 
@@ -1266,7 +1266,7 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
       thenStatement = processInnerIfStatement(thenStatement, 0, log, isBuilder, isGlobalBuilder);
       thenStatement = ts.factory.createBlock(
         partialUpdateConfig.partialUpdateMode
-          ? [createIfCreate(), createIfBranchFunc(id, [thenStatement]), createIfPop()]
+          ? [createIfCreate(), createIfBranchFunc(id, [thenStatement], isGlobalBuilder), createIfPop()]
           : [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()],
         true
       );
@@ -1352,14 +1352,14 @@ function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
 
 function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
   isGlobalBuilder: boolean = false): ts.Block {
-  return addIfBranchId(id,
+  return addIfBranchId(id, isGlobalBuilder,
     processComponentBlock(block, false, log, false, isBuilder, undefined, undefined, isGlobalBuilder));
 }
 
-function addIfBranchId(id: number, container: ts.Block): ts.Block {
+function addIfBranchId(id: number, isGlobalBuilder: boolean = false, container: ts.Block): ts.Block {
   let containerStatements: ts.Statement[];
   if (partialUpdateConfig.partialUpdateMode) {
-    containerStatements = [createIfBranchFunc(id, [...container.statements])];
+    containerStatements = [createIfBranchFunc(id, [...container.statements], isGlobalBuilder)];
   } else {
     containerStatements = [createIfBranchId(id), ...container.statements];
   }
@@ -1386,9 +1386,11 @@ function createIfBranchId(id: number): ts.ExpressionStatement {
     ts.factory.createNodeArray([ts.factory.createNumericLiteral(id)])));
 }
 
-function createIfBranchFunc(id: number, innerStatements: ts.Statement[]): ts.ExpressionStatement {
+function createIfBranchFunc(id: number, innerStatements: ts.Statement[],
+  isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-    ts.factory.createThis(), ts.factory.createIdentifier(IFELSEBRANCHUPDATEFUNCTION)), undefined,
+    isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis(),
+    ts.factory.createIdentifier(IFELSEBRANCHUPDATEFUNCTION)), undefined,
       [ts.factory.createNumericLiteral(id), ts.factory.createArrowFunction(undefined, undefined, [], undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock(innerStatements, true))]));
 }
