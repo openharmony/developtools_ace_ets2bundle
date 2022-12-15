@@ -159,7 +159,12 @@ function setJsConfigRule() {
   };
   if (projectConfig.compileMode !== 'esmodule') {
     jsRule.type = 'javascript/auto';
-    jsRule.use[0].options.plugins.unshift('@babel/plugin-transform-modules-commonjs');
+    jsRule.use[0].options.plugins.unshift([
+      '@babel/plugin-transform-modules-commonjs',
+      {
+        'allowTopLevelThis': true
+      }
+    ]);
   }
   return jsRule;
 }
