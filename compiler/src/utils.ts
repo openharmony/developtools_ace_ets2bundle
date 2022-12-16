@@ -424,12 +424,23 @@ export function getPackageInfo(configFile: string): Array<string> {
 }
 
 function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string): string {
-  const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
+    // remove file extension from moduleRequest
+    const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
+    moduleRequest = moduleRequest.replace(SUFFIX_REG, '');
+
+    // normalize the moduleRequest
+    item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+      let normalizedModuleRequest: string = toUnixPath(path.normalize(moduleRequest));
+      if (moduleRequest.startsWith("./")) {
+        normalizedModuleRequest = "./" + normalizedModuleRequest;
+      }
+      return quotation + normalizedModuleRequest + quotation;
+    });
+
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const filePathWithoutSuffix: string = filePath.replace(SUFFIX_REG, '');
     const result: RegExpMatchArray | null =
-      filePathWithoutSuffix.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
+      filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
       const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
       const projectRootPath: string = projectConfig.projectRootPath;
@@ -438,7 +449,9 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
         const bundleName: string = packageInfo[0];
         const moduleName: string = packageInfo[1];
         moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+        item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+          return quotation + moduleRequest + quotation;
+        });
       }
     }
   }
@@ -447,7 +460,7 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 
 function transformModuleSpecifier(sourcePath: string, sourceCode: string): string {
   // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+)['"]/g;
   return sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
     return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
   });
