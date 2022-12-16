@@ -24,56 +24,51 @@ import {
   JSBUNDLE
 } from "./pre_define";
 
-if (process.env["workerNumber"] === undefined) {
-    process.exit(FAIL);
-}
-
 if (process.env["mode"] !== JSBUNDLE && process.env['mode'] !== ESMODULE) {
-    process.exit(FAIL);
+  process.exit(FAIL);
 }
 
-if (
-  process.env["workerNumber"] !== undefined ||
-  process.env["splitedData"] !== undefined ||
+if (process.env["workerNumber"] !== undefined &&
+  process.env["splittedData"] !== undefined &&
   process.env["cmdPrefix"] !== undefined
 ) {
-  const clusterNewApiVersion: number = 16;
-  const currentNodeVersion: number = parseInt(process.version.split(".")[0]);
-  const useNewApi: boolean = currentNodeVersion >= clusterNewApiVersion;
-
   let workerNumber: number = parseInt(process.env.workerNumber);
-  let splitedData: any = JSON.parse(process.env.splitedData);
-  let cmdPrefix: string = process.env.cmdPrefix;  
+  let splittedData: any = JSON.parse(process.env.splittedData);
+  let cmdPrefix: string = process.env.cmdPrefix;
+
+  const clusterNewApiVersion: number = 16;
+  const currentNodeVersion: number = parseInt(process.version.split('.')[0]);
+  const useNewApi: boolean = currentNodeVersion >= clusterNewApiVersion;
 
   if ((useNewApi && cluster.isPrimary) || (!useNewApi && cluster.isMaster)) {
     let genAbcScript: string = GEN_ABC_SCRIPT;
-    if (process.env['mode'] === ESMODULE) {
-      genAbcScript = GEN_MODULE_ABC_SCRIPT
+    if (process.env["mode"] === ESMODULE) {
+      genAbcScript = GEN_MODULE_ABC_SCRIPT;
     }
     if (useNewApi) {
       cluster.setupPrimary({
-        exec: path.resolve(__dirname, genAbcScript),
+        exec: path.resolve(__dirname, genAbcScript)
       });
     } else {
       cluster.setupMaster({
-        exec: path.resolve(__dirname, genAbcScript),
+        exec: path.resolve(__dirname, genAbcScript)
       });
     }
 
     for (let i = 0; i < workerNumber; ++i) {
       let workerData: any = {
-        inputs: JSON.stringify(splitedData[i]),
-        cmd: cmdPrefix,
+        'inputs': JSON.stringify(splittedData[i]),
+        'cmd': cmdPrefix
       };
-      if (process.env['mode'] === ESMODULE) {
-        let cachePath: string = process.env.cachePath;
+      if (process.env["mode"] === ESMODULE) {
         let sn: number = i + 1;
         let workerFileName: string = `filesInfo_${sn}.txt`;
         workerData['workerFileName'] = workerFileName;
-        workerData['cachePath'] = cachePath;
+        workerData['cachePath'] = process.env.cachePath;
       }
       cluster.fork(workerData);
     }
+
     cluster.on("exit", (worker, code, signal) => {
       if (code === FAIL) {
         process.exit(FAIL);
