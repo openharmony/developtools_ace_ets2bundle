@@ -113,21 +113,18 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false
-            && process.env.compilerType && process.env.compilerType === ARK) {
+          if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
               validateReExportType(node, pagesDir, transformLog.errors);
-          }
-          if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
-            && process.env.compilerType && process.env.compilerType === ARK) {
-            writeFileSyncByNode(node, true);
+              if (projectConfig.processTs === true) {
+                writeFileSyncByNode(node, true);
+              }
           }
           return node;
         }
         node = createEntryNode(node, context);
         node = ts.visitEachChild(node, processAllNodes, context);
-        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false
-          && process.env.compilerType && process.env.compilerType === ARK) {
-            validateReExportType(node, pagesDir, transformLog.errors);
+        if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
+          validateReExportType(node, pagesDir, transformLog.errors);
         }
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
