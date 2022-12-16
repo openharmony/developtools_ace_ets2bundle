@@ -72,7 +72,9 @@ import {
   EXTNAME_PROTO_BIN,
   FILESINFO_TXT,
   MANAGE_WORKERS_SCRIPT,
-  MAX_WORKER_NUMBER
+  MAX_WORKER_NUMBER,
+  GEN_ABC_SCRIPT,
+  GEN_MODULE_ABC_SCRIPT
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -681,37 +683,11 @@ function invokeClusterModuleToAbc(): void {
   let cmdPrefix: string = `${nodeJs} ${abcArgs.join(' ')}`;
   const workerNumber: number = MAX_WORKER_NUMBER < splitedModules.length ? MAX_WORKER_NUMBER : splitedModules.length;
 
-  let envParams: any = {
-    'splitedData': JSON.stringify(splitedModules),
-    'cmdPrefix': cmdPrefix,
-    'workerNumber': workerNumber.toString(),
-    'cachePath': process.env.cachePath,
-    'mode': ESMODULE
-  };
-  let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
-
   try {
     if (process.env.watchMode === 'true') {
-      childProcess.execSync(genAbcCmd, {env: envParams});
-      processExtraAsset();
+      processWorkersOfPreviewMode(splitedModules, cmdPrefix, workerNumber);
     } else {
-      const child = childProcess.exec(genAbcCmd, {env: envParams});
-      child.on('exit', (code: any) => {
-        if (code === 1) {
-          logger.debug(red, "ArkTS:ERROR failed to execute ts2abc", reset);
-          process.exit(FAIL);
-        }
-        processExtraAsset();
-      });
-
-      child.on('error', (err: any) => {
-        logger.debug(red, err.toString(), reset);
-        process.exit(FAIL);
-      });
-
-      child.stderr.on('data', (data: any) => {
-        logger.error(red, data.toString(), reset);
-      });
+      processWorkersOfBuildMode(splitedModules, cmdPrefix, workerNumber);
     }
   } catch (e) {
     logger.debug(red, `ArkTS:ERROR failed to generate abc. Error message: ${e}`, reset);
@@ -760,36 +736,11 @@ function invokeWorkersToGenAbc(): void {
   const splitedBundles: any[] = splitJsBundlesBySize(fileterIntermediateJsBundle, MAX_WORKER_NUMBER);
   const workerNumber: number = MAX_WORKER_NUMBER < splitedBundles.length ? MAX_WORKER_NUMBER : splitedBundles.length;
 
-  let envParams: any = {
-    'splitedData': JSON.stringify(splitedBundles),
-    'cmdPrefix': cmdPrefix,
-    'workerNumber': workerNumber.toString(),
-    'mode': JSBUNDLE
-  };
-  let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
-
-  try  {
+  try {
     if (process.env.watchMode === 'true') {
-      childProcess.execSync(genAbcCmd, {env: envParams});
-      processExtraAsset();
+      processWorkersOfPreviewMode(splitedBundles, cmdPrefix, workerNumber);
     } else {
-      const child = childProcess.exec(genAbcCmd, {env: envParams});
-      child.on('exit', (code: any) => {
-        if (code === 1) {
-          logger.debug(red, "ArkTS:ERROR failed to execute ts2abc", reset);
-          process.exit(FAIL);
-        }
-        processExtraAsset();
-      });
-
-      child.on('error', (err: any) => {
-        logger.debug(red, err.toString(), reset);
-        process.exit(FAIL);
-      });
-
-      child.stderr.on('data', (data: any) => {
-        logger.error(red, data.toString(), reset);
-      });
+      processWorkersOfBuildMode(splitedBundles, cmdPrefix, workerNumber);
     }
   } catch (e) {
     logger.debug(red, `ArkTS:ERROR failed to generate abc. Error message: ${e}`, reset);
@@ -1150,7 +1101,7 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
     } else {
       const child = childProcess.exec(genAbcCmd);
       child.on('exit', (code: any) => {
-        if (code === 1) {
+        if (code === FAIL) {
           logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
           process.exit(FAIL);
         }
@@ -1215,4 +1166,69 @@ function removeDuplicateInfoOfBundleList(inputPaths: File[]) {
   inputPaths = tempInputPaths;
 
   return inputPaths;
+}
+
+function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, workerNumber: number) {
+  let envParams: any = {
+    'splittedData': JSON.stringify(splittedData),
+    'cmdPrefix': cmdPrefix,
+    'workerNumber': workerNumber.toString(),
+  };
+  if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
+    envParams['mode'] = JSBUNDLE;
+  } else if (projectConfig.compileMode === ESMODULE) {
+    envParams['cachePath'] = process.env.cachePath;
+    envParams['mode'] = ESMODULE;
+  }
+
+  let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
+  childProcess.execSync(genAbcCmd, {env: envParams});
+  processExtraAsset();
+}
+
+function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerNumber: number) {
+  const useNewApi: boolean = compareNodeVersion()
+
+  if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
+    let genAbcScript: string = GEN_ABC_SCRIPT;
+    if (projectConfig.compileMode === ESMODULE) {
+      genAbcScript = GEN_MODULE_ABC_SCRIPT;
+    }
+    if (useNewApi) {
+      cluster.setupPrimary({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    } else {
+      cluster.setupMaster({
+        exec: path.resolve(__dirname, genAbcScript)
+      });
+    }
+
+    for (let i = 0; i < workerNumber; ++i) {
+      let workerData: any = {
+        'inputs': JSON.stringify(splittedData[i]),
+        'cmd': cmdPrefix
+      };
+      if (projectConfig.compileMode === ESMODULE) {
+        let sn: number = i + 1;
+        let workerFileName: string = `filesInfo_${sn}.txt`;
+        workerData['workerFileName'] = workerFileName;
+        workerData['cachePath'] = process.env.cachePath;
+      }
+      cluster.fork(workerData);
+    }
+
+    cluster.on('exit', (worker, code, signal) => {
+      if (code === FAIL) {
+        process.exitCode = FAIL;
+      }
+      logger.debug(`worker ${worker.process.pid} finished`);
+    });
+
+    process.on('exit', (code) => {
+      if (process.exitCode !== FAIL && process.env.watchMode !== 'true') {
+        processExtraAsset();
+      }
+    });
+  }
 }
