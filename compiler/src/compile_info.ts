@@ -382,12 +382,12 @@ export class ResultStates {
   }
 
   private printLogCount(): void {
-    this.mErrorCount += this.tsErrorCount;
-    if (this.mErrorCount + this.warningCount + this.noteCount > 0) {
+    let errorCount: number = this.mErrorCount + this.tsErrorCount;
+    if (errorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
-      if (this.mErrorCount > 0) {
-        resultInfo += `ERROR:${this.mErrorCount}`;
+      if (errorCount > 0) {
+        resultInfo += `ERROR:${errorCount}`;
         result = 'FAIL ';
         if (!partialUpdateConfig.strictCheck && !partialUpdateConfig.partialUpdateMode) {
           process.exitCode = 1;
