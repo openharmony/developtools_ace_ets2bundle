@@ -47,6 +47,7 @@ import {
   builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
+  getExtension,
   hasDecorator,
   LogInfo,
   LogType,
@@ -477,18 +478,6 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   return fileResolvePath;
 }
 
-function addExtension(filePath: string): string {
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    return "";
-  }
-
-  let extension: string = EXTNAME_ETS;
-  if (fs.existsSync(filePath + '.ts') && fs.statSync(filePath + '.ts').isFile()) {
-    extension = '.ts';
-  }
-  return extension;
-}
-
 function getFileFullPath(filePath: string, pagesDir: string): string {
   if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
     const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
@@ -496,7 +485,7 @@ function getFileFullPath(filePath: string, pagesDir: string): string {
       fs.existsSync(dirIndexPath)) {
       filePath = dirIndexPath;
     } else {
-      filePath += addExtension(path.resolve(pagesDir, filePath));
+      filePath += getExtension(path.resolve(pagesDir, filePath));
     }
   }
 
@@ -562,33 +551,37 @@ function collectNonTypeMarkedReExportName(node: ts.SourceFile, pagesDir: string)
   node.statements.forEach(stmt => {
     if (ts.isImportDeclaration(stmt) && stmt.importClause && !stmt.importClause.isTypeOnly) {
       let fileFullPath: string = getFileFullPath(stmt.moduleSpecifier.getText().replace(/'|"/g, ''), pagesDir);
-      const importClause: ts.ImportClause = stmt.importClause;
-      if (importClause.name) {
-        let localName: string = importClause.name.escapedText.toString();
-        let importName: ImportName = {name: 'default', node: stmt, source: fileFullPath};
-        IMPORT_AS.set(localName, importName);
-      }
-      if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
-        importClause.namedBindings.elements.forEach(elem => {
-          let localName: string = elem.name.escapedText.toString();
-          let importName: string = elem.propertyName ? elem.propertyName.escapedText.toString() : localName;
-          IMPORT_AS.set(localName, <ImportName>{name: importName, node: stmt, source: fileFullPath})
-        });
+      if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts') || fileFullPath.endsWith('.d.ts')) {
+        const importClause: ts.ImportClause = stmt.importClause;
+        if (importClause.name) {
+          let localName: string = importClause.name.escapedText.toString();
+          let importName: ImportName = {name: 'default', node: stmt, source: fileFullPath};
+          IMPORT_AS.set(localName, importName);
+        }
+        if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
+          importClause.namedBindings.elements.forEach(elem => {
+            let localName: string = elem.name.escapedText.toString();
+            let importName: string = elem.propertyName ? elem.propertyName.escapedText.toString() : localName;
+            IMPORT_AS.set(localName, <ImportName>{name: importName, node: stmt, source: fileFullPath})
+          });
+        }
       }
     }
 
     if (ts.isExportDeclaration(stmt)) {
       if (stmt.moduleSpecifier && !stmt.isTypeOnly && stmt.exportClause && ts.isNamedExports(stmt.exportClause)) {
         let fileFullPath: string = getFileFullPath(stmt.moduleSpecifier.getText().replace(/'|"/g, ''), pagesDir);
-        stmt.exportClause.elements.forEach(elem => {
-          let importName: string = elem.propertyName ? elem.propertyName.escapedText.toString() :
-                                   elem.name.escapedText.toString();
-          if (RE_EXPORT_NAME.has(fileFullPath)) {
-            RE_EXPORT_NAME.get(fileFullPath).set(importName, stmt);
-          } else {
-            RE_EXPORT_NAME.set(fileFullPath, (new Map<string, ts.Node>()).set(importName, stmt));
-          }
-        })
+        if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts') || fileFullPath.endsWith('.d.ts')) {
+          stmt.exportClause.elements.forEach(elem => {
+            let importName: string = elem.propertyName ? elem.propertyName.escapedText.toString() :
+                                     elem.name.escapedText.toString();
+            if (RE_EXPORT_NAME.has(fileFullPath)) {
+              RE_EXPORT_NAME.get(fileFullPath).set(importName, stmt);
+            } else {
+              RE_EXPORT_NAME.set(fileFullPath, (new Map<string, ts.Node>()).set(importName, stmt));
+            }
+          });
+        }
       }
       if (!stmt.moduleSpecifier && stmt.exportClause && ts.isNamedExports(stmt.exportClause)) {
         stmt.exportClause.elements.forEach(elem => {
@@ -778,7 +771,7 @@ function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], lo
     const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
     const error: LogInfo = {
       type: LogType.ERROR,
-      message: `The re-export name '${name}' need to be marked as type. please use 'export type'`,
+      message: `The re-export name '${name}' need to be marked as type, please use 'export type'.`,
       pos: moduleNode.getStart(),
       fileName: sourceFile.fileName,
       line: posOfNode.line + 1,
