@@ -646,7 +646,7 @@ function collectNonTypeMarkedReExportName(node: ts.SourceFile, pagesDir: string)
   node.statements.forEach(stmt => {
     if (ts.isImportDeclaration(stmt) && stmt.importClause && !stmt.importClause.isTypeOnly) {
       let fileFullPath: string = getFileFullPath(stmt.moduleSpecifier.getText().replace(/'|"/g, ''), pagesDir);
-      if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts') || fileFullPath.endsWith('.d.ts')) {
+      if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts')) {
         const importClause: ts.ImportClause = stmt.importClause;
         if (importClause.name) {
           let localName: string = importClause.name.escapedText.toString();
@@ -666,7 +666,7 @@ function collectNonTypeMarkedReExportName(node: ts.SourceFile, pagesDir: string)
     if (ts.isExportDeclaration(stmt)) {
       if (stmt.moduleSpecifier && !stmt.isTypeOnly && stmt.exportClause && ts.isNamedExports(stmt.exportClause)) {
         let fileFullPath: string = getFileFullPath(stmt.moduleSpecifier.getText().replace(/'|"/g, ''), pagesDir);
-        if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts') || fileFullPath.endsWith('.d.ts')) {
+        if (fileFullPath.endsWith('.ets') || fileFullPath.endsWith('.ts')) {
           stmt.exportClause.elements.forEach(elem => {
             let importName: string = elem.propertyName ? elem.propertyName.escapedText.toString() :
                                      elem.name.escapedText.toString();
@@ -824,7 +824,7 @@ function checkTypeModuleDeclIsType(node: ts.ModuleDeclaration): boolean {
         if (hasExport) {
           return false;
         }
-      } else if (!ts.isInterfaceDeclaration(stmt) || !ts.isTypeAliasDeclaration(stmt)) {
+      } else if (!ts.isInterfaceDeclaration(stmt) && !ts.isTypeAliasDeclaration(stmt)) {
         return false;
       }
     }
@@ -851,13 +851,8 @@ function processNamespace(node: ts.ModuleDeclaration, localTypeNames: Set<string
   }
 }
 
-function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], localTypeNames: Set<string>,
-  typeExportNames: Set<string>, exportAs: Map<string, string>, exportNames: Map<string, ts.Node>): void {
-  localTypeNames.forEach(localName => {
-    if (exportAs.has(localName)) {
-      typeExportNames.add(exportAs.get(localName));
-    }
-  });
+function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], typeExportNames: Set<string>,
+                                   exportNames: Map<string, ts.Node>): void {
   let reExportNamesArray: Array<string> = Array.from(exportNames.keys());
   let typeExportNamesArray: Array<string> = Array.from(typeExportNames);
   const needWarningNames: Array<string> = reExportNamesArray.filter(name => typeExportNamesArray.includes(name));
@@ -876,6 +871,8 @@ function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], lo
   });
 }
 
+const FILE_TYPE_EXPORT_NAMES: Map<string, Set<string>> = new Map();
+
 export function validateReExportType(node: ts.SourceFile, pagesDir: string, log: LogInfo[]): void {
   /*
    * those cases' name should be treat as Type 
@@ -888,7 +885,7 @@ export function validateReExportType(node: ts.SourceFile, pagesDir: string, log:
    *   export type * as T from ...
    * case3:
    *   export interface T {}
-   *   export Type T = {}
+   *   export type T = {}
    * case4:
    *   export default interface {}
    * case5:
@@ -897,50 +894,60 @@ export function validateReExportType(node: ts.SourceFile, pagesDir: string, log:
    */
   const RE_EXPORT_NAME: Map<string, Map<string, ts.Node>> = collectNonTypeMarkedReExportName(node, pagesDir);
   RE_EXPORT_NAME.forEach((exportNames: Map<string, ts.Node>, source: string) => {
-    let importFileAst: ts.SourceFile;
-    if (IMPORT_FILE_ASTCACHE.has(source)) {
-      importFileAst = IMPORT_FILE_ASTCACHE.get(source);
+    if (FILE_TYPE_EXPORT_NAMES.has(source)) {
+      addErrorLogIfReExportType(node, log, FILE_TYPE_EXPORT_NAMES.get(source), exportNames);
     } else {
-      importFileAst = generateSourceFileAST(source, source);
-      IMPORT_FILE_ASTCACHE[source] = importFileAst;
-    }
-    const EXPORT_AS: Map<string, string> = new Map();
-    const LOCAL_TYPE_NAMES: Set<string> = new Set();
-    const TYPE_EXPORT_NAMES: Set<string> = new Set();
-    importFileAst.statements.forEach(stmt => {
-      switch(stmt.kind) {
-        case ts.SyntaxKind.ImportDeclaration: {
-          processTypeImportDecl(<ts.ImportDeclaration>stmt, LOCAL_TYPE_NAMES);
-          break;
-        }
-        case ts.SyntaxKind.ExportDeclaration: {
-          processExportDecl(<ts.ExportDeclaration>stmt, TYPE_EXPORT_NAMES, EXPORT_AS);
-          break;
-        }
-        case ts.SyntaxKind.ExportAssignment: {
-          if (ts.isIdentifier((<ts.ExportAssignment>stmt).expression) && exportNames.has("default")) {
-            EXPORT_AS.set((<ts.Identifier>(<ts.ExportAssignment>stmt).expression).escapedText.toString(), "default");
-          }
-          break;
-        }
-        case ts.SyntaxKind.EnumDeclaration: {
-          processEnum(<ts.EnumDeclaration>stmt, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
-          break;
-        }
-        case ts.SyntaxKind.ModuleDeclaration: {
-          processNamespace(<ts.ModuleDeclaration>stmt, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
-          break;
-        }
-        case ts.SyntaxKind.InterfaceDeclaration:
-        case ts.SyntaxKind.TypeAliasDeclaration: {
-          processInterfaceAndTypeAlias(<ts.InterfaceDeclaration|ts.TypeAliasDeclaration>stmt,
-                                        LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
-          break;
-        }
-        default:
-          break;
+      let importFileAst: ts.SourceFile;
+      if (IMPORT_FILE_ASTCACHE.has(source)) {
+        importFileAst = IMPORT_FILE_ASTCACHE.get(source);
+      } else {
+        importFileAst = generateSourceFileAST(source, source);
+        IMPORT_FILE_ASTCACHE[source] = importFileAst;
       }
-    });
-    addErrorLogIfReExportType(node, log, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES, EXPORT_AS, exportNames);
+      const EXPORT_AS: Map<string, string> = new Map();
+      const LOCAL_TYPE_NAMES: Set<string> = new Set();
+      const TYPE_EXPORT_NAMES: Set<string> = new Set();
+      importFileAst.statements.forEach(stmt => {
+        switch(stmt.kind) {
+          case ts.SyntaxKind.ImportDeclaration: {
+            processTypeImportDecl(<ts.ImportDeclaration>stmt, LOCAL_TYPE_NAMES);
+            break;
+          }
+          case ts.SyntaxKind.ExportDeclaration: {
+            processExportDecl(<ts.ExportDeclaration>stmt, TYPE_EXPORT_NAMES, EXPORT_AS);
+            break;
+          }
+          case ts.SyntaxKind.ExportAssignment: {
+            if (ts.isIdentifier((<ts.ExportAssignment>stmt).expression) && exportNames.has("default")) {
+              EXPORT_AS.set((<ts.Identifier>(<ts.ExportAssignment>stmt).expression).escapedText.toString(), "default");
+            }
+            break;
+          }
+          case ts.SyntaxKind.EnumDeclaration: {
+            processEnum(<ts.EnumDeclaration>stmt, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
+            break;
+          }
+          case ts.SyntaxKind.ModuleDeclaration: {
+            processNamespace(<ts.ModuleDeclaration>stmt, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
+            break;
+          }
+          case ts.SyntaxKind.InterfaceDeclaration:
+          case ts.SyntaxKind.TypeAliasDeclaration: {
+            processInterfaceAndTypeAlias(<ts.InterfaceDeclaration|ts.TypeAliasDeclaration>stmt,
+                                          LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
+            break;
+          }
+          default:
+            break;
+        }
+      });
+      LOCAL_TYPE_NAMES.forEach(localName => {
+        if (EXPORT_AS.has(localName)) {
+          TYPE_EXPORT_NAMES.add(EXPORT_AS.get(localName));
+        }
+      });
+      FILE_TYPE_EXPORT_NAMES.set(source, TYPE_EXPORT_NAMES);
+      addErrorLogIfReExportType(node, log, TYPE_EXPORT_NAMES, exportNames);
+    }
   });
 }
