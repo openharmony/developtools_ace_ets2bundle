@@ -456,7 +456,9 @@ function hashProjectPath(projectPath) {
 function loadModuleInfo(projectConfig, envArgs) {
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    projectConfig.compileMode = buildJsonInfo.compileMode;
+    if (buildJsonInfo.compileMode) {
+      projectConfig.compileMode = buildJsonInfo.compileMode;
+    }
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
