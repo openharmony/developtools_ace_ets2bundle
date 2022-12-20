@@ -660,28 +660,6 @@ function processExportDecl(node: ts.ExportDeclaration, typeExportNames: Set<stri
   }
 }
 
-function processEnum(node: ts.EnumDeclaration, localTypeNames: Set<string>, typeExportNames: Set<string>): void {
-  // 1. export const enum E{}
-  // 2. const enum E{} export {E as EE}
-  // 3. export const enum E{} export {E as EE}
-  let hasConst: boolean = false, hasExport: boolean = false;
-  node.modifiers && node.modifiers.forEach(m => {
-    if (m.kind == ts.SyntaxKind.ConstKeyword) {
-      hasConst = true;
-    }
-    if (m.kind == ts.SyntaxKind.ExportKeyword) {
-      hasExport = true;
-    }
-  });
-  if (!hasConst) {
-    return;
-  }
-  if (hasExport) {
-    typeExportNames.add(node.name.escapedText.toString());
-  }
-  localTypeNames.add(node.name.escapedText.toString());
-}
-
 function processInterfaceAndTypeAlias(node: ts.InterfaceDeclaration | ts.TypeAliasDeclaration,
                                       localTypeNames: Set<string>, typeExportNames: Set<string>): void {
   let hasDefault: boolean = false, hasExport: boolean = false;
@@ -705,20 +683,8 @@ function checkTypeModuleDeclIsType(node: ts.ModuleDeclaration): boolean {
   if (ts.isIdentifier(node.name) && node.body && ts.isModuleBlock(node.body)) {
     for (let idx = 0; idx < node.body.statements.length; idx++) {
       let stmt: ts.Statement = node.body.statements[idx];
-      if (ts.isModuleDeclaration(stmt)) {
-        if (!checkTypeModuleDeclIsType(<ts.ModuleDeclaration>stmt)) {
-          return false;
-        }
-      } else if (ts.isEnumDeclaration(stmt)) {
-        let hasConst: boolean = false;
-        stmt.modifiers && stmt.modifiers.forEach(m => {
-          if (m.kind == ts.SyntaxKind.ConstKeyword) {
-            hasConst = true;
-          }
-        });
-        if (!hasConst) {
-          return false;
-        }
+      if (ts.isModuleDeclaration(stmt) && !checkTypeModuleDeclIsType(<ts.ModuleDeclaration>stmt)) {
+        return false;
       } else if (ts.isImportEqualsDeclaration(stmt)) {
         let hasExport: boolean = false;
         stmt.modifiers && stmt.modifiers.forEach(m => {
@@ -763,10 +729,16 @@ function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], ty
   const needWarningNames: Array<string> = reExportNamesArray.filter(name => typeExportNamesArray.includes(name));
   needWarningNames.forEach(name => {
     const moduleNode: ts.Node = exportNames.get(name)!;
+    let typeIdentifier: string = name;
+    if (name === 'default' && ts.isImportDeclaration(moduleNode) && moduleNode.importClause) {
+      typeIdentifier = moduleNode.importClause.name!.escapedText.toString();
+    }
     const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
+    let errorMessage: string = `The re-export name '${typeIdentifier}' need to be marked as type, `;
+    errorMessage += ts.isImportDeclaration(moduleNode) ? "please use 'import type'." : "please use 'export type'.";
     const error: LogInfo = {
       type: LogType.ERROR,
-      message: `The re-export name '${name}' need to be marked as type, please use 'export type'.`,
+      message: errorMessage,
       pos: moduleNode.getStart(),
       fileName: sourceFile.fileName,
       line: posOfNode.line + 1,
@@ -823,13 +795,9 @@ export function validateReExportType(node: ts.SourceFile, pagesDir: string, log:
             break;
           }
           case ts.SyntaxKind.ExportAssignment: {
-            if (ts.isIdentifier((<ts.ExportAssignment>stmt).expression) && exportNames.has("default")) {
+            if (ts.isIdentifier((<ts.ExportAssignment>stmt).expression)) {
               EXPORT_AS.set((<ts.Identifier>(<ts.ExportAssignment>stmt).expression).escapedText.toString(), "default");
             }
-            break;
-          }
-          case ts.SyntaxKind.EnumDeclaration: {
-            processEnum(<ts.EnumDeclaration>stmt, LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
             break;
           }
           case ts.SyntaxKind.ModuleDeclaration: {
@@ -839,7 +807,7 @@ export function validateReExportType(node: ts.SourceFile, pagesDir: string, log:
           case ts.SyntaxKind.InterfaceDeclaration:
           case ts.SyntaxKind.TypeAliasDeclaration: {
             processInterfaceAndTypeAlias(<ts.InterfaceDeclaration|ts.TypeAliasDeclaration>stmt,
-                                          LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
+                                         LOCAL_TYPE_NAMES, TYPE_EXPORT_NAMES);
             break;
           }
           default:
