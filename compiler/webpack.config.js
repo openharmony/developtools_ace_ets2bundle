@@ -237,6 +237,9 @@ function setReleaseConfig(config) {
       }
     })]
   });
+  config.output.devtoolModuleFilenameTemplate = (info) => {
+    return `webpack:///${info.absoluteResourcePath.replace(projectConfig.projectRootPath, '')}`;
+  };
   config.output.sourceMapFilename = '_releaseMap/[name].js.map';
   config.performance = {
     hints: false
