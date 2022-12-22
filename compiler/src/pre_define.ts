@@ -56,6 +56,7 @@ export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
 export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
+export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 
 export const OBSERVED_PROPERTY_SIMPLE: string = 'ObservedPropertySimple';

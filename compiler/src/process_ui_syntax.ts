@@ -31,6 +31,7 @@ import {
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   BUILD_ON,
   COMPONENT_BUILDER_DECORATOR,
+  COMPONENT_CONCURRENT_DECORATOR,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_STYLES_DECORATOR,
   RESOURCE,
@@ -198,6 +199,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
               pos: node.getStart()
             });
           }
+        } else if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
+          // ark compiler's feature
+          node = processConcurrent(node);
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -562,6 +566,17 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
+}
+
+function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration {
+  if (node.body) {
+    const statementArray: ts.Statement[]
+      = [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent')),
+        ...node.body.statements];
+    return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken, node.name,
+      node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+  }
+  return node;
 }
 
 export function isOriginalExtend(node: ts.Block): boolean {
