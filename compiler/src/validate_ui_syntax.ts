@@ -43,6 +43,7 @@ import {
   STYLES,
   VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR,
+  COMPONENT_CONCURRENT_DECORATOR,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_STYLES_DECORATOR,
   RESOURCE_NAME_TYPE,
@@ -53,7 +54,8 @@ import {
   COMPONENT_BUILDERPARAM_DECORATOR,
   ESMODULE,
   CARD_ENABLE_DECORATORS,
-  CARD_LOG_TYPE_DECORATORS
+  CARD_LOG_TYPE_DECORATORS,
+  JSBUNDLE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -315,6 +317,29 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
   }
 }
 
+function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclaration, log: LogInfo[],
+  sourceFile: ts.SourceFile): void {
+  if (projectConfig.compileMode === JSBUNDLE) {
+    const message: string = `@Concurrent can only be used in ESMODULE compile mode.`;
+    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+  }
+  if (ts.isMethodDeclaration(node)) {
+    const message: string = `@Concurrent can not be used on method. please use it on function declaration.`;
+    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+  }
+  let hasAsync: boolean = false;
+  node.modifiers && node.modifiers.forEach(m => {
+    if (m.kind === ts.SyntaxKind.AsyncKeyword) {
+      hasAsync = true;
+    }
+  });
+  if (node.asteriskToken || hasAsync) {
+    const funcKind: string = node.asteriskToken ? hasAsync ? 'Async generator' : 'Generator' : 'Async';
+    const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
+    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+  }
+}
+
 function collectLocalStorageName(node: ts.Decorator): void {
   if (node && node.expression && ts.isCallExpression(node.expression)) {
     if (node.expression.arguments && node.expression.arguments.length) {
@@ -341,9 +366,14 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     collectComponentProps(node);
   }
-  if ((ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
-    hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+  if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
+    if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(node.name.getText());
+    }
+    if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
+      // ark compiler's feature
+      checkConcurrentDecorator(node, log, sourceFileNode);
+    }
   }
   if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
     const componentName: string = isExtendFunction(node);
