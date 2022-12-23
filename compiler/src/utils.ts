@@ -571,7 +571,7 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any
   if (toTsFile) {
     content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
-  content = processSystemApi(content, true);
+  content = transformModuleSpecifier(fileName, processSystemApi(content, true));
 
   return {
     content: content,
