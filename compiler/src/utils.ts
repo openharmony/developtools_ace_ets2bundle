@@ -394,20 +394,24 @@ async function writeMinimizedSourceCode(content: string, filePath: string): Prom
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string): void {
-  const jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
-  if (jsFilePath.length === 0) {
+  const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
+  if (filePath.length === 0) {
     return;
   }
 
-  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
-
-  mkdirsSync(path.dirname(jsFilePath));
-  if (projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(jsFilePath, sourceCode);
-    return;
+  if (/\.js$/.test(sourcePath)) {
+    sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
+    mkdirsSync(path.dirname(filePath));
+    if (projectConfig.buildArkMode === 'debug') {
+      fs.writeFileSync(filePath, sourceCode);
+      return;
+    }
+    writeMinimizedSourceCode(sourceCode, filePath);
   }
 
-  writeMinimizedSourceCode(sourceCode, jsFilePath);
+  if (/\.json$/.test(sourcePath)) {
+    fs.writeFileSync(filePath, sourceCode);
+  }
 }
 
 export const packageCollection: Map<string, Array<string>> = new Map();
