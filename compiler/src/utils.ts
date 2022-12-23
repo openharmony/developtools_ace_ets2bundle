@@ -191,7 +191,7 @@ export function readFile(dir: string, utFiles: string[]) {
       }
     });
   } catch (e) {
-    console.error('ETS ERROR: ' + e);
+    console.error(red, 'ArkTS ERROR: ' + e, reset);
   }
 }
 
@@ -657,17 +657,17 @@ export function maxFilePathLength(): number {
 
 export function validateFilePathLength(filePath: string): boolean {
   if (maxFilePathLength() < 0) {
-    logger.error("Unknown OS platform");
+    logger.error(red, "Unknown OS platform", reset);
     process.exitCode = FAIL;
     return false;
   } else if (filePath.length > 0 && filePath.length <= maxFilePathLength()) {
     return true;
   } else if (filePath.length > maxFilePathLength()) {
-    logger.error("The length of path exceeds the maximum length: " + maxFilePathLength());
+    logger.error(red, "The length of path exceeds the maximum length: " + maxFilePathLength(), reset);
     process.exitCode = FAIL;
     return false;
   } else {
-    logger.error("Validate file path failed");
+    logger.error(red, "Validate file path failed", reset);
     process.exitCode = FAIL;
     return false;
   }
