@@ -800,6 +800,31 @@ function collectTypeExportNames(source: string): Set<string> {
   return TYPE_EXPORT_NAMES;
 }
 
+/*
+ * Validate re-export names from ets/ts file whether is a type by compiling with [TranspileOnly].
+ * Currently, there are three scenarios as following can not be validated correctly:
+ * case 1 export some specify type Identifier from one module's export * from ...:
+ * // A
+ * export { xx } from 'B'
+ * // B
+ * export * from 'C'
+ * // C
+ * export interface xx{}
+ * case 2 export some type Identifier from indirect .d.ts module:
+ * // A(ts)
+ * export { xx } from 'B'
+ * // B(.d.ts)
+ * export { xx } from 'C'
+ * // C(.d.ts)
+ * export interface xx {}
+ * case 3 export some type Identifier from '/// .d.ts'
+ * // A(ts)
+ * export { xx } from 'B'
+ * // B(.d.ts)
+ * ///C // extend B with C by using '///'
+ * // C(.d.ts)
+ * export interface xx {}
+ */
 export function validateReExportType(node: ts.SourceFile, pagesDir: string, log: LogInfo[]): void {
   /*
    * those cases' name should be treat as Type 
