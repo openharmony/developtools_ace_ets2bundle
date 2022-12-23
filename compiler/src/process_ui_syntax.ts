@@ -108,7 +108,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (process.env.compiler === BUILD_ON) {
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
-        if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
+        if (!ut && (process.env.compileMode !== 'moduleJson' &&
+          path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
+          /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
             && process.env.compilerType && process.env.compilerType === ARK) {
