@@ -5,7 +5,7 @@ import {
   ARK
 } from './pre_define';
 
-module.exports = function processjs2file(source: string): string {
+module.exports = function processSourcefile(source: string): string {
   if (projectConfig.compileMode === ESMODULE && process.env.compilerType
       && process.env.compilerType === ARK) {
     writeFileSyncByString(this.resourcePath, source);
