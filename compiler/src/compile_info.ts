@@ -97,6 +97,7 @@ let allModifiedFiles: Set<string> = new Set();
 export class ResultStates {
   private mStats: Stats;
   private mErrorCount: number = 0;
+  private mPreErrorCount: number = 0;
   private tsErrorCount: number = 0;
   private mWarningCount: number = 0;
   private warningCount: number = 0;
@@ -106,6 +107,7 @@ export class ResultStates {
   private blue: string = '\u001b[34m';
   private reset: string = '\u001b[39m';
   private moduleSharePaths: Set<string> = new Set([]);
+  private removedFiles: string[] = [];
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
@@ -243,12 +245,15 @@ export class ResultStates {
     });
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
+      process.env.watchEts = 'start';
+      this.clearCount();
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       let watchRemovedFiles: string[] = [...comp.removedFiles];
-      process.env.watchEts = 'start';
-      this.clearCount();
+      if (watchRemovedFiles.length) {
+        this.removedFiles = watchRemovedFiles;
+      }
       if (watchModifiedFiles.length) {
         const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
           return /.(ts|ets)$/.test(item);
@@ -358,16 +363,21 @@ export class ResultStates {
     this.printError();
     if (process.env.watchMode === 'true') {
       process.env.watchEts = 'end';
-      this.delayPrintLogCount();
+      this.delayPrintLogCount(true);
     } else {
       this.printLogCount();
     }
   }
 
-  private delayPrintLogCount() {
+  private delayPrintLogCount(isCompile: boolean = false) {
     if (process.env.watchEts === 'end' && process.env.watchTs === 'end') {
       this.printLogCount();
+      process.env.watchTs = 'start';
+      this.removedFiles = [];
+    } else if (isCompile && this.removedFiles.length && this.mErrorCount === 0 && this.mPreErrorCount > 0) {
+      this.printLogCount();
     }
+    this.mPreErrorCount = this.mErrorCount;
   }
 
   private printLogCount(): void {
