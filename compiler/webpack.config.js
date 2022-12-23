@@ -92,7 +92,8 @@ function initConfig(config) {
             { loader: path.resolve(__dirname, 'lib/pre_process.js') }
           ]
         },
-        setJsConfigRule()
+        setJsConfigRule(),
+        setJsonConfigRule()
       ]
     },
     node: {
@@ -153,7 +154,7 @@ function setJsConfigRule() {
           compact: false
         }
       },
-      { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
+      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
     ]
   };
@@ -169,6 +170,19 @@ function setJsConfigRule() {
     jsRule.resolve = { fullySpecified: false };
   }
   return jsRule;
+}
+
+function setJsonConfigRule() {
+  const jsonRule = {
+    test: /\.json$/,
+    use: [
+      { loader: 'json-loader' }
+    ]
+  }
+  if (projectConfig.compileMode === 'esmodule') {
+    jsonRule.use.push({ loader: path.resolve(__dirname, 'lib/process_source_file.js') })
+  }
+  return jsonRule;
 }
 
 function existsPackageJson(config, rootPackageJsonPath, modulePackageJsonPath) {
