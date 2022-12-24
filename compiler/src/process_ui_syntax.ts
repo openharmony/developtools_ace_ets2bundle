@@ -22,7 +22,7 @@ import {
   createParentParameter
 } from './process_component_class';
 import processImport from './process_import';
-import validateReExportType from './process_module_syntax';
+import validateReExportType from './validate_module_syntax';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
   PREVIEW_COMPONENT_FUNCTION_NAME,
