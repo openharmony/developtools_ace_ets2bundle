@@ -340,9 +340,10 @@ export class ResultStates {
         const { line, character }: ts.LineAndCharacter =
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
         logger.error(this.red,
-          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`,
+          this.reset);
       } else {
-        logger.error(this.red, `ArkTS:ERROR: ${message}`);
+        logger.error(this.red, `ArkTS:ERROR: ${message}`, this.reset);
       }
     }
   }
@@ -438,7 +439,7 @@ export class ResultStates {
     if (projectConfig.hotReload) {
       this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().getTime().toString();
       console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime
-        +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime);
+        +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime, reset);
     }
     if (resultInfo.length === 0) {
       console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);
