@@ -58,7 +58,7 @@ let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
 let globalDeclaration = new Map();
-let variableDoubleCheck = [];
+let variableDoubleCheck = new Set();
 let compileVariable = false;
 let connectNum = 0;
 let script = '';
@@ -187,7 +187,7 @@ function processResourceNode(node, log) {
 function checkPreparation(receivedMsg) {
   if (previewCacheFilePath && fs.existsSync(previewCacheFilePath) && compileWithCheck === 'true') {
     globalVariable = receivedMsg.data.globalVariable.map((item)=>{
-      globalDeclaration[item.identifier] = item.declaration;
+      globalDeclaration.set(item.identifier, item.declaration);
       return item.identifier;
     })
     propertyVariable = receivedMsg.data.propertyVariable || propertyVariable;
@@ -261,13 +261,13 @@ function responseToPlugin() {
         receivedMsg_.data.log =  receivedMsg_.data.log || [];
         receivedMsg_.data.log.push(...errorInfo);
       }
-      if (!receivedMsg_.data.log.length && variableDoubleCheck.length && !compileVariable) {
+      if (!receivedMsg_.data.log.length && variableDoubleCheck.size && !compileVariable) {
         compileVariable = true;
         checkStatus = false;
         compileStatus = false;
         let variableContent = '';
         variableDoubleCheck.forEach((item)=>{
-          variableContent += globalDeclaration[item] + '\n';
+          variableContent += globalDeclaration.get(item) + '\n';
         })
         receivedMsg_.data.variableScript = variableContent;
         handlePluginCompileVariable();
@@ -278,7 +278,7 @@ function responseToPlugin() {
           compileStatus = false;
           errorInfo = [];
           receivedMsg_ = undefined;
-          variableDoubleCheck = [];
+          variableDoubleCheck = new Set();
           compileVariable = false;
           messages.shift();
           if (messages.length > 0) {
@@ -305,7 +305,7 @@ function matchMessage(message, nameArr, reg, isGlobalVariable = false) {
     const match = message.match(reg);
     if (match[1] && nameArr.includes(match[1])) {
       if (isGlobalVariable) {
-        variableDoubleCheck.push(match[1]);
+        variableDoubleCheck.add(match[1]);
       }
       return true;
     }
