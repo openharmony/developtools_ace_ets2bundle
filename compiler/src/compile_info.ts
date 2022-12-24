@@ -93,6 +93,11 @@ export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
 let allModifiedFiles: Set<string> = new Set();
+interface wholeCache {
+  runtimeOS: string,
+  sdkInfo: string,
+  fileList: Cache
+}
 
 export class ResultStates {
   private mStats: Stats;
@@ -224,11 +229,6 @@ export class ResultStates {
           languageService = createLanguageService(rootFileNames);
         } else {
           cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
-          interface wholeCache {
-            runtimeOS: string,
-            sdkInfo: string,
-            fileList: Cache
-          }
           let wholeCache: wholeCache = fs.existsSync(cacheFile) ?
             JSON.parse(fs.readFileSync(cacheFile).toString()) :
               {"runtimeOS": projectConfig.runtimeOS, "sdkInfo": projectConfig.sdkInfo, "fileList": {}};
