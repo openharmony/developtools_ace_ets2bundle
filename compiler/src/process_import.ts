@@ -56,6 +56,7 @@ import {
   localStoragePropCollection
 } from './validate_ui_syntax';
 import {
+  getExtension,
   hasDecorator,
   LogInfo,
   LogType,
@@ -65,7 +66,7 @@ import {
 import { projectConfig } from '../main';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
 
-const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
+export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
@@ -105,30 +106,13 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
       }
     }
   }
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
-    const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
-    if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
-      fs.existsSync(dirIndexPath)) {
-      filePath = dirIndexPath;
-    } else {
-      filePath += EXTNAME_ETS;
-    }
-  }
 
   if (filePath) {
     validatorCard(log, CARD_LOG_TYPE_IMPORT, node.getStart());
   }
 
   try {
-    let fileResolvePath: string;
-    if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
-      fileResolvePath = path.resolve(pagesDir, filePath);
-    } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0 ||
-      fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      fileResolvePath = filePath;
-    } else {
-      fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
-    }
+    let fileResolvePath: string = getFileFullPath(filePath, pagesDir);
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
       !pathCollection.has(fileResolvePath)) {
       let sourceFile: ts.SourceFile;
@@ -136,12 +120,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
       if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
         sourceFile = IMPORT_FILE_ASTCACHE.get(fileResolvePath);
       } else {
-        const content: string = preprocessNewExtend(preprocessExtend(processSystemApi(
-          fs.readFileSync(fileResolvePath, { encoding: 'utf-8' }).replace(
-            new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
-              return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-            }))));
-        sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        sourceFile = generateSourceFileAST(fileResolvePath, filePath);
         IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
       }
       visitAllNode(sourceFile, sourceFile, defaultName, asName, path.dirname(fileResolvePath), log,
@@ -150,6 +129,16 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   } catch (e) {
     // ignore
   }
+}
+
+export function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.SourceFile {
+  const originContent: string = fs.readFileSync(fileResolvePath, { encoding: 'utf-8' });
+  const content: string = path.extname(fileResolvePath) === EXTNAME_ETS ?
+    preprocessNewExtend(preprocessExtend(processSystemApi(originContent.replace(
+      new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
+        return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
+      })))) : originContent;
+  return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 }
 
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
@@ -581,6 +570,30 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
     }
     curPageDir = path.dirname(curPageDir);
   }
+  return fileResolvePath;
+}
+
+export function getFileFullPath(filePath: string, pagesDir: string): string {
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
+    const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+    if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
+      fs.existsSync(dirIndexPath)) {
+      filePath = dirIndexPath;
+    } else {
+      filePath += getExtension(path.resolve(pagesDir, filePath));
+    }
+  }
+
+  let fileResolvePath: string;
+  if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+    fileResolvePath = path.resolve(pagesDir, filePath);
+  } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0 ||
+    fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    fileResolvePath = filePath;
+  } else {
+    fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
+  }
+
   return fileResolvePath;
 }
 

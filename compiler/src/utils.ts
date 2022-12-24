@@ -749,3 +749,22 @@ export function unlinkSync(filePath: string): void {
     fs.unlinkSync(filePath);
   }
 }
+
+export function getExtension(filePath: string): string {
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    return "";
+  }
+
+  let extension: string = EXTNAME_ETS;
+  if (fs.existsSync(filePath + '.ts') && fs.statSync(filePath + '.ts').isFile()) {
+    extension = '.ts';
+  } else if (fs.existsSync(filePath + '.d.ts') && fs.statSync(filePath + '.d.ts').isFile()) {
+    extension = '.d.ts';
+  } else if (fs.existsSync(filePath + '.d.ets') && fs.statSync(filePath + '.d.ets').isFile()) {
+    extension = '.d.ets';
+  } else if (fs.existsSync(filePath + '.js') && fs.statSync(filePath + '.js').isFile()) {
+    extension = '.js';
+  }
+
+  return extension;
+}
