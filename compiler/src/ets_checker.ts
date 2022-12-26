@@ -287,7 +287,8 @@ export const importModuleCollection: Set<string> = new Set();
 
 function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[]): void {
   if (/\.ets$/.test(fileName)) {
-    if (path.basename(fileName) !== 'app.ets') {
+    if (process.env.compileMode === 'moduleJson' ||
+      path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
