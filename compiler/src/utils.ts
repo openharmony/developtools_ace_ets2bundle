@@ -458,10 +458,40 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
   return item;
 }
 
+function replaceHarDependency(item:string, moduleRequest: string): string {
+  if (projectConfig.harNameOhmMap) {
+    // case1: "@ohos/lib" ---> "@module:lib/ets/index"
+    if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
+      return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+        return quotation + projectConfig.harNameOhmMap[moduleRequest] + quotation;
+      });
+    }
+    // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@module:lib/ets/pages/page1"
+    for (const harName in projectConfig.harNameOhmMap) {
+      if (moduleRequest.startsWith(harName + '/')) {
+        const harOhmName: string =
+          projectConfig.harNameOhmMap[harName].substring(0, projectConfig.harNameOhmMap[harName].indexOf('/'));
+        if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) == 0) {
+          moduleRequest = moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
+        } else {
+          moduleRequest = moduleRequest.replace(harName, harOhmName);
+        }
+        return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+          return quotation + moduleRequest + quotation;
+        });
+      }
+    }
+  }
+  return item;
+}
+
 function transformModuleSpecifier(sourcePath: string, sourceCode: string): string {
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+)['"]/g;
-  return sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+  const REG_HAR_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^\.\/][^'"]+)['"]/g;
+  return sourceCode.replace(REG_HAR_DEPENDENCY, (item, moduleRequest) => {
+    return replaceHarDependency(item, moduleRequest);
+  }).replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest) => {
     return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
   });
 }
