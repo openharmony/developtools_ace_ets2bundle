@@ -42,6 +42,9 @@ import { genETS } from '../codegen/codegen_ets.js';
 const visualMap: Map<number, number> = new Map();
 const slotMap: Map<number, number> = new Map();
 
+const red: string = '\u001b[31m';
+const reset: string = '\u001b[39m';
+
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
   if (/\.ets$/.test(this.resourcePath)) {
@@ -265,7 +268,7 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   }
   fs.writeFile(path.resolve(visualMapDirPath, visualMapName), sourcemap.toString(), (err) => {
     if (err) {
-      return console.error('ERROR: Failed to write visual.js.map');
+      return console.error(red, 'ERROR: Failed to write visual.js.map', reset);
     }
   });
 }

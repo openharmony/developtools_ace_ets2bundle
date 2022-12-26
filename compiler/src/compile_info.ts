@@ -329,9 +329,9 @@ export class ResultStates {
         const { line, character }: ts.LineAndCharacter =
           diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
         logger.error(this.red,
-          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`, this.reset);
       } else {
-        logger.error(this.red, `ArkTS:ERROR: ${message}`);
+        logger.error(this.red, `ArkTS:ERROR: ${message}`, this.reset);
       }
     }
   }
