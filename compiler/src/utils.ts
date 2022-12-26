@@ -398,17 +398,15 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string): v
   if (filePath.length === 0) {
     return;
   }
-
+  mkdirsSync(path.dirname(filePath));
   if (/\.js$/.test(sourcePath)) {
     sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
-    mkdirsSync(path.dirname(filePath));
     if (projectConfig.buildArkMode === 'debug') {
       fs.writeFileSync(filePath, sourceCode);
       return;
     }
     writeMinimizedSourceCode(sourceCode, filePath);
   }
-
   if (/\.json$/.test(sourcePath)) {
     fs.writeFileSync(filePath, sourceCode);
   }
