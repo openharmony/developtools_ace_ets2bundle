@@ -55,8 +55,6 @@ import {
   EXTNAME_TS,
   EXTNAME_MJS,
   EXTNAME_CJS,
-  EXTNAME_D_ETS,
-  EXTNAME_D_TS,
   EXTNAME_JSON,
   EXTNAME_JS_MAP,
   FAIL,
@@ -216,7 +214,8 @@ export class GenAbcPlugin {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP ||
+              path.extname(key) === EXTNAME_JSON) {
             delete assets[key];
           }
         });
@@ -336,10 +335,6 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
-}
-
-function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
-  return;
 }
 
 function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
