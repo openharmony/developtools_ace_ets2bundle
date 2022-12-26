@@ -93,6 +93,11 @@ export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
 let allModifiedFiles: Set<string> = new Set();
+interface wholeCache {
+  runtimeOS: string,
+  sdkInfo: string,
+  fileList: Cache
+}
 
 export class ResultStates {
   private mStats: Stats;
@@ -226,7 +231,14 @@ export class ResultStates {
           languageService = createLanguageService(rootFileNames);
         } else {
           cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
-          cache = fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile).toString()) : {};
+          let wholeCache: wholeCache = fs.existsSync(cacheFile) ?
+            JSON.parse(fs.readFileSync(cacheFile).toString()) :
+              {"runtimeOS": projectConfig.runtimeOS, "sdkInfo": projectConfig.sdkInfo, "fileList": {}};
+          if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
+            cache = wholeCache.fileList;
+          } else {
+            cache = {};
+          }
           const filterFiles: string[] = filterInput(rootFileNames);
           languageService = createLanguageService(filterFiles);
         }
@@ -239,7 +251,11 @@ export class ResultStates {
           this.printDiagnostic(diagnostic);
         });
         if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-          fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+          fs.writeFileSync(cacheFile, JSON.stringify({
+            "runtimeOS": projectConfig.runtimeOS,
+            "sdkInfo": projectConfig.sdkInfo,
+            "fileList": cache
+          }, null, 2));
         }
       }
     });
