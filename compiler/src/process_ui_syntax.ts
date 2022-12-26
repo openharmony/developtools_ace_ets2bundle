@@ -84,7 +84,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       if (process.env.compiler === BUILD_ON) {
-        if (!ut && (path.basename(node.fileName) === 'app.ets' || /\.ts$/.test(node.fileName))) {
+        if (!ut && (process.env.compileMode !== 'moduleJson' &&
+          path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
+          /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           return node;
         }
