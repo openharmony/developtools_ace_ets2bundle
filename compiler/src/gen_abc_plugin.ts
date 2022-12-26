@@ -491,9 +491,6 @@ function handleFullModuleFiles(modules, callback): any {
           processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
           break;
         }
-        case EXTNAME_D_TS:
-        case EXTNAME_D_ETS:
-          break;
         case EXTNAME_JSON: {
           processJsonModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
           break;
@@ -503,19 +500,6 @@ function handleFullModuleFiles(modules, callback): any {
           process.exitCode = FAIL;
         }
       }
-
-      // if (filePath.endsWith(EXTNAME_ETS)) {
-      //   processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      // } else if (filePath.endsWith(EXTNAME_D_TS)) {
-      //   processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      // } else if (filePath.endsWith(EXTNAME_TS)) {
-      //   processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      // } else if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
-      //   processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      // } else {
-      //   logger.error(red, `ArkTS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
-      //   process.exitCode = FAIL;
-      // }
     }
   });
 
@@ -1045,17 +1029,29 @@ function handleHotReloadChangedFiles() {
     let buildFilePath: string = "";
     tempFilePath = toUnixPath(tempFilePath);
 
-    if (file.endsWith(EXTNAME_ETS)) {
-      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_D_TS)) {
-      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_TS)) {
-      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
-      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else {
-      logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
-      return;
+    switch (path.extname(filePath)) {
+      case EXTNAME_ETS: {
+        processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_TS: {
+        processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_JS:
+      case EXTNAME_MJS:
+      case EXTNAME_CJS: {
+        processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_JSON: {
+        processJsonModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      default: {
+        logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
+        return;
+      }
     }
 
     let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
