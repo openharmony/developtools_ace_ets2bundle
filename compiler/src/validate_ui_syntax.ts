@@ -133,7 +133,8 @@ export const useOSFiles: Set<string> = new Set();
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string): LogInfo[] {
   let log: LogInfo[] = [];
-  if (path.basename(filePath) !== 'app.ets') {
+  if (process.env.compileMode === 'moduleJson' ||
+    path.resolve(filePath) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
     const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery);
     if (res) {
       log = log.concat(res);
