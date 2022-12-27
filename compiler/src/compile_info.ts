@@ -239,12 +239,12 @@ export class ResultStates {
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
       const watchRemovedFiles: string[] = [...comp.removedFiles];
       if (watchModifiedFiles.length) {
-        const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
-          return /.(ts|ets)$/.test(item);
+        watchModifiedFiles.some((item: string) => {
+          if (fs.statSync(item).isFile() && !/.(ts|ets)$/.test(item)) {
+            process.env.watchTs = 'end';
+            return true;
+          }
         });
-        if (!isTsAndEtsFile) {
-          process.env.watchTs = 'end';
-        }
       }
       const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
       if (changedFiles.length) {
