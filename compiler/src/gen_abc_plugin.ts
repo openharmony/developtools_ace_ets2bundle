@@ -350,7 +350,9 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
-  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
+  if (!filePath.endsWith(EXTNAME_JSON)) {
+    buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
+  }
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
@@ -416,7 +418,6 @@ function processJsonModule(filePath: string, tempFilePath: string, buildFilePath
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
     moduleInfos.push(tempModuleInfo);
   }
-  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
 }
 
 var cachedSourceMaps: Object;
