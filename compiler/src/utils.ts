@@ -694,13 +694,7 @@ export function isTs2Abc(): boolean {
 }
 
 export function genProtoFileName(temporaryFile: string): string {
-  let protoFile: string = temporaryFile;
-  if (temporaryFile.endsWith(EXTNAME_TS)) {
-    protoFile = temporaryFile.replace(/\.ts$/, EXTNAME_PROTO_BIN);
-  } else {
-    protoFile = temporaryFile.replace(/\.js$/, EXTNAME_PROTO_BIN);
-  }
-  return protoFile;
+  return temporaryFile.replace(/\.(?:[tj]s|json)$/, EXTNAME_PROTO_BIN);
 }
 
 export function genMergeProtoFileName(temporaryFile: string): string {
