@@ -149,7 +149,7 @@ export function validateUISyntax(source: string, content: string, filePath: stri
   fileQuery: string): LogInfo[] {
   let log: LogInfo[] = [];
   if (process.env.compileMode === 'moduleJson' ||
-    path.resolve(filePath) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
+    path.resolve(filePath) !== path.resolve(projectConfig.projectPath || '', 'app.ets')) {
     const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery);
     if (res) {
       log = log.concat(res);
