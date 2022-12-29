@@ -83,6 +83,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
   projectConfig.compileHar = false;
   projectConfig.compileShared = false;
+  projectConfig.splitCommon = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -145,6 +146,7 @@ function buildManifest(manifest, aceConfigPath) {
       moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
       partialUpdateController(moduleConfigJson.module.metadata,
         moduleConfigJson.app.minAPIVersion);
+      stageOptimization(moduleConfigJson.module.metadata);
     }
     if (moduleConfigJson.module) {
       switch (moduleConfigJson.module.type) {
@@ -232,6 +234,18 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
     projectConfig.entryObj[entryKey] = mainEntryPath;
   } else {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+  }
+}
+
+function stageOptimization(metadata) {
+  if (Array.isArray(metadata) && metadata.length) {
+    metadata.some(item => {
+      if (item.name && item.name === 'USE_COMMON_CHUNK' &&
+        item.value && item.value === 'true') {
+        projectConfig.splitCommon = true;
+        return true;
+      }
+    });
   }
 }
 
