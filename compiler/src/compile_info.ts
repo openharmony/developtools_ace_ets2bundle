@@ -271,12 +271,12 @@ export class ResultStates {
         this.removedFiles = watchRemovedFiles;
       }
       if (watchModifiedFiles.length) {
-        const isTsAndEtsFile: boolean = watchModifiedFiles.some((item: string) => {
-          return /.(ts|ets)$/.test(item);
+        watchModifiedFiles.some((item: string) => {
+          if (fs.statSync(item).isFile() && !/.(ts|ets)$/.test(item)) {
+            process.env.watchTs = 'end';
+            return true;
+          }
         });
-        if (!isTsAndEtsFile) {
-          process.env.watchTs = 'end';
-        }
       }
       if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
         watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
