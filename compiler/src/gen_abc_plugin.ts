@@ -275,6 +275,15 @@ function getEntryInfo(filePath: string, resourceResolveData: any): string {
   if (!resourceResolveData.descriptionFilePath) {
     return;
   }
+
+  let isEntry: boolean = false;
+  let mainFileds: Set<string> = getEntryCandidatesFromPackageJson(resourceResolveData);
+  for (let value of mainFileds.values()) {
+    if (toUnixPath(filePath) === value) {
+      isEntry = true;
+      break;
+    }
+  }
   const packageJsonPath: string = resourceResolveData.descriptionFilePath;
   let npmInfoPath: string = path.resolve(packageJsonPath, '..');
 
@@ -288,12 +297,38 @@ function getEntryInfo(filePath: string, resourceResolveData: any): string {
   const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
   const buildNpmInfoPath: string = toUnixPath(path.resolve(buildFakeEntryPath, '..'));
-  if (!entryInfos.has(npmInfoPath)) {
+  if (!entryInfos.has(npmInfoPath) && isEntry) {
     const entryInfo: EntryInfo = new EntryInfo(npmInfoPath, buildNpmInfoPath, entry);
     entryInfos.set(npmInfoPath, entryInfo);
   }
 
   return buildNpmInfoPath;
+}
+
+function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<string>{
+  let descriptionFileData: any = resourceResolveData.descriptionFileData;
+  let packagePath: string = path.resolve(resourceResolveData.descriptionFilePath, '..');
+  let mainFileds: Set<string> = new Set<string>();
+  if (descriptionFileData.browser) {
+    if (typeof descriptionFileData.browser === 'string') {
+      mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.browser)));
+    } else {
+      Object.keys(descriptionFileData.browser).forEach(key => {
+        mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.browser[key])));
+      });
+    }
+  }
+  if (descriptionFileData.module) {
+    mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.module)));
+  }
+  if (descriptionFileData.main) {
+    mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.main)));
+  }
+  if (mainFileds.size === 0) {
+    mainFileds.add(toUnixPath(path.join(packagePath, 'index.js')));
+  }
+
+  return mainFileds;
 }
 
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
