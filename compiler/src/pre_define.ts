@@ -253,7 +253,6 @@ export const COMPONENT_TOGGLE: string = 'Toggle';
 export const TTOGGLE_CHECKBOX: string = 'Checkbox';
 export const TOGGLE_SWITCH: string = 'Switch';
 
-export const ENTRY_TXT: string = 'entry.txt';
 export const FILESINFO_TXT: string = 'filesInfo.txt';
 export const NPMENTRIES_TXT: string = 'npmEntries.txt';
 export const MODULES_CACHE: string = 'modules.cache';
@@ -279,6 +278,8 @@ export const EXTNAME_TS_MAP: string = '.ts.map';
 export const EXTNAME_MJS: string = '.mjs';
 export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
+export const EXTNAME_D_ETS: string = '.d.ets';
+export const EXTNAME_JSON: string = '.json';
 export const EXTNAME_ABC: string = '.abc';
 export const EXTNAME_PROTO_BIN: string = '.protoBin';
 export const PATCH_SYMBOL_TABLE: string = "symbol.txt";

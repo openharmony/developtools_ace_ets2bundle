@@ -394,20 +394,22 @@ async function writeMinimizedSourceCode(content: string, filePath: string): Prom
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string): void {
-  const jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
-  if (jsFilePath.length === 0) {
+  const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
+  if (filePath.length === 0) {
     return;
   }
-
-  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
-
-  mkdirsSync(path.dirname(jsFilePath));
-  if (projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(jsFilePath, sourceCode);
-    return;
+  mkdirsSync(path.dirname(filePath));
+  if (/\.js$/.test(sourcePath)) {
+    sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
+    if (projectConfig.buildArkMode === 'debug') {
+      fs.writeFileSync(filePath, sourceCode);
+      return;
+    }
+    writeMinimizedSourceCode(sourceCode, filePath);
   }
-
-  writeMinimizedSourceCode(sourceCode, jsFilePath);
+  if (/\.json$/.test(sourcePath)) {
+    fs.writeFileSync(filePath, sourceCode);
+  }
 }
 
 export const packageCollection: Map<string, Array<string>> = new Map();
@@ -692,13 +694,7 @@ export function isTs2Abc(): boolean {
 }
 
 export function genProtoFileName(temporaryFile: string): string {
-  let protoFile: string = temporaryFile;
-  if (temporaryFile.endsWith(EXTNAME_TS)) {
-    protoFile = temporaryFile.replace(/\.ts$/, EXTNAME_PROTO_BIN);
-  } else {
-    protoFile = temporaryFile.replace(/\.js$/, EXTNAME_PROTO_BIN);
-  }
-  return protoFile;
+  return temporaryFile.replace(/\.(?:[tj]s|json)$/, EXTNAME_PROTO_BIN);
 }
 
 export function genMergeProtoFileName(temporaryFile: string): string {
