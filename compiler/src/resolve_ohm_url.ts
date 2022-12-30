@@ -95,6 +95,7 @@ export function getOhmUrlByFilepath(filePath: string): string {
   const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
 
   const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+  const bundleName: string = packageInfo[0];
   const moduleName: string = packageInfo[1];
   const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
   const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
@@ -105,7 +106,7 @@ export function getOhmUrlByFilepath(filePath: string): string {
 
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(NODE_MODULES) === -1) {
-    return `${result[2]}/${result[3]}`;
+    return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
 
   if (projectFilePath.indexOf(NODE_MODULES) !== -1) {
