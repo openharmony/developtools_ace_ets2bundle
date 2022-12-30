@@ -165,6 +165,8 @@ function setJsConfigRule() {
         'allowTopLevelThis': true
       }
     ]);
+  } else {
+    jsRule.resolve = { fullySpecified: false };
   }
   return jsRule;
 }
