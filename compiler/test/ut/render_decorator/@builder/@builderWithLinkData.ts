@@ -87,7 +87,7 @@ class TestPage extends View {
     set value(newValue) {
         this.__value.set(newValue);
     }
-    TitleCompView(parent = undefined) {
+    TitleCompView(parent = null) {
         let earlierCreatedChild_2 = ((parent ? parent : this) && (parent ? parent : this).findChildById) ? (parent ? parent : this).findChildById(generateId()) : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new TitleComp("@builderWithLinkData_" + __generate__Id, parent ? parent : this, { title: this.__value }));

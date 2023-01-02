@@ -34,7 +34,9 @@ import {
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
   $$_BLOCK_INTERFACE,
-  COMPONENT_EXTEND_DECORATOR
+  COMPONENT_EXTEND_DECORATOR,
+  EXTNAME_D_ETS,
+  EXTNAME_JS
 } from './pre_define';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
@@ -43,7 +45,8 @@ import {
   CacheFileName,
   cache,
   shouldResolvedFiles,
-  hotReloadSupportFiles
+  hotReloadSupportFiles,
+  allResolvedModules
 } from './compile_info';
 import { hasDecorator } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
@@ -143,7 +146,18 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
         }
       });
       if (result.resolvedModule) {
-        resolvedModules.push(result.resolvedModule);
+        if (result.resolvedModule.resolvedFileName &&
+          path.extname(result.resolvedModule.resolvedFileName) === EXTNAME_JS) {
+          const resultDETSPath: string =
+            result.resolvedModule.resolvedFileName.replace(EXTNAME_JS, EXTNAME_D_ETS);
+          if (ts.sys.fileExists(resultDETSPath)) {
+            resolvedModules.push(getResolveModule(resultDETSPath, EXTNAME_D_ETS));
+          } else {
+            resolvedModules.push(result.resolvedModule);
+          }
+        } else {
+          resolvedModules.push(result.resolvedModule);
+        }
       } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
         const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
         if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
@@ -151,7 +165,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
         } else {
           resolvedModules.push(null);
         }
-      } else if (/\.ets$/.test(moduleName)) {
+      } else if (/\.ets$/.test(moduleName) && !/\.d\.ets$/.test(moduleName)) {
         const modulePath: string = path.resolve(path.dirname(containingFile), moduleName);
         if (ts.sys.fileExists(modulePath)) {
           resolvedModules.push(getResolveModule(modulePath, '.ets'));
@@ -171,19 +185,39 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
         const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
         const fileModulePath: string =
           path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
+        const DETSModulePath: string = path.resolve(path.dirname(containingFile),
+          /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
         if (ts.sys.fileExists(modulePath)) {
           resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
         } else if (ts.sys.fileExists(jsModulePath)) {
           resolvedModules.push(getResolveModule(jsModulePath, '.js'));
         } else if (ts.sys.fileExists(fileModulePath)) {
           resolvedModules.push(getResolveModule(fileModulePath, '.js'));
+        } else if (ts.sys.fileExists(DETSModulePath)) {
+          resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
         } else {
-          resolvedModules.push(null);
+          const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
+          let DETSModulePathFromModule: string;
+          if (srcIndex > 0) {
+            DETSModulePathFromModule = path.resolve(
+              projectConfig.projectPath.substring(0, srcIndex), moduleName + path.sep + 'index' + EXTNAME_D_ETS);
+            if (DETSModulePathFromModule && ts.sys.fileExists(DETSModulePathFromModule)) {
+              resolvedModules.push(getResolveModule(DETSModulePathFromModule, '.d.ets'));
+            } else {
+              resolvedModules.push(null);
+            }
+          } else {
+            resolvedModules.push(null);
+          }
         }
       }
       if (projectConfig.hotReload && resolvedModules.length &&
         resolvedModules[resolvedModules.length - 1]) {
         hotReloadSupportFiles.add(path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName));
+      }
+      if ((projectConfig.compileHar || projectConfig.compileShared) && resolvedModules[resolvedModules.length - 1] &&
+        path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/(\.[^d]|[^\.]d|[^\.][^d])\.e?ts$/)) {
+        allResolvedModules.add(resolvedModules[resolvedModules.length - 1].resolvedFileName);
       }
     }
     if (!projectConfig.xtsMode) {

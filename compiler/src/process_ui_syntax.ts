@@ -398,13 +398,19 @@ function getResourceDataNode(node: ts.CallExpression,
     }
     const resourceValue: number = resources[resourceData[0]][resourceData[1]][resourceData[2]];
     return createResourceParam(resourceValue, resourceType,
-      Array.from(node.arguments).slice(1));
+      projectConfig.compileHar ? Array.from(node.arguments) : Array.from(node.arguments).slice(1));
   }
   return node;
 }
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
   ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar) {
+    projectConfig.bundleName = '';
+    projectConfig.moduleName = '';
+    resourceValue = -1;
+  }
+
   const propertyArray: Array<ts.PropertyAssignment> = [
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),

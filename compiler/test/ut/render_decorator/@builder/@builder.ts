@@ -147,13 +147,13 @@ let __generate__Id = 0;
 function generateId() {
     return "@builder_" + ++__generate__Id;
 }
-function noParam(parent = undefined) {
+function noParam(parent = null) {
     Row.create();
     Text.create('this is a no param builder');
     Text.pop();
     Row.pop();
 }
-function specificParam(label1, label2, parent = undefined) {
+function specificParam(label1, label2, parent = null) {
     Column.create();
     Text.create(label1);
     Text.pop();
@@ -190,12 +190,12 @@ class MyComponent extends View {
     set hideBar(newValue) {
         this.__hideBar.set(newValue);
     }
-    textBuilder(parent = undefined) {
+    textBuilder(parent = null) {
         Text.create("文本");
         Text.fontSize(30);
         Text.pop();
     }
-    NavigationTitlePara(label, parent = undefined) {
+    NavigationTitlePara(label, parent = null) {
         Column.create();
         Text.create(label);
         Text.width(80);
@@ -203,7 +203,7 @@ class MyComponent extends View {
         Text.pop();
         Column.pop();
     }
-    MenuBuilder(parent = undefined) {
+    MenuBuilder(parent = null) {
         Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });
         Flex.width(100);
         Text.create('Test menu item 1');
