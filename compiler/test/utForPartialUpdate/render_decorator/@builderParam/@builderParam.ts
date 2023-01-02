@@ -209,7 +209,7 @@ class CustomContainer2 extends ViewPU {
         this.updateDirtyElements();
     }
 }
-function specificWithParam(label1, label2, parent = undefined) {
+function specificWithParam(label1, label2, parent = null) {
     (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Column.create();
@@ -267,7 +267,7 @@ class CustomContainerUser extends ViewPU {
     set text(newValue) {
         this.__text.set(newValue);
     }
-    specificParam(parent = undefined) {
+    specificParam(parent = null) {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -288,7 +288,7 @@ class CustomContainerUser extends ViewPU {
         Text.pop();
         Column.pop();
     }
-    callSpecificParam(label1, label2, parent = undefined) {
+    callSpecificParam(label1, label2, parent = null) {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();

@@ -516,7 +516,8 @@ function isPackageJsonEntry(filePath: string): boolean {
 }
 
 function getPackageJsonEntry(filePath: string): string {
-  return path.join(filePath, JSON.parse(fs.readFileSync(path.join(filePath, PACKAGE_JSON)).toString()).main);
+  let packageJson: Object = JSON.parse(fs.readFileSync(path.join(filePath, PACKAGE_JSON)).toString());
+  return path.join(filePath, packageJson.types ? packageJson.types : packageJson.main);
 }
 
 function getModuleFilePath(filePath: string): string {

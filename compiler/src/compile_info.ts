@@ -36,13 +36,17 @@ import {
   circularFile,
   mkDir,
   writeFileSync,
-  parseErrorMessage
+  parseErrorMessage,
+  generateSourceFilesInHar
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
-  ESMODULE
+  ESMODULE,
+  JSBUNDLE,
+  EXTNAME_JS,
+  EXTNAME_JS_MAP
 } from './pre_define';
 import {
   createLanguageService,
@@ -94,6 +98,7 @@ interface NeedUpdateFlag {
   flag: boolean;
 }
 
+export const allResolvedModules: Set<string> = new Set();
 export let hotReloadSupportFiles: Set<string> = new Set();
 export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
@@ -126,6 +131,17 @@ export class ResultStates {
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
+      compilation.hooks.processAssets.tap('RemoveHar', (assets) => {
+        if (!projectConfig.compileHar) {
+          return;
+        }
+        Object.keys(compilation.assets).forEach(key => {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
+            delete assets[key];
+          }
+        });
+      });
+
       compilation.hooks.afterProcessAssets.tap('SourcemapFixer', assets => {
         Reflect.ownKeys(assets).forEach(key => {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
@@ -281,6 +297,22 @@ export class ResultStates {
             "sdkInfo": projectConfig.sdkInfo,
             "fileList": cache
           }, null, 2));
+        }
+        if (projectConfig.compileHar || projectConfig.compileShared) {
+          [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
+            if (!(moduleFile.match(/node_modules/) && projectConfig.compileHar)) {
+              try {
+                const emit: any = languageService.getEmitOutput(moduleFile, true, true);
+                if (emit.outputFiles[0]) {
+                  generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile));
+                } else {
+                  console.warn(this.yellow,
+                    "ArkTS:WARN doesn't generate .d"+path.extname(moduleFile) + " for " + moduleFile, this.reset);
+                }
+              } catch(err) {
+              }
+            }
+          })
         }
       }
     });
