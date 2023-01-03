@@ -81,6 +81,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
+  projectConfig.compileHar = false;
+  projectConfig.compileShared = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -144,15 +146,25 @@ function buildManifest(manifest, aceConfigPath) {
       partialUpdateController(moduleConfigJson.module.metadata,
         moduleConfigJson.app.minAPIVersion);
     }
-    if (moduleConfigJson.module.type === 'har') {
-      projectConfig.compileHar = true;
-      getPackageJsonEntryPath();
-    } else if (moduleConfigJson.module.type === 'shared') {
-      projectConfig.compileShared = true;
-      getPackageJsonEntryPath();
-      getManifestPages(moduleConfigJson, manifest);
+    if (moduleConfigJson.module) {
+      switch (moduleConfigJson.module.type) {
+        case 'har':
+          projectConfig.compileHar = true;
+          getPackageJsonEntryPath();
+          break;
+        case 'shared':
+          projectConfig.compileShared = true;
+          getPackageJsonEntryPath();
+          manifest.pages = getPages(moduleConfigJson);
+          break;
+        default:
+          manifest.pages = getPages(moduleConfigJson);
+          break;
+      }
     } else {
-      getManifestPages(moduleConfigJson, manifest);
+      throw Error('\u001b[31m'+
+        'ERROR: the config.json file miss key word module || module[abilities].' +
+        '\u001b[39m').message;
     }
   } catch (e) {
     if (/BUIDERROR/.test(e)) {
@@ -161,16 +173,6 @@ function buildManifest(manifest, aceConfigPath) {
       throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
         "\x1B[39m").message;
     }
-  }
-}
-
-function getManifestPages(moduleConfigJson, manifest) {
-  if (moduleConfigJson.module) {
-    manifest.pages = getPages(moduleConfigJson);
-  } else {
-    throw Error('\u001b[31m'+
-      'ERROR: the config.json file miss key word module || module[abilities].' +
-      '\u001b[39m').message;
   }
 }
 
@@ -189,79 +191,52 @@ function getPackageJsonEntryPath() {
     } else {
       throw Error('\u001b[31m'+ 'lack message in package.json.' + '\u001b[39m').message;
     }
-    if (rootPackageJsonContent.module) {
-      rootPackageJsonContent.main = rootPackageJsonContent.module;
-    }
-    if (rootPackageJsonContent && rootPackageJsonContent.main) {
-      let mainEntryPath = path.resolve(rootPackageJsonPath, '../', rootPackageJsonContent.main);
-      if (path.extname(mainEntryPath)==='') {
-        if (fs.existsSync(mainEntryPath+'.ets')) {
-          mainEntryPath = mainEntryPath+'.ets'
-        } else if (fs.existsSync(mainEntryPath+'.ts')) {
-          mainEntryPath = mainEntryPath+'.ts'
-        } else if (fs.existsSync(mainEntryPath+'.js')) {
-          mainEntryPath = mainEntryPath+'.js'
-        }
-      }
-      if (fs.existsSync(mainEntryPath)) {
-        projectConfig.entryObj[path.relative(projectConfig.projectPath, mainEntryPath)] = mainEntryPath;
-      } else {
-        throw Error('\u001b[31m'+
-          'not find file declared of main in package.json.' +
-          '\u001b[39m').message;
-      }
-    } else if (rootPackageJsonContent && !rootPackageJsonContent.main) {
-      let mainEntryPath = path.resolve(rootPackageJsonPath, '../', rootPackageJsonContent.main);
-      if (fs.existsSync(path.join(mainEntryPath, 'index.ets'))) {
-        mainEntryPath = path.join(mainEntryPath, 'index.ets')
-      } else if (fs.existsSync(path.join(mainEntryPath, 'index.ts'))) {
-        mainEntryPath = path.join(mainEntryPath, 'index.ts')
-      } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
-        mainEntryPath = path.join(mainEntryPath, 'index.js')
-      } else {
-        throw Error('\u001b[31m'+
-        'lack main in package.json.' +
-        '\u001b[39m').message;
-      }
-      projectConfig.entryObj[path.relative(projectConfig.projectPath, mainEntryPath)] = mainEntryPath;
-    } else {
-      throw Error('\u001b[31m'+
-        'lack message in package.json.' +
-        '\u001b[39m').message;
+  }
+}
+
+function supportSuffix(mainEntryPath) {
+  if (fs.existsSync(path.join(mainEntryPath, 'index.ets'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.ets');
+  } else if (fs.existsSync(path.join(mainEntryPath, 'index.ts'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.ts');
+  } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.js');
+  } else {
+    throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+  }
+  return mainEntryPath;
+}
+
+function supportExtName(mainEntryPath) {
+  if (path.extname(mainEntryPath) === '') {
+    if (fs.existsSync(mainEntryPath + '.ets')) {
+      mainEntryPath = mainEntryPath + '.ets';
+    } else if (fs.existsSync(mainEntryPath + '.ts')) {
+      mainEntryPath = mainEntryPath + '.ts';
+    } else if (fs.existsSync(mainEntryPath + '.js')) {
+      mainEntryPath = mainEntryPath + '.js';
     }
   }
+  return mainEntryPath;
 }
 
 function getEntryPath(entryPath, rootPackageJsonPath) {
   let mainEntryPath = path.resolve(rootPackageJsonPath, '../', entryPath);
   if (fs.statSync(mainEntryPath).isDirectory()) {
-    if (fs.existsSync(path.join(mainEntryPath, 'index.ets'))) {
-      mainEntryPath = path.join(mainEntryPath, 'index.ets');
-    } else if (fs.existsSync(path.join(mainEntryPath, 'index.ts'))) {
-      mainEntryPath = path.join(mainEntryPath, 'index.ts');
-    } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
-      mainEntryPath = path.join(mainEntryPath, 'index.js');
-    }
+    mainEntryPath = supportSuffix(mainEntryPath);
   } else {
-    if (path.extname(mainEntryPath) === '') {
-      if (fs.existsSync(mainEntryPath + '.ets')) {
-        mainEntryPath = mainEntryPath + '.ets';
-      } else if (fs.existsSync(mainEntryPath + '.ts')) {
-        mainEntryPath = mainEntryPath + '.ts';
-      } else if (fs.existsSync(mainEntryPath + '.js')) {
-        mainEntryPath = mainEntryPath + '.js';
-      }
-    }
+    mainEntryPath = supportExtName(mainEntryPath);
   }
   if (fs.existsSync(mainEntryPath)) {
-    projectConfig.entryObj[path.relative(projectConfig.projectPath, mainEntryPath)] = mainEntryPath;
+    let entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
+    projectConfig.entryObj[entryKey] = mainEntryPath;
   } else {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
   }
 }
 
 function getPages(configJson) {
-  const pages = []
+  const pages = [];
   const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
   const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {

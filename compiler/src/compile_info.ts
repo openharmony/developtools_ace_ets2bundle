@@ -306,7 +306,7 @@ export class ResultStates {
                 if (emit.outputFiles[0]) {
                   generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile));
                 } else {
-                  console.warn(this.yellow,
+                  logger.warn(this.yellow,
                     "ArkTS:WARN doesn't generate .d"+path.extname(moduleFile) + " for " + moduleFile, this.reset);
                 }
               } catch(err) {
