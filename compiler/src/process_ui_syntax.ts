@@ -426,14 +426,14 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
     )
   ];
 
-  if (projectConfig.bundleName) {
+  if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
       ts.factory.createStringLiteral(projectConfig.bundleName)
     ));
   }
 
-  if (projectConfig.moduleName) {
+  if (projectConfig.moduleName || projectConfig.moduleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
       ts.factory.createStringLiteral(projectConfig.moduleName)
