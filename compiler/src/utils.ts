@@ -399,6 +399,8 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string): v
     return;
   }
 
+  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
+
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
     fs.writeFileSync(jsFilePath, sourceCode);
@@ -423,8 +425,22 @@ export function getPackageInfo(configFile: string): Array<string> {
 
 function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string): string {
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
+    // remove file extension from moduleRequest
+    const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
+    moduleRequest = moduleRequest.replace(SUFFIX_REG, '');
+
+    // normalize the moduleRequest
+    item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+      let normalizedModuleRequest: string = toUnixPath(path.normalize(moduleRequest));
+      if (moduleRequest.startsWith("./")) {
+        normalizedModuleRequest = "./" + normalizedModuleRequest;
+      }
+      return quotation + normalizedModuleRequest + quotation;
+    });
+
     const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
-    const result: RegExpMatchArray | null = filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
+    const result: RegExpMatchArray | null =
+      filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {
       const npmModuleIdx: number = result[1].search(/(\/|\\)node_modules(\/|\\)/);
       const projectRootPath: string = projectConfig.projectRootPath;
@@ -433,11 +449,21 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
         const bundleName: string = packageInfo[0];
         const moduleName: string = packageInfo[1];
         moduleRequest = `@bundle:${bundleName}/${moduleName}/${result[5]}/${toUnixPath(result[7])}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
+        item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+          return quotation + moduleRequest + quotation;
+        });
       }
     }
   }
   return item;
+}
+
+function transformModuleSpecifier(sourcePath: string, sourceCode: string): string {
+  // replace relative moduleSpecifier with ohmURl
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+)['"]/g;
+  return sourceCode.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
+    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
+  });
 }
 
 export var newSourceMaps: Object = {};
@@ -461,11 +487,7 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
     delete sourceMap.sourcesContent;
     newSourceMaps[source] = sourceMap;
   }
-  // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/).*)['"]/g;
-  sourceContent = sourceContent.replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest)=>{
-    return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath));
-  });
+  sourceContent = transformModuleSpecifier(sourcePath, sourceContent);
 
   mkdirsSync(path.dirname(jsFilePath));
   if (projectConfig.buildArkMode === 'debug') {
@@ -549,7 +571,7 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean): any
   if (toTsFile) {
     content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
-  content = processSystemApi(content, true);
+  content = transformModuleSpecifier(fileName, processSystemApi(content, true));
 
   return {
     content: content,
@@ -726,4 +748,23 @@ export function unlinkSync(filePath: string): void {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
+}
+
+export function getExtension(filePath: string): string {
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    return "";
+  }
+
+  let extension: string = EXTNAME_ETS;
+  if (fs.existsSync(filePath + '.ts') && fs.statSync(filePath + '.ts').isFile()) {
+    extension = '.ts';
+  } else if (fs.existsSync(filePath + '.d.ts') && fs.statSync(filePath + '.d.ts').isFile()) {
+    extension = '.d.ts';
+  } else if (fs.existsSync(filePath + '.d.ets') && fs.statSync(filePath + '.d.ets').isFile()) {
+    extension = '.d.ets';
+  } else if (fs.existsSync(filePath + '.js') && fs.statSync(filePath + '.js').isFile()) {
+    extension = '.js';
+  }
+
+  return extension;
 }
