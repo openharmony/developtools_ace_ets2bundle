@@ -60,7 +60,7 @@ import {
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   CUSTOM_COMPONENT,
   COMPONENT_CONSTRUCTOR_PARENT,
-  COMPONENT_IF_UNDEFINED,
+  NULL,
   INNER_COMPONENT_MEMBER_DECORATORS,
   COMPONENT_RERENDER_FUNCTION,
   RMELMTID,
@@ -401,7 +401,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
 export function createParentParameter(): ts.ParameterDeclaration {
   return ts.factory.createParameterDeclaration(undefined, undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
-    ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
+    ts.factory.createIdentifier(NULL));
 }
 
 function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
