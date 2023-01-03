@@ -81,6 +81,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
+  projectConfig.compileHar = false;
+  projectConfig.compileShared = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -113,22 +115,24 @@ function loadEntryObj(projectConfig) {
       throw Error('\u001b[31m ERROR: the manifest file ' + projectConfig.manifestFilePath.replace(/\\/g, '/') +
         ' or module.json is lost or format is invalid. \u001b[39m').message;
     }
-    if (manifest.pages) {
-      const pages = manifest.pages;
-      pages.forEach((element) => {
-        const sourcePath = element.replace(/^\.\/ets\//, '');
-        const fileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
-        if (fs.existsSync(fileName)) {
-          projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
-        } else {
-          throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
-            .message;
-        }
-      });
-    } else {
-      throw Error('\u001b[31m ERROR: missing pages attribute in ' +
-        projectConfig.manifestFilePath.replace(/\\/g, '/') +
-        '. \u001b[39m').message;
+    if (!projectConfig.compileHar) {
+      if (manifest.pages) {
+        const pages = manifest.pages;
+        pages.forEach((element) => {
+          const sourcePath = element.replace(/^\.\/ets\//, '');
+          const fileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
+          if (fs.existsSync(fileName)) {
+            projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
+          } else {
+            throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
+              .message;
+          }
+        });
+      } else {
+        throw Error('\u001b[31m ERROR: missing pages attribute in ' +
+          projectConfig.manifestFilePath.replace(/\\/g, '/') +
+          '. \u001b[39m').message;
+      }
     }
   }
 }
@@ -143,7 +147,20 @@ function buildManifest(manifest, aceConfigPath) {
         moduleConfigJson.app.minAPIVersion);
     }
     if (moduleConfigJson.module) {
-      manifest.pages = getPages(moduleConfigJson);
+      switch (moduleConfigJson.module.type) {
+        case 'har':
+          projectConfig.compileHar = true;
+          getPackageJsonEntryPath();
+          break;
+        case 'shared':
+          projectConfig.compileShared = true;
+          getPackageJsonEntryPath();
+          manifest.pages = getPages(moduleConfigJson);
+          break;
+        default:
+          manifest.pages = getPages(moduleConfigJson);
+          break;
+      }
     } else {
       throw Error('\u001b[31m'+
         'ERROR: the config.json file miss key word module || module[abilities].' +
@@ -159,8 +176,67 @@ function buildManifest(manifest, aceConfigPath) {
   }
 }
 
+function getPackageJsonEntryPath() {
+  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../package.json');
+  if (fs.existsSync(rootPackageJsonPath)) {
+    let rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    if (rootPackageJsonContent) {
+      if (rootPackageJsonContent.module) {
+        getEntryPath(rootPackageJsonContent.module, rootPackageJsonPath);
+      } else if (rootPackageJsonContent.main) {
+        getEntryPath(rootPackageJsonContent.main, rootPackageJsonPath);
+      } else {
+        getEntryPath('', rootPackageJsonPath);
+      }
+    } else {
+      throw Error('\u001b[31m'+ 'lack message in package.json.' + '\u001b[39m').message;
+    }
+  }
+}
+
+function supportSuffix(mainEntryPath) {
+  if (fs.existsSync(path.join(mainEntryPath, 'index.ets'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.ets');
+  } else if (fs.existsSync(path.join(mainEntryPath, 'index.ts'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.ts');
+  } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
+    mainEntryPath = path.join(mainEntryPath, 'index.js');
+  } else {
+    throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+  }
+  return mainEntryPath;
+}
+
+function supportExtName(mainEntryPath) {
+  if (path.extname(mainEntryPath) === '') {
+    if (fs.existsSync(mainEntryPath + '.ets')) {
+      mainEntryPath = mainEntryPath + '.ets';
+    } else if (fs.existsSync(mainEntryPath + '.ts')) {
+      mainEntryPath = mainEntryPath + '.ts';
+    } else if (fs.existsSync(mainEntryPath + '.js')) {
+      mainEntryPath = mainEntryPath + '.js';
+    }
+  }
+  return mainEntryPath;
+}
+
+function getEntryPath(entryPath, rootPackageJsonPath) {
+  let mainEntryPath = path.resolve(rootPackageJsonPath, '../', entryPath);
+  if (fs.statSync(mainEntryPath).isDirectory()) {
+    mainEntryPath = supportSuffix(mainEntryPath);
+  } else {
+    mainEntryPath = supportExtName(mainEntryPath);
+  }
+  if (fs.existsSync(mainEntryPath)) {
+    let entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
+    projectConfig.entryObj[entryKey] = mainEntryPath;
+  } else {
+    throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+  }
+}
+
 function getPages(configJson) {
-  const pages = []
+  const pages = [];
   const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
   const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
@@ -478,6 +554,10 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       projectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
+    }
+    if (projectConfig.compileHar && buildJsonInfo.moduleName &&
+      buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {
+      projectConfig.moduleRootPath = buildJsonInfo.modulePathMap[buildJsonInfo.moduleName];
     }
   }
 }

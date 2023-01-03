@@ -162,7 +162,7 @@ class CustomContainer2 extends View {
         Column.pop();
     }
 }
-function specificWithParam(label1, label2, parent = undefined) {
+function specificWithParam(label1, label2, parent = null) {
     Column.create();
     Text.create(label1);
     Text.fontSize(50);
@@ -193,14 +193,14 @@ class CustomContainerUser extends View {
     set text(newValue) {
         this.__text.set(newValue);
     }
-    specificParam(parent = undefined) {
+    specificParam(parent = null) {
         Column.create();
         Text.create("content");
         Text.fontSize(50);
         Text.pop();
         Column.pop();
     }
-    callSpecificParam(label1, label2, parent = undefined) {
+    callSpecificParam(label1, label2, parent = null) {
         Column.create();
         Text.create(label1);
         Text.fontSize(50);

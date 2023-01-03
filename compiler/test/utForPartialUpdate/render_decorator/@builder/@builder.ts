@@ -143,7 +143,7 @@ struct MyComponent {
 `
 exports.expectResult =
 `"use strict";
-function noParam(parent = undefined) {
+function noParam(parent = null) {
     (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Row.create();
@@ -163,7 +163,7 @@ function noParam(parent = undefined) {
     Text.pop();
     Row.pop();
 }
-function specificParam(label1, label2, parent = undefined) {
+function specificParam(label1, label2, parent = null) {
     (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Column.create();
@@ -227,7 +227,7 @@ class MyComponent extends ViewPU {
     set hideBar(newValue) {
         this.__hideBar.set(newValue);
     }
-    textBuilder(parent = undefined) {
+    textBuilder(parent = null) {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("文本");
@@ -239,7 +239,7 @@ class MyComponent extends ViewPU {
         });
         Text.pop();
     }
-    NavigationTitlePara(label, parent = undefined) {
+    NavigationTitlePara(label, parent = null) {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
@@ -261,7 +261,7 @@ class MyComponent extends ViewPU {
         Text.pop();
         Column.pop();
     }
-    MenuBuilder(parent = undefined) {
+    MenuBuilder(parent = null) {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });

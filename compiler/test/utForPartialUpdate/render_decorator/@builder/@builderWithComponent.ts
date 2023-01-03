@@ -44,7 +44,7 @@ struct child{
 
 exports.expectResult =
 `"use strict";
-function myBuilder(parent = undefined) {
+function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -73,7 +73,7 @@ class Index extends ViewPU {
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    Builder1(parent = undefined) {
+    Builder1(parent = null) {
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
