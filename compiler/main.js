@@ -468,6 +468,8 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (projectConfig.aotMode && projectConfig.compileMode === 'esmodule') {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
+      projectConfig.anBuildMode = buildJsonInfo.anBuildMode || "type";
+      projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
     } else {
       projectConfig.processTs = false;
       projectConfig.pandaMode = buildJsonInfo.pandaMode;

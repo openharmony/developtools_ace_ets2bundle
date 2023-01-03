@@ -762,6 +762,15 @@ export function validateFilePathLength(filePath: string): boolean {
   }
 }
 
+export function validateFilePathLengths(filePaths: Array<string>): boolean {
+  filePaths.forEach((filePath) => {
+    if (!validateFilePathLength(filePath)) {
+      return false;
+    }
+  })
+  return true;
+}
+
 export function buildCachePath(tailName: string): string {
   let pathName: string = process.env.cachePath !== undefined ?
       path.join(process.env.cachePath, tailName) : path.join(projectConfig.buildPath, tailName);
@@ -774,6 +783,20 @@ export function unlinkSync(filePath: string): void {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
+}
+
+export function getArkBuildDir(arkDir: string): string {
+  if (isWindows()) {
+    return path.join(arkDir, 'build-win');
+  } else if (isMac()) {
+    return path.join(arkDir, 'build-mac');
+  } else {
+    return path.join(arkDir, 'build');
+  }
+}
+
+export function getBuildBinDir(arkDir: string): string {
+  return path.join(getArkBuildDir(arkDir), 'bin');
 }
 
 export function getExtension(filePath: string): string {
