@@ -81,6 +81,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
+  projectConfig.splitCommon = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -141,6 +142,7 @@ function buildManifest(manifest, aceConfigPath) {
       moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
       partialUpdateController(moduleConfigJson.module.metadata,
         moduleConfigJson.app.minAPIVersion);
+      stageOptimization(moduleConfigJson.module.metadata);
     }
     if (moduleConfigJson.module) {
       manifest.pages = getPages(moduleConfigJson);
@@ -156,6 +158,18 @@ function buildManifest(manifest, aceConfigPath) {
       throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
         "\x1B[39m").message;
     }
+  }
+}
+
+function stageOptimization(metadata) {
+  if (Array.isArray(metadata) && metadata.length) {
+    metadata.some(item => {
+      if (item.name && item.name === 'USE_COMMON_CHUNK' &&
+        item.value && item.value === 'true') {
+        projectConfig.splitCommon = true;
+        return true;
+      }
+    });
   }
 }
 
