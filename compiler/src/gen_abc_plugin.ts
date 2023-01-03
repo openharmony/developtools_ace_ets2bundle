@@ -50,6 +50,8 @@ import {
   JSBUNDLE,
   NODE_MODULES,
   ES2ABC,
+  EXTNAME_D_ETS,
+  EXTNAME_D_TS,
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_TS,
@@ -356,6 +358,10 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  // skip declaration modules
+  if (filePath.endsWith(EXTNAME_D_ETS)) {
+    return;
+  }
   if (projectConfig.processTs === true) {
     tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_TS);
     buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_TS);
@@ -375,6 +381,10 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
 }
 
 function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  // skip declaration modules
+  if (filePath.endsWith(EXTNAME_D_TS)) {
+    return;
+  }
   if (projectConfig.processTs === false) {
     tempFilePath = tempFilePath.replace(/\.ts$/, EXTNAME_JS);
     buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
