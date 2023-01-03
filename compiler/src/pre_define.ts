@@ -116,6 +116,7 @@ export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 export const ATTRIBUTE_ID: string = 'id';
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
+export const NULL: string = 'null';
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
