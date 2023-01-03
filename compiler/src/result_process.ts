@@ -29,7 +29,8 @@ import {
   LogInfo,
   emitLogInfo,
   componentInfo,
-  generateSourceFilesToTemporary
+  generateSourceFilesToTemporary,
+  generateSourceFilesInHar
 } from './utils';
 import { resetComponentCollection } from './validate_ui_syntax';
 import { abilityConfig, projectConfig } from '../main';
@@ -70,8 +71,12 @@ module.exports = function resultProcess(source: string, map: any): void {
   }
 
   if (projectConfig.compileMode == ESMODULE && projectConfig.processTs === false
-    && process.env.compilerType && process.env.compilerType === 'ark') {
+    && process.env.compilerType && process.env.compilerType === 'ark' && !projectConfig.compileHar) {
     generateSourceFilesToTemporary(this.resourcePath, source, map);
+  }
+
+  if (projectConfig.compileHar) {
+    generateSourceFilesInHar(this.resourcePath, source, '.js');
   }
 
   this.callback(null, source, map);

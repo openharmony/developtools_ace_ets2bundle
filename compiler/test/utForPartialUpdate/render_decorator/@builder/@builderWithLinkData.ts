@@ -105,7 +105,7 @@ class TestPage extends ViewPU {
     set value(newValue) {
         this.__value.set(newValue);
     }
-    TitleCompView(parent = undefined) {
+    TitleCompView(parent = null) {
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
