@@ -228,12 +228,20 @@ function setReleaseConfig(config) {
     minimizer: [new TerserPlugin({
       terserOptions: {
         compress: {
+          defaults: false,
+          dead_code: true,
+          collapse_vars: true,
+          unused: true,
+          drop_debugger: true,
+          if_return: true,
+          reduce_vars: true,
           join_vars: false,
           sequences: 0
         },
         format: {
           semicolons: false,
           beautify: true,
+          braces: true,
           indent_level: 2
         }
       }
