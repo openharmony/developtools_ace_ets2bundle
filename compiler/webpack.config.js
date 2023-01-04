@@ -453,7 +453,7 @@ module.exports = (env, argv) => {
     setGenAbcPlugin(env, config);
     let port;
     process.argv.forEach((val, index) => {
-      if(val.startsWith('port=')){
+      if (val.startsWith('port=')) {
         port = val.split('=')[1];
       }
     });
@@ -474,9 +474,10 @@ module.exports = (env, argv) => {
     setReleaseConfig(config);
   }
 
-  if (projectConfig.compileMode === 'esmodule') {
-    for (const harName in (projectConfig.harNameOhmMap || {})) {
-      config.externals[harName] = RegExp("^("+harName+")($|\/\S+)");
+  if (projectConfig.compileMode === 'esmodule' && projectConfig.harNameOhmMap) {
+    config.externals = [];
+    for (const harName in projectConfig.harNameOhmMap) {
+      config.externals.push(RegExp('^(' + harName + ')($|\/\S+)'));
     }
   }
 
