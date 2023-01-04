@@ -428,7 +428,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       }
     } else {
       parentPropertyName =
-        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
       const parentPropertyKind = COMPONENT_NON_DECORATOR;
       if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
@@ -461,6 +461,9 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
   const initExpression: ts.Expression = node.initializer;
+  if (!initExpression) {
+    return undefined;
+  }
   let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
