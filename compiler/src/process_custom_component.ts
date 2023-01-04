@@ -685,7 +685,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart()
   });
 }
 
