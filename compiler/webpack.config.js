@@ -216,7 +216,8 @@ function setProjectConfig(envArgs) {
 function setReleaseConfig(config) {
   const TerserPlugin = require('terser-webpack-plugin');
   config.mode = 'production';
-  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
+  if ((process.env.compileMode !== 'moduleJson' || projectConfig.splitCommon) &&
+    abilityConfig.abilityType === 'page') {
     config.optimization = config.optimization;
   } else {
     config.optimization = {};
@@ -311,7 +312,8 @@ function excludeWorker(workerFile, name) {
 }
 
 function setOptimizationConfig(config, workerFile) {
-  if (process.env.compileMode !== 'moduleJson' && abilityConfig.abilityType === 'page') {
+  if ((process.env.compileMode !== 'moduleJson' || projectConfig.splitCommon) &&
+    abilityConfig.abilityType === 'page') {
     config.optimization = {
       splitChunks: {
         chunks(chunk) {
