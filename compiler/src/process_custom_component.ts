@@ -428,7 +428,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       }
     } else {
       parentPropertyName =
-        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
       const parentPropertyKind = COMPONENT_NON_DECORATOR;
       if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
@@ -461,6 +461,9 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
   const initExpression: ts.Expression = node.initializer;
+  if (!initExpression) {
+    return undefined;
+  }
   let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
@@ -670,9 +673,6 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   let type: LogType = LogType.ERROR;
   if (inputType) {
     type = inputType;
-  } else if (parentPropertyKind === COMPONENT_NON_DECORATOR &&
-    curPropertyKind === COMPONENT_PROP_DECORATOR) {
-    type = LogType.WARN;
   } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
     curPropertyKind === COMPONENT_STATE_DECORATOR) {
     type = LogType.WARN;
@@ -682,7 +682,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart()
   });
 }
 
