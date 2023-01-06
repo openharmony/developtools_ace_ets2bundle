@@ -281,12 +281,17 @@ export const EXTNAME_CJS: string = '.cjs';
 export const EXTNAME_D_TS: string = '.d.ts';
 export const EXTNAME_ABC: string = '.abc';
 export const EXTNAME_PROTO_BIN: string = '.protoBin';
+export const MANAGE_WORKERS_SCRIPT: string = 'manage_workers.js';
+export const GEN_ABC_SCRIPT: string = "gen_abc.js";
+export const GEN_MODULE_ABC_SCRIPT: string = "gen_module_abc.js";
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
 
 export const TS2ABC: string = 'ts2abc';
 export const ES2ABC: string = 'es2abc';
+
+export const MAX_WORKER_NUMBER: number = 3;
 
 export const GENERATE_ID = 'generateId';
 export const _GENERATE_ID = '__generate__Id';
