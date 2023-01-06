@@ -987,7 +987,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
       newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
-      newStatements.push(createComponentCreationStatement(node, newForEachStatements), popNode);
+      newStatements.push(createComponentCreationStatement(node, newForEachStatements, isGlobalBuilder), popNode);
     } else {
       if (argumentsArray[2]) {
         newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement,
