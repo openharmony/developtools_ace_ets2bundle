@@ -21,9 +21,7 @@ import cluster from 'cluster';
 import { logger } from './compile_info';
 import {
   SUCCESS,
-  FAIL,
-  TS2ABC,
-  ES2ABC
+  FAIL
 } from './pre_define';
 import {
   toUnixPath
@@ -62,7 +60,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string)
 logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined
-    && process.env['workerFileName'] !== undefined) {
+    && process.env['workerFileName'] !== undefined && process.env['cachePath'] !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
   js2abcByWorkers(process.env['inputs'], process.env['cmd'], process.env['workerFileName']);
   process.exit(SUCCESS);
