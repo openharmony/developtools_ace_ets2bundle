@@ -125,7 +125,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
             ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))];
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode, log);
-        newStatements.push(createComponentCreationStatement(componentAttributes(), commomComponentNode));
+        newStatements.push(createComponentCreationStatement(componentAttributes(), commomComponentNode, isGlobalBuilder));
       } else {
         newStatements.push(ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
