@@ -48,7 +48,8 @@ export function generateAot(arkDir: string, builtinAbcPath: string): void {
     logger.error(reset, `ArkTS:ERROR generateAot failed. Invalid file path.`);
     return;
   }
-  const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${path.relative(process.cwd(), builtinAbcPath)}" --aot-file="${appAot}"`;
+  const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${path.relative(process.cwd(), builtinAbcPath)}" ` +
+   `--aot-file="${appAot}" --target-triple=aarch64-unknown-linux-gnu `;
   let singleCmd: string = "";
   if (projectConfig.anBuildMode === "full") {
     singleCmd = singleCmdPrefix + ` "${appAbc}"`;
