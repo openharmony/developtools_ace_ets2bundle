@@ -1252,20 +1252,22 @@ function removeDuplicateInfoOfBundleList(inputPaths: File[]) {
 }
 
 function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, workerNumber: number) {
-  let envParams: any = {
+  let processEnv: any = Object.assign({}, process.env);
+  let arkEnvParams: any = {
     'splittedData': JSON.stringify(splittedData),
     'cmdPrefix': cmdPrefix,
     'workerNumber': workerNumber.toString(),
   };
   if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
-    envParams['mode'] = JSBUNDLE;
+    arkEnvParams['mode'] = JSBUNDLE;
   } else if (projectConfig.compileMode === ESMODULE) {
-    envParams['cachePath'] = process.env.cachePath;
-    envParams['mode'] = ESMODULE;
+    arkEnvParams['cachePath'] = process.env.cachePath;
+    arkEnvParams['mode'] = ESMODULE;
   }
+  processEnv.arkEnvParams = JSON.stringify(arkEnvParams);
 
   let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
-  childProcess.execSync(genAbcCmd, {env: envParams});
+  childProcess.execSync(genAbcCmd, {env: processEnv});
   processExtraAsset();
 }
 
