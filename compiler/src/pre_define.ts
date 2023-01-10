@@ -117,6 +117,9 @@ export const ATTRIBUTE_ID: string = 'id';
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
 export const NULL: string = 'null';
+export const FOREACH_LAZYFOREACH: Set<string> = new Set([
+  COMPONENT_FOREACH, COMPONENT_LAZYFOREACH
+]);
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
