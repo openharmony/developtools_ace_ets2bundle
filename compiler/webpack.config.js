@@ -118,6 +118,7 @@ function initConfig(config) {
       new ResultStates()
     ]
   });
+  setModuleJsonConfigRule(config);
   if (!projectConfig.xtsMode) {
     config.cache = {
       type: "filesystem",
@@ -153,7 +154,7 @@ function setJsConfigRule() {
           compact: false
         }
       },
-      { loader: path.resolve(__dirname, 'lib/process_js_file.js')},
+      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
     ]
   };
@@ -169,6 +170,19 @@ function setJsConfigRule() {
     jsRule.resolve = { fullySpecified: false };
   }
   return jsRule;
+}
+
+function setModuleJsonConfigRule(config) {
+  if (projectConfig.compileMode !== 'esmodule') {
+    return;
+  }
+  const jsonRule = {
+    test: /\.json$/,
+    use: [
+      { loader: path.resolve(__dirname, 'lib/process_source_file.js') }
+    ]
+  }
+  config.module.rules.push(jsonRule);
 }
 
 function existsPackageJson(config, rootPackageJsonPath, modulePackageJsonPath) {

@@ -394,20 +394,22 @@ async function writeMinimizedSourceCode(content: string, filePath: string): Prom
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string): void {
-  const jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
-  if (jsFilePath.length === 0) {
+  const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath);
+  if (filePath.length === 0) {
     return;
   }
-
-  sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
-
-  mkdirsSync(path.dirname(jsFilePath));
-  if (projectConfig.buildArkMode === 'debug') {
-    fs.writeFileSync(jsFilePath, sourceCode);
-    return;
+  mkdirsSync(path.dirname(filePath));
+  if (/\.js$/.test(sourcePath)) {
+    sourceCode = transformModuleSpecifier(sourcePath, sourceCode);
+    if (projectConfig.buildArkMode === 'debug') {
+      fs.writeFileSync(filePath, sourceCode);
+      return;
+    }
+    writeMinimizedSourceCode(sourceCode, filePath);
   }
-
-  writeMinimizedSourceCode(sourceCode, jsFilePath);
+  if (/\.json$/.test(sourcePath)) {
+    fs.writeFileSync(filePath, sourceCode);
+  }
 }
 
 export const packageCollection: Map<string, Array<string>> = new Map();
@@ -653,6 +655,41 @@ export function parseErrorMessage(message: string): string {
   return logContent;
 }
 
+export function isEs2Abc(): boolean {
+  return process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined;
+}
+
+export function isTs2Abc(): boolean {
+  return process.env.panda === TS2ABC;
+}
+
+export function genProtoFileName(temporaryFile: string): string {
+  return temporaryFile.replace(/\.(?:[tj]s|json)$/, EXTNAME_PROTO_BIN);
+}
+
+export function genMergeProtoFileName(temporaryFile: string): string {
+  let protoTempPathArr: string[] = temporaryFile.split(TEMPORARY);
+  const sufStr: string = protoTempPathArr[protoTempPathArr.length - 1];
+  let protoBuildPath: string = path.join(process.env.cachePath, "protos", sufStr);
+
+  return protoBuildPath;
+}
+
+export function removeDuplicateInfo(moduleInfos: Array<any>): Array<any> {
+  const tempModuleInfos: any[] = Array<any>();
+  moduleInfos.forEach((item) => {
+    let check: boolean = tempModuleInfos.every((newItem) => {
+      return item.tempFilePath !== newItem.tempFilePath;
+    });
+    if (check) {
+      tempModuleInfos.push(item);
+    }
+  });
+  moduleInfos = tempModuleInfos;
+
+  return moduleInfos;
+}
+
 export function isWindows(): boolean {
   return os.type() === WINDOWS;
 }
@@ -693,47 +730,6 @@ export function validateFilePathLength(filePath: string): boolean {
     process.exitCode = FAIL;
     return false;
   }
-}
-
-export function isEs2Abc(): boolean {
-  return process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined;
-}
-
-export function isTs2Abc(): boolean {
-  return process.env.panda === TS2ABC;
-}
-
-export function genProtoFileName(temporaryFile: string): string {
-  let protoFile: string = temporaryFile;
-  if (temporaryFile.endsWith(EXTNAME_TS)) {
-    protoFile = temporaryFile.replace(/\.ts$/, EXTNAME_PROTO_BIN);
-  } else {
-    protoFile = temporaryFile.replace(/\.js$/, EXTNAME_PROTO_BIN);
-  }
-  return protoFile;
-}
-
-export function genMergeProtoFileName(temporaryFile: string): string {
-  let protoTempPathArr: string[] = temporaryFile.split(TEMPORARY);
-  const sufStr: string = protoTempPathArr[protoTempPathArr.length - 1];
-  let protoBuildPath: string = path.join(process.env.cachePath, "protos", sufStr);
-
-  return protoBuildPath;
-}
-
-export function removeDuplicateInfo(moduleInfos: Array<any>): Array<any> {
-  const tempModuleInfos: any[] = Array<any>();
-  moduleInfos.forEach((item) => {
-    let check: boolean = tempModuleInfos.every((newItem) => {
-      return item.tempFilePath !== newItem.tempFilePath;
-    });
-    if (check) {
-      tempModuleInfos.push(item);
-    }
-  });
-  moduleInfos = tempModuleInfos;
-
-  return moduleInfos;
 }
 
 export function buildCachePath(tailName: string): string {
