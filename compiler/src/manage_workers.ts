@@ -24,17 +24,21 @@ import {
   JSBUNDLE
 } from "./pre_define";
 
-if (process.env["mode"] !== JSBUNDLE && process.env['mode'] !== ESMODULE) {
+if (process.env['arkEnvParams'] === undefined) {
   process.exit(FAIL);
 }
 
-if (process.env["workerNumber"] !== undefined &&
-  process.env["splittedData"] !== undefined &&
-  process.env["cmdPrefix"] !== undefined
-) {
-  let workerNumber: number = parseInt(process.env.workerNumber);
-  let splittedData: any = JSON.parse(process.env.splittedData);
-  let cmdPrefix: string = process.env.cmdPrefix;
+let arkEnvParams = JSON.parse(process.env.arkEnvParams);
+if (arkEnvParams['mode'] !== JSBUNDLE && arkEnvParams['mode'] !== ESMODULE) {
+  process.exit(FAIL);
+}
+
+if (arkEnvParams['workerNumber'] !== undefined &&
+  arkEnvParams['splittedData'] !== undefined &&
+  arkEnvParams['cmdPrefix'] !== undefined) {
+  let workerNumber: number = parseInt(arkEnvParams['workerNumber']);
+  let splittedData: any = JSON.parse(arkEnvParams['splittedData']);
+  let cmdPrefix: string = arkEnvParams['cmdPrefix'];
 
   const clusterNewApiVersion: number = 16;
   const currentNodeVersion: number = parseInt(process.version.split('.')[0]);
@@ -42,7 +46,7 @@ if (process.env["workerNumber"] !== undefined &&
 
   if ((useNewApi && cluster.isPrimary) || (!useNewApi && cluster.isMaster)) {
     let genAbcScript: string = GEN_ABC_SCRIPT;
-    if (process.env["mode"] === ESMODULE) {
+    if (arkEnvParams['mode'] === ESMODULE) {
       genAbcScript = GEN_MODULE_ABC_SCRIPT;
     }
     if (useNewApi) {
@@ -60,11 +64,11 @@ if (process.env["workerNumber"] !== undefined &&
         'inputs': JSON.stringify(splittedData[i]),
         'cmd': cmdPrefix
       };
-      if (process.env["mode"] === ESMODULE) {
+      if (arkEnvParams['mode'] === ESMODULE) {
         let sn: number = i + 1;
         let workerFileName: string = `filesInfo_${sn}.txt`;
         workerData['workerFileName'] = workerFileName;
-        workerData['cachePath'] = process.env.cachePath;
+        workerData['cachePath'] = arkEnvParams['cachePath'];
       }
       cluster.fork(workerData);
     }
