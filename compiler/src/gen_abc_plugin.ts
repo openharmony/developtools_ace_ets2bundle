@@ -49,14 +49,15 @@ import {
   ESMODULE,
   JSBUNDLE,
   NODE_MODULES,
-  ENTRY_TXT,
   ES2ABC,
+  EXTNAME_D_ETS,
+  EXTNAME_D_TS,
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_TS,
   EXTNAME_MJS,
   EXTNAME_CJS,
-  EXTNAME_D_TS,
+  EXTNAME_JSON,
   EXTNAME_JS_MAP,
   FAIL,
   MODULELIST_JSON,
@@ -215,7 +216,8 @@ export class GenAbcPlugin {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP ||
+              path.extname(key) === EXTNAME_JSON) {
             delete assets[key];
           }
         });
@@ -350,10 +352,16 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
   }
-  buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
+  if (!filePath.endsWith(EXTNAME_JSON)) {
+    buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
+  }
 }
 
 function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  // skip declaration modules
+  if (filePath.endsWith(EXTNAME_D_ETS)) {
+    return;
+  }
   if (projectConfig.processTs === true) {
     tempFilePath = tempFilePath.replace(/\.ets$/, EXTNAME_TS);
     buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_TS);
@@ -372,11 +380,11 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
 }
 
-function processDtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
-  return;
-}
-
 function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  // skip declaration modules
+  if (filePath.endsWith(EXTNAME_D_TS)) {
+    return;
+  }
   if (projectConfig.processTs === false) {
     tempFilePath = tempFilePath.replace(/\.ts$/, EXTNAME_JS);
     buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
@@ -409,6 +417,17 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     moduleInfos.push(tempModuleInfo);
   }
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
+}
+
+function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+  const abcFilePath: string = "NA";
+  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+    processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
+  } else {
+    const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
+    const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, moduleName, false);
+    moduleInfos.push(tempModuleInfo);
+  }
 }
 
 var cachedSourceMaps: Object;
@@ -497,17 +516,30 @@ function handleFullModuleFiles(modules, callback): any {
       validateFilePathLength(buildFilePath);
       tempFilePath = toUnixPath(tempFilePath);
       buildFilePath = toUnixPath(buildFilePath);
-      if (filePath.endsWith(EXTNAME_ETS)) {
-        processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith(EXTNAME_D_TS)) {
-        processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith(EXTNAME_TS)) {
-        processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_MJS) || filePath.endsWith(EXTNAME_CJS)) {
-        processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
-      } else {
-        logger.error(red, `ArkTS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
-        process.exitCode = FAIL;
+
+      switch (path.extname(filePath)) {
+        case EXTNAME_ETS: {
+          processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+          break;
+        }
+        case EXTNAME_TS: {
+          processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+          break;
+        }
+        case EXTNAME_JS:
+        case EXTNAME_MJS:
+        case EXTNAME_CJS: {
+          processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+          break;
+        }
+        case EXTNAME_JSON: {
+          processJsonModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, module);
+          break;
+        }
+        default: {
+          logger.error(red, `ArkTS:ERROR Cannot find resolve this file path: ${filePath}`, reset);
+          process.exitCode = FAIL;
+        }
       }
     }
   });
@@ -1038,17 +1070,29 @@ function handleHotReloadChangedFiles() {
     let buildFilePath: string = "";
     tempFilePath = toUnixPath(tempFilePath);
 
-    if (file.endsWith(EXTNAME_ETS)) {
-      processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_D_TS)) {
-      processDtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_TS)) {
-      processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else if (file.endsWith(EXTNAME_JS) || file.endsWith(EXTNAME_MJS) || file.endsWith(EXTNAME_CJS)) {
-      processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-    } else {
-      logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
-      return;
+    switch (path.extname(filePath)) {
+      case EXTNAME_ETS: {
+        processEtsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_TS: {
+        processTsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_JS:
+      case EXTNAME_MJS:
+      case EXTNAME_CJS: {
+        processJsModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      case EXTNAME_JSON: {
+        processJsonModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
+        break;
+      }
+      default: {
+        logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
+        return;
+      }
     }
 
     let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
