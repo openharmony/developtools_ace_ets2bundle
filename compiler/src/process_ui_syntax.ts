@@ -100,6 +100,7 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 
 export function processUISyntax(program: ts.Program, ut = false): Function {
+  let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
@@ -121,8 +122,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           }
           return node;
         }
-        node = createEntryNode(node, context);
+        const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
+        node = createEntryNode(node, context, entryNodeKey, id);
         if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
           validateReExportType(node, pagesDir, transformLog.errors);
         }
@@ -148,12 +150,27 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         return node;
       }
     };
+
+    function entryKeyNode(node: ts.Node): ts.Expression {
+      if (node && node.decorators && node.decorators.length) {
+        node.decorators.forEach(item => {
+          if (item.expression && ts.isCallExpression(item.expression) && ts.isIdentifier(item.expression.expression) &&
+            item.expression.expression.escapedText.toString() === 'Entry' && item.expression.arguments &&
+            item.expression.arguments.length && ts.isIdentifier(item.expression.arguments[0])) {
+            entryNodeKey = item.expression.arguments[0];
+          }
+        });
+      }
+      return entryNodeKey;
+    }
+
     function processAllNodes(node: ts.Node): ts.Node {
       if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         processImport(node, pagesDir, transformLog.errors);
       } else if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
+        componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         node = processComponentClass(node, context, transformLog.errors, program);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
@@ -605,7 +622,8 @@ export function isExtendFunction(node: ts.FunctionDeclaration): string {
   return null;
 }
 
-function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext): ts.SourceFile {
+function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
+  entryNodeKey: ts.Expression, id: number): ts.SourceFile {
   let cardRelativePath: string = undefined;
   if (projectConfig && projectConfig.cardObj) {
     cardRelativePath = projectConfig.cardObj[resourceFileName];
@@ -615,12 +633,12 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
       if (!partialUpdateConfig.partialUpdateMode) {
         const entryNode: ts.ExpressionStatement =
           createEntryFunction(componentCollection.entryComponent, context,
-            cardRelativePath) as ts.ExpressionStatement;
+            cardRelativePath, entryNodeKey, id) as ts.ExpressionStatement;
         return context.factory.updateSourceFile(node, [...node.statements, entryNode]);
       } else {
         const entryNodes: ts.ExpressionStatement[] =
           createEntryFunction(componentCollection.entryComponent, context,
-            cardRelativePath) as ts.ExpressionStatement[];
+            cardRelativePath, entryNodeKey, id) as ts.ExpressionStatement[];
         return entryNodes ?
           context.factory.updateSourceFile(node, [...node.statements, ...entryNodes]) :
           context.factory.updateSourceFile(node, [...node.statements]);
@@ -630,13 +648,13 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext)
     }
   } else {
     const statementsArray: ts.Statement =
-      createPreviewComponentFunction(componentCollection.entryComponent, context, cardRelativePath);
+      createPreviewComponentFunction(componentCollection.entryComponent, context, cardRelativePath, id);
     return context.factory.updateSourceFile(node, [...node.statements, statementsArray]);
   }
 }
 
-function createEntryFunction(name: string, context: ts.TransformationContext, cardRelativePath: string)
-  : ts.ExpressionStatement | ts.ExpressionStatement[] {
+function createEntryFunction(name: string, context: ts.TransformationContext, cardRelativePath: string,
+  entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | ts.ExpressionStatement[] {
   let localStorageName: string;
   const localStorageNum: number = localStorageLinkCollection.get(name).size +
     localStoragePropCollection.get(name).size;
@@ -652,12 +670,12 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
     return;
   }
   const newArray: ts.Expression[] = [
-    context.factory.createStringLiteral((++componentInfo.id).toString()),
+    context.factory.createStringLiteral(id.toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
   if (localStorageName) {
-    newArray.push(context.factory.createIdentifier(localStorageName));
+    newArray.push(entryNodeKey);
   }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
@@ -733,9 +751,9 @@ function createStopGetAccessRecording(context: ts.TransformationContext): ts.Exp
 }
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
-  cardRelativePath: string): ts.Statement {
+  cardRelativePath: string, id: number): ts.Statement {
   const newArray: ts.Expression[] = [
-    context.factory.createStringLiteral((++componentInfo.id).toString()),
+    context.factory.createStringLiteral(id.toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
