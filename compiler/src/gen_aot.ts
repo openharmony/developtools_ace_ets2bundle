@@ -23,7 +23,7 @@ import {
   SUCCESS,
   FAIL,
   MODULES_ABC,
-  TEMPORARY 
+  TEMPORARY
 } from './pre_define';
 import {
   isWindows,
@@ -41,13 +41,15 @@ export function generateAot(arkDir: string, builtinAbcPath: string): void {
   let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? "ark_aot_compiler.exe" : "ark_aot_compiler");
   const appAbc: string = path.relative(process.cwd(), path.join(projectConfig.buildPath, MODULES_ABC));
   const appAot: string = path.relative(process.cwd(), path.join(projectConfig.anBuildOutPut, projectConfig.moduleName));
-  const profile: string = path.relative(process.cwd(), path.join(projectConfig.buildPath, "..", "profile.aprof"));
+  const profile: string = path.relative(process.cwd(), path.join(
+    projectConfig.modulePathMap[projectConfig.moduleName], "profile.aprof"));
   
   if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot, profile])) {
     logger.error(reset, `ArkTS:ERROR generateAot failed. Invalid file path.`);
     return;
   }
-  const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${path.relative(process.cwd(), builtinAbcPath)}" --aot-file="${appAot}"`;
+  const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${path.relative(process.cwd(), builtinAbcPath)}" ` +
+    `--aot-file="${appAot}" --target-triple=aarch64-unknown-linux-gnu `;
   let singleCmd: string = "";
   if (projectConfig.anBuildMode === "full") {
     singleCmd = singleCmdPrefix + ` "${appAbc}"`;
