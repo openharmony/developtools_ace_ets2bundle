@@ -43,7 +43,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string): void {
   const appAot: string = path.relative(process.cwd(), path.join(projectConfig.anBuildOutPut, projectConfig.moduleName));
   const profile: string = path.relative(process.cwd(), path.join(
     projectConfig.modulePathMap[projectConfig.moduleName], "profile.aprof"));
-  
+
   if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot, profile])) {
     logger.error(reset, `ArkTS:ERROR generateAot failed. Invalid file path.`);
     return;
