@@ -84,6 +84,10 @@ import {
   generateMergedAbc,
   generateNpmEntriesInfo
 } from './gen_merged_abc';
+import {
+  generateAot,
+  generateBuiltinAbc
+} from './gen_aot'
 
 let output: string;
 let isWin: boolean = false;
@@ -1307,6 +1311,11 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
     process.on('exit', (code) => {
       if (process.exitCode !== FAIL && process.env.watchMode !== 'true') {
         processExtraAsset();
+        if (projectConfig.compileMode === ESMODULE &&
+          (projectConfig.anBuildMode === 'full' || projectConfig.anBuildMode === 'pgo')) {
+          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv());
+          generateAot(arkDir, builtinAbcPath);
+        }
       }
     });
   }
