@@ -324,7 +324,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           case ComponentType.customBuilderMethod:
             parent = undefined;
             if (CUSTOM_BUILDER_METHOD.has(name)) {
-              newStatements.push(addInnerBuilderParameter(item));
+              newStatements.push(addInnerBuilderParameter(item, isGlobalBuilder));
             } else {
               newStatements.push(item);
             }
@@ -359,9 +359,10 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
   }
 }
 
-function addInnerBuilderParameter(node: ts.ExpressionStatement): ts.ExpressionStatement {
+function addInnerBuilderParameter(node: ts.ExpressionStatement,
+  isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments) {
-    node.expression.arguments.push(ts.factory.createThis());
+    node.expression.arguments.push(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
     return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(node.expression,
       node.expression.expression, node.expression.typeArguments, node.expression.arguments));
   } else {
