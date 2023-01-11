@@ -134,11 +134,8 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
 export function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.SourceFile {
   const originContent: string = fs.readFileSync(fileResolvePath, { encoding: 'utf-8' });
   const content: string = path.extname(fileResolvePath) === EXTNAME_ETS ?
-    preprocessNewExtend(preprocessExtend(processSystemApi(originContent.replace(
-      new RegExp('\\b' + STRUCT + '\\b.+\\{', 'g'), item => {
-        return item.replace(new RegExp('\\b' + STRUCT + '\\b', 'g'), `${CLASS} `);
-      })))) : originContent;
-  return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    preprocessNewExtend(preprocessExtend(processSystemApi(originContent))) : originContent;
+  return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
 }
 
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
@@ -156,8 +153,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   if (ts.isEnumDeclaration(node) && node.name) {
     enumCollection.add(node.name.getText());
   }
-  if ((ts.isClassDeclaration(node) || ts.isStructDeclaration(node)) && ts.isIdentifier(node.name) &&
-    isCustomComponent(node)) {
+  if (ts.isStructDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
     addDependencies(node, defaultNameFromParent, asNameFromParent);
     isExportEntry(node, log, entryCollection, exportCollection, defaultCollection, fileResolvePath, sourceFile);
     if (asExportCollection.has(node.name.getText())) {
@@ -304,7 +300,7 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration, asNameFromPare
   }
 }
 
-function isExportEntry(node: ts.ClassDeclaration, log: LogInfo[], entryCollection: Set<string>,
+function isExportEntry(node: ts.StructDeclaration, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, fileResolvePath: string,
   sourceFile: ts.SourceFile): void {
   if (process.env.watchMode === 'true' && node && node.decorators) {
@@ -348,7 +344,7 @@ function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePa
   }
 }
 
-function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: string,
+function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node);
@@ -375,9 +371,9 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
   }
 }
 
-function addDefaultExport(node: ts.ClassDeclaration | ts.ExportAssignment): void {
+function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment): void {
   let name: string;
-  if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+  if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     name = node.name.escapedText.toString();
   } else if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression)) {
     name = node.expression.escapedText.toString();
@@ -487,7 +483,7 @@ function isModule(filePath: string): boolean {
   return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(NODE_MODULES) > -1;
 }
 
-function isCustomComponent(node: ts.ClassDeclaration | ts.StructDeclaration): boolean {
+function isCustomComponent(node: ts.StructDeclaration): boolean {
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; ++i) {
       const decoratorName: ts.Identifier = node.decorators[i].expression as ts.Identifier;
