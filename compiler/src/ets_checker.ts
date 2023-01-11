@@ -33,7 +33,8 @@ import {
   COMPONENT_BUILD_FUNCTION,
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
-  PROPERTIES_ADD_DOUBLE_DOLLAR
+  PROPERTIES_ADD_DOUBLE_DOLLAR,
+  COMPONENT_LOOP_VARIABLE
 } from './pre_define';
 import { JS_BIND_COMPONENTS } from './component_map';
 import { getName } from './process_component_build';
@@ -318,6 +319,16 @@ function traverseBuild(node: ts.Node, index: number): void {
     node = node.expression;
     if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body)) {
       node.body.statements.forEach((item, indexBlock) => {
+        traverseBuild(item, indexBlock);
+      });
+    } else if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+      COMPONENT_LOOP_VARIABLE.has(node.expression.escapedText.toString()) && node.arguments && node.arguments[1] &&
+      ts.isArrowFunction(node.arguments[1]) && node.arguments[1].body && ts.isBlock(node.arguments[1].body)) {
+      node.arguments[1].body.statements.forEach((item, indexBlock) => {
+        traverseBuild(item, indexBlock);
+      });
+    } else if (ts.isIfStatement(node) && node.thenStatement && ts.isBlock(node.thenStatement)) {
+      node.thenStatement.statements.forEach((item, indexBlock) => {
         traverseBuild(item, indexBlock);
       });
     } else {
