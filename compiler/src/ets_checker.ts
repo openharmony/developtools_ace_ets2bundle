@@ -36,7 +36,8 @@ import {
   $$_BLOCK_INTERFACE,
   COMPONENT_EXTEND_DECORATOR,
   EXTNAME_D_ETS,
-  EXTNAME_JS
+  EXTNAME_JS,
+  FOREACH_LAZYFOREACH
 } from './pre_define';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
@@ -368,6 +369,12 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
 }
 
+function isForeachAndLzayForEach(node: ts.Node): boolean {
+  return ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    FOREACH_LAZYFOREACH.has(node.expression.escapedText.toString()) && node.arguments && node.arguments[1] &&
+    ts.isArrowFunction(node.arguments[1]) && node.arguments[1].body && ts.isBlock(node.arguments[1].body);
+}
+
 function traverseBuild(node: ts.Node, index: number): void {
   if (ts.isExpressionStatement(node)) {
     let parentComponentName: string = getName(node);
@@ -378,7 +385,11 @@ function traverseBuild(node: ts.Node, index: number): void {
     node = node.expression;
     if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
       !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
-      node.body.statements.forEach((item, indexBlock) => {
+      node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
+        traverseBuild(item, indexBlock);
+      });
+    } else if (isForeachAndLzayForEach(node)) {
+      node.arguments[1].body.statements.forEach((item: ts.Statement, indexBlock: number) => {
         traverseBuild(item, indexBlock);
       });
     } else {
