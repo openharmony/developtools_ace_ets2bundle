@@ -42,9 +42,6 @@ import {
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-projectConfig.patch = false
-projectConfig.enableMap = false
-
 function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   const tempModuleInfos: ModuleInfo[] = Array<ModuleInfo>();
   moduleInfos.forEach((item) => {
@@ -95,7 +92,10 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   let genAbcCmd: string =
     `${initAbcEnv().join(' ')} "@${filesInfoPath}" --npm-module-entry-list "${npmEntriesInfoPath}" --output "${outputABCPath}" --file-threads "${fileThreads}"`;
 
-  projectConfig.inOldSymbolTablePath = projectConfig.projectRootPath;  // temp symbol table path for hot patch
+  projectConfig.patch = projectConfig.patch || false;
+  projectConfig.enableMap = projectConfig.enableMap || false;
+  projectConfig.inOldSymbolTablePath = projectConfig.inOldSymbolTablePath || projectConfig.projectRootPath;
+
   if (projectConfig.patch) {
     let oldHapSymbolTable = path.join(projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
     genAbcCmd += ` --input-symbol-table "${oldHapSymbolTable}" --generate-patch`;
