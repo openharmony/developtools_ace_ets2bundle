@@ -332,6 +332,8 @@ function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<strin
   }
   if (mainFileds.size === 0) {
     mainFileds.add(toUnixPath(path.join(packagePath, 'index.js')));
+    mainFileds.add(toUnixPath(path.join(packagePath, 'index.ets')));
+    mainFileds.add(toUnixPath(path.join(packagePath, 'index.ts')));
   }
 
   return mainFileds;
