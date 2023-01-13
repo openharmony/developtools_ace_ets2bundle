@@ -44,7 +44,8 @@ import {
   BASE_COMPONENT_NAME_PU,
   OBSERVECOMPONENTCREATION,
   ISINITIALRENDER,
-  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID
+  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
+  COMPONENT_CUSTOM_DECORATOR
 } from './pre_define';
 import {
   propertyCollection,
@@ -490,33 +491,24 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
 function isCorrectInitFormParent(parent: string, child: string): boolean {
   switch (child) {
     case COMPONENT_STATE_DECORATOR:
-    case COMPONENT_PROVIDE_DECORATOR:
-      if (parent === COMPONENT_NON_DECORATOR) {
-        return true;
-      }
-      break;
-    case COMPONENT_LINK_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR,
-        COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
-        return true;
-      }
-      break;
     case COMPONENT_PROP_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR
-        ].includes(parent)) {
-        return true;
-      }
-      break;
+    case COMPONENT_PROVIDE_DECORATOR:
+      return true;
+    case COMPONENT_CUSTOM_DECORATOR:
+      return false;
     case COMPONENT_NON_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR,
+      if ([COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_PROP_DECORATOR,
         COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
         return true;
       }
       break;
+    case COMPONENT_LINK_DECORATOR:
+      if (![COMPONENT_NON_DECORATOR].includes(parent)) {
+        return false;
+      }
+      break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (!partialUpdateConfig.partialUpdateMode && parent === COMPONENT_STATE_DECORATOR) {
-        return true;
-      } else if (partialUpdateConfig.partialUpdateMode && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
+      if ([COMPONENT_STATE_DECORATOR].includes(parent)) {
         return true;
       }
       break;
