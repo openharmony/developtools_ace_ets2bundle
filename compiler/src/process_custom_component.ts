@@ -503,15 +503,9 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       }
       break;
     case COMPONENT_LINK_DECORATOR:
-      if (![COMPONENT_NON_DECORATOR].includes(parent)) {
-        return false;
-      }
-      break;
+      return ![COMPONENT_NON_DECORATOR].includes(parent);
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR].includes(parent)) {
-        return true;
-      }
-      break;
+      return [COMPONENT_STATE_DECORATOR].includes(parent);
   }
   return false;
 }
