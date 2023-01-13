@@ -285,6 +285,7 @@ export const EXTNAME_D_ETS: string = '.d.ets';
 export const EXTNAME_JSON: string = '.json';
 export const EXTNAME_ABC: string = '.abc';
 export const EXTNAME_PROTO_BIN: string = '.protoBin';
+export const PATCH_SYMBOL_TABLE: string = "symbol.txt";
 export const MANAGE_WORKERS_SCRIPT: string = 'manage_workers.js';
 export const GEN_ABC_SCRIPT: string = "gen_abc.js";
 export const GEN_MODULE_ABC_SCRIPT: string = "gen_module_abc.js";
