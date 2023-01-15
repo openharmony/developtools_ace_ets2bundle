@@ -44,7 +44,8 @@ import {
   enumCollection,
   getComponentSet,
   IComponentSet,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  objectLinkCollection
 } from './validate_ui_syntax';
 import {
   getExtension,
@@ -178,7 +179,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         linkCollection.get(node.expression.escapedText.toString()),
         propertyCollection.get(node.expression.escapedText.toString()),
         propCollection.get(node.expression.escapedText.toString()),
-        builderParamObjectCollection.get(node.expression.escapedText.toString()));
+        builderParamObjectCollection.get(node.expression.escapedText.toString()),
+        objectLinkCollection.get(node.expression.escapedText.toString()));    
     }
     addDefaultExport(node);
   }
@@ -208,7 +210,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
             setDependencies(asExportName, linkCollection.get(asExportPropertyName),
               propertyCollection.get(asExportPropertyName),
               propCollection.get(asExportPropertyName),
-              builderParamObjectCollection.get(asExportPropertyName));
+              builderParamObjectCollection.get(asExportPropertyName),
+              objectLinkCollection.get(asExportPropertyName));
           }
           asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
         }
@@ -339,13 +342,13 @@ function addDependencies(node: ts.ClassDeclaration, defaultNameFromParent: strin
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
     setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props, ComponentSet.builderParams);
+      ComponentSet.props, ComponentSet.builderParams, ComponentSet.objectLinks);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props, ComponentSet.builderParams);
+      ComponentSet.props, ComponentSet.builderParams, ComponentSet.objectLinks);
   } else {
     setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
-      ComponentSet.builderParams);
+      ComponentSet.builderParams, ComponentSet.objectLinks);
   }
 }
 
@@ -370,15 +373,19 @@ function addDefaultExport(node: ts.ClassDeclaration | ts.ExportAssignment): void
       propCollection.get(name),
     builderParamObjectCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...builderParamObjectCollection.get(CUSTOM_COMPONENT_DEFAULT),
-        ...builderParamObjectCollection.get(name)]) : builderParamObjectCollection.get(name));
+        ...builderParamObjectCollection.get(name)]) : builderParamObjectCollection.get(name),
+    objectLinkCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...objectLinkCollection.get(CUSTOM_COMPONENT_DEFAULT),
+        ...objectLinkCollection.get(name)]) : objectLinkCollection.get(name));
 }
 
 function setDependencies(component: string, linkArray: Set<string>, propertyArray: Set<string>,
-  propArray: Set<string>, builderParamArray: Set<string>): void {
+  propArray: Set<string>, builderParamArray: Set<string>, objectLinksArray: Set<string>): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
   builderParamObjectCollection.set(component, builderParamArray);
+  objectLinkCollection.set(component, objectLinksArray);
   componentCollection.customComponents.add(component);
 }
 
