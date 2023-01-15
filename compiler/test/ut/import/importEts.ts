@@ -132,8 +132,8 @@ const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponen
 const AMDComponentDefault = require("./test/pages/AMDComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__myState1 = new ObservedPropertyObject(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimple(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");

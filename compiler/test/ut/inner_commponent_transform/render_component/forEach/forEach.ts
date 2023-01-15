@@ -115,8 +115,8 @@ class Month {
     }
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.languages = ['ets', 'js', 'java'];
         this.weekNames = ['日', '一', '二', '三', '四', '五', '六'];
         this.__calendar = new ObservedPropertyObject([

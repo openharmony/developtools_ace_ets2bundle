@@ -40,8 +40,8 @@ function generateId() {
     return "button_" + ++__generate__Id;
 }
 class ButtonExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {

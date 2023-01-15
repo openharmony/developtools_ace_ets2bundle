@@ -45,8 +45,8 @@ function generateId() {
     return "swipeGesture_" + ++__generate__Id;
 }
 class SwipeGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__rotateAngle = new ObservedPropertySimple(0, this, "rotateAngle");
         this.__speed = new ObservedPropertySimple(1, this, "speed");
         this.updateWithValueParams(params);
