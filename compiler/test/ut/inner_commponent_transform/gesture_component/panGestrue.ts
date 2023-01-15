@@ -51,8 +51,8 @@ function generateId() {
     return "panGestrue_" + ++__generate__Id;
 }
 class PanGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__offsetX = new ObservedPropertySimple(0, this, "offsetX");
         this.__offsetY = new ObservedPropertySimple(0, this, "offsetY");
         this.updateWithValueParams(params);

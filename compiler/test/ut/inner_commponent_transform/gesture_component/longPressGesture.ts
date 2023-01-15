@@ -43,8 +43,8 @@ function generateId() {
     return "longPressGesture_" + ++__generate__Id;
 }
 class LongPressGestureExample extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__count = new ObservedPropertySimple(0, this, "count");
         this.updateWithValueParams(params);
     }

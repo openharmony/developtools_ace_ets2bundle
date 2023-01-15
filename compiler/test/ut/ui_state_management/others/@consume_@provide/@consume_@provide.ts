@@ -65,8 +65,8 @@ function generateId() {
     return "@consume_@provide_" + ++__generate__Id;
 }
 class CompA extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__reviewVotes = new ObservedPropertySimple(0, this, "reviewVotes");
         this.addProvidedVar("reviewVote", this.__reviewVotes);
         this.addProvidedVar("reviewVotes", this.__reviewVotes);
@@ -112,8 +112,8 @@ class CompA extends View {
     }
 }
 class CompB extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
@@ -135,8 +135,8 @@ class CompB extends View {
     }
 }
 class CompC extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes");
         this.updateWithValueParams(params);
     }

@@ -87,8 +87,8 @@ ClassB = __decorate([
     Observed
 ], ClassB);
 class ViewA extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__varA = new SynchedPropertyNesedObject(params.varA, this, "varA");
         this.updateWithValueParams(params);
     }
@@ -110,8 +110,8 @@ class ViewA extends View {
     }
 }
 class ViewB extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__varB = new ObservedPropertyObject(new ClassB(new ClassA(0)), this, "varB");
         this.updateWithValueParams(params);
     }
