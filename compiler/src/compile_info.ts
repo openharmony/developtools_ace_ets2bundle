@@ -104,6 +104,7 @@ export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
 type Cache = Record<string, CacheFileName>;
 let allModifiedFiles: Set<string> = new Set();
+let checkErrorMessage: Set<string | Info> = new Set([]);
 interface wholeCache {
   runtimeOS: string,
   sdkInfo: string,
@@ -532,8 +533,11 @@ export class ResultStates {
           this.noteCount++;
           logger.info(this.blue, message.replace(/^NOTE/, 'ArkTS:NOTE'), this.reset, '\n');
         } else {
-          this.warningCount++;
-          logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
+          if (!checkErrorMessage.has(message)) {
+            this.warningCount++;
+            logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
+            checkErrorMessage.add(message);
+          } 
         }
       }
       if (this.mWarningCount > length) {
@@ -547,6 +551,7 @@ export class ResultStates {
       const errors: Info[] = [...this.mStats.compilation.errors];
       for (let index = 0; index < errors.length; index++) {
         if (errors[index].issue) {
+          if (!checkErrorMessage.has(errors[index].issue)) {
           this.mErrorCount++;
           const position: string = errors[index].issue.location
             ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
@@ -555,12 +560,17 @@ export class ResultStates {
           const detail: string = errors[index].issue.message;
           logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
           logger.error(this.red, detail, this.reset, '\n');
+          checkErrorMessage.add(errors[index].issue);
+          }
         } else if (/BUILDERROR/.test(errors[index].message)) {
-          this.mErrorCount++;
-          const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
-            .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
-            .replace(/^ERROR/, 'ArkTS:ERROR');
-          this.printErrorMessage(errorMessage, true, errors[index]);
+          if (!checkErrorMessage.has(errors[index].message)) {
+            this.mErrorCount++;
+            const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
+              .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
+              .replace(/^ERROR/, 'ArkTS:ERROR');
+            this.printErrorMessage(errorMessage, true, errors[index]);
+            checkErrorMessage.add(errors[index].message);
+          }  
         } else if (!/TS[0-9]+:/.test(errors[index].message.toString()) &&
           !/Module parse failed/.test(errors[index].message.toString())) {
           this.mErrorCount++;
