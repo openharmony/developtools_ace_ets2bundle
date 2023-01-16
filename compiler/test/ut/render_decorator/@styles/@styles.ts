@@ -60,8 +60,8 @@ function generateId() {
     return "@styles_" + ++__generate__Id;
 }
 class FancyUse extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__enable = new ObservedPropertySimple(true, this, "enable");
         this.updateWithValueParams(params);
     }

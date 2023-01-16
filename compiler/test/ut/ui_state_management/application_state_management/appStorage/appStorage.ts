@@ -56,8 +56,8 @@ function generateId() {
 let varA = AppStorage.Link('varA');
 let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__varA = AppStorage.SetAndLink('varA', 2, this, "varA");
         this.__lang = AppStorage.SetAndProp('languageCode', 'en', this, "lang");
         this.label = 'count';

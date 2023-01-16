@@ -44,8 +44,8 @@ function generateId() {
     return "@builderWithLinkData_" + ++__generate__Id;
 }
 class TitleComp extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__title = new SynchedPropertySimpleTwoWay(params.title, this, "title");
         this.updateWithValueParams(params);
     }
@@ -67,8 +67,8 @@ class TitleComp extends View {
     }
 }
 class TestPage extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__value = new ObservedPropertySimple('hello world', this, "value");
         this.updateWithValueParams(params);
     }
@@ -87,7 +87,7 @@ class TestPage extends View {
     set value(newValue) {
         this.__value.set(newValue);
     }
-    TitleCompView(parent = undefined) {
+    TitleCompView(parent = null) {
         let earlierCreatedChild_2 = ((parent ? parent : this) && (parent ? parent : this).findChildById) ? (parent ? parent : this).findChildById(generateId()) : undefined;
         if (earlierCreatedChild_2 == undefined) {
             View.create(new TitleComp("@builderWithLinkData_" + __generate__Id, parent ? parent : this, { title: this.__value }));

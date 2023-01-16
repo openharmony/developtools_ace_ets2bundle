@@ -43,6 +43,13 @@ struct CustomContainer2 {
   }
 }
 
+@Builder function specificWithParam(label1: string, label2: string) {
+  Column() {
+    Text(label1).fontSize(50)
+    Text(label2).fontSize(50)
+  }
+}
+
 @Entry
 @Component
 struct CustomContainerUser {
@@ -65,7 +72,7 @@ struct CustomContainerUser {
         header: this.text,
       }){
         Column(){
-          specificParam("111", "22")
+          specificWithParam("111", "22")
         }.onClick(()=>{
           this.text = "changeHeader"
         })
@@ -102,8 +109,8 @@ function generateId() {
 }
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
         this.footer = "";
         this.updateWithValueParams(params);
@@ -133,8 +140,8 @@ class CustomContainer extends View {
     }
 }
 class CustomContainer2 extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
         this.updateWithValueParams(params);
     }
@@ -155,9 +162,19 @@ class CustomContainer2 extends View {
         Column.pop();
     }
 }
+function specificWithParam(label1, label2, parent = null) {
+    Column.create();
+    Text.create(label1);
+    Text.fontSize(50);
+    Text.pop();
+    Text.create(label2);
+    Text.fontSize(50);
+    Text.pop();
+    Column.pop();
+}
 class CustomContainerUser extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__text = new ObservedPropertySimple('header', this, "text");
         this.updateWithValueParams(params);
     }
@@ -176,14 +193,14 @@ class CustomContainerUser extends View {
     set text(newValue) {
         this.__text.set(newValue);
     }
-    specificParam(parent = undefined) {
+    specificParam(parent = null) {
         Column.create();
         Text.create("content");
         Text.fontSize(50);
         Text.pop();
         Column.pop();
     }
-    callSpecificParam(label1, label2, parent = undefined) {
+    callSpecificParam(label1, label2, parent = null) {
         Column.create();
         Text.create(label1);
         Text.fontSize(50);
@@ -204,7 +221,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22", this);
+                    specificWithParam("111", "22", this);
                     Column.pop();
                 }
             }));
@@ -217,7 +234,7 @@ class CustomContainerUser extends View {
                     Column.onClick(() => {
                         this.text = "changeHeader";
                     });
-                    specificParam("111", "22", this);
+                    specificWithParam("111", "22", this);
                     Column.pop();
                 }
             });
