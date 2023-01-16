@@ -17,6 +17,8 @@ import path from 'path';
 import ts from 'typescript';
 import fs from 'fs';
 import os from 'os';
+import uglifyJS from 'uglify-js';
+
 import { projectConfig } from '../main';
 import { createHash } from 'crypto';
 import { processSystemApi } from './validate_ui_syntax';
@@ -270,7 +272,8 @@ export function writeFileSync(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content);
 }
 
-export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string): string {
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
+  removeTemporary: boolean = false): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
     filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
@@ -287,16 +290,17 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
       const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
-      output = path.join(buildPath, TEMPORARY, NODE_MODULES, MAIN, sufStr);
+      output = path.join(buildPath, removeTemporary ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
     } else {
-      output = filePath.replace(fakeNodeModulesPath, path.join(buildPath, TEMPORARY, NODE_MODULES, AUXILIARY));
+      output = filePath.replace(fakeNodeModulesPath,
+        path.join(buildPath, removeTemporary ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
     }
     return output;
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
     const sufStr: string = filePath.replace(projectPath, '');
-    const output: string = path.join(buildPath, TEMPORARY, sufStr);
+    const output: string = path.join(buildPath, removeTemporary ? '' : TEMPORARY, sufStr);
     return output;
   }
 
@@ -458,6 +462,21 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
     }
   }
   return item;
+}
+
+export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string) {
+  let jsFilePath: string = genTemporaryPath(sourcePath,
+    projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
+    projectConfig.compileShared ? path.resolve(projectConfig.buildPath, '../etsFortgz') : process.env.cachePath,
+    projectConfig.compileShared);
+  if (!jsFilePath.match(/node_modules/)) {
+    jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
+    mkdirsSync(path.dirname(jsFilePath));
+    if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
+      sourceContent = uglifyJS.minify(sourceContent).code;
+    }
+    fs.writeFileSync(jsFilePath, sourceContent);
+  }
 }
 
 function replaceHarDependency(item:string, moduleRequest: string): string {

@@ -36,13 +36,18 @@ import {
   circularFile,
   mkDir,
   writeFileSync,
-  parseErrorMessage
+  parseErrorMessage,
+  generateSourceFilesInHar,
+  genTemporaryPath
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
-  ESMODULE
+  ESMODULE,
+  JSBUNDLE,
+  EXTNAME_JS,
+  EXTNAME_JS_MAP
 } from './pre_define';
 import {
   createLanguageService,
@@ -88,9 +93,10 @@ interface NeedUpdateFlag {
   flag: boolean;
 }
 
+export const allResolvedModules: Set<string> = new Set();
 export let hotReloadSupportFiles: Set<string> = new Set();
 export let cache: Cache = {};
-export const shouldResolvedFiles: Set<string> = new Set()
+export const shouldResolvedFiles: Set<string> = new Set();
 type Cache = Record<string, CacheFileName>;
 let allModifiedFiles: Set<string> = new Set();
 interface wholeCache {
@@ -113,9 +119,21 @@ export class ResultStates {
   private reset: string = '\u001b[39m';
   private moduleSharePaths: Set<string> = new Set([]);
   private removedFiles: string[] = [];
+  private incrementalFileInHar: Map<string, string> = new Map();
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
+      compilation.hooks.processAssets.tap('RemoveHar', (assets) => {
+        if (!projectConfig.compileHar) {
+          return;
+        }
+        Object.keys(compilation.assets).forEach(key => {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
+            delete assets[key];
+          }
+        });
+      });
+
       compilation.hooks.afterProcessAssets.tap('SourcemapFixer', assets => {
         Reflect.ownKeys(assets).forEach(key => {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
@@ -168,6 +186,8 @@ export class ResultStates {
           }
         }
       });
+
+      compilation.hooks.finishModules.tap('finishModules', handleFinishModules.bind(this));
     });
 
     compiler.hooks.afterCompile.tap('copyFindModule', () => {
@@ -272,6 +292,22 @@ export class ResultStates {
             "fileList": cache
           }, null, 2));
         }
+        if (projectConfig.compileHar || projectConfig.compileShared) {
+          [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
+            if (!(moduleFile.match(/node_modules/) && projectConfig.compileHar)) {
+              try {
+                const emit: any = languageService.getEmitOutput(moduleFile, true, true);
+                if (emit.outputFiles[0]) {
+                  generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile));
+                } else {
+                  logger.warn(this.yellow,
+                    "ArkTS:WARN doesn't generate .d"+path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
+                }
+              } catch (err) {
+              }
+            }
+          })
+        }
       }
     });
 
@@ -318,6 +354,12 @@ export class ResultStates {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
         this.writeUseOSFiles();
+      }
+      if (projectConfig.compileHar) {
+        this.incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+          const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
+          writeFileSync(jsBuildFilePath, sourceCode);
+        });
       }
       this.mStats = stats;
       this.warningCount = 0;
@@ -607,5 +649,26 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
   } else {
     cache[file] = { mtimeMs, children: [], parent: [], error: false };
     needUpdate.flag = true;
+  }
+}
+
+function handleFinishModules(modules, callback) {
+  if (projectConfig.compileHar) {
+    modules.forEach(module => {
+      if (module !== undefined && module.resourceResolveData !== undefined) {
+        const filePath: string = module.resourceResolveData.path;
+        if (!filePath.match(/node_modules/)) {
+          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, process.env.cachePath);
+          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, projectConfig.buildPath, true);
+          if (path.extname(filePath) === 'ets' || path.extname(filePath) === 'ts') {
+            this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
+              jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
+            this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
+          } else {
+            this.incrementalFileInHar.set(jsCacheFilePath, jsBuildFilePath);
+          }
+        }
+      }
+    });
   }
 }
