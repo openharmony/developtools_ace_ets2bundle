@@ -70,8 +70,8 @@ function generateId() {
     return "@prop_" + ++__generate__Id;
 }
 class ctComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__name = new SynchedPropertySimpleOneWay(params.name, this, "name");
         this.__canPlay = new SynchedPropertySimpleOneWay(params.canPlay, this, "canPlay");
         this.__count = new SynchedPropertySimpleOneWay(params.count, this, "count");
@@ -145,8 +145,8 @@ class ctComponent extends View {
     }
 }
 class PageComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__countDownStartValue = new ObservedPropertySimple(10, this, "countDownStartValue");
         this.updateWithValueParams(params);
     }

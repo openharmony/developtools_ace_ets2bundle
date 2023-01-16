@@ -64,8 +64,8 @@ function generateId() {
 }
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__testText1 = new ObservedPropertySimple('Hello', this, "testText1");
         this.__testText2 = new ObservedPropertySimple('World', this, "testText2");
         this.__testText3 = new ObservedPropertySimple('Test', this, "testText3");

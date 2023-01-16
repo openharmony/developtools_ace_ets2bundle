@@ -48,11 +48,13 @@ struct Banner {
 exports.expectResult =
 `"use strict";
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
@@ -70,53 +72,117 @@ class MyComponent extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, {}));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
-        __Common__.create();
-        __Common__.width(100);
-        {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, {}));
+            __Common__.create();
+            __Common__.width(100);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
             ViewStackProcessor.StopGetAccessRecording();
-        }
-        __Common__.pop();
-        __Common__.create();
-        __Common__.width(100);
-        __Common__.height(200);
+        });
         {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, {}));
-            ViewStackProcessor.StopGetAccessRecording();
-        }
-        __Common__.pop();
-        {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, { value: "Hello" }));
-            ViewStackProcessor.StopGetAccessRecording();
-        }
-        __Common__.create();
-        __Common__.width(100);
-        {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, { value: "Hello" }));
-            ViewStackProcessor.StopGetAccessRecording();
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         __Common__.pop();
-        __Common__.create();
-        __Common__.width(100);
-        __Common__.height(200);
-        {
-            const elmtId = ViewStackProcessor.AllocateNewElmetIdForNextComponent();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            ViewPU.create(new Banner(this, { value: "Hello" }));
+            __Common__.create();
+            __Common__.width(100);
+            __Common__.height(200);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
             ViewStackProcessor.StopGetAccessRecording();
+        });
+        {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
+        }
+        __Common__.pop();
+        {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
+        }
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
+        }
+        __Common__.pop();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            __Common__.create();
+            __Common__.width(100);
+            __Common__.height(200);
+            if (!isInitialRender) {
+                __Common__.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        {
+            this.observeComponentCreation((elmtId, isInitialRender) => {
+                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                if (isInitialRender) {
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                }
+                ViewStackProcessor.StopGetAccessRecording();
+            });
         }
         __Common__.pop();
         Column.pop();
@@ -126,8 +192,8 @@ class MyComponent extends ViewPU {
     }
 }
 class Banner extends ViewPU {
-    constructor(parent, params, __localStorage) {
-        super(parent, __localStorage);
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
         this.value = "Hello";
         this.setInitiallyProvidedValue(params);
     }
@@ -136,10 +202,11 @@ class Banner extends ViewPU {
             this.value = params.value;
         }
     }
+    updateStateVars(params) {
+    }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
     }
     aboutToBeDeleted() {
-        this.value = undefined;
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }

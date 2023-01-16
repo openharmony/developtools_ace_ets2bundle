@@ -147,13 +147,13 @@ let __generate__Id = 0;
 function generateId() {
     return "@builder_" + ++__generate__Id;
 }
-function noParam(parent = undefined) {
+function noParam(parent = null) {
     Row.create();
     Text.create('this is a no param builder');
     Text.pop();
     Row.pop();
 }
-function specificParam(label1, label2, parent = undefined) {
+function specificParam(label1, label2, parent = null) {
     Column.create();
     Text.create(label1);
     Text.pop();
@@ -162,8 +162,8 @@ function specificParam(label1, label2, parent = undefined) {
     Column.pop();
 }
 class MyComponent extends View {
-    constructor(compilerAssignedUniqueChildId, parent, params) {
-        super(compilerAssignedUniqueChildId, parent);
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
         this.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimple(true, this, "hideBar");
@@ -190,12 +190,12 @@ class MyComponent extends View {
     set hideBar(newValue) {
         this.__hideBar.set(newValue);
     }
-    textBuilder(parent = undefined) {
+    textBuilder(parent = null) {
         Text.create("文本");
         Text.fontSize(30);
         Text.pop();
     }
-    NavigationTitlePara(label, parent = undefined) {
+    NavigationTitlePara(label, parent = null) {
         Column.create();
         Text.create(label);
         Text.width(80);
@@ -203,7 +203,7 @@ class MyComponent extends View {
         Text.pop();
         Column.pop();
     }
-    MenuBuilder(parent = undefined) {
+    MenuBuilder(parent = null) {
         Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });
         Flex.width(100);
         Text.create('Test menu item 1');
@@ -221,7 +221,7 @@ class MyComponent extends View {
         Row.create();
         Row.padding(10);
         Row.bindMenu({ builder: () => {
-                this.NavigationTitlePara("111");
+                this.NavigationTitlePara.call(this, "111");
             } });
         Text.create("Drag Me");
         Text.onDragStart((event, extraParams) => {
@@ -252,7 +252,7 @@ class MyComponent extends View {
         Row.create();
         Row.padding(10);
         Navigation.create();
-        Navigation.title({ builder: noParam });
+        Navigation.title({ builder: noParam.bind(this) });
         Navigation.menus({ builder: this.textBuilder.bind(this) });
         Navigation.toolBar({ items: [
                 { value: 'app', text: 'Grid', action: () => {
