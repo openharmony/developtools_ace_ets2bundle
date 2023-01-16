@@ -405,23 +405,32 @@ function isCustomComponent(node: ts.ClassDeclaration | ts.StructDeclaration): bo
   return false;
 }
 
+let packageJsonEntry: string = '';
+
 function isPackageJsonEntry(filePath: string): boolean {
   const packageJsonPath: string = path.join(filePath, PACKAGE_JSON);
   if (fs.existsSync(packageJsonPath)) {
-    let entry: string;
+    let entryTypes: string;
+    let entryMain: string;
     try {
-      entry = JSON.parse(fs.readFileSync(packageJsonPath).toString()).main;
+      const packageJson: Object = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+      entryTypes = packageJson.types;
+      entryMain = packageJson.main;
     } catch (e) {
       return false;
     }
-    if (typeof entry === 'string' && fs.existsSync(path.join(filePath, entry))) {
+    if (entryExist(filePath, entryTypes)) {
+      packageJsonEntry = path.resolve(filePath, entryTypes);
+      return true;
+    } else if (entryExist(filePath, entryMain)) {
+      packageJsonEntry = path.resolve(filePath, entryMain);
       return true;
     }
   }
 }
 
-function getPackageJsonEntry(filePath: string): string {
-  return path.join(filePath, JSON.parse(fs.readFileSync(path.join(filePath, PACKAGE_JSON)).toString()).main);
+function entryExist(filePath: string, entry: string): boolean {
+  return typeof entry === 'string' && fs.existsSync(path.resolve(filePath, entry));
 }
 
 function getModuleFilePath(filePath: string): string {
@@ -463,7 +472,7 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
     if (fs.existsSync(fileResolvePath + EXTNAME_ETS)) {
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
     } else if (isPackageJsonEntry(fileResolvePath)) {
-      fileResolvePath = getPackageJsonEntry(fileResolvePath);
+      fileResolvePath = packageJsonEntry;
       if (fs.statSync(fileResolvePath).isDirectory() && fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
         fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
       }
