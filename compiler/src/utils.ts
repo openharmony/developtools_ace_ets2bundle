@@ -273,7 +273,7 @@ export function writeFileSync(filePath: string, content: string): void {
 }
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
-  buildInHar: boolean = false): string {
+  removeTemporary: boolean = false): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
     filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
@@ -290,17 +290,17 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
       const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
-      output = path.join(buildPath, buildInHar ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
+      output = path.join(buildPath, removeTemporary ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
     } else {
       output = filePath.replace(fakeNodeModulesPath,
-        path.join(buildPath, buildInHar ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
+        path.join(buildPath, removeTemporary ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
     }
     return output;
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
     const sufStr: string = filePath.replace(projectPath, '');
-    const output: string = path.join(buildPath, buildInHar ? '' : TEMPORARY, sufStr);
+    const output: string = path.join(buildPath, removeTemporary ? '' : TEMPORARY, sufStr);
     return output;
   }
 
@@ -467,7 +467,8 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string) {
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
-    path.resolve(projectConfig.buildPath, projectConfig.compileShared ? '../etsFortgz' : ''), true);
+    projectConfig.compileShared ? path.resolve(projectConfig.buildPath, '../etsFortgz') : process.env.cachePath,
+    projectConfig.compileShared);
   if (!jsFilePath.match(/node_modules/)) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     mkdirsSync(path.dirname(jsFilePath));
