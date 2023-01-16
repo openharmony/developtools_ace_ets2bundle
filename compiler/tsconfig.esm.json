@@ -1,7 +1,85 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-   "ets": {
+    "ets": {
+      "emitDecorators":[
+        {
+          "name":"Entry", 
+          "emitParameters" : false
+        },
+        {
+          "name":"Component",
+          "emitParameters" : false
+        },
+        {
+          "name":"Preview",
+          "emitParameters" : false
+        },
+        {
+          "name":"CustomDialog",
+          "emitParameters" : false
+        },
+        {
+          "name":"Consume", 
+          "emitParameters" : false
+        },
+        {
+          "name":"Link",
+          "emitParameters" : false
+        },
+        {
+          "name":"LocalStorageLink",
+          "emitParameters" : false
+        },
+        {
+          "name":"LocalStorageProp",
+          "emitParameters" : false
+        },
+        {
+          "name":"ObjectLink", 
+          "emitParameters" : false
+        },
+        {
+          "name":"Prop",
+          "emitParameters" : false
+        },
+        {
+          "name":"Provide",
+          "emitParameters" : false
+        },
+        {
+          "name":"State",
+          "emitParameters" : false
+        },
+        {
+          "name":"StorageLink",
+          "emitParameters" : false
+        },
+        {
+          "name":"StorageProp",
+          "emitParameters" : false
+        },
+        {
+          "name":"Watch",
+          "emitParameters" : false
+        },
+        {
+          "name":"Builder",
+          "emitParameters" : false
+        },
+        {
+          "name":"BuilderParam",
+          "emitParameters" : false
+        },
+        {
+          "name":"Styles",
+          "emitParameters" : false
+        },
+        {
+          "name":"Observed",
+          "emitParameters" : false
+        }
+      ],
       "propertyDecorators": [
         {
           "name": "Link",

@@ -100,7 +100,7 @@ function initConfig(config) {
     },
     resolve: {
       symlinks: projectConfig.compileMode === 'esmodule' ? false : true,
-      extensions: ['.js', '.ets', '.ts', '.d.ts'],
+      extensions: ['.js', '.ets', '.ts', '.d.ts', '.d.ets'],
       modules: [
         projectPath,
         './node_modules',
@@ -168,6 +168,9 @@ function setJsConfigRule() {
     ]);
   } else {
     jsRule.resolve = { fullySpecified: false };
+  }
+  if (projectConfig.compileHar) {
+    jsRule.use.unshift({ loader: path.resolve(__dirname, 'lib/process_har_writejs.js')});
   }
   return jsRule;
 }
@@ -449,7 +452,7 @@ module.exports = (env, argv) => {
 
   if (env.isPreview !== "true") {
     loadWorker(projectConfig, workerFile);
-    if (env.compilerType && env.compilerType === 'ark') {
+    if (env.compilerType && env.compilerType === 'ark' && !projectConfig.compileHar) {
       setGenAbcPlugin(env, config);
     }
   } else {
@@ -458,7 +461,7 @@ module.exports = (env, argv) => {
     setGenAbcPlugin(env, config);
     let port;
     process.argv.forEach((val, index) => {
-      if(val.startsWith('port=')){
+      if (val.startsWith('port=')) {
         port = val.split('=')[1];
       }
     });
@@ -467,12 +470,23 @@ module.exports = (env, argv) => {
     }
   }
 
+  if (projectConfig.compileHar && env.obfuscate === 'uglify') {
+    projectConfig.obfuscateHarType = 'uglify';
+  }
+
   if (env.sourceMap === 'none') {
     config.devtool = false;
   }
 
   if (env.buildMode === 'release' && projectConfig.compileMode !== 'esmodule') {
     setReleaseConfig(config);
+  }
+
+  if (projectConfig.compileMode === 'esmodule' && projectConfig.harNameOhmMap) {
+    config.externals = [];
+    for (const harName in projectConfig.harNameOhmMap) {
+      config.externals.push(RegExp('^(' + harName + ')($|\/\S+)'));
+    }
   }
 
   const appResourcePath = env.appResource || process.env.appResource;
