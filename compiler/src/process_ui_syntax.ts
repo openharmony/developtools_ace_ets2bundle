@@ -475,19 +475,19 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
   } else if (!resources[resourceData[0]]) {
     log.push({
       type: LogType.ERROR,
-      message: `The value of '${resourceData[0]}' is invalid.`,
+      message: `Unknown resource source '${resourceData[0]}'.`,
       pos: pos
     });
   } else if (!resources[resourceData[0]][resourceData[1]]) {
     log.push({
       type: LogType.ERROR,
-      message: `Value '${resourceData[1]}' does not exist on type 'typeof ${resourceData[0]}'.`,
+      message: `Unknown resource type '${resourceData[1]}'.`,
       pos: pos
     });
   } else if (!resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
     log.push({
       type: LogType.ERROR,
-      message: `Value '${resourceData[2]}' does not exist on type 'typeof ${resourceData[1]}'.`,
+      message: `Unknown resource name '${resourceData[2]}'.`,
       pos: pos
     });
   } else {
