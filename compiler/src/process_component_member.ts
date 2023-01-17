@@ -867,6 +867,13 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
     }
     return true;
   }
+  if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
+  }
   return false;
 }
 
