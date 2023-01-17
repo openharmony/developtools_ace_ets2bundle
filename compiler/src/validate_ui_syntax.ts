@@ -72,14 +72,14 @@ import {
   componentInfo,
   addLog,
   hasDecorator,
-  getPackageInfo,
   validatorCard
 } from './utils';
+import { getPackageInfo } from './ark_utils'
 import { projectConfig, abilityPagesFullPath } from '../main';
-import { 
-  collectExtend, 
-  isExtendFunction, 
-  transformLog 
+import {
+  collectExtend,
+  isExtendFunction,
+  transformLog
 } from './process_ui_syntax';
 import { isOhmUrl } from './resolve_ohm_url';
 import { logger } from './compile_info';

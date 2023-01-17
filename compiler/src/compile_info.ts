@@ -308,7 +308,8 @@ export class ResultStates {
               try {
                 const emit: any = languageService.getEmitOutput(moduleFile, true, true);
                 if (emit.outputFiles[0]) {
-                  generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile));
+                  generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile),
+                    projectConfig);
                 } else {
                   logger.warn(this.yellow,
                     "ArkTS:WARN doesn't generate .d"+path.extname(moduleFile) + " for " + moduleFile, this.reset);
@@ -676,8 +677,10 @@ function handleFinishModules(modules, callback) {
       if (module !== undefined && module.resourceResolveData !== undefined) {
         const filePath: string = module.resourceResolveData.path;
         if (!filePath.match(/node_modules/)) {
-          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, process.env.cachePath);
-          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, projectConfig.buildPath, true);
+          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, process.env.cachePath,
+            projectConfig);
+          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            projectConfig.buildPath, projectConfig, true);
           if (filePath.match(/\.e?ts$/)) {
             this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
               jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
