@@ -53,7 +53,8 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'VideoController', 'WebController', 'CustomDialogController', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
   'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D',
-  'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController', 'TextAreaController', 'TextInputController'
+  'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController',
+  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController'
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
