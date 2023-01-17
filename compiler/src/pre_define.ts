@@ -378,3 +378,5 @@ export const CARD_LOG_TYPE_IMPORT = 3;
 
 export const CALL = 'call';
 export const RESERT = 'reset';
+
+export const TS_NOCHECK: string = '// @ts-nocheck';
