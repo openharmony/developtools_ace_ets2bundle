@@ -379,19 +379,19 @@ function validateStateManagement(node: ts.ObjectLiteralElementLike, customCompon
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
   log: LogInfo[]): void {
   let propertyName: string;
-  if (node.name && node.name.escapedText) {
-    // @ts-ignore
+  if (ts.isIdentifier(node.name)) {
     propertyName = node.name.escapedText.toString();
   }
   const curPropertyKind: string = getPropertyDecoratorKind(propertyName, customComponentName);
+  let parentPropertyName: string;
   if (curPropertyKind) {
     if (isInitFromParent(node)) {
-      const parentPropertyName: string =
+      parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
-      if (!parentPropertyName) {
-        return;
+      let parentPropertyKind: string = curPropMap.get(parentPropertyName);
+      if (!parentPropertyKind) {
+        parentPropertyKind = COMPONENT_NON_DECORATOR;
       }
-      const parentPropertyKind: string = curPropMap.get(parentPropertyName);
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
@@ -400,6 +400,14 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       if (!localArray.includes(curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
+      }
+    } else {
+      parentPropertyName =
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
+      const parentPropertyKind = COMPONENT_NON_DECORATOR;
+      if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
+        validateIllegalInitFromParent(
+          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log, LogType.WARN);
       }
     }
   }
@@ -427,8 +435,11 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
-  let parentPropertyName: string;
   const initExpression: ts.Expression = node.initializer;
+  if (!initExpression) {
+    return undefined;
+  }
+  let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
       // @ts-ignore
@@ -441,10 +452,13 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
     if (hasDollar(initExpression)) {
       validateNonLinkWithDollar(node, log);
     } else {
-    // @ts-ignore
-      parentPropertyName = node.initializer.name.getText();
+      // @ts-ignore
+      if (node.initializer && node.initializer.name) {
+        parentPropertyName = node.initializer.name.getText();
+      }
     }
   }
+
   return parentPropertyName;
 }
 
@@ -627,13 +641,20 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], inputType: LogType = undefined): void {
+  let type: LogType = LogType.ERROR;
+  if (inputType) {
+    type = inputType;
+  } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
+    curPropertyKind === COMPONENT_STATE_DECORATOR) {
+    type = LogType.WARN;
+  }
   log.push({
-    type: LogType.ERROR,
+    type: type,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart()
   });
 }
 
