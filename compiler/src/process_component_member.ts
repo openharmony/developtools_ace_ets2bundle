@@ -865,7 +865,7 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
   if (checker) {
     const type: ts.Type = checker.getTypeFromTypeNode(typeNode);
     /* Enum */
-    if (type.flags & 32) {
+    if (type.flags & (32 | 1024)) {
       return true;
     }
     // @ts-ignore
@@ -894,11 +894,12 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
 }
 
 function isBasicType(flags: number): boolean {
-  return [
-    4, /* String */ 8, /* Number */ 16 /* Boolean */, 32 /* Enum */, 64, /* BigInt */
-    128, /* StringLiteral */ 256, /* NumberLiteral */ 512 /* BooleanLiteral */, 1024 /* EnumLiteral */,
-    2048 /* BigIntLiteral */
-  ].includes(flags);
+  if (flags & (4 | /* String */ 8 | /* Number */ 16 | /* Boolean */ 32 | /* Enum */ 64 | /* BigInt */
+    128 | /* StringLiteral */ 256 | /* NumberLiteral */ 512 /* BooleanLiteral */| 1024 /* EnumLiteral */|
+    2048 /* BigIntLiteral */)) {
+    return true;
+  }
+  return false;
 }
 
 function isObservedClassType(type: ts.TypeNode): boolean {
