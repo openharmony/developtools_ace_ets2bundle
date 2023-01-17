@@ -255,7 +255,7 @@ export function isObservedClass(node: ts.Node): boolean {
 }
 
 export function isCustomDialogClass(node: ts.Node): boolean {
-  if (ts.isClassDeclaration(node) && hasDecorator(node, COMPONENT_DECORATOR_CUSTOM_DIALOG)) {
+  if (ts.isStructDeclaration(node) && hasDecorator(node, COMPONENT_DECORATOR_CUSTOM_DIALOG)) {
     return true;
   }
   return false;
