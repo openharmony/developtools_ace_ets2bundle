@@ -846,48 +846,51 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   } else if (program) {
     checker = program.getTypeChecker();
   }
-  const enumType: ts.SyntaxKind = getEnumType(typeNode, checker);
-  if (simpleTypes.has(enumType || typeNode.kind) || isEnumtype(typeNode)) {
+  return getDeclarationType(typeNode, checker, log);
+}
+
+function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log: LogInfo[]): boolean {
+  if (simpleTypes.has(typeNode.kind)) {
     return true;
-  } else if (ts.isUnionTypeNode(typeNode) && typeNode.types) {
-    const types: ts.NodeArray<ts.TypeNode> = typeNode.types;
-    let basicType: boolean = false;
-    let referenceType: boolean = false;
-    for (let i = 0; i < types.length; i++) {
-      const enumType: ts.SyntaxKind = getEnumType(types[i], checker);
-      if (simpleTypes.has(enumType || types[i].kind) || isEnumtype(typeNode)) {
-        basicType = true;
-      } else {
-        referenceType = true;
+  }
+  if (checker) {
+    const type: ts.Type = checker.getTypeFromTypeNode(typeNode);
+    /* Enum */
+    if (type.flags & (32 | 1024)) {
+      return true;
+    }
+    // @ts-ignore
+    if (type.types && type.types.length) {
+      // @ts-ignore
+      const types = type.types;
+      let basicType: boolean = false;
+      let referenceType: boolean = false;
+      for (let i = 0; i < types.length; i++) {
+        if (isBasicType(types[i].flags)) {
+          basicType = true;
+        } else {
+          referenceType = true;
+        }
       }
       if (basicType && referenceType && log) {
         validateVariableType(typeNode, log);
         return false;
       }
+      if (!referenceType) {
+        return true;
+      }
     }
-    return true;
   }
   return false;
 }
 
-function getEnumType(typeNode: ts.TypeNode, checker: ts.TypeChecker): ts.SyntaxKind {
-  if (!checker) {
-    return;
+function isBasicType(flags: number): boolean {
+  if (flags & (4 | /* String */ 8 | /* Number */ 16 | /* Boolean */ 32 | /* Enum */ 64 | /* BigInt */
+    128 | /* StringLiteral */ 256 | /* NumberLiteral */ 512 /* BooleanLiteral */| 1024 /* EnumLiteral */|
+    2048 /* BigIntLiteral */)) {
+    return true;
   }
-  typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
-  if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
-    const type: ts.Type =
-      checker.getBaseTypeOfLiteralType(checker.getTypeAtLocation(typeNode.typeName));
-    if (type.symbol && type.symbol.valueDeclaration) {
-      return type.symbol.valueDeclaration.kind;
-    }
-  }
-}
-
-function isEnumtype(typeNode: ts.TypeNode): boolean {
-  if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
-    return enumCollection.has(typeNode.typeName.getText());
-  }
+  return false;
 }
 
 function isObservedClassType(type: ts.TypeNode): boolean {
@@ -1048,7 +1051,9 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
 function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: 'The state variable type of a struct component cannot be declared by both a simple type and an object type.',
+    message: `The state variable type here is '${typeNode.getText()}', ` +
+      `it contains both a simple type and an object type,\n ` +
+      `which are not allowed to be defined for state variable of a struct.`,
     pos: typeNode.getStart()
   });
 }
