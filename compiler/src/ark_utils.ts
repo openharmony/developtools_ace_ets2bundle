@@ -45,6 +45,7 @@ import {
   isWindows,
   isNodeModulesFile,
   genTemporaryPath,
+  getExtensionIfUnfullySpecifiedFilepath,
   mkdirsSync,
   toUnixPath,
   validateFilePathLength
@@ -209,7 +210,7 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, pr
 
 export function transformModuleSpecifier(sourcePath: string, sourceCode: string, projectConfig: any): string {
   // replace relative moduleSpecifier with ohmURl
-  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+)['"]/g;
+  const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+|(?:\.\/?|\.\.\/?))['"]/g;
   const REG_HAR_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^\.\/][^'"]+)['"]/g;
   return sourceCode.replace(REG_HAR_DEPENDENCY, (item, moduleRequest) => {
     return replaceHarDependency(item, moduleRequest, projectConfig);
@@ -245,6 +246,19 @@ function replaceHarDependency(item:string, moduleRequest: string, projectConfig:
   return item;
 }
 
+function locateActualFilePathWithModuleRequest(absolutePath: string): string {
+  if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isDirectory()) {
+    return absolutePath
+  }
+
+  const filePath: string = absolutePath + getExtensionIfUnfullySpecifiedFilepath(absolutePath);
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    return absolutePath;
+  }
+
+  return path.join(absolutePath, 'index');
+}
+
 function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string, projectConfig: any): string {
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     // remove file extension from moduleRequest
@@ -260,7 +274,8 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
       return quotation + normalizedModuleRequest + quotation;
     });
 
-    const filePath: string = path.resolve(path.dirname(sourcePath), moduleRequest);
+    const filePath: string =
+      locateActualFilePathWithModuleRequest(path.resolve(path.dirname(sourcePath), moduleRequest));
     const result: RegExpMatchArray | null =
       filePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
     if (result && projectConfig.aceModuleJsonPath) {

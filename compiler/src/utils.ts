@@ -451,7 +451,7 @@ export function unlinkSync(filePath: string): void {
   }
 }
 
-export function getExtension(filePath: string): string {
+export function getExtensionIfUnfullySpecifiedFilepath(filePath: string): string {
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     return "";
   }
