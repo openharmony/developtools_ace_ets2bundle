@@ -85,6 +85,7 @@ interface NeedUpdateFlag {
 
 export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set()
+const checkErrorMessage: Set<string | Info> = new Set([]);
 type Cache = Record<string, CacheFileName>;
 
 export class ResultStates {
@@ -249,6 +250,7 @@ export class ResultStates {
     });
 
     compiler.hooks.watchRun.tap('Listening State', (comp: Compiler) => {
+      checkErrorMessage.clear();
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
       const watchModifiedFiles: string[] = [...comp.modifiedFiles];
@@ -411,11 +413,17 @@ export class ResultStates {
         const message: string = warnings[index].message.replace(/^Module Warning\s*.*:\n/, '')
           .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '');
         if (/^NOTE/.test(message)) {
-          this.noteCount++;
-          logger.info(this.blue, message, this.reset, '\n');
+          if (!checkErrorMessage.has(message)) {
+            this.noteCount++;
+            logger.info(this.blue, message, this.reset, '\n');
+            checkErrorMessage.add(message);
+          }
         } else {
-          this.warningCount++;
-          logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
+          if (!checkErrorMessage.has(message)) {
+            this.warningCount++;
+            logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
+            checkErrorMessage.add(message);
+          }
         }
       }
       if (this.mWarningCount > length) {
@@ -429,20 +437,26 @@ export class ResultStates {
       const errors: Info[] = [...this.mStats.compilation.errors];
       for (let index = 0; index < errors.length; index++) {
         if (errors[index].issue) {
-          this.mErrorCount++;
-          const position: string = errors[index].issue.location
-            ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
-            : '';
-          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
-          const detail: string = errors[index].issue.message;
-          logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
-          logger.error(this.red, detail, this.reset, '\n');
+          if (!checkErrorMessage.has(errors[index].issue)) {
+            this.mErrorCount++;
+            const position: string = errors[index].issue.location
+              ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
+              : '';
+            const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
+            const detail: string = errors[index].issue.message;
+            logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
+            logger.error(this.red, detail, this.reset, '\n');
+            checkErrorMessage.add(errors[index].issue);
+          }
         } else if (/BUILDERROR/.test(errors[index].message)) {
-          this.mErrorCount++;
-          const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
-            .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
-            .replace(/^ERROR/, 'ArkTS:ERROR');
-          this.printErrorMessage(errorMessage, true, errors[index]);
+          if (!checkErrorMessage.has(errors[index].message)) {
+            this.mErrorCount++;
+            const errorMessage: string = errors[index].message.replace(/^Module Error\s*.*:\n/, '')
+              .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '')
+              .replace(/^ERROR/, 'ArkTS:ERROR');
+            this.printErrorMessage(errorMessage, true, errors[index]);
+            checkErrorMessage.add(errors[index].message);
+          }
         } else if (!/TS[0-9]+:/.test(errors[index].message.toString()) &&
           !/Module parse failed/.test(errors[index].message.toString())) {
           this.mErrorCount++;
