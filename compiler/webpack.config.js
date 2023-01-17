@@ -33,7 +33,7 @@ const {
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
-const { IGNORE_ERROR_CODE, removeDir } = require('./lib/utils');
+const { IGNORE_ERROR_CODE, removeDir, mkdirsSync } = require('./lib/utils');
 const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
@@ -433,7 +433,8 @@ function clearWebpackCacheByBuildMode() {
   if (fs.existsSync(CACHED_BUILDMODE)) {
     let cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
     if (cachedBuildMode !== projectConfig.buildArkMode) {
-      removeDir(path.resolve(projectConfig.cachePath, '.ets_cache'));
+      removeDir(projectConfig.cachePath);
+      mkdirsSync(projectConfig.cachePath);
     }
   }
 }
