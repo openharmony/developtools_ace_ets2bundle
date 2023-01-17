@@ -111,9 +111,6 @@ export const GLOBAL_CONTEXT: string = 'Context';
 export const ATTRIBUTE_ANIMATION: string = 'animation';
 export const ATTRIBUTE_ANIMATETO: string = 'animateTo';
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
-export const COMPONENT_LOOP_VARIABLE: Set<string> = new Set([
-  COMPONENT_FOREACH, COMPONENT_LAZYFOREACH
-]);
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
