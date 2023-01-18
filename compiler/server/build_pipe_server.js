@@ -268,10 +268,8 @@ function responseToPlugin() {
 }
 
 function validateError(message) {
-  const propInfoReg = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
   const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-  if (matchMessage(message, [...globalVariable, ...props], propInfoReg) ||
-    matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
+  if (matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
     return false;
   }
   return true;
