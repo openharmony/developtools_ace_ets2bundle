@@ -137,7 +137,7 @@ export const setUpdateParamsDecorators: Set<string> =
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
+  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
