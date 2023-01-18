@@ -39,7 +39,7 @@ let supplement = {
   line: 0,
   column: 0,
   fileName: ''
-}
+};
 
 const pluginCommandChannelMessageHandlers = {
   'compileComponent': handlePluginCompileComponent,
@@ -58,10 +58,7 @@ let compileWithCheck;
 let globalVariable = [];
 let propertyVariable = [];
 let globalDeclaration = new Map();
-let variableDoubleCheck = new Set();
-let compileVariable = false;
 let connectNum = 0;
-let script = '';
 const maxConnectNum = 8;
 
 function init(port) {
@@ -92,7 +89,7 @@ function handlePluginConnect(ws) {
     try {
       const jsonData = JSON.parse(message);
       handlePluginCommand(jsonData);
-    } catch(e) {
+    } catch (e) {
     }
   });
 }
@@ -109,7 +106,7 @@ function handlePluginCompileComponent(jsonData) {
     if (receivedMsg_) {
       return;
     }
-  } else if (messages.length > 0){
+  } else if (messages.length > 0) {
     jsonData = messages[0];
   } else {
     return;
@@ -118,14 +115,15 @@ function handlePluginCompileComponent(jsonData) {
   const receivedMsg = _.cloneDeep(jsonData);
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-    Object.assign(compilerOptions, {
-      "sourceMap": false,
-    });
+  Object.assign(compilerOptions, {
+    'sourceMap': false
+  });
   const sourceNode = ts.createSourceFile('preview.ets',
     'struct preview{build(){' + receivedMsg.data.script + '}}',
     ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   compileWithCheck = jsonData.data.compileWithCheck || 'true';
-  checkPreparation(receivedMsg);
+  receivedMsg.data.variableScript = '';
+  checkPreparation(receivedMsg, sourceNode);
   const previewStatements = [];
   const log = [];
   supplement = {
@@ -133,7 +131,7 @@ function handlePluginCompileComponent(jsonData) {
     line: parseInt(JSON.parse(receivedMsg.data.offset).line),
     column: parseInt(JSON.parse(receivedMsg.data.offset).column),
     fileName: receivedMsg.data.filePath || ''
-  }
+  };
   processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
   supplement.isAcceleratePreview = false;
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
@@ -143,23 +141,15 @@ function handlePluginCompileComponent(jsonData) {
   receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
   receivedMsg.data.log = log;
   if (receivedMsg.data.viewID) {
-    receivedMsg.data.script = `function quickPreview(context) {
+    receivedMsg.data.script = receivedMsg.data.variableScript + `function quickPreview(context) {
       const fastPreview = function build(){
         ${receivedMsg.data.script}
       }.bind(context);
       fastPreview();
     }
-    quickPreview(GetRootView().findChildByIdForPreview(${receivedMsg.data.viewID}))`
-    script = receivedMsg.data.script;
+    quickPreview(GetRootView().findChildByIdForPreview(${receivedMsg.data.viewID}))`;
   }
   callEs2abc(receivedMsg);
-}
-
-function handlePluginCompileVariable() {
-  writeFileSync(previewCacheFilePath, receivedMsg_.data.variableScript);
-  receivedMsg_.data.script = ts.transpileModule(receivedMsg_.data.variableScript, {}).outputText + script;
-  script = '';
-  callEs2abc(receivedMsg_);
 }
 
 function transformResourceNode(newSource, log) {
@@ -170,8 +160,8 @@ function transformResourceNode(newSource, log) {
         return processResourceNode(node, log);
       }
       return ts.visitNode(rootNode, visit);
-    }
-  }  
+    };
+  };
   const transformationResult = ts.transform(newSource, [transformerFactory]);
   return transformationResult.transformed[0];
 }
@@ -184,19 +174,27 @@ function processResourceNode(node, log) {
   }
 }
 
-function checkPreparation(receivedMsg) {
+function checkPreparation(receivedMsg, sourceNode) {
+  let variableScript = '';
   if (previewCacheFilePath && fs.existsSync(previewCacheFilePath) && compileWithCheck === 'true') {
-    globalVariable = receivedMsg.data.globalVariable.map((item)=>{
+    globalVariable = receivedMsg.data.globalVariable || globalVariable;
+    globalVariable = globalVariable.map((item) => {
       globalDeclaration.set(item.identifier, item.declaration);
       return item.identifier;
-    })
+    });
+    for (const [key, value] of sourceNode.identifiers) {
+      if (globalVariable.includes(key)) {
+        variableScript += globalDeclaration.get(key) + '\n';
+      }
+    }
     propertyVariable = receivedMsg.data.propertyVariable || propertyVariable;
-    writeFileSync(previewCacheFilePath, 'struct preview{build(){' + receivedMsg.data.script + '}}');
+    receivedMsg.data.variableScript = ts.transpileModule(variableScript, {}).outputText;
+    writeFileSync(previewCacheFilePath, variableScript + 'struct preview{build(){' + receivedMsg.data.script + '}}');
   }
 }
 
 function callEs2abc(receivedMsg) {
-  if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)){
+  if (fs.existsSync(es2abcFilePath + '.exe') || fs.existsSync(es2abcFilePath)) {
     es2abc(receivedMsg);
   } else {
     es2abcFilePath = path.join(__dirname, '../bin/ark/build-mac/bin/es2abc');
@@ -211,23 +209,15 @@ function es2abc(receivedMsg) {
     Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
   try {
     pipeProcess.exec(cmd, (error, stdout, stderr) => {
-      if (compileVariable) {
-        if (stdout) {
-          receivedMsg.data.script = stdout;
-        } else {
-          receivedMsg.data.script = "";
-        }
+      if (stdout) {
+        receivedMsg.data.script = stdout;
       } else {
-        if (stdout) {
-          receivedMsg.data.script = stdout;
-        } else {
-          receivedMsg.data.script = "";
-        }
+        receivedMsg.data.script = '';
       }
       compileStatus = true;
       receivedMsg_ = receivedMsg;
       responseToPlugin();
-    })
+    });
   } catch (e) {
   }
 }
@@ -238,8 +228,8 @@ function resolveDiagnostic(diagnostic) {
     if (diagnostic.file) {
       const { line, character } =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        errorInfo.push(
-          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+      errorInfo.push(
+        `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
     } else {
       errorInfo.push(`ArkTS:ERROR: ${message}`);
     }
@@ -254,38 +244,25 @@ function delayPrintLogCount() {
 }
 
 function responseToPlugin() {
-  if ((compileWithCheck !== "true" && compileStatus == true) ||
-    (compileWithCheck === "true" && compileStatus == true && checkStatus == true) ) {
+  if ((compileWithCheck !== 'true' && compileStatus == true) ||
+    (compileWithCheck === 'true' && compileStatus == true && checkStatus == true)) {
     if (receivedMsg_) {
       if (errorInfo && errorInfo.length) {
         receivedMsg_.data.log =  receivedMsg_.data.log || [];
         receivedMsg_.data.log.push(...errorInfo);
       }
-      if (!receivedMsg_.data.log.length && variableDoubleCheck.size && !compileVariable) {
-        compileVariable = true;
+      pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
+        start = false;
         checkStatus = false;
         compileStatus = false;
-        let variableContent = '';
-        variableDoubleCheck.forEach((item)=>{
-          variableContent += globalDeclaration.get(item) + '\n';
-        })
-        receivedMsg_.data.variableScript = variableContent;
-        handlePluginCompileVariable();
-      } else {
-        pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
-          start = false;
-          checkStatus = false;
-          compileStatus = false;
-          errorInfo = [];
-          receivedMsg_ = undefined;
-          variableDoubleCheck = new Set();
-          compileVariable = false;
-          messages.shift();
-          if (messages.length > 0) {
-            handlePluginCompileComponent();
-          }
-        });
-      }
+        errorInfo = [];
+        receivedMsg_ = undefined;
+        globalDeclaration.clear();
+        messages.shift();
+        if (messages.length > 0) {
+          handlePluginCompileComponent();
+        }
+      });
     }
   }
 }
@@ -293,20 +270,17 @@ function responseToPlugin() {
 function validateError(message) {
   const propInfoReg = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
   const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-  if (!compileVariable && (matchMessage(message, [...globalVariable, ...props], propInfoReg, true) ||
-    matchMessage(message, [...propertyVariable, ...props], stateInfoReg))) {
+  if (matchMessage(message, [...globalVariable, ...props], propInfoReg) ||
+    matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
     return false;
   }
   return true;
 }
 
-function matchMessage(message, nameArr, reg, isGlobalVariable = false) {
+function matchMessage(message, nameArr, reg) {
   if (reg.test(message)) {
     const match = message.match(reg);
     if (match[1] && nameArr.includes(match[1])) {
-      if (isGlobalVariable) {
-        variableDoubleCheck.add(match[1]);
-      }
       return true;
     }
   }
