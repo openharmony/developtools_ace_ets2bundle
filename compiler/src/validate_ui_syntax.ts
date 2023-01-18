@@ -1117,3 +1117,32 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
     }
   }
 }
+
+export function getObservedPropertyCollection(className: string): Set<string> {
+  const observedProperthCollection: Set<string> = new Set([
+    ...stateCollection.get(className),
+    ...linkCollection.get(className),
+    ...propCollection.get(className),
+    ...storageLinkCollection.get(className),
+    ...storageLinkCollection.get(className),
+    ...provideCollection.get(className),
+    ...consumeCollection.get(className),
+    ...objectLinkCollection.get(className)
+  ]);
+  getLocalStorageCollection(className, observedProperthCollection);
+  return observedProperthCollection;
+}
+
+export function getLocalStorageCollection(componentName: string, collection: Set<string>): void {
+  if (localStorageLinkCollection.get(componentName)) {
+    for (const key of localStorageLinkCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+  }
+  if (localStoragePropCollection.get(componentName)) {
+    for (const key of localStoragePropCollection.get(componentName).keys()) {
+      collection.add(key);
+    }
+  }
+}
+ 
