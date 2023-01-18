@@ -869,7 +869,7 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   }
   if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
-      type: projectConfig.xtsMode ? LogType.WARN : LogType.ERROR,
+      type: LogType.WARN,
       message: `Please define an explicit type, not any.`,
       pos: typeNode.getStart()
     });
@@ -1082,7 +1082,7 @@ function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.T
 function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
   decoractor: string, log: LogInfo[], program: ts.Program): ts.ExpressionStatement {
   const name: string = nameIdentifier.escapedText.toString();
-  if (isSimpleType(type, program)) {
+  if (isSimpleType(type, program, log)) {
     return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
       createPropertyAccessExpressionWithParams(name));
   } else {
