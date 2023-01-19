@@ -558,7 +558,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    if (checkAotConfig(buildJsonInfo)) {
+    if (checkAotConfig(buildJsonInfo, logger)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;

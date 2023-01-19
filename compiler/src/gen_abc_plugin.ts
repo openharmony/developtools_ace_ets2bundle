@@ -1319,8 +1319,8 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
         processExtraAsset();
         if (projectConfig.compileMode === ESMODULE &&
           (projectConfig.anBuildMode === AOT_FULL || projectConfig.anBuildMode === AOT_PARTIAL)) {
-          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv());
-          generateAot(arkDir, builtinAbcPath);
+          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv(), logger);
+          generateAot(arkDir, builtinAbcPath, logger);
         }
       }
     });
