@@ -655,9 +655,6 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   let type: LogType = LogType.ERROR;
   if (inputType) {
     type = inputType;
-  } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
-    curPropertyKind === COMPONENT_STATE_DECORATOR) {
-    type = LogType.WARN;
   } else if ([COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR].includes(
     parentPropertyKind) && curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR) {
     type = LogType.WARN;
