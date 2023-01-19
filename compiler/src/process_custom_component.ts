@@ -502,8 +502,6 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       break;
     case COMPONENT_LINK_DECORATOR:
       return ![COMPONENT_NON_DECORATOR].includes(parent);
-    case COMPONENT_OBJECT_LINK_DECORATOR:
-      return [COMPONENT_STATE_DECORATOR].includes(parent);
   }
   return false;
 }
@@ -659,6 +657,9 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     type = inputType;
   } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
     curPropertyKind === COMPONENT_STATE_DECORATOR) {
+    type = LogType.WARN;
+  } else if ([COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR].includes(
+    parentPropertyKind) && curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR) {
     type = LogType.WARN;
   }
   log.push({
