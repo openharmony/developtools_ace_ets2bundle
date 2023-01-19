@@ -28,6 +28,10 @@ const {
 } = require('./lib/pre_define');
 
 const {
+  checkAotConfig
+} = require('./lib/gen_aot');
+
+const {
   configure,
   getLogger
 } = require('log4js');
@@ -554,12 +558,12 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    projectConfig.aotMode = buildJsonInfo.aotMode;
-    if (projectConfig.aotMode && projectConfig.compileMode === 'esmodule') {
+    if (checkAotConfig(buildJsonInfo, logger)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
-      projectConfig.anBuildMode = buildJsonInfo.anBuildMode || "type";
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
+      projectConfig.anBuildMode = buildJsonInfo.anBuildMode;
+      projectConfig.apPath = buildJsonInfo.apPath;
     } else {
       projectConfig.processTs = false;
       projectConfig.pandaMode = buildJsonInfo.pandaMode;
