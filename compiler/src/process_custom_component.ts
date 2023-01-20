@@ -403,6 +403,10 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
       }
+    } else if (curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR && node.initializer &&
+      (ts.isPropertyAccessExpression(node.initializer) ||
+        ts.isElementAccessExpression(node.initializer))) {
+      return;
     } else {
       parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
