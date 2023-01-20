@@ -881,6 +881,13 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
       }
     }
   }
+  if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
+  }
   return false;
 }
 
@@ -1080,7 +1087,7 @@ function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.T
 function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
   decoractor: string, log: LogInfo[], program: ts.Program): ts.ExpressionStatement {
   const name: string = nameIdentifier.escapedText.toString();
-  if (isSimpleType(type, program)) {
+  if (isSimpleType(type, program, log)) {
     return createInitExpressionStatementForDecorator(name, SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
       createPropertyAccessExpressionWithParams(name));
   } else {

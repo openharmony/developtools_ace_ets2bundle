@@ -44,7 +44,8 @@ import {
   BASE_COMPONENT_NAME_PU,
   OBSERVECOMPONENTCREATION,
   ISINITIALRENDER,
-  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID
+  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
+  COMPONENT_CUSTOM_DECORATOR
 } from './pre_define';
 import {
   propertyCollection,
@@ -58,7 +59,8 @@ import {
   consumeCollection,
   objectLinkCollection,
   isStaticViewCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  getLocalStorageCollection
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -379,19 +381,19 @@ function validateStateManagement(node: ts.ObjectLiteralElementLike, customCompon
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
   log: LogInfo[]): void {
   let propertyName: string;
-  if (node.name && node.name.escapedText) {
-    // @ts-ignore
+  if (ts.isIdentifier(node.name)) {
     propertyName = node.name.escapedText.toString();
   }
   const curPropertyKind: string = getPropertyDecoratorKind(propertyName, customComponentName);
+  let parentPropertyName: string;
   if (curPropertyKind) {
     if (isInitFromParent(node)) {
-      const parentPropertyName: string =
+      parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
-      if (!parentPropertyName) {
-        return;
+      let parentPropertyKind: string = curPropMap.get(parentPropertyName);
+      if (!parentPropertyKind) {
+        parentPropertyKind = COMPONENT_NON_DECORATOR;
       }
-      const parentPropertyKind: string = curPropMap.get(parentPropertyName);
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
@@ -400,6 +402,18 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       if (!localArray.includes(curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
+      }
+    } else if (curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR && node.initializer &&
+      (ts.isPropertyAccessExpression(node.initializer) ||
+        ts.isElementAccessExpression(node.initializer))) {
+      return;
+    } else {
+      parentPropertyName =
+        getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
+      const parentPropertyKind = COMPONENT_NON_DECORATOR;
+      if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
+        validateIllegalInitFromParent(
+          node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log, LogType.WARN);
       }
     }
   }
@@ -427,8 +441,11 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
-  let parentPropertyName: string;
   const initExpression: ts.Expression = node.initializer;
+  if (!initExpression) {
+    return undefined;
+  }
+  let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     if (hasDollar(initExpression)) {
       // @ts-ignore
@@ -441,46 +458,30 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
     if (hasDollar(initExpression)) {
       validateNonLinkWithDollar(node, log);
     } else {
-    // @ts-ignore
-      parentPropertyName = node.initializer.name.getText();
+      // @ts-ignore
+      if (node.initializer && node.initializer.name) {
+        parentPropertyName = node.initializer.name.getText();
+      }
     }
   }
+
   return parentPropertyName;
 }
 
 function isCorrectInitFormParent(parent: string, child: string): boolean {
   switch (child) {
     case COMPONENT_STATE_DECORATOR:
-    case COMPONENT_PROVIDE_DECORATOR:
-      if (parent === COMPONENT_NON_DECORATOR) {
-        return true;
-      }
-      break;
-    case COMPONENT_LINK_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR,
-        COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
-        return true;
-      }
-      break;
     case COMPONENT_PROP_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR
-        ].includes(parent)) {
-        return true;
-      }
-      break;
+    case COMPONENT_PROVIDE_DECORATOR:
+      return true;
     case COMPONENT_NON_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR,
+      if ([COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_PROP_DECORATOR,
         COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
         return true;
       }
       break;
-    case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (!partialUpdateConfig.partialUpdateMode && parent === COMPONENT_STATE_DECORATOR) {
-        return true;
-      } else if (partialUpdateConfig.partialUpdateMode && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
-        return true;
-      }
-      break;
+    case COMPONENT_LINK_DECORATOR:
+      return ![COMPONENT_NON_DECORATOR].includes(parent);
   }
   return false;
 }
@@ -571,10 +572,13 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   const forbiddenToInitViaParamSet: Set<string> = new Set([
     ...getCollectionSet(customComponentName, storageLinkCollection),
     ...getCollectionSet(customComponentName, storagePropCollection),
-    ...getCollectionSet(customComponentName, consumeCollection)]);
-  if (isThisProperty(node, forbiddenToInitViaParamSet)) {
+    ...getCollectionSet(customComponentName, consumeCollection)
+  ]);
+  const localStorageSet: Set<string> = new Set();
+  getLocalStorageCollection(customComponentName, localStorageSet);
+  if (isThisProperty(node, forbiddenToInitViaParamSet) || isThisProperty(node, localStorageSet)) {
     log.push({
-      type: LogType.ERROR,
+      type: localStorageSet.has(node.name.getText()) ? LogType.WARN : LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot initialize here (forbidden to specify).`,
       pos: node.name.getStart()
@@ -627,13 +631,20 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 
 function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, propertyName: string,
   curPropertyKind: string, parentPropertyName: string, parentPropertyKind: string,
-  log: LogInfo[]): void {
+  log: LogInfo[], inputType: LogType = undefined): void {
+  let type: LogType = LogType.ERROR;
+  if (inputType) {
+    type = inputType;
+  } else if ([COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR].includes(
+    parentPropertyKind) && curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR) {
+    type = LogType.WARN;
+  }
   log.push({
-    type: LogType.ERROR,
+    type: type,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart()
   });
 }
 
