@@ -132,6 +132,9 @@ export const COMPONENT_SET_AND_PROP: string = 'setAndProp';
 export const BUILD_ON: string = 'on';
 export const BUILD_OFF: string = 'off';
 
+export const START: string = 'start';
+export const END: string = 'end';
+
 export const COMPONENT_CREATE_FUNCTION: string = 'create';
 export const COMPONENT_CREATE_LABEL_FUNCTION: string = 'createWithLabel';
 export const COMPONENT_CREATE_CHILD_FUNCTION: string = 'createWithChild';
@@ -218,8 +221,11 @@ export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
-export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> =
-  new Map([['Navigation', new Set(['title'])], ['NavDestination', new Set(['title'])]]);
+export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
+  ['Navigation', new Set(['title'])], 
+  ['NavDestination', new Set(['title'])],
+  ['ListImte', new Set(['swipeAction'])]
+]);
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup']);
 export const HEADER: string = 'header';
 export const FOOTER: string = 'footer';
