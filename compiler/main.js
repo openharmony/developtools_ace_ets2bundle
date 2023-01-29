@@ -65,6 +65,7 @@ function initProjectConfig(projectConfig) {
     path.join(process.cwd(), 'sample');
   projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
     path.resolve(projectConfig.projectPath, 'build');
+  projectConfig.aceModuleBuild = projectConfig.buildPath;  // To be compatible with both webpack and rollup
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
     path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
