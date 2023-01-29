@@ -14,15 +14,12 @@
  */
 
 import path from 'path';
-import ts from 'typescript';
 import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
 
 import {
   NODE_MODULES,
   TEMPORARY,
-  MAIN,
-  AUXILIARY,
   ZERO,
   ONE,
   EXTNAME_JS,
@@ -38,7 +35,6 @@ import {
   TS2ABC,
   ES2ABC,
   EXTNAME_PROTO_BIN,
-  TS_NOCHECK
 } from './pre_define';
 import {
   isMac,
@@ -50,7 +46,6 @@ import {
   toUnixPath,
   validateFilePathLength
 } from './utils';
-import { processSystemApi } from './validate_ui_syntax';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -95,88 +90,6 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
 
   logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
-}
-
-export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): void {
-  if (toTsFile) {
-    const newStatements: ts.Node[] = [];
-    const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
-    newStatements.push(tsIgnoreNode);
-    if (node.statements && node.statements.length) {
-      newStatements.push(...node.statements);
-    }
-
-    node = ts.factory.updateSourceFile(node, newStatements);
-  }
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, toTsFile, projectConfig);
-  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
-    projectConfig);
-  if (temporaryFile.length === 0) {
-    return;
-  }
-  let temporarySourceMapFile: string = '';
-  if (temporaryFile.endsWith(EXTNAME_ETS)) {
-    if (toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
-    } else {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_JS);
-    }
-    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  } else {
-    if (!toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ts$/, EXTNAME_JS);
-      temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-    }
-  }
-  mkdirsSync(path.dirname(temporaryFile));
-  if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-    newSourceMaps[source] = mixedInfo.sourceMapJson;
-  }
-  fs.writeFileSync(temporaryFile, mixedInfo.content);
-}
-
-function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): any {
-  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const options: ts.CompilerOptions = {
-    sourceMap: true
-  };
-  const mapOpions: any = {
-    sourceMap: true,
-    inlineSourceMap: false,
-    inlineSources: false,
-    sourceRoot: '',
-    mapRoot: '',
-    extendedDiagnostics: false
-  };
-  const host: ts.CompilerHost = ts.createCompilerHost(options);
-  const fileName: string = node.fileName;
-  // @ts-ignore
-  const sourceMapGenerator: any = ts.createSourceMapGenerator(
-    host,
-    // @ts-ignore
-    ts.getBaseFileName(fileName),
-    '',
-    '',
-    mapOpions
-  );
-  // @ts-ignore
-  const writer: any = ts.createTextWriter(
-    // @ts-ignore
-    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
-  printer['writeFile'](node, writer, sourceMapGenerator);
-  const sourceMapJson: any = sourceMapGenerator.toJSON();
-  sourceMapJson['sources'] = [fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
-  let content: string = writer.getText();
-  if (toTsFile) {
-    content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
-  }
-  content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
-
-  return {
-    content: content,
-    sourceMapJson: sourceMapJson
-  };
 }
 
 export function genSourceMapFileName(temporaryFile: string): string {
@@ -230,13 +143,11 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   });
 }
 
-function replaceHarDependency(item:string, moduleRequest: string, projectConfig: any): string {
+export function getOhmUrlByHarName(moduleRequest: string, projectConfig: any): string | undefined {
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@module:lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
-      return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
-        return quotation + projectConfig.harNameOhmMap[moduleRequest] + quotation;
-      });
+      return projectConfig.harNameOhmMap[moduleRequest];
     }
     // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@module:lib/ets/pages/page1"
     for (const harName in projectConfig.harNameOhmMap) {
@@ -244,15 +155,22 @@ function replaceHarDependency(item:string, moduleRequest: string, projectConfig:
         const harOhmName: string =
           projectConfig.harNameOhmMap[harName].substring(0, projectConfig.harNameOhmMap[harName].indexOf('/'));
         if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) == 0) {
-          moduleRequest = moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
+          return moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
         } else {
-          moduleRequest = moduleRequest.replace(harName, harOhmName);
+          return moduleRequest.replace(harName, harOhmName);
         }
-        return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
-          return quotation + moduleRequest + quotation;
-        });
       }
     }
+  }
+  return undefined;
+}
+
+function replaceHarDependency(item:string, moduleRequest: string, projectConfig: any): string {
+  const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, projectConfig);
+  if (harOhmUrl !== undefined) {
+    return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+      return quotation + harOhmUrl + quotation;
+    });
   }
   return item;
 }

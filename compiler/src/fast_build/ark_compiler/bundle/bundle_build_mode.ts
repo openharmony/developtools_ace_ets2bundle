@@ -22,7 +22,7 @@ export class BundleBuildMode extends BundleMode {
 
   generateAbc() {
     if (this.filterIntermediateJsBundle.length === 0) {
-      this.afterCompilationProcess();
+      super.afterCompilationProcess();
       return;
     }
     super.executeArkCompiler();

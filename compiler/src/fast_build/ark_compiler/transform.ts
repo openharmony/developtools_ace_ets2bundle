@@ -15,31 +15,34 @@
 
 import path from 'path';
 
-import { DEBUG } from '../common/common_define';
 import {
-  EXTNAME_JS,
-  EXTNAME_MJS,
-  EXTNAME_CJS,
   ESMODULE,
   EXTNAME_ETS,
   EXTNAME_TS
 } from './common/ark_define';
-import { ModuleSourceFile } from "./module/module_source_file";
-import { isSpecifiedExt } from './utils';
+import { ModuleSourceFile } from './module/module_source_file';
+import {
+  isCommonJsPluginVirtualFile,
+  isDebug,
+  isJsSourceFile,
+  isSpecifiedExt
+} from './utils';
 import { toUnixPath } from '../../utils';
 
 export let newSourceMaps: Object = {};
 
 /**
  * rollup transform hook
- * @param {string} code
- * @param {string} id
+ * @param {string} code: source code of an input file
+ * @param {string} id: absolute path of an input file
  */
 export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     preserveTsAndEtsSourceContent(id, code);
-    preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
+    if (isDebug(projectConfig)) {
+      preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
+    }
   }
 }
 
@@ -50,17 +53,14 @@ function preserveTsAndEtsSourceContent(sourceFilePath: string, code: string): vo
 }
 
 function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig: any): void {
-  if (projectConfig.buildArkMode.toLowerCase() !== DEBUG) {
-    return;
-  }
-
-  if (sourceFilePath.includes('\x00') || isSpecifiedExt(sourceFilePath, EXTNAME_JS) ||
-    isSpecifiedExt(sourceFilePath, EXTNAME_MJS) || isSpecifiedExt(sourceFilePath, EXTNAME_CJS)) {
+  if (isCommonJsPluginVirtualFile(sourceFilePath) || isJsSourceFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     // skip js/cjs/mjs file sourcemap
     return;
   }
 
-  sourcemap['sources'] = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
-  newSourceMaps[toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''))] = sourcemap;
+  const relativeSourceFilePath = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
+  sourcemap['sources'] = [ relativeSourceFilePath ];
+  sourcemap['file'] = path.basename(relativeSourceFilePath);
+  newSourceMaps[relativeSourceFilePath] = sourcemap;
 }

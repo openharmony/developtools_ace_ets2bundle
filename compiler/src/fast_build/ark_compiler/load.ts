@@ -15,22 +15,20 @@
 
 import fs from 'fs';
 
-import {
-  ESMODULE,
-  EXTNAME_CJS,
-  EXTNAME_JS,
-  EXTNAME_JSON,
-  EXTNAME_MJS,
-} from './common/ark_define';
+import { ESMODULE } from './common/ark_define';
 import { initArkProjectConfig } from './common/process_ark_config';
-import { ModuleSourceFile } from "./module/module_source_file";
-import { isSpecifiedExt } from './utils';
+import { ModuleSourceFile } from './module/module_source_file';
+import {
+  isJsonSourceFile,
+  isJsSourceFile
+} from './utils';
 
 /**
  * rollup load hook
- * @param {string } id
+ * @param {string } id: absolute path of an input file
  */
 export function load(id: string) {
+  // init ArkProjectConfig here since load is the first plugin of gen_abc_plugin
   this.share.arkProjectConfig = initArkProjectConfig(this.share.projectConfig);
   if (this.share.projectConfig.compileMode === ESMODULE) {
     preserveJsAndJsonSourceContent(id);
@@ -38,10 +36,7 @@ export function load(id: string) {
 }
 
 function preserveJsAndJsonSourceContent(sourceFilePath: string) {
-  if (isSpecifiedExt(sourceFilePath, EXTNAME_JS) || isSpecifiedExt(sourceFilePath, EXTNAME_MJS) ||
-    isSpecifiedExt(sourceFilePath, EXTNAME_CJS) || isSpecifiedExt(sourceFilePath, EXTNAME_JSON)) {
+  if (isJsSourceFile(sourceFilePath) || isJsonSourceFile(sourceFilePath)) {
     ModuleSourceFile.newSourceFile(sourceFilePath, fs.readFileSync(sourceFilePath).toString());
   }
-
-  return;
 }

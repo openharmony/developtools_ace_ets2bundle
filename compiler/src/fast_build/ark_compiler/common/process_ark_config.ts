@@ -20,7 +20,7 @@ import {
   TS2ABC,
   ESMODULE
 } from './ark_define';
-import { DEBUG } from '../../common/common_define';
+import { isDebug } from '../utils';
 import {
   isLinux,
   isMac,
@@ -53,7 +53,7 @@ export function initArkConfig(projectConfig: any) {
   }
   processPlatformInfo(arkRootPath);
   processCompatibleVersion(projectConfig, arkRootPath);
-  arkConfig.isDebug = projectConfig.buildMode.toLowerCase() === DEBUG;
+  arkConfig.isDebug = isDebug(projectConfig);
   arkConfig.arkRootPath = arkRootPath;
 
   return arkConfig;
@@ -76,7 +76,7 @@ export function initArkProjectConfig(projectConfig) {
       arkProjectConfig.processTs = false;
       arkProjectConfig.pandaMode = buildJsonInfo.pandaMode;
     }
-    arkProjectConfig.buildArkMode = projectConfig.buildMode;
+
     if (buildJsonInfo.compileMode === ESMODULE) {
       arkProjectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;

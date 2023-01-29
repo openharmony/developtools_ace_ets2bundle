@@ -19,10 +19,11 @@ import path from 'path';
 import {
   HASH_FILE_NAME,
   GEN_ABC_PLUGIN_NAME,
-  GEN_ABC_SCRIPT
+  GEN_ABC_SCRIPT,
+  blue,
+  reset
 } from './ark_define';
 import { initArkConfig } from './process_ark_config';
-import { blue, reset } from '../../common/common_define';
 import {
   compareNodeVersion,
   mkdirsSync,

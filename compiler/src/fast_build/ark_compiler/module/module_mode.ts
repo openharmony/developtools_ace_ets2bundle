@@ -1,0 +1,533 @@
+/*
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import childProcess from 'child_process';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import cluster from 'cluster';
+
+import {
+  AUXILIARY,
+  COMMONJS,
+  ESM,
+  EXTNAME_CJS,
+  EXTNAME_ETS,
+  EXTNAME_JS,
+  EXTNAME_JSON,
+  EXTNAME_MJS,
+  EXTNAME_TS,
+  FILESINFO_TXT,
+  MAIN,
+  MODULES_ABC,
+  MODULES_CACHE,
+  MODULELIST_JSON,
+  NODE_MODULES,
+  NPMENTRIES_TXT,
+  SOURCEMAPS,
+  SOURCEMAPS_JSON,
+  TEMPORARY,
+  HAP_PACKAGE,
+  PROJECT_PACKAGE
+} from '../common/ark_define';
+import {
+  ESMODULE,
+  EXTNAME_PROTO_BIN,
+  EXTNAME_TXT,
+  FILESINFO,
+  GEN_ABC_SCRIPT,
+  MAX_WORKER_NUMBER,
+  NPM_ENTRIES_PROTO_BIN,
+  PROTOS,
+  PROTO_FILESINFO_TXT,
+  FAIL,
+  red,
+  reset
+} from '../common/ark_define';
+import {
+  isAotMode,
+  isMasterOrPrimary
+} from '../utils';
+import { CommonMode } from '../common/common_mode';
+import { newSourceMaps } from '../transform';
+import {
+  changeFileExtension,
+  getEs2abcFileThreadNumber,
+  isCommonJsPluginVirtualFile,
+  isCurrentProjectFiles
+} from '../utils';
+import {
+  isNodeModulesFile,
+  mkdirsSync,
+  toUnixPath,
+  toHashData,
+  validateFilePathLength
+} from '../../../utils';
+import {
+  getPackageInfo,
+  getOhmUrlByFilepath
+} from '../../../ark_utils';
+import { generateAot, generateBuiltinAbc } from '../../../gen_aot';
+
+export class ModuleInfo {
+  filePath: string;
+  cacheFilePath: string;
+  recordName: string;
+  isCommonJs: boolean;
+  sourceFile: string;
+  packageName: string;
+
+  constructor(filePath: string, cacheFilePath: string, isCommonJs: boolean, recordName: string, sourceFile: string,
+    packageName: string
+  ) {
+    this.filePath = filePath;
+    this.cacheFilePath = cacheFilePath;
+    this.recordName = recordName;
+    this.isCommonJs = isCommonJs;
+    this.sourceFile = sourceFile;
+    this.packageName = packageName;
+  }
+}
+
+export class PackageEntryInfo {
+  pkgEntryPath: string;
+  pkgBuildPath: string;
+  constructor(pkgEntryPath: string, pkgBuildPath: string) {
+    this.pkgEntryPath = pkgEntryPath;
+    this.pkgBuildPath = pkgBuildPath;
+  }
+}
+
+export class ModuleMode extends CommonMode {
+  moduleInfos: Map<String, ModuleInfo>;
+  pkgEntryInfos: Map<String, PackageEntryInfo>;
+  hashJsonObject: any;
+  filesInfoPath: string;
+  npmEntriesInfoPath: string;
+  moduleAbcPath: string;
+  sourceMapPath: string;
+  cacheFilePath: string;
+  workerNumber: number;
+  npmEntriesProtoFilePath: string;
+  protoFilePath: string;
+  filterModuleInfos: Map<String, ModuleInfo>;
+
+  constructor(rollupObject: any) {
+    super(rollupObject);
+    this.moduleInfos = new Map<String, ModuleInfo>();
+    this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
+    this.hashJsonObject = {};
+    this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
+    this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
+    this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, MODULES_ABC);
+    this.sourceMapPath = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
+    this.cacheFilePath = path.join(this.projectConfig.cachePath, MODULES_CACHE);
+    this.workerNumber = MAX_WORKER_NUMBER;
+    this.npmEntriesProtoFilePath = path.join(this.projectConfig.cachePath, PROTOS, NPM_ENTRIES_PROTO_BIN);
+    this.protoFilePath = path.join(this.projectConfig.cachePath, PROTOS, PROTO_FILESINFO_TXT);
+    this.hashJsonObject = {};
+    this.filterModuleInfos = new Map<String, ModuleInfo>();
+  }
+
+  collectModuleFileList(module: any, fileList: IterableIterator<string>) {
+    let moduleInfos: Map<String, ModuleInfo> = new Map<String, ModuleInfo>();
+    let pkgEntryInfos: Map<String, PackageEntryInfo> = new Map<String, PackageEntryInfo>();
+    for (const moduleId of fileList) {
+      if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
+        continue;
+      }
+      const moduleInfo: any = module.getModuleInfo(moduleId);
+      if (moduleInfo['meta']['isNodeModuleEntryFile']) {
+        this.getPackageEntryInfo(moduleId, moduleInfo['meta'], pkgEntryInfos);
+      }
+
+      this.processModuleInfos(moduleId, moduleInfos, moduleInfo['meta']);
+    }
+    this.moduleInfos = moduleInfos;
+    this.pkgEntryInfos = pkgEntryInfos;
+  }
+
+  private getPackageEntryInfo(filePath: string, metaInfo: any, pkgEntryInfos: Map<String, PackageEntryInfo>) {
+    if (!metaInfo['packageJson']) {
+      this.logger.debug("Failed to get 'packageJson' from metaInfo. File: ", filePath);
+      return;
+    }
+    const pkgPath: string = metaInfo['packageJson']['pkgPath'];
+    let originPkgEntryPath: string = toUnixPath(filePath.replace(pkgPath, ''));
+    if (originPkgEntryPath.startsWith('/')) {
+      originPkgEntryPath = originPkgEntryPath.slice(1, originPkgEntryPath.length);
+    }
+    let originPkgName: string = this.getNodeModulesFilePkgName(pkgPath);
+
+    let pkgEntryPath: string = '';
+    const projectNodeModulesPath: string = toUnixPath(path.join(this.projectConfig.projectRootPath, NODE_MODULES));
+    if (pkgPath.includes(projectNodeModulesPath)) {
+      pkgEntryPath = path.join(NODE_MODULES, PROJECT_PACKAGE, originPkgName);
+    } else {
+      pkgEntryPath = path.join(NODE_MODULES, HAP_PACKAGE, originPkgName);
+    }
+    pkgEntryPath = toUnixPath(pkgEntryPath);
+
+    let pkgBuildPath: string = path.join(pkgEntryPath, originPkgEntryPath);
+    pkgBuildPath = pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.'));
+    pkgBuildPath = toUnixPath(pkgBuildPath);
+
+    pkgEntryInfos.set(pkgPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
+  }
+
+  private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
+    switch (path.extname(moduleId)) {
+      case EXTNAME_ETS: {
+        const extName: string = this.projectConfig.processTs ? EXTNAME_TS : EXTNAME_JS;
+        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
+        break;
+      }
+      case EXTNAME_TS: {
+        const extName: string = this.projectConfig.processTs ? '' : EXTNAME_JS;
+        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
+        break;
+      }
+      case EXTNAME_JS:
+      case EXTNAME_MJS:
+      case EXTNAME_CJS: {
+        const extName: string = (moduleId.endsWith(EXTNAME_MJS) || moduleId.endsWith(EXTNAME_CJS)) ? EXTNAME_JS : '';
+        const isCommonJS: boolean = metaInfo && metaInfo['commonjs'] && metaInfo['commonjs']['isCommonJS'];
+        this.addModuleInfoItem(moduleId, isCommonJS, extName, metaInfo, moduleInfos);
+        break;
+      }
+      case EXTNAME_JSON: {
+        this.addModuleInfoItem(moduleId, false, '', metaInfo, moduleInfos);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string, metaInfo: any, moduleInfos: any) {
+    let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger);
+    let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
+    let cacheFilePath: string = '';
+    let packageName: string = '';
+    if (isNodeModulesFile(filePath, this.projectConfig)) {
+      cacheFilePath = this.genNodeModulesFileCachePath(filePath, this.projectConfig.cachePath, this.projectConfig);
+      packageName = this.getNodeModulesFilePkgName(metaInfo['packageJson']['pkgPath']);
+    } else {
+      cacheFilePath = this.genFileCachePath(filePath, this.projectConfig.projectPath, this.projectConfig.cachePath);
+      packageName = getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+    }
+
+    if (extName.length != 0) {
+      cacheFilePath = changeFileExtension(cacheFilePath, extName);
+    }
+
+    cacheFilePath = toUnixPath(cacheFilePath);
+    recordName = toUnixPath(recordName);
+    sourceFile = toUnixPath(sourceFile);
+    packageName = toUnixPath(packageName);
+
+    moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
+  }
+
+  buildModuleSourceMapInfo() {
+    if (!this.arkConfig.isDebug) {
+      return;
+    }
+    mkdirsSync(this.projectConfig.aceModuleBuild);
+    const sourceMapFilePath: string = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
+    fs.writeFile(sourceMapFilePath, JSON.stringify(newSourceMaps, null, 2), 'utf-8', (err) => {
+      if (err) {
+        throw Error('ArkTS:ERROR failed to write cache sourceMaps json');
+      }
+    });
+  }
+
+  generateEs2AbcCmd() {
+    const fileThreads = getEs2abcFileThreadNumber();
+    this.cmdArgs.push(`"@${this.filesInfoPath}"`);
+    this.cmdArgs.push('--npm-module-entry-list');
+    this.cmdArgs.push(`"${this.npmEntriesInfoPath}"`);
+    this.cmdArgs.push('--output');
+    this.cmdArgs.push(`"${this.moduleAbcPath}"`);
+    this.cmdArgs.push('--file-threads');
+    this.cmdArgs.push(`"${fileThreads}"`);
+    this.cmdArgs.push('--cache-file');
+    this.cmdArgs.push(`"${this.cacheFilePath}"`);
+    this.cmdArgs.push('--merge-abc');
+  }
+
+  private generateCompileFilesInfo() {
+    let filesInfo: string = '';
+    this.moduleInfos.forEach((info) => {
+      const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
+      filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName}\n`;
+    });
+    fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
+  }
+
+  private generateNpmEntriesInfo() {
+    let entriesInfo: string = '';
+    for (const value of this.pkgEntryInfos.values()) {
+      entriesInfo += `${value.pkgEntryPath}:${value.pkgBuildPath}\n`;
+    }
+    fs.writeFileSync(this.npmEntriesInfoPath, entriesInfo, 'utf-8');
+  }
+
+  private genDescriptionsForMergedEs2abc() {
+    this.generateCompileFilesInfo();
+    this.generateNpmEntriesInfo();
+  }
+
+  generateMergedAbcOfEs2Abc() {
+    this.genDescriptionsForMergedEs2abc();
+    const genAbcCmd: string = this.cmdArgs.join(' ');
+    try {
+      const child = this.asyncHandler(() => {
+        return childProcess.exec(genAbcCmd, { windowsHide: true });
+      });
+      child.on('exit', (code: any) => {
+        if (code === FAIL) {
+          throw Error('ArkTS:ERROR failed to execute es2abc');
+        }
+        this.signalHandler();
+      });
+
+      child.on('error', (err: any) => {
+        throw Error(err.toString());
+      });
+
+      child.stderr.on('data', (data: any) => {
+        this.logger.error(red, data.toString(), reset);
+      });
+    } catch (e) {
+      throw Error('ArkTS:ERROR failed to execute es2abc. Error message: ' + e.toString());
+    }
+  }
+
+  filterModulesByHashJson() {
+    if (this.hashJsonFilePath.length === 0) {
+      for (const key of this.moduleInfos.keys()) {
+        this.filterModuleInfos.set(key, this.moduleInfos.get(key));
+      }
+      return;
+    }
+
+    let updatedJsonObject: any = {};
+    let jsonObject: any = {};
+    let jsonFile: string = '';
+
+    if (fs.existsSync(this.hashJsonFilePath)) {
+      jsonFile = fs.readFileSync(this.hashJsonFilePath).toString();
+      jsonObject = JSON.parse(jsonFile);
+      this.filterModuleInfos = new Map<string, ModuleInfo>();
+      for (const [key, value] of this.moduleInfos) {
+        const cacheFilePath: string = value.cacheFilePath;
+        const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
+        if (!fs.existsSync(cacheFilePath)) {
+          throw Error(`ArkTS:ERROR ${cacheFilePath} is lost`);
+        }
+        if (fs.existsSync(cacheProtoFilePath)) {
+          const hashCacheFileContentData: any = toHashData(cacheFilePath);
+          const hashProtoFileContentData: any = toHashData(cacheProtoFilePath);
+          if (jsonObject[cacheFilePath] === hashCacheFileContentData &&
+            jsonObject[cacheProtoFilePath] === hashProtoFileContentData) {
+            updatedJsonObject[cacheFilePath] = cacheFilePath;
+            updatedJsonObject[cacheProtoFilePath] = cacheProtoFilePath;
+            continue;
+          }
+        }
+        this.filterModuleInfos.set(key, value);
+      }
+    }
+
+    this.hashJsonObject = updatedJsonObject;
+  }
+
+  getSplittedModulesByNumber() {
+    const result: any = [];
+    if (this.moduleInfos.size < this.workerNumber) {
+      for (const value of this.moduleInfos.values()) {
+        result.push([value]);
+      }
+      return result;
+    }
+
+    for (let i = 0; i < this.workerNumber; ++i) {
+      result.push([]);
+    }
+
+    let pos: number = 0;
+    for (const value of this.moduleInfos.values()) {
+      const chunk = pos % this.workerNumber;
+      result[chunk].push(value);
+      pos++;
+    }
+
+    return result;
+  }
+
+  generateTs2AbcCmd() {
+    this.cmdArgs.push('--output-proto');
+    this.cmdArgs.push('--merge-abc');
+    this.cmdArgs.push('--input-file');
+  }
+
+  invokeTs2AbcWorkersToGenProto(splittedModules) {
+    if (isMasterOrPrimary()) {
+      this.setupCluster(cluster);
+      for (let i = 0; i < this.workerNumber; ++i) {
+        const sn: number = i + 1;
+        const workerFileName: string = `${FILESINFO}_${sn}${EXTNAME_TXT}`;
+        const workerData: any = {
+          inputs: JSON.stringify(splittedModules[i]),
+          cmd: this.cmdArgs.join(' '),
+          workerFileName: workerFileName,
+          mode: ESMODULE,
+          cachePath: this.projectConfig.cachePath
+        };
+        this.asyncHandler(() => {
+          cluster.fork(workerData);
+        });
+      }
+    }
+  }
+
+  processTs2abcWorkersToGenAbc() {
+    this.generateNpmEntriesInfo();
+    let workerCount: number = 0;
+    if (isMasterOrPrimary()) {
+      cluster.on('exit', (worker, code, signal) => {
+        if (code === FAIL) {
+          throw Error('ArkTS:ERROR failed to execute ts2abc');
+        }
+        workerCount++;
+        if (workerCount === this.workerNumber) {
+          this.generateNpmEntryToGenProto();
+          this.generateProtoFilesInfo();
+          this.mergeProtoToAbc();
+          if (isAotMode(this.projectConfig)) {
+            const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.arkConfig.nodePath,
+              this.cmdArgs, this.logger, true);
+            generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.logger, true);
+          }
+          this.afterCompilationProcess();
+        }
+        this.signalHandler();
+      });
+    }
+  }
+
+  private genFileCachePath(filePath: string, projectPath: string, cachePath: string,
+    buildInHar: boolean = false): string {
+    const sufStr: string = filePath.replace(projectPath, '');
+    const output: string = path.join(cachePath, buildInHar ? '' : TEMPORARY, sufStr);
+    return output;
+  }
+
+  private genNodeModulesFileCachePath(filePath: string, cachePath: string, projectConfig: any,
+    buildInHar: boolean = false): string {
+    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
+    let output: string = '';
+    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+      const hapPath: string = toUnixPath(projectConfig.projectRootPath);
+      const tempFilePath: string = filePath.replace(hapPath, '');
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
+      output = path.join(cachePath, buildInHar ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
+    } else {
+      output = filePath.replace(fakeNodeModulesPath,
+        path.join(cachePath, buildInHar ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
+    }
+    return output;
+  }
+
+  private getNodeModulesFilePkgName(pkgPath: string) {
+    const projectRootPath = toUnixPath(this.projectConfig.projectRootPath);
+    const projectNodeModulesPath: string = toUnixPath(path.join(projectRootPath, NODE_MODULES));
+    let pkgName: string = '';
+    if (pkgPath.includes(projectNodeModulesPath)) {
+      pkgName = pkgPath.replace(projectNodeModulesPath, '');
+    } else {
+      const tempFilePath: string = pkgPath.replace(projectRootPath, '');
+      pkgName = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
+    }
+    return pkgName;
+  }
+
+  private generateProtoFilesInfo() {
+    validateFilePathLength(this.protoFilePath, this.logger);
+    mkdirsSync(path.dirname(this.protoFilePath));
+    let protoFilesInfo: string = '';
+    for (const value of this.moduleInfos.values()) {
+      const cacheProtoPath: string = changeFileExtension(value.cacheFilePath, EXTNAME_PROTO_BIN);
+      protoFilesInfo += `${toUnixPath(cacheProtoPath)}\n`;
+    }
+    if (this.pkgEntryInfos.size > 0) {
+      protoFilesInfo += `${toUnixPath(this.npmEntriesProtoFilePath)}\n`;
+    }
+    fs.writeFileSync(this.protoFilePath, protoFilesInfo, 'utf-8');
+  }
+
+  private mergeProtoToAbc() {
+    mkdirsSync(this.projectConfig.aceModuleBuild);
+    const cmd: any = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
+      this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
+    try {
+      childProcess.execSync(cmd);
+    } catch (e) {
+      throw Error(`ArkTS:ERROR failed to merge proto file to abc, error message:` + e.toString());
+    }
+  }
+
+  private afterCompilationProcess() {
+    this.writeHashJson();
+    this.cleanInfo();
+  }
+
+  private writeHashJson() {
+    if (this.hashJsonFilePath.length === 0) {
+      return;
+    }
+
+    for (const value of this.filterModuleInfos.values()) {
+      const cacheFilePath: string = value.cacheFilePath;
+      const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
+      if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheProtoFilePath)) {
+        throw Error(
+          `ArkTS:ERROR ${cacheFilePath} or  ${cacheProtoFilePath} is lost`
+        );
+      }
+      const hashCacheFileContentData: any = toHashData(cacheFilePath);
+      const hashCacheProtoContentData: any = toHashData(cacheProtoFilePath);
+      this.hashJsonObject[cacheFilePath] = hashCacheFileContentData;
+      this.hashJsonObject[cacheProtoFilePath] = hashCacheProtoContentData;
+    }
+
+    fs.writeFileSync(this.hashJsonFilePath, JSON.stringify(this.hashJsonObject));
+  }
+
+  private generateNpmEntryToGenProto() {
+    if (this.pkgEntryInfos.size <= 0) {
+      return;
+    }
+    mkdirsSync(path.dirname(this.npmEntriesProtoFilePath));
+    const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${
+      this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
+    try {
+      childProcess.execSync(cmd);
+    } catch (e) {
+      throw Error(`ArkTS:ERROR failed to generate npm proto file to abc. Error message: ` + e.toString());
+    }
+  }
+}

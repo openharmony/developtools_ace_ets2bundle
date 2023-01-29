@@ -18,8 +18,8 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-import { DEBUG } from '../common/common_define';
 import {
+  DEBUG,
   ESMODULE,
   EXTNAME_ETS,
   EXTNAME_JS,
@@ -32,13 +32,13 @@ import {
 } from './common/ark_define';
 import {
   compareNodeVersion,
+  genTemporaryPath,
   mkdirsSync,
   toUnixPath,
   validateFilePathLength
 } from '../../utils';
 import {
   genBuildPath,
-  genTemporaryPath,
   transformModuleSpecifier,
   writeMinimizedSourceCode
 } from '../../ark_utils';
@@ -48,6 +48,10 @@ export function isAotMode(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (
     projectConfig.anBuildMode === 'full' || projectConfig.anBuildMode === 'pgo'
   );
+}
+
+export function isDebug(projectConfig: any): boolean {
+  return projectConfig.buildMode.toLowerCase() === DEBUG;
 }
 
 export function isMasterOrPrimary() {
@@ -61,21 +65,21 @@ export function changeFileExtension(file: string, targetExt: string, originExt =
 }
 
 export function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
-  if (id.includes('\x00')) {
-    // skip automatic generated files like 'jsfile.js?commonjs-exports'
+  if (isCommonJsPluginVirtualFile(id)) {
     return;
   }
 
-  let filePath: string = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig);
+  if (!isCurrentProjectFiles(id, projectConfig)) {
+    return;
+  }
 
+  let filePath: string;
   if (projectConfig.compileHar) {
     filePath = genTemporaryPath(id,
       projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
       path.resolve(projectConfig.buildPath, projectConfig.compileShared ? '../etsFortgz' : ''), projectConfig, true);
-  }
-
-  if (filePath.length === 0) {
-    return;
+  } else {
+    filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig);
   }
 
   switch (path.extname(id)) {
@@ -103,17 +107,12 @@ function writeFileContent(sourceFilePath: string, filePath: string, content: str
 
   mkdirsSync(path.dirname(filePath));
 
-  if (projectConfig.compileHar && projectConfig.obfuscateHarType === 'uglify') {
+  if ((projectConfig.compileHar && projectConfig.obfuscateHarType === 'uglify') || !isDebug(projectConfig)) {
     writeMinimizedSourceCode(content, filePath, logger);
     return;
   }
 
-  if (projectConfig.buildArkMode.toLowerCase() === DEBUG) {
-    fs.writeFileSync(filePath, content, 'utf-8');
-    return;
-  }
-
-  writeMinimizedSourceCode(content, filePath, logger);
+  fs.writeFileSync(filePath, content, 'utf-8');
 }
 
 export function getNodeModulesFilePackageName(projectConfig: any, pkgPath: string) {
@@ -161,4 +160,12 @@ export function genCachePath(tailName: string, projectConfig: any, logger: any):
 
   validateFilePathLength(pathName, logger);
   return pathName;
+}
+
+export function isJsSourceFile(file: string): boolean {
+  return /\.[cm]?js$/.test(file);
+}
+
+export function isJsonSourceFile(file: string): boolean {
+  return /\.json$/.test(file);
 }

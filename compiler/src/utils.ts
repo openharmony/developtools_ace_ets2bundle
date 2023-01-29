@@ -340,6 +340,7 @@ export function isNodeModulesFile(filePath: string, projectConfig: any): boolean
 }
 
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
+  // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : process.env.cachePath,

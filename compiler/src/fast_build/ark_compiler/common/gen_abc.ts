@@ -24,10 +24,11 @@ import {
   ESM,
   ESMODULE,
   EXTNAME_ABC,
-  JSBUNDLE
+  JSBUNDLE,
+  FAIL,
+  SUCCESS
 } from './ark_define';
 import { changeFileExtension} from '../utils';
-import { FAIL, SUCCESS } from '../../common/common_define';
 
 function genAbcByWorkersOfBundleMode(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
