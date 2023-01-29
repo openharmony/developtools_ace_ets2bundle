@@ -75,7 +75,9 @@ import {
   MANAGE_WORKERS_SCRIPT,
   MAX_WORKER_NUMBER,
   GEN_ABC_SCRIPT,
-  GEN_MODULE_ABC_SCRIPT
+  GEN_MODULE_ABC_SCRIPT,
+  AOT_FULL,
+  AOT_PARTIAL
 } from './pre_define';
 import {
   getOhmUrlByFilepath
@@ -1316,9 +1318,9 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
       if (process.exitCode !== FAIL && process.env.watchMode !== 'true') {
         processExtraAsset();
         if (projectConfig.compileMode === ESMODULE &&
-          (projectConfig.anBuildMode === 'full' || projectConfig.anBuildMode === 'pgo')) {
-          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv());
-          generateAot(arkDir, builtinAbcPath);
+          (projectConfig.anBuildMode === AOT_FULL || projectConfig.anBuildMode === AOT_PARTIAL)) {
+          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv(), logger);
+          generateAot(arkDir, builtinAbcPath, logger);
         }
       }
     });
