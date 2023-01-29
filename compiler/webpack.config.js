@@ -147,6 +147,7 @@ function setJsConfigRule() {
   const jsRule = {
     test: /\.js$/,
     use: [
+      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       {
         loader: 'babel-loader',
         options: {
@@ -154,13 +155,12 @@ function setJsConfigRule() {
           compact: false
         }
       },
-      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
     ]
   };
   if (projectConfig.compileMode !== 'esmodule') {
     jsRule.type = 'javascript/auto';
-    jsRule.use[0].options.plugins.unshift([
+    jsRule.use[1].options.plugins.unshift([
       '@babel/plugin-transform-modules-commonjs',
       {
         'allowTopLevelThis': true
