@@ -131,14 +131,13 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  validatorCard
+  componentInfo
 } from './utils';
 import {
   partialUpdateConfig,
   projectConfig
 } from '../main';
-import { transformLog, contextGlobal } from './process_ui_syntax';
+import { transformLog, contextGlobal, validatorCard } from './process_ui_syntax';
 import { props } from './compile_info';
 
 const checkComponents: Set<string> = new Set([

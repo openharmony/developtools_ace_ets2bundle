@@ -60,11 +60,11 @@ import {
   hasDecorator,
   LogInfo,
   LogType,
-  repeatLog,
-  validatorCard
+  repeatLog
 } from './utils';
 import { projectConfig } from '../main';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
+import { validatorCard } from './process_ui_syntax';
 
 export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
