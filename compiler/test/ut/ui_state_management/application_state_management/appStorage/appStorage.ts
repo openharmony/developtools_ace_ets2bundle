@@ -85,9 +85,6 @@ class MyComponent extends View {
     set lang(newValue) {
         this.__lang.set(newValue);
     }
-    set lang(newValue) {
-      this.__lang.set(newValue);
-    }
     aboutToAppear() {
         this.label = (this.lang === 'zh') ? '数' : 'Count';
     }
