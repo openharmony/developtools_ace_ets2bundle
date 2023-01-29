@@ -451,7 +451,7 @@ export function unlinkSync(filePath: string): void {
   }
 }
 
-export function getExtension(filePath: string): string {
+export function getExtensionIfUnfullySpecifiedFilepath(filePath: string): string {
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     return "";
   }
@@ -465,6 +465,8 @@ export function getExtension(filePath: string): string {
     extension = '.d.ets';
   } else if (fs.existsSync(filePath + '.js') && fs.statSync(filePath + '.js').isFile()) {
     extension = '.js';
+  } else if (fs.existsSync(filePath + '.json') && fs.statSync(filePath + '.json').isFile()) {
+    extension = '.json';
   }
 
   return extension;

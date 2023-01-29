@@ -19,8 +19,10 @@ import path from 'path';
 
 import {
   EXTNAME_ETS,
+  EXTNAME_TS,
   NODE_MODULES,
   INDEX_ETS,
+  INDEX_TS,
   PACKAGE_JSON,
   STRUCT,
   CLASS,
@@ -56,7 +58,7 @@ import {
   localStoragePropCollection
 } from './validate_ui_syntax';
 import {
-  getExtension,
+  getExtensionIfUnfullySpecifiedFilepath,
   hasDecorator,
   LogInfo,
   LogType,
@@ -579,13 +581,18 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
 }
 
 export function getFileFullPath(filePath: string, pagesDir: string): string {
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
-    const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && path.extname(filePath) !== EXTNAME_TS &&
+      !isModule(filePath)) {
+    const dirIndexEtsPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+    const dirIndexTsPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_TS);
     if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
-      fs.existsSync(dirIndexPath)) {
-      filePath = dirIndexPath;
+      fs.existsSync(dirIndexEtsPath)) {
+      filePath = dirIndexEtsPath;
+    } else if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_TS)) &&
+      fs.existsSync(dirIndexTsPath)) {
+      filePath = dirIndexTsPath;
     } else {
-      filePath += getExtension(path.resolve(pagesDir, filePath));
+      filePath += getExtensionIfUnfullySpecifiedFilepath(path.resolve(pagesDir, filePath));
     }
   }
 
