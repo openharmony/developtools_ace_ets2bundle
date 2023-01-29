@@ -81,19 +81,21 @@ function initProjectConfig(projectConfig) {
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname);
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
-  projectConfig.isPreview = projectConfig.isPreview ||
-    (process.env.isPreview === 'true' ? true : process.env.isPreview);
+  projectConfig.isPreview = projectConfig.isPreview || process.env.isPreview === 'true';
   projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
   projectConfig.splitCommon = false;
   projectConfig.compileHar = false;
   projectConfig.compileShared = false;
+  projectConfig.checkEntry = projectConfig.checkEntry || process.env.checkEntry;
+  projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
 }
 
 function loadEntryObj(projectConfig) {
   let manifest = {};
   initProjectConfig(projectConfig);
+  loadBuildJson();
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -103,7 +105,7 @@ function loadEntryObj(projectConfig) {
     setStageTestRunnerFile(projectConfig);
   }
 
-  if(staticPreviewPage) {
+  if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
   } else if (abilityConfig.abilityType === 'page') {
@@ -454,44 +456,59 @@ function loadWorker(projectConfig, workerFileEntry) {
   }
 }
 
-function readWorkerFile(isPreview) {
-  const workerFileEntry = {};
+let aceBuildJson = {};
+function loadBuildJson() {
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
-    const workerConfig = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
-    if (workerConfig.workers) {
-      workerConfig.workers.forEach(worker => {
-        if (!/\.(ts|js)$/.test(worker)) {
-          worker += '.ts';
-        }
-        const relativePath = path.relative(projectConfig.projectPath, worker);
-        if (filterWorker(relativePath)) {
-          const workerKey = relativePath.replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
-          if (workerFileEntry[workerKey]) {
-            throw Error(
-              '\u001b[31m ERROR: The worker file cannot use the same file name: \n' +
-              workerFileEntry[workerKey] + '\n' + worker + '\u001b[39m'
-            ).message;
-          } else {
-            workerFileEntry[workerKey] = worker;
-          }
-        }
-      });
-      return workerFileEntry;
-    }
-    if (workerConfig.patchConfig) {
-      projectConfig.hotReload = process.env.watchMode === 'true' &&  isPreview !== 'true';
-      projectConfig.patchAbcPath = workerConfig.patchConfig.patchAbcPath;
-      projectConfig.changedFileList = workerConfig.patchConfig.changedFileList ?
-        workerConfig.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
-      if (projectConfig.hotReload) {
-        writeFileSync(projectConfig.changedFileList, JSON.stringify({
-          modifiedFiles: [],
-          removedFiles: []
-        }));
+    aceBuildJson = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+  }
+}
+
+function initBuildInfo() {
+  projectConfig.projectRootPath = aceBuildJson.projectRootPath;
+  if (projectConfig.compileHar && aceBuildJson.moduleName &&
+    aceBuildJson.modulePathMap[aceBuildJson.moduleName]) {
+    projectConfig.moduleRootPath = aceBuildJson.modulePathMap[aceBuildJson.moduleName];
+  }
+}
+
+function readWorkerFile() {
+  const workerFileEntry = {};
+  if (aceBuildJson.workers) {
+    aceBuildJson.workers.forEach(worker => {
+      if (!/\.(ts|js)$/.test(worker)) {
+        worker += '.ts';
       }
-    }
+      const relativePath = path.relative(projectConfig.projectPath, worker);
+      if (filterWorker(relativePath)) {
+        const workerKey = relativePath.replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
+        if (workerFileEntry[workerKey]) {
+          throw Error(
+            '\u001b[31m ERROR: The worker file cannot use the same file name: \n' +
+            workerFileEntry[workerKey] + '\n' + worker + '\u001b[39m'
+          ).message;
+        } else {
+          workerFileEntry[workerKey] = worker;
+        }
+      }
+    });
+    return workerFileEntry;
   }
   return null;
+}
+
+function readPatchConfig() {
+  if (aceBuildJson.patchConfig) {
+    projectConfig.hotReload = process.env.watchMode === 'true' && !projectConfig.isPreview;
+    projectConfig.patchAbcPath = aceBuildJson.patchConfig.patchAbcPath;
+    projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
+      aceBuildJson.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
+    if (projectConfig.hotReload) {
+      writeFileSync(projectConfig.changedFileList, JSON.stringify({
+        modifiedFiles: [],
+        removedFiles: []
+      }));
+    }
+  }
 }
 
 function filterWorker(workerPath) {
@@ -499,20 +516,20 @@ function filterWorker(workerPath) {
 }
 
 ;(function initSystemResource() {
-  const sysResourcePath = path.resolve('./sysResource.js');
+  const sysResourcePath = path.resolve(__dirname, './sysResource.js');
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
   }
 })();
 
 ;(function readSystemModules() {
-  const systemModulesPath = path.resolve(__dirname,'../../api');
+  const systemModulesPath = path.resolve(__dirname, '../../api');
   if (fs.existsSync(systemModulesPath)) {
     systemModules.push(...fs.readdirSync(systemModulesPath));
   }
 })()
 
-function readAppResource(resources, filePath) {
+function readAppResource(filePath) {
   if (fs.existsSync(filePath)) {
     const appResource = fs.readFileSync(filePath, "utf-8");
     const resourceArr = appResource.split(/\n/);
@@ -586,7 +603,7 @@ function loadModuleInfo(projectConfig, envArgs) {
 
 function checkAppResourcePath(appResourcePath, config) {
   if (appResourcePath) {
-    readAppResource(resources, appResourcePath);
+    readAppResource(appResourcePath);
     if (fs.existsSync(appResourcePath) && config.cache) {
       config.cache.buildDependencies.config.push(appResourcePath);
     }
@@ -624,6 +641,21 @@ function addSDKBuildDependencies(config) {
     fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
     config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
   }
+}
+
+function getCleanConfig(workerFile) {
+  const cleanPath = [];
+  if (projectConfig.compileMode === 'esmodule') {
+    return cleanPath;
+  }
+  cleanPath.push(projectConfig.buildPath);
+  if (workerFile) {
+    const workerFilesPath = Object.keys(workerFile);
+    for (const workerFilePath of workerFilesPath) {
+      cleanPath.push(path.join(projectConfig.buildPath, workerFilePath, '..'));
+    }
+  }
+  return cleanPath;
 }
 
 function isPartialUpdate(metadata) {
@@ -673,3 +705,6 @@ exports.systemModules = systemModules;
 exports.checkAppResourcePath = checkAppResourcePath;
 exports.addSDKBuildDependencies = addSDKBuildDependencies;
 exports.partialUpdateConfig = partialUpdateConfig;
+exports.readPatchConfig = readPatchConfig;
+exports.initBuildInfo = initBuildInfo;
+exports.getCleanConfig = getCleanConfig;
