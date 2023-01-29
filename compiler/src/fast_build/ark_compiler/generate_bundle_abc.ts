@@ -29,8 +29,6 @@ export function generateBundleAbc(options: any, bundle: any, isWrite: boolean) {
   }
 
   generateAbc(this, bundle);
-
-  return;
 }
 
 function generateAbc(rollupObject: any, rollupBundleFileSet: any) {

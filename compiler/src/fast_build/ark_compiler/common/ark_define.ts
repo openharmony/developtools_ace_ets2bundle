@@ -73,3 +73,17 @@ export const SCRIPT: string = 'script';
 
 export const SRC_MAIN: string = 'src/main';
 export const GEN_ABC_PLUGIN_NAME: string = 'Gen_Abc_Plugin';
+
+export const SUCCESS: number = 0;
+export const FAIL: number = 1;
+
+export const red: string = '\u001b[31m';
+export const yellow: string = '\u001b[33m';
+export const blue: string = '\u001b[34m';
+export const reset: string = '\u001b[39m';
+
+export const DEBUG: string = 'debug';
+export const RELEASE: string = 'release';
+
+export const TRUE: string = 'true';
+export const FALSE: string = 'false';

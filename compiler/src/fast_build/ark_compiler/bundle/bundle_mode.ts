@@ -33,13 +33,11 @@ import {
   FILESINFO_TXT,
   JSBUNDLE,
   MAX_WORKER_NUMBER,
-  TEMP_JS
-} from '../common/ark_define';
-import {
+  TEMP_JS,
   blue,
   FAIL,
   reset
-} from '../../common/common_define';
+} from '../common/ark_define';
 import {
   mkDir,
   toHashData,
@@ -158,7 +156,6 @@ export class BundleMode extends CommonMode {
     this.writeHashJson();
     this.copyFileFromCachePathToOutputPath();
     this.cleanCacheFiles();
-    this.cleanInfo();
   }
 
   private generateEs2AbcCmd(filesInfoPath: string) {
@@ -371,11 +368,5 @@ export class BundleMode extends CommonMode {
     if (isEs2Abc(this.projectConfig) && fs.existsSync(this.filesInfoPath)) {
       unlinkSync(this.filesInfoPath);
     }
-  }
-
-  private cleanInfo() {
-    this.intermediateJsBundle.clear();
-    this.filterIntermediateJsBundle = [];
-    this.hashJsonObject = {};
   }
 }

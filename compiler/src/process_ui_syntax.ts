@@ -65,7 +65,7 @@ import {
   hasDecorator,
   FileLog
 } from './utils';
-import { writeFileSyncByNode } from './ark_utils';
+import { writeFileSyncByNode } from './process_module_files';
 import {
   componentCollection,
   localStorageLinkCollection,
@@ -96,6 +96,7 @@ import {
   partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
+import { ModuleSourceFile } from "./fast_build/ark_compiler/module/module_source_file";
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -119,7 +120,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
             validateReExportType(node, pagesDir, transformLog.errors);
             if (projectConfig.processTs === true) {
-              writeFileSyncByNode(node, true, projectConfig);
+              process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(node.fileName, node) :
+                writeFileSyncByNode(node, true, projectConfig);
             }
           }
           return node;
@@ -145,7 +147,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
           && process.env.compilerType && process.env.compilerType === ARK) {
-          writeFileSyncByNode(node, true, projectConfig);
+          process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(node.fileName, node) :
+            writeFileSyncByNode(node, true, projectConfig);
         }
         return node;
       } else {
