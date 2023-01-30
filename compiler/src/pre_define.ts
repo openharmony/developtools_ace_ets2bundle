@@ -224,7 +224,7 @@ export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragSta
 export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])], 
   ['NavDestination', new Set(['title'])],
-  ['ListImte', new Set(['swipeAction'])]
+  ['ListItem', new Set(['swipeAction'])]
 ]);
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup']);
 export const HEADER: string = 'header';
