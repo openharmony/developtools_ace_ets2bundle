@@ -854,14 +854,8 @@ export function preprocessNewExtend(content: string, extendCollection?: Set<stri
 function replaceSystemApi(item: string, systemValue: string, moduleType: string, systemKey: string): string {
   if (NATIVE_MODULE.has(`${moduleType}.${systemKey}`)) {
     item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-  } else if (moduleType === SYSTEM_PLUGIN) {
-    item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
-        `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
-  } else if (moduleType === OHOS_PLUGIN) {
-    item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
-        `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
-        `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
-        `? globalThis.systemplugin.${systemKey} : undefined)`;
+  } else if (moduleType === SYSTEM_PLUGIN || moduleType === OHOS_PLUGIN) {
+    item = `var ${systemValue} = globalThis.requireNapi('${systemKey}')`;
   }
   return item;
 }
