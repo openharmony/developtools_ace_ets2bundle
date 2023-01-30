@@ -76,7 +76,8 @@ import {
   OBSERVED_PROPERTY_ABSTRACT_PU,
   CREATE_LOCAL_STORAGE_LINK,
   CREATE_LOCAL_STORAGE_PROP,
-  COMPONENT_UPDATE_STATE_VARS
+  COMPONENT_UPDATE_STATE_VARS,
+  COMPONENT_WATCH_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -286,11 +287,17 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       ) {
         isLocalStorage = true;
       }
-      updatePropertyItem = createPropertyDeclaration(propertyItem, newType, false,
-        isLocalStorage, parentComponentName);
-      if (updatePropertyItem) {
-        newMembers.push(updatePropertyItem);
+      const newUpdatePropertyItem = createPropertyDeclaration(
+        propertyItem, newType, false, isLocalStorage, parentComponentName);
+      if (!updatePropertyItem) {
+        updatePropertyItem = newUpdatePropertyItem;
+      } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName) &&
+        decoratorName !== COMPONENT_WATCH_DECORATOR) {
+        updatePropertyItem = newUpdatePropertyItem;
       }
+    }
+    if (updatePropertyItem) {
+      newMembers.push(updatePropertyItem);
     }
   }
 }
