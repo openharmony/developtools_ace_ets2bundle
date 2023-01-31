@@ -99,7 +99,9 @@ import {
   FOOTER,
   CALL,
   CREATE_BIND_COMPONENT,
-  TabContentAndNavDestination
+  TabContentAndNavDestination,
+  START,
+  END
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1616,8 +1618,8 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER].includes(property.name.escapedText.toString()) &&
-      property.initializer) {
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END].includes(
+        property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer)) {
         newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
           ts.factory.createCallExpression(
