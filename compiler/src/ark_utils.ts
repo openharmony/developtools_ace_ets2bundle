@@ -212,10 +212,21 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+|(?:\.\/?|\.\.\/?))['"]/g;
   const REG_HAR_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^\.\/][^'"]+)['"]/g;
+  // replace requireNapi and requireNativeModule with import
+  const REG_REQUIRE_NATIVE_MODULE: RegExp = /var (\S+) = globalThis.requireNativeModule\(['"](\S+)['"]\);/g;
+  const REG_REQUIRE_NAPI_APP: RegExp = /var (\S+) = globalThis.requireNapi\(['"](\S+)['"], true, ['"](\S+)['"]\);/g;
+  const REG_REQUIRE_NAPI_OHOS: RegExp = /var (\S+) = globalThis.requireNapi\(['"](\S+)['"]\);/g;
+
   return sourceCode.replace(REG_HAR_DEPENDENCY, (item, moduleRequest) => {
     return replaceHarDependency(item, moduleRequest, projectConfig);
   }).replace(REG_RELATIVE_DEPENDENCY, (item, moduleRequest) => {
     return replaceRelativeDependency(item, moduleRequest, toUnixPath(sourcePath), projectConfig);
+  }).replace(REG_REQUIRE_NATIVE_MODULE, (_, moduleRequest, moduleName) => {
+    return `import ${moduleRequest} from '@native:${moduleName}';`;
+  }).replace(REG_REQUIRE_NAPI_APP, (_, moduleRequest, soName, moudlePath) => {
+    return `import ${moduleRequest} from '@app:${moudlePath}/${soName}';`;
+  }).replace(REG_REQUIRE_NAPI_OHOS, (_, moduleRequest, moduleName) => {
+    return `import ${moduleRequest} from '@ohos:${moduleName}';`;
   });
 }
 
