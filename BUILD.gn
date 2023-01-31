@@ -133,10 +133,12 @@ action("build_ets_sysResource") {
 }
 
 ets_loader_sources = [
+  "compiler/compile_plugin.js",
   "compiler/main.js",
   "compiler/npm-install.js",
   "compiler/package-lock.json",
   "compiler/package.json",
+  "compiler/rollup.config.js",
   "compiler/tsconfig.esm.json",
   "compiler/tsconfig.json",
   "compiler/webpack.config.js",

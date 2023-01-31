@@ -29,11 +29,18 @@ const {
   readWorkerFile,
   loadModuleInfo,
   checkAppResourcePath,
-  addSDKBuildDependencies
+  addSDKBuildDependencies,
+  readPatchConfig,
+  getCleanConfig
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
-const { IGNORE_ERROR_CODE, removeDir, mkdirsSync } = require('./lib/utils');
+const {
+  IGNORE_ERROR_CODE,
+  removeDir,
+  mkdirsSync,
+  getResolveModules
+} = require('./lib/utils');
 const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
@@ -127,17 +134,11 @@ function initConfig(config) {
     };
   }
   if (!projectConfig.aceModuleJsonPath) {
-    config.resolve.modules.push(path.join(projectPath, '../../../../../'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../'));
+    config.resolve.modules.push(...getResolveModules(projectPath, true));
     existsPackageJson(config, path.resolve(projectPath, '../../../../../package.json'),
       path.resolve(projectPath, '../../../../package.json'));
   } else {
-    config.resolve.modules.push(path.join(projectPath, '../../../../'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../'));
+    config.resolve.modules.push(...getResolveModules(projectPath, false));
     existsPackageJson(config, path.resolve(projectPath, '../../../../package.json'),
       path.resolve(projectPath, '../../../package.json'));
   }
@@ -398,23 +399,11 @@ function setGenAbcPlugin(env, config) {
 }
 
 function setCleanWebpackPlugin(workerFile, config) {
-  if (projectConfig.compileMode === 'esmodule') {
-    return;
-  }
-  let cleanPath = [];
-  cleanPath.push(projectConfig.buildPath);
-  if (workerFile) {
-    let workerFilesPath = Object.keys(workerFile);
-    for (let workerFilePath of workerFilesPath) {
-      cleanPath.push(path.join(projectConfig.buildPath, workerFilePath, '..'));
-    }
-  }
-
   config.plugins.push(
     new CleanWebpackPlugin({
       dry: false,
       dangerouslyAllowCleanPatternsOutsideProject: true,
-      cleanOnceBeforeBuildPatterns: cleanPath
+      cleanOnceBeforeBuildPatterns: getCleanConfig(workerFile)
     })
   );
 }
@@ -447,7 +436,8 @@ module.exports = (env, argv) => {
   setTsConfigFile();
   clearWebpackCacheByBuildMode();
   initConfig(config);
-  const workerFile = readWorkerFile(env.isPreview);
+  readPatchConfig();
+  const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCleanWebpackPlugin(workerFile, config);
 

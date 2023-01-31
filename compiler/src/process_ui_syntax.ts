@@ -16,12 +16,6 @@
 import ts from 'typescript';
 import path from 'path';
 
-import { componentCollection } from './validate_ui_syntax';
-import {
-  processComponentClass,
-  createParentParameter
-} from './process_component_class';
-import processImport from './process_import';
 import validateReExportType from './validate_module_syntax';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
@@ -52,7 +46,6 @@ import {
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   ESMODULE,
   ARK,
-  COMPONENT_COMMON,
   EXTNAME_ETS,
   GENERATE_ID,
   _GENERATE_ID,
@@ -60,7 +53,10 @@ import {
   STARTGETACCESSRECORDINGFOR,
   ALLOCATENEWELMETIDFORNEXTCOMPONENT,
   STOPGETACCESSRECORDING,
-  CARD_ENTRY_FUNCTION_NAME
+  CARD_ENTRY_FUNCTION_NAME,
+  CARD_LOG_TYPE_COMPONENTS,
+  CARD_LOG_TYPE_DECORATORS,
+  CARD_LOG_TYPE_IMPORT
 } from './pre_define';
 import {
   componentInfo,
@@ -70,6 +66,16 @@ import {
   FileLog
 } from './utils';
 import { writeFileSyncByNode } from './ark_utils';
+import {
+  componentCollection,
+  localStorageLinkCollection,
+  localStoragePropCollection,
+} from './validate_ui_syntax';
+import {
+  processComponentClass,
+  createParentParameter
+} from './process_component_class';
+import processImport from './process_import';
 import {
   processComponentBlock,
   bindComponentAttr,
@@ -84,10 +90,6 @@ import {
   INTERFACE_NODE_SET,
   ID_ATTRS
 } from './component_map';
-import {
-  localStorageLinkCollection,
-  localStoragePropCollection
-} from './validate_ui_syntax';
 import {
   resources,
   projectConfig,
@@ -107,7 +109,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
-      if (process.env.compiler === BUILD_ON) {
+      if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
         if (!ut && (process.env.compileMode !== 'moduleJson' &&
@@ -115,10 +117,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
-              validateReExportType(node, pagesDir, transformLog.errors);
-              if (projectConfig.processTs === true) {
-                writeFileSyncByNode(node, true, projectConfig);
-              }
+            validateReExportType(node, pagesDir, transformLog.errors);
+            if (projectConfig.processTs === true) {
+              writeFileSyncByNode(node, true, projectConfig);
+            }
           }
           return node;
         }
@@ -821,5 +823,29 @@ function addCardStringliteral(newExpressionParams: any[], context: ts.Transforma
     newExpressionParams.push(context.factory.createStringLiteral(
       projectConfig.bundleName + '/' + projectConfig.moduleName + '/' +
       cardRelativePath));
+  }
+}
+
+export function validatorCard(log: any[], type: number, pos: number,
+  name: string = ''): void {
+  if (projectConfig && projectConfig.cardObj && resourceFileName
+    && projectConfig.cardObj[resourceFileName]) {
+    const logInfo: object = {
+      type: LogType.ERROR,
+      message: '',
+      pos: pos
+    };
+    switch (type) {
+      case CARD_LOG_TYPE_COMPONENTS:
+        logInfo.message = `Card page cannot use the component ${name}.`;
+        break;
+      case CARD_LOG_TYPE_DECORATORS:
+        logInfo.message = `Card page cannot use ${name}`;
+        break;
+      case CARD_LOG_TYPE_IMPORT:
+        logInfo.message = `Card page cannot use import.`;
+        break;
+    }
+    log.push(logInfo);
   }
 }
