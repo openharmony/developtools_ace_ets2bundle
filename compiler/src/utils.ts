@@ -31,11 +31,8 @@ import {
   NODE_MODULES,
   FAIL,
   TEMPORARY,
-  CARD_LOG_TYPE_COMPONENTS,
-  CARD_LOG_TYPE_DECORATORS,
-  CARD_LOG_TYPE_IMPORT
+  ESMODULE
 } from './pre_define';
-import { resourceFileName } from './process_ui_syntax';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -85,18 +82,22 @@ export class FileLog {
   }
 }
 
-export function emitLogInfo(loader: any, infos: LogInfo[]) {
+export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
+  resourcePath: string = null): void {
   if (infos && infos.length) {
     infos.forEach((item) => {
       switch (item.type) {
         case LogType.ERROR:
-          loader.emitError(getMessage(item.fileName || loader.resourcePath, item));
+          fastBuild ? loader.error('\u001b[31m' + getMessage(item.fileName || resourcePath, item, true)) :
+            loader.emitError(getMessage(item.fileName || loader.resourcePath, item));
           break;
         case LogType.WARN:
-          loader.emitWarning(getMessage(item.fileName || loader.resourcePath, item));
+          fastBuild ? loader.warn('\u001b[33m' + getMessage(item.fileName || resourcePath, item, true)) :
+            loader.emitWarning(getMessage(item.fileName || loader.resourcePath, item));
           break;
         case LogType.NOTE:
-          loader.emitWarning(getMessage(loader.resourcePath, item));
+          fastBuild ? loader.info('\u001b[34m' + getMessage(item.fileName || resourcePath, item, true)) :
+            loader.emitWarning(getMessage(loader.resourcePath, item));
           break;
       }
     });
@@ -115,14 +116,38 @@ export function addLog(type: LogType, message: string, pos: number, log: LogInfo
   });
 }
 
-export function getMessage(fileName: string, info: LogInfo): string {
+export function getMessage(fileName: string, info: LogInfo, fastBuild: boolean = false): string {
   let message: string;
   if (info.line && info.column) {
     message = `BUILD${info.type} File: ${fileName}:${info.line}:${info.column}\n ${info.message}`;
   } else {
     message = `BUILD${info.type} File: ${fileName}\n ${info.message}`;
   }
+  if (fastBuild) {
+    message = message.replace(/^BUILD/, 'ArkTS:');
+  }
   return message;
+}
+
+export function getTransformLog(transformLog: FileLog): LogInfo[] {
+  const sourceFile: ts.SourceFile = transformLog.sourceFile;
+  const logInfos: LogInfo[] = transformLog.errors.map((item) => {
+    if (item.pos) {
+      if (!item.column || !item.line) {
+        const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
+        item.line = posOfNode.line + 1;
+        item.column = posOfNode.character + 1;
+      }
+    } else {
+      item.line = item.line || undefined;
+      item.column = item.column || undefined;
+    }
+    if (!item.fileName) {
+      item.fileName = sourceFile.fileName;
+    }
+    return item;
+  });
+  return logInfos;
 }
 
 class ComponentInfo {
@@ -359,30 +384,6 @@ export function removeDir(dirName: string): void {
   }
 }
 
-export function validatorCard(log: any[], type: number, pos: number,
-  name: string = ''): void {
-  if (projectConfig && projectConfig.cardObj && resourceFileName
-    && projectConfig.cardObj[resourceFileName]) {
-    const logInfo: object = {
-      type: LogType.ERROR,
-      message: '',
-      pos: pos
-    }
-    switch(type) {
-      case CARD_LOG_TYPE_COMPONENTS:
-        logInfo.message = `Card page cannot use the component ${name}.`;
-        break;
-      case CARD_LOG_TYPE_DECORATORS:
-        logInfo.message = `Card page cannot use ${name}`;
-        break;
-      case CARD_LOG_TYPE_IMPORT:
-        logInfo.message = `Card page cannot use import.`;
-        break;
-    }
-    log.push(logInfo);
-  }
-}
-
 export function parseErrorMessage(message: string): string {
   const messageArrary: string[] = message.split('\n');
   let logContent: string = '';
@@ -470,4 +471,83 @@ export function getExtensionIfUnfullySpecifiedFilepath(filePath: string): string
   }
 
   return extension;
+}
+
+export function shouldWriteChangedList(watchModifiedFiles: string[],
+  watchRemovedFiles: string[]): boolean {
+  if (projectConfig.compileMode === ESMODULE && process.env.watchMode === 'true' && !projectConfig.isPreview &&
+    projectConfig.changedFileList && (watchRemovedFiles.length + watchModifiedFiles.length)) {
+    if (process.env.compileTool !== 'rollup') {
+      if (!(watchModifiedFiles.length === 1 &&
+        watchModifiedFiles[0] === projectConfig.projectPath && !watchRemovedFiles.length)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+interface HotReloadIncrementalTime {
+  hotReloadIncrementalStartTime: string;
+  hotReloadIncrementalEndTime: string;
+}
+
+export const hotReloadIncrementalTime: HotReloadIncrementalTime = {
+  hotReloadIncrementalStartTime: '',
+  hotReloadIncrementalEndTime: ''
+};
+
+interface FilesObj {
+  modifiedFiles: string[],
+  removedFiles: string[]
+}
+
+let allModifiedFiles: Set<string> = new Set();
+
+export function getHotReloadFiles(watchModifiedFiles: string[],
+  watchRemovedFiles: string[], hotReloadSupportFiles: Set<string>): FilesObj {
+  hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
+  watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
+  allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
+    .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
+    .map(file => path.relative(projectConfig.projectPath, file))]
+    .filter(file => !watchRemovedFiles.includes(file)));
+  return {
+    modifiedFiles: [...allModifiedFiles],
+    removedFiles: [...watchRemovedFiles]
+  };
+}
+
+export function getResolveModules(projectPath: string, faMode: boolean): string[] {
+  if (faMode) {
+    return [
+      path.resolve(projectPath, '../../../../../'),
+      path.resolve(projectPath, '../../../../node_modules'),
+      path.resolve(projectPath, '../../../../../node_modules'),
+      path.resolve(projectPath, '../../')
+    ];
+  } else {
+    return [
+      path.resolve(projectPath, '../../../../'),
+      path.resolve(projectPath, '../../../node_modules'),
+      path.resolve(projectPath, '../../../../node_modules'),
+      path.resolve(projectPath, '../')
+    ];
+  }
+}
+
+export function writeUseOSFiles(useOSFiles: Set<string>): void {
+  let info: string = '';
+  if (!fs.existsSync(projectConfig.aceSoPath)) {
+    const parent: string = path.resolve(projectConfig.aceSoPath, '..');
+    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+      mkDir(parent);
+    }
+  } else {
+    info = fs.readFileSync(projectConfig.aceSoPath, 'utf-8') + '\n';
+  }
+  fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
 }
