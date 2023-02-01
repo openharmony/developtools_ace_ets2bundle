@@ -88,6 +88,7 @@ export const CUSTOM_DECORATOR_NAME: Set<string> = new Set([
 export const EXTNAME_ETS: string = '.ets';
 export const NODE_MODULES: string = 'node_modules';
 export const INDEX_ETS: string = 'index.ets';
+export const INDEX_TS: string = 'index.ts';
 export const PACKAGE_JSON: string = 'package.json';
 export const CUSTOM_COMPONENT_DEFAULT: string = 'default';
 
@@ -131,6 +132,9 @@ export const COMPONENT_SET_AND_PROP: string = 'setAndProp';
 
 export const BUILD_ON: string = 'on';
 export const BUILD_OFF: string = 'off';
+
+export const START: string = 'start';
+export const END: string = 'end';
 
 export const COMPONENT_CREATE_FUNCTION: string = 'create';
 export const COMPONENT_CREATE_LABEL_FUNCTION: string = 'createWithLabel';
@@ -218,8 +222,11 @@ export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
-export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> =
-  new Map([['Navigation', new Set(['title'])], ['NavDestination', new Set(['title'])]]);
+export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
+  ['Navigation', new Set(['title'])], 
+  ['NavDestination', new Set(['title'])],
+  ['ListItem', new Set(['swipeAction'])]
+]);
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup']);
 export const HEADER: string = 'header';
 export const FOOTER: string = 'footer';
@@ -265,6 +272,10 @@ export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
 export const SOURCEMAPS: string = 'sourceMaps.map';
 export const PROTO_FILESINFO_TXT: string = 'protoFilesInfo.txt';
+export const AOT_FULL: string = 'full';
+export const AOT_TYPE: string = 'type';
+export const AOT_PARTIAL: string = 'partial';
+export const AOT_PROFILE_SUFFIX: string = '.ap';
 
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
@@ -374,7 +385,5 @@ export const CARD_LOG_TYPE_IMPORT = 3;
 
 export const CALL = 'call';
 export const RESERT = 'reset';
-export const ARRAY = 'Array';
-export const JSON = 'JSON';
-export const STRINGIFY = 'stringify';
-export const GETDATA = 'getData';
+
+export const TS_NOCHECK: string = '// @ts-nocheck';

@@ -34,24 +34,27 @@ import {
 } from './validate_ui_syntax';
 import {
   circularFile,
-  mkDir,
+  writeUseOSFiles,
   writeFileSync,
   parseErrorMessage,
-  generateSourceFilesInHar
+  genTemporaryPath,
+  shouldWriteChangedList,
+  getHotReloadFiles
 } from './utils';
 import {
   MODULE_ETS_PATH,
   MODULE_SHARE_PATH,
   BUILD_SHARE_PATH,
-  ESMODULE,
-  JSBUNDLE,
   EXTNAME_JS,
   EXTNAME_JS_MAP
 } from './pre_define';
 import {
-  createLanguageService,
+  serviceChecker,
   createWatchCompilerHost,
-  readDeaclareFiles
+  hotReloadSupportFiles,
+  printDiagnostic,
+  checkerResult,
+  incrementWatchFile
 } from './ets_checker';
 import {
   globalProgram,
@@ -67,6 +70,7 @@ configure({
 export const logger = getLogger('ETS');
 
 export const props: string[] = [];
+const checkErrorMessage: Set<string | Info> = new Set([]);
 
 interface Info {
   message?: string;
@@ -75,11 +79,6 @@ interface Info {
     file: string,
     location: { start?: { line: number, column: number } }
   };
-}
-
-interface filesObj {
-  modifiedFiles: string[],
-  removedFiles: string[]
 }
 
 export interface CacheFileName {
@@ -94,28 +93,10 @@ interface hotReloadIncrementalTime {
   hotReloadIncrementalEndTime: string;
 }
 
-interface NeedUpdateFlag {
-  flag: boolean;
-}
-
-export const allResolvedModules: Set<string> = new Set();
-export let hotReloadSupportFiles: Set<string> = new Set();
-export let cache: Cache = {};
-export const shouldResolvedFiles: Set<string> = new Set()
-type Cache = Record<string, CacheFileName>;
-let allModifiedFiles: Set<string> = new Set();
-let checkErrorMessage: Set<string | Info> = new Set([]);
-interface wholeCache {
-  runtimeOS: string,
-  sdkInfo: string,
-  fileList: Cache
-}
-
 export class ResultStates {
   private mStats: Stats;
   private mErrorCount: number = 0;
   private mPreErrorCount: number = 0;
-  private tsErrorCount: number = 0;
   private mWarningCount: number = 0;
   private warningCount: number = 0;
   private noteCount: number = 0;
@@ -129,6 +110,7 @@ export class ResultStates {
     hotReloadIncrementalStartTime: '',
     hotReloadIncrementalEndTime: ''
   }
+  private incrementalFileInHar: Map<string, string> = new Map();
 
   public apply(compiler: Compiler): void {
     compiler.hooks.compilation.tap('SourcemapFixer', compilation => {
@@ -195,6 +177,8 @@ export class ResultStates {
           }
         }
       });
+
+      compilation.hooks.finishModules.tap('finishModules', handleFinishModules.bind(this));
     });
 
     compiler.hooks.afterCompile.tap('copyFindModule', () => {
@@ -258,68 +242,17 @@ export class ResultStates {
         rootFileNames.push(fileName.replace('?entry', ''));
       });
       if (process.env.watchMode === 'true') {
-        if (projectConfig.hotReload) {
-          [...rootFileNames, ...readDeaclareFiles()].forEach(fileName => {
-            hotReloadSupportFiles.add(path.resolve(fileName));
-          })
-        }
         globalProgram.watchProgram = ts.createWatchProgram(
-          createWatchCompilerHost(rootFileNames, this.printDiagnostic.bind(this),
-            this.delayPrintLogCount.bind(this), this.resetTsErrorCount.bind(this)));
+          createWatchCompilerHost(rootFileNames, printDiagnostic,
+            this.delayPrintLogCount.bind(this), this.resetTsErrorCount));
       } else {
-        let languageService: ts.LanguageService = null;
-        let cacheFile: string = null;
-        if (projectConfig.xtsMode) {
-          languageService = createLanguageService(rootFileNames);
-        } else {
-          cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
-          let wholeCache: wholeCache = fs.existsSync(cacheFile) ?
-            JSON.parse(fs.readFileSync(cacheFile).toString()) :
-              {"runtimeOS": projectConfig.runtimeOS, "sdkInfo": projectConfig.sdkInfo, "fileList": {}};
-          if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
-            cache = wholeCache.fileList;
-          } else {
-            cache = {};
-          }
-          const filterFiles: string[] = filterInput(rootFileNames);
-          languageService = createLanguageService(filterFiles);
-        }
-        globalProgram.program = languageService.getProgram();
-        const allDiagnostics: ts.Diagnostic[] = globalProgram.program
-          .getSyntacticDiagnostics()
-          .concat(globalProgram.program.getSemanticDiagnostics())
-          .concat(globalProgram.program.getDeclarationDiagnostics());
-        allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-          this.printDiagnostic(diagnostic);
-        });
-        if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-          fs.writeFileSync(cacheFile, JSON.stringify({
-            "runtimeOS": projectConfig.runtimeOS,
-            "sdkInfo": projectConfig.sdkInfo,
-            "fileList": cache
-          }, null, 2));
-        }
-        if (projectConfig.compileHar || projectConfig.compileShared) {
-          [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
-            if (!(moduleFile.match(/node_modules/) && projectConfig.compileHar)) {
-              try {
-                const emit: any = languageService.getEmitOutput(moduleFile, true, true);
-                if (emit.outputFiles[0]) {
-                  generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile));
-                } else {
-                  logger.warn(this.yellow,
-                    "ArkTS:WARN doesn't generate .d"+path.extname(moduleFile) + " for " + moduleFile, this.reset);
-                }
-              } catch(err) {
-              }
-            }
-          })
-        }
+        serviceChecker(rootFileNames);
       }
     });
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
       process.env.watchEts = 'start';
+      checkErrorMessage.clear();
       this.clearCount();
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
@@ -336,32 +269,23 @@ export class ResultStates {
           }
         });
       }
-      if (this.shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
-        this.hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
-        watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
-        allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
-          .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
-          .map(file => path.relative(projectConfig.projectPath, file))]
-          .filter(file => !watchRemovedFiles.includes(file)));
-        const filesObj: filesObj = {
-          modifiedFiles: [...allModifiedFiles],
-          removedFiles: [...watchRemovedFiles]
-        };
-        writeFileSync(projectConfig.changedFileList, JSON.stringify(filesObj));
+      if (shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
+        writeFileSync(projectConfig.changedFileList, JSON.stringify(
+          getHotReloadFiles(watchModifiedFiles, watchRemovedFiles, hotReloadSupportFiles)));
       }
-      const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
-      if (changedFiles.length) {
-        shouldResolvedFiles.clear();
-      }
-      changedFiles.forEach((file) => {
-        this.judgeFileShouldResolved(file, shouldResolvedFiles)
-      })
-    })
+      incrementWatchFile(watchModifiedFiles, watchRemovedFiles);
+    });
 
     compiler.hooks.done.tap('Result States', (stats: Stats) => {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
-        this.writeUseOSFiles();
+        writeUseOSFiles(useOSFiles);
+      }
+      if (projectConfig.compileHar) {
+        this.incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+          const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
+          writeFileSync(jsBuildFilePath, sourceCode);
+        });
       }
       this.mStats = stats;
       this.warningCount = 0;
@@ -373,65 +297,8 @@ export class ResultStates {
     });
   }
 
-  private shouldWriteChangedList(watchModifiedFiles: string[], watchRemovedFiles: string[]): boolean {
-    return projectConfig.compileMode === ESMODULE && process.env.watchMode === 'true' && !projectConfig.isPreview &&
-      projectConfig.changedFileList && (watchRemovedFiles.length + watchModifiedFiles.length) &&
-      !(watchModifiedFiles.length === 1 && watchModifiedFiles[0] == projectConfig.projectPath && !watchRemovedFiles.length);
-  }
-
-  private judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
-    if (shouldResolvedFiles.has(file)) {
-      return;
-    }
-    shouldResolvedFiles.add(file);
-    if (cache && cache[file] && cache[file].parent) {
-      cache[file].parent.forEach((item)=>{
-        this.judgeFileShouldResolved(item, shouldResolvedFiles);
-      })
-      cache[file].parent = [];
-    }
-    if (cache && cache[file] && cache[file].children) {
-      cache[file].children.forEach((item)=>{
-        this.judgeFileShouldResolved(item, shouldResolvedFiles);
-      })
-      cache[file].children = [];
-    }
-  }
-
-  private printDiagnostic(diagnostic: ts.Diagnostic): void {
-    const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-    if (this.validateError(message)) {
-      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-        updateErrorFileCache(diagnostic);
-      }
-      this.tsErrorCount += 1;
-      if (diagnostic.file) {
-        const { line, character }: ts.LineAndCharacter =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-        logger.error(this.red,
-          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`,
-          this.reset);
-      } else {
-        logger.error(this.red, `ArkTS:ERROR: ${message}`, this.reset);
-      }
-    }
-  }
-
   private resetTsErrorCount(): void {
-    this.tsErrorCount = 0;
-  }
-
-  private writeUseOSFiles(): void {
-    let info: string = '';
-    if (!fs.existsSync(projectConfig.aceSoPath)) {
-      const parent: string = path.join(projectConfig.aceSoPath, '..');
-      if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
-        mkDir(parent);
-      }
-    } else {
-      info = fs.readFileSync(projectConfig.aceSoPath, 'utf-8') + '\n';
-    }
-    fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
+    checkerResult.count = 0;
   }
 
   private printResult(): void {
@@ -457,7 +324,7 @@ export class ResultStates {
   }
 
   private printLogCount(): void {
-    let errorCount: number = this.mErrorCount + this.tsErrorCount;
+    let errorCount: number = this.mErrorCount + checkerResult.count;
     if (errorCount + this.warningCount + this.noteCount > 0) {
       let result: string;
       let resultInfo: string = '';
@@ -530,14 +397,17 @@ export class ResultStates {
         const message: string = warnings[index].message.replace(/^Module Warning\s*.*:\n/, '')
           .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '');
         if (/^NOTE/.test(message)) {
-          this.noteCount++;
-          logger.info(this.blue, message.replace(/^NOTE/, 'ArkTS:NOTE'), this.reset, '\n');
+          if (!checkErrorMessage.has(message)) {
+            this.noteCount++;
+            logger.info(this.blue, message.replace(/^NOTE/, 'ArkTS:NOTE'), this.reset, '\n');
+            checkErrorMessage.add(message);
+          }
         } else {
           if (!checkErrorMessage.has(message)) {
             this.warningCount++;
             logger.warn(this.yellow, message.replace(/^WARN/, 'ArkTS:WARN'), this.reset, '\n');
             checkErrorMessage.add(message);
-          } 
+          }
         }
       }
       if (this.mWarningCount > length) {
@@ -552,15 +422,15 @@ export class ResultStates {
       for (let index = 0; index < errors.length; index++) {
         if (errors[index].issue) {
           if (!checkErrorMessage.has(errors[index].issue)) {
-          this.mErrorCount++;
-          const position: string = errors[index].issue.location
-            ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
-            : '';
-          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
-          const detail: string = errors[index].issue.message;
-          logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
-          logger.error(this.red, detail, this.reset, '\n');
-          checkErrorMessage.add(errors[index].issue);
+            this.mErrorCount++;
+            const position: string = errors[index].issue.location
+              ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
+              : '';
+            const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
+            const detail: string = errors[index].issue.message;
+            logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
+            logger.error(this.red, detail, this.reset, '\n');
+            checkErrorMessage.add(errors[index].issue);
           }
         } else if (/BUILDERROR/.test(errors[index].message)) {
           if (!checkErrorMessage.has(errors[index].message)) {
@@ -570,7 +440,7 @@ export class ResultStates {
               .replace(/^ERROR/, 'ArkTS:ERROR');
             this.printErrorMessage(errorMessage, true, errors[index]);
             checkErrorMessage.add(errors[index].message);
-          }  
+          }
         } else if (!/TS[0-9]+:/.test(errors[index].message.toString()) &&
           !/Module parse failed/.test(errors[index].message.toString())) {
           this.mErrorCount++;
@@ -585,36 +455,12 @@ export class ResultStates {
     }
   }
   private printErrorMessage(errorMessage: string, lineFeed: boolean, errorInfo: Info): void {
-    if (this.validateError(errorMessage)) {
-      const formatErrMsg = errorMessage.replace(/\\/g, '/');
-      if (lineFeed) {
-        logger.error(this.red, formatErrMsg + '\n', this.reset);
-      } else {
-        logger.error(this.red, formatErrMsg, this.reset);
-      }
+    const formatErrMsg = errorMessage.replace(/\\/g, '/');
+    if (lineFeed) {
+      logger.error(this.red, formatErrMsg + '\n', this.reset);
     } else {
-      const errorsIndex = this.mStats.compilation.errors.indexOf(errorInfo);
-      this.mStats.compilation.errors.splice(errorsIndex, 1);
-      this.mErrorCount = this.mErrorCount - 1;
+      logger.error(this.red, formatErrMsg, this.reset);
     }
-  }
-  private validateError(message: string): boolean {
-    const propInfoReg: RegExp = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
-    const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-    if (this.matchMessage(message, props, propInfoReg) ||
-      this.matchMessage(message, props, stateInfoReg)) {
-      return false;
-    }
-    return true;
-  }
-  private matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
-    if (reg.test(message)) {
-      const match: string[] = message.match(reg);
-      if (match[1] && nameArr.includes(match[1])) {
-        return true;
-      }
-    }
-    return false;
   }
   private filterModuleError(message: string): string {
     if (/You may need an additional loader/.test(message) && transformLog && transformLog.sourceFile) {
@@ -628,44 +474,25 @@ export class ResultStates {
   }
 }
 
-function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
-  if (diagnostic.file && cache[path.resolve(diagnostic.file.fileName)]) {
-    cache[path.resolve(diagnostic.file.fileName)].error = true;
-  }
-}
-
-function filterInput(rootFileNames: string[]): string[] {
-  return rootFileNames.filter((file: string) => {
-    const needUpdate: NeedUpdateFlag = { flag: false };
-    const alreadyCheckedFiles: Set<string> = new Set();
-    checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
-    return needUpdate.flag;
-  });
-}
-
-function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyCheckedFiles: Set<string>): void {
-  if (alreadyCheckedFiles.has(file)) {
-    return;
-  } else {
-    alreadyCheckedFiles.add(file);
-  }
-
-  if (needUpdate.flag) {
-    return;
-  }
-
-  const value: CacheFileName = cache[file];
-  const mtimeMs: number = fs.statSync(file).mtimeMs;
-  if (value) {
-    if (value.error || value.mtimeMs !== mtimeMs) {
-      needUpdate.flag = true;
-      return;
-    }
-    for (let i = 0; i < value.children.length; ++i) {
-      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
-    }
-  } else {
-    cache[file] = { mtimeMs, children: [], parent: [], error: false };
-    needUpdate.flag = true;
+function handleFinishModules(modules, callback) {
+  if (projectConfig.compileHar) {
+    modules.forEach(module => {
+      if (module !== undefined && module.resourceResolveData !== undefined) {
+        const filePath: string = module.resourceResolveData.path;
+        if (!filePath.match(/node_modules/)) {
+          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, process.env.cachePath,
+            projectConfig);
+          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            projectConfig.buildPath, projectConfig, true);
+          if (filePath.match(/\.e?ts$/)) {
+            this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
+              jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
+            this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
+          } else {
+            this.incrementalFileInHar.set(jsCacheFilePath, jsBuildFilePath);
+          }
+        }
+      }
+    });
   }
 }

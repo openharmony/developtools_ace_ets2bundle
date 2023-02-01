@@ -73,8 +73,7 @@ import {
   CREATE_STORAGE_PROP,
   ELMTID,
   COMPONENT_CONSTRUCTOR_PARAMS,
-  RESERT,
-  ARRAY
+  RESERT
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -91,8 +90,7 @@ import { updateConstructor } from './process_component_constructor';
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  hasDecorator
+  componentInfo
 } from './utils';
 import {
   createReference,
@@ -140,7 +138,7 @@ export const setUpdateParamsDecorators: Set<string> =
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
+  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -392,9 +390,6 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
-    if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode) {
-      checkStatePropertyType(node, log);
-    }
   }
   if (!immutableDecorators.has(decorator)) {
     updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD, node.type));
@@ -409,97 +404,6 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     const variableWithUnderLink: string = '__' + name.escapedText.toString();
     updateResult.setDecoratorName(decorator);
     updateResult.setPurgeVariableDepStatement(createPurgeVariableDepStatement(variableWithUnderLink));
-  }
-}
-
-function checkStatePropertyType(node: ts.PropertyDeclaration, log: LogInfo[]): void {
-  switch (isArrayTypeNode(node.type, log, true)) {
-    case 'TypeReference':
-      if (ts.isTypeReferenceNode(node.type.typeArguments[0]) && node.type.typeArguments[0].typeName &&
-        ts.isIdentifier(node.type.typeArguments[0].typeName)) {
-        judgeArrayType(node.type.typeArguments[0], log);
-      } else if (!isExactArrayType(node.type.typeArguments[0])) {
-        remindObserved(log, node.type.typeArguments[0]);
-      }
-      break;
-    case 'ArrayType':
-      if (ts.isArrayTypeNode(node.type) && node.type.elementType &&
-        ts.isTypeReferenceNode(node.type.elementType) && node.type.elementType.typeName &&
-        ts.isIdentifier(node.type.elementType.typeName)) {
-        judgeArrayType(node.type.elementType, log);
-      } else if (!isExactArrayType(node.type.elementType)) {
-        remindObserved(log, node.type.elementType);
-      }
-      break;
-  }
-}
-
-function judgeArrayType(node: ts.Node, log: LogInfo[]): void {
-  if (!observedClassCollection.has(node.typeName.escapedText.toString())) {
-    remindObserved(log, node);
-  }
-}
-
-function remindObserved(log: LogInfo[], node: ts.Node): void {
-  log.push({
-    type: LogType.NOTE,
-    message: `Make sure this type is a Class with @Observed decorator, ` +
-      `or it's property may not update when you change this state variable`,
-    pos: node.getStart()
-  })
-}
-
-function isArrayTypeNode(type: ts.Node, log: LogInfo[], isSurface: boolean): string {
-  let isArrayType: string;
-  if (type) {
-    if (ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName) &&
-      type.typeName.escapedText.toString() === ARRAY && type.typeArguments && type.typeArguments.length) {
-      isArrayType = 'TypeReference';
-      isArrayTypeNodeCommon(isSurface, type.typeArguments[0], log);
-    } else if (ts.isArrayTypeNode(type) && type.elementType) {
-      isArrayType = 'ArrayType';
-      isArrayTypeNodeCommon(isSurface, type.elementType, log);
-    }
-  }
-  return isArrayType;
-}
-
-function isArrayTypeNodeCommon(isSurface: boolean, node: ts.Node, log: LogInfo[]): void {
-  if (isSurface) {
-    isObscureArrayType(node, log);
-    isArrayTypeNode(node, log, false);
-  } else {
-    log.push({
-      type: LogType.NOTE,
-      message: `Better not nested Array in Array`,
-      pos: node.getStart()
-    })
-  }
-}
-
-function isExactArrayType(type: ts.Node): boolean {
-  switch(type.kind) {
-    case ts.SyntaxKind.StringKeyword:
-    case ts.SyntaxKind.NumberKeyword:
-    case ts.SyntaxKind.BooleanKeyword:
-    case ts.SyntaxKind.SymbolKeyword:
-    case ts.SyntaxKind.BigIntKeyword:
-      return true;
-    default:
-      return false;
-  }
-}
-
-function isObscureArrayType(type: ts.Node, log: LogInfo[]): void {
-  switch(type.kind) {
-    case ts.SyntaxKind.AnyKeyword:
-    case ts.SyntaxKind.TupleType:
-    case ts.SyntaxKind.VoidKeyword:
-      log.push({
-        type: LogType.NOTE,
-        message: `Please give a exact type of Array`,
-        pos: type.getStart()
-      })
   }
 }
 
@@ -943,27 +847,6 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   } else if (program) {
     checker = program.getTypeChecker();
   }
-  const enumType: ts.SyntaxKind = getEnumType(typeNode, checker);
-  if (simpleTypes.has(enumType || typeNode.kind) || isEnumtype(typeNode)) {
-    return true;
-  } else if (ts.isUnionTypeNode(typeNode) && typeNode.types) {
-    const types: ts.NodeArray<ts.TypeNode> = typeNode.types;
-    let basicType: boolean = false;
-    let referenceType: boolean = false;
-    for (let i = 0; i < types.length; i++) {
-      const enumType: ts.SyntaxKind = getEnumType(types[i], checker);
-      if (simpleTypes.has(enumType || types[i].kind) || isEnumtype(typeNode)) {
-        basicType = true;
-      } else {
-        referenceType = true;
-      }
-      if (basicType && referenceType && log) {
-        validateVariableType(typeNode, log);
-        return false;
-      }
-    }
-    return true;
-  }
   if (typeNode.parent && typeNode.parent.name &&
     typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
@@ -972,27 +855,51 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
       pos: typeNode.getStart()
     });
   }
+  return getDeclarationType(typeNode, checker, log);
+}
+
+function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log: LogInfo[]): boolean {
+  if (simpleTypes.has(typeNode.kind)) {
+    return true;
+  }
+  if (checker) {
+    const type: ts.Type = checker.getTypeFromTypeNode(typeNode);
+    /* Enum */
+    if (type.flags & (32 | 1024)) {
+      return true;
+    }
+    // @ts-ignore
+    if (type.types && type.types.length) {
+      // @ts-ignore
+      const types = type.types;
+      let basicType: boolean = false;
+      let referenceType: boolean = false;
+      for (let i = 0; i < types.length; i++) {
+        if (isBasicType(types[i].flags)) {
+          basicType = true;
+        } else {
+          referenceType = true;
+        }
+      }
+      if (basicType && referenceType && log) {
+        validateVariableType(typeNode, log);
+        return false;
+      }
+      if (!referenceType) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 
-function getEnumType(typeNode: ts.TypeNode, checker: ts.TypeChecker): ts.SyntaxKind {
-  if (!checker) {
-    return;
+function isBasicType(flags: number): boolean {
+  if (flags & (4 | /* String */ 8 | /* Number */ 16 | /* Boolean */ 32 | /* Enum */ 64 | /* BigInt */
+    128 | /* StringLiteral */ 256 | /* NumberLiteral */ 512 /* BooleanLiteral */| 1024 /* EnumLiteral */|
+    2048 /* BigIntLiteral */)) {
+    return true;
   }
-  typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
-  if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
-    const type: ts.Type =
-      checker.getBaseTypeOfLiteralType(checker.getTypeAtLocation(typeNode.typeName));
-    if (type.symbol && type.symbol.valueDeclaration) {
-      return type.symbol.valueDeclaration.kind;
-    }
-  }
-}
-
-function isEnumtype(typeNode: ts.TypeNode): boolean {
-  if (ts.isTypeReferenceNode(typeNode) && ts.isIdentifier(typeNode.typeName)) {
-    return enumCollection.has(typeNode.typeName.getText());
-  }
+  return false;
 }
 
 function isObservedClassType(type: ts.TypeNode): boolean {
@@ -1153,7 +1060,9 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
 function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: 'The state variable type of a struct component cannot be declared by both a simple type and an object type.',
+    message: `The state variable type here is '${typeNode.getText()}', ` +
+      `it contains both a simple type and an object type,\n ` +
+      `which are not allowed to be defined for state variable of a struct.`,
     pos: typeNode.getStart()
   });
 }

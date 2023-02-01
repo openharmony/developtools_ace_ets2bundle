@@ -53,7 +53,8 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'VideoController', 'WebController', 'CustomDialogController', 'SwiperController',
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
   'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D',
-  'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController', 'TextAreaController', 'TextInputController'
+  'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController',
+  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController'
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
@@ -97,7 +98,7 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['bindPopup', 'bindMenu', 'bindContextMenu', 'title',
-  'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart']);
+  'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {

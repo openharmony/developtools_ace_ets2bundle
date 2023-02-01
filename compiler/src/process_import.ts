@@ -19,8 +19,10 @@ import path from 'path';
 
 import {
   EXTNAME_ETS,
+  EXTNAME_TS,
   NODE_MODULES,
   INDEX_ETS,
+  INDEX_TS,
   PACKAGE_JSON,
   STRUCT,
   CLASS,
@@ -56,15 +58,15 @@ import {
   localStoragePropCollection
 } from './validate_ui_syntax';
 import {
-  getExtension,
+  getExtensionIfUnfullySpecifiedFilepath,
   hasDecorator,
   LogInfo,
   LogType,
-  repeatLog,
-  validatorCard
+  repeatLog
 } from './utils';
 import { projectConfig } from '../main';
 import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
+import { validatorCard } from './process_ui_syntax';
 
 export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
 
@@ -496,24 +498,32 @@ function isCustomComponent(node: ts.StructDeclaration): boolean {
   return false;
 }
 
+let packageJsonEntry: string = '';
+
 function isPackageJsonEntry(filePath: string): boolean {
   const packageJsonPath: string = path.join(filePath, PACKAGE_JSON);
   if (fs.existsSync(packageJsonPath)) {
-    let entry: string;
+    let entryTypes: string;
+    let entryMain: string;
     try {
-      entry = JSON.parse(fs.readFileSync(packageJsonPath).toString()).main;
+      const packageJson: Object = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+      entryTypes = packageJson.types;
+      entryMain = packageJson.main;
     } catch (e) {
       return false;
     }
-    if (typeof entry === 'string' && fs.existsSync(path.join(filePath, entry))) {
+    if (entryExist(filePath, entryTypes)) {
+      packageJsonEntry = path.resolve(filePath, entryTypes);
+      return true;
+    } else if (entryExist(filePath, entryMain)) {
+      packageJsonEntry = path.resolve(filePath, entryMain);
       return true;
     }
   }
 }
 
-function getPackageJsonEntry(filePath: string): string {
-  let packageJson: Object = JSON.parse(fs.readFileSync(path.join(filePath, PACKAGE_JSON)).toString());
-  return path.join(filePath, packageJson.types ? packageJson.types : packageJson.main);
+function entryExist(filePath: string, entry: string): boolean {
+  return typeof entry === 'string' && fs.existsSync(path.resolve(filePath, entry));
 }
 
 function getModuleFilePath(filePath: string): string {
@@ -555,7 +565,7 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
     if (fs.existsSync(fileResolvePath + EXTNAME_ETS)) {
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
     } else if (isPackageJsonEntry(fileResolvePath)) {
-      fileResolvePath = getPackageJsonEntry(fileResolvePath);
+      fileResolvePath = packageJsonEntry;
       if (fs.statSync(fileResolvePath).isDirectory() && fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
         fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
       }
@@ -571,13 +581,18 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
 }
 
 export function getFileFullPath(filePath: string, pagesDir: string): string {
-  if (filePath && path.extname(filePath) !== EXTNAME_ETS && !isModule(filePath)) {
-    const dirIndexPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+  if (filePath && path.extname(filePath) !== EXTNAME_ETS && path.extname(filePath) !== EXTNAME_TS &&
+      !isModule(filePath)) {
+    const dirIndexEtsPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);
+    const dirIndexTsPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_TS);
     if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_ETS)) &&
-      fs.existsSync(dirIndexPath)) {
-      filePath = dirIndexPath;
+      fs.existsSync(dirIndexEtsPath)) {
+      filePath = dirIndexEtsPath;
+    } else if (/^(\.|\.\.)\//.test(filePath) && !fs.existsSync(path.resolve(pagesDir, filePath + EXTNAME_TS)) &&
+      fs.existsSync(dirIndexTsPath)) {
+      filePath = dirIndexTsPath;
     } else {
-      filePath += getExtension(path.resolve(pagesDir, filePath));
+      filePath += getExtensionIfUnfullySpecifiedFilepath(path.resolve(pagesDir, filePath));
     }
   }
 

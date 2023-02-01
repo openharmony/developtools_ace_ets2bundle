@@ -44,7 +44,8 @@ import {
   BASE_COMPONENT_NAME_PU,
   OBSERVECOMPONENTCREATION,
   ISINITIALRENDER,
-  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID
+  UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
+  COMPONENT_CUSTOM_DECORATOR
 } from './pre_define';
 import {
   propertyCollection,
@@ -86,16 +87,17 @@ import {
 const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 
-const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
-  [[COMPONENT_STATE_DECORATOR, stateCollection],
-    [COMPONENT_LINK_DECORATOR, linkCollection],
-    [COMPONENT_PROP_DECORATOR, propCollection],
-    [COMPONENT_NON_DECORATOR, regularCollection],
-    [COMPONENT_PROVIDE_DECORATOR, provideCollection],
-    [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
+let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  decoractorMap = new Map(
+    [[COMPONENT_STATE_DECORATOR, stateCollection],
+      [COMPONENT_LINK_DECORATOR, linkCollection],
+      [COMPONENT_PROP_DECORATOR, propCollection],
+      [COMPONENT_NON_DECORATOR, regularCollection],
+      [COMPONENT_PROVIDE_DECORATOR, provideCollection],
+      [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
     const hasChainCall: boolean = componentNode.parent &&
@@ -426,6 +428,10 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
       }
+    } else if (curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR && node.initializer &&
+      (ts.isPropertyAccessExpression(node.initializer) ||
+        ts.isElementAccessExpression(node.initializer))) {
+      return;
     } else {
       parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
@@ -490,36 +496,17 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
 function isCorrectInitFormParent(parent: string, child: string): boolean {
   switch (child) {
     case COMPONENT_STATE_DECORATOR:
-    case COMPONENT_PROVIDE_DECORATOR:
-      if (parent === COMPONENT_NON_DECORATOR) {
-        return true;
-      }
-      break;
-    case COMPONENT_LINK_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR,
-        COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
-        return true;
-      }
-      break;
     case COMPONENT_PROP_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR
-        ].includes(parent)) {
-        return true;
-      }
-      break;
+    case COMPONENT_PROVIDE_DECORATOR:
+      return true;
     case COMPONENT_NON_DECORATOR:
-      if ([COMPONENT_STATE_DECORATOR, ...propAndLinkDecorators, COMPONENT_NON_DECORATOR,
+      if ([COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_PROP_DECORATOR,
         COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
         return true;
       }
       break;
-    case COMPONENT_OBJECT_LINK_DECORATOR:
-      if (!partialUpdateConfig.partialUpdateMode && parent === COMPONENT_STATE_DECORATOR) {
-        return true;
-      } else if (partialUpdateConfig.partialUpdateMode && STATE_OBJECTLINK_DECORATORS.includes(parent)) {
-        return true;
-      }
-      break;
+    case COMPONENT_LINK_DECORATOR:
+      return ![COMPONENT_NON_DECORATOR].includes(parent);
   }
   return false;
 }
@@ -673,8 +660,8 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
   let type: LogType = LogType.ERROR;
   if (inputType) {
     type = inputType;
-  } else if (parentPropertyKind === COMPONENT_STATE_DECORATOR &&
-    curPropertyKind === COMPONENT_STATE_DECORATOR) {
+  } else if ([COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR].includes(
+    parentPropertyKind) && curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR) {
     type = LogType.WARN;
   }
   log.push({

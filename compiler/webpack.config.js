@@ -29,11 +29,18 @@ const {
   readWorkerFile,
   loadModuleInfo,
   checkAppResourcePath,
-  addSDKBuildDependencies
+  addSDKBuildDependencies,
+  readPatchConfig,
+  getCleanConfig
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
-const { IGNORE_ERROR_CODE, removeDir } = require('./lib/utils');
+const {
+  IGNORE_ERROR_CODE,
+  removeDir,
+  mkdirsSync,
+  getResolveModules
+} = require('./lib/utils');
 const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
@@ -127,17 +134,11 @@ function initConfig(config) {
     };
   }
   if (!projectConfig.aceModuleJsonPath) {
-    config.resolve.modules.push(path.join(projectPath, '../../../../../'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../'));
+    config.resolve.modules.push(...getResolveModules(projectPath, true));
     existsPackageJson(config, path.resolve(projectPath, '../../../../../package.json'),
       path.resolve(projectPath, '../../../../package.json'));
   } else {
-    config.resolve.modules.push(path.join(projectPath, '../../../../'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../../../../node_modules'));
-    config.resolve.modules.push(path.resolve(projectPath, '../'));
+    config.resolve.modules.push(...getResolveModules(projectPath, false));
     existsPackageJson(config, path.resolve(projectPath, '../../../../package.json'),
       path.resolve(projectPath, '../../../package.json'));
   }
@@ -147,6 +148,7 @@ function setJsConfigRule() {
   const jsRule = {
     test: /\.js$/,
     use: [
+      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       {
         loader: 'babel-loader',
         options: {
@@ -154,13 +156,12 @@ function setJsConfigRule() {
           compact: false
         }
       },
-      { loader: path.resolve(__dirname, 'lib/process_source_file.js') },
       { loader: path.resolve(__dirname, 'lib/process_system_module.js') }
     ]
   };
   if (projectConfig.compileMode !== 'esmodule') {
     jsRule.type = 'javascript/auto';
-    jsRule.use[0].options.plugins.unshift([
+    jsRule.use[1].options.plugins.unshift([
       '@babel/plugin-transform-modules-commonjs',
       {
         'allowTopLevelThis': true
@@ -398,23 +399,11 @@ function setGenAbcPlugin(env, config) {
 }
 
 function setCleanWebpackPlugin(workerFile, config) {
-  if (projectConfig.compileMode === 'esmodule') {
-    return;
-  }
-  let cleanPath = [];
-  cleanPath.push(projectConfig.buildPath);
-  if (workerFile) {
-    let workerFilesPath = Object.keys(workerFile);
-    for (let workerFilePath of workerFilesPath) {
-      cleanPath.push(path.join(projectConfig.buildPath, workerFilePath, '..'));
-    }
-  }
-
   config.plugins.push(
     new CleanWebpackPlugin({
       dry: false,
       dangerouslyAllowCleanPatternsOutsideProject: true,
-      cleanOnceBeforeBuildPatterns: cleanPath
+      cleanOnceBeforeBuildPatterns: getCleanConfig(workerFile)
     })
   );
 }
@@ -433,7 +422,8 @@ function clearWebpackCacheByBuildMode() {
   if (fs.existsSync(CACHED_BUILDMODE)) {
     let cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
     if (cachedBuildMode !== projectConfig.buildArkMode) {
-      removeDir(path.resolve(projectConfig.cachePath, '.ets_cache'));
+      removeDir(projectConfig.cachePath);
+      mkdirsSync(projectConfig.cachePath);
     }
   }
 }
@@ -446,7 +436,8 @@ module.exports = (env, argv) => {
   setTsConfigFile();
   clearWebpackCacheByBuildMode();
   initConfig(config);
-  const workerFile = readWorkerFile(env.isPreview);
+  readPatchConfig();
+  const workerFile = readWorkerFile();
   setOptimizationConfig(config, workerFile);
   setCleanWebpackPlugin(workerFile, config);
 
