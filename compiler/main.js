@@ -114,6 +114,7 @@ function loadEntryObj(projectConfig) {
       manifest = JSON.parse(jsonString);
       if (manifest && manifest.minPlatformVersion) {
         process.env.minPlatformVersion = manifest.minPlatformVersion;
+        partialUpdateController(manifest.minPlatformVersion);
       }
       projectConfig.pagesJsonFileName = 'config.json';
     } else if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
@@ -149,11 +150,13 @@ function buildManifest(manifest, aceConfigPath) {
   try {
     const moduleConfigJson = JSON.parse(fs.readFileSync(aceConfigPath).toString());
     manifest.type = process.env.abilityType;
-    if (moduleConfigJson && moduleConfigJson.module && moduleConfigJson.module.metadata &&
-      moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
-      partialUpdateController(moduleConfigJson.module.metadata,
-        moduleConfigJson.app.minAPIVersion);
-      stageOptimization(moduleConfigJson.module.metadata);
+    if (moduleConfigJson && moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
+      if (moduleConfigJson.module && moduleConfigJson.module.metadata) {
+        partialUpdateController(moduleConfigJson.app.minAPIVersion, moduleConfigJson.module.metadata);
+        stageOptimization(moduleConfigJson.module.metadata);
+      } else {
+        partialUpdateController(moduleConfigJson.app.minAPIVersion);
+      }
     }
     if (moduleConfigJson.module) {
       switch (moduleConfigJson.module.type) {
@@ -659,23 +662,26 @@ function isPartialUpdate(metadata) {
   if (Array.isArray(metadata) && metadata.length) {
     metadata.some(item => {
       if (item.name && item.name === 'ArkTSPartialUpdate' &&
-        item.value && item.value === 'true') {
-        partialUpdateConfig.partialUpdateMode = true;
+        item.value && item.value === 'false') {
+        partialUpdateConfig.partialUpdateMode = false;
       }
       if (item.name && item.name === 'partialUpdateStrictCheck' && item.value) {
         partialUpdateConfig.strictCheck = item.value;
       }
-      return partialUpdateConfig.partialUpdateMode &&
+      return !partialUpdateConfig.partialUpdateMode &&
         partialUpdateConfig.strictCheck;
     });
   }
 }
 
-function partialUpdateController(metadata, minAPIVersion) {
+function partialUpdateController(minAPIVersion, metadata = null) {
   if (projectConfig.isPreview) {
     return;
   }
   if (minAPIVersion >= 9) {
+    partialUpdateConfig.partialUpdateMode = true;
+  }
+  if (metadata) {
     isPartialUpdate(metadata);
   }
 }
