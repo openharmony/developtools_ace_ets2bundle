@@ -15,7 +15,6 @@
 
 import childProcess from 'child_process';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import cluster from 'cluster';
 
@@ -33,21 +32,18 @@ import {
   MAIN,
   MODULES_ABC,
   MODULES_CACHE,
-  MODULELIST_JSON,
   NPMENTRIES_TXT,
   SOURCEMAPS,
-  SOURCEMAPS_JSON,
   TEMPORARY,
   HAP_PACKAGE,
-  PROJECT_PACKAGE,
-  PACKAGES
+  PACKAGES,
+  PROJECT_PACKAGE
 } from '../common/ark_define';
 import {
   ESMODULE,
   EXTNAME_PROTO_BIN,
   EXTNAME_TXT,
   FILESINFO,
-  GEN_ABC_SCRIPT,
   MAX_WORKER_NUMBER,
   NPM_ENTRIES_PROTO_BIN,
   PROTOS,
@@ -102,6 +98,12 @@ export class ModuleInfo {
 }
 
 export class PackageEntryInfo {
+  // There are two types of modules : node_modules and oh_modules. Only one type exists in a project.
+  // And there are two types of directories modules placed in: project root directory and entry directory.
+  // take json5, a node_moduels placed in project root directory, as an example:
+  // pkgEntryPath will be 'pkg_modules/0/json5', pkgBuildPath will be 'pkg_modules/0/json5/index'
+  // 'pkg_modules' represents both oh_modules and node_moduels
+  // '0' represents this module is placed in project root dir, modules placed in entry dir will be '1'
   pkgEntryPath: string;
   pkgBuildPath: string;
   constructor(pkgEntryPath: string, pkgBuildPath: string) {
@@ -238,7 +240,7 @@ export class ModuleMode extends CommonMode {
     const sourceMapFilePath: string = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
     fs.writeFile(sourceMapFilePath, JSON.stringify(newSourceMaps, null, 2), 'utf-8', (err) => {
       if (err) {
-        throw Error('ArkTS:ERROR failed to write cache sourceMaps json');
+        this.throwArkTsCompilerError('ArkTS:ERROR failed to write cache sourceMaps json');
       }
     });
   }
@@ -288,25 +290,25 @@ export class ModuleMode extends CommonMode {
       });
       child.on('exit', (code: any) => {
         if (code === FAIL) {
-          throw Error('ArkTS:ERROR failed to execute es2abc');
+          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
         this.signalHandler();
       });
 
       child.on('error', (err: any) => {
-        throw Error(err.toString());
+        this.throwArkTsCompilerError(err.toString());
       });
 
       child.stderr.on('data', (data: any) => {
         this.logger.error(red, data.toString(), reset);
       });
     } catch (e) {
-      throw Error('ArkTS:ERROR failed to execute es2abc. Error message: ' + e.toString());
+      this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc. Error message: ' + e.toString());
     }
   }
 
   filterModulesByHashJson() {
-    if (this.hashJsonFilePath.length === 0) {
+    if (this.hashJsonFilePath.length === 0 || !fs.existsSync(this.hashJsonFilePath)) {
       for (const key of this.moduleInfos.keys()) {
         this.filterModuleInfos.set(key, this.moduleInfos.get(key));
       }
@@ -325,7 +327,7 @@ export class ModuleMode extends CommonMode {
         const cacheFilePath: string = value.cacheFilePath;
         const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
         if (!fs.existsSync(cacheFilePath)) {
-          throw Error(`ArkTS:ERROR ${cacheFilePath} is lost`);
+          this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} is lost`);
         }
         if (fs.existsSync(cacheProtoFilePath)) {
           const hashCacheFileContentData: any = toHashData(cacheFilePath);
@@ -387,7 +389,11 @@ export class ModuleMode extends CommonMode {
           cachePath: this.projectConfig.cachePath
         };
         this.asyncHandler(() => {
-          cluster.fork(workerData);
+          let worker = cluster.fork(workerData);
+          worker.on("message", (errorMsg) => {
+            this.logger.error(errorMsg.data.toString());
+            this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
+          });
         });
       }
     }
@@ -399,7 +405,7 @@ export class ModuleMode extends CommonMode {
     if (isMasterOrPrimary()) {
       cluster.on('exit', (worker, code, signal) => {
         if (code === FAIL) {
-          throw Error('ArkTS:ERROR failed to execute ts2abc');
+          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
         }
         workerCount++;
         if (workerCount === this.workerNumber) {
@@ -429,6 +435,7 @@ export class ModuleMode extends CommonMode {
     buildInHar: boolean = false): string {
     const packageDir: string = projectConfig.packageDir;
     const fakePkgModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, packageDir));
+    filePath = toUnixPath(filePath);
     let output: string = '';
     if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
@@ -443,6 +450,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private getPkgModulesFilePkgName(pkgPath: string) {
+    pkgPath = toUnixPath(pkgPath);
     const packageDir: string = this.projectConfig.packageDir;
     const projectRootPath = toUnixPath(this.projectConfig.projectRootPath);
     const projectPkgModulesPath: string = toUnixPath(path.join(projectRootPath, packageDir));
@@ -477,15 +485,14 @@ export class ModuleMode extends CommonMode {
     const cmd: any = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
       this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
     try {
-      childProcess.execSync(cmd);
+      childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      throw Error(`ArkTS:ERROR failed to merge proto file to abc, error message:` + e.toString());
+      this.throwArkTsCompilerError(`ArkTS:ERROR failed to merge proto file to abc, error message:` + e.toString());
     }
   }
 
   private afterCompilationProcess() {
     this.writeHashJson();
-    this.cleanInfo();
   }
 
   private writeHashJson() {
@@ -497,7 +504,7 @@ export class ModuleMode extends CommonMode {
       const cacheFilePath: string = value.cacheFilePath;
       const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheProtoFilePath)) {
-        throw Error(
+        this.throwArkTsCompilerError(
           `ArkTS:ERROR ${cacheFilePath} or  ${cacheProtoFilePath} is lost`
         );
       }
@@ -518,9 +525,9 @@ export class ModuleMode extends CommonMode {
     const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${
       this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
     try {
-      childProcess.execSync(cmd);
+      childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      throw Error(`ArkTS:ERROR failed to generate npm proto file to abc. Error message: ` + e.toString());
+      this.throwArkTsCompilerError(`ArkTS:ERROR failed to generate npm proto file to abc. Error message: ` + e.toString());
     }
   }
 }

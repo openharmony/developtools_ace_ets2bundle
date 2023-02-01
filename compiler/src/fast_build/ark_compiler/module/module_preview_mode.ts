@@ -14,6 +14,7 @@
  */
 
 import { ModuleMode } from './module_mode';
+import { ES2ABC, TS2ABC } from '../common/ark_define';
 import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
 
 export class ModulePreviewMode extends ModuleMode {
@@ -33,11 +34,13 @@ export class ModulePreviewMode extends ModuleMode {
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();
       const splittedModules: any[] = this.getSplittedModulesByNumber();
+      this.workerNumber = splittedModules.length;
       this.generateTs2AbcCmd();
       this.invokeTs2AbcWorkersToGenProto(splittedModules);
       this.processTs2abcWorkersToGenAbc();
     } else {
-      throw Error('ArkTS:ERROR please set panda mode');
+      this.throwArkTsCompilerError(`Invalid projectConfig.pandaMode for module preview, should be either
+      "${TS2ABC}" or "${ES2ABC}"`);
     }
   }
 }

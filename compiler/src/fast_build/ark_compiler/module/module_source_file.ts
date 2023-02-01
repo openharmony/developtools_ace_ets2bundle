@@ -51,9 +51,9 @@ export class ModuleSourceFile {
     ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source));
   }
 
-  static processModuleSourceFiles(rollupObject: any) {
+  static async processModuleSourceFiles(rollupObject: any) {
     this.initPluginEnv(rollupObject);
-    ModuleSourceFile.sourceFiles.forEach((source: ModuleSourceFile) => {
+    await ModuleSourceFile.sourceFiles.forEach((source: ModuleSourceFile) => {
       source.processModuleRequest(rollupObject);
       source.writeSourceFile();
     });
@@ -113,7 +113,7 @@ export class ModuleSourceFile {
     this.source = code.toString();
   }
 
-  private processTransformedTsmoduleRequest(rollupObject: any) {
+  private processTransformedTsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
     (<ts.SourceFile>this.source)!.forEachChild((childNode: ts.Node) => {
@@ -133,6 +133,9 @@ export class ModuleSourceFile {
     });
   }
 
+  // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
+  // This 'ohmUrl' will be the same as the record name for each file, to make sure runtime can find the corresponding
+  // record based on each module request.
   processModuleRequest(rollupObject: any) {
     if (isJsonSourceFile(this.moduleId)) {
       return;
@@ -141,7 +144,10 @@ export class ModuleSourceFile {
       this.processJsModuleRequest(rollupObject);
       return;
     }
-    this.isSourceNode ? this.processTransformedTsmoduleRequest(rollupObject) :
+
+    // Only when files were transformed to ts, the corresponding ModuleSourceFile were initialized with sourceFile node,
+    // if files were transformed to js, ModuleSourceFile were initialized with srouce string.
+    this.isSourceNode ? this.processTransformedTsModuleRequest(rollupObject) :
       this.processTransformedJsModuleRequest(rollupObject);
   }
 

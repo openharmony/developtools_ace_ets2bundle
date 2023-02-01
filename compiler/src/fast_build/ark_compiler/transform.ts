@@ -17,15 +17,15 @@ import path from 'path';
 
 import {
   ESMODULE,
-  EXTNAME_ETS,
-  EXTNAME_TS
 } from './common/ark_define';
 import { ModuleSourceFile } from './module/module_source_file';
 import {
+  isAotMode,
   isCommonJsPluginVirtualFile,
   isDebug,
+  isJsonSourceFile,
   isJsSourceFile,
-  isSpecifiedExt
+  isTsOrEtsSourceFile
 } from './utils';
 import { toUnixPath } from '../../utils';
 
@@ -33,29 +33,28 @@ export let newSourceMaps: Object = {};
 
 /**
  * rollup transform hook
- * @param {string} code: source code of an input file
+ * @param {string} code: transformed source code of an input file
  * @param {string} id: absolute path of an input file
  */
 export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
-    preserveTsAndEtsSourceContent(id, code);
-    if (isDebug(projectConfig)) {
-      preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
+    if (isTsOrEtsSourceFile(id) && !isAotMode(projectConfig)) {
+      if (isDebug(projectConfig)) {
+        preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
+      }
+      ModuleSourceFile.newSourceFile(id, code);
+    }
+
+    if (isJsSourceFile(id) || isJsonSourceFile(id)) {
+      ModuleSourceFile.newSourceFile(id, this.getModuleInfo(id).originalCode);
     }
   }
 }
 
-function preserveTsAndEtsSourceContent(sourceFilePath: string, code: string): void {
-  if (isSpecifiedExt(sourceFilePath, EXTNAME_ETS) || isSpecifiedExt(sourceFilePath, EXTNAME_TS)) {
-    ModuleSourceFile.newSourceFile(sourceFilePath, code);
-  }
-}
-
 function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig: any): void {
-  if (isCommonJsPluginVirtualFile(sourceFilePath) || isJsSourceFile(sourceFilePath)) {
+  if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
-    // skip js/cjs/mjs file sourcemap
     return;
   }
 

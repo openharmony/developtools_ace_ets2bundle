@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 
+import { initArkProjectConfig } from './common/process_ark_config';
 import { generateBundleAbc } from './generate_bundle_abc';
 import { generateModuleAbc } from './generate_module_abc';
-import { load } from './load';
 import { transformForModule } from './transform';
 
 export function genAbc() {
   return {
     name: 'genAbc',
-    load: load,
+    buildStart() {
+      this.share.arkProjectConfig = initArkProjectConfig(this.share.projectConfig);
+    },
     transform: transformForModule,
     buildEnd: generateModuleAbc,
     generateBundle: generateBundleAbc

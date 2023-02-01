@@ -17,6 +17,7 @@ import path from 'path';
 import ts from 'typescript';
 import fs from 'fs';
 
+import { newSourceMaps as rollupNewSourceMaps } from './fast_build/ark_compiler/transform';
 import {
   EXTNAME_JS,
   EXTNAME_TS,
@@ -30,7 +31,7 @@ import {
 } from './utils';
 import {
   genSourceMapFileName,
-  newSourceMaps,
+  newSourceMaps as webpackNewSourceMaps,
   transformModuleSpecifier
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
@@ -71,7 +72,8 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, proj
   mkdirsSync(path.dirname(temporaryFile));
   if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
     let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-    newSourceMaps[source] = mixedInfo.sourceMapJson;
+    process.env.compileTool === 'rollup' ? rollupNewSourceMaps[source] = mixedInfo.sourceMapJson :
+                                           webpackNewSourceMaps[source] = mixedInfo.sourceMapJson;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
@@ -111,7 +113,9 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean, proj
   if (toTsFile) {
     content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
   }
-  content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
+  if (process.env.compileTool !== 'rollup') {
+    content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
+  }
 
   return {
     content: content,

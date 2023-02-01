@@ -41,13 +41,16 @@ import {
   abilityConfig,
   projectConfig
 } from '../../../main';
-import { JSBUNDLE } from '../../pre_define';
+import { ESMODULE, JSBUNDLE } from '../../pre_define';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
 compilerOptions['module'] = 'es2020';
+if (projectConfig.compileMode === ESMODULE) {
+  compilerOptions['importsNotUsedAsValues'] = 'remove';
+}
 
 export function etsTransform() {
   return {
