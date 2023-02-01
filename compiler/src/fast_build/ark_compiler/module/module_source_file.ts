@@ -16,8 +16,8 @@
 import * as ts from 'typescript';
 import MagicString from 'magic-string';
 import {
-  NODE_MODULES,
-  GEN_ABC_PLUGIN_NAME
+  GEN_ABC_PLUGIN_NAME,
+  PACKAGES
 } from '../common/ark_define';
 import { getOhmUrlByFilepath, getOhmUrlByHarName } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
@@ -76,7 +76,7 @@ export class ModuleSourceFile {
     }
     if (filePath) {
       const ohmUrl: string = getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
-      return ohmUrl.startsWith(NODE_MODULES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
+      return ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
     }
     return undefined;
   }

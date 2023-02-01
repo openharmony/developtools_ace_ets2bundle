@@ -18,7 +18,9 @@ import fs from 'fs';
 
 import {
   TS2ABC,
-  ESMODULE
+  ESMODULE,
+  NODE_MODULES,
+  OH_MODULES
 } from './ark_define';
 import { isDebug } from '../utils';
 import {
@@ -80,6 +82,10 @@ export function initArkProjectConfig(projectConfig) {
     if (buildJsonInfo.compileMode === ESMODULE) {
       arkProjectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
+      projectConfig.packageDir = NODE_MODULES;
+      if (process.env.compileTool === 'rollup' && buildJsonInfo.packageManagerType === 'ohpm') {
+        projectConfig.packageDir = OH_MODULES;
+      }
     }
   }
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {

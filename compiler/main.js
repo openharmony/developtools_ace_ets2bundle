@@ -593,6 +593,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       projectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
+      projectConfig.packageDir = 'node_modules';
     }
     if (projectConfig.compileHar && buildJsonInfo.moduleName &&
       buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {

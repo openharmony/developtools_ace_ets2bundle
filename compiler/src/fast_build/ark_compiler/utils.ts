@@ -27,7 +27,6 @@ import {
   EXTNAME_JSON,
   EXTNAME_CJS,
   EXTNAME_MJS,
-  NODE_MODULES,
   TEMPORARY
 } from './common/ark_define';
 import {
@@ -115,13 +114,6 @@ function writeFileContent(sourceFilePath: string, filePath: string, content: str
   fs.writeFileSync(filePath, content, 'utf-8');
 }
 
-export function getNodeModulesFilePackageName(projectConfig: any, pkgPath: string) {
-  const buildPackagePath: string = genBuildPath(pkgPath, projectConfig.projectPath, projectConfig.aceModuleBuild,
-    projectConfig);
-
-  return toUnixPath(path.join(NODE_MODULES, toUnixPath(buildPackagePath.replace(projectConfig.nodeModulesPath, ''))));
-}
-
 export function getEs2abcFileThreadNumber(): number {
   const fileThreads : number = os.cpus().length < 16 ? os.cpus().length : 16;
   return fileThreads;
@@ -134,10 +126,11 @@ export function isCommonJsPluginVirtualFile(filePath: string): boolean {
 }
 
 export function isCurrentProjectFiles(filePath: string, projectConfig: any): boolean {
+  const packageDir: string = projectConfig.packageDir;
   let modulePath: string = projectConfig.modulePathMap[projectConfig.moduleName];
   return filePath.indexOf(projectConfig.projectPath) >= 0 ||
-    filePath.indexOf(path.join(projectConfig.projectRootPath, NODE_MODULES)) >= 0 ||
-    filePath.indexOf(path.join(modulePath, NODE_MODULES)) >= 0;
+    filePath.indexOf(path.join(projectConfig.projectRootPath, packageDir)) >= 0 ||
+    filePath.indexOf(path.join(modulePath, packageDir)) >= 0;
 }
 
 export function genTemporaryModuleCacheDirectoryForBundle(projectConfig: any) {

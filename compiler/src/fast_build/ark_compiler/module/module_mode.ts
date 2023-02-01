@@ -34,13 +34,13 @@ import {
   MODULES_ABC,
   MODULES_CACHE,
   MODULELIST_JSON,
-  NODE_MODULES,
   NPMENTRIES_TXT,
   SOURCEMAPS,
   SOURCEMAPS_JSON,
   TEMPORARY,
   HAP_PACKAGE,
-  PROJECT_PACKAGE
+  PROJECT_PACKAGE,
+  PACKAGES
 } from '../common/ark_define';
 import {
   ESMODULE,
@@ -69,7 +69,7 @@ import {
   isCurrentProjectFiles
 } from '../utils';
 import {
-  isNodeModulesFile,
+  isPackageModulesFile,
   mkdirsSync,
   toUnixPath,
   toHashData,
@@ -169,20 +169,9 @@ export class ModuleMode extends CommonMode {
     if (originPkgEntryPath.startsWith('/')) {
       originPkgEntryPath = originPkgEntryPath.slice(1, originPkgEntryPath.length);
     }
-    let originPkgName: string = this.getNodeModulesFilePkgName(pkgPath);
-
-    let pkgEntryPath: string = '';
-    const projectNodeModulesPath: string = toUnixPath(path.join(this.projectConfig.projectRootPath, NODE_MODULES));
-    if (pkgPath.includes(projectNodeModulesPath)) {
-      pkgEntryPath = path.join(NODE_MODULES, PROJECT_PACKAGE, originPkgName);
-    } else {
-      pkgEntryPath = path.join(NODE_MODULES, HAP_PACKAGE, originPkgName);
-    }
-    pkgEntryPath = toUnixPath(pkgEntryPath);
-
+    let pkgEntryPath: string = toUnixPath(this.getPkgModulesFilePkgName(pkgPath));
     let pkgBuildPath: string = path.join(pkgEntryPath, originPkgEntryPath);
-    pkgBuildPath = pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.'));
-    pkgBuildPath = toUnixPath(pkgBuildPath);
+    pkgBuildPath = toUnixPath(pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.')));
 
     pkgEntryInfos.set(pkgPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
   }
@@ -221,9 +210,9 @@ export class ModuleMode extends CommonMode {
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string = '';
     let packageName: string = '';
-    if (isNodeModulesFile(filePath, this.projectConfig)) {
-      cacheFilePath = this.genNodeModulesFileCachePath(filePath, this.projectConfig.cachePath, this.projectConfig);
-      packageName = this.getNodeModulesFilePkgName(metaInfo['packageJson']['pkgPath']);
+    if (isPackageModulesFile(filePath, this.projectConfig)) {
+      cacheFilePath = this.genPkgModulesFileCachePath(filePath, this.projectConfig.cachePath, this.projectConfig);
+      packageName = this.getPkgModulesFilePkgName(metaInfo['packageJson']['pkgPath']);
     } else {
       cacheFilePath = this.genFileCachePath(filePath, this.projectConfig.projectPath, this.projectConfig.cachePath);
       packageName = getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
@@ -436,33 +425,37 @@ export class ModuleMode extends CommonMode {
     return output;
   }
 
-  private genNodeModulesFileCachePath(filePath: string, cachePath: string, projectConfig: any,
+  private genPkgModulesFileCachePath(filePath: string, cachePath: string, projectConfig: any,
     buildInHar: boolean = false): string {
-    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
+    const packageDir: string = projectConfig.packageDir;
+    const fakePkgModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, packageDir));
     let output: string = '';
-    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+    if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
-      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
-      output = path.join(cachePath, buildInHar ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
+      output = path.join(cachePath, buildInHar ? '' : TEMPORARY, packageDir, MAIN, sufStr);
     } else {
-      output = filePath.replace(fakeNodeModulesPath,
-        path.join(cachePath, buildInHar ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
+      output = filePath.replace(fakePkgModulesPath,
+        path.join(cachePath, buildInHar ? '' : TEMPORARY, packageDir, AUXILIARY));
     }
     return output;
   }
 
-  private getNodeModulesFilePkgName(pkgPath: string) {
+  private getPkgModulesFilePkgName(pkgPath: string) {
+    const packageDir: string = this.projectConfig.packageDir;
     const projectRootPath = toUnixPath(this.projectConfig.projectRootPath);
-    const projectNodeModulesPath: string = toUnixPath(path.join(projectRootPath, NODE_MODULES));
+    const projectPkgModulesPath: string = toUnixPath(path.join(projectRootPath, packageDir));
     let pkgName: string = '';
-    if (pkgPath.includes(projectNodeModulesPath)) {
-      pkgName = pkgPath.replace(projectNodeModulesPath, '');
+    if (pkgPath.includes(projectPkgModulesPath)) {
+      pkgName = path.join(PACKAGES, PROJECT_PACKAGE, pkgPath.replace(projectPkgModulesPath, ''));
     } else {
       const tempFilePath: string = pkgPath.replace(projectRootPath, '');
-      pkgName = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
+      pkgName = path.join(PACKAGES, HAP_PACKAGE,
+        tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1));
     }
-    return pkgName;
+
+    return pkgName.replace(packageDir, PACKAGES);
   }
 
   private generateProtoFilesInfo() {
