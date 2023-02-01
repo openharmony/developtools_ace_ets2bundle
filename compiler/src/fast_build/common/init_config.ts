@@ -13,10 +13,13 @@
  * limitations under the License.
  */
 
-import { generateSourceFilesInHar } from './utils';
-import { projectConfig } from '../main.js';
+import { readAppResource } from '../../../main';
+import { getEntryObj } from './process_project_config';
 
-module.exports = function writejsfile(source: string): string {
-  generateSourceFilesInHar(this.resourcePath, source, '.js', projectConfig);
-  return source;
-};
+export function initConfig() {
+  getEntryObj();
+  if (process.env.appResource) {
+    readAppResource(process.env.appResource);
+  }
+}
+

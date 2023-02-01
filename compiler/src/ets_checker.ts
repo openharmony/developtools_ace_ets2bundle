@@ -19,7 +19,8 @@ import * as ts from 'typescript';
 
 import {
   projectConfig,
-  systemModules
+  systemModules,
+  globalProgram
 } from '../main';
 import {
   processSystemApi,
@@ -41,15 +42,12 @@ import {
 } from './pre_define';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
-import { props } from './compile_info';
 import {
-  CacheFileName,
-  cache,
-  shouldResolvedFiles,
-  hotReloadSupportFiles,
-  allResolvedModules
+  props,
+  logger
 } from './compile_info';
 import { hasDecorator } from './utils';
+import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 
 export function readDeaclareFiles(): string[] {
@@ -129,6 +127,167 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
     getDirectories: ts.sys.getDirectories
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+}
+
+interface CacheFileName {
+  mtimeMs: number,
+  children: string[],
+  parent: string[],
+  error: boolean
+}
+interface NeedUpdateFlag {
+  flag: boolean;
+}
+interface CheckerResult {
+  count: number
+}
+interface WholeCache {
+  runtimeOS: string,
+  sdkInfo: string,
+  fileList: Cache
+}
+type Cache = Record<string, CacheFileName>;
+export let cache: Cache = {};
+export const hotReloadSupportFiles: Set<string> = new Set();
+export const shouldResolvedFiles: Set<string> = new Set();
+const allResolvedModules: Set<string> = new Set();
+
+let fastBuildLogger = null;
+
+export const checkerResult: CheckerResult = {count: 0};
+export function serviceChecker(rootFileNames: string[], newLogger: any = null): void {
+  fastBuildLogger = newLogger;
+  let languageService: ts.LanguageService = null;
+  let cacheFile: string = null;
+  if (projectConfig.xtsMode) {
+    languageService = createLanguageService(rootFileNames);
+  } else {
+    cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
+    const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
+      JSON.parse(fs.readFileSync(cacheFile).toString()) :
+      {'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {}};
+    if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
+      cache = wholeCache.fileList;
+    } else {
+      cache = {};
+    }
+    const filterFiles: string[] = filterInput(rootFileNames);
+    languageService = createLanguageService(filterFiles);
+  }
+  globalProgram.program = languageService.getProgram();
+  const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+    .getSyntacticDiagnostics()
+    .concat(globalProgram.program.getSemanticDiagnostics())
+    .concat(globalProgram.program.getDeclarationDiagnostics());
+  allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+    printDiagnostic(diagnostic);
+  });
+  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+    fs.writeFileSync(cacheFile, JSON.stringify({
+      'runtimeOS': projectConfig.runtimeOS,
+      'sdkInfo': projectConfig.sdkInfo,
+      'fileList': cache
+    }, null, 2));
+  }
+  if (projectConfig.compileHar || projectConfig.compileShared) {
+    [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
+      if (!(moduleFile.match(/node_modules/) && projectConfig.compileHar)) {
+        try {
+          const emit: any = languageService.getEmitOutput(moduleFile, true, true);
+          if (emit.outputFiles[0]) {
+            generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile),
+              projectConfig);
+          } else {
+            console.warn(this.yellow,
+              "ArkTS:WARN doesn't generate .d" + path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
+          }
+        } catch (err) {}
+      }
+    });
+  }
+}
+
+export function printDiagnostic(diagnostic: ts.Diagnostic): void {
+  const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+  if (validateError(message)) {
+    if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+      updateErrorFileCache(diagnostic);
+    }
+    checkerResult.count += 1;
+    if (diagnostic.file) {
+      const { line, character }: ts.LineAndCharacter =
+        diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+      fastBuildLogger ?
+        fastBuildLogger.error('\u001b[31m' +
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`) :
+        logger.error('\u001b[31m',
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
+    } else {
+      fastBuildLogger ? fastBuildLogger.error('\u001b[31m' + `ArkTS:ERROR: ${message}`) :
+        logger.error('\u001b[31m', `ArkTS:ERROR: ${message}`);
+    }
+  }
+}
+
+function validateError(message: string): boolean {
+  const propInfoReg: RegExp = /Cannot find name\s*'(\$?\$?[_a-zA-Z0-9]+)'/;
+  const stateInfoReg: RegExp = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
+  if (matchMessage(message, props, propInfoReg) ||
+    matchMessage(message, props, stateInfoReg)) {
+    return false;
+  }
+  return true;
+}
+function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
+  if (reg.test(message)) {
+    const match: string[] = message.match(reg);
+    if (match[1] && nameArr.includes(match[1])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
+  if (diagnostic.file && cache[path.resolve(diagnostic.file.fileName)]) {
+    cache[path.resolve(diagnostic.file.fileName)].error = true;
+  }
+}
+
+function filterInput(rootFileNames: string[]): string[] {
+  return rootFileNames.filter((file: string) => {
+    const needUpdate: NeedUpdateFlag = { flag: false };
+    const alreadyCheckedFiles: Set<string> = new Set();
+    checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
+    return needUpdate.flag;
+  });
+}
+
+function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyCheckedFiles: Set<string>): void {
+  if (alreadyCheckedFiles.has(file)) {
+    return;
+  } else {
+    alreadyCheckedFiles.add(file);
+  }
+
+  if (needUpdate.flag) {
+    return;
+  }
+
+  const value: CacheFileName = cache[file];
+  const mtimeMs: number = fs.statSync(file).mtimeMs;
+  if (value) {
+    if (value.error || value.mtimeMs !== mtimeMs) {
+      needUpdate.flag = true;
+      return;
+    }
+    for (let i = 0; i < value.children.length; ++i) {
+      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
+    }
+  } else {
+    cache[file] = { mtimeMs, children: [], parent: [], error: false };
+    needUpdate.flag = true;
+  }
 }
 
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
@@ -252,12 +411,17 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
   });
   cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children,
     parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
-    cache[path.resolve(containingFile)].parent : [], error };
+      cache[path.resolve(containingFile)].parent : [], error };
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
   reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, resetErrorCount: Function,
   isPipe: boolean = false): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
+  if (projectConfig.hotReload) {
+    rootFileNames.forEach(fileName => {
+      hotReloadSupportFiles.add(fileName);
+    });
+  }
   setCompilerOptions();
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
@@ -292,6 +456,12 @@ export function createWatchCompilerHost(rootFileNames: string[],
   };
   host.resolveModuleNames = resolveModuleNames;
   return host;
+}
+
+export function watchChecker(rootFileNames: string[], newLogger: any = null): void {
+  fastBuildLogger = newLogger;
+  globalProgram.watchProgram = ts.createWatchProgram(
+    createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}));
 }
 
 function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
@@ -489,4 +659,34 @@ function processContent(source: string): string {
   source = preprocessNewExtend(source, extendCollection);
   source = processDraw(source);
   return source;
+}
+
+function judgeFileShouldResolved(file: string, shouldResolvedFiles: Set<string>): void {
+  if (shouldResolvedFiles.has(file)) {
+    return;
+  }
+  shouldResolvedFiles.add(file);
+  if (cache && cache[file] && cache[file].parent) {
+    cache[file].parent.forEach((item) => {
+      judgeFileShouldResolved(item, shouldResolvedFiles);
+    });
+    cache[file].parent = [];
+  }
+  if (cache && cache[file] && cache[file].children) {
+    cache[file].children.forEach((item) => {
+      judgeFileShouldResolved(item, shouldResolvedFiles);
+    });
+    cache[file].children = [];
+  }
+}
+
+export function incrementWatchFile(watchModifiedFiles: string[],
+  watchRemovedFiles: string[]): void {
+  const changedFiles: string[] = [...watchModifiedFiles, ...watchRemovedFiles];
+  if (changedFiles.length) {
+    shouldResolvedFiles.clear();
+  }
+  changedFiles.forEach((file) => {
+    judgeFileShouldResolved(file, shouldResolvedFiles);
+  });
 }
