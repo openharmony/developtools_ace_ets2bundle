@@ -5,14 +5,10 @@
       "emitDecorators":[
         {
           "name":"Entry", 
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"Component",
-          "emitParameters" : false
-        },
-        {
-          "name":"Preview",
           "emitParameters" : false
         },
         {
@@ -21,7 +17,7 @@
         },
         {
           "name":"Consume", 
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"Link",
@@ -29,11 +25,11 @@
         },
         {
           "name":"LocalStorageLink",
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"LocalStorageProp",
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"ObjectLink", 
@@ -45,7 +41,7 @@
         },
         {
           "name":"Provide",
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"State",
@@ -53,15 +49,11 @@
         },
         {
           "name":"StorageLink",
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"StorageProp",
-          "emitParameters" : false
-        },
-        {
-          "name":"Watch",
-          "emitParameters" : false
+          "emitParameters" : true
         },
         {
           "name":"Builder",
@@ -69,10 +61,6 @@
         },
         {
           "name":"BuilderParam",
-          "emitParameters" : false
-        },
-        {
-          "name":"Styles",
           "emitParameters" : false
         },
         {
