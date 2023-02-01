@@ -39,6 +39,7 @@ export class CommonMode {
   arkConfig: any;
   cmdArgs: string[] = [];
   logger: any;
+  throwArkTsCompilerError: any;
   hashJsonFilePath: string;
   genAbcScriptPath: string;
   asyncHandler: any;
@@ -49,6 +50,7 @@ export class CommonMode {
     this.arkConfig = initArkConfig(this.projectConfig);
     this.cmdArgs = this.initCmdEnv();
     this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.hashJsonFilePath = this.genHashJsonFilePath();
     this.genAbcScriptPath = path.resolve(__dirname, GEN_ABC_SCRIPT);
     this.asyncHandler = rollupObject.async;
@@ -76,7 +78,7 @@ export class CommonMode {
         args.push('--debug-info');
       }
     } else {
-      throw Error('ArkTS:ERROR please set panda mode');
+      this.throwArkTsCompilerError('ArkTS:ERROR please set panda mode');
     }
 
     return args;

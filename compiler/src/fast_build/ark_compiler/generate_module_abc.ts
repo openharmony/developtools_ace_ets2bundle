@@ -20,13 +20,13 @@ import { ModuleHotreloadMode } from './module/module_hotreload_mode';
 import { ModulePreviewMode } from './module/module_preview_mode';
 import { ModuleSourceFile } from './module/module_source_file';
 
-export function generateModuleAbc(error) {
-  // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, dosen't emit abc.
+export async function generateModuleAbc(error) {
   if (this.share.projectConfig.compileHar) {
+    // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, dosen't emit abc.
     return;
   }
   if (this.share.projectConfig.compileMode === ESMODULE) {
-    ModuleSourceFile.processModuleSourceFiles(this);
+    await ModuleSourceFile.processModuleSourceFiles(this);
     generateAbc(this);
   }
 }

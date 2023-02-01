@@ -33,15 +33,11 @@ import {
   compareNodeVersion,
   genTemporaryPath,
   mkdirsSync,
-  toUnixPath,
   validateFilePathLength
 } from '../../utils';
 import {
-  genBuildPath,
-  transformModuleSpecifier,
   writeMinimizedSourceCode
 } from '../../ark_utils';
-import { processSystemApi } from '../../validate_ui_syntax';
 
 export function isAotMode(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (
@@ -58,9 +54,9 @@ export function isMasterOrPrimary() {
 }
 
 export function changeFileExtension(file: string, targetExt: string, originExt = ''): string {
-  let basename: string = originExt.length == 0 ? path.basename(file, path.extname(file)) :
-    path.basename(file, originExt);
-  return path.join(path.dirname(file), basename + targetExt);
+  let currentExt = originExt.length == 0 ? path.extname(file) : originExt;
+  let fileWithoutExt = file.substring(0, file.lastIndexOf(currentExt));
+  return fileWithoutExt + targetExt;
 }
 
 export function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
@@ -101,8 +97,6 @@ function writeFileContent(sourceFilePath: string, filePath: string, content: str
   if (!isSpecifiedExt(sourceFilePath, EXTNAME_JS)) {
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
-
-  transformModuleSpecifier(sourceFilePath, processSystemApi(content, true), projectConfig);
 
   mkdirsSync(path.dirname(filePath));
 
@@ -153,6 +147,10 @@ export function genCachePath(tailName: string, projectConfig: any, logger: any):
 
   validateFilePathLength(pathName, logger);
   return pathName;
+}
+
+export function isTsOrEtsSourceFile(file: string): boolean {
+  return /(?<!\.d)\.[e]?ts$/.test(file);
 }
 
 export function isJsSourceFile(file: string): boolean {

@@ -38,9 +38,9 @@ function genAbcByWorkersOfBundleMode(jsonInput: string, cmd: string): Promise<vo
     const sourceFile: string = inputPaths[i].sourceFile;
     const singleCmd: any = `${cmd} "${cacheFilePath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
     try {
-      // TODO: check syntax error？
-      childProcess.execSync(singleCmd);
+      childProcess.execSync(singleCmd, { windowsHide: true });
     } catch (e) {
+      process.send({ data: e.toString() });
       process.exit(FAIL);
     }
   }
@@ -62,15 +62,27 @@ function genAbcByWorkersOfModuleMode(jsonInput: string, cmd: string, workerFileN
     }
   }
   fs.writeFileSync(filePath, content, 'utf-8');
-  // cmd `${cmd} --input-file xx --output-proto --merge-abc`
   const singleCmd: any = `${cmd} "${filePath}"`;
   try {
-    childProcess.execSync(singleCmd);
+    childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
+    process.send({ data: e.toString() });
     process.exit(FAIL);
   }
 
   return;
+}
+
+process.stderr.write = function(chunk) {
+  const message = chunk.toString();
+  if (message.length != 0) {
+    // send only non-empty message. sometimes there will be empty stderr,
+    // if processed by parent process's logger.error, the gen_abc process will fail
+    process.send({
+      data: message
+    })
+  }
+  return true;
 }
 
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined &&
@@ -85,4 +97,9 @@ if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'
   } else {
     process.exit(FAIL);
   }
+} else {
+  process.send({
+    data: "Failed to invoke worker with uncomplete inputs"
+  })
+  process.exit(FAIL);
 }

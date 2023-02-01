@@ -82,15 +82,12 @@ export function initArkProjectConfig(projectConfig) {
     if (buildJsonInfo.compileMode === ESMODULE) {
       arkProjectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
-      projectConfig.packageDir = NODE_MODULES;
-      if (process.env.compileTool === 'rollup' && buildJsonInfo.packageManagerType === 'ohpm') {
-        projectConfig.packageDir = OH_MODULES;
-      }
+      projectConfig.packageDir = buildJsonInfo.packageManagerType === 'ohpm' ? OH_MODULES : NODE_MODULES;
     }
   }
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    arkProjectConfig.minPlatformVersion = moduleJsonInfo.app.minPlatformVersion;
+    arkProjectConfig.minPlatformVersion = moduleJsonInfo.app.minAPIVersion;
     if (moduleJsonInfo.module) {
       arkProjectConfig.moduleName = moduleJsonInfo.module.name;
     }
@@ -129,9 +126,9 @@ function processPlatformInfo(arkRootPath: string): void {
 
 function processCompatibleVersion(projectConfig: any, arkRootPath: string) {
   const platformPath: string = getArkBuildDir(arkRootPath);
-  if (projectConfig.minPlatformVersion === '8') {
+  if (projectConfig.minPlatformVersion.toString() === '8') {
+    // use ts2abc to compile apps with 'CompatibleSdkVersion' set to 8
     arkConfig.ts2abcPath = path.join(platformPath, 'legacy_api8', 'src', 'index.js');
-    // for api 8
     projectConfig.pandaMode = TS2ABC;
   }
 }

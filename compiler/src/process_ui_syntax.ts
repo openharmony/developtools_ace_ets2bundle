@@ -117,11 +117,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
+          if (projectConfig.compileMode === ESMODULE) {
             validateReExportType(node, pagesDir, transformLog.errors);
             if (projectConfig.processTs === true) {
-              process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(node.fileName, node) :
-                writeFileSyncByNode(node, true, projectConfig);
+              process.env.compileTool === 'rollup' ?
+              ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
+              writeFileSyncByNode(node, true, projectConfig);
             }
           }
           return node;
@@ -129,7 +130,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
         node = createEntryNode(node, context, entryNodeKey, id);
-        if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
+        if (projectConfig.compileMode === ESMODULE) {
           validateReExportType(node, pagesDir, transformLog.errors);
         }
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
@@ -145,10 +146,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
-        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
-          && process.env.compilerType && process.env.compilerType === ARK) {
-          process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(node.fileName, node) :
-            writeFileSyncByNode(node, true, projectConfig);
+        if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
+          process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
+                                                 writeFileSyncByNode(node, true, projectConfig);
         }
         return node;
       } else {
