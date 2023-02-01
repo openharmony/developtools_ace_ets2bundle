@@ -314,6 +314,7 @@ export class ResultStates {
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
       process.env.watchEts = 'start';
+      checkErrorMessage.clear();
       this.clearCount();
       comp.modifiedFiles = comp.modifiedFiles || [];
       comp.removedFiles = comp.removedFiles || [];
