@@ -18,7 +18,7 @@ import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
 
 import {
-  NODE_MODULES,
+  PACKAGES,
   TEMPORARY,
   ZERO,
   ONE,
@@ -39,7 +39,7 @@ import {
 import {
   isMac,
   isWindows,
-  isNodeModulesFile,
+  isPackageModulesFile,
   genTemporaryPath,
   getExtensionIfUnfullySpecifiedFilepath,
   mkdirsSync,
@@ -69,22 +69,21 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   // case2: /node_modules/xxx/yyy
   // case3: /entry/node_modules/xxx/yyy
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
-
+  const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
-  if (result && result[1].indexOf(NODE_MODULES) === -1) {
+  if (result && result[1].indexOf(packageDir) === -1) {
     return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
 
-  if (projectFilePath.indexOf(NODE_MODULES) !== -1) {
-
-    const tryProjectNPM: string = toUnixPath(path.join(projectRootPath, NODE_MODULES));
-    if (unixFilePath.indexOf(tryProjectNPM) !== -1) {
-      return unixFilePath.replace(tryProjectNPM, `${NODE_MODULES}/${ONE}`);
+  if (projectFilePath.indexOf(packageDir) !== -1) {
+    const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
+    if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
+      return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(packageDir, PACKAGES);
     }
 
-    const tryModuleNPM: string = toUnixPath(path.join(moduleRootPath, NODE_MODULES));
-    if (unixFilePath.indexOf(tryModuleNPM) !== -1) {
-      return unixFilePath.replace(tryModuleNPM, `${NODE_MODULES}/${ZERO}`);
+    const tryModulePkg: string = toUnixPath(path.join(moduleRootPath, packageDir));
+    if (unixFilePath.indexOf(tryModulePkg) !== -1) {
+      return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(packageDir, PACKAGES);
     }
   }
 
@@ -255,17 +254,17 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
   }
   projectPath = toUnixPath(projectPath);
 
-  if (isNodeModulesFile(filePath, projectConfig)) {
-    filePath = toUnixPath(filePath);
-    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
+  if (isPackageModulesFile(filePath, projectConfig)) {
+    const packageDir: string = projectConfig.packageDir;
+    const fakePkgModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, packageDir));
     let output: string = '';
-    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+    if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
-      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
       output = path.join(projectConfig.nodeModulesPath, ZERO, sufStr);
     } else {
-      output = filePath.replace(fakeNodeModulesPath, path.join(projectConfig.nodeModulesPath, ONE));
+      output = filePath.replace(fakePkgModulesPath, path.join(projectConfig.nodeModulesPath, ONE));
     }
     return output;
   }
