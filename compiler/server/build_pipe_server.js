@@ -17,7 +17,7 @@ const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
-const pipeProcess = require('child_process');
+const { spawn } = require('child_process');
 const _ = require('lodash');
 
 const { processComponentChild } = require('../lib/process_component_build');
@@ -205,15 +205,17 @@ function callEs2abc(receivedMsg) {
 }
 
 function es2abc(receivedMsg) {
-  const cmd = '"' + es2abcFilePath + '"' + ' --base64Input ' +
-    Buffer.from(receivedMsg.data.script).toString('base64') + ' --base64Output';
   try {
-    pipeProcess.exec(cmd, (error, stdout, stderr) => {
-      if (stdout) {
-        receivedMsg.data.script = stdout;
-      } else {
-        receivedMsg.data.script = '';
-      }
+    const transCode = spawn(es2abcFilePath,
+      ['--base64Input', Buffer.from(receivedMsg.data.script).toString('base64'), '--base64Output'], {windowsHide: true});
+    transCode.stdout.on('data', (data) => {
+      receivedMsg.data.script = data.toString();
+      compileStatus = true;
+      receivedMsg_ = receivedMsg;
+      responseToPlugin();
+    });
+    transCode.stderr.on('data', (data) => {
+      receivedMsg.data.script = '';
       compileStatus = true;
       receivedMsg_ = receivedMsg;
       responseToPlugin();
