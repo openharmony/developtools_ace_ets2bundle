@@ -475,11 +475,6 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   newStatements.push(res.newNode);
   processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
-  if (res.identifierNode.escapedText && partialUpdateConfig.strictCheck === 'all' &&
-    partialUpdateConfig.partialUpdateMode) {
-    checkComponentInitializer(
-        res.identifierNode.escapedText.toString(), etsComponentResult.etsComponentNode, log);
-  }
   if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
     etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
@@ -1212,7 +1207,6 @@ function createRenderingInProgress(isTrue: boolean): ts.ExpressionStatement {
 
 function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
-  checkHasThisKeyword(node, log);
   const ifCreate: ts.ExpressionStatement = createIfCreate();
   const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isBuilder, isGlobalBuilder);
   const ifPop: ts.ExpressionStatement = createIfPop();
@@ -1301,47 +1295,6 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
     );
   }
   return elseStatement;
-}
-
-function checkHasThisKeyword(node: ts.Statement, log: LogInfo[]): void {
-  if (partialUpdateConfig.strictCheck === 'all' && partialUpdateConfig.partialUpdateMode &&
-    node && node.getText()) {
-    if (node.getText().indexOf(THIS) >= 0) {
-      const currentObservedPropertyCollection: Set<string> = getObservedPropertyCollection(
-        componentCollection.currentClassName);
-      let hasObservedKeyword: boolean = false;
-      const realKeywords: Set<string> = new Set();
-      const traverse: Function = (node: ts.Node) => {
-        if (node && ts.isPropertyAccessExpression(node) && node.expression &&
-          node.expression.kind === ts.SyntaxKind.ThisKeyword) {
-          const keyword: string = node.name.escapedText.toString();
-          if (currentObservedPropertyCollection.has(keyword)) {
-            hasObservedKeyword = true;
-            return;
-          } else {
-            realKeywords.add(keyword);
-          }
-        }
-        if (node && !ts.isBlock(node)) {
-          ts.forEachChild(node, node => traverse(node));
-        }
-      }
-      traverse(node);
-      if (!hasObservedKeyword && node && realKeywords.size > 0) {
-        log.push({
-          type: LogType.NOTE,
-          message: `It is recommended to use the state variable for condition judgment of the IF component.`,
-          pos: node.getStart() || node.pos
-        });
-      }
-    } else {
-      log.push({
-        type: LogType.NOTE,
-        message: `It is recommended to use the state variable for condition judgment of the IF component.`,
-        pos: node.getStart() || node.pos
-      });
-    }
-  }
 }
 
 function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
@@ -1528,49 +1481,6 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
   if (statements.length) {
     reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
-  }
-}
-
-function checkComponentInitializer(name: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
-  if (!checkComponents.has(name)) {
-    return;
-  }
-  const textList: Set<string> = new Set(['TextArea', 'TextInput']);
-  if (node.arguments && node.arguments.length &&
-    ts.isObjectLiteralExpression(node.arguments[0])) {
-    node.arguments[0].properties.forEach(property => {
-      if (textList.has(name) && property.name &&
-        ts.isIdentifier(property.name) && property.name.escapedText.toString() === 'text') {
-        let logFlag: boolean = true;
-        if (property.initializer && ts.isPropertyAccessExpression(property.initializer) &&
-          property.initializer.expression &&
-          property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
-          property.initializer.name.escapedText) {
-          const observedPropertyCollection: Set<string> = getObservedPropertyCollection(
-            componentCollection.currentClassName);
-          if (observedPropertyCollection.has(property.initializer.name.escapedText.toString())) {
-            logFlag = false;
-          }
-        }
-        if (logFlag) {
-          log.push({
-            type: LogType.NOTE,
-            message: `If the text property value does not use the state variable,` +
-            ` the text content will not be updated.`,
-            pos: node.getStart()
-          });
-        }
-        return;
-      } else if (name === 'GridContainer' && property.name && ts.isIdentifier(property.name) &&
-        property.name.escapedText && property.name.escapedText.toString() === 'margin') {
-        log.push({
-          type: LogType.NOTE,
-          message: `In API9, the margin attribute of GridContainer takes effect.`,
-          pos: node.getStart()
-        });
-        return;
-      }
-    });
   }
 }
 

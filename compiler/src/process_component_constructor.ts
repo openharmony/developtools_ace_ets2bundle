@@ -31,11 +31,6 @@ import {
   ELMTID
 } from './pre_define';
 
-import {
-  localStorageLinkCollection,
-  localStoragePropCollection
-} from './validate_ui_syntax';
-
 import { partialUpdateConfig } from '../main';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier

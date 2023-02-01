@@ -662,11 +662,7 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'true') {
         partialUpdateConfig.partialUpdateMode = true;
       }
-      if (item.name && item.name === 'partialUpdateStrictCheck' && item.value) {
-        partialUpdateConfig.strictCheck = item.value;
-      }
-      return partialUpdateConfig.partialUpdateMode &&
-        partialUpdateConfig.strictCheck;
+      return partialUpdateConfig.partialUpdateMode;
     });
   }
 }
@@ -686,7 +682,6 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
-  strictCheck: undefined,
   partialUpdateMode: false
 };
 
