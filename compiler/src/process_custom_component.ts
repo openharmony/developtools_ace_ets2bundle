@@ -81,9 +81,6 @@ import {
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
-const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
-  COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
-
 const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
   [[COMPONENT_STATE_DECORATOR, stateCollection],
     [COMPONENT_LINK_DECORATOR, linkCollection],
@@ -399,7 +396,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
       }
     } else if (isInitFromLocal(node) && ts.isPropertyAssignment(node)) {
-      if (!localArray.includes(curPropertyKind)) {
+      if (!isCorrectInitFormParent(COMPONENT_NON_DECORATOR, curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
       }
