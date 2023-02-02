@@ -1141,6 +1141,9 @@ function copyModuleFileCachePathToBuildPath(): void {
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
   moduleInfos = removeDuplicateInfo(moduleInfos);
+  moduleInfos.sort((m1: ModuleInfo, m2: ModuleInfo) => {
+    return m1.tempFilePath < m2.tempFilePath ? 1 : -1;
+  });
   for (let i = 0; i < moduleInfos.length; ++i) {
     let protoTempPath: string = genProtoFileName(moduleInfos[i].tempFilePath);
     entriesInfo += `${toUnixPath(protoTempPath)}\n`;
