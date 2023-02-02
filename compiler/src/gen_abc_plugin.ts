@@ -222,8 +222,7 @@ export class GenAbcPlugin {
           return;
         }
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP ||
-              path.extname(key) === EXTNAME_JSON) {
+          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
             delete assets[key];
           }
         });
