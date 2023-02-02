@@ -213,6 +213,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
+  curPropMap.clear();
   return newMembers;
 }
 
@@ -370,7 +371,6 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     }
     const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
     updateItem = processBuildMember(buildNode, context, log);
-    curPropMap.clear();
   } else if (node.body && ts.isBlock(node.body)) {
     if (name === COMPONENT_TRANSITION_FUNCTION) {
       updateItem = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
