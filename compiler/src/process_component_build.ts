@@ -970,7 +970,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
       argumentsArray, newArrowNode);
     const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
-    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray);
+    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, isGlobalBuilder);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
       newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
@@ -1068,11 +1068,12 @@ function createItemIdFuncStatement(
   }
 }
 
-function createUpdateFunctionStatement(argumentsArray: ts.Expression[]): ts.ExpressionStatement {
+function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
+  isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        ts.factory.createThis(),
+        isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis(),
         ts.factory.createIdentifier(FOREACHUPDATEFUNCTION)
       ),
       undefined,
@@ -1184,7 +1185,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
           arrowNode.type, arrowNode.equalsGreaterThanToken,
           processComponentBlock(body, isLazy, log, false, isBuilder, undefined, arrowNode.parameters));
       } else {
-        return processComponentBlock(body, isLazy, log, false, false, undefined, arrowNode.parameters).statements;
+        return processComponentBlock(body, isLazy, log, false, false, undefined, arrowNode.parameters, isGlobalBuilder).statements;
       }
     }
   }
