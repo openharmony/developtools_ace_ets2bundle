@@ -395,7 +395,8 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
       }
-    } else if (isInitFromLocal(node) && ts.isPropertyAssignment(node)) {
+    } else if (isInitFromLocal(node) && ts.isPropertyAssignment(node) &&
+      curPropertyKind !== COMPONENT_OBJECT_LINK_DECORATOR) {
       if (!isCorrectInitFormParent(COMPONENT_NON_DECORATOR, curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
