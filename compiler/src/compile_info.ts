@@ -99,7 +99,7 @@ export let cache: Cache = {};
 export const shouldResolvedFiles: Set<string> = new Set();
 type Cache = Record<string, CacheFileName>;
 let allModifiedFiles: Set<string> = new Set();
-let checkErrorMessage: Set<string | Info> = new Set([]);
+const checkErrorMessage: Set<string | Info> = new Set([]);
 interface wholeCache {
   runtimeOS: string,
   sdkInfo: string,
@@ -523,8 +523,11 @@ export class ResultStates {
         const message: string = warnings[index].message.replace(/^Module Warning\s*.*:\n/, '')
           .replace(/\(Emitted value instead of an instance of Error\) BUILD/, '');
         if (/^NOTE/.test(message)) {
-          this.noteCount++;
-          logger.info(this.blue, message, this.reset, '\n');
+          if (!checkErrorMessage.has(message)) {
+            this.noteCount++;
+            logger.info(this.blue, message, this.reset, '\n');
+            checkErrorMessage.add(message);
+            }
         } else {
           if (!checkErrorMessage.has(message)) {
             this.warningCount++;
@@ -545,15 +548,15 @@ export class ResultStates {
       for (let index = 0; index < errors.length; index++) {
         if (errors[index].issue) {
           if (!checkErrorMessage.has(errors[index].issue)) {
-          this.mErrorCount++;
-          const position: string = errors[index].issue.location
-            ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
-            : '';
-          const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
-          const detail: string = errors[index].issue.message;
-          logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
-          logger.error(this.red, detail, this.reset, '\n');
-          checkErrorMessage.add(errors[index].issue);
+            this.mErrorCount++;
+            const position: string = errors[index].issue.location
+              ? `:${errors[index].issue.location.start.line}:${errors[index].issue.location.start.column}`
+              : '';
+            const location: string = errors[index].issue.file.replace(/\\/g, '/') + position;
+            const detail: string = errors[index].issue.message;
+            logger.error(this.red, 'ArkTS:ERROR File: ' + location, this.reset);
+            logger.error(this.red, detail, this.reset, '\n');
+            checkErrorMessage.add(errors[index].issue);
           }
         } else if (/BUILDERROR/.test(errors[index].message)) {
           if (!checkErrorMessage.has(errors[index].message)) {
