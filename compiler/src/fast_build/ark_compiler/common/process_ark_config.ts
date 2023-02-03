@@ -19,8 +19,13 @@ import fs from 'fs';
 import {
   TS2ABC,
   ESMODULE,
+  AOT_FULL,
+  AOT_PARTIAL,
+  AOT_TYPE,
+  AOT_PROFILE_SUFFIX,
   NODE_MODULES,
-  OH_MODULES
+  OH_MODULES,
+  FAIL
 } from './ark_define';
 import { isDebug } from '../utils';
 import {
@@ -29,6 +34,7 @@ import {
   isWindows
 } from '../../../utils';
 import { getArkBuildDir } from '../../../ark_utils';
+import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 
 type ArkConfig = {
@@ -61,19 +67,20 @@ export function initArkConfig(projectConfig: any) {
   return arkConfig;
 }
 
-export function initArkProjectConfig(projectConfig) {
+export function initArkProjectConfig(share: any) {
+  let projectConfig: any = share.projectConfig;
   let arkProjectConfig: any = {};
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     arkProjectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     arkProjectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    arkProjectConfig.aotMode = buildJsonInfo.aotMode;
-    if (arkProjectConfig.aotMode && projectConfig.compileMode === ESMODULE) {
+    if (checkAotConfig(buildJsonInfo, (error: string) => { share.throwArkTsCompilerError(error) })) {
       arkProjectConfig.processTs = true;
       arkProjectConfig.pandaMode = TS2ABC;
-      arkProjectConfig.anBuildMode = buildJsonInfo.anBuildMode || 'type';
       arkProjectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
+      projectConfig.anBuildMode = buildJsonInfo.anBuildMode;
+      projectConfig.apPath = buildJsonInfo.apPath;
     } else {
       arkProjectConfig.processTs = false;
       arkProjectConfig.pandaMode = buildJsonInfo.pandaMode;
