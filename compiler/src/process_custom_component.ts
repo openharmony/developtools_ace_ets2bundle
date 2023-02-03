@@ -84,9 +84,6 @@ import {
   projectConfig
 } from '../main';
 
-const localArray: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
-  COMPONENT_NON_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
-
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
@@ -423,8 +420,9 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
       }
-    } else if (isInitFromLocal(node) && ts.isPropertyAssignment(node)) {
-      if (!localArray.includes(curPropertyKind)) {
+    } else if (isInitFromLocal(node) && ts.isPropertyAssignment(node) &&
+      curPropertyKind !== COMPONENT_OBJECT_LINK_DECORATOR) {
+      if (!isCorrectInitFormParent(COMPONENT_NON_DECORATOR, curPropertyKind)) {
         validateIllegalInitFromParent(node, propertyName, curPropertyKind,
           node.initializer.getText(), COMPONENT_NON_DECORATOR, log);
       }
