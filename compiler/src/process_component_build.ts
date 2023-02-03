@@ -545,7 +545,7 @@ function processInnerCompStatements(
 
 export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
   isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.Statement {
-  const blockArr = [
+  const blockArr: ts.Node[] = [
     createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
     ...innerStatements
   ];
