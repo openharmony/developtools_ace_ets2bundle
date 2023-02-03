@@ -58,7 +58,6 @@ import {
 } from './ets_checker';
 import {
   globalProgram,
-  partialUpdateConfig,
   projectConfig
 } from '../main';
 import cluster from 'cluster';
@@ -331,9 +330,7 @@ export class ResultStates {
       if (errorCount > 0) {
         resultInfo += `ERROR:${errorCount}`;
         result = 'FAIL ';
-        if (!partialUpdateConfig.strictCheck && !partialUpdateConfig.partialUpdateMode) {
-          process.exitCode = 1;
-        }
+        process.exitCode = 1;
       } else {
         result = 'SUCCESS ';
       }
