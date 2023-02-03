@@ -32,9 +32,11 @@ import {
 import {
   genSourceMapFileName,
   newSourceMaps as webpackNewSourceMaps,
-  transformModuleSpecifier
+  transformModuleSpecifier,
+  getBuildModeInLowerCase
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
+import { DEBUG } from './fast_build/ark_compiler/common/ark_define';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -70,7 +72,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, proj
     }
   }
   mkdirsSync(path.dirname(temporaryFile));
-  if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
+  if (temporarySourceMapFile.length > 0 && getBuildModeInLowerCase(projectConfig) === DEBUG) {
     let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
     process.env.compileTool === 'rollup' ? rollupNewSourceMaps[source] = mixedInfo.sourceMapJson :
                                            webpackNewSourceMaps[source] = mixedInfo.sourceMapJson;

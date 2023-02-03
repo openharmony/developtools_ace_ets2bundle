@@ -89,7 +89,8 @@ import {
 } from './gen_merged_abc';
 import {
   generateAot,
-  generateBuiltinAbc
+  generateBuiltinAbc,
+  FaultHandler
 } from './gen_aot'
 import { Logger } from 'log4js';
 
@@ -1328,8 +1329,11 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
         processExtraAsset();
         if (projectConfig.compileMode === ESMODULE &&
           (projectConfig.anBuildMode === AOT_FULL || projectConfig.anBuildMode === AOT_PARTIAL)) {
-          const builtinAbcPath: string = generateBuiltinAbc(arkDir, nodeJs, initAbcEnv(), logger);
-          generateAot(arkDir, builtinAbcPath, logger);
+          let faultHandler: FaultHandler = (error) => { logger.error(error); process.exit(FAIL); }
+          let abcArgs: string[] = initAbcEnv();
+          abcArgs.unshift(nodeJs);
+          const builtinAbcPath: string = generateBuiltinAbc(arkDir, abcArgs, process.env.cachePath, logger, faultHandler);
+          generateAot(arkDir, builtinAbcPath, projectConfig, logger, faultHandler);
         }
       }
     });
