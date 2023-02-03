@@ -486,7 +486,7 @@ module.exports = (env, argv) => {
   if (projectConfig.compileMode === 'esmodule' && projectConfig.harNameOhmMap) {
     config.externals = [];
     for (const harName in projectConfig.harNameOhmMap) {
-      config.externals.push(RegExp('^(' + harName + ')($|\/\S+)'));
+      config.externals.push(RegExp('^(' + harName + ')($|\\/\\S+)'));
     }
   }
 
