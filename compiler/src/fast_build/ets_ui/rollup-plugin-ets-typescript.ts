@@ -15,6 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import MagicString from 'magic-string';
 
@@ -22,7 +23,9 @@ import {
   LogInfo,
   componentInfo,
   emitLogInfo,
-  getTransformLog
+  getTransformLog,
+  genTemporaryPath,
+  writeFileSync
 } from '../../utils';
 import {
   preprocessExtend,
@@ -39,7 +42,8 @@ import {
 } from '../../process_ui_syntax';
 import {
   abilityConfig,
-  projectConfig
+  projectConfig,
+  abilityPagesFullPath
 } from '../../../main';
 import { ESMODULE, JSBUNDLE } from '../../pre_define';
 
@@ -53,6 +57,7 @@ if (projectConfig.compileMode === ESMODULE) {
 }
 
 export function etsTransform() {
+  const incrementalFileInHar: Map<string, string> = new Map();
   return {
     name: 'etsTransform',
     transform: transform,
@@ -67,6 +72,32 @@ export function etsTransform() {
         code: code,
         map: magicString.generateMap()
       };
+    },
+    moduleParsed(moduleInfo) {
+      if (projectConfig.compileHar) {
+        if (moduleInfo.id && !moduleInfo.id.match(/node_modules/)) {
+          const filePath: string = moduleInfo.id;
+          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            process.env.cachePath, projectConfig);
+          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            projectConfig.buildPath, projectConfig, true);
+          if (filePath.match(/\.e?ts$/)) {
+            incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
+              jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
+            incrementalFileInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
+          } else {
+            incrementalFileInHar.set(jsCacheFilePath, jsBuildFilePath);
+          }
+        }
+      }
+    },
+    afterBuildEnd() {
+      if (projectConfig.compileHar) {
+        incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+          const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
+          writeFileSync(jsBuildFilePath, sourceCode);
+        });
+      }
     }
   };
 }
@@ -104,7 +135,7 @@ function preProcess(code: string, id: string, isEntry: boolean, logger: any): st
     let content = preprocessExtend(code);
     content = preprocessNewExtend(content);
     const log: LogInfo[] = validateUISyntax(code, content,
-      id, isEntry ? '?entry' : '');
+      id, isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '');
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }

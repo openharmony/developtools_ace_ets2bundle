@@ -13,13 +13,23 @@
  * limitations under the License.
  */
 
-import { readAppResource } from '../../../main';
-import { getEntryObj } from './process_project_config';
+import {
+  readAppResource,
+  projectConfig
+} from '../../../main';
+import {
+  getEntryObj,
+  workerFile
+} from './process_project_config';
 
 export function initConfig() {
   getEntryObj();
   if (process.env.appResource) {
     readAppResource(process.env.appResource);
   }
+  return {
+    entryObj: projectConfig.entryObj,
+    workerFile: workerFile
+  };
 }
 
