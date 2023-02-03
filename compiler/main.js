@@ -24,7 +24,8 @@ const {
 
 const {
   WORKERS_DIR,
-  TS2ABC
+  TS2ABC,
+  FAIL
 } = require('./lib/pre_define');
 
 const {
@@ -584,7 +585,15 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    if (checkAotConfig(buildJsonInfo, logger)) {
+    let faultHandler = function (error) {
+      // rollup's error will be handled in fast build
+      if (process.env.compileTool === 'rollup') {
+        return;
+      }
+      logger.error(error);
+      process.exit(FAIL);
+    }
+    if (checkAotConfig(buildJsonInfo, faultHandler)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;

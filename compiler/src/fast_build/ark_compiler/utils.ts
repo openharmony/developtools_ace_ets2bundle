@@ -38,11 +38,16 @@ import {
 import {
   writeMinimizedSourceCode
 } from '../../ark_utils';
+import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
+
+export function needAotCompiler(projectConfig: any): boolean {
+  return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
+    projectConfig.anBuildMode === AOT_PARTIAL);
+}
 
 export function isAotMode(projectConfig: any): boolean {
-  return projectConfig.compileMode === ESMODULE && (
-    projectConfig.anBuildMode === 'full' || projectConfig.anBuildMode === 'pgo'
-  );
+  return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
+    projectConfig.anBuildMode === AOT_PARTIAL || projectConfig.anBuildMode === AOT_TYPE);
 }
 
 export function isDebug(projectConfig: any): boolean {
