@@ -102,6 +102,10 @@ export function genSourceMapFileName(temporaryFile: string): string {
   return abcFile;
 }
 
+export function getBuildModeInLowerCase(projectConfig: any): string {
+  return (process.env.compileTool === 'rollup' ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
+}
+
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: any, logger: any): void {
   const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
   if (filePath.length === 0) {
