@@ -124,7 +124,7 @@ export const mandatorySpecifyDefaultValueDecorators: Set<string> =
   new Set([...observedPropertyDecorators, ...appStorageDecorators]);
 
 export const forbiddenSpecifyDefaultValueDecorators: Set<string> =
-  new Set([...propAndLinkDecorators, COMPONENT_CONSUME_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_CONSUME_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const mandatoryToInitViaParamDecorators: Set<string> =
   new Set([...propAndLinkDecorators, COMPONENT_OBJECT_LINK_DECORATOR]);
@@ -394,7 +394,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     updateResult.setVariableSet(createSetAccessor(name, CREATE_SET_METHOD, node.type));
   }
   if (setUpdateParamsDecorators.has(decorator)) {
-    updateResult.setUpdateParams(createUpdateParams(name, decorator));
+    updateResult.setUpdateParams(createUpdateParams(name, decorator, node));
   }
   if (setStateVarsDecorators.has(decorator)) {
     updateResult.setStateVarsParams(createStateVarsParams(name, decorator));
@@ -520,7 +520,8 @@ function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string
   }
 }
 
-function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statement {
+function createUpdateParams(name: ts.Identifier, decorator: string,
+  localInitializationNode: ts.PropertyDeclaration = undefined): ts.Statement {
   let updateParamsNode: ts.Statement;
   switch (decorator) {
     case COMPONENT_NON_DECORATOR:
@@ -532,6 +533,11 @@ function createUpdateParams(name: ts.Identifier, decorator: string): ts.Statemen
     case COMPONENT_PROP_DECORATOR:
       if (!partialUpdateConfig.partialUpdateMode) {
         updateParamsNode = createUpdateParamsWithoutIf(name);
+      } else {
+        if (localInitializationNode && localInitializationNode.initializer) {
+          updateParamsNode = createUpdateParamsWithIf(name, true,
+          localInitializationNode.initializer);
+        }
       }
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
@@ -554,14 +560,16 @@ function createStateVarsParams(name: ts.Identifier, decorator: string): ts.State
   return updateParamsNode;
 }
 
-function createUpdateParamsWithIf(name: ts.Identifier): ts.IfStatement {
+function createUpdateParamsWithIf(name: ts.Identifier, isSet: boolean = false,
+  initializeNode: ts.Expression = undefined): ts.IfStatement {
   return ts.factory.createIfStatement(ts.factory.createBinaryExpression(
     ts.factory.createPropertyAccessExpression(
       ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS),
       ts.factory.createIdentifier(name.escapedText.toString())),
     ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)), ts.factory.createBlock([
-    createUpdateParamsWithoutIf(name)], true), undefined);
+    isSet ? createUpdateParamsWithSet(name) : createUpdateParamsWithoutIf(name)], true),
+    isSet ? ts.factory.createBlock([createUpdateParamsWithSet(name, true, initializeNode)]) : undefined);
 }
 
 function createUpdateParamsWithoutIf(name: ts.Identifier): ts.ExpressionStatement {
@@ -571,11 +579,12 @@ function createUpdateParamsWithoutIf(name: ts.Identifier): ts.ExpressionStatemen
     createPropertyAccessExpressionWithParams(name.getText())));
 }
 
-function createUpdateParamsWithSet(name: ts.Identifier): ts.ExpressionStatement {
+function createUpdateParamsWithSet(name: ts.Identifier, hasElse: boolean = false,
+  initializeNode: ts.Expression = undefined): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(createPropertyAccessExpressionWithThis(`__${name.getText()}`),
       ts.factory.createIdentifier(CREATE_SET_METHOD)), undefined,
-    [createPropertyAccessExpressionWithParams(name.getText())]));
+    [hasElse ? initializeNode : createPropertyAccessExpressionWithParams(name.getText())]));
 }
 
 function updateNormalProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
