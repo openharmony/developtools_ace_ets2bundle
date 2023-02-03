@@ -366,7 +366,7 @@ function locateActualFilePathWithModuleRequest(absolutePath: string): string {
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
-    projectConfig.compileShared ? path.resolve(projectConfig.buildPath, '../etsFortgz') : process.env.cachePath,
+    projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
     projectConfig, projectConfig.compileShared);
   if (!jsFilePath.match(/node_modules/)) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);

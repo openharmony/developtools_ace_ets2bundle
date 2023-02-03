@@ -242,6 +242,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
   if (fs.existsSync(mainEntryPath)) {
     let entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
+    abilityPagesFullPath.push(mainEntryPath);
   } else {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
   }
@@ -460,6 +461,10 @@ let aceBuildJson = {};
 function loadBuildJson() {
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     aceBuildJson = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
+  }
+  if (aceBuildJson.packageManagerType === 'ohpm') {
+    projectConfig.packageDir = 'oh_modules';
+    projectConfig.packageJson = 'oh-package.json5';
   }
 }
 
