@@ -173,7 +173,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false): ts.Block {
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-    isBuilder, parent, forEachParameters, isGlobalBuilder);
+    isBuilder, parent, forEachParameters, isGlobalBuilder, isTransition);
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -187,7 +187,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)), [ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
-          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))]));
+          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))], false, isTransition));
     }
     newStatements.push(ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
@@ -282,7 +282,8 @@ let sourceNode: ts.SourceFile;
 export function processComponentChild(node: ts.Block | ts.SourceFile, newStatements: ts.Statement[],
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
   isBuilder: boolean = false, parent: string = undefined,
-  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false): void {
+  forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false,
+  isTransition: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -306,7 +307,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (ts.isIdentifier(etsExpression.expression)) {
               parent = etsExpression.expression.escapedText.toString();
             }
-            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder);
+            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition);
             break;
           case ComponentType.customComponent:
             parent = undefined;
@@ -452,7 +453,8 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false): void {
+  log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
+  isTransition: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
@@ -463,13 +465,14 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
     processTabAndNav(node, innerCompStatements, nameResult.name, log, isGlobalBuilder);
   } else {
-    processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder);
+    processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder,
+      isTransition);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
   innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined,
-  isGlobalBuilder: boolean = false): void {
+  isGlobalBuilder: boolean = false, isTransition: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
@@ -492,12 +495,12 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     if (etsComponentResult.hasAttr) {
       bindComponentAttr(node, res.identifierNode, newStatements, log);
     }
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder, isTransition);
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder);
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log);
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder, isTransition);
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -536,17 +539,27 @@ function processInnerCompStatements(
   innerCompStatements: ts.Statement[],
   newStatements: ts.Statement[],
   node: ts.Statement,
-  isGlobalBuilder: boolean = false
+  isGlobalBuilder: boolean = false,
+  isTransition: boolean = false
 ): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
-    innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder));
+    innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder,
+      isTransition));
   }
 }
 
 export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
-  isGlobalBuilder: boolean = false): ts.Statement {
+  isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.Statement {
+  const blockArr: ts.Node[] = [
+    createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+    ...innerStatements
+  ];
+  if (!isTransition) {
+    blockArr.push(createInitRenderStatement(node));
+  }
+  blockArr.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
@@ -560,15 +573,7 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
             ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
         ], undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-        ts.factory.createBlock(
-          [
-            createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-            ...innerStatements,
-            createInitRenderStatement(node),
-            createViewStackProcessorStatement(STOPGETACCESSRECORDING)
-          ],
-          true
-        )
+        ts.factory.createBlock(blockArr, true)
       )]
     )
   );
@@ -617,7 +622,7 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
       bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
     }
     processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, undefined, undefined, isGlobalBuilder);
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, undefined, undefined, isGlobalBuilder, false);
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
   }
