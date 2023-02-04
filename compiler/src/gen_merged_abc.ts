@@ -26,6 +26,7 @@ import {
   MODULES_CACHE,
   NPMENTRIES_TXT,
   NODE_MODULES,
+  PACKAGES,
   PATCH_SYMBOL_TABLE
 } from './pre_define';
 import {
@@ -55,7 +56,7 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
   moduleInfos = tempModuleInfos;
 
   const filesInfoPath: string = path.join(process.env.cachePath, FILESINFO_TXT);
-  validateFilePathLength(filesInfoPath);
+  validateFilePathLength(filesInfoPath, logger);
   let filesInfo: string = '';
   moduleInfos.forEach(info => {
     const moduleType: string = info.isCommonJs ? 'commonjs' : 'esm';
@@ -67,14 +68,15 @@ function generateCompileFilesInfo(moduleInfos: Array<ModuleInfo>) {
 
 export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
-  validateFilePathLength(npmEntriesInfoPath);
+  validateFilePathLength(npmEntriesInfoPath, logger);
   let entriesInfo: string = '';
   for (const value of entryInfos.values()) {
-    const buildPath: string = value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
+    const buildPath: string =
+      value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '').replace(NODE_MODULES, PACKAGES);
     const entryFile: string = toUnixPath(path.join(buildPath, value.entry));
-    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.'));
+    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.')).replace(NODE_MODULES, PACKAGES);
     entriesInfo +=
-      `${toUnixPath(path.join(NODE_MODULES, buildPath))}:${toUnixPath(path.join(NODE_MODULES, entry))}\n`;
+      `${toUnixPath(path.join(PACKAGES, buildPath))}:${toUnixPath(path.join(PACKAGES, entry))}\n`;
   }
   fs.writeFileSync(npmEntriesInfoPath, entriesInfo, 'utf-8');
 }
@@ -86,7 +88,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   const filesInfoPath: string = path.join(process.env.cachePath, FILESINFO_TXT);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   const cacheFilePath: string = path.join(process.env.cachePath, MODULES_CACHE);
-  validateFilePathLength(cacheFilePath);
+  validateFilePathLength(cacheFilePath, logger);
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   mkdirsSync(projectConfig.buildPath);
   let genAbcCmd: string =
