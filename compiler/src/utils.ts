@@ -28,7 +28,6 @@ import {
   EXTNAME_MJS,
   EXTNAME_JS,
   MAIN,
-  NODE_MODULES,
   FAIL,
   TEMPORARY,
   ESMODULE
@@ -292,17 +291,18 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   }
   projectPath = toUnixPath(projectPath);
 
-  if (isNodeModulesFile(filePath, projectConfig)) {
-    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
+  if (isPackageModulesFile(filePath, projectConfig)) {
+    const packageDir: string = projectConfig.packageDir;
+    const fakePkgModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, packageDir));
     let output: string = '';
-    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+    if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
-      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
-      output = path.join(buildPath, buildInHar ? '' : TEMPORARY, NODE_MODULES, MAIN, sufStr);
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
+      output = path.join(buildPath, buildInHar ? '' : TEMPORARY, packageDir, MAIN, sufStr);
     } else {
-      output = filePath.replace(fakeNodeModulesPath,
-        path.join(buildPath, buildInHar ? '' : TEMPORARY, NODE_MODULES, AUXILIARY));
+      output = filePath.replace(fakePkgModulesPath,
+        path.join(buildPath, buildInHar ? '' : TEMPORARY, packageDir, AUXILIARY));
     }
     return output;
   }
@@ -316,20 +316,21 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   return '';
 }
 
-export function isNodeModulesFile(filePath: string, projectConfig: any): boolean {
+export function isPackageModulesFile(filePath: string, projectConfig: any): boolean {
   filePath = toUnixPath(filePath);
   const hapPath: string = toUnixPath(projectConfig.projectRootPath);
   const tempFilePath: string = filePath.replace(hapPath, '');
-  if (tempFilePath.indexOf(NODE_MODULES) !== -1) {
-    const fakeNodeModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, NODE_MODULES));
-    if (filePath.indexOf(fakeNodeModulesPath) !== -1) {
+  const packageDir: string = projectConfig.packageDir;
+  if (tempFilePath.indexOf(packageDir) !== -1) {
+    const fakePkgModulesPath: string = toUnixPath(path.resolve(projectConfig.projectRootPath, packageDir));
+    if (filePath.indexOf(fakePkgModulesPath) !== -1) {
       return true;
     }
     if (projectConfig.modulePathMap) {
       for (const key in projectConfig.modulePathMap) {
         const value: string = projectConfig.modulePathMap[key];
-        const fakeModuleNodeModulesPath: string = toUnixPath(path.resolve(value, NODE_MODULES));
-        if (filePath.indexOf(fakeModuleNodeModulesPath) !== -1) {
+        const fakeModulePkgModulesPath: string = toUnixPath(path.resolve(value, packageDir));
+        if (filePath.indexOf(fakeModulePkgModulesPath) !== -1) {
           return true;
         }
       }
@@ -340,6 +341,7 @@ export function isNodeModulesFile(filePath: string, projectConfig: any): boolean
 }
 
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
+  // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : process.env.cachePath,

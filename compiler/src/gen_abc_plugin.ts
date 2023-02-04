@@ -30,7 +30,7 @@ import {
   removeDir,
   validateFilePathLength,
   unlinkSync,
-  isNodeModulesFile,
+  isPackageModulesFile,
   genTemporaryPath
 } from './utils';
 import {
@@ -79,7 +79,8 @@ import {
   GEN_ABC_SCRIPT,
   GEN_MODULE_ABC_SCRIPT,
   AOT_FULL,
-  AOT_PARTIAL
+  AOT_PARTIAL,
+  PACKAGES
 } from './pre_define';
 import {
   generateMergedAbc,
@@ -344,7 +345,7 @@ function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<strin
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
   let npmPkgPath: string = getEntryInfo(filePath, module.resourceResolveData);
   const buildNpmPkgPath: string = npmPkgPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
-  const npmPkgName: string = toUnixPath(path.join(NODE_MODULES, buildNpmPkgPath));
+  const npmPkgName: string = toUnixPath(path.join(PACKAGES, buildNpmPkgPath)).replace(NODE_MODULES, PACKAGES);
 
   const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
@@ -378,7 +379,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (isNodeModulesFile(filePath, projectConfig)) {
+  if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -398,7 +399,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
     buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (isNodeModulesFile(filePath, projectConfig)) {
+  if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -417,7 +418,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     fs.copyFileSync(filePath, tempFilePath);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (isNodeModulesFile(filePath, projectConfig)) {
+  if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -429,7 +430,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
 
 function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
   const abcFilePath: string = "NA";
-  if (isNodeModulesFile(filePath, projectConfig)) {
+  if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -1274,7 +1275,7 @@ function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, worke
   }
   processEnv.arkEnvParams = JSON.stringify(arkEnvParams);
 
-  let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
+  let genAbcCmd: string = `${nodeJs} "${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}"`;
   childProcess.execSync(genAbcCmd, {env: processEnv});
   processExtraAsset();
 }
