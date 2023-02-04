@@ -682,6 +682,9 @@
         },
         "property": "stateStyles"
       },
+      "concurrent": {
+        "decorator": "Concurrent"
+      },
       "customComponent": "CustomComponent",
     },
     "allowJs": true,
