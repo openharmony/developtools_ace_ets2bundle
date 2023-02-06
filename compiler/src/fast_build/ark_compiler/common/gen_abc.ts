@@ -75,15 +75,15 @@ function genAbcByWorkersOfModuleMode(jsonInput: string, cmd: string, workerFileN
 
 process.stderr.write = function(chunk) {
   const message = chunk.toString();
-  if (message.length != 0) {
+  if (message.length !== 0) {
     // send only non-empty message. sometimes there will be empty stderr,
     // if processed by parent process's logger.error, the gen_abc process will fail
     process.send({
       data: message
-    })
+    });
   }
   return true;
-}
+};
 
 if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined &&
   process.env['mode'] !== undefined) {
@@ -99,7 +99,7 @@ if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'
   }
 } else {
   process.send({
-    data: "Failed to invoke worker with uncomplete inputs"
-  })
+    data: 'Failed to invoke worker with uncomplete inputs'
+  });
   process.exit(FAIL);
 }

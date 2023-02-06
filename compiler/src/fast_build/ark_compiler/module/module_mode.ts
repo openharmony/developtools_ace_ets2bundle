@@ -171,7 +171,7 @@ export class ModuleMode extends CommonMode {
     if (originPkgEntryPath.startsWith('/')) {
       originPkgEntryPath = originPkgEntryPath.slice(1, originPkgEntryPath.length);
     }
-    let pkgEntryPath: string = toUnixPath(this.getPkgModulesFilePkgName(pkgPath));
+    const pkgEntryPath: string = toUnixPath(this.getPkgModulesFilePkgName(pkgPath));
     let pkgBuildPath: string = path.join(pkgEntryPath, originPkgEntryPath);
     pkgBuildPath = toUnixPath(pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.')));
 
@@ -220,7 +220,7 @@ export class ModuleMode extends CommonMode {
       packageName = getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
     }
 
-    if (extName.length != 0) {
+    if (extName.length !== 0) {
       cacheFilePath = changeFileExtension(cacheFilePath, extName);
     }
 
@@ -285,14 +285,14 @@ export class ModuleMode extends CommonMode {
     this.genDescriptionsForMergedEs2abc();
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
-      const child = this.asyncHandler(() => {
+      const child = this.triggerAsync(() => {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('exit', (code: any) => {
         if (code === FAIL) {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
-        this.signalHandler();
+        this.triggerEndSignal();
       });
 
       child.on('error', (err: any) => {
@@ -369,28 +369,27 @@ export class ModuleMode extends CommonMode {
     return result;
   }
 
-  generateTs2AbcCmd() {
-    this.cmdArgs.push('--output-proto');
-    this.cmdArgs.push('--merge-abc');
-    this.cmdArgs.push('--input-file');
-  }
-
   invokeTs2AbcWorkersToGenProto(splittedModules) {
+    let ts2abcCmdArgs: string[] = this.cmdArgs.slice(0);
+    ts2abcCmdArgs.push('--output-proto');
+    ts2abcCmdArgs.push('--merge-abc');
+    ts2abcCmdArgs.push('--input-file');
     if (isMasterOrPrimary()) {
       this.setupCluster(cluster);
+      this.workerNumber = splittedModules.length;
       for (let i = 0; i < this.workerNumber; ++i) {
         const sn: number = i + 1;
         const workerFileName: string = `${FILESINFO}_${sn}${EXTNAME_TXT}`;
         const workerData: any = {
           inputs: JSON.stringify(splittedModules[i]),
-          cmd: this.cmdArgs.join(' '),
+          cmd: ts2abcCmdArgs.join(' '),
           workerFileName: workerFileName,
           mode: ESMODULE,
           cachePath: this.projectConfig.cachePath
         };
-        this.asyncHandler(() => {
-          let worker = cluster.fork(workerData);
-          worker.on("message", (errorMsg) => {
+        this.triggerAsync(() => {
+          const worker: any = cluster.fork(workerData);
+          worker.on('message', (errorMsg) => {
             this.logger.error(errorMsg.data.toString());
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
           });
@@ -419,7 +418,7 @@ export class ModuleMode extends CommonMode {
           }
           this.afterCompilationProcess();
         }
-        this.signalHandler();
+        this.triggerEndSignal();
       });
     }
   }

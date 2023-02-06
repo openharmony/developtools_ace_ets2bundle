@@ -16,7 +16,7 @@
 import path from 'path';
 
 import {
-  ESMODULE,
+  ESMODULE
 } from './common/ark_define';
 import { ModuleSourceFile } from './module/module_source_file';
 import {
