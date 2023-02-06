@@ -35,8 +35,6 @@ export class ModuleBuildMode extends ModuleMode {
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();
       const splittedModules: any[] = this.getSplittedModulesByNumber();
-      this.workerNumber = splittedModules.length;
-      this.generateTs2AbcCmd();
       this.invokeTs2AbcWorkersToGenProto(splittedModules);
       this.processTs2abcWorkersToGenAbc();
     } else {
