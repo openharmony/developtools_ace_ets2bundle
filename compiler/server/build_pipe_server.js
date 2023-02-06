@@ -61,6 +61,25 @@ let globalDeclaration = new Map();
 let connectNum = 0;
 const maxConnectNum = 8;
 
+let callback = undefined;
+
+function buildPipeServer() {
+  return {
+    init(cachePath, buildPath, cb) {
+      previewCacheFilePath = path.join(cachePath || buildPath, 'preview.ets');
+      const rootFileNames = [];
+      writeFileSync(previewCacheFilePath, '');
+      rootFileNames.push(previewCacheFilePath);
+      ts.createWatchProgram(
+        createWatchCompilerHost(rootFileNames, resolveDiagnostic, delayPrintLogCount, ()=>{}, true));
+      callback = cb;
+    },
+    compileComponent(jsonData) {
+      handlePluginCompileComponent(jsonData);
+    }
+  }
+}
+
 function init(port) {
   previewCacheFilePath =
     path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
@@ -253,19 +272,28 @@ function responseToPlugin() {
         receivedMsg_.data.log =  receivedMsg_.data.log || [];
         receivedMsg_.data.log.push(...errorInfo);
       }
-      pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
-        start = false;
-        checkStatus = false;
-        compileStatus = false;
-        errorInfo = [];
-        receivedMsg_ = undefined;
-        globalDeclaration.clear();
-        messages.shift();
-        if (messages.length > 0) {
-          handlePluginCompileComponent();
-        }
-      });
+      if (callback) {
+        callback(JSON.stringify(receivedMsg_));
+        afterResponse();
+      } else {
+        pluginSocket.send(JSON.stringify(receivedMsg_), (err) => {
+          afterResponse();
+        });
+      }
     }
+  }
+}
+
+function afterResponse() {
+  start = false;
+  checkStatus = false;
+  compileStatus = false;
+  errorInfo = [];
+  receivedMsg_ = undefined;
+  globalDeclaration.clear();
+  messages.shift();
+  if (messages.length > 0) {
+    handlePluginCompileComponent();
   }
 }
 
@@ -288,5 +316,6 @@ function matchMessage(message, nameArr, reg) {
 }
 
 module.exports = {
-  init
+  init,
+  buildPipeServer
 };
