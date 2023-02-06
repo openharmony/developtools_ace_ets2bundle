@@ -25,7 +25,7 @@ import {
 } from './ark_define';
 import { initArkConfig } from './process_ark_config';
 import {
-  compareNodeVersion,
+  nodeLargeOrEqualTargetVersion,
   mkdirsSync,
   validateFilePathLength
 } from '../../../utils';
@@ -42,8 +42,8 @@ export class CommonMode {
   throwArkTsCompilerError: any;
   hashJsonFilePath: string;
   genAbcScriptPath: string;
-  asyncHandler: any;
-  signalHandler: any;
+  triggerAsync: any;
+  triggerEndSignal: any;
 
   constructor(rollupObject: any) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
@@ -53,8 +53,13 @@ export class CommonMode {
     this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.hashJsonFilePath = this.genHashJsonFilePath();
     this.genAbcScriptPath = path.resolve(__dirname, GEN_ABC_SCRIPT);
-    this.asyncHandler = rollupObject.async;
-    this.signalHandler = rollupObject.signal;
+    // Each time triggerAsync() was called, IDE will wait for asynchronous operation to finish before continue excuting.
+    // The finish signal was passed to IDE by calling triggerEndSignal() in the child process created by triggerAsync()
+    // When multiple workers were invoked by triggerAsync(), IDE will wait until the times of calling
+    // triggerEndSignal() matches the number of workers invoked.
+    // If the child process throws an error by calling throwArkTsCompilerError(), IDE will reset the counting state.
+    this.triggerAsync = rollupObject.async;
+    this.triggerEndSignal = rollupObject.signal;
   }
 
   private initCmdEnv() {
@@ -101,7 +106,7 @@ export class CommonMode {
   }
 
   setupCluster(cluster: any): void {
-    if (compareNodeVersion()) {
+    if (nodeLargeOrEqualTargetVersion(16)) {
       cluster.setupPrimary({
         exec: this.genAbcScriptPath,
         windowsHide: true
