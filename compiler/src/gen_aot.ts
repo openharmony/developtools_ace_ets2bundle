@@ -32,11 +32,13 @@ import {
   isWindows,
   mkdirsSync,
   toUnixPath,
-  getArkBuildDir,
-  getBuildBinDir,
   validateFilePathLength,
   validateFilePathLengths
 } from './utils';
+import {
+  getArkBuildDir,
+  getBuildBinDir
+} from './ark_utils';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -125,7 +127,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string, logger: any,
   const appAbc: string = path.join(projectConfig.buildPath, MODULES_ABC);
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
-  if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot])) {
+  if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot], logger)) {
     logger.error(`ArkTS:ERROR generateAot failed. Invalid file path.`);
     processExit(isFastBuild);
   }
@@ -140,7 +142,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string, logger: any,
     singleCmd = singleCmdPrefix + ` "${appAbc}"`;
   } else if (projectConfig.anBuildMode === AOT_PARTIAL) {
     const profile: string = projectConfig.apPath;
-    if (!validateFilePathLength(profile)) {
+    if (!validateFilePathLength(profile, logger)) {
       logger.error(`ArkTS:ERROR generateAot failed. Invalid profile file path.`);
       processExit(isFastBuild);
     }
@@ -172,7 +174,7 @@ export function generateBuiltinAbc(arkDir: string, nodeJs: string, abcArgs: stri
     return builtinAbcPath;
   }
   mkdirsSync(path.dirname(builtinAbcPath));
-  if (!validateFilePathLengths([builtinFilePath, builtinAbcPath])) {
+  if (!validateFilePathLengths([builtinFilePath, builtinAbcPath], logger)) {
     logger.error(`ArkTS:ERROR generateBuiltinAbc failed. Invalid file path.`);
     processExit(isFastBuild);
   }
