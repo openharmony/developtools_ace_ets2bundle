@@ -67,9 +67,9 @@ import {
   LogInfo,
   LogType,
   hasDecorator,
-  FileLog,
-  writeFileSyncByNode
+  FileLog
 } from './utils';
+import { writeFileSyncByNode } from './ark_utils';
 import {
   processComponentBlock,
   bindComponentAttr,
@@ -117,7 +117,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           if (projectConfig.compileMode === ESMODULE && process.env.compilerType && process.env.compilerType === ARK) {
               validateReExportType(node, pagesDir, transformLog.errors);
               if (projectConfig.processTs === true) {
-                writeFileSyncByNode(node, true);
+                writeFileSyncByNode(node, true, projectConfig);
               }
           }
           return node;
@@ -143,7 +143,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true
           && process.env.compilerType && process.env.compilerType === ARK) {
-          writeFileSyncByNode(node, true);
+          writeFileSyncByNode(node, true, projectConfig);
         }
         return node;
       } else {
@@ -722,7 +722,7 @@ function createStartGetAccessRecording(context: ts.TransformationContext): ts.Ex
   );
 }
 
-function createLoadDocument(context: ts.TransformationContext, name: string, 
+function createLoadDocument(context: ts.TransformationContext, name: string,
   cardRelativePath: string, localStorageName: string): ts.ExpressionStatement {
   const newArray: ts.Expression[] = [
     context.factory.createIdentifier('undefined'),

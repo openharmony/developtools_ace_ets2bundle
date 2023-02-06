@@ -14,8 +14,9 @@
  */
 
 import { generateSourceFilesInHar } from './utils';
+import { projectConfig } from '../main.js';
 
 module.exports = function writejsfile(source: string): string {
-  generateSourceFilesInHar(this.resourcePath, source, '.js');
+  generateSourceFilesInHar(this.resourcePath, source, '.js', projectConfig);
   return source;
 };
