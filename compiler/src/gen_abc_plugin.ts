@@ -26,24 +26,27 @@ import {
   toUnixPath,
   toHashData,
   genTemporaryPath,
-  genBuildPath,
-  genAbcFileName,
-  getPackageInfo,
   mkdirsSync,
   genSourceMapFileName,
-  checkNodeModulesFile,
+  isNodeModulesFile,
   compareNodeVersion,
   removeDir,
-  newSourceMaps,
   validateFilePathLength,
-  genProtoFileName,
-  genMergeProtoFileName,
-  removeDuplicateInfo,
-  isTs2Abc,
-  isEs2Abc,
-  buildCachePath,
   unlinkSync
 } from './utils';
+import {
+  buildCachePath,
+  genAbcFileName,
+  genBuildPath,
+  genMergeProtoFileName,
+  genProtoFileName,
+  getOhmUrlByFilepath,
+  getPackageInfo,
+  isEs2Abc,
+  isTs2Abc,
+  newSourceMaps,
+  removeDuplicateInfo
+} from './ark_utils';
 import { projectConfig } from '../main';
 import {
   ESMODULE,
@@ -80,9 +83,6 @@ import {
   AOT_PARTIAL
 } from './pre_define';
 import {
-  getOhmUrlByFilepath
-} from './resolve_ohm_url';
-import {
   generateMergedAbc,
   generateNpmEntriesInfo
 } from './gen_merged_abc';
@@ -90,6 +90,7 @@ import {
   generateAot,
   generateBuiltinAbc
 } from './gen_aot'
+import { Logger } from 'log4js';
 
 let output: string;
 let isWin: boolean = false;
@@ -142,7 +143,7 @@ export class ModuleInfo {
     this.abcFilePath = abcFilePath;
     this.packageName = packageName;
     this.isCommonJs = isCommonJs;
-    this.recordName = getOhmUrlByFilepath(filePath);
+    this.recordName = getOhmUrlByFilepath(filePath, projectConfig, logger);
     this.sourceFile = filePath.replace(projectConfig.projectRootPath + path.sep, '');
   }
 }
@@ -190,7 +191,7 @@ export class GenAbcPlugin {
       if (projectConfig.cachePath && !projectConfig.xtsMode) {
         let cachedJson: any = {};
         const CACHED_BUILDMODE: string = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
-        validateFilePathLength(CACHED_BUILDMODE);
+        validateFilePathLength(CACHED_BUILDMODE, logger);
         cachedJson["buildMode"] = projectConfig.buildArkMode;
         fs.writeFile(CACHED_BUILDMODE, JSON.stringify(cachedJson, null, 2), 'utf-8',
         (err) => {
@@ -251,9 +252,9 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      if (isTs2Abc() || process.env.minPlatformVersion === "8") {
+      if (isTs2Abc(projectConfig) || process.env.minPlatformVersion === "8") {
         invokeWorkersToGenAbc();
-      } else if (isEs2Abc()){
+      } else if (isEs2Abc(projectConfig)){
         generateAbcByEs2AbcOfBundleMode(intermediateJsBundle);
       } else {
         logger.error(red, `ArkTS:ERROR please set panda module`, reset);
@@ -300,8 +301,10 @@ function getEntryInfo(filePath: string, resourceResolveData: any): string {
   }
 
   const fakeEntryPath: string = path.resolve(npmInfoPath, 'fake.js');
-  const tempFakeEntryPath: string = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath);
-  const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath);
+  const tempFakeEntryPath: string = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath,
+    projectConfig);
+  const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath,
+    projectConfig);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
   const buildNpmInfoPath: string = toUnixPath(path.resolve(buildFakeEntryPath, '..'));
   if (!entryInfos.has(npmInfoPath) && isEntry) {
@@ -377,7 +380,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
     buildFilePath = buildFilePath.replace(/\.ets$/, EXTNAME_JS);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+  if (isNodeModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -397,7 +400,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
     buildFilePath = buildFilePath.replace(/\.ts$/, EXTNAME_JS);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+  if (isNodeModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -416,7 +419,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
     fs.copyFileSync(filePath, tempFilePath);
   }
   const abcFilePath: string = genAbcFileName(tempFilePath);
-  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+  if (isNodeModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -428,7 +431,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
 
 function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
   const abcFilePath: string = "NA";
-  if (checkNodeModulesFile(filePath, projectConfig.projectPath)) {
+  if (isNodeModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
     const moduleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[1];
@@ -441,7 +444,7 @@ var cachedSourceMaps: Object;
 
 function updateCachedSourceMaps(): void {
   const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
-  validateFilePathLength(CACHED_SOURCEMAPS);
+  validateFilePathLength(CACHED_SOURCEMAPS, logger);
   if (!fs.existsSync(CACHED_SOURCEMAPS)) {
     cachedSourceMaps = {};
   } else {
@@ -454,7 +457,7 @@ function updateCachedSourceMaps(): void {
 
 function getCachedModuleList(): Array<string> {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
-  validateFilePathLength(CACHED_MODULELIST_FILE);
+  validateFilePathLength(CACHED_MODULELIST_FILE, logger);
   if (!fs.existsSync(CACHED_MODULELIST_FILE)) {
     return [];
   }
@@ -465,9 +468,9 @@ function getCachedModuleList(): Array<string> {
 
 function updateCachedModuleList(moduleList: Array<string>): void {
   const CACHED_MODULELIST_FILE: string = path.join(process.env.cachePath, MODULELIST_JSON);
-  validateFilePathLength(CACHED_MODULELIST_FILE);
+  validateFilePathLength(CACHED_MODULELIST_FILE, logger);
   const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
-  validateFilePathLength(CACHED_SOURCEMAPS);
+  validateFilePathLength(CACHED_SOURCEMAPS, logger);
   let cachedJson: Object = {};
   cachedJson["list"] = moduleList;
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
@@ -489,7 +492,7 @@ function updateCachedModuleList(moduleList: Array<string>): void {
 function writeSourceMaps(): void {
   mkdirsSync(projectConfig.buildPath);
   let sourceMapFilePath: string = path.join(projectConfig.buildPath, SOURCEMAPS);
-  validateFilePathLength(sourceMapFilePath);
+  validateFilePathLength(sourceMapFilePath, logger);
   fs.writeFile(sourceMapFilePath, JSON.stringify(cachedSourceMaps, null, 2), 'utf-8',
     (err) => {
       if (err) {
@@ -514,13 +517,14 @@ function handleFullModuleFiles(modules, callback): any {
   modules.forEach(module => {
     if (module !== undefined && module.resourceResolveData !== undefined) {
       const filePath: string = module.resourceResolveData.path;
-      let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+      let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
       if (tempFilePath.length === 0) {
         return;
       }
-      validateFilePathLength(tempFilePath);
-      let buildFilePath: string = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath);
-      validateFilePathLength(buildFilePath);
+      validateFilePathLength(tempFilePath, logger);
+      let buildFilePath: string = genBuildPath(filePath, projectConfig.projectPath, projectConfig.buildPath,
+        projectConfig);
+      validateFilePathLength(buildFilePath, logger);
       tempFilePath = toUnixPath(tempFilePath);
       buildFilePath = toUnixPath(buildFilePath);
 
@@ -562,7 +566,7 @@ function handleFullModuleFiles(modules, callback): any {
 
   if (process.env.panda !== TS2ABC) {
     const outputABCPath: string = path.join(projectConfig.buildPath, MODULES_ABC);
-    validateFilePathLength(outputABCPath);
+    validateFilePathLength(outputABCPath, logger);
     generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
     clearGlobalInfo();
   } else {
@@ -576,10 +580,10 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   }
   generateNpmEntriesInfo(entryInfos);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
-  validateFilePathLength(npmEntriesInfoPath);
+  validateFilePathLength(npmEntriesInfoPath, logger);
   let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
   const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
-  validateFilePathLength(npmEntriesProtoFilePath);
+  validateFilePathLength(npmEntriesProtoFilePath, logger);
   mkdirsSync(path.dirname(npmEntriesProtoFilePath));
   let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
   if (isWin) {
@@ -587,7 +591,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   } else if (isMac) {
     js2Abc = path.join(arkDir, 'build-mac', 'bin', 'js2abc');
   }
-  validateFilePathLength(js2Abc);
+  validateFilePathLength(js2Abc, logger);
   const singleCmd: any = `"${js2Abc}" --compile-npm-entries "${npmEntriesInfoPath}" "${npmEntriesProtoFilePath}`;
   try {
     childProcess.execSync(singleCmd);
@@ -598,7 +602,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
 
 function writeFileSync(inputString: string, buildPath: string, keyPath: string, jsBundleFile: string): void {
   let output = path.resolve(buildPath, keyPath);
-  validateFilePathLength(output);
+  validateFilePathLength(output, logger);
   let parent: string = path.join(output, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
@@ -611,7 +615,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   } else {
     cacheOutputPath = output;
   }
-  validateFilePathLength(cacheOutputPath);
+  validateFilePathLength(cacheOutputPath, logger);
   parent = path.join(cacheOutputPath, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
@@ -694,7 +698,7 @@ export function initAbcEnv() : string[] {
     } else if (isMac) {
       js2abc = path.join(arkDir, 'build-mac', 'legacy_api8', 'src', 'index.js');
     }
-    validateFilePathLength(js2abc);
+    validateFilePathLength(js2abc, logger);
 
     js2abc = '"' + js2abc + '"';
     args = [
@@ -711,7 +715,7 @@ export function initAbcEnv() : string[] {
     } else if (isMac) {
       js2abc = path.join(arkDir, 'build-mac', 'src', 'index.js');
     }
-    validateFilePathLength(js2abc);
+    validateFilePathLength(js2abc, logger);
 
     js2abc = '"' + js2abc + '"';
     args = [
@@ -728,7 +732,7 @@ export function initAbcEnv() : string[] {
     } else if (isMac) {
       es2abc = path.join(arkDir, 'build-mac', 'bin', 'es2abc');
     }
-    validateFilePathLength(es2abc);
+    validateFilePathLength(es2abc, logger);
 
     args = [
       '"' + es2abc + '"'
@@ -973,7 +977,7 @@ function genHashJsonPath(buildPath: string): string {
     let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
     let abilityDir: string = buildDirArr[buildDirArr.length - 1];
     let hashJsonPath: string = path.join(process.env.cachePath, TEMPORARY, abilityDir, hashFile);
-    validateFilePathLength(hashJsonPath)
+    validateFilePathLength(hashJsonPath, logger)
     mkdirsSync(path.dirname(hashJsonPath));
     return hashJsonPath;
   } else if (buildPath.indexOf(ARK) >= 0) {
@@ -984,7 +988,7 @@ function genHashJsonPath(buildPath: string): string {
       return '';
     }
     let hashJsonPath: string = path.join(hashPath, hashFile);
-    validateFilePathLength(hashJsonPath);
+    validateFilePathLength(hashJsonPath, logger);
     return hashJsonPath;
   } else {
     logger.debug(red, `ArkTS:ERROR not cache exist`, reset);
@@ -1001,7 +1005,7 @@ function checkNodeModules() {
       arkEntryPath = path.join(arkDir, 'build-mac');
     }
     let nodeModulesPath: string = path.join(arkEntryPath, NODE_MODULES);
-    validateFilePathLength(nodeModulesPath);
+    validateFilePathLength(nodeModulesPath, logger);
     if (!(fs.existsSync(nodeModulesPath) && fs.statSync(nodeModulesPath).isDirectory())) {
       logger.error(red, `ERROR: node_modules for ark compiler not found.
         Please make sure switch to non-root user before runing "npm install" for safity requirements and try re-run "npm install" under ${arkEntryPath}`, reset);
@@ -1068,12 +1072,12 @@ function handleHotReloadChangedFiles() {
 
   for (let file of changedFileList) {
     let filePath: string = path.join(projectConfig.projectPath, file);
-    validateFilePathLength(filePath);
-    let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath);
+    validateFilePathLength(filePath, logger);
+    let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
     if (tempFilePath.length === 0) {
       return;
     }
-    validateFilePathLength(tempFilePath);
+    validateFilePathLength(tempFilePath, logger);
     let buildFilePath: string = "";
     tempFilePath = toUnixPath(tempFilePath);
 
@@ -1103,7 +1107,7 @@ function handleHotReloadChangedFiles() {
     }
 
     let sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
-    validateFilePathLength(sourceMapPath);
+    validateFilePathLength(sourceMapPath, logger);
     hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
   }
 
@@ -1112,12 +1116,12 @@ function handleHotReloadChangedFiles() {
   }
 
   const outputABCPath: string = path.join(projectConfig.patchAbcPath, MODULES_ABC);
-  validateFilePathLength(outputABCPath);
+  validateFilePathLength(outputABCPath, logger);
   generateMergedAbc(moduleInfos, entryInfos, outputABCPath);
 
   // write source maps
   let sourceMapFilePath: string = path.join(projectConfig.patchAbcPath, SOURCEMAPS);
-  validateFilePathLength(sourceMapFilePath);
+  validateFilePathLength(sourceMapFilePath, logger);
   fs.writeFileSync(sourceMapFilePath,
                    JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8');
 }
@@ -1137,7 +1141,7 @@ function handleFinishModules(modules, callback) {
 
 function copyModuleFileCachePathToBuildPath(): void {
   protoFilePath = path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT);
-  validateFilePathLength(protoFilePath);
+  validateFilePathLength(protoFilePath, logger);
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
   moduleInfos = removeDuplicateInfo(moduleInfos);
@@ -1225,7 +1229,7 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
 }
 
 function generateFileOfBundle(inputPaths: File[]) {
-  let filesInfoPath: string = buildCachePath(FILESINFO_TXT);
+  let filesInfoPath: string = buildCachePath(FILESINFO_TXT, projectConfig, Logger);
   inputPaths = removeDuplicateInfoOfBundleList(inputPaths);
 
   let filesInfo: string = '';
