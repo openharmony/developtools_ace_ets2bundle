@@ -323,7 +323,9 @@ function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<strin
       mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.browser)));
     } else {
       Object.keys(descriptionFileData.browser).forEach(key => {
-        mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.browser[key])));
+        if (typeof key === 'string' && typeof descriptionFileData.browser[key] === 'string') {
+          mainFileds.add(toUnixPath(path.join(packagePath, descriptionFileData.browser[key])));
+        }
       });
     }
   }
