@@ -90,6 +90,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.splitCommon = false;
   projectConfig.checkEntry = projectConfig.checkEntry || process.env.checkEntry;
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
+  projectConfig.packageDir = 'node_modules';
+  projectConfig.packageJson = 'package.json';
 }
 
 function loadEntryObj(projectConfig) {
@@ -174,7 +176,7 @@ function buildManifest(manifest, aceConfigPath) {
           break;
       }
     } else {
-      throw Error('\u001b[31m'+
+      throw Error('\u001b[31m' +
         'ERROR: the config.json file miss key word module || module[abilities].' +
         '\u001b[39m').message;
     }
@@ -189,7 +191,7 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../package.json');
+  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
     if (rootPackageJsonContent) {
@@ -201,7 +203,7 @@ function getPackageJsonEntryPath() {
         getEntryPath('', rootPackageJsonPath);
       }
     } else {
-      throw Error('\u001b[31m'+ 'lack message in package.json.' + '\u001b[39m').message;
+      throw Error('\u001b[31m' + 'lack message in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
     }
   }
 }
@@ -214,7 +216,7 @@ function supportSuffix(mainEntryPath) {
   } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
     mainEntryPath = path.join(mainEntryPath, 'index.js');
   } else {
-    throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+    throw Error('\u001b[31m' + 'not find entry file in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
   }
   return mainEntryPath;
 }
@@ -397,7 +399,7 @@ function setCardPages(extensionAbilities) {
           if (metadata.resource) {
             readCardResource(metadata.resource);
           }
-        })
+        });
       }
     });
   }
@@ -411,7 +413,7 @@ function readCardResource(resource) {
     if (cardConfig.forms) {
       cardConfig.forms.forEach(form => {
         readCardForm(form);
-      })
+      });
     }
   }
 }
@@ -451,7 +453,7 @@ function loadWorker(projectConfig, workerFileEntry) {
             .replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
         }
-      })
+      });
     }
   }
 }
@@ -468,6 +470,10 @@ function initBuildInfo() {
   if (projectConfig.compileHar && aceBuildJson.moduleName &&
     aceBuildJson.modulePathMap[aceBuildJson.moduleName]) {
     projectConfig.moduleRootPath = aceBuildJson.modulePathMap[aceBuildJson.moduleName];
+  }
+  if (aceBuildJson.packageManagerType === 'ohpm') {
+    projectConfig.packageDir = 'oh_modules';
+    projectConfig.packageJson = 'oh-package.json5';
   }
 }
 
@@ -595,7 +601,6 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       projectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
-      projectConfig.packageDir = 'node_modules';
     }
     if (projectConfig.compileHar && buildJsonInfo.moduleName &&
       buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {
