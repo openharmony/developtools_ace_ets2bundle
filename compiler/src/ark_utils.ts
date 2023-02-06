@@ -17,6 +17,7 @@ import path from 'path';
 import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
 
+import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
   PACKAGES,
   TEMPORARY,
@@ -313,6 +314,10 @@ export function genAbcFileName(temporaryFile: string): string {
     abcFile = temporaryFile.replace(/\.js$/, EXTNAME_ABC);
   }
   return abcFile;
+}
+
+export function isOhModules(projectConfig: any): boolean {
+  return projectConfig.packageDir === OH_MODULES;
 }
 
 export function isEs2Abc(projectConfig: any): boolean {
