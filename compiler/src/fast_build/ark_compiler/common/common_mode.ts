@@ -29,7 +29,11 @@ import {
   mkdirsSync,
   validateFilePathLength
 } from '../../../utils';
-import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
+import {
+  isEs2Abc,
+  isOhModules,
+  isTs2Abc
+} from '../../../ark_utils';
 import {
   genTemporaryModuleCacheDirectoryForBundle
 } from '../utils';
@@ -73,6 +77,9 @@ export class CommonMode {
       args = [`${this.arkConfig.nodePath}`, '--expose-gc', ts2abc];
       if (this.arkConfig.isDebug) {
         args.push('--debug');
+      }
+      if (isOhModules(this.projectConfig)) {
+        args.push('--oh-modules');
       }
     } else if (isEs2Abc(this.projectConfig)) {
       const es2abc: string = this.arkConfig.es2abcPath;
