@@ -367,9 +367,9 @@ export function mkdirsSync(dirname: string): boolean {
   return false;
 }
 
-export function compareNodeVersion(nodeVersion: number = 16): boolean {
+export function nodeLargeOrEqualTargetVersion(targetVersion: number): boolean {
   const currentNodeVersion: number = parseInt(process.versions.node.split('.')[0]);
-  if (currentNodeVersion >= nodeVersion) {
+  if (currentNodeVersion >= targetVersion) {
     return true;
   }
 
@@ -378,7 +378,7 @@ export function compareNodeVersion(nodeVersion: number = 16): boolean {
 
 export function removeDir(dirName: string): void {
   if (fs.existsSync(dirName)) {
-    if (compareNodeVersion()) {
+    if (nodeLargeOrEqualTargetVersion(16)) {
       fs.rmSync(dirName, { recursive: true});
     } else {
       fs.rmdirSync(dirName, { recursive: true});
