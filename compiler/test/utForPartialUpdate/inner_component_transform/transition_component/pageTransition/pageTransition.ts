@@ -138,9 +138,6 @@ class PageTransitionExample1 extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             PageTransition.create();
-            if (!isInitialRender) {
-                PageTransition.pop();
-            }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
@@ -150,9 +147,6 @@ class PageTransitionExample1 extends ViewPU {
                 this.scale2 = 1;
                 this.opacity2 = progress;
             });
-            if (!isInitialRender) {
-                PageTransitionEnter.pop();
-            }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
@@ -162,9 +156,6 @@ class PageTransitionExample1 extends ViewPU {
                 this.scale2 = 1 - progress;
                 this.opacity2 = 1;
             });
-            if (!isInitialRender) {
-                PageTransitionExit.pop();
-            }
             ViewStackProcessor.StopGetAccessRecording();
         });
         PageTransition.pop();
