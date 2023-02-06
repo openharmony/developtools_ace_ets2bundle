@@ -346,7 +346,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : process.env.cachePath,
     projectConfig, projectConfig.compileShared);
-  if (!jsFilePath.match(/node_modules/)) {
+  if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     mkdirsSync(path.dirname(jsFilePath));
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
@@ -527,15 +527,15 @@ export function getResolveModules(projectPath: string, faMode: boolean): string[
   if (faMode) {
     return [
       path.resolve(projectPath, '../../../../../'),
-      path.resolve(projectPath, '../../../../node_modules'),
-      path.resolve(projectPath, '../../../../../node_modules'),
+      path.resolve(projectPath, '../../../../' + projectConfig.packageDir),
+      path.resolve(projectPath, '../../../../../' + projectConfig.packageDir),
       path.resolve(projectPath, '../../')
     ];
   } else {
     return [
       path.resolve(projectPath, '../../../../'),
-      path.resolve(projectPath, '../../../node_modules'),
-      path.resolve(projectPath, '../../../../node_modules'),
+      path.resolve(projectPath, '../../../' + projectConfig.packageDir),
+      path.resolve(projectPath, '../../../../' + projectConfig.packageDir),
       path.resolve(projectPath, '../')
     ];
   }
