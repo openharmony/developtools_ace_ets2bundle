@@ -344,7 +344,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
-    projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : process.env.cachePath,
+    projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
     projectConfig, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);

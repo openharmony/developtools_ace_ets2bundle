@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+const { initConfig } = require('./lib/fast_build/common/init_config');
+const { getCleanConfig } = require('./main');
 const { etsTransform } = require('./lib/fast_build/ets_ui/rollup-plugin-ets-typescript');
 const { etsChecker } = require('./lib/fast_build/ets_ui/rollup-plugin-ets-checker');
 const { apiTransform } = require('./lib/fast_build/system_api/rollup-plugin-system-api');
@@ -24,3 +26,5 @@ exports.apiTransform = apiTransform;
 exports.etsChecker = etsChecker;
 exports.genAbc = genAbc;
 exports.watchChangeFiles = watchChangeFiles;
+exports.initConfig = initConfig;
+exports.getCleanConfig = getCleanConfig;

@@ -31,6 +31,12 @@ export function etsChecker() {
         return;
       }
       Object.assign(projectConfig, this.share.projectConfig);
+      Object.assign(this.share.projectConfig, {
+        compileHar: projectConfig.compileHar,
+        compileShared: projectConfig.compileShared,
+        moduleRootPath: projectConfig.moduleRootPath,
+        buildPath: projectConfig.buildPath
+      });
       initConfig();
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
