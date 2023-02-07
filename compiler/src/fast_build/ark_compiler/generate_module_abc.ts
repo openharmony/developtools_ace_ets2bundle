@@ -21,12 +21,12 @@ import { ModulePreviewMode } from './module/module_preview_mode';
 import { ModuleSourceFile } from './module/module_source_file';
 
 export async function generateModuleAbc(error) {
-  if (this.share.projectConfig.compileHar) {
-    // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, dosen't emit abc.
-    return;
-  }
   if (this.share.projectConfig.compileMode === ESMODULE) {
     await ModuleSourceFile.processModuleSourceFiles(this);
+    if (this.share.projectConfig.compileHar) {
+      // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
+      return;
+    }
     generateAbc(this);
   }
 }

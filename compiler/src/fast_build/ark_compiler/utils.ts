@@ -71,9 +71,11 @@ export function writeFileContentToTempDir(id: string, content: string, projectCo
 
   let filePath: string;
   if (projectConfig.compileHar) {
+    // compileShared: compile shared har of project
     filePath = genTemporaryPath(id,
       projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
-      path.resolve(projectConfig.buildPath, projectConfig.compileShared ? '../etsFortgz' : ''), projectConfig, true);
+      projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz'): projectConfig.cachePath,
+      projectConfig, projectConfig.compileShared);
   } else {
     filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig);
   }
@@ -124,6 +126,7 @@ export function isCurrentProjectFiles(filePath: string, projectConfig: any): boo
   const packageDir: string = projectConfig.packageDir;
   let modulePath: string = projectConfig.modulePathMap[projectConfig.moduleName];
   return filePath.indexOf(projectConfig.projectPath) >= 0 ||
+    (projectConfig.moduleRootPath && filePath.indexOf(projectConfig.moduleRootPath) >= 0) ||
     filePath.indexOf(path.join(projectConfig.projectRootPath, packageDir)) >= 0 ||
     filePath.indexOf(path.join(modulePath, packageDir)) >= 0;
 }
