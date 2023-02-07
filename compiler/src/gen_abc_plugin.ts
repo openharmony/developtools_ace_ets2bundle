@@ -1278,7 +1278,7 @@ function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, worke
   }
   processEnv.arkEnvParams = JSON.stringify(arkEnvParams);
 
-  let genAbcCmd: string = `${nodeJs} ${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}`;
+  let genAbcCmd: string = `${nodeJs} "${path.resolve(__dirname, MANAGE_WORKERS_SCRIPT)}"`;
   childProcess.execSync(genAbcCmd, {env: processEnv});
   processExtraAsset();
 }
