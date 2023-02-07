@@ -324,7 +324,7 @@ export class ResultStates {
 
   private printLogCount(): void {
     let errorCount: number = this.mErrorCount + checkerResult.count;
-    if (errorCount + this.warningCount + this.noteCount > 0) {
+    if (errorCount + this.warningCount + this.noteCount > 0 || process.env.abcCompileSuccess === 'false') {
       let result: string;
       let resultInfo: string = '';
       if (errorCount > 0) {
