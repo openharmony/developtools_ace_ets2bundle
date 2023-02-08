@@ -52,9 +52,6 @@ const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
 compilerOptions['module'] = 'es2020';
-if (projectConfig.compileMode === ESMODULE) {
-  compilerOptions['importsNotUsedAsValues'] = 'remove';
-}
 
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
@@ -105,6 +102,10 @@ export function etsTransform() {
 function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
+  }
+
+  if (projectConfig.compileMode === ESMODULE) {
+    compilerOptions['importsNotUsedAsValues'] = 'remove';
   }
 
   const logger = this.share.getLogger('etsTransform');
