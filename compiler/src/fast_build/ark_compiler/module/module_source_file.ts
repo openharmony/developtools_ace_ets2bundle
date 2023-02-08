@@ -119,9 +119,12 @@ export class ModuleSourceFile {
   private processTransformedTsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    (<ts.SourceFile>this.source)!.forEachChild((childNode: ts.Node) => {
+    const statements: ts.Statement[] = [];
+    (<ts.SourceFile>this.source)!.forEachChild((childNode: ts.Statement) => {
       if (ts.isImportDeclaration(childNode) || (ts.isExportDeclaration(childNode) && childNode.moduleSpecifier)) {
-        const moduleRequest: string = childNode.moduleSpecifier.getText();
+        // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
+        // so we need to remove the quotation marks from moduleRequest.
+        const moduleRequest: string = childNode.moduleSpecifier.getText().replace(/'|"/g, '');
         const ohmUrl: string | undefined = this.getOhmUrl(moduleRequest, importMap[moduleRequest]);
         if (ohmUrl !== undefined) {
           if (ts.isImportDeclaration(childNode)) {
@@ -133,7 +136,9 @@ export class ModuleSourceFile {
           }
         }
       }
+      statements.push(childNode);
     });
+    this.source = ts.factory.updateSourceFile(<ts.SourceFile>this.source, statements);
   }
 
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
