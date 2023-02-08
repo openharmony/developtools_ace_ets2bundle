@@ -189,7 +189,7 @@ export class BundleMode extends CommonMode {
   private executeEs2AbcCmd() {
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
-      const child = this.asyncHandler(() => {
+      const child = this.triggerAsync(() => {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('exit', (code: any) => {
@@ -197,7 +197,7 @@ export class BundleMode extends CommonMode {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
         this.afterCompilationProcess();
-        this.signalHandler();
+        this.triggerEndSignal();
       });
 
       child.on('error', (err: any) => {
@@ -262,12 +262,12 @@ export class BundleMode extends CommonMode {
           cmd: this.cmdArgs.join(' '),
           mode: JSBUNDLE
         };
-        this.asyncHandler(() => {
-          let worker = cluster.fork(workerData);
-          worker.on("message", (errorMsg) => {
+        this.triggerAsync(() => {
+          const worker: any = cluster.fork(workerData);
+          worker.on('message', (errorMsg) => {
             this.logger.error(errorMsg.data.toString());
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc, received error message.');
-          })
+          });
         });
       }
 
@@ -280,7 +280,7 @@ export class BundleMode extends CommonMode {
         if (workerCount === workerNumber) {
           this.afterCompilationProcess();
         }
-        this.signalHandler();
+        this.triggerEndSignal();
       });
     }
   }

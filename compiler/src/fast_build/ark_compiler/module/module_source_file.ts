@@ -60,7 +60,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.sourceFiles = [];
   }
 
-  writeSourceFile() {
+  private writeSourceFile() {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       writeFileSyncByNode(<ts.SourceFile>this.source, true, ModuleSourceFile.projectConfig);
     } else {

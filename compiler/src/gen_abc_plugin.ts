@@ -29,7 +29,7 @@ import {
   mkdirsSync,
   genSourceMapFileName,
   isPackageModulesFile,
-  compareNodeVersion,
+  nodeLargeOrEqualTargetVersion,
   removeDir,
   validateFilePathLength,
   unlinkSync
@@ -1285,7 +1285,7 @@ function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, worke
 }
 
 function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerNumber: number) {
-  const useNewApi: boolean = compareNodeVersion()
+  const useNewApi: boolean = nodeLargeOrEqualTargetVersion(16);
 
   if (useNewApi && cluster.isPrimary || !useNewApi && cluster.isMaster) {
     let genAbcScript: string = GEN_ABC_SCRIPT;

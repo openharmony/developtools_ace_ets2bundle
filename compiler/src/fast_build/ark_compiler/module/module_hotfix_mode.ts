@@ -43,7 +43,7 @@ export class ModuleHotfixMode extends ModuleMode {
   }
 
   private generateEs2AbcCmdForHotfix() {
-    const fileThreads = getEs2abcFileThreadNumber();;
+    const fileThreads = getEs2abcFileThreadNumber();
     this.cmdArgs.push(`"@${this.filesInfoPath}"`);
     this.cmdArgs.push('--npm-module-entry-list');
     this.cmdArgs.push(`"${this.npmEntriesInfoPath}"`);
