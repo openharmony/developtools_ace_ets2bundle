@@ -30,7 +30,7 @@ import {
   TEMPORARY
 } from './common/ark_define';
 import {
-  compareNodeVersion,
+  nodeLargeOrEqualTargetVersion,
   genTemporaryPath,
   mkdirsSync,
   validateFilePathLength
@@ -50,11 +50,12 @@ export function isDebug(projectConfig: any): boolean {
 }
 
 export function isMasterOrPrimary() {
-  return ((compareNodeVersion() && cluster.isPrimary) || (!compareNodeVersion() && cluster.isMaster));
+  return ((nodeLargeOrEqualTargetVersion(16) && cluster.isPrimary) ||
+    (!nodeLargeOrEqualTargetVersion(16) && cluster.isMaster));
 }
 
 export function changeFileExtension(file: string, targetExt: string, originExt = ''): string {
-  let currentExt = originExt.length == 0 ? path.extname(file) : originExt;
+  let currentExt = originExt.length === 0 ? path.extname(file) : originExt;
   let fileWithoutExt = file.substring(0, file.lastIndexOf(currentExt));
   return fileWithoutExt + targetExt;
 }
