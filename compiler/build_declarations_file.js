@@ -215,9 +215,10 @@ generateComponentConfig(process.argv[4]);
 function generateComponentConfig(dir) {
   const configFile = path.resolve(dir, 'component_map.js');
   if (fs.existsSync(configFile)) {
-    const { COMPONENT_MAP } = require(configFile);
+    const { COMPONENT_MAP, FORM_MAP } = require(configFile);
     try {
       fs.writeFileSync(path.resolve(dir, '../component_config.json'), JSON.stringify(COMPONENT_MAP));
+      fs.writeFileSync(path.resolve(dir, '../form_config.json'), JSON.stringify(FORM_MAP));
     } catch (error) {
       console.error(error);
     }

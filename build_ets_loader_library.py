@@ -50,6 +50,8 @@ def parse_args():
         help='path declarations file to output')
     parser.add_argument('--output-component-config-file',
         help='path component config file to output')
+    parser.add_argument('--output-form-config-file',
+        help='path form config file to output')
 
     options = parser.parse_args()
     return options
@@ -89,7 +91,8 @@ def main():
         output_paths=([
             options.output_dir,
             options.output_declarations_dir,
-            options.output_component_config_file]))
+            options.output_component_config_file,
+            options.output_form_config_file]))
 
 if __name__ == '__main__':
     sys.exit(main())
