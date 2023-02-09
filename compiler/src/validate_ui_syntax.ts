@@ -328,14 +328,11 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
     const message: string = `@Concurrent can not be used on method. please use it on function declaration.`;
     addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
   }
-  let hasAsync: boolean = false;
-  node.modifiers && node.modifiers.forEach(m => {
-    if (m.kind === ts.SyntaxKind.AsyncKeyword) {
-      hasAsync = true;
-    }
-  });
-  if (node.asteriskToken || hasAsync) {
-    const funcKind: string = node.asteriskToken ? hasAsync ? 'Async generator' : 'Generator' : 'Async';
+  if (node.asteriskToken) {
+    let hasAsync: boolean = false;
+    const checkAsyncModifier = (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword;
+    node.modifiers && (hasAsync = node.modifiers.some(checkAsyncModifier));
+    const funcKind: string = hasAsync ? 'Async generator' : 'Generator';
     const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
     addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
   }
