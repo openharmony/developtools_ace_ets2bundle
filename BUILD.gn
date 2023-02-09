@@ -28,12 +28,16 @@ ets_loader_declarations_dir = get_label_info(":build_ets_loader_library",
 ets_loader_component_config_file =
     get_label_info(":build_ets_loader_library", "target_out_dir") +
     "/component_config.json"
+ets_loader_form_config_file =
+    get_label_info(":build_ets_loader_library", "target_out_dir") +
+    "/form_config.json"
 ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
                   "/sysResource.js"
 
 action("build_ets_loader_library") {
   deps = [
     ":components",
+    ":form_components",
     ":server",
   ]
   script = "build_ets_loader_library.py"
@@ -42,6 +46,7 @@ action("build_ets_loader_library") {
     ets_loader_lib_dir,
     ets_loader_declarations_dir,
     ets_loader_component_config_file,
+    ets_loader_form_config_file,
   ]
 
   _ets_loader_dir = "compiler"
@@ -110,6 +115,8 @@ action("build_ets_loader_library") {
     rebase_path(ets_loader_declarations_dir, root_build_dir),
     "--output-component-config-file",
     rebase_path(ets_loader_component_config_file, root_build_dir),
+    "--output-form-config-file",
+    rebase_path(ets_loader_form_config_file, root_build_dir),
   ]
 }
 
@@ -176,6 +183,15 @@ ohos_copy("ets_loader_component_config") {
   module_install_name = ""
 }
 
+ohos_copy("ets_loader_form_config") {
+  deps = [ ":build_ets_loader_library" ]
+  sources = [ ets_loader_form_config_file ]
+
+  outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
 ohos_copy("ets_loader_library") {
   deps = [ ":build_ets_loader_library" ]
   sources = [ ets_loader_lib_dir ]
@@ -186,6 +202,13 @@ ohos_copy("ets_loader_library") {
 
 ohos_copy("components") {
   sources = [ "compiler/components" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_copy("form_components") {
+  sources = [ "compiler/form_components" ]
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
@@ -248,6 +271,15 @@ ohos_copy("ets_loader_ark_components") {
   outputs = [ target_out_dir + "/ets_loader_ark/components" ]
 }
 
+ohos_copy("ets_loader_ark_form_components") {
+  deps = [
+    ":build_ets_loader_library",
+    ":ets_loader_ark",
+  ]
+  sources = [ "compiler/form_components" ]
+  outputs = [ target_out_dir + "/ets_loader_ark/form_components" ]
+}
+
 ohos_copy("ets_loader_ark_server") {
   deps = [
     ":build_ets_loader_library",
@@ -293,6 +325,7 @@ ohos_copy("ets_loader_node_modules") {
     ":ets_loader_ark_codegen",
     ":ets_loader_ark_components",
     ":ets_loader_ark_declaration",
+    ":ets_loader_ark_form_components",
     ":ets_loader_ark_lib",
     ":ets_loader_ark_server",
   ]
