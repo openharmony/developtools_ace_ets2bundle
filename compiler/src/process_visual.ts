@@ -275,33 +275,38 @@ function findVisualFile(filePath: string): string {
   if (fs.existsSync(resolvePath)) {
     return resolvePath;
   }
-  let projectRootPath = projectConfig.projectRootPath;
-  if (projectConfig.isPreview && !projectRootPath) {
-    if (!projectConfig.aceModuleJsonPath) {
-      projectRootPath = path.resolve(projectConfig.projectPath, '../../../../../');
-    } else {
-      projectRootPath = path.resolve(projectConfig.projectPath, '../../../../');
-    }
-  }
-  let moduleName = '';
-  const relativePath = filePath.replace(projectRootPath, '');
-  const moduleNames = relativePath.split(path.sep);
-  for (let i = 0; i < moduleNames.length; ++i) {
-    if (moduleNames[i] === 'src') {
-      if (i >= moduleNames.length - 2) {
-        break;
-      }
-      const modulePath = path.join(moduleNames[i], moduleNames[i + 1], moduleNames[i + 2]);
-      if (modulePath === MODULE_ETS_PATH) {
-        break;
+  try {
+    let projectRootPath = projectConfig.projectRootPath;
+    if (!projectRootPath) {
+      if (!projectConfig.aceModuleJsonPath) {
+        projectRootPath = path.resolve(projectConfig.projectPath, '../../../../../');
+      } else {
+        projectRootPath = path.resolve(projectConfig.projectPath, '../../../../');
       }
     }
-    moduleName = path.join(moduleName, moduleNames[i]);
+    let moduleName = '';
+    const relativePath = filePath.replace(projectRootPath, '');
+    const moduleNames = relativePath.split(path.sep);
+    for (let i = 0; i < moduleNames.length; ++i) {
+      if (moduleNames[i] === 'src') {
+        if (i >= moduleNames.length - 2) {
+          break;
+        }
+        const modulePath = path.join(moduleNames[i], moduleNames[i + 1], moduleNames[i + 2]);
+        if (modulePath === MODULE_ETS_PATH) {
+          break;
+        }
+      }
+      moduleName = path.join(moduleName, moduleNames[i]);
+    }
+    etsDirPath = path.join(projectRootPath, moduleName, MODULE_ETS_PATH);
+    visualDirPath = path.join(projectRootPath, moduleName, MODULE_VISUAL_PATH);
+    resolvePath = filePath.replace(etsDirPath, visualDirPath).replace(/\.ets$/, '.visual');
+    return resolvePath;
+  } catch (e) {
+    // avoid projectConfig attributes has undefined value
+    return '';
   }
-  etsDirPath = path.join(projectRootPath, moduleName, MODULE_ETS_PATH);
-  visualDirPath = path.join(projectRootPath, moduleName, MODULE_VISUAL_PATH);
-  resolvePath = filePath.replace(etsDirPath, visualDirPath).replace(/\.ets$/, '.visual');
-  return resolvePath;
 }
 
 function getVisualContent(visualPath: string, log: LogInfo[]): any {
