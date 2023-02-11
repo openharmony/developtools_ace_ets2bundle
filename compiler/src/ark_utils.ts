@@ -148,17 +148,17 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
 
 export function getOhmUrlByHarName(moduleRequest: string, projectConfig: any): string | undefined {
   if (projectConfig.harNameOhmMap) {
-    // case1: "@ohos/lib" ---> "@module:lib/ets/index"
+    // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
       return projectConfig.harNameOhmMap[moduleRequest];
     }
-    // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@module:lib/ets/pages/page1"
+    // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
     for (const harName in projectConfig.harNameOhmMap) {
       if (moduleRequest.startsWith(harName + '/')) {
-        const harOhmName: string =
-          projectConfig.harNameOhmMap[harName].substring(0, projectConfig.harNameOhmMap[harName].indexOf('/'));
-        if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) == 0) {
-          return moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
+        const idx: number = projectConfig.harNameOhmMap[harName].split('/', 2).join('/').length;
+        const harOhmName: string = projectConfig.harNameOhmMap[harName].substring(0, idx);
+        if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) === 0) {
+          return moduleRequest.replace(harName + '/' + SRC_MAIN, harOhmName);
         } else {
           return moduleRequest.replace(harName, harOhmName);
         }
