@@ -21,7 +21,8 @@ import {
   blue,
   reset,
   MODULES_ABC,
-  SOURCEMAPS
+  SOURCEMAPS,
+  SYMBOLMAP
 } from '../common/ark_define';
 import { newSourceMaps } from '../transform';
 import {
@@ -34,8 +35,14 @@ let isFirstBuild: boolean = true;
 let hotReloadSourceMap: Object = {};
 
 export class ModuleHotreloadMode extends ModuleMode {
+  symbolMapFilePath: string;
   constructor(rollupObject: any) {
     super(rollupObject);
+    if (this.projectConfig.oldMapFilePath) {
+      this.symbolMapFilePath = path.join(this.projectConfig.oldMapFilePath, SYMBOLMAP);
+    } else {
+      this.throwArkTsCompilerError('ArkTS:ERROR oldMapFilePath is not specified, hotReload Fail');
+    }
   }
 
   generateAbc(rollupObject: any) {
@@ -45,6 +52,17 @@ export class ModuleHotreloadMode extends ModuleMode {
     } else {
       this.compileChangeListFiles(rollupObject);
     }
+  }
+
+  addHotReloadArgs() {
+    if (isFirstBuild) {
+      this.cmdArgs.push('--dump-symbol-table');
+      this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
+      return;
+    }
+    this.cmdArgs.push('--input-symbol-table');
+    this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
+    this.cmdArgs.push('--hot-reload');
   }
 
   private compileAllFiles(rollupObject: any) {
@@ -101,6 +119,7 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private generateAbcByEs2abc() {
     this.generateEs2AbcCmd();
+    this.addHotReloadArgs();
     this.generateMergedAbcOfEs2Abc();
   }
 }
