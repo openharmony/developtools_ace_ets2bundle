@@ -84,7 +84,8 @@ function initConfig(config) {
                 reportFiles: ['*.js'],
                 onlyCompileBundledFiles: true,
                 transpileOnly: true,
-                configFile: path.resolve(__dirname, 'tsconfig.json'),
+                configFile: path.resolve(__dirname,
+                  projectConfig.compileMode === 'esmodule' ? 'tsconfig.esm.json' : 'tsconfig.json'),
                 getCustomTransformers(program) {
                   let transformerOperation = {
                     before: [processUISyntax(program)],
@@ -364,21 +365,6 @@ function setOptimizationConfig(config, workerFile) {
   }
 }
 
-function setTsConfigFile() {
-  let tsconfigTemplate =
-    path.resolve(__dirname, projectConfig.compileMode === 'esmodule' ? 'tsconfig.esm.json' : 'tsconfig.cjs.json');
-  if (fs.existsSync(tsconfigTemplate) && fs.statSync(tsconfigTemplate).isFile()) {
-    let currentTsconfigFile = path.resolve(__dirname, 'tsconfig.json');
-    let tsconfigTemplateNew =
-      currentTsconfigFile.replace(/.json$/, projectConfig.compileMode === 'esmodule' ? '.cjs.json' : '.esm.json');
-    fs.renameSync(currentTsconfigFile, tsconfigTemplateNew);
-
-    let tsconfigFileNew =
-      tsconfigTemplate.replace(projectConfig.compileMode === 'esmodule' ? /.esm.json$/ : /.cjs.json$/, '.json');
-    fs.renameSync(tsconfigTemplate, tsconfigFileNew);
-  }
-}
-
 function setGenAbcPlugin(env, config) {
   process.env.compilerType = 'ark';
   process.env.panda = projectConfig.pandaMode;
@@ -433,7 +419,6 @@ module.exports = (env, argv) => {
   setProjectConfig(env);
   loadEntryObj(projectConfig);
   loadModuleInfo(projectConfig, env);
-  setTsConfigFile();
   clearWebpackCacheByBuildMode();
   initConfig(config);
   readPatchConfig();
