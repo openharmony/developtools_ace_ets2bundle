@@ -193,9 +193,9 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
+  const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
-    let rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    const rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
     if (rootPackageJsonContent) {
       if (rootPackageJsonContent.module) {
         getEntryPath(rootPackageJsonContent.module, rootPackageJsonPath);
@@ -204,7 +204,7 @@ function getPackageJsonEntryPath() {
       } else {
         getEntryPath('', rootPackageJsonPath);
       }
-    } else {
+    } else if (projectConfig.compileHar) {
       throw Error('\u001b[31m' + 'lack message in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
     }
   }
@@ -217,7 +217,7 @@ function supportSuffix(mainEntryPath) {
     mainEntryPath = path.join(mainEntryPath, 'index.ts');
   } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
     mainEntryPath = path.join(mainEntryPath, 'index.js');
-  } else {
+  } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + 'not find entry file in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
   }
   return mainEntryPath;
@@ -238,16 +238,16 @@ function supportExtName(mainEntryPath) {
 
 function getEntryPath(entryPath, rootPackageJsonPath) {
   let mainEntryPath = path.resolve(rootPackageJsonPath, '../', entryPath);
-  if (fs.statSync(mainEntryPath).isDirectory()) {
+  if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isDirectory()) {
     mainEntryPath = supportSuffix(mainEntryPath);
   } else {
     mainEntryPath = supportExtName(mainEntryPath);
   }
-  if (fs.existsSync(mainEntryPath)) {
-    let entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
+  if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isFile()) {
+    const entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
     abilityPagesFullPath.push(mainEntryPath);
-  } else {
+  } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
   }
 }
