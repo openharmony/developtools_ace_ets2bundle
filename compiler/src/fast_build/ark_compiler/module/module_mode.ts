@@ -53,7 +53,7 @@ import {
   reset
 } from '../common/ark_define';
 import {
-  isAotMode,
+  needAotCompiler,
   isMasterOrPrimary
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
@@ -75,7 +75,11 @@ import {
   getPackageInfo,
   getOhmUrlByFilepath
 } from '../../../ark_utils';
-import { generateAot, generateBuiltinAbc } from '../../../gen_aot';
+import {
+  generateAot,
+  generateBuiltinAbc,
+  FaultHandler
+} from '../../../gen_aot'
 
 export class ModuleInfo {
   filePath: string;
@@ -411,10 +415,11 @@ export class ModuleMode extends CommonMode {
           this.generateNpmEntryToGenProto();
           this.generateProtoFilesInfo();
           this.mergeProtoToAbc();
-          if (isAotMode(this.projectConfig)) {
-            const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.arkConfig.nodePath,
-              this.cmdArgs, this.logger, true);
-            generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.logger, true);
+          if (needAotCompiler(this.projectConfig)) {
+            let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
+            const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.cmdArgs,
+              this.projectConfig.cachePath, this.logger, faultHandler);
+            generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.projectConfig, this.logger, faultHandler);
           }
           this.afterCompilationProcess();
         }
