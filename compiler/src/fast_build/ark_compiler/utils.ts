@@ -92,6 +92,7 @@ export function writeFileContentToTempDir(id: string, content: string, projectCo
       writeFileContent(id, filePath, content, projectConfig, logger);
       break;
     case EXTNAME_JSON:
+      mkdirsSync(path.dirname(filePath));
       fs.writeFileSync(filePath, content, 'utf-8');
       break;
     default:
