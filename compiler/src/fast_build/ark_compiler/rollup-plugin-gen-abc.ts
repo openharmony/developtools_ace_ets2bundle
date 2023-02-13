@@ -22,7 +22,7 @@ export function genAbc() {
   return {
     name: 'genAbc',
     buildStart() {
-      this.share.arkProjectConfig = initArkProjectConfig(this.share.projectConfig);
+      this.share.arkProjectConfig = initArkProjectConfig(this.share);
     },
     transform: transformForModule,
     buildEnd: generateModuleAbc,
