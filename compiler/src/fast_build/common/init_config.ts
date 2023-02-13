@@ -29,6 +29,7 @@ export function initConfig() {
   }
   return {
     entryObj: projectConfig.entryObj,
+    cardEntryObj: projectConfig.cardEntryObj,
     workerFile: workerFile
   };
 }
