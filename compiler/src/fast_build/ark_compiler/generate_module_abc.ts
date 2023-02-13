@@ -26,12 +26,12 @@ export async function generateModuleAbc(error) {
     // Stop generate abc if error exists
     return;
   }
-  if (this.share.projectConfig.compileHar) {
-    // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, dosen't emit abc.
-    return;
-  }
   if (this.share.projectConfig.compileMode === ESMODULE) {
     await ModuleSourceFile.processModuleSourceFiles(this);
+    if (this.share.projectConfig.compileHar) {
+      // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
+      return;
+    }
     generateAbc(this);
   }
 }

@@ -54,7 +54,10 @@ export class ModuleSourceFile {
   static async processModuleSourceFiles(rollupObject: any) {
     this.initPluginEnv(rollupObject);
     await ModuleSourceFile.sourceFiles.forEach((source: ModuleSourceFile) => {
-      source.processModuleRequest(rollupObject);
+      if (!rollupObject.share.projectConfig.compileHar) {
+        // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
+        source.processModuleRequest(rollupObject);
+      }
       source.writeSourceFile();
     });
     ModuleSourceFile.sourceFiles = [];
