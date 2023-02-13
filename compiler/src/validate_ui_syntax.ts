@@ -66,7 +66,9 @@ import {
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
   STYLES_ATTRIBUTE,
-  CUSTOM_BUILDER_METHOD
+  CUSTOM_BUILDER_METHOD,
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   LogType,
@@ -369,6 +371,11 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      if (ts.isFunctionDeclaration(node)) {
+        GLOBAL_CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      } else {
+        INNER_CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      }
     }
     if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
       // ark compiler's feature

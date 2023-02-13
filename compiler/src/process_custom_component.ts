@@ -211,9 +211,9 @@ function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAs
   if (node.arguments[0].properties) {
     node.arguments[0].properties.forEach(item => {
       if (ts.isIdentifier(item.name) && propsAndObjectLinks.includes(item.name.escapedText.toString())) {
-        childParam.push(item);       
+        childParam.push(item);
       }
-    })
+    });
   }
   return childParam;
 }
@@ -231,7 +231,7 @@ function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpr
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
         ), undefined,
         [ts.factory.createArrowFunction(undefined, undefined,
           [
@@ -283,7 +283,7 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentParameter: 
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-          ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
+        ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
         ), undefined,
         [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
   );
@@ -312,7 +312,6 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
-  validateMandatoryToAssignmentViaParam(node, name, curChildProps, log);
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
@@ -448,12 +447,12 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
   }
   let parentPropertyName: string = initExpression.getText();
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
+    // @ts-ignore
+    const initName: ts.Identifier = initExpression.name || initExpression;
     if (hasDollar(initExpression)) {
-      // @ts-ignore
-      const initName: ts.Identifier = initExpression.name || initExpression;
       parentPropertyName = initName.getText().replace(/^\$/, '');
     } else {
-      validateLinkWithoutDollar(node, log);
+      parentPropertyName = initName.getText();
     }
   } else {
     if (hasDollar(initExpression)) {
@@ -511,7 +510,7 @@ function createFindChildById(id: string, name: string, isBuilder: boolean = fals
           ))), ts.factory.createToken(ts.SyntaxKind.QuestionToken),
       ts.factory.createAsExpression(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(createConditionParent(isBuilder),
-        ts.factory.createIdentifier(`${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined,
+          ts.factory.createIdentifier(`${CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID}`)), undefined,
         [isBuilder ? ts.factory.createCallExpression(ts.factory.createIdentifier(GENERATE_ID),
           undefined, []) : ts.factory.createStringLiteral(id)]),
       ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))),
