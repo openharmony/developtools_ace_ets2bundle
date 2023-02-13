@@ -22,7 +22,8 @@ const {
   initBuildInfo,
   readWorkerFile,
   loadWorker,
-  readPatchConfig
+  readPatchConfig,
+  loadModuleInfo
 } = require('../../../main.js');
 
 export let workerFile = null;
@@ -30,6 +31,7 @@ export function getEntryObj() {
   loadEntryObj(projectConfig);
   initBuildInfo();
   readPatchConfig();
+  loadModuleInfo(projectConfig);
   workerFile = readWorkerFile();
   if (!projectConfig.isPreview) {
     loadWorker(projectConfig, workerFile);

@@ -45,7 +45,10 @@ import {
   projectConfig,
   abilityPagesFullPath
 } from '../../../main';
-import { JSBUNDLE } from '../../pre_define';
+import {
+  JSBUNDLE,
+  ESMODULE
+} from '../../pre_define';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const compilerOptions = ts.readConfigFile(
@@ -105,6 +108,10 @@ export function etsTransform() {
 function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
+  }
+
+  if (projectConfig.compileMode === ESMODULE) {
+    compilerOptions['importsNotUsedAsValues'] = 'remove';
   }
 
   const logger = this.share.getLogger('etsTransform');
