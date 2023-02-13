@@ -129,6 +129,8 @@
         "LoadingProgress",
         "Marquee",
         "Menu",
+        "MenuItem",
+        "MenuItemGroup",
         "NavDestination",
         "NavRouter",
         "Navigation",
@@ -378,6 +380,16 @@
             "name": "Menu",
             "type": "MenuAttribute",
             "instance": "MenuInstance"
+          },
+          {
+            "name": "MenuItem",
+            "type": "MenuItemAttribute",
+            "instance": "MenuItemInstance"
+          },
+          {
+            "name": "MenuItemGroup",
+            "type": "MenuItemGroupAttribute",
+            "instance": "MenuItemGroupInstance"
           },
           {
             "name": "NavDestination",
