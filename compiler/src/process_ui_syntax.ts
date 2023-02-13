@@ -778,11 +778,16 @@ function createStopGetAccessRecording(context: ts.TransformationContext): ts.Exp
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
   cardRelativePath: string, id: number): ts.Statement {
-  const newArray: ts.Expression[] = [
-    context.factory.createStringLiteral(id.toString()),
-    context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
-    context.factory.createObjectLiteralExpression([], false)
-  ];
+  const newArray: ts.Expression[] = partialUpdateConfig.partialUpdateMode ?
+    [
+      context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+      context.factory.createObjectLiteralExpression([], false)
+    ] :
+    [
+      context.factory.createStringLiteral(id.toString()),
+      context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+      context.factory.createObjectLiteralExpression([], false)
+    ];
   const argsArr: ts.Expression[] = [];
   componentCollection.previewComponent.forEach(componentName => {
     const newExpression: ts.Expression = context.factory.createNewExpression(
@@ -820,10 +825,12 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
             ...argsArr
           ]
         )),
+        name && partialUpdateConfig.partialUpdateMode ? createStartGetAccessRecording(context) : undefined,
         name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
           context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-            PAGE_ENTRY_FUNCTION_NAME),undefined,newExpressionParams
-        )) : undefined
+            PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams
+        )) : undefined,
+        name && partialUpdateConfig.partialUpdateMode ? createStopGetAccessRecording(context) : undefined
       ],
       true
     )
