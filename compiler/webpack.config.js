@@ -406,8 +406,14 @@ function clearWebpackCacheByBuildMode() {
   // clear&update cache dir when buildMode is different from last time
   const CACHED_BUILDMODE = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
   if (fs.existsSync(CACHED_BUILDMODE)) {
-    let cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
-    if (cachedBuildMode !== projectConfig.buildArkMode) {
+    let cachedBuildMode = undefined;
+    try {
+      cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
+    } catch {
+      removeDir(projectConfig.cachePath);
+      mkdirsSync(projectConfig.cachePath);
+    }
+    if (cachedBuildMode && cachedBuildMode !== projectConfig.buildArkMode) {
       removeDir(projectConfig.cachePath);
       mkdirsSync(projectConfig.cachePath);
     }
