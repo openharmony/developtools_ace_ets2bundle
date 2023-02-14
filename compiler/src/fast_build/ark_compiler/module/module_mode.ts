@@ -482,7 +482,8 @@ export class ModuleMode extends CommonMode {
     validateFilePathLength(this.protoFilePath, this.logger);
     mkdirsSync(path.dirname(this.protoFilePath));
     let protoFilesInfo: string = '';
-    for (const value of this.moduleInfos.values()) {
+    const sortModuleInfos: any = new Map([...this.moduleInfos].sort());
+    for (const value of sortModuleInfos.values()) {
       const cacheProtoPath: string = changeFileExtension(value.cacheFilePath, EXTNAME_PROTO_BIN);
       protoFilesInfo += `${toUnixPath(cacheProtoPath)}\n`;
     }
