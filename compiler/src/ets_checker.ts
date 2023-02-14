@@ -235,13 +235,13 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
+    // FIXME: will be instead of ts.Diagnostics config
+    if (diagnostic.file && !projectConfig.cardObj[diagnostic.file.fileName.replace(/\//g, '\\')] &&
+      /can't support form application./.test(message)) {
+      return;
+    }
     checkerResult.count += 1;
     if (diagnostic.file) {
-      // FIXME: will be instead of ts.Diagnostics config
-      if (!projectConfig.cardObj[diagnostic.file.fileName.replace(/\//g, '\\')] &&
-        /can't support form application./.test(message)) {
-        return;
-      }
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
       fastBuildLogger ?
