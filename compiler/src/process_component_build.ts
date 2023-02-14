@@ -1799,16 +1799,17 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   const propName: string = node.getText();
   verifyComponentId(temp, node, propName, log);
   if (propName === ATTRIBUTE_ANIMATION) {
+    const animationNullNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
+      createFunction(ts.factory.createIdentifier(GLOBAL_CONTEXT), node,
+      // @ts-ignore
+      [ts.factory.createNull()]));
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&
         temp.arguments[0].kind === ts.SyntaxKind.NullKeyword)) {
-        statements.push(ts.factory.createExpressionStatement(createFunction(
-          ts.factory.createIdentifier(GLOBAL_CONTEXT), node,
-          // @ts-ignore
-          [ts.factory.createNull()])));
+        statements.push(animationNullNode);
       }
     } else {
-      statements.push(lastStatement.statement);
+      statements.push(lastStatement.statement, animationNullNode);
     }
     lastStatement.statement = ts.factory.createExpressionStatement(createFunction(
       ts.factory.createIdentifier(GLOBAL_CONTEXT), node, temp.arguments));
