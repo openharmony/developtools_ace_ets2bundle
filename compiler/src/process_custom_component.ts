@@ -81,16 +81,17 @@ import {
 } from './process_component_build';
 import { partialUpdateConfig } from '../main';
 
-const decoractorMap: Map<string, Map<string, Set<string>>> = new Map(
-  [[COMPONENT_STATE_DECORATOR, stateCollection],
-    [COMPONENT_LINK_DECORATOR, linkCollection],
-    [COMPONENT_PROP_DECORATOR, propCollection],
-    [COMPONENT_NON_DECORATOR, regularCollection],
-    [COMPONENT_PROVIDE_DECORATOR, provideCollection],
-    [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
+let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  decoractorMap = new Map(
+    [[COMPONENT_STATE_DECORATOR, stateCollection],
+      [COMPONENT_LINK_DECORATOR, linkCollection],
+      [COMPONENT_PROP_DECORATOR, propCollection],
+      [COMPONENT_NON_DECORATOR, regularCollection],
+      [COMPONENT_PROVIDE_DECORATOR, provideCollection],
+      [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
     const hasChainCall: boolean = componentNode.parent &&
