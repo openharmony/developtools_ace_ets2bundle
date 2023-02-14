@@ -19,6 +19,7 @@ export const FILESINFO: string = 'filesInfo';
 export const NPMENTRIES_TXT: string = 'npmEntries.txt';
 export const MODULES_CACHE: string = 'modules.cache';
 export const MODULES_ABC: string = 'modules.abc';
+export const WIDGETS_ABC: string = 'widgets.abc';
 export const MODULELIST_JSON: string = 'moduleList.json';
 export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
