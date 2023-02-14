@@ -35,6 +35,7 @@ import {
   NPMENTRIES_TXT,
   SOURCEMAPS,
   TEMPORARY,
+  WIDGETS_ABC,
   HAP_PACKAGE,
   PACKAGES,
   PROJECT_PACKAGE
@@ -137,7 +138,8 @@ export class ModuleMode extends CommonMode {
     this.hashJsonObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
-    this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, MODULES_ABC);
+    const outPutABC: string = this.projectConfig.widgetCompile ? WIDGETS_ABC : MODULES_ABC;
+    this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, outPutABC);
     this.sourceMapPath = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
     this.cacheFilePath = path.join(this.projectConfig.cachePath, MODULES_CACHE);
     this.workerNumber = MAX_WORKER_NUMBER;
@@ -237,7 +239,7 @@ export class ModuleMode extends CommonMode {
   }
 
   buildModuleSourceMapInfo() {
-    if (!this.arkConfig.isDebug) {
+    if (!this.arkConfig.isDebug || this.projectConfig.widgetCompile) {
       return;
     }
     mkdirsSync(this.projectConfig.aceModuleBuild);
