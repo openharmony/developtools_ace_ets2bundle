@@ -856,13 +856,8 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   } else if (program) {
     checker = program.getTypeChecker();
   }
-  if (typeNode.parent && typeNode.parent.name &&
-    typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
-    log.push({
-      type: LogType.WARN,
-      message: `Please define an explicit type, not any.`,
-      pos: typeNode.getStart()
-    });
+  if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    checkTypeAny(typeNode, log);   
   }
   return getDeclarationType(typeNode, checker, log);
 }
@@ -876,6 +871,10 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
     /* Enum */
     if (type.flags & (32 | 1024)) {
       return true;
+    }
+    /* Any */
+    if ((type.flags & 1) && typeNode.kind !== ts.SyntaxKind.AnyKeyword && log) {
+      checkTypeAny(typeNode, log);
     }
     // @ts-ignore
     if (type.types && type.types.length) {
@@ -1152,4 +1151,12 @@ function validatePropDecorator(decorators: ts.NodeArray<ts.Decorator>): boolean 
     }
   }
   return false;
+}
+
+function checkTypeAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
+  log.push({
+    type: LogType.WARN,
+    message: `Please define an explicit type, not any.`,
+    pos: typeNode.getStart()
+  });
 }
