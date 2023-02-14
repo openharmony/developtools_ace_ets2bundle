@@ -36,6 +36,7 @@ import {
   MAX_WORKER_NUMBER,
   TEMP_JS,
   TS2ABC,
+  red,
   blue,
   FAIL,
   reset
@@ -187,6 +188,8 @@ export class BundleMode extends CommonMode {
   }
 
   private executeEs2AbcCmd() {
+    // collect data error from subprocess
+    let errMsg: string = '';
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
       const child = this.triggerAsync(() => {
@@ -205,7 +208,13 @@ export class BundleMode extends CommonMode {
       });
 
       child.stderr.on('data', (data: any) => {
-        this.logger.error(blue, data.toString(), reset);
+        errMsg += data.toString();
+      });
+
+      child.stderr.on('end', () => {
+        if (errMsg !== undefined && errMsg.length > 0) {
+          this.logger.error(red, errMsg, reset);
+        }
       });
     } catch (e) {
       this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc with async handler: ' + e.toString());
@@ -265,7 +274,7 @@ export class BundleMode extends CommonMode {
         this.triggerAsync(() => {
           const worker: any = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
-            this.logger.error(errorMsg.data.toString());
+            this.logger.error(red, errorMsg.data.toString(), reset);
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc, received error message.');
           });
         });
