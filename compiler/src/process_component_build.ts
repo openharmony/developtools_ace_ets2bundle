@@ -132,11 +132,13 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo,
-  validatorCard
+  componentInfo
 } from './utils';
-import { partialUpdateConfig, projectConfig } from '../main';
-import { transformLog, contextGlobal } from './process_ui_syntax';
+import {
+  partialUpdateConfig,
+  projectConfig
+} from '../main';
+import { transformLog, contextGlobal, validatorCard } from './process_ui_syntax';
 import { props } from './compile_info';
 
 export function processComponentBuild(node: ts.MethodDeclaration,

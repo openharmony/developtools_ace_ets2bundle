@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-import ts from 'typescript';
-
 import { BUILD_OFF, ESMODULE, JSBUNDLE } from './pre_define';
 import {
   resetLog,
@@ -26,10 +24,10 @@ import {
   processSystemApi
 } from './validate_ui_syntax';
 import {
-  LogInfo,
   emitLogInfo,
   componentInfo,
-  generateSourceFilesInHar
+  generateSourceFilesInHar,
+  getTransformLog
 } from './utils';
 import { generateSourceFilesToTemporary } from './ark_utils';
 import { resetComponentCollection } from './validate_ui_syntax';
@@ -45,24 +43,7 @@ module.exports = function resultProcess(source: string, map: any): void {
     linkCollection.clear();
     resetComponentCollection();
     if (transformLog && transformLog.errors.length) {
-      const sourceFile: ts.SourceFile = transformLog.sourceFile;
-      const logInfos: LogInfo[] = transformLog.errors.map((item) => {
-        if (item.pos) {
-          if (!item.column || !item.line) {
-            const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
-            item.line = posOfNode.line + 1;
-            item.column = posOfNode.character + 1;
-          }
-        } else {
-          item.line = item.line || undefined;
-          item.column = item.column || undefined;
-        }
-        if (!item.fileName) {
-          item.fileName = sourceFile.fileName;
-        }
-        return item;
-      });
-      emitLogInfo(this, logInfos);
+      emitLogInfo(this, getTransformLog(transformLog));
       resetLog();
     }
   }
