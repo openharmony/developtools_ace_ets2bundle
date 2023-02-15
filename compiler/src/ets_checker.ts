@@ -235,11 +235,18 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
+    
     // FIXME: will be instead of ts.Diagnostics config
-    if (diagnostic.file && !projectConfig.cardObj[diagnostic.file.fileName.replace(/\//g, '\\')] &&
-      /can't support form application./.test(message)) {
-      return;
+    if (diagnostic.file) {
+      const absPath = diagnostic.file.fileName;
+      const relativePath = path.relative(projectConfig.projectPath, absPath);
+      const cardEntryObjKey = `.././${relativePath}`.replace(/\.ets$/, '');
+      if (!projectConfig.cardEntryObj[cardEntryObjKey] &&
+        /can't support form application./.test(message)) {
+        return;
+      }
     }
+
     checkerResult.count += 1;
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
