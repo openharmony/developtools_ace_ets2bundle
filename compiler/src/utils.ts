@@ -368,7 +368,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
     projectConfig, projectConfig.compileShared);
-  if (!jsFilePath.match(/node_modules/)) {
+  if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     mkdirsSync(path.dirname(jsFilePath));
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
@@ -525,7 +525,8 @@ export function getHotReloadFiles(watchModifiedFiles: string[],
   hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
   watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
   allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
-    .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
+    .filter(file => fs.statSync(file).isFile() &&
+      (hotReloadSupportFiles.has(file) || !['.ets', '.ts', '.js'].includes(path.extname(file))))
     .map(file => path.relative(projectConfig.projectPath, file))]
     .filter(file => !watchRemovedFiles.includes(file)));
   return {
@@ -538,15 +539,15 @@ export function getResolveModules(projectPath: string, faMode: boolean): string[
   if (faMode) {
     return [
       path.resolve(projectPath, '../../../../../'),
-      path.resolve(projectPath, '../../../../node_modules'),
-      path.resolve(projectPath, '../../../../../node_modules'),
+      path.resolve(projectPath, '../../../../' + projectConfig.packageDir),
+      path.resolve(projectPath, '../../../../../' + projectConfig.packageDir),
       path.resolve(projectPath, '../../')
     ];
   } else {
     return [
       path.resolve(projectPath, '../../../../'),
-      path.resolve(projectPath, '../../../node_modules'),
-      path.resolve(projectPath, '../../../../node_modules'),
+      path.resolve(projectPath, '../../../' + projectConfig.packageDir),
+      path.resolve(projectPath, '../../../../' + projectConfig.packageDir),
       path.resolve(projectPath, '../')
     ];
   }
