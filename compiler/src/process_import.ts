@@ -487,7 +487,7 @@ function hasCollection(node: ts.Identifier): boolean {
 }
 
 function isModule(filePath: string): boolean {
-  return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(NODE_MODULES) > -1;
+  return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(projectConfig.packageDir) > -1;
 }
 
 function isCustomComponent(node: ts.ClassDeclaration | ts.StructDeclaration): boolean {
@@ -506,7 +506,7 @@ function isCustomComponent(node: ts.ClassDeclaration | ts.StructDeclaration): bo
 let packageJsonEntry: string = '';
 
 function isPackageJsonEntry(filePath: string): boolean {
-  const packageJsonPath: string = path.join(filePath, PACKAGE_JSON);
+  const packageJsonPath: string = path.join(filePath, projectConfig.packageJson);
   if (fs.existsSync(packageJsonPath)) {
     let entryTypes: string;
     let entryMain: string;
@@ -528,7 +528,8 @@ function isPackageJsonEntry(filePath: string): boolean {
 }
 
 function entryExist(filePath: string, entry: string): boolean {
-  return typeof entry === 'string' && fs.existsSync(path.resolve(filePath, entry));
+  return typeof entry === 'string' && fs.existsSync(path.resolve(filePath, entry)) &&
+    fs.statSync(path.resolve(filePath, entry)).isFile();
 }
 
 function getModuleFilePath(filePath: string): string {
@@ -562,10 +563,10 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   }
   let curPageDir: string = pagesDir;
   while (!fs.existsSync(fileResolvePath)) {
-    if (filePath.indexOf(NODE_MODULES) > -1) {
+    if (filePath.indexOf(projectConfig.packageDir) > -1) {
       fileResolvePath = path.join(curPageDir, filePath);
     } else {
-      fileResolvePath = path.join(curPageDir, NODE_MODULES, filePath);
+      fileResolvePath = path.join(curPageDir, projectConfig.packageDir, filePath);
     }
     if (fs.existsSync(fileResolvePath + EXTNAME_ETS)) {
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
@@ -602,9 +603,9 @@ export function getFileFullPath(filePath: string, pagesDir: string): string {
   }
 
   let fileResolvePath: string;
-  if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0) {
+  if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(projectConfig.packageDir) < 0) {
     fileResolvePath = path.resolve(pagesDir, filePath);
-  } else if (/^\//.test(filePath) && filePath.indexOf(NODE_MODULES) < 0 ||
+  } else if (/^\//.test(filePath) && filePath.indexOf(projectConfig.packageDir) < 0 ||
     fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     fileResolvePath = filePath;
   } else {
@@ -622,7 +623,7 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
       type: LogType.ERROR,
       message: `The module name '${moduleName}' can not be the same as the inner component name.`,
       pos: moduleNode.getStart()
-    }
+    };
     if (sourceFile && fileResolvePath) {
       const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
       const line: number = posOfNode.line + 1;
@@ -631,7 +632,7 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
         fileName: fileResolvePath,
         line: line,
         column: column
-      })
+      });
     }
     log.push(error);
   }
