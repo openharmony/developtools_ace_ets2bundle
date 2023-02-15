@@ -358,7 +358,7 @@ function setAbilityFile(projectConfig, abilityPages) {
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
     } else {
       throw Error(
-        `\u001b[31m ERROR: srcEntrance file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
+        `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
     }
   });
@@ -368,7 +368,11 @@ function readAbilityEntrance(moduleJson) {
   let abilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
-    if (moduleSrcEntrance) {
+    const moduleSrcEntry = moduleJson.module.srcEntry;
+    if (moduleSrcEntry) {
+      abilityPages.push(moduleSrcEntry);
+      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+    } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
@@ -386,7 +390,10 @@ function readAbilityEntrance(moduleJson) {
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
-      if (ability.srcEntrance) {
+      if (ability.srcEntry) {
+        abilityPages.push(ability.srcEntry)
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry))
+      } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
         abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
