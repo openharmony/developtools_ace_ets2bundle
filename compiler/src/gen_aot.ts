@@ -17,9 +17,7 @@ import * as childProcess from 'child_process';
 import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { projectConfig } from '../main';
 import {
-  FAIL,
   MODULES_ABC,
   TEMPORARY,
   ESMODULE,
@@ -43,97 +41,82 @@ import {
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
-function processExit(isFastBuild = false): void {
-  if (!isFastBuild) {
-    process.exit(FAIL);
-  }
+export interface FaultHandler {
+  (error: string): void
 }
 
-function checkAotPartialConfig(buildJsonInfo: any, logger: any, isFastBuild: boolean): boolean {
+function checkAotPartialConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_PARTIAL && !buildJsonInfo.apPath) {
     return false;
   }
   if (buildJsonInfo.compileMode !== ESMODULE) {
-    logger.error(`ArkTS:ERROR Aot's partial mode must config compileMode with esmodule.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's partial mode must config compileMode with esmodule.`);
   }
   if (buildJsonInfo.anBuildMode !== AOT_PARTIAL) {
-    logger.error(`ArkTS:ERROR Aot's partial mode must config aotBuildMode with partial.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's partial mode must config aotBuildMode with partial.`);
   }
   if (!buildJsonInfo.apPath) {
-    logger.error(`ArkTS:ERROR Aot's partial mode must config a valid apPath.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's partial mode must config a valid apPath.`);
   }
   if (path.extname(buildJsonInfo.apPath) !== AOT_PROFILE_SUFFIX) {
-    logger.error(`ArkTS:ERROR apPath for Aot's partial mode must with suffix "${AOT_PROFILE_SUFFIX}".`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR apPath for Aot's partial mode must with suffix "${AOT_PROFILE_SUFFIX}".`);
   }
   if (!fs.existsSync(buildJsonInfo.apPath)) {
-    logger.error(`ArkTS:ERROR apPath for Aot's partial mode is not found in "${buildJsonInfo.apPath}".`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR apPath for Aot's partial mode is not found in "${buildJsonInfo.apPath}".`);
   }
   if (!buildJsonInfo.anBuildOutPut) {
-    logger.error(`ArkTS:ERROR Aot's partial mode need anBuildOutPut.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's partial mode need anBuildOutPut.`);
   }
-  logger.debug(`Aot compiler's partial mode.`);
+  // Aot compiler's partial mode.
   return true;
 }
 
-function checkAotFullConfig(buildJsonInfo: any, logger: any, isFastBuild: boolean): boolean {
+function checkAotFullConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_FULL) {
     return false;
   }
   if (buildJsonInfo.compileMode !== ESMODULE) {
-    logger.error(`ArkTS:ERROR Aot's full mode must config compileMode with esmodule.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's full mode must config compileMode with esmodule.`);
   }
   if (buildJsonInfo.apPath) {
-    logger.error(`ArkTS:ERROR Aot's full mode do not need apPath.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's full mode do not need apPath.`);
   }
   if (!buildJsonInfo.anBuildOutPut) {
-    logger.error(`ArkTS:ERROR Aot's full mode need anBuildOutPut.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's full mode need anBuildOutPut.`);
   }
-  logger.debug(`Aot compiler's full mode.`);
+  // Aot compiler's full mode.
   return true;
 }
 
-function checkAotTypeConfig(buildJsonInfo: any, logger: any, isFastBuild: boolean): boolean {
+function checkAotTypeConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_TYPE) {
     return false;
   }
   if (buildJsonInfo.compileMode !== ESMODULE) {
-    logger.error(`ArkTS:ERROR Aot's type mode must config compileMode with esmodule.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's type mode must config compileMode with esmodule.`);
   }
   if (buildJsonInfo.apPath) {
-    logger.error(`ArkTS:ERROR Aot's type mode do not need apPath.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Aot's type mode do not need apPath.`);
   }
-  logger.debug(`Aot compiler's type mode.`);
+  // Aot compiler's type mode.
   return true;
 }
 
-export function checkAotConfig(buildJsonInfo: any, logger: any, isFastBuild = false): boolean {
-  return checkAotTypeConfig(buildJsonInfo, logger, isFastBuild) ||
-    checkAotFullConfig(buildJsonInfo, logger, isFastBuild) || checkAotPartialConfig(buildJsonInfo, logger, isFastBuild);
+export function checkAotConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
+  return checkAotTypeConfig(buildJsonInfo, faultHandler) ||
+    checkAotFullConfig(buildJsonInfo, faultHandler) || checkAotPartialConfig(buildJsonInfo, faultHandler);
 }
 
-export function generateAot(arkDir: string, builtinAbcPath: string, logger: any, isFastBuild = false): void {
+export function generateAot(arkDir: string, builtinAbcPath: string, projectConfig: any, logger: any, faultHandler: FaultHandler): void {
   let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? "ark_aot_compiler.exe" : "ark_aot_compiler");
   const appAbc: string = path.join(projectConfig.buildPath, MODULES_ABC);
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
   if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot], logger)) {
-    logger.error(`ArkTS:ERROR generateAot failed. Invalid file path.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR generateAot failed. Invalid file path.`);
   }
   if (!fs.existsSync(appAbc)) {
-    logger.error(`ArkTS:ERROR generateAot failed. AppAbc not found in "${appAbc}"`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR generateAot failed. AppAbc not found in "${appAbc}"`);
   }
   const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${builtinAbcPath}" ` +
     `--aot-file="${appAot}" --target-triple=aarch64-unknown-linux-gnu `;
@@ -143,49 +126,43 @@ export function generateAot(arkDir: string, builtinAbcPath: string, logger: any,
   } else if (projectConfig.anBuildMode === AOT_PARTIAL) {
     const profile: string = projectConfig.apPath;
     if (!validateFilePathLength(profile, logger)) {
-      logger.error(`ArkTS:ERROR generateAot failed. Invalid profile file path.`);
-      processExit(isFastBuild);
+      faultHandler(`ArkTS:ERROR generateAot failed. Invalid profile file path.`);
     }
     if (!fs.existsSync(profile)) {
-      logger.error(`ArkTS:ERROR generateAot failed. Partial mode lost profile in "${profile}"`);
-      processExit(isFastBuild);
+      faultHandler(`ArkTS:ERROR generateAot failed. Partial mode lost profile in "${profile}"`);
     }
     singleCmd = singleCmdPrefix + ` --enable-pgo-profiler=true --pgo-profiler-path="${profile}" "${appAbc}"`;
   } else {
-    logger.error(`ArkTS:ERROR generateAot failed. unknown anBuildMode: ${projectConfig.anBuildMode}`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR generateAot failed. unknown anBuildMode: ${projectConfig.anBuildMode}`);
   }
   try {
     logger.debug(`generateAot cmd: ${singleCmd}`);
     mkdirsSync(projectConfig.anBuildOutPut);
-    childProcess.execSync(singleCmd);
+    childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
-    logger.error(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}`);
   }
 }
 
-export function generateBuiltinAbc(arkDir: string, nodeJs: string, abcArgs: string[],
-  logger: any, isFastBuild = false): string {
+export function generateBuiltinAbc(arkDir: string, abcArgs: string[], cachePath: string,
+  logger: any, faultHandler: FaultHandler): string {
   const builtinFilePath: string = path.join(getArkBuildDir(arkDir), "aot", "src", "lib_ark_builtins.d.ts");
-  const builtinAbcPath: string = path.join(process.env.cachePath, TEMPORARY, "aot", "lib_ark_builtins.d.abc");
+  const builtinAbcPath: string = path.join(cachePath, TEMPORARY, "aot", "lib_ark_builtins.d.abc");
   if (fs.existsSync(builtinAbcPath)) {
     logger.debug(`builtin.d.abc already exists, no need to rebuild again`);
     return builtinAbcPath;
   }
   mkdirsSync(path.dirname(builtinAbcPath));
   if (!validateFilePathLengths([builtinFilePath, builtinAbcPath], logger)) {
-    logger.error(`ArkTS:ERROR generateBuiltinAbc failed. Invalid file path.`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR generateBuiltinAbc failed. Invalid file path.`);
   }
   const tempAbcArgs: string[] = abcArgs.slice(0);
-  let singleCmd: string = `${nodeJs} ${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
+  let singleCmd: string = `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
   try {
     logger.debug(`generateBuiltinAbc cmd: ${singleCmd}`);
-    childProcess.execSync(singleCmd);
+    childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
-    logger.error(`ArkTS:ERROR Failed to generate builtin to abc. Error message: ${e}`);
-    processExit(isFastBuild);
+    faultHandler(`ArkTS:ERROR Failed to generate builtin to abc. Error message: ${e}`);
   }
   return builtinAbcPath;
 }
