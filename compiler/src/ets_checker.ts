@@ -89,6 +89,11 @@ function setCompilerOptions() {
       'lib.es2020.d.ts'
     ]
   });
+  if (projectConfig.packageDir === 'oh_modules') {
+    Object.assign(compilerOptions, {
+      'packageManagerType': 'ohpm'
+    });
+  }
 }
 
 interface extendInfo {
@@ -191,7 +196,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
   }
   if (projectConfig.compileHar || projectConfig.compileShared) {
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
-      if (!(moduleFile.match(/node_modules/) && projectConfig.compileHar)) {
+      if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {
           const emit: any = languageService.getEmitOutput(moduleFile, true, true);
           if (emit.outputFiles[0]) {
