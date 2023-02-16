@@ -52,6 +52,26 @@ struct TransitionExample {
             iterations: 1, // 播放次数
             playMode: PlayMode.Normal // 动画模式
           })
+    Column({space: 5}) {
+        Column()
+        .opacity(this.opacity1)
+        .backgroundColor(this.color)
+        .animation({duration: 1000})
+        .width(this.width1)
+        .animation({duration: 2000})
+        .height(this.height1)
+        .borderRadius(this.borderRaius1)
+        .animation({duration: 3000})
+        .onClick(() => {
+            this.color = Color.Green
+            this.borderRaius1 = 20
+            this.opacity1 = 0.5
+            this.height1 = 200
+            this.width1 = 200
+        })
+    }
+    .width("100%")
+    .height("100%")
     }.height(400).width("100%").padding({top:100})
   }
 }
@@ -161,6 +181,30 @@ class TransitionExample extends View {
         });
         Context.animation(null);
         Button.pop();
+        Column.create({ space: 5 });
+        Column.width("100%");
+        Column.height("100%");
+        Column.create();
+        Context.animation({ duration: 1000 });
+        Column.opacity(this.opacity1);
+        Column.backgroundColor(this.color);
+        Context.animation(null);
+        Context.animation({ duration: 2000 });
+        Column.width(this.width1);
+        Context.animation(null);
+        Context.animation({ duration: 3000 });
+        Column.height(this.height1);
+        Column.borderRadius(this.borderRaius1);
+        Context.animation(null);
+        Column.onClick(() => {
+            this.color = Color.Green;
+            this.borderRaius1 = 20;
+            this.opacity1 = 0.5;
+            this.height1 = 200;
+            this.width1 = 200;
+        });
+        Column.pop();
+        Column.pop();
         Flex.pop();
     }
 }
