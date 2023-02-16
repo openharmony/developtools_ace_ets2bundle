@@ -14,15 +14,13 @@
  */
 
 import path from 'path';
-import ts from 'typescript';
 import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
 
+import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
-  NODE_MODULES,
+  PACKAGES,
   TEMPORARY,
-  MAIN,
-  AUXILIARY,
   ZERO,
   ONE,
   EXTNAME_JS,
@@ -38,18 +36,16 @@ import {
   TS2ABC,
   ES2ABC,
   EXTNAME_PROTO_BIN,
-  TS_NOCHECK
 } from './pre_define';
 import {
   isMac,
   isWindows,
-  isNodeModulesFile,
+  isPackageModulesFile,
   genTemporaryPath,
   mkdirsSync,
   toUnixPath,
   validateFilePathLength
 } from './utils';
-import { processSystemApi } from './validate_ui_syntax';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -73,109 +69,26 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   // case2: /node_modules/xxx/yyy
   // case3: /entry/node_modules/xxx/yyy
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
-
+  const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
-  if (result && result[1].indexOf(NODE_MODULES) === -1) {
+  if (result && result[1].indexOf(packageDir) === -1) {
     return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
 
-  if (projectFilePath.indexOf(NODE_MODULES) !== -1) {
-
-    const tryProjectNPM: string = toUnixPath(path.join(projectRootPath, NODE_MODULES));
-    if (unixFilePath.indexOf(tryProjectNPM) !== -1) {
-      return unixFilePath.replace(tryProjectNPM, `${NODE_MODULES}/${ONE}`);
+  if (projectFilePath.indexOf(packageDir) !== -1) {
+    const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
+    if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
+      return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(packageDir, PACKAGES);
     }
 
-    const tryModuleNPM: string = toUnixPath(path.join(moduleRootPath, NODE_MODULES));
-    if (unixFilePath.indexOf(tryModuleNPM) !== -1) {
-      return unixFilePath.replace(tryModuleNPM, `${NODE_MODULES}/${ZERO}`);
+    const tryModulePkg: string = toUnixPath(path.join(moduleRootPath, packageDir));
+    if (unixFilePath.indexOf(tryModulePkg) !== -1) {
+      return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(packageDir, PACKAGES);
     }
   }
 
   logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
-}
-
-export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): void {
-  if (toTsFile) {
-    const newStatements: ts.Node[] = [];
-    const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
-    newStatements.push(tsIgnoreNode);
-    if (node.statements && node.statements.length) {
-      newStatements.push(...node.statements);
-    }
-
-    node = ts.factory.updateSourceFile(node, newStatements);
-  }
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, toTsFile, projectConfig);
-  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
-    projectConfig);
-  if (temporaryFile.length === 0) {
-    return;
-  }
-  let temporarySourceMapFile: string = '';
-  if (temporaryFile.endsWith(EXTNAME_ETS)) {
-    if (toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
-    } else {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_JS);
-    }
-    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  } else {
-    if (!toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ts$/, EXTNAME_JS);
-      temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-    }
-  }
-  mkdirsSync(path.dirname(temporaryFile));
-  if (temporarySourceMapFile.length > 0 && projectConfig.buildArkMode === 'debug') {
-    let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-    newSourceMaps[source] = mixedInfo.sourceMapJson;
-  }
-  fs.writeFileSync(temporaryFile, mixedInfo.content);
-}
-
-function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): any {
-  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const options: ts.CompilerOptions = {
-    sourceMap: true
-  };
-  const mapOpions: any = {
-    sourceMap: true,
-    inlineSourceMap: false,
-    inlineSources: false,
-    sourceRoot: '',
-    mapRoot: '',
-    extendedDiagnostics: false
-  };
-  const host: ts.CompilerHost = ts.createCompilerHost(options);
-  const fileName: string = node.fileName;
-  // @ts-ignore
-  const sourceMapGenerator: any = ts.createSourceMapGenerator(
-    host,
-    // @ts-ignore
-    ts.getBaseFileName(fileName),
-    '',
-    '',
-    mapOpions
-  );
-  // @ts-ignore
-  const writer: any = ts.createTextWriter(
-    // @ts-ignore
-    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
-  printer['writeFile'](node, writer, sourceMapGenerator);
-  const sourceMapJson: any = sourceMapGenerator.toJSON();
-  sourceMapJson['sources'] = [fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
-  let content: string = writer.getText();
-  if (toTsFile) {
-    content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
-  }
-  content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
-
-  return {
-    content: content,
-    sourceMapJson: sourceMapJson
-  };
 }
 
 export function genSourceMapFileName(temporaryFile: string): string {
@@ -186,6 +99,10 @@ export function genSourceMapFileName(temporaryFile: string): string {
     abcFile = temporaryFile.replace(/\.js$/, EXTNAME_JS_MAP);
   }
   return abcFile;
+}
+
+export function getBuildModeInLowerCase(projectConfig: any): string {
+  return (process.env.compileTool === 'rollup' ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: any, logger: any): void {
@@ -229,13 +146,11 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   });
 }
 
-function replaceHarDependency(item:string, moduleRequest: string, projectConfig: any): string {
+export function getOhmUrlByHarName(moduleRequest: string, projectConfig: any): string | undefined {
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@module:lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
-      return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
-        return quotation + projectConfig.harNameOhmMap[moduleRequest] + quotation;
-      });
+      return projectConfig.harNameOhmMap[moduleRequest];
     }
     // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@module:lib/ets/pages/page1"
     for (const harName in projectConfig.harNameOhmMap) {
@@ -243,15 +158,22 @@ function replaceHarDependency(item:string, moduleRequest: string, projectConfig:
         const harOhmName: string =
           projectConfig.harNameOhmMap[harName].substring(0, projectConfig.harNameOhmMap[harName].indexOf('/'));
         if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) == 0) {
-          moduleRequest = moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
+          return moduleRequest.replace(harName + '/' + SRC_MAIN , harOhmName);
         } else {
-          moduleRequest = moduleRequest.replace(harName, harOhmName);
+          return moduleRequest.replace(harName, harOhmName);
         }
-        return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
-          return quotation + moduleRequest + quotation;
-        });
       }
     }
+  }
+  return undefined;
+}
+
+function replaceHarDependency(item:string, moduleRequest: string, projectConfig: any): string {
+  const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, projectConfig);
+  if (harOhmUrl !== undefined) {
+    return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
+      return quotation + harOhmUrl + quotation;
+    });
   }
   return item;
 }
@@ -322,17 +244,17 @@ export function genBuildPath(filePath: string, projectPath: string, buildPath: s
   }
   projectPath = toUnixPath(projectPath);
 
-  if (isNodeModulesFile(filePath, projectConfig)) {
-    filePath = toUnixPath(filePath);
-    const fakeNodeModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, NODE_MODULES));
+  if (isPackageModulesFile(filePath, projectConfig)) {
+    const packageDir: string = projectConfig.packageDir;
+    const fakePkgModulesPath: string = toUnixPath(path.join(projectConfig.projectRootPath, packageDir));
     let output: string = '';
-    if (filePath.indexOf(fakeNodeModulesPath) === -1) {
+    if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
-      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(NODE_MODULES) + NODE_MODULES.length + 1);
+      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
       output = path.join(projectConfig.nodeModulesPath, ZERO, sufStr);
     } else {
-      output = filePath.replace(fakeNodeModulesPath, path.join(projectConfig.nodeModulesPath, ONE));
+      output = filePath.replace(fakePkgModulesPath, path.join(projectConfig.nodeModulesPath, ONE));
     }
     return output;
   }
@@ -396,6 +318,10 @@ export function genAbcFileName(temporaryFile: string): string {
     abcFile = temporaryFile.replace(/\.js$/, EXTNAME_ABC);
   }
   return abcFile;
+}
+
+export function isOhModules(projectConfig: any): boolean {
+  return projectConfig.packageDir === OH_MODULES;
 }
 
 export function isEs2Abc(projectConfig: any): boolean {
