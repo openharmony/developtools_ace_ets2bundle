@@ -26,6 +26,7 @@ import {
   MODULES_CACHE,
   NPMENTRIES_TXT,
   NODE_MODULES,
+  PACKAGES,
   PATCH_SYMBOL_TABLE
 } from './pre_define';
 import {
@@ -70,11 +71,12 @@ export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   validateFilePathLength(npmEntriesInfoPath, logger);
   let entriesInfo: string = '';
   for (const value of entryInfos.values()) {
-    const buildPath: string = value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
+    const buildPath: string =
+      value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '').replace(NODE_MODULES, PACKAGES);
     const entryFile: string = toUnixPath(path.join(buildPath, value.entry));
-    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.'));
+    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.')).replace(NODE_MODULES, PACKAGES);
     entriesInfo +=
-      `${toUnixPath(path.join(NODE_MODULES, buildPath))}:${toUnixPath(path.join(NODE_MODULES, entry))}\n`;
+      `${toUnixPath(path.join(PACKAGES, buildPath))}:${toUnixPath(path.join(PACKAGES, entry))}\n`;
   }
   fs.writeFileSync(npmEntriesInfoPath, entriesInfo, 'utf-8');
 }
