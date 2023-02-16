@@ -24,7 +24,8 @@ const {
 
 const {
   WORKERS_DIR,
-  TS2ABC
+  TS2ABC,
+  FAIL
 } = require('./lib/pre_define');
 
 const {
@@ -356,7 +357,7 @@ function setAbilityFile(projectConfig, abilityPages) {
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
     } else {
       throw Error(
-        `\u001b[31m ERROR: srcEntrance file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
+        `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
     }
   });
@@ -366,7 +367,11 @@ function readAbilityEntrance(moduleJson) {
   let abilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
-    if (moduleSrcEntrance) {
+    const moduleSrcEntry = moduleJson.module.srcEntry;
+    if (moduleSrcEntry) {
+      abilityPages.push(moduleSrcEntry);
+      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+    } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
@@ -384,7 +389,10 @@ function readAbilityEntrance(moduleJson) {
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
-      if (ability.srcEntrance) {
+      if (ability.srcEntry) {
+        abilityPages.push(ability.srcEntry)
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry))
+      } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
         abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
@@ -586,7 +594,15 @@ function loadModuleInfo(projectConfig, envArgs) {
     projectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     projectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     projectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    if (checkAotConfig(buildJsonInfo, logger)) {
+    let faultHandler = function (error) {
+      // rollup's error will be handled in fast build
+      if (process.env.compileTool === 'rollup') {
+        return;
+      }
+      logger.error(error);
+      process.exit(FAIL);
+    }
+    if (checkAotConfig(buildJsonInfo, faultHandler)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
@@ -596,10 +612,13 @@ function loadModuleInfo(projectConfig, envArgs) {
       projectConfig.processTs = false;
       projectConfig.pandaMode = buildJsonInfo.pandaMode;
     }
-    projectConfig.buildArkMode = envArgs.buildMode;
+    if (envArgs !== undefined) {
+      projectConfig.buildArkMode = envArgs.buildMode;
+    }
     if (buildJsonInfo.compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       projectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
+      projectConfig.packageDir = 'node_modules';
     }
     if (projectConfig.compileHar && buildJsonInfo.moduleName &&
       buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {
