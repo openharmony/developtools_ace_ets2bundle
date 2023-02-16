@@ -514,7 +514,8 @@ export function getHotReloadFiles(watchModifiedFiles: string[],
   hotReloadIncrementalTime.hotReloadIncrementalStartTime = new Date().getTime().toString();
   watchRemovedFiles = watchRemovedFiles.map(file => path.relative(projectConfig.projectPath, file));
   allModifiedFiles = new Set([...allModifiedFiles, ...watchModifiedFiles
-    .filter(file => fs.statSync(file).isFile() && hotReloadSupportFiles.has(file))
+    .filter(file => fs.statSync(file).isFile() &&
+      (hotReloadSupportFiles.has(file) || !['.ets', '.ts', '.js'].includes(path.extname(file))))
     .map(file => path.relative(projectConfig.projectPath, file))]
     .filter(file => !watchRemovedFiles.includes(file)));
   return {
