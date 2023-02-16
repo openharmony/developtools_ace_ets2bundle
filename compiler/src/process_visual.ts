@@ -254,8 +254,9 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   let visualMapDirPath: string = path.resolve(process.env.cachePath, SUPERVISUAL +
     visualDirPath.replace(etsDirPath, ''));
   if (!visualDirPath.includes(etsDirPath)) {
+    const projectRootPath = getProjectRootPath();
     visualMapDirPath = path.resolve(process.env.cachePath, SUPERVISUAL +
-      visualDirPath.replace(projectConfig.projectRootPath, ''));
+      visualDirPath.replace(projectRootPath, ''));
   }
   if (!(fs.existsSync(visualMapDirPath) && fs.statSync(visualMapDirPath).isDirectory())) {
     mkDir(visualMapDirPath);
@@ -267,6 +268,18 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   });
 }
 
+function getProjectRootPath(): string {
+  let projectRootPath = projectConfig.projectRootPath;
+  if (!projectRootPath) {
+    if (!projectConfig.aceModuleJsonPath) {
+      projectRootPath = path.resolve(projectConfig.projectPath, '../../../../../');
+    } else {
+      projectRootPath = path.resolve(projectConfig.projectPath, '../../../../');
+    }
+  }
+  return projectRootPath;
+}
+
 function findVisualFile(filePath: string): string {
   let etsDirPath: string = path.parse(projectConfig.projectPath).dir;
   let visualDirPath: string = path.parse(projectConfig.aceSuperVisualPath).dir;
@@ -276,14 +289,7 @@ function findVisualFile(filePath: string): string {
     return resolvePath;
   }
   try {
-    let projectRootPath = projectConfig.projectRootPath;
-    if (!projectRootPath) {
-      if (!projectConfig.aceModuleJsonPath) {
-        projectRootPath = path.resolve(projectConfig.projectPath, '../../../../../');
-      } else {
-        projectRootPath = path.resolve(projectConfig.projectPath, '../../../../');
-      }
-    }
+    const projectRootPath = getProjectRootPath();
     let moduleName = '';
     const relativePath = filePath.replace(projectRootPath, '');
     const moduleNames = relativePath.split(path.sep);
