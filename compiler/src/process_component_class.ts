@@ -722,6 +722,7 @@ function createHeritageClause(): ts.HeritageClause {
 function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogInfo[],
   program: ts.Program): ts.TypeNode {
   let newType: ts.TypeNode;
+  let isCheckAny: boolean = true;
   switch (decoratorName) {
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
@@ -765,6 +766,12 @@ function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogI
         type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
       ]);
       break;
+    default:
+      isCheckAny = false;
+      break;
+  }
+  if (isCheckAny) {
+    checkAny(type, log);
   }
   return newType;
 }
@@ -772,6 +779,7 @@ function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogI
 function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: LogInfo[],
   program: ts.Program): ts.TypeNode {
   let newType: ts.TypeNode;
+  let isCheckAny: boolean = true;
   switch (decoratorName) {
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
@@ -815,6 +823,22 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
         type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
       ]);
       break;
+    default:
+      isCheckAny = false;
+      break;
+  }
+  if (isCheckAny) {
+    checkAny(type, log);
   }
   return newType;
+}
+
+function checkAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
+  if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+    log.push({
+      type: LogType.WARN,
+      message: `Please define an explicit type, not any.`,
+      pos: typeNode.getStart()
+    });
+  }
 }
