@@ -238,7 +238,10 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     checkerResult.count += 1;
     if (diagnostic.file) {
       // FIXME: will be instead of ts.Diagnostics config
-      if (!projectConfig.cardObj[diagnostic.file.fileName.replace(/\//g, '\\')] &&
+      const absPath = diagnostic.file.fileName;
+      const relativePath = path.relative(projectConfig.projectPath, absPath);
+      const cardEntryObjKey = `.././${relativePath}`.replace(/\.ets$/, '');
+      if (!projectConfig.cardEntryObj[cardEntryObjKey] &&
         /can't support form application./.test(message)) {
         return;
       }
