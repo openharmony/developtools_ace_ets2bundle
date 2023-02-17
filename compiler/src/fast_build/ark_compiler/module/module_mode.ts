@@ -286,6 +286,8 @@ export class ModuleMode extends CommonMode {
   }
 
   generateMergedAbcOfEs2Abc() {
+    // collect data error from subprocess
+    let errMsg: string = '';
     this.genDescriptionsForMergedEs2abc();
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
@@ -304,7 +306,13 @@ export class ModuleMode extends CommonMode {
       });
 
       child.stderr.on('data', (data: any) => {
-        this.logger.error(red, data.toString(), reset);
+        errMsg += data.toString();
+      });
+
+      child.stderr.on('end', (data: any) => {
+        if (errMsg !== undefined && errMsg.length > 0) {
+          this.logger.error(red, errMsg, reset);
+        }
       });
     } catch (e) {
       this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc. Error message: ' + e.toString());
@@ -394,7 +402,7 @@ export class ModuleMode extends CommonMode {
         this.triggerAsync(() => {
           const worker: any = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
-            this.logger.error(errorMsg.data.toString());
+            this.logger.error(red, errorMsg.data.toString(), reset);
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
           });
         });
@@ -474,7 +482,8 @@ export class ModuleMode extends CommonMode {
     validateFilePathLength(this.protoFilePath, this.logger);
     mkdirsSync(path.dirname(this.protoFilePath));
     let protoFilesInfo: string = '';
-    for (const value of this.moduleInfos.values()) {
+    const sortModuleInfos: any = new Map([...this.moduleInfos].sort());
+    for (const value of sortModuleInfos.values()) {
       const cacheProtoPath: string = changeFileExtension(value.cacheFilePath, EXTNAME_PROTO_BIN);
       protoFilesInfo += `${toUnixPath(cacheProtoPath)}\n`;
     }
