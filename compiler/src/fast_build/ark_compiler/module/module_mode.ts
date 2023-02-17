@@ -360,8 +360,8 @@ export class ModuleMode extends CommonMode {
 
   getSplittedModulesByNumber() {
     const result: any = [];
-    if (this.moduleInfos.size < this.workerNumber) {
-      for (const value of this.moduleInfos.values()) {
+    if (this.filterModuleInfos.size < this.workerNumber) {
+      for (const value of this.filterModuleInfos.values()) {
         result.push([value]);
       }
       return result;
@@ -372,7 +372,7 @@ export class ModuleMode extends CommonMode {
     }
 
     let pos: number = 0;
-    for (const value of this.moduleInfos.values()) {
+    for (const value of this.filterModuleInfos.values()) {
       const chunk = pos % this.workerNumber;
       result[chunk].push(value);
       pos++;
