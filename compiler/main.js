@@ -699,9 +699,6 @@ function isPartialUpdate(metadata) {
 }
 
 function partialUpdateController(minAPIVersion, metadata = null) {
-  if (projectConfig.isPreview) {
-    return;
-  }
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
   }
