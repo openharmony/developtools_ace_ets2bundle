@@ -129,7 +129,24 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
     readDirectory: ts.sys.readDirectory,
     resolveModuleNames: resolveModuleNames,
     directoryExists: ts.sys.directoryExists,
-    getDirectories: ts.sys.getDirectories
+    getDirectories: ts.sys.getDirectories,
+    getTagNameNeededCheckByFile: (fileName, sourceFileName) => {
+      let needCheckResult: boolean = false;
+      if (/compiler\/declarations/.test(sourceFileName) || /ets-loader\/declarations/.test(sourceFileName)) {
+        needCheckResult = true;
+      }
+      return {
+        needCheck: needCheckResult,
+        checkConfig: [{
+          tagName: "form",
+          message: "'{0}' can't support form application.",
+          needConditionCheck: false,
+          type: ts.DiagnosticCategory.Error,
+          specifyCheckConditionFuncName: '',
+          tagNameShouldExisted: true
+        }]
+      }
+    }
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
 }
@@ -220,6 +237,11 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     }
     checkerResult.count += 1;
     if (diagnostic.file) {
+      // FIXME: will be instead of ts.Diagnostics config
+      if (!projectConfig.cardObj[diagnostic.file.fileName.replace(/\//g, '\\')] &&
+        /can't support form application./.test(message)) {
+        return;
+      }
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
       fastBuildLogger ?
