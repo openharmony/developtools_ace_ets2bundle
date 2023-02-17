@@ -59,18 +59,6 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
-    renderChunk(code, chunk) {
-      const magicString = new MagicString(code);
-      if (projectConfig.compileMode === JSBUNDLE &&
-        [abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath)
-          .concat(abilityConfig.testRunnerFile).includes(chunk.facadeModuleId)) {
-        code = code.replace(/module\.exports/, 'globalThis.exports.default');
-      }
-      return {
-        code: code,
-        map: magicString.generateMap()
-      };
-    },
     moduleParsed(moduleInfo) {
       if (projectConfig.compileHar) {
         if (moduleInfo.id && !moduleInfo.id.match(/node_modules/)) {
