@@ -79,8 +79,8 @@ export function initArkProjectConfig(share: any) {
       arkProjectConfig.processTs = true;
       arkProjectConfig.pandaMode = TS2ABC;
       arkProjectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
-      projectConfig.anBuildMode = buildJsonInfo.anBuildMode;
-      projectConfig.apPath = buildJsonInfo.apPath;
+      arkProjectConfig.anBuildMode = buildJsonInfo.anBuildMode;
+      arkProjectConfig.apPath = buildJsonInfo.apPath;
     } else {
       arkProjectConfig.processTs = false;
       arkProjectConfig.pandaMode = buildJsonInfo.pandaMode;
