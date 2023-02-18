@@ -423,17 +423,26 @@ export class ModuleMode extends CommonMode {
           this.generateNpmEntryToGenProto();
           this.generateProtoFilesInfo();
           this.mergeProtoToAbc();
-          if (needAotCompiler(this.projectConfig)) {
-            let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
-            const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.cmdArgs,
-              this.projectConfig.cachePath, this.logger, faultHandler);
-            generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.projectConfig, this.logger, faultHandler);
-          }
+          this.processAotIfNeeded();
           this.afterCompilationProcess();
         }
         this.triggerEndSignal();
       });
+      if (this.workerNumber == 0) {
+        // process aot for no source file changed.
+        this.processAotIfNeeded();
+      }
     }
+  }
+
+  private processAotIfNeeded(): void {
+    if (!needAotCompiler(this.projectConfig)) {
+      return;
+    }
+    let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
+    const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.cmdArgs,
+      this.projectConfig.cachePath, this.logger, faultHandler);
+    generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
   private genFileCachePath(filePath: string, projectPath: string, cachePath: string,
