@@ -229,17 +229,17 @@ function addErrorLogIfReExportType(sourceFile: ts.SourceFile, log: LogInfo[], ty
       typeIdentifier = moduleNode.importClause.name!.escapedText.toString();
     }
     const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());
-    let errorMessage: string = `The re-export name '${typeIdentifier}' need to be marked as type, `;
-    errorMessage += ts.isImportDeclaration(moduleNode) ? "please use 'import type'." : "please use 'export type'.";
-    const error: LogInfo = {
-      type: LogType.ERROR,
-      message: errorMessage,
+    let warningMessage: string = `The re-export name '${typeIdentifier}' need to be marked as type, `;
+    warningMessage += ts.isImportDeclaration(moduleNode) ? "please use 'import type'." : "please use 'export type'.";
+    const warning: LogInfo = {
+      type: LogType.WARN,
+      message: warningMessage,
       pos: moduleNode.getStart(),
       fileName: sourceFile.fileName,
       line: posOfNode.line + 1,
       column: posOfNode.character + 1
     }
-    log.push(error);
+    log.push(warning);
   });
 }
 
