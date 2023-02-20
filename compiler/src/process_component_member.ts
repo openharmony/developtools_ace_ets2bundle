@@ -856,14 +856,6 @@ export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: L
   } else if (program) {
     checker = program.getTypeChecker();
   }
-  if (typeNode.parent && typeNode.parent.name &&
-    typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
-    log.push({
-      type: LogType.WARN,
-      message: `Please define an explicit type, not any.`,
-      pos: typeNode.getStart()
-    });
-  }
   return getDeclarationType(typeNode, checker, log);
 }
 
