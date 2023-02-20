@@ -141,10 +141,14 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
   pathCollection: Set<string>, fileResolvePath: string) {
   if (isObservedClass(node)) {
+    collectSpecialFunctionNode(node as ts.ClassDeclaration, asNameFromParent, defaultNameFromParent, defaultCollection,
+      asExportCollection, observedClassCollection);
     // @ts-ignore
     observedClassCollection.add(node.name.getText());
   }
   if (isCustomDialogClass(node)) {
+    collectSpecialFunctionNode(node as ts.StructDeclaration, asNameFromParent, defaultNameFromParent, defaultCollection,
+      asExportCollection, componentCollection.customDialogs);
     // @ts-ignore
     componentCollection.customDialogs.add(node.name.getText());
   }
@@ -273,9 +277,9 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
     defaultCollection, asExportCollection, pathCollection, fileResolvePath));
 }
 
-function collectSpecialFunctionNode(node: ts.FunctionDeclaration, asNameFromParent: Map<string, string>,
-  defaultNameFromParent: string, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
-  collection: Set<string>): void {
+function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDeclaration | ts.StructDeclaration,
+  asNameFromParent: Map<string, string>, defaultNameFromParent: string, defaultCollection: Set<string>,
+  asExportCollection: Map<string, string>, collection: Set<string>): void {
   const name: string = node.name.getText();
   let componentName: string;
   if (asNameFromParent.has(name)) {
