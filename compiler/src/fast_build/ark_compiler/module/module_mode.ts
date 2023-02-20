@@ -34,6 +34,7 @@ import {
   MODULES_CACHE,
   NPMENTRIES_TXT,
   SOURCEMAPS,
+  SOURCEMAPS_JSON,
   TEMPORARY,
   HAP_PACKAGE,
   PACKAGES,
@@ -60,6 +61,7 @@ import { CommonMode } from '../common/common_mode';
 import { newSourceMaps } from '../transform';
 import {
   changeFileExtension,
+  genCachePath,
   getEs2abcFileThreadNumber,
   isCommonJsPluginVirtualFile,
   isCurrentProjectFiles
@@ -120,11 +122,13 @@ export class ModuleMode extends CommonMode {
   moduleInfos: Map<String, ModuleInfo>;
   pkgEntryInfos: Map<String, PackageEntryInfo>;
   hashJsonObject: any;
+  cacheSourceMapObject: any;
   filesInfoPath: string;
   npmEntriesInfoPath: string;
   moduleAbcPath: string;
   sourceMapPath: string;
   cacheFilePath: string;
+  cacheSourceMapPath: string;
   workerNumber: number;
   npmEntriesProtoFilePath: string;
   protoFilePath: string;
@@ -135,11 +139,13 @@ export class ModuleMode extends CommonMode {
     this.moduleInfos = new Map<String, ModuleInfo>();
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
     this.hashJsonObject = {};
+    this.cacheSourceMapObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
     this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, MODULES_ABC);
     this.sourceMapPath = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
     this.cacheFilePath = path.join(this.projectConfig.cachePath, MODULES_CACHE);
+    this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.workerNumber = MAX_WORKER_NUMBER;
     this.npmEntriesProtoFilePath = path.join(this.projectConfig.cachePath, PROTOS, NPM_ENTRIES_PROTO_BIN);
     this.protoFilePath = path.join(this.projectConfig.cachePath, PROTOS, PROTO_FILESINFO_TXT);
@@ -236,16 +242,48 @@ export class ModuleMode extends CommonMode {
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
   }
 
+  updateCachedSourceMaps(): void {
+    if (!fs.existsSync(this.cacheSourceMapPath)) {
+      this.cacheSourceMapObject = newSourceMaps;
+      return;
+    }
+
+    this.cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
+
+    // remove unused source files's sourceMap
+    let unusedFiles = [];
+    let compileFileList: Set<string> = new Set();
+    this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
+      compileFileList.add(toUnixPath(moduleId));
+    })
+
+    Object.keys(this.cacheSourceMapObject).forEach(key => {
+      const sourceFileAbsolutePath: string = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
+      if (!compileFileList.has(sourceFileAbsolutePath)) {
+        unusedFiles.push(key);
+      }
+    });
+    unusedFiles.forEach(file => {
+      delete this.cacheSourceMapObject[file];
+    })
+
+    // update sourceMap
+    Object.keys(newSourceMaps).forEach(key => {
+      this.cacheSourceMapObject[key] = newSourceMaps[key];
+    });
+  }
+
   buildModuleSourceMapInfo() {
     if (!this.arkConfig.isDebug) {
       return;
     }
-    mkdirsSync(this.projectConfig.aceModuleBuild);
-    const sourceMapFilePath: string = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
-    fs.writeFile(sourceMapFilePath, JSON.stringify(newSourceMaps, null, 2), 'utf-8', (err) => {
+
+    this.updateCachedSourceMaps();
+    fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
       if (err) {
-        this.throwArkTsCompilerError('ArkTS:ERROR failed to write cache sourceMaps json');
+        this.throwArkTsCompilerError('ArkTS:ERROR failed to write sourceMaps');
       }
+      fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
     });
   }
 
