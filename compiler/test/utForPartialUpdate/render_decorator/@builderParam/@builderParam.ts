@@ -108,6 +108,8 @@ class CustomContainer extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1) {
         super(parent, __localStorage, elmtId);
         this.header = "";
+        this.content = undefined;
+        this.callContent = undefined;
         this.footer = "";
         this.setInitiallyProvidedValue(params);
     }
@@ -115,8 +117,12 @@ class CustomContainer extends ViewPU {
         if (params.header !== undefined) {
             this.header = params.header;
         }
-        this.content = params.content;
-        this.callContent = params.callContent;
+        if (params.content !== undefined) {
+            this.content = params.content;
+        }
+        if (params.callContent !== undefined) {
+            this.callContent = params.callContent;
+        }
         if (params.footer !== undefined) {
             this.footer = params.footer;
         }
@@ -147,8 +153,8 @@ class CustomContainer extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        this.content(this);
-        this.callContent(this);
+        this.content.bind(this)();
+        this.callContent.bind(this)();
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.footer);
@@ -168,13 +174,16 @@ class CustomContainer2 extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1) {
         super(parent, __localStorage, elmtId);
         this.header = "";
+        this.content = undefined;
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
         if (params.header !== undefined) {
             this.header = params.header;
         }
-        this.content = params.content;
+        if (params.content !== undefined) {
+            this.content = params.content;
+        }
     }
     updateStateVars(params) {
     }
@@ -202,7 +211,7 @@ class CustomContainer2 extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        this.content(this);
+        this.content.bind(this)();
         Column.pop();
     }
     rerender() {
@@ -346,7 +355,7 @@ class CustomContainerUser extends ViewPU {
                                 }
                                 ViewStackProcessor.StopGetAccessRecording();
                             });
-                            specificWithParam("111", "22", this);
+                            specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
                     }, undefined, elmtId));
@@ -409,7 +418,7 @@ class CustomContainerUser extends ViewPU {
                                 }
                                 ViewStackProcessor.StopGetAccessRecording();
                             });
-                            this.callSpecificParam("111", '222', this);
+                            this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
                     }, undefined, elmtId));

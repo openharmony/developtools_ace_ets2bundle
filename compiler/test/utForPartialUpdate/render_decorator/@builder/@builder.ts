@@ -335,7 +335,7 @@ class MyComponent extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        specificParam('test1', 'test2', this);
+        specificParam.bind(this)('test1', 'test2');
         Row.pop();
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);

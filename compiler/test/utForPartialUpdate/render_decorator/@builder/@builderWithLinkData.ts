@@ -128,7 +128,7 @@ class TestPage extends ViewPU {
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        this.TitleCompView(this);
+        this.TitleCompView.bind(this)();
         Flex.pop();
     }
     rerender() {
