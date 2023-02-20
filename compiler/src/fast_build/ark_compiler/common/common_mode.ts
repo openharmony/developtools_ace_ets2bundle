@@ -113,6 +113,7 @@ export class CommonMode {
   }
 
   setupCluster(cluster: any): void {
+    cluster.removeAllListeners('exit');
     if (nodeLargeOrEqualTargetVersion(16)) {
       cluster.setupPrimary({
         exec: this.genAbcScriptPath,
