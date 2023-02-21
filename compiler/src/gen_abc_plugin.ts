@@ -1099,11 +1099,11 @@ function handleHotReloadChangedFiles() {
         break;
       }
       case EXTNAME_JSON: {
-        processJsonModule(filePath, tempFilePath, buildFilePath, nodeModulesFile, undefined);
-        break;
+        logger.debug(blue, `ArkTS: json source file: ${filePath} changed, skip hot reload build`, reset);
+        return;
       }
       default: {
-        logger.debug(red, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
+        logger.debug(blue, `ArkTS:ERROR Cannot resolve file path: ${filePath}, stop hot reload build`, reset);
         return;
       }
     }
