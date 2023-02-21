@@ -24,6 +24,7 @@ export const MODULELIST_JSON: string = 'moduleList.json';
 export const PREBUILDMODE_JSON: string = 'preBuildMode.json';
 export const SOURCEMAPS_JSON: string = 'sourceMaps.json';
 export const SOURCEMAPS: string = 'sourceMaps.map';
+export const SYMBOLMAP: string = 'symbolMap.map';
 export const PROTO_FILESINFO_TXT: string = 'protoFilesInfo.txt';
 export const AOT_FULL: string = 'full';
 export const AOT_TYPE: string = 'type';

@@ -75,6 +75,9 @@ export function initArkProjectConfig(share: any) {
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     arkProjectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     arkProjectConfig.isOhosTest = buildJsonInfo.isOhosTest;
+    if (buildJsonInfo.patchConfig) {
+      arkProjectConfig.oldMapFilePath = buildJsonInfo.patchConfig.oldMapFilePath;
+    }
     if (checkAotConfig(buildJsonInfo, (error: string) => { share.throwArkTsCompilerError(error) })) {
       arkProjectConfig.processTs = true;
       arkProjectConfig.pandaMode = TS2ABC;
