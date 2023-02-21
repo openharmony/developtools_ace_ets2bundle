@@ -201,7 +201,7 @@ class ImportTest extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        ImportNestAll_1.tExtend(20, this);
+        ImportNestAll_1.tExtend.bind(this)(20);
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.testText2);
@@ -211,7 +211,7 @@ class ImportTest extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        ImportNestAll_1.tStyles(this);
+        ImportNestAll_1.tStyles.bind(this)();
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel(this.testText3);

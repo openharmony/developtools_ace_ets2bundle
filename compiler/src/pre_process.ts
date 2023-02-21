@@ -17,7 +17,7 @@ import {
   validateUISyntax,
   processSystemApi,
   ReplaceResult,
-  sourceReplace,
+  sourceReplace
 } from './validate_ui_syntax';
 import {
   LogInfo,

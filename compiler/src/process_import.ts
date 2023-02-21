@@ -61,7 +61,11 @@ import {
   repeatLog
 } from './utils';
 import { projectConfig } from '../main';
-import { CUSTOM_BUILDER_METHOD, INNER_COMPONENT_NAMES } from './component_map';
+import {
+  CUSTOM_BUILDER_METHOD,
+  INNER_COMPONENT_NAMES,
+  GLOBAL_CUSTOM_BUILDER_METHOD
+} from './component_map';
 import { validatorCard } from './process_ui_syntax';
 
 export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
@@ -177,6 +181,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
     collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
       asExportCollection, CUSTOM_BUILDER_METHOD);
+    collectSpecialFunctionNode(node, asNameFromParent, defaultNameFromParent, defaultCollection,
+      asExportCollection, GLOBAL_CUSTOM_BUILDER_METHOD);
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression) &&
     hasCollection(node.expression)) {
