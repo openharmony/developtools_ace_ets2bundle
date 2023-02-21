@@ -226,7 +226,7 @@ export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
 export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
-  ['Navigation', new Set(['title'])], 
+  ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
   ['ListItem', new Set(['swipeAction'])]
 ]);
@@ -390,3 +390,5 @@ export const CALL = 'call';
 export const RESERT = 'reset';
 
 export const TS_NOCHECK: string = '// @ts-nocheck';
+
+export const BUILDER_PARAM_PROXY: string = 'makeBuilderParameterProxy';
