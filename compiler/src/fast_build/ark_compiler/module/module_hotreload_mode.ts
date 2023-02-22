@@ -24,6 +24,7 @@ import {
   SOURCEMAPS,
   SYMBOLMAP
 } from '../common/ark_define';
+import { isJsonSourceFile } from '../utils';
 import { newSourceMaps } from '../transform';
 import {
   mkdirsSync,
@@ -85,20 +86,29 @@ export class ModuleHotreloadMode extends ModuleMode {
       return;
     }
 
+    let needHotreloadBuild: boolean = true;
+    let changedFileListInAbsolutePath: Array<string> = changedFileList.map((file) => {
+      if (isJsonSourceFile(file)) {
+        this.logger.debug(blue, `ARKTS: json source file: ${file} changed, skip hot reload build!`, reset);
+        needHotreloadBuild = false;
+      }
+      return path.join(this.projectConfig.projectPath, file);
+    });
+
+    if (!needHotreloadBuild) {
+      return;
+    }
+
+    this.collectModuleFileList(rollupObject, changedFileListInAbsolutePath[Symbol.iterator]());
+
     if (!fs.existsSync(this.projectConfig.patchAbcPath)) {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
     this.updateSourceMapFromFileList(changedFileList);
-    let changedFileListInAbsolutePath: Array<string> = changedFileList.map((file) => {
-      return path.join(this.projectConfig.projectPath, file);
-    });
-    this.collectModuleFileList(rollupObject, changedFileListInAbsolutePath[Symbol.iterator]());
-
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
-
     this.generateAbcByEs2abc();
   }
 
