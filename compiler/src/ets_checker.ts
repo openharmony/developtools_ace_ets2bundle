@@ -481,6 +481,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
       if ([6193, 6194].includes(diagnostic.code)) {
         if (!isPipe) {
           process.env.watchTs = 'end';
+          if (fastBuildLogger) {
+            fastBuildLogger.debug('TS Watch End');
+          }
         }
         delayPrintLogCount();
       }
