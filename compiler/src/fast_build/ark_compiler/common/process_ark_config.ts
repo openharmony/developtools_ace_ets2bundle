@@ -90,7 +90,7 @@ export function initArkProjectConfig(share: any) {
       arkProjectConfig.pandaMode = buildJsonInfo.pandaMode;
     }
 
-    if (buildJsonInfo.compileMode === ESMODULE) {
+    if (projectConfig.compileMode === ESMODULE) {
       arkProjectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
       projectConfig.packageDir = buildJsonInfo.packageManagerType === 'ohpm' ? OH_MODULES : NODE_MODULES;
