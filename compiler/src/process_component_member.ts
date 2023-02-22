@@ -106,6 +106,7 @@ import {
   parentConditionalExpression,
   createFunction
 } from './process_component_build'
+import { CUSTOM_BUILDER_METHOD } from '../lib/component_map';
 
 export type ControllerType = {
   hasController: boolean
@@ -500,7 +501,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       updateState = updateConsumeProperty(node, name);
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
-      updateState = updateBuilderParamProperty(node, name);
+      updateState = updateBuilderParamProperty(node, name, log);
   }
   const members = interfaceNode.members;
   members.push(ts.factory.createPropertySignature(undefined, name,
@@ -707,12 +708,27 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
 }
 
 function updateBuilderParamProperty(node: ts.PropertyDeclaration,
-  nameIdentifier: ts.Identifier): ts.ExpressionStatement {
+  nameIdentifier: ts.Identifier, log: LogInfo[]): ts.ExpressionStatement {
   const name: string = nameIdentifier.getText();
+  if (judgeBuilderParamAssignedByBuilder(node)) {
+    log.push({
+      type: LogType.WARN,
+      message: `BuilderParam property can only initialized by Builder function`,
+      pos: node.getStart()
+    });
+  }
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(name), ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-    node.initializer || ts.factory.createIdentifier('undefined')
+    node.initializer || ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
   ));
+}
+
+function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boolean {
+  return node.initializer && !(node.initializer && (ts.isIdentifier(node.initializer) &&
+    CUSTOM_BUILDER_METHOD.has(node.initializer.escapedText.toString()) ||
+    ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
+    ts.isIdentifier(node.initializer.name) &&
+    CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString())));
 }
 
 function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,

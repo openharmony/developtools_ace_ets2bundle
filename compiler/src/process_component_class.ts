@@ -77,7 +77,8 @@ import {
   CREATE_LOCAL_STORAGE_LINK,
   CREATE_LOCAL_STORAGE_PROP,
   COMPONENT_UPDATE_STATE_VARS,
-  COMPONENT_WATCH_DECORATOR
+  COMPONENT_WATCH_DECORATOR,
+  $$
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -114,9 +115,11 @@ import {
 import {
   LogType,
   LogInfo,
-  hasDecorator
+  hasDecorator,
+  getPossibleBuilderTypeParameter
 } from './utils';
 import { partialUpdateConfig } from '../main';
+import { builderTypeParameter } from './process_ui_syntax';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -379,10 +382,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
+      builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       node.parameters.push(createParentParameter());
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
+      builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
@@ -542,20 +547,13 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isB
     ts.isIdentifier(initExpression.name) && initExpression.name.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
   } else if (isBuilder && ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
-    ts.isIdentifier(initExpression.expression) && initExpression.expression.escapedText.toString() === '$$' &&
+    ts.isIdentifier(initExpression.expression) && initExpression.expression.escapedText.toString() === $$ &&
     ts.isIdentifier(initExpression.name) && linkParentComponent.includes(propertyName.escapedText.toString())) {
     is$$ = true;
     initText = initExpression.name.escapedText.toString();
   } else if (isMatchInitExpression(initExpression) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
-    if (!initExpression.name.escapedText.toString().match(LINK_REG)) {
-      log.push({
-        type: LogType.WARN,
-        message: `The @Link property should initialze using "$" to create a reference.`,
-        pos: initExpression.getStart()
-      });
-    }
   }
   if (initText) {
     node = addDoubleUnderline(node, propertyName, initText, is$$);
@@ -574,7 +572,7 @@ function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identi
   initText: string, is$$ = false): ts.PropertyAssignment {
   return ts.factory.updatePropertyAssignment(node, propertyName,
     ts.factory.createPropertyAccessExpression(
-      is$$ && partialUpdateConfig.partialUpdateMode ? ts.factory.createIdentifier('$$') : ts.factory.createThis(),
+      is$$ && partialUpdateConfig.partialUpdateMode ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
       ts.factory.createIdentifier(`__${initText}`)));
 }
 
