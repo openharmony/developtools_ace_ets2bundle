@@ -19,7 +19,10 @@ import fs from 'fs';
 import os from 'os';
 import uglifyJS from 'uglify-js';
 
-import { projectConfig } from '../main';
+import {
+  projectConfig,
+  partialUpdateConfig
+} from '../main';
 import { createHash } from 'crypto';
 import {
   AUXILIARY,
@@ -568,4 +571,16 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
     info = fs.readFileSync(projectConfig.aceSoPath, 'utf-8') + '\n';
   }
   fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
+}
+
+export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclaration[]): string[] {
+  const parameterNames: string[] = [];
+  if (!partialUpdateConfig.builderCheck) {
+    parameters.forEach((parameter) => {
+      if (parameter.name && ts.isIdentifier(parameter.name)) {
+        parameterNames.push(parameter.name.escapedText.toString());
+      }
+    });
+  }
+  return parameterNames;
 }
