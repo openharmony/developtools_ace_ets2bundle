@@ -51,7 +51,8 @@ import {
   consumeCollection,
   objectLinkCollection,
   localStorageLinkCollection,
-  localStoragePropCollection
+  localStoragePropCollection,
+  builderParamInitialization
 } from './validate_ui_syntax';
 import {
   getExtensionIfUnfullySpecifiedFilepath,
@@ -194,7 +195,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         regularCollection.get(propertiesName), storagePropCollection.get(propertiesName),
         storageLinkCollection.get(propertiesName), provideCollection.get(propertiesName),
         consumeCollection.get(propertiesName), objectLinkCollection.get(propertiesName),
-        localStorageLinkCollection.get(propertiesName), localStoragePropCollection.get(propertiesName));
+        localStorageLinkCollection.get(propertiesName), localStoragePropCollection.get(propertiesName),
+        builderParamInitialization.get(propertiesName));
     }
     addDefaultExport(node);
   }
@@ -229,7 +231,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
               storagePropCollection.get(asExportPropertyName), storageLinkCollection.get(asExportPropertyName),
               provideCollection.get(asExportPropertyName), consumeCollection.get(asExportPropertyName),
               objectLinkCollection.get(asExportPropertyName), localStorageLinkCollection.get(asExportPropertyName),
-              localStoragePropCollection.get(asExportPropertyName));
+              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName));
           }
           asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
         }
@@ -363,19 +365,19 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData);
   } else {
     setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
       ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData);
   }
 }
 
@@ -423,7 +425,10 @@ function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment): voi
       new Set([...objectLinkCollection.get(CUSTOM_COMPONENT_DEFAULT),
         ...objectLinkCollection.get(name)]) : objectLinkCollection.get(name),
     getNewLocalStorageMap(localStorageLinkCollection, name),
-    getNewLocalStorageMap(localStoragePropCollection, name)
+    getNewLocalStorageMap(localStoragePropCollection, name),
+    builderParamInitialization.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...builderParamInitialization.get(CUSTOM_COMPONENT_DEFAULT),
+        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name)
   );
 }
 
@@ -453,7 +458,8 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   propArray: Set<string>, builderParamArray: Set<string>, stateArray: Set<string>,
   regularArray: Set<string>, storagePropsArray: Set<string>, storageLinksArray: Set<string>,
   providesArray: Set<string>, consumesArray: Set<string>, objectLinksArray: Set<string>,
-  localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>): void {
+  localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
+  builderParamData: Set<string>): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
@@ -468,6 +474,7 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   objectLinkCollection.set(component, objectLinksArray);
   localStorageLinkCollection.set(component, localStorageLinkMap);
   localStoragePropCollection.set(component, localStoragePropMap);
+  builderParamInitialization.set(component, builderParamData);
 }
 
 function hasCollection(node: ts.Identifier): boolean {
