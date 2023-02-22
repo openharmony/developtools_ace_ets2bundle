@@ -60,7 +60,8 @@ import {
   objectLinkCollection,
   isStaticViewCollection,
   builderParamObjectCollection,
-  getLocalStorageCollection
+  getLocalStorageCollection,
+  builderParamInitialization
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -312,6 +313,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
+  validateInitDecorator(node, name, curChildProps, log);
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
@@ -623,6 +625,23 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
         type: LogType.ERROR,
         message: `Property '${item}' in the custom component '${customComponentName}'` +
           ` is missing (mandatory to specify).`,
+        pos: node.getStart()
+      });
+    }
+  });
+}
+
+function validateInitDecorator(node: ts.CallExpression, customComponentName: string,
+  curChildProps: Set<string>, log: LogInfo[]): void {
+  const mandatoryToInitViaParamSet: Set<string> = new Set([
+    ...getCollectionSet(customComponentName, builderParamObjectCollection)]);
+  const decoratorVariable: Set<string> = builderParamInitialization.get(customComponentName);
+  mandatoryToInitViaParamSet.forEach((item: string) => {
+    if (item && !curChildProps.has(item) && decoratorVariable && !decoratorVariable.has(item)) {
+      log.push({
+        type: LogType.ERROR,
+        message: `Property '${item}' in the custom component '${customComponentName}'` +
+        ` is missing assignment or initialization.`,
         pos: node.getStart()
       });
     }
