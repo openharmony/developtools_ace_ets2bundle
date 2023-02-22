@@ -690,7 +690,11 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.partialUpdateMode = false;
       }
-      return !partialUpdateConfig.partialUpdateMode
+      if (item.name && item.name === 'ArkTSBuilderCheck' &&
+        item.value && item.value === 'false') {
+        partialUpdateConfig.builderCheck = false;
+      }
+      return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck;
     });
   }
 }
@@ -713,7 +717,8 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
-  partialUpdateMode: false
+  partialUpdateMode: false,
+  builderCheck: true
 };
 
 exports.globalProgram = globalProgram;

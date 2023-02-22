@@ -114,8 +114,10 @@ import {
 import {
   LogType,
   LogInfo,
-  hasDecorator
+  hasDecorator,
+  getPossibleBuilderTypeParameter
 } from './utils';
+import { builderTypeParameter } from './process_ui_syntax';
 import { partialUpdateConfig } from '../main';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
@@ -379,10 +381,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
+      builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       node.parameters.push(createParentParameter());
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
+      builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {

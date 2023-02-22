@@ -390,3 +390,5 @@ export const CALL = 'call';
 export const RESERT = 'reset';
 
 export const TS_NOCHECK: string = '// @ts-nocheck';
+
+export const BUILDER_TYPE: string = 'BuilderType';
