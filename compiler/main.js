@@ -619,7 +619,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     if (envArgs !== undefined) {
       projectConfig.buildArkMode = envArgs.buildMode;
     }
-    if (buildJsonInfo.compileMode === 'esmodule') {
+    if (compileMode === 'esmodule') {
       projectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
       projectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
     }
