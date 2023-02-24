@@ -102,7 +102,8 @@ import {
   TabContentAndNavDestination,
   START,
   END,
-  BUILDER_PARAM_PROXY
+  BUILDER_PARAM_PROXY,
+  BUILDER_TYPE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -138,10 +139,16 @@ import {
   componentInfo
 } from './utils';
 import {
+  globalProgram,
   partialUpdateConfig,
   projectConfig
 } from '../main';
-import { transformLog, contextGlobal, validatorCard } from './process_ui_syntax';
+import {
+  transformLog,
+  contextGlobal,
+  validatorCard,
+  builderTypeParameter
+} from './process_ui_syntax';
 import { props } from './compile_info';
 
 const checkComponents: Set<string> = new Set([
@@ -342,6 +349,14 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             }
             break;
           case ComponentType.builderParamMethod:
+            parent = undefined;
+            if (partialUpdateConfig.partialUpdateMode) {
+              newStatements.push(transferBuilderCall(item, name, isBuilder));
+            } else {
+              newStatements.push(addInnerBuilderParameter(item));
+            }
+            break;
+          case ComponentType.builderTypeFunction:
             parent = undefined;
             if (partialUpdateConfig.partialUpdateMode) {
               newStatements.push(transferBuilderCall(item, name, isBuilder));
@@ -793,15 +808,15 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
             ts.factory.createBinaryExpression(ts.factory.createBinaryExpression(
               ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
                 ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(GLOBAL_THIS),
-                ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
+                  ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
                   ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
-                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()),
-                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                  ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
-                    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-                      ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)),
-                      undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                      ts.factory.createTrue()))))],ts.NodeFlags.Const));
+              ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()),
+            ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+            ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+              ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)),
+              undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+              ts.factory.createTrue()))))],ts.NodeFlags.Const));
       } else {
         return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
           [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
@@ -822,9 +837,9 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
             ts.factory.createBinaryExpression(ts.factory.createParenthesizedExpression(
               ts.factory.createBinaryExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(
                 GLOBAL_THIS), ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
-                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
-                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
-                  ts.NodeFlags.Const));
+                ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
+            ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
+          ts.NodeFlags.Const));
       } else {
         return createIsLazyWithValue(true);
       }
@@ -2221,6 +2236,9 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
 function isCustomAttributes(temp: ts.PropertyAccessExpression): boolean {
   if (temp.expression && temp.expression.getText() === THIS) {
     return true;
+  } else if (temp.expression && ts.isIdentifier(temp.expression) && temp.expression.getText() === $$ &&
+    builderTypeParameter.params.includes(temp.expression.getText())) {
+    return true;
   } else {
     return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
   }
@@ -2245,7 +2263,8 @@ enum ComponentType {
   forEachComponent,
   customBuilderMethod,
   builderParamMethod,
-  function
+  function,
+  builderTypeFunction
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -2296,6 +2315,9 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   } else if ((['XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
     ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
     return ComponentType.function;
+  } else if (!partialUpdateConfig.builderCheck && builderTypeParameter.params.includes(name) &&
+    judgeBuilderType(node)) {
+    return ComponentType.builderTypeFunction;
   } else if (!isAttributeNode(node)) {
     log.push({
       type: LogType.ERROR,
@@ -2304,6 +2326,22 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     });
   }
   return null;
+}
+
+function judgeBuilderType(node: ts.ExpressionStatement): boolean {
+  let checker: ts.TypeChecker;
+  if (globalProgram.program) {
+    checker = globalProgram.program.getTypeChecker();
+  } else if (globalProgram.watchProgram) {
+    checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
+  }
+  if (node.expression && node.expression.expression && checker) {
+    const type: ts.Type = checker.getTypeAtLocation(node.expression.expression);
+    if (type && type.aliasSymbol && type.aliasSymbol.escapedName === BUILDER_TYPE) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
