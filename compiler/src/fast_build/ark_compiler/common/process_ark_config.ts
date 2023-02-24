@@ -78,7 +78,8 @@ export function initArkProjectConfig(share: any) {
     if (buildJsonInfo.patchConfig) {
       arkProjectConfig.oldMapFilePath = buildJsonInfo.patchConfig.oldMapFilePath;
     }
-    if (checkAotConfig(buildJsonInfo, (error: string) => { share.throwArkTsCompilerError(error) })) {
+    if (checkAotConfig(projectConfig.compileMode, buildJsonInfo,
+      (error: string) => { share.throwArkTsCompilerError(error) })) {
       arkProjectConfig.processTs = true;
       arkProjectConfig.pandaMode = TS2ABC;
       arkProjectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
