@@ -45,66 +45,89 @@ export interface FaultHandler {
   (error: string): void
 }
 
-function checkAotPartialConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
+function checkAotPartialConfig(compileMode: string, buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_PARTIAL && !buildJsonInfo.apPath) {
+    // no AOT's partial related configuration is hit, pass the configuration to next compile mode
     return false;
   }
-  if (buildJsonInfo.compileMode !== ESMODULE) {
+  if (compileMode !== ESMODULE) {
     faultHandler(`ArkTS:ERROR Aot's partial mode must config compileMode with esmodule.`);
+    return true;
   }
   if (buildJsonInfo.anBuildMode !== AOT_PARTIAL) {
     faultHandler(`ArkTS:ERROR Aot's partial mode must config aotBuildMode with partial.`);
+    return true;
   }
   if (!buildJsonInfo.apPath) {
     faultHandler(`ArkTS:ERROR Aot's partial mode must config a valid apPath.`);
+    return true;
   }
   if (path.extname(buildJsonInfo.apPath) !== AOT_PROFILE_SUFFIX) {
     faultHandler(`ArkTS:ERROR apPath for Aot's partial mode must with suffix "${AOT_PROFILE_SUFFIX}".`);
+    return true;
   }
   if (!fs.existsSync(buildJsonInfo.apPath)) {
     faultHandler(`ArkTS:ERROR apPath for Aot's partial mode is not found in "${buildJsonInfo.apPath}".`);
+    return true;
   }
   if (!buildJsonInfo.anBuildOutPut) {
     faultHandler(`ArkTS:ERROR Aot's partial mode need anBuildOutPut.`);
+    return true;
   }
   // Aot compiler's partial mode.
   return true;
 }
 
-function checkAotFullConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
+function checkAotFullConfig(compileMode: string, buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_FULL) {
+    // no AOT's full related configuration is hit, pass the configuration to next compile mode
     return false;
   }
-  if (buildJsonInfo.compileMode !== ESMODULE) {
+  if (compileMode !== ESMODULE) {
     faultHandler(`ArkTS:ERROR Aot's full mode must config compileMode with esmodule.`);
+    return true;
   }
   if (buildJsonInfo.apPath) {
     faultHandler(`ArkTS:ERROR Aot's full mode do not need apPath.`);
+    return true;
   }
   if (!buildJsonInfo.anBuildOutPut) {
     faultHandler(`ArkTS:ERROR Aot's full mode need anBuildOutPut.`);
+    return true;
   }
   // Aot compiler's full mode.
   return true;
 }
 
-function checkAotTypeConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
+function checkAotTypeConfig(compileMode: string, buildJsonInfo: any, faultHandler: FaultHandler): boolean {
   if (buildJsonInfo.anBuildMode !== AOT_TYPE) {
+    // no AOT's type related configuration is hit, pass the configuration to next compile mode
     return false;
   }
-  if (buildJsonInfo.compileMode !== ESMODULE) {
+  if (compileMode !== ESMODULE) {
     faultHandler(`ArkTS:ERROR Aot's type mode must config compileMode with esmodule.`);
+    return true;
   }
   if (buildJsonInfo.apPath) {
     faultHandler(`ArkTS:ERROR Aot's type mode do not need apPath.`);
+    return true;
   }
   // Aot compiler's type mode.
   return true;
 }
 
-export function checkAotConfig(buildJsonInfo: any, faultHandler: FaultHandler): boolean {
-  return checkAotTypeConfig(buildJsonInfo, faultHandler) ||
-    checkAotFullConfig(buildJsonInfo, faultHandler) || checkAotPartialConfig(buildJsonInfo, faultHandler);
+/**
+ * Check if the AOT related configuration is hit
+ * @param compileMode CompileMode for the project, which can be jsbundle or esmodule
+ * @param buildJsonInfo buildJsonInfo which parsed from projectConfig.aceBuildJson
+ * @param faultHandler faultHandler for illegal AOT configuration
+ * @returns {Boolean} false means no AOT related configuration found, else return true
+ * @api private
+ */
+export function checkAotConfig(compileMode: string, buildJsonInfo: any, faultHandler: FaultHandler): boolean {
+  return checkAotTypeConfig(compileMode, buildJsonInfo, faultHandler) ||
+    checkAotFullConfig(compileMode, buildJsonInfo, faultHandler) ||
+    checkAotPartialConfig(compileMode, buildJsonInfo, faultHandler);
 }
 
 export function generateAot(arkDir: string, builtinAbcPath: string, projectConfig: any, logger: any, faultHandler: FaultHandler): void {
