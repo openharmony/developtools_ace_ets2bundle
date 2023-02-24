@@ -112,6 +112,8 @@ class CustomContainer extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
+        this.content = undefined;
+        this.callContent = undefined;
         this.footer = "";
         this.updateWithValueParams(params);
     }
@@ -119,8 +121,12 @@ class CustomContainer extends View {
         if (params.header !== undefined) {
             this.header = params.header;
         }
-        this.content = params.content;
-        this.callContent = params.callContent;
+        if (params.content !== undefined) {
+            this.content = params.content;
+        }
+        if (params.callContent !== undefined) {
+            this.callContent = params.callContent;
+        }
         if (params.footer !== undefined) {
             this.footer = params.footer;
         }
@@ -143,13 +149,16 @@ class CustomContainer2 extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.header = "";
+        this.content = undefined;
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
         if (params.header !== undefined) {
             this.header = params.header;
         }
-        this.content = params.content;
+        if (params.content !== undefined) {
+            this.content = params.content;
+        }
     }
     aboutToBeDeleted() {
         SubscriberManager.Get().delete(this.id());

@@ -75,7 +75,8 @@ import {
 } from './validate_ui_syntax';
 import {
   processComponentClass,
-  createParentParameter
+  createParentParameter,
+  processBuildMember
 } from './process_component_class';
 import processImport from './process_import';
 import {
@@ -151,7 +152,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
           process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
-                                                 writeFileSyncByNode(node, true, projectConfig);
+            writeFileSyncByNode(node, true, projectConfig);
         }
         return node;
       } else {
@@ -198,6 +199,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
             processComponentBlock(node.body, false, transformLog.errors, false, true,
               node.name.getText(), undefined, true));
           builderTypeParameter.params = [];
+          node = processBuildMember(node, context, transformLog.errors, true);
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
@@ -241,7 +243,7 @@ function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
           ts.factory.createIdentifier(_GENERATE_ID),
           undefined,
           ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
-          ts.factory.createNumericLiteral("0")
+          ts.factory.createNumericLiteral('0')
         )],
         ts.NodeFlags.Let
       )
@@ -256,15 +258,15 @@ function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
       ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
       ts.factory.createBlock(
         [ts.factory.createReturnStatement(ts.factory.createBinaryExpression(
-          ts.factory.createStringLiteral(path.basename(node.fileName, EXTNAME_ETS)+'_'),
-          ts.factory.createToken(ts.SyntaxKind.PlusToken),ts.factory.createPrefixUnaryExpression(
-          ts.SyntaxKind.PlusPlusToken,
-          ts.factory.createIdentifier(_GENERATE_ID)
-        )))],
+          ts.factory.createStringLiteral(path.basename(node.fileName, EXTNAME_ETS) + '_'),
+          ts.factory.createToken(ts.SyntaxKind.PlusToken), ts.factory.createPrefixUnaryExpression(
+            ts.SyntaxKind.PlusPlusToken,
+            ts.factory.createIdentifier(_GENERATE_ID)
+          )))],
         true
       )
     )
-  )
+  );
 }
 
 function preprocessIdAttrs(fileName: string): void {
@@ -757,13 +759,13 @@ function createLoadDocument(context: ts.TransformationContext, name: string,
   }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
-    context.factory.createIdentifier(name),
-    undefined, newArray)];
+      context.factory.createIdentifier(name),
+      undefined, newArray)];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   return context.factory.createExpressionStatement(
     context.factory.createCallExpression(
       context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-      PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)
+        PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)
   );
 }
 
