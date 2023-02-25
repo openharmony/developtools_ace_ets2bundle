@@ -36,6 +36,7 @@ import {
   TS2ABC,
   ES2ABC,
   EXTNAME_PROTO_BIN,
+  NATIVE_MODULE,
 } from './pre_define';
 import {
   isMac,
@@ -47,6 +48,9 @@ import {
   toUnixPath,
   validateFilePathLength
 } from './utils';
+import {
+  projectConfig
+} from '../main';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -90,6 +94,30 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
 
   logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
+}
+
+export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
+{
+  const REG_SYSTEM_MODULE: RegExp = /@(system|ohos)\.(\S+)/;
+  const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
+
+  if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {
+    return moduleRequest.replace(REG_SYSTEM_MODULE, (_, moduleType, systemKey) => {
+      const systemModule: string = `${moduleType}.${systemKey}`;
+      if (NATIVE_MODULE.has(systemModule)) {
+        return `@native:${systemModule}`;
+      } else {
+        return `@ohos:${systemKey}`;
+      };
+    });
+  }
+  if (REG_LIB_SO.test(moduleRequest.trim())) {
+    return moduleRequest.replace(REG_LIB_SO, (_, libsoKey) => {
+      return `@app:${projectConfig.bundleName}/${projectConfig.moduleName}/${libsoKey}`;
+    });
+  }
+
+  return undefined;
 }
 
 export function genSourceMapFileName(temporaryFile: string): string {
