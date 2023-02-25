@@ -96,8 +96,8 @@ class Index extends ViewPU {
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        myBuilder(this);
-        this.Builder1(this);
+        myBuilder.bind(this)();
+        this.Builder1.bind(this)();
         {
             this.observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);

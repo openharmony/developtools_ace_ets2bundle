@@ -77,7 +77,8 @@ import {
   CREATE_LOCAL_STORAGE_LINK,
   CREATE_LOCAL_STORAGE_PROP,
   COMPONENT_UPDATE_STATE_VARS,
-  COMPONENT_WATCH_DECORATOR
+  COMPONENT_WATCH_DECORATOR,
+  $$
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -387,7 +388,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         node.parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       builderTypeParameter.params = [];
-      updateItem = processBuildMember(builderNode, context, log);
+      updateItem = processBuildMember(builderNode, context, log, true);
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
@@ -415,15 +416,15 @@ export function createParentParameter(): ts.ParameterDeclaration {
     ts.factory.createIdentifier(NULL));
 }
 
-function processBuildMember(node: ts.MethodDeclaration, context: ts.TransformationContext,
-  log: LogInfo[]): ts.MethodDeclaration {
+export function processBuildMember(node: ts.MethodDeclaration | ts.FunctionDeclaration, context: ts.TransformationContext,
+  log: LogInfo[], isBuilder = false): ts.MethodDeclaration | ts.FunctionDeclaration {
   return ts.visitNode(node, visitBuild);
   function visitBuild(node: ts.Node): ts.Node {
     if (isGeometryView(node)) {
       node = processGeometryView(node as ts.ExpressionStatement, log);
     }
     if (isProperty(node)) {
-      node = createReference(node as ts.PropertyAssignment, log);
+      node = createReference(node as ts.PropertyAssignment, log, isBuilder);
     }
     if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
       stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
@@ -530,13 +531,14 @@ function judgmentParentType(node: ts.Node): boolean {
     (ts.isCallExpression(node.parent.parent) || ts.isEtsComponentExpression(node.parent.parent));
 }
 
-export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts.PropertyAssignment {
+export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isBuilder = false): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propParentComponent: string[] = getParentNode(node, propCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
   const LINK_REG: RegExp = /^\$/g;
   const initExpression: ts.Expression = node.initializer;
+  let is$$: boolean = false;
   if (ts.isIdentifier(initExpression) &&
     initExpression.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.escapedText.toString().replace(LINK_REG, '');
@@ -544,19 +546,17 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[]): ts
     initExpression.expression.kind === ts.SyntaxKind.ThisKeyword &&
     ts.isIdentifier(initExpression.name) && initExpression.name.escapedText.toString().match(LINK_REG)) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
+  } else if (isBuilder && ts.isPropertyAccessExpression(initExpression) && initExpression.expression &&
+    ts.isIdentifier(initExpression.expression) && initExpression.expression.escapedText.toString() === $$ &&
+    ts.isIdentifier(initExpression.name) && linkParentComponent.includes(propertyName.escapedText.toString())) {
+    is$$ = true;
+    initText = initExpression.name.escapedText.toString();
   } else if (isMatchInitExpression(initExpression) &&
     linkParentComponent.includes(propertyName.escapedText.toString())) {
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
-    if (!initExpression.name.escapedText.toString().match(LINK_REG)) {
-      log.push({
-        type: LogType.WARN,
-        message: `The @Link property should initialze using "$" to create a reference.`,
-        pos: initExpression.getStart()
-      });
-    }
   }
   if (initText) {
-    node = addDoubleUnderline(node, propertyName, initText);
+    node = addDoubleUnderline(node, propertyName, initText, is$$);
   }
   return node;
 }
@@ -569,9 +569,10 @@ function isMatchInitExpression(initExpression: ts.Expression): boolean {
 }
 
 function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identifier,
-  initText: string): ts.PropertyAssignment {
+  initText: string, is$$ = false): ts.PropertyAssignment {
   return ts.factory.updatePropertyAssignment(node, propertyName,
-    ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
+    ts.factory.createPropertyAccessExpression(
+      is$$ && partialUpdateConfig.partialUpdateMode ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
       ts.factory.createIdentifier(`__${initText}`)));
 }
 
