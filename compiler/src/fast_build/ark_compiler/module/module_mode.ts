@@ -522,7 +522,7 @@ export class ModuleMode extends CommonMode {
         tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1));
     }
 
-    return pkgName.replace(packageDir, PACKAGES);
+    return pkgName.replace(new RegExp(packageDir, 'g'), PACKAGES);
   }
 
   private generateProtoFilesInfo() {
