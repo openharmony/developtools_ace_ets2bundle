@@ -72,9 +72,9 @@ export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   let entriesInfo: string = '';
   for (const value of entryInfos.values()) {
     const buildPath: string =
-      value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '').replace(NODE_MODULES, PACKAGES);
+      value.buildPath.replace(toUnixPath(projectConfig.nodeModulesPath), '').replace(new RegExp(NODE_MODULES, 'g'), PACKAGES);
     const entryFile: string = toUnixPath(path.join(buildPath, value.entry));
-    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.')).replace(NODE_MODULES, PACKAGES);
+    const entry: string = entryFile.substring(0, entryFile.lastIndexOf('.')).replace(new RegExp(NODE_MODULES, 'g'), PACKAGES);
     entriesInfo +=
       `${toUnixPath(path.join(PACKAGES, buildPath))}:${toUnixPath(path.join(PACKAGES, entry))}\n`;
   }

@@ -79,12 +79,12 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   if (projectFilePath.indexOf(packageDir) !== -1) {
     const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
     if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
-      return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(packageDir, PACKAGES);
+      return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
     }
 
     const tryModulePkg: string = toUnixPath(path.join(moduleRootPath, packageDir));
     if (unixFilePath.indexOf(tryModulePkg) !== -1) {
-      return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(packageDir, PACKAGES);
+      return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
     }
   }
 
