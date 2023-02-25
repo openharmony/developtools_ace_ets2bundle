@@ -118,7 +118,7 @@ class Index extends ViewPU {
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
-        ComB(this.arr, this);
+        ComB.bind(this)(this.arr);
         Column.pop();
     }
     rerender() {

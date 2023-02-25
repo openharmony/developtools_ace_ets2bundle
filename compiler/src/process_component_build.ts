@@ -102,6 +102,7 @@ import {
   TabContentAndNavDestination,
   START,
   END,
+  BUILDER_PARAM_PROXY,
   BUILDER_TYPE
 } from './pre_define';
 import {
@@ -119,6 +120,7 @@ import {
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
   INNER_CUSTOM_BUILDER_METHOD,
+  GLOBAL_CUSTOM_BUILDER_METHOD,
   ID_ATTRS
 } from './component_map';
 import {
@@ -335,19 +337,27 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
-            if (CUSTOM_BUILDER_METHOD.has(name)) {
-              newStatements.push(addInnerBuilderParameter(item, isGlobalBuilder));
+            if (partialUpdateConfig.partialUpdateMode) {
+              newStatements.push(transferBuilderCall(item, name, isBuilder));
             } else {
-              newStatements.push(item);
+              newStatements.push(addInnerBuilderParameter(item, isGlobalBuilder));
             }
             break;
           case ComponentType.builderParamMethod:
             parent = undefined;
-            newStatements.push(addInnerBuilderParameter(item));
+            if (partialUpdateConfig.partialUpdateMode) {
+              newStatements.push(transferBuilderCall(item, name, isBuilder));
+            } else {
+              newStatements.push(addInnerBuilderParameter(item));
+            }
             break;
           case ComponentType.builderTypeFunction:
             parent = undefined;
-            newStatements.push(addInnerBuilderParameter(item, isGlobalBuilder));
+            if (partialUpdateConfig.partialUpdateMode) {
+              newStatements.push(transferBuilderCall(item, name, isBuilder));
+            } else {
+              newStatements.push(addInnerBuilderParameter(item));
+            }
             break;
           case ComponentType.function:
             parent = undefined;
@@ -373,6 +383,119 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
       fileName: ''
     };
   }
+}
+
+function transferBuilderCall(node: ts.ExpressionStatement, name: string,
+  isBuilder: boolean = false): ts.ExpressionStatement {
+  if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments &&
+    node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
+    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          node.expression.expression,
+          ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+        ),
+        undefined,
+        [ts.factory.createThis()]
+      ),
+      undefined,
+      [ts.factory.createCallExpression(
+        ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+        undefined,
+        [
+          ts.factory.createStringLiteral(name),
+          traverseBuilderParams(node.expression.arguments[0], isBuilder)
+        ]
+      )]
+    ));
+  } else {
+    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          node.expression.expression,
+          ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+        ),
+        undefined,
+        [ts.factory.createThis()]
+      ),
+      undefined,
+      node.expression.arguments
+    ));
+  }
+}
+
+function traverseBuilderParams(node: ts.ObjectLiteralExpression,
+  isBuilder: boolean): ts.ObjectLiteralExpression {
+  const properties: ts.ObjectLiteralElementLike[] = [];
+  if (node.properties && node.properties.length) {
+    node.properties.forEach(property => {
+      if (ts.isPropertyAssignment(property) && property.initializer &&
+        ts.isPropertyAccessExpression(property.initializer) && property.initializer.expression &&
+        property.initializer.name && ts.isIdentifier(property.initializer.name)) {
+        const name: string = property.initializer.name.escapedText.toString();
+        if (!isBuilder && property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword ||
+          isBuilder && ts.isIdentifier(property.initializer.expression) &&
+          property.initializer.expression.escapedText.toString() === $$) {
+          addProperties(properties, property, name, isBuilder);
+        } else {
+          properties.push(ts.factory.createPropertyAssignment(
+            property.name,
+            ts.factory.createArrowFunction(
+              undefined,
+              undefined,
+              [],
+              undefined,
+              ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              property.initializer
+            )
+          ));
+        }
+      } else {
+        properties.push(ts.factory.createPropertyAssignment(
+          property.name,
+          ts.factory.createArrowFunction(
+            undefined,
+            undefined,
+            [],
+            undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            property.initializer
+          )
+        ));
+      }
+    });
+  }
+  return ts.factory.createObjectLiteralExpression(properties);
+}
+
+function addProperties(properties: ts.ObjectLiteralElementLike[], property: ts.ObjectLiteralElementLike,
+  name: string, isBuilder: boolean): void {
+  properties.push(ts.factory.createPropertyAssignment(
+    property.name,
+    ts.factory.createArrowFunction(
+      undefined,
+      undefined,
+      [],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
+        ts.factory.createElementAccessExpression(
+          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          ts.factory.createStringLiteral('__' + name)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        ts.factory.createElementAccessExpression(
+          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          ts.factory.createStringLiteral('__' + name)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.ColonToken),
+        ts.factory.createElementAccessExpression(
+          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          ts.factory.createStringLiteral(name)
+        )
+      ))
+    )
+  ));
 }
 
 function addInnerBuilderParameter(node: ts.ExpressionStatement,
@@ -2107,6 +2230,9 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
 function isCustomAttributes(temp: ts.PropertyAccessExpression): boolean {
   if (temp.expression && temp.expression.getText() === THIS) {
     return true;
+  } else if (temp.expression && ts.isIdentifier(temp.expression) && temp.expression.getText() === $$ &&
+    builderTypeParameter.params.includes(temp.expression.getText())) {
+    return true;
   } else {
     return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
   }
@@ -2148,21 +2274,21 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 }
 
 function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
-  return Array.isArray(forEachParameters) && 
-    forEachParameters.some((item)=>{
+  return Array.isArray(forEachParameters) &&
+    forEachParameters.some((item) => {
       return ts.isIdentifier(item.name) ? item.name.escapedText.toString() === name : false;
     });
 }
 
 function isParamFunction(node: ts.ExpressionStatement): boolean {
-  return node.expression && ts.isCallExpression(node.expression) && 
+  return node.expression && ts.isCallExpression(node.expression) &&
     node.expression.expression && ts.isIdentifier(node.expression.expression);
 }
 
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: string,
   parent: string, forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ComponentType {
   let isBuilderName: boolean = true;
-  if(forEachParameters && isSomeName(forEachParameters, name) && isParamFunction(node)) {
+  if (forEachParameters && isSomeName(forEachParameters, name) && isParamFunction(node)) {
     isBuilderName = false;
   }
   if (isEtsComponent(node)) {
@@ -2251,8 +2377,8 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
         (argument.expression.escapedText.toString() === RESOURCE))) {
         log.push({
           type: LogType.ERROR,
-          message: "The Button component with a label parameter can not have any child.",
-          pos: node.getStart(),
+          message: 'The Button component with a label parameter can not have any child.',
+          pos: node.getStart()
         });
         return;
       }
@@ -2262,7 +2388,7 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
 
 function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
   let temp: any = node.parent;
-  while(temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
+  while (temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
     temp = temp.parent;
   }
   if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
@@ -2290,7 +2416,7 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
       argumentsArr = transformBuilder(argumentsArr);
     }
   } else {
-    //@ts-ignore
+    // @ts-ignore
     argumentsArr = [];
   }
   return ts.factory.createCallExpression(
@@ -2315,8 +2441,8 @@ function transformBuilder(argumentsArr: ts.NodeArray<ts.Expression>): ts.NodeArr
   const newArguments: ts.Expression[] = [];
   argumentsArr.forEach((argument: ts.Expression) => {
     newArguments.push(parseCreateParameterBuilder(argument));
-  })
-  //@ts-ignore
+  });
+  // @ts-ignore
   return newArguments;
 }
 

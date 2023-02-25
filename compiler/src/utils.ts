@@ -33,7 +33,8 @@ import {
   MAIN,
   FAIL,
   TEMPORARY,
-  ESMODULE
+  ESMODULE,
+  $$
 } from './pre_define';
 
 export enum LogType {
@@ -576,11 +577,25 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
 export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclaration[]): string[] {
   const parameterNames: string[] = [];
   if (!partialUpdateConfig.builderCheck) {
-    parameters.forEach((parameter) => {
-      if (parameter.name && ts.isIdentifier(parameter.name)) {
-        parameterNames.push(parameter.name.escapedText.toString());
-      }
-    });
+    if (is$$Parameter(parameters)) {
+      parameters[0].type.members.forEach((member) => {
+        if (member.name && ts.isIdentifier(member.name)) {
+          parameterNames.push(member.name.escapedText.toString());
+        }
+      });
+    } else {
+      parameters.forEach((parameter) => {
+        if (parameter.name && ts.isIdentifier(parameter.name)) {
+          parameterNames.push(parameter.name.escapedText.toString());
+        }
+      });
+    }
   }
   return parameterNames;
+}
+
+function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
+  return parameters.length === 1 && parameters[0].name && ts.isIdentifier(parameters[0].name) &&
+    parameters[0].name.escapedText.toString() === $$ && parameters[0].type && ts.isTypeLiteralNode(parameters[0].type) &&
+    parameters[0].type.members && parameters[0].type.members.length > 0;
 }

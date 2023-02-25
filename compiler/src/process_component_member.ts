@@ -104,7 +104,8 @@ import {
 import {
   parentConditionalExpression,
   createFunction
-} from './process_component_build'
+} from './process_component_build';
+import { CUSTOM_BUILDER_METHOD } from './component_map';
 
 export type ControllerType = {
   hasController: boolean
@@ -472,7 +473,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
       updateState = !partialUpdateConfig.partialUpdateMode ?
-          updateObservedProperty(node, name, type, program) : updateObservedPropertyPU(node, name, type, program);
+        updateObservedProperty(node, name, type, program) : updateObservedPropertyPU(node, name, type, program);
       break;
     case COMPONENT_LINK_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_LINK_DECORATOR, hasPreview, log);
@@ -498,6 +499,8 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
       updateState = updateConsumeProperty(node, name);
       break;
+    case COMPONENT_BUILDERPARAM_DECORATOR:
+      updateState = updateBuilderParamProperty(node, name, log);
   }
   const members = interfaceNode.members;
   members.push(ts.factory.createPropertySignature(undefined, name,
@@ -536,12 +539,12 @@ function createUpdateParams(name: ts.Identifier, decorator: string,
       } else {
         if (localInitializationNode && localInitializationNode.initializer) {
           updateParamsNode = createUpdateParamsWithIf(name, true,
-          localInitializationNode.initializer);
+            localInitializationNode.initializer);
         }
       }
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
-      updateParamsNode = createUpdateParamsWithoutIf(name);
+      updateParamsNode = createUpdateParamsWithIf(name);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
@@ -701,6 +704,30 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
       createPropertyAccessExpressionWithThis(INITIALIZE_CONSUME_FUNCTION), undefined, [
         ts.factory.createStringLiteral(propertyOrAliasName), ts.factory.createStringLiteral(name)])));
+}
+
+function updateBuilderParamProperty(node: ts.PropertyDeclaration,
+  nameIdentifier: ts.Identifier, log: LogInfo[]): ts.ExpressionStatement {
+  const name: string = nameIdentifier.getText();
+  if (judgeBuilderParamAssignedByBuilder(node)) {
+    log.push({
+      type: LogType.WARN,
+      message: `BuilderParam property can only initialized by Builder function`,
+      pos: node.getStart()
+    });
+  }
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    createPropertyAccessExpressionWithThis(name), ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+    node.initializer || ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+  ));
+}
+
+function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boolean {
+  return node.initializer && !(node.initializer && (ts.isIdentifier(node.initializer) &&
+    CUSTOM_BUILDER_METHOD.has(node.initializer.escapedText.toString()) ||
+    ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
+    ts.isIdentifier(node.initializer.name) &&
+    CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString())));
 }
 
 function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,
