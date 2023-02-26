@@ -36,8 +36,12 @@ export function apiTransform() {
     transform(code: string, id: string) {
       const magicString = new MagicString(code);
       if (filter(id)) {
-        code = processSystemApi(code, id);
-        code = proceseLibso(code, id, useOSFiles);
+        if (projectConfig.compileMode === "esmodule") {
+          code = transformImportRequire(code, id, useOSFiles);
+        } else {
+          code = processSystemApi(code, id);
+          code = processLibso(code, id, useOSFiles);
+        }
       }
       return {
         code: code,
@@ -64,14 +68,8 @@ function processSystemApi(content: string, sourcePath: string): string {
     checkModuleExist(systemModule, sourcePath);
     if (NATIVE_MODULE.has(systemModule)) {
       item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-    } else if (moduleType === SYSTEM_PLUGIN) {
-      item = `var ${systemValue} = isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ? ` +
-          `globalThis.systemplugin.${systemKey} : globalThis.requireNapi('${systemKey}')`;
-    } else if (moduleType === OHOS_PLUGIN) {
-      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}') || ` +
-          `(isSystemplugin('${systemKey}', '${OHOS_PLUGIN}') ? ` +
-          `globalThis.ohosplugin.${systemKey} : isSystemplugin('${systemKey}', '${SYSTEM_PLUGIN}') ` +
-          `? globalThis.systemplugin.${systemKey} : undefined)`;
+    } else if (moduleType === SYSTEM_PLUGIN || moduleType === OHOS_PLUGIN) {
+      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}')`;
     }
     return item;
   });
@@ -86,7 +84,7 @@ function checkModuleExist(systemModule: string, sourcePath: string): void {
   }
 }
 
-function proceseLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
+function processLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
   return content.replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
@@ -96,5 +94,26 @@ function proceseLibso(content: string, sourcePath: string, useOSFiles: Set<strin
     return projectConfig.bundleName && projectConfig.moduleName
       ? `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true, "${projectConfig.bundleName}/${projectConfig.moduleName}");`
       : `var ${libSoValue} = globalThis.requireNapi("${libSoKey}", true);`;
+  });
+}
+
+// It is rare to use `import xxx = require('module')` for system module and user native library,
+// Here keep tackling with this for compatibility concern.
+function transformImportRequire(content: string, sourcePath: string, useOSFiles: Set<string>): string {
+  const REG_SYSTEM: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  const REG_LIB_SO: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
+
+  return content.replace(REG_SYSTEM, (_, item1, item2, item3, item4, item5, item6) => {
+    const moduleType: string = item2 || item5;
+    const systemKey: string = item3 || item6;
+    const systemValue: string = item1 || item4;
+    const systemModule: string = `${moduleType}.${systemKey}`;
+    checkModuleExist(systemModule, sourcePath);
+    return `import ${systemValue} from '@${moduleType}.${systemKey}'`;
+  }).replace(REG_LIB_SO, (_, item1, item2, item3, item4) => {
+    useOSFiles.add(sourcePath);
+    const libSoValue: string = item1 || item3;
+    const libSoKey: string = item2 || item4;
+    return `import ${libSoValue} from 'lib${libSoKey}.so'`;
   });
 }
