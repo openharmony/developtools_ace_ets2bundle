@@ -19,7 +19,11 @@ import {
   GEN_ABC_PLUGIN_NAME,
   PACKAGES
 } from '../common/ark_define';
-import { getOhmUrlByFilepath, getOhmUrlByHarName } from '../../../ark_utils';
+import {
+  getOhmUrlByFilepath,
+  getOhmUrlByHarName,
+  getOhmUrlBySystemApiOrLibRequest
+} from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
   isJsonSourceFile,
@@ -73,6 +77,10 @@ export class ModuleSourceFile {
   }
 
   private getOhmUrl(moduleRequest: string, filePath: string | undefined): string | undefined {
+    let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
+    if (systemOrLibOhmUrl != undefined) {
+      return systemOrLibOhmUrl;
+    }
     const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, ModuleSourceFile.projectConfig);
     if (harOhmUrl !== undefined) {
       return harOhmUrl;

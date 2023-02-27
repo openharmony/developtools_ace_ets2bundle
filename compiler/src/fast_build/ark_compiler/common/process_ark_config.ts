@@ -75,7 +75,11 @@ export function initArkProjectConfig(share: any) {
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     arkProjectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     arkProjectConfig.isOhosTest = buildJsonInfo.isOhosTest;
-    if (checkAotConfig(buildJsonInfo, (error: string) => { share.throwArkTsCompilerError(error) })) {
+    if (buildJsonInfo.patchConfig) {
+      arkProjectConfig.oldMapFilePath = buildJsonInfo.patchConfig.oldMapFilePath;
+    }
+    if (checkAotConfig(projectConfig.compileMode, buildJsonInfo,
+      (error: string) => { share.throwArkTsCompilerError(error) })) {
       arkProjectConfig.processTs = true;
       arkProjectConfig.pandaMode = TS2ABC;
       arkProjectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
@@ -110,6 +114,8 @@ export function initArkProjectConfig(share: any) {
       arkProjectConfig.bundleName = moduleJsonInfo.app.bundleName;
     }
   }
+  // add minPlatformVersion env for maxFilePathLength function
+  process.env.minPlatformVersion = arkProjectConfig.minPlatformVersion;
 
   // Hotreload attributes are initialized by arkui in main.js, just copy them.
   arkProjectConfig.hotReload = mainProjectConfig.hotReload;

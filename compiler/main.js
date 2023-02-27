@@ -605,7 +605,8 @@ function loadModuleInfo(projectConfig, envArgs) {
       logger.error(error);
       process.exit(FAIL);
     }
-    if (checkAotConfig(buildJsonInfo, faultHandler)) {
+    const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
+    if (checkAotConfig(compileMode, buildJsonInfo, faultHandler)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
@@ -693,7 +694,11 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.partialUpdateMode = false;
       }
-      return !partialUpdateConfig.partialUpdateMode;
+      if (item.name && item.name === 'ArkTSBuilderCheck' &&
+        item.value && item.value === 'false') {
+        partialUpdateConfig.builderCheck = false;
+      }
+      return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck;
     });
   }
 }
@@ -713,7 +718,8 @@ const globalProgram = {
 };
 
 const partialUpdateConfig = {
-  partialUpdateMode: false
+  partialUpdateMode: false,
+  builderCheck: true
 };
 
 exports.globalProgram = globalProgram;

@@ -64,7 +64,8 @@ import {
   LogInfo,
   LogType,
   hasDecorator,
-  FileLog
+  FileLog,
+  getPossibleBuilderTypeParameter
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -98,11 +99,12 @@ import {
   partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
-import { ModuleSourceFile } from "./fast_build/ark_compiler/module/module_source_file";
+import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
+export const builderTypeParameter: {params: string[]} = {params: []};
 
 export function processUISyntax(program: ts.Program, ut = false): Function {
   let entryNodeKey: ts.Expression;
@@ -190,11 +192,13 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
+          builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
           node.parameters.push(createParentParameter());
           node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
             node.asteriskToken, node.name, node.typeParameters, node.parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
               node.name.getText(), undefined, true));
+          builderTypeParameter.params = [];
           node = processBuildMember(node, context, transformLog.errors, true);
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
