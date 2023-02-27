@@ -755,7 +755,7 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
   }
   innerCompStatements.push(createItemBlock(
-    node, itemRenderInnerStatements, deepItemRenderInnerStatements,nameResult, innerCompStatements));
+    node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements));
 }
 
 function createItemCreate(nameResult: NameResult): ts.Statement {
@@ -775,7 +775,7 @@ function createItemBlock(
     [
       createIsLazyCreate(node),
       createItemCreation(node, itemRenderInnerStatements),
-      createObservedShallowRender(node, itemRenderInnerStatements,nameResult, innerCompStatements),
+      createObservedShallowRender(node, itemRenderInnerStatements, nameResult, innerCompStatements),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
       ts.factory.createIfStatement(
