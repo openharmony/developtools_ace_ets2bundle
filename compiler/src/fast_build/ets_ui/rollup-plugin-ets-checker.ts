@@ -15,7 +15,6 @@
 
 import path from 'path';
 
-import { initConfig } from '../common/init_config';
 import { projectConfig } from '../../../main';
 import {
   serviceChecker,
@@ -37,7 +36,6 @@ export function etsChecker() {
         moduleRootPath: projectConfig.moduleRootPath,
         buildPath: projectConfig.buildPath
       });
-      initConfig();
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
