@@ -25,7 +25,8 @@ import {
   emitLogInfo,
   getTransformLog,
   genTemporaryPath,
-  writeFileSync
+  writeFileSync,
+  generateCollectionFile
 } from '../../utils';
 import {
   preprocessExtend,
@@ -47,7 +48,9 @@ import {
 } from '../../../main';
 import { ESMODULE, JSBUNDLE } from '../../pre_define';
 import { parseVisual } from '../../process_visual';
-
+import {
+  appComponentCollection
+} from '../../ets_checker';
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
@@ -83,6 +86,9 @@ export function etsTransform() {
           const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
           writeFileSync(jsBuildFilePath, sourceCode);
         });
+      }
+      if (!projectConfig.isPreview) {
+        generateCollectionFile(projectConfig, appComponentCollection);
       }
     }
   };

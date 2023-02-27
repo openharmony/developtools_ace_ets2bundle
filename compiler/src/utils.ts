@@ -561,6 +561,14 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
   fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
 }
 
+export function generateCollectionFile(projectConfig: any, appComponentCollection: Set<string>): void {
+  const componentContent: string = Array.from(appComponentCollection).join(',');
+  if (projectConfig.cachePath) {
+    writeFileSync(path.resolve(projectConfig.cachePath, 'component_collection.txt'), componentContent);
+    appComponentCollection.clear();
+  }
+}
+
 export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclaration[]): string[] {
   const parameterNames: string[] = [];
   if (!partialUpdateConfig.builderCheck) {
