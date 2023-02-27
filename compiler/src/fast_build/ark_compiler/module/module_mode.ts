@@ -22,37 +22,35 @@ import {
   AUXILIARY,
   COMMONJS,
   ESM,
+  ESMODULE,
   EXTNAME_CJS,
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_JSON,
   EXTNAME_MJS,
+  EXTNAME_PROTO_BIN,
   EXTNAME_TS,
+  EXTNAME_TXT,
+  FAIL,
+  FILESINFO,
   FILESINFO_TXT,
+  HAP_PACKAGE,
   MAIN,
+  MAX_WORKER_NUMBER,
   MODULES_ABC,
   MODULES_CACHE,
+  NPM_ENTRIES_PROTO_BIN,
   NPMENTRIES_TXT,
+  PACKAGES,
+  PROJECT_PACKAGE,
+  PROTO_FILESINFO_TXT,
+  PROTOS,
+  red,
+  reset,
   SOURCEMAPS,
   SOURCEMAPS_JSON,
   TEMPORARY,
-  WIDGETS_ABC,
-  HAP_PACKAGE,
-  PACKAGES,
-  PROJECT_PACKAGE
-} from '../common/ark_define';
-import {
-  ESMODULE,
-  EXTNAME_PROTO_BIN,
-  EXTNAME_TXT,
-  FILESINFO,
-  MAX_WORKER_NUMBER,
-  NPM_ENTRIES_PROTO_BIN,
-  PROTOS,
-  PROTO_FILESINFO_TXT,
-  FAIL,
-  red,
-  reset
+  WIDGETS_ABC
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -524,7 +522,7 @@ export class ModuleMode extends CommonMode {
         tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1));
     }
 
-    return pkgName.replace(packageDir, PACKAGES);
+    return pkgName.replace(new RegExp(packageDir, 'g'), PACKAGES);
   }
 
   private generateProtoFilesInfo() {

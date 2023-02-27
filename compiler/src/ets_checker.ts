@@ -234,22 +234,31 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
   }
 }
 
+function isCardFile(file: string): boolean {
+  for (const key in projectConfig.cardEntryObj) {
+    if (path.normalize(projectConfig.cardEntryObj[key]) === path.normalize(file)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function containFormError(message: string): boolean {
+  if (/can't support form application./.test(message)) {
+    return true;
+  }
+  return false;
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
-    
-    // FIXME: will be instead of ts.Diagnostics config
-    if (diagnostic.file) {
-      const absPath = diagnostic.file.fileName;
-      const relativePath = path.relative(projectConfig.projectPath, absPath);
-      const cardEntryObjKey = `.././${relativePath}`.replace(/\.ets$/, '');
-      if (!projectConfig.cardEntryObj[cardEntryObjKey] &&
-        /can't support form application./.test(message)) {
+
+    if (containFormError(message) && !isCardFile(diagnostic.file.fileName)) {
         return;
-      }
     }
 
     checkerResult.count += 1;
@@ -477,6 +486,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
       if ([6193, 6194].includes(diagnostic.code)) {
         if (!isPipe) {
           process.env.watchTs = 'end';
+          if (fastBuildLogger) {
+            fastBuildLogger.debug('TS Watch End');
+          }
         }
         delayPrintLogCount();
       }
