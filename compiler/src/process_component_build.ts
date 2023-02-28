@@ -619,7 +619,6 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
   itemRenderInnerStatements.push(itemCreateStatement);
-  processDebug(node, nameResult, innerCompStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (etsComponentResult.hasAttr) {
@@ -650,7 +649,7 @@ function createItemBlock(
   return ts.factory.createBlock(
     [
       createIsLazyCreate(node),
-      createItemCreation(node, itemRenderInnerStatements),
+      createItemCreation(node, itemRenderInnerStatements, nameResult),
       createObservedShallowRender(node, itemRenderInnerStatements, nameResult, innerCompStatements),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
@@ -721,7 +720,8 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
 
 function createItemCreation(
   node: ts.ExpressionStatement,
-  itemRenderInnerStatements: ts.Statement[]
+  itemRenderInnerStatements: ts.Statement[],
+  nameResult: NameResult
 ): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
@@ -740,6 +740,7 @@ function createItemCreation(
             [
               createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
               ...itemRenderInnerStatements,
+              processDebug(node, nameResult, itemRenderInnerStatements, true),
               ts.factory.createIfStatement(
                 ts.factory.createPrefixUnaryExpression(
                   ts.SyntaxKind.ExclamationToken,
