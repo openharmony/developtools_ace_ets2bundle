@@ -63,7 +63,9 @@ function generateTargetFile(filePath, output) {
   files.forEach((item) => {
     let content = fs.readFileSync(item, 'utf8');
     const fileName = path.resolve(output, path.basename(item));
-    if (item === globalTsFile || item === featureAbilityPath) {
+    if (item === featureAbilityPath) {
+      content = processsFile(content, fileName, true);
+    } else if (item === globalTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, true);
     } else {
       content = processImportType(content);
@@ -134,7 +136,7 @@ function processsFile(content, fileName, isGlobal) {
     }
   }
   sourceFile = ts.factory.updateSourceFile(sourceFile, newStatements);
-  const printer = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
+  const printer = ts.createPrinter({ removeComments: false, newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, sourceFile, sourceFile);
   return result;
 }
