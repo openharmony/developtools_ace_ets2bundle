@@ -605,7 +605,8 @@ function loadModuleInfo(projectConfig, envArgs) {
       logger.error(error);
       process.exit(FAIL);
     }
-    if (checkAotConfig(buildJsonInfo, faultHandler)) {
+    const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
+    if (checkAotConfig(compileMode, buildJsonInfo, faultHandler)) {
       projectConfig.processTs = true;
       projectConfig.pandaMode = TS2ABC;
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;

@@ -39,7 +39,8 @@ import {
   parseErrorMessage,
   genTemporaryPath,
   shouldWriteChangedList,
-  getHotReloadFiles
+  getHotReloadFiles,
+  generateCollectionFile
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -54,7 +55,8 @@ import {
   hotReloadSupportFiles,
   printDiagnostic,
   checkerResult,
-  incrementWatchFile
+  incrementWatchFile,
+  appComponentCollection
 } from './ets_checker';
 import {
   globalProgram,
@@ -294,6 +296,14 @@ export class ResultStates {
       }
       this.printResult();
     });
+    if (!projectConfig.isPreview) {
+      compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
+        compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
+          generateCollectionFile(projectConfig, appComponentCollection);
+          callback();
+        });
+      });
+    }
   }
 
   private resetTsErrorCount(): void {
@@ -493,3 +503,4 @@ function handleFinishModules(modules, callback) {
     });
   }
 }
+

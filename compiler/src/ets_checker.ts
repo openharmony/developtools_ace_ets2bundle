@@ -38,10 +38,14 @@ import {
   COMPONENT_EXTEND_DECORATOR,
   EXTNAME_D_ETS,
   EXTNAME_JS,
-  FOREACH_LAZYFOREACH
+  FOREACH_LAZYFOREACH,
+  COMPONENT_IF
 } from './pre_define';
 import { getName } from './process_component_build';
-import { INNER_COMPONENT_NAMES } from './component_map';
+import {
+  INNER_COMPONENT_NAMES,
+  JS_BIND_COMPONENTS
+} from './component_map';
 import {
   props,
   logger
@@ -172,6 +176,7 @@ type Cache = Record<string, CacheFileName>;
 export let cache: Cache = {};
 export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
+export const appComponentCollection: Set<string> = new Set();
 const allResolvedModules: Set<string> = new Set();
 
 let fastBuildLogger = null;
@@ -541,8 +546,21 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+      collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
+    }
+  }
+}
+
+function collectComponents(node: ts.SourceFile): void {
+  // @ts-ignore
+  if (process.env.watchMode !== 'true' && node.identifiers && node.identifiers.size) {
+    // @ts-ignore
+    for (const key of node.identifiers.keys()) {
+      if (JS_BIND_COMPONENTS.has(key)) {
+        appComponentCollection.add(key);
+      }
     }
   }
 }
@@ -567,6 +585,9 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
         }
       });
     }
+  }
+  if (ts.isIfStatement(node)) {
+    appComponentCollection.add(COMPONENT_IF);
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION) {
     if (node.body && node.body.statements && node.body.statements.length) {
