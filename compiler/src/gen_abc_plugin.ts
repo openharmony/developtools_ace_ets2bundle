@@ -348,7 +348,7 @@ function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<strin
 function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
   let npmPkgPath: string = getEntryInfo(filePath, module.resourceResolveData);
   const buildNpmPkgPath: string = npmPkgPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
-  const npmPkgName: string = toUnixPath(path.join(PACKAGES, buildNpmPkgPath)).replace(NODE_MODULES, PACKAGES);
+  const npmPkgName: string = toUnixPath(path.join(PACKAGES, buildNpmPkgPath)).replace(new RegExp(NODE_MODULES, 'g'), PACKAGES);
 
   const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
