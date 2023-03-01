@@ -592,7 +592,7 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder);
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
-    processTabAndNav(node, innerCompStatements, nameResult.name, log, isGlobalBuilder);
+    processTabAndNav(node, innerCompStatements, nameResult, log, isGlobalBuilder);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder,
       isTransition);
@@ -636,7 +636,8 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   }
 }
 
-function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[]): void {
+function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
+  getNode: boolean = false): ts.ExpressionStatement {
   if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
     let posOfNode: ts.LineAndCharacter;
     let curFileName: string;
@@ -660,6 +661,9 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
       createFunction(ts.factory.createIdentifier(nameResult.name),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
         ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
+    if (getNode) {
+      return debugNode;
+    }
     newStatements.push(debugNode);
   }
 }
@@ -669,22 +673,27 @@ function processInnerCompStatements(
   newStatements: ts.Statement[],
   node: ts.Statement,
   isGlobalBuilder: boolean = false,
-  isTransition: boolean = false
+  isTransition: boolean = false,
+  nameResult: NameResult = undefined
 ): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
     innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder,
-      isTransition));
+      isTransition, nameResult));
   }
 }
 
 export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
-  isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.Statement {
+  isGlobalBuilder: boolean = false, isTransition: boolean = false,
+  nameResult: NameResult = undefined): ts.Statement {
   const blockArr: ts.Node[] = [
     createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
     ...innerStatements
   ];
+  if (nameResult) {
+    blockArr.push(processDebug(node, nameResult, innerStatements, true));
+  }
   if (!isTransition) {
     blockArr.push(createInitRenderStatement(node));
   }
@@ -744,7 +753,6 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
   itemRenderInnerStatements.push(itemCreateStatement);
-  processDebug(node, nameResult, innerCompStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (etsComponentResult.hasAttr) {
@@ -755,7 +763,8 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
   }
-  innerCompStatements.push(createItemBlock(node, itemRenderInnerStatements, deepItemRenderInnerStatements));
+  innerCompStatements.push(createItemBlock(
+    node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements));
 }
 
 function createItemCreate(nameResult: NameResult): ts.Statement {
@@ -768,13 +777,14 @@ function createItemCreate(nameResult: NameResult): ts.Statement {
 function createItemBlock(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
-  deepItemRenderInnerStatements: ts.Statement[]
+  deepItemRenderInnerStatements: ts.Statement[],
+  nameResult: NameResult, innerCompStatements: ts.Statement[]
 ): ts.Block {
   return ts.factory.createBlock(
     [
       createIsLazyCreate(node),
-      createItemCreation(node, itemRenderInnerStatements),
-      createObservedShallowRender(node, itemRenderInnerStatements),
+      createItemCreation(node, itemRenderInnerStatements, nameResult),
+      createObservedShallowRender(node, itemRenderInnerStatements, nameResult, innerCompStatements),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
       ts.factory.createIfStatement(
@@ -844,7 +854,8 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
 
 function createItemCreation(
   node: ts.ExpressionStatement,
-  itemRenderInnerStatements: ts.Statement[]
+  itemRenderInnerStatements: ts.Statement[],
+  nameResult: NameResult
 ): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
@@ -863,6 +874,7 @@ function createItemCreation(
             [
               createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
               ...itemRenderInnerStatements,
+              processDebug(node, nameResult, itemRenderInnerStatements, true),
               ts.factory.createIfStatement(
                 ts.factory.createPrefixUnaryExpression(
                   ts.SyntaxKind.ExclamationToken,
@@ -934,7 +946,8 @@ function createDeepRenderFunction(
 
 function createObservedShallowRender(
   node: ts.ExpressionStatement,
-  itemRenderInnerStatements: ts.Statement[]
+  itemRenderInnerStatements: ts.Statement[],
+  nameResult: NameResult, innerCompStatements: ts.Statement[]
 ): ts.VariableStatement {
   return ts.factory.createVariableStatement(undefined,
     ts.factory.createVariableDeclarationList(
@@ -960,6 +973,7 @@ function createObservedShallowRender(
                   ts.factory.createBlock(
                     [createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
                       itemRenderInnerStatements[0],
+                      processDebug(node, nameResult, innerCompStatements, true),
                       ts.factory.createIfStatement(
                         ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken,
                           ts.factory.createIdentifier(ISINITIALRENDER)),
@@ -1020,7 +1034,8 @@ function createObservedDeepRender(
 }
 
 function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  name: string, log: LogInfo[], isGlobalBuilder: boolean = false): void {
+  nameResult: NameResult, log: LogInfo[], isGlobalBuilder: boolean = false): void {
+  const name: string = nameResult.name;
   const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const TabContentBody: ts.Block = TabContentComp.body;
   let tabContentCreation: ts.Statement;
@@ -1038,13 +1053,15 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock([...newTabContentChildren], true))]));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log);
-    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder);
+    processInnerCompStatements(
+      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false, nameResult);
   } else {
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log);
-    processInnerCompStatements(innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder);
+    processInnerCompStatements(
+      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false, nameResult);
   }
   innerCompStatements.push(tabContentPop);
 }
