@@ -106,7 +106,7 @@ import {
   parentConditionalExpression,
   createFunction
 } from './process_component_build'
-import { CUSTOM_BUILDER_METHOD } from '../lib/component_map';
+import { CUSTOM_BUILDER_METHOD } from './component_map';
 
 export type ControllerType = {
   hasController: boolean

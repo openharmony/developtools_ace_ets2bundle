@@ -966,27 +966,9 @@ function createObservedShallowRender(
                 ts.factory.createPropertyAccessExpression(
                   ts.factory.createThis(),
                   ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-                ), undefined,
-                [ts.factory.createArrowFunction(undefined, undefined,
-                  [
-                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-                      ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
-                    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-                      ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
-                  ], undefined,
-                  ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                  ts.factory.createBlock(
-                    [createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-                      itemRenderInnerStatements[0],
-                      processDebug(node, nameResult, innerCompStatements, true),
-                      ts.factory.createIfStatement(
-                        ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken,
-                          ts.factory.createIdentifier(ISINITIALRENDER)),
-                        ts.factory.createBlock(
-                          [createComponent(node, COMPONENT_POP_FUNCTION).newNode], true)),
-                      createViewStackProcessorStatement(STOPGETACCESSRECORDING)], true
-                  )
-                )]
+                ),
+                undefined,
+                [ts.factory.createIdentifier(ITEMCREATION)]
               )),
               createComponent(node, COMPONENT_POP_FUNCTION).newNode
             ],
