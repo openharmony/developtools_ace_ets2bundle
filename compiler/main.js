@@ -702,6 +702,15 @@ function isPartialUpdate(metadata) {
 
 function partialUpdateController(minAPIVersion, metadata = null) {
   if (projectConfig.isPreview) {
+    if (metadata && Array.isArray(metadata) && metadata.length) {
+      metadata.some(item => {
+        if (item.name && item.name === 'ArkTSBuilderCheck' &&
+          item.value && item.value === 'false') {
+          partialUpdateConfig.builderCheck = false;
+        }
+        return !partialUpdateConfig.builderCheck;
+      });
+    }
     return;
   }
   if (minAPIVersion >= 9) {
