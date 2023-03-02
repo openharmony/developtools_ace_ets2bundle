@@ -64,7 +64,7 @@ import {
   FAIL,
   MODULELIST_JSON,
   MODULES_ABC,
-  PREBUILDMODE_JSON,
+  PREBUILDINFO_JSON,
   SUCCESS,
   SOURCEMAPS_JSON,
   SOURCEMAPS,
@@ -190,20 +190,38 @@ export class GenAbcPlugin {
     if (projectConfig.compileMode === ESMODULE) {
       if (projectConfig.cachePath && !projectConfig.xtsMode) {
         let cachedJson: any = {};
-        const CACHED_BUILDMODE: string = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
-        validateFilePathLength(CACHED_BUILDMODE, logger);
-        cachedJson["buildMode"] = projectConfig.buildArkMode;
-        fs.writeFile(CACHED_BUILDMODE, JSON.stringify(cachedJson, null, 2), 'utf-8',
-        (err) => {
-          if (err) {
-            logger.error(red, `ArkTS:ERROR Failed to write buildMode.`, reset);
+        const cachePrebuildInfoPath: string = path.join(projectConfig.cachePath, PREBUILDINFO_JSON);
+        validateFilePathLength(cachePrebuildInfoPath, logger);
+        cachedJson.buildMode = projectConfig.buildArkMode;
+        cachedJson.bundleName = projectConfig.bundleName;
+        fs.writeFile(cachePrebuildInfoPath, JSON.stringify(cachedJson, null, 2), 'utf-8',
+          (err) => {
+            if (err) {
+              logger.error(red, `ArkTS:ERROR Failed to write module build info.`, reset);
+            }
           }
-        });
+        );
       }
 
       // clear output dir
       removeDir(output);
       removeDir(projectConfig.nodeModulesPath);
+    }
+
+    if (projectConfig.compileMode === JSBUNDLE && process.env.minPlatformVersion) {
+      if (projectConfig.cachePath && !projectConfig.xtsMode) {
+        let cachedJson: any = {};
+        const cachePrebuildInfoPath: string = path.join(projectConfig.cachePath, PREBUILDINFO_JSON);
+        validateFilePathLength(cachePrebuildInfoPath, logger);
+        cachedJson.minAPIVersion = process.env.minPlatformVersion;
+        fs.writeFile(cachePrebuildInfoPath, JSON.stringify(cachedJson, null, 2), 'utf-8',
+          (err) => {
+            if (err) {
+              logger.error(red, `ArkTS:ERROR Failed to write bundle build info.`, reset);
+            }
+          }
+        );
+      }
     }
 
     // for preview mode max listeners
