@@ -93,6 +93,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
   projectConfig.packageDir = 'node_modules';
   projectConfig.packageJson = 'package.json';
+  projectConfig.cardEntryObj = {};
 }
 
 function loadEntryObj(projectConfig) {
@@ -428,11 +429,13 @@ function readCardResource(resource) {
 }
 
 function readCardForm(form) {
-  if (form.type && form.type === 'eTS') {
+  if ((form.type && form.type === 'eTS') ||
+    (form.uiSyntax && form.uiSyntax === 'arkts')) {
     const sourcePath = form.src.replace(/\.ets$/, '');
     const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
     if (cardPath && fs.existsSync(cardPath)) {
       projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
+      projectConfig.cardEntryObj['../' + sourcePath] = cardPath;
       projectConfig.cardObj[cardPath] = sourcePath.replace(/^\.\//, '');
     }
   }
