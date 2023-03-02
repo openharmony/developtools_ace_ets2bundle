@@ -17,27 +17,42 @@ const fs = require('fs');
 const path = require('path');
 import ts from 'typescript';
 
+const COMPONENTS = 'components';
+const FORM_COMPONENTS = 'form_components';
 export const COMPONENT_MAP: any = {};
+export const FORM_MAP: any = {};
 
 export let COMMON_ATTRS: Set<string> = new Set([]);
 
 (function readComponents() {
-  const componentsFile: string = path.join(__dirname, '../components');
-  const files: string[] = fs.readdirSync(componentsFile);
-  files.forEach(function (item) {
-    const fPath: string = path.join(componentsFile, item);
-    const json: any = require(fPath);
-    const stat: any = fs.statSync(fPath);
-    if (stat.isFile()) {
-      if (json.name) {
-        const compName: string = json.name;
-        delete json.name;
-        COMPONENT_MAP[compName] = json;
-      } else {
-        COMMON_ATTRS = new Set(json.attrs);
+  const componentPath: Map<string, string> = new Map([
+    [`${COMPONENTS}`, `../${COMPONENTS}`],
+    [`${FORM_COMPONENTS}`, `../${FORM_COMPONENTS}`]
+  ]);
+  for (const [id, relPath] of componentPath.entries()) {
+    const componentsFile: string = path.join(__dirname, relPath);
+    const files: string[] = fs.readdirSync(componentsFile);
+    files.forEach(function (item) {
+      const fPath: string = path.join(componentsFile, item);
+      const json: any = require(fPath);
+      const stat: any = fs.statSync(fPath);
+      if (stat.isFile()) {
+        if (json.name) {
+          const compName: string = json.name;
+          delete json.name;
+          if (id === COMPONENTS) {
+            COMPONENT_MAP[compName] = json;
+          } else if (id === FORM_COMPONENTS) {
+            FORM_MAP[compName] = json;
+          }
+        } else {
+          if (id === COMPONENTS) {
+            COMMON_ATTRS = new Set(json.attrs);
+          }
+        }
       }
-    }
-  });
+    });
+  }
 })();
 
 const TRANSITION_COMMON_ATTRS: Set<string> = new Set([

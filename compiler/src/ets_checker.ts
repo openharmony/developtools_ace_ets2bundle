@@ -129,7 +129,24 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
     readDirectory: ts.sys.readDirectory,
     resolveModuleNames: resolveModuleNames,
     directoryExists: ts.sys.directoryExists,
-    getDirectories: ts.sys.getDirectories
+    getDirectories: ts.sys.getDirectories,
+    getTagNameNeededCheckByFile: (fileName, sourceFileName) => {
+      let needCheckResult: boolean = false;
+      if (/compiler\/declarations/.test(sourceFileName) || /ets-loader\/declarations/.test(sourceFileName)) {
+        needCheckResult = true;
+      }
+      return {
+        needCheck: needCheckResult,
+        checkConfig: [{
+          tagName: "form",
+          message: "'{0}' can't support form application.",
+          needConditionCheck: false,
+          type: ts.DiagnosticCategory.Error,
+          specifyCheckConditionFuncName: '',
+          tagNameShouldExisted: true
+        }]
+      }
+    }
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
 }
@@ -212,12 +229,33 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
   }
 }
 
+function isCardFile(file: string): boolean {
+  for (const key in projectConfig.cardEntryObj) {
+    if (path.normalize(projectConfig.cardEntryObj[key]) === path.normalize(file)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function containFormError(message: string): boolean {
+  if (/can't support form application./.test(message)) {
+    return true;
+  }
+  return false;
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
+
+    if (containFormError(message) && !isCardFile(diagnostic.file.fileName)) {
+        return;
+    }
+
     checkerResult.count += 1;
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
