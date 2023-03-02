@@ -45,12 +45,7 @@ import {
   projectConfig,
   abilityPagesFullPath
 } from '../../../main';
-import {
-  JSBUNDLE,
-  ESMODULE
-} from '../../pre_define';
-import { parseVisual } from '../../process_visual';
-
+import { ESMODULE, JSBUNDLE } from '../../pre_define';
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
@@ -132,7 +127,6 @@ function preProcess(code: string, id: string, isEntry: boolean, logger: any): st
     content = preprocessNewExtend(content);
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
-    content = parseVisual(id, fileQuery, content, log, code, true);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }
