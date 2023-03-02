@@ -26,6 +26,7 @@ import {
   projectConfig
 } from '../../../main';
 import { writeUseOSFiles } from '../../utils';
+import { visualTransform } from '../../process_visual';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 
@@ -34,8 +35,14 @@ export function apiTransform() {
   return {
     name: 'apiTransform',
     transform(code: string, id: string) {
-      const magicString = new MagicString(code);
+      let magicString = new MagicString(code);
       if (filter(id)) {
+        const logger = this.share.getLogger('apiTransform');
+        const content = visualTransform(code, id, logger);
+        if (content && content !== code) {
+          code = content;
+          magicString = new MagicString(code);
+        }
         if (projectConfig.compileMode === "esmodule") {
           code = transformImportRequire(code, id, useOSFiles);
         } else {
