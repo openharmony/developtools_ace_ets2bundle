@@ -41,7 +41,7 @@ const {
   mkdirsSync,
   getResolveModules
 } = require('./lib/utils');
-const { BUILD_SHARE_PATH, PREBUILDMODE_JSON } = require('./lib/pre_define');
+const { BUILD_SHARE_PATH, PREBUILDINFO_JSON } = require('./lib/pre_define');
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 
 function initConfig(config) {
@@ -394,26 +394,30 @@ function setCleanWebpackPlugin(workerFile, config) {
   );
 }
 
-function clearWebpackCacheByBuildMode() {
-  if (projectConfig.compileMode !== 'esmodule') {
-    return;
-  }
-
+function clearWebpackCacheByBuildInfo() {
   if (!projectConfig.cachePath || projectConfig.xtsMode) {
     return;
   }
 
-  // clear&update cache dir when buildMode is different from last time
-  const CACHED_BUILDMODE = path.join(projectConfig.cachePath, PREBUILDMODE_JSON);
-  if (fs.existsSync(CACHED_BUILDMODE)) {
-    let cachedBuildMode = undefined;
+  // clear&update cache dir when build info is different from last time
+  const cachePrebuildInfoPath = path.join(projectConfig.cachePath, PREBUILDINFO_JSON);
+  if (fs.existsSync(cachePrebuildInfoPath)) {
+    let cachedJson = undefined;
     try {
-      cachedBuildMode = JSON.parse(fs.readFileSync(CACHED_BUILDMODE).toString()).buildMode;
+      cachedJson = JSON.parse(fs.readFileSync(cachePrebuildInfoPath).toString());
     } catch {
       removeDir(projectConfig.cachePath);
       mkdirsSync(projectConfig.cachePath);
     }
-    if (cachedBuildMode && cachedBuildMode !== projectConfig.buildArkMode) {
+    if (projectConfig.compileMode === 'esmodule' && cachedJson &&
+      (cachedJson.buildMode && cachedJson.buildMode !== projectConfig.buildArkMode ||
+      cachedJson.bundleName && cachedJson.bundleName !== projectConfig.bundleName)) {
+      removeDir(projectConfig.cachePath);
+      mkdirsSync(projectConfig.cachePath);
+    }
+    // api version is 8 or 9
+    if (projectConfig.compileMode === 'jsbundle' && cachedJson &&
+      cachedJson.minAPIVersion && cachedJson.minAPIVersion.toString() !== process.env.minPlatformVersion) {
       removeDir(projectConfig.cachePath);
       mkdirsSync(projectConfig.cachePath);
     }
@@ -425,7 +429,7 @@ module.exports = (env, argv) => {
   setProjectConfig(env);
   loadEntryObj(projectConfig);
   loadModuleInfo(projectConfig, env);
-  clearWebpackCacheByBuildMode();
+  clearWebpackCacheByBuildInfo();
   initConfig(config);
   readPatchConfig();
   const workerFile = readWorkerFile();
