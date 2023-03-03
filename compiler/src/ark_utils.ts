@@ -60,7 +60,7 @@ export const SRC_MAIN: string = 'src/main';
 export var newSourceMaps: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
-export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any): string {
+export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any, namespace?: string): string {
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
   const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
@@ -71,12 +71,16 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
   const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
   // case1: /entry/src/main/ets/xxx/yyy
-  // case2: /node_modules/xxx/yyy
-  // case3: /entry/node_modules/xxx/yyy
+  // case2: /entry/src/ohosTest/ets/xxx/yyy
+  // case3: /node_modules/xxx/yyy
+  // case4: /entry/node_modules/xxx/yyy
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(packageDir) === -1) {
+    if (namespace && moduleName !== namespace) {
+      return `${bundleName}/${moduleName}:${namespace}/${result[2]}/${result[3]}`;
+    }
     return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
 

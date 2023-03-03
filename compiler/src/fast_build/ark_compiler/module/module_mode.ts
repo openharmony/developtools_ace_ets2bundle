@@ -185,6 +185,8 @@ export class ModuleMode extends CommonMode {
     let pkgBuildPath: string = path.join(pkgEntryPath, originPkgEntryPath);
     pkgBuildPath = toUnixPath(pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.')));
 
+    // todo: need adapt to LocalHar's real path to support runtime dynamic-import loader
+
     pkgEntryInfos.set(pkgPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
   }
 
@@ -218,6 +220,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string, metaInfo: any, moduleInfos: any) {
+    // let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['namespace']);
     let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger);
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string = '';
@@ -227,7 +230,8 @@ export class ModuleMode extends CommonMode {
       packageName = this.getPkgModulesFilePkgName(metaInfo['packageJson']['pkgPath']);
     } else {
       cacheFilePath = this.genFileCachePath(filePath, this.projectConfig.projectPath, this.projectConfig.cachePath);
-      packageName = getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+      packageName =
+        metaInfo['isLocalHar'] ? metaInfo['namespace'] : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
     }
 
     if (extName.length !== 0) {
