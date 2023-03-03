@@ -21,15 +21,14 @@ import { SourceMapGenerator } from 'source-map';
 import {
   validateUISyntax,
   componentCollection,
-  preprocessExtend,
-  preprocessNewExtend,
   ReplaceResult,
   sourceReplace
 } from './validate_ui_syntax';
 import {
   LogType,
   LogInfo,
-  mkDir
+  mkDir,
+  emitLogInfo
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -47,48 +46,40 @@ const slotMap: Map<number, number> = new Map();
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
+const compilerOptions = ts.readConfigFile(
+  path.resolve(__dirname, '../tsconfig.json'),
+  ts.sys.readFile
+).config.compilerOptions;
+compilerOptions['sourceMap'] = false;
+
+export function visualTransform(code: string, id: string, logger: any) {
+  const log: LogInfo[] = [];
+  const content: string | null = getParsedContent(code, id, log);
+  if (!content) {
+    return code;
+  }
+  if (log.length) {
+    emitLogInfo(logger, log, true, id);
+  }
+  generateSourceMapForNewAndOriEtsFile(id, code);
+  return content;
+}
+
 export function parseVisual(resourcePath: string, resourceQuery: string, content: string,
-  log: LogInfo[], source: string, isFastBuild: boolean = false): string {
-  if (!(componentCollection.entryComponent || componentCollection.customComponents) || !projectConfig.aceSuperVisualPath) {
+  log: LogInfo[], source: string): string {
+  let code: string | null = getParsedContent(content, resourcePath, log);
+  if (!code) {
     return content;
   }
-  const visualPath: string = findVisualFile(resourcePath);
-  if (!visualPath || !fs.existsSync(visualPath)) {
-    return content;
-  }
-  const visualContent: any = getVisualContent(visualPath, log);
-  if (!visualContent) {
-    return content;
-  }
-  visualMap.clear();
-  slotMap.clear();
-  const compilerOptions = ts.readConfigFile(
-    path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-  Object.assign(compilerOptions, {
-    'sourceMap': false
-  });
-  const sourceFile: ts.SourceFile = ts.createSourceFile(resourcePath, content,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
-  let newContent: string = content;
-  if (sourceFile.statements) {
-    sourceFile.statements.forEach(statement => {
-      newContent = parseStatement(statement, newContent, log, visualContent);
-    });
-  }
-  if (isFastBuild) {
-    newContent = preprocessExtend(newContent);
-    newContent = preprocessNewExtend(newContent);
-  } else {
-    const result: ReplaceResult = sourceReplace(newContent, resourcePath);
-    newContent = result.content;
-    log.concat(result.log);
-  }
-  let resultLog: LogInfo[] = validateUISyntax(source, newContent, resourcePath, resourceQuery);
+  const result: ReplaceResult = sourceReplace(code, resourcePath);
+  code = result.content;
+  log.concat(result.log);
+  const resultLog: LogInfo[] = validateUISyntax(source, code, resourcePath, resourceQuery);
   log.concat(resultLog);
   if (!log.length) {
     generateSourceMapForNewAndOriEtsFile(resourcePath, source);
   }
-  return newContent;
+  return code;
 }
 
 function parseStatement(statement: ts.Statement, content: string, log: LogInfo[],
@@ -281,6 +272,9 @@ function getProjectRootPath(): string {
 }
 
 function findVisualFile(filePath: string): string {
+  if (!/\.ets$/.test(filePath)) {
+    return '';
+  }
   let etsDirPath: string = path.parse(projectConfig.projectPath).dir;
   let visualDirPath: string = path.parse(projectConfig.aceSuperVisualPath).dir;
   let resolvePath = filePath.replace(projectConfig.projectPath, projectConfig.aceSuperVisualPath)
@@ -320,8 +314,44 @@ function getVisualContent(visualPath: string, log: LogInfo[]): any {
   if (parseContent && parseContent.errorType && parseContent.errorType !== '') {
     log.push({
       type: LogType.ERROR,
-      message: parseContent.message
+      message: parseContent.errorMessage
     });
   }
   return parseContent ? parseContent.ets : null;
+}
+
+function getParsedContent(code: string, id: string, log: LogInfo[]): string | null {
+  if (!projectConfig.aceSuperVisualPath ||
+    !(componentCollection.entryComponent || componentCollection.customComponents)) {
+      return null;
+  }
+  const visualPath: string = findVisualFile(id);
+  if (!visualPath || !fs.existsSync(visualPath)) {
+    return null;
+  }
+  const visualContent: any = getVisualContent(visualPath, log);
+  if (!visualContent) {
+    return null;
+  }
+  clearVisualSlotMap();
+  const sourceFile: ts.SourceFile = ts.createSourceFile(
+    id,
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.ETS,
+    compilerOptions
+  );
+  let content: string = code;
+  if (sourceFile.statements) {
+    sourceFile.statements.forEach(statement => {
+      content = parseStatement(statement, content, log, visualContent);
+    });
+  }
+  return content;
+}
+
+function clearVisualSlotMap(): void {
+  visualMap.clear();
+  slotMap.clear();
 }
