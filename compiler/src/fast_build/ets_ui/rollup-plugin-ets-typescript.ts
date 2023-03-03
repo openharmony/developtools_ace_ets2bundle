@@ -47,7 +47,6 @@ import {
   abilityPagesFullPath
 } from '../../../main';
 import { ESMODULE, JSBUNDLE } from '../../pre_define';
-import { parseVisual } from '../../process_visual';
 import {
   appComponentCollection
 } from '../../ets_checker';
@@ -132,7 +131,6 @@ function preProcess(code: string, id: string, isEntry: boolean, logger: any): st
     content = preprocessNewExtend(content);
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
-    content = parseVisual(id, fileQuery, content, log, code, true);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }
