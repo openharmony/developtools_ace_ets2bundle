@@ -256,10 +256,11 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
   return item;
 }
 
-export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any): Promise<void> {
+export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
+  isHar: boolean = false): Promise<void> {
   let result: MinifyOutput;
   try {
-    result = await minify(content, {
+    result = await minify(content, isHar ? {} : {
       compress: {
         join_vars: false,
         sequences: 0
