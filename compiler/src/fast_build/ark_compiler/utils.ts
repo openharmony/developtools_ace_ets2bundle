@@ -108,9 +108,10 @@ function writeFileContent(sourceFilePath: string, filePath: string, content: str
   }
 
   mkdirsSync(path.dirname(filePath));
-
-  if ((projectConfig.compileHar && projectConfig.obfuscateHarType === 'uglify') || !isDebug(projectConfig)) {
-    writeMinimizedSourceCode(content, filePath, logger);
+  // In compile har mode, the code needs to be obfuscated and compressed.
+  const isHar: boolean = projectConfig.compileHar && projectConfig.obfuscate === 'uglify';
+  if (isHar || !isDebug(projectConfig)) {
+    writeMinimizedSourceCode(content, filePath, logger, isHar);
     return;
   }
 
