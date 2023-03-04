@@ -76,7 +76,7 @@ export class ModuleSourceFile {
     }
   }
 
-  private getOhmUrl(moduleRequest: string, namespace: string, filePath: string | undefined): string | undefined {
+  private getOhmUrl(rollupObject: any, moduleRequest: string, filePath: string | undefined): string | undefined {
     let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
     if (systemOrLibOhmUrl != undefined) {
       return systemOrLibOhmUrl;
@@ -86,6 +86,8 @@ export class ModuleSourceFile {
       return harOhmUrl;
     }
     if (filePath) {
+      const targetModuleInfo: any = rollupObject.getModuleInfo(filePath);
+      const namespace: string = targetModuleInfo['meta']['moduleName'];
       const ohmUrl: string =
         getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace);
       return ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
@@ -96,11 +98,9 @@ export class ModuleSourceFile {
   private processJsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    // const namespace: string = moduleInfo['meta']['namespace'];
-    const namespace = undefined;
     const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]/g;
     this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, moduleRequest) => {
-      const ohmUrl: string | undefined = this.getOhmUrl(moduleRequest, namespace, importMap[moduleRequest]);
+      const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
       if (ohmUrl !== undefined) {
         item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
           return quotation + ohmUrl + quotation;
@@ -113,14 +113,13 @@ export class ModuleSourceFile {
   private processTransformedJsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    // const namespace: string = moduleInfo['meta']['namespace'];
-    const namespace = undefined;
     const code: MagicString = new MagicString(<string>this.source);
     const ast = moduleInfo.ast;
     ast.body.forEach(node => {
       if (node.type === ROLLUP_IMPORT_NODE || (node.type === ROLLUP_EXPORTNAME_NODE && node.source) ||
           node.type === ROLLUP_EXPORTALL_NODE) {
-        const ohmUrl: string | undefined = this.getOhmUrl(node.source.value, namespace, importMap[node.source.value]);
+        const ohmUrl: string | undefined =
+          this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
         if (ohmUrl !== undefined) {
           code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
         }
@@ -132,15 +131,13 @@ export class ModuleSourceFile {
   private processTransformedTsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    // const namespace: string = moduleInfo['meta']['namespace'];
-    const namespace = undefined;
     const statements: ts.Statement[] = [];
     (<ts.SourceFile>this.source)!.forEachChild((childNode: ts.Statement) => {
       if (ts.isImportDeclaration(childNode) || (ts.isExportDeclaration(childNode) && childNode.moduleSpecifier)) {
         // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
         // so we need to remove the quotation marks from moduleRequest.
         const moduleRequest: string = childNode.moduleSpecifier.getText().replace(/'|"/g, '');
-        const ohmUrl: string | undefined = this.getOhmUrl(moduleRequest, namespace, importMap[moduleRequest]);
+        const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
         if (ohmUrl !== undefined) {
           if (ts.isImportDeclaration(childNode)) {
             childNode = ts.factory.updateImportDeclaration(childNode, childNode.decorators, childNode.modifiers,
