@@ -33,14 +33,12 @@ import {
   FAIL,
   FILESINFO,
   FILESINFO_TXT,
-  HAP_PACKAGE,
   MAX_WORKER_NUMBER,
   MODULES_ABC,
   MODULES_CACHE,
   NPM_ENTRIES_PROTO_BIN,
   NPMENTRIES_TXT,
   PACKAGES,
-  PROJECT_PACKAGE,
   PROTO_FILESINFO_TXT,
   PROTOS,
   red,
@@ -115,7 +113,7 @@ export class PackageEntryInfo {
 
 export class ModuleMode extends CommonMode {
   moduleInfos: Map<String, ModuleInfo>;
-  pkgEntryInfos: Map<String, PackageEntryInfo>;
+  pkgEntryInfos: PackageEntryInfo[];
   hashJsonObject: any;
   cacheSourceMapObject: any;
   filesInfoPath: string;
@@ -132,7 +130,7 @@ export class ModuleMode extends CommonMode {
   constructor(rollupObject: any) {
     super(rollupObject);
     this.moduleInfos = new Map<String, ModuleInfo>();
-    this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
+    this.pkgEntryInfos = [];
     this.hashJsonObject = {};
     this.cacheSourceMapObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
@@ -151,13 +149,13 @@ export class ModuleMode extends CommonMode {
 
   collectModuleFileList(module: any, fileList: IterableIterator<string>) {
     let moduleInfos: Map<String, ModuleInfo> = new Map<String, ModuleInfo>();
-    let pkgEntryInfos: Map<String, PackageEntryInfo> = new Map<String, PackageEntryInfo>();
+    let pkgEntryInfos: PackageEntryInfo[] = [];
     for (const moduleId of fileList) {
       if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
         continue;
       }
       const moduleInfo: any = module.getModuleInfo(moduleId);
-      if (moduleInfo['meta']['isNodeModuleEntryFile']) {
+      if (moduleInfo['meta']['isNodeEntryFile']) {
         this.getPackageEntryInfo(moduleId, moduleInfo['meta'], pkgEntryInfos);
       }
 
@@ -167,7 +165,19 @@ export class ModuleMode extends CommonMode {
     this.pkgEntryInfos = pkgEntryInfos;
   }
 
-  private getPackageEntryInfo(filePath: string, metaInfo: any, pkgEntryInfos: Map<String, PackageEntryInfo>) {
+  private getPackageEntryInfo(filePath: string, metaInfo: any, pkgEntryInfos: PackageEntryInfo[]) {
+    if (metaInfo['isLocalDependency']) {
+      const hostModulesInfo: any = metaInfo['hostModulesInfo'];
+      const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
+      hostModulesInfo.forEach(hostModuleInfo => {
+        const hostDependencyName: string = hostModuleInfo['hostDependencyName'];
+        const hostModuleName: string = hostModuleInfo['hostModuleName'];
+        const pkgEntryPath: string = toUnixPath(path.join(`${PACKAGES}:${hostModuleName}`, hostDependencyName));
+        pkgEntryInfos.push(new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
+      });
+      return;
+    }
+
     if (!metaInfo['packageJson']) {
       this.logger.debug("Failed to get 'packageJson' from metaInfo. File: ", filePath);
       return;
@@ -181,9 +191,7 @@ export class ModuleMode extends CommonMode {
     let pkgBuildPath: string = path.join(pkgEntryPath, originPkgEntryPath);
     pkgBuildPath = toUnixPath(pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.')));
 
-    // todo: need adapt to LocalHar's real path to support runtime dynamic-import loader
-
-    pkgEntryInfos.set(pkgPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
+    pkgEntryInfos.push(new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
   }
 
   private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
@@ -216,8 +224,8 @@ export class ModuleMode extends CommonMode {
   }
 
   private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string, metaInfo: any, moduleInfos: any) {
-    // let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['namespace']);
-    let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger);
+    let namespace: string = metaInfo['moduleName'];
+    let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
@@ -226,7 +234,7 @@ export class ModuleMode extends CommonMode {
       packageName = this.getPkgModulesFilePkgName(metaInfo['packageJson']['pkgPath']);
     } else {
       packageName =
-        metaInfo['isLocalHar'] ? metaInfo['namespace'] : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+        metaInfo['isLocalDependency'] ? namespace : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
     }
 
     if (extName.length !== 0) {
@@ -495,11 +503,18 @@ export class ModuleMode extends CommonMode {
     const projectPkgModulesPath: string = toUnixPath(path.join(projectRootPath, packageDir));
     let pkgName: string = '';
     if (pkgPath.includes(projectPkgModulesPath)) {
-      pkgName = path.join(PACKAGES, PROJECT_PACKAGE, pkgPath.replace(projectPkgModulesPath, ''));
+      pkgName = path.join(PACKAGES, pkgPath.replace(projectPkgModulesPath, ''));
     } else {
-      const tempFilePath: string = pkgPath.replace(projectRootPath, '');
-      pkgName = path.join(PACKAGES, HAP_PACKAGE,
-        tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1));
+      for (const key in this.projectConfig.modulePathMap) {
+        const value: string = this.projectConfig.modulePathMap[key];
+        const fakeModulePkgModulesPath: string = toUnixPath(path.resolve(value, packageDir));
+        if (pkgPath.indexOf(fakeModulePkgModulesPath) !== -1) {
+          const tempFilePath: string = pkgPath.replace(projectRootPath, '');
+          pkgName = path.join(`${PACKAGES}:${key}`,
+            tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1));
+          break;
+        }
+      }
     }
 
     return pkgName.replace(new RegExp(packageDir, 'g'), PACKAGES);
@@ -514,7 +529,7 @@ export class ModuleMode extends CommonMode {
       const cacheProtoPath: string = changeFileExtension(value.cacheFilePath, EXTNAME_PROTO_BIN);
       protoFilesInfo += `${toUnixPath(cacheProtoPath)}\n`;
     }
-    if (this.pkgEntryInfos.size > 0) {
+    if (this.pkgEntryInfos.length > 0) {
       protoFilesInfo += `${toUnixPath(this.npmEntriesProtoFilePath)}\n`;
     }
     fs.writeFileSync(this.protoFilePath, protoFilesInfo, 'utf-8');
@@ -558,7 +573,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private generateNpmEntryToGenProto() {
-    if (this.pkgEntryInfos.size <= 0) {
+    if (this.pkgEntryInfos.length <= 0) {
       return;
     }
     mkdirsSync(path.dirname(this.npmEntriesProtoFilePath));
