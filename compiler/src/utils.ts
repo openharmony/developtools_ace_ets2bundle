@@ -286,14 +286,15 @@ export function writeFileSync(filePath: string, content: string): void {
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
   projectConfig: any, buildInHar: boolean = false): string {
-  filePath = toUnixPath(filePath);
-  if (filePath.endsWith(EXTNAME_MJS)) {
-    filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
-  }
-  if (filePath.endsWith(EXTNAME_CJS)) {
-    filePath = filePath.replace(/\.cjs$/, EXTNAME_JS);
-  }
+  filePath = toUnixPath(filePath).replace(/\.[cm]js$/, EXTNAME_JS);
   projectPath = toUnixPath(projectPath);
+
+  if (process.env.compileTool === 'rollup') {
+    const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
+    const sufStr: string = filePath.replace(projectRootPath, '');
+    const output: string = path.join(buildPath, sufStr);
+    return output;
+  }
 
   if (isPackageModulesFile(filePath, projectConfig)) {
     const packageDir: string = projectConfig.packageDir;
