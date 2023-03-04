@@ -73,6 +73,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   // case2: /entry/src/ohosTest/ets/xxx/yyy
   // case3: /node_modules/xxx/yyy
   // case4: /entry/node_modules/xxx/yyy
+  // case5: /library/node_modules/xxx/yyy
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
@@ -84,6 +85,24 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   }
 
   if (projectFilePath.indexOf(packageDir) !== -1) {
+    if (process.env.compileTool === 'rollup') {
+      const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
+      if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
+        return unixFilePath.replace(tryProjectPkg, `${packageDir}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+      }
+      // iterate the modulePathMap to find the moudleName which contains the pkg_module's file
+      for (const key in projectConfig.modulePathMap) {
+        const value: string = projectConfig.modulePathMap[key];
+        const tryModulePkg: string = toUnixPath(path.resolve(value, packageDir));
+        if (unixFilePath.indexOf(tryModulePkg) !== -1) {
+          return unixFilePath.replace(tryModulePkg, `${packageDir}:${key}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+        }
+      }
+      logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
+      return filePath;
+    }
+
+    // webpack with old implematation
     const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
     if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
       return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
@@ -94,7 +113,6 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
       return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
     }
   }
-
   logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
 }
