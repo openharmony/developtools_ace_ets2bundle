@@ -17,6 +17,7 @@ import * as childProcess from 'child_process';
 import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import {
   MODULES_ABC,
   TEMPORARY,
@@ -164,9 +165,9 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
     childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
     // Extract HostTool log information from hilog, which outputs to stdout.
-    let errorMessages: string[] = [''];
+    let errorMessages: string[] = [];
     let outStream: Buffer = e.stdout;
-    outStream.toString().split('\n').forEach((stdLog: string) => {
+    outStream.toString().split(os.EOL).forEach((stdLog: string) => {
       if (!stdLog.includes(hostToolKeyWords)) {
         return;
       }
@@ -176,12 +177,12 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
       if (!logHeader && !logContent) {
         return;
       }
-      let logLevel: string = logHeader.split(' ')[logLevelIndex];
+      let logLevel: string = logHeader.trim().split(/\s+/)[logLevelIndex];
       if (logLevel === 'F' || logLevel === 'E') {
         errorMessages.push(`ArkTS:ERROR: ${logContent}`);
       }
     });
-    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}${errorMessages.join('\n')}`);
+    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}${errorMessages.join(os.EOL)}`);
   }
 }
 
