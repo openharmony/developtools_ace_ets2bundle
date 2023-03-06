@@ -44,7 +44,7 @@ export function apiTransform() {
           magicString = new MagicString(code);
         }
         if (projectConfig.compileMode === "esmodule") {
-          code = transformImportRequire(code, id, useOSFiles);
+          code = processSystemApiAndLibso(code, id, useOSFiles);
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
@@ -106,9 +106,11 @@ function processLibso(content: string, sourcePath: string, useOSFiles: Set<strin
 
 // It is rare to use `import xxx = require('module')` for system module and user native library,
 // Here keep tackling with this for compatibility concern.
-function transformImportRequire(content: string, sourcePath: string, useOSFiles: Set<string>): string {
+function processSystemApiAndLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
   const REG_SYSTEM: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
-  const REG_LIB_SO: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
+  // Import libso should be recored in useOSFiles.
+  const REG_LIB_SO: RegExp =
+    /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
 
   return content.replace(REG_SYSTEM, (_, item1, item2, item3, item4, item5, item6) => {
     const moduleType: string = item2 || item5;
