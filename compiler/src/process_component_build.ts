@@ -1934,8 +1934,8 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   if (propName === ATTRIBUTE_ANIMATION) {
     const animationNullNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(GLOBAL_CONTEXT), node,
-      // @ts-ignore
-      [ts.factory.createNull()]));
+        // @ts-ignore
+        [ts.factory.createNull()]));
     if (!lastStatement.statement) {
       if (!(temp.arguments.length === 1 &&
         temp.arguments[0].kind === ts.SyntaxKind.NullKeyword)) {
@@ -1956,7 +1956,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         type: LogType.ERROR,
         message: `Doesn't support Extend function now`,
         pos: temp.getStart()
-      })
+      });
     }
     statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
@@ -1972,7 +1972,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     }
   } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
     const styleBlock: ts.Block =
-      GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
+        INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
     bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
       statements, log, false, true);
     lastStatement.kind = true;
