@@ -411,7 +411,8 @@ function clearWebpackCacheByBuildInfo() {
     }
     if (projectConfig.compileMode === 'esmodule' && cachedJson &&
       (cachedJson.buildMode && cachedJson.buildMode !== projectConfig.buildArkMode ||
-      cachedJson.bundleName && cachedJson.bundleName !== projectConfig.bundleName)) {
+      cachedJson.bundleName && cachedJson.bundleName !== projectConfig.bundleName ||
+      cachedJson.moduleName && cachedJson.moduleName !== projectConfig.moduleName)) {
       removeDir(projectConfig.cachePath);
       mkdirsSync(projectConfig.cachePath);
     }
