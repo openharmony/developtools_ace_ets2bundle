@@ -29,6 +29,7 @@ const {
   isResource,
   processResourceData
 } = require('../lib/process_ui_syntax');
+const { dollarCollection } = require('../lib/ets_checker');
 
 const WebSocketServer = WebSocket.Server;
 
@@ -77,7 +78,7 @@ function buildPipeServer() {
     compileComponent(jsonData) {
       handlePluginCompileComponent(jsonData);
     }
-  }
+  };
 }
 
 function init(port) {
@@ -204,6 +205,8 @@ function checkPreparation(receivedMsg, sourceNode) {
     for (const [key, value] of sourceNode.identifiers) {
       if (globalVariable.includes(key)) {
         variableScript += globalDeclaration.get(key) + '\n';
+      } else if (key.startsWith('$$') && globalVariable.includes(key.substring(2))) {
+        variableScript += globalDeclaration.get(key.substring(2)) + '\n';
       }
     }
     propertyVariable = receivedMsg.data.propertyVariable || propertyVariable;
@@ -299,7 +302,9 @@ function afterResponse() {
 
 function validateError(message) {
   const stateInfoReg = /Property\s*'(\$?[_a-zA-Z0-9]+)' does not exist on type/;
-  if (matchMessage(message, [...propertyVariable, ...props], stateInfoReg)) {
+  const $$InfoReg = /Cannot find name\s*'(\$\$[_a-zA-Z0-9]+)'/;
+  if (matchMessage(message, [...propertyVariable, ...props], stateInfoReg) ||
+    matchMessage(message, [...dollarCollection], $$InfoReg)) {
     return false;
   }
   return true;
