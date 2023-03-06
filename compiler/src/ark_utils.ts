@@ -247,7 +247,8 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
     result = await minify(content, {
       compress: {
         join_vars: false,
-        sequences: 0
+        sequences: 0,
+        directives: false
       },
       format: {
         semicolons: false,
