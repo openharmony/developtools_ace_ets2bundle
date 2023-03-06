@@ -194,6 +194,7 @@ export class GenAbcPlugin {
         validateFilePathLength(cachePrebuildInfoPath, logger);
         cachedJson.buildMode = projectConfig.buildArkMode;
         cachedJson.bundleName = projectConfig.bundleName;
+        cachedJson.moduleName = projectConfig.moduleName;
         fs.writeFile(cachePrebuildInfoPath, JSON.stringify(cachedJson, null, 2), 'utf-8',
           (err) => {
             if (err) {
