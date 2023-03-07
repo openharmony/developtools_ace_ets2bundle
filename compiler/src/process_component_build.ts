@@ -928,7 +928,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         type: LogType.ERROR,
         message: `Doesn't support Extend function now`,
         pos: temp.getStart()
-      })
+      });
     }
     statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
@@ -944,7 +944,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     }
   } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
     const styleBlock: ts.Block =
-      GLOBAL_STYLE_FUNCTION.get(propName) || INNER_STYLE_FUNCTION.get(propName);
+      INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
     bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
       statements, log, false, true);
     lastStatement.kind = true;
