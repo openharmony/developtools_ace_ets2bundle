@@ -17,6 +17,7 @@ import * as childProcess from 'child_process';
 import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import {
   MODULES_ABC,
   TEMPORARY,
@@ -38,8 +39,8 @@ import {
   getBuildBinDir
 } from './ark_utils';
 
-const red: string = '\u001b[31m';
-const reset: string = '\u001b[39m';
+const hostToolKeyWords: string = '[HostTool] ';
+const logLevelIndex: number = 4;
 
 export interface FaultHandler {
   (error: string): void
@@ -163,7 +164,25 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
     mkdirsSync(projectConfig.anBuildOutPut);
     childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
-    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}`);
+    // Extract HostTool log information from hilog, which outputs to stdout.
+    let errorMessages: string[] = [];
+    let outStream: Buffer = e.stdout;
+    outStream.toString().split(os.EOL).forEach((stdLog: string) => {
+      if (!stdLog.includes(hostToolKeyWords)) {
+        return;
+      }
+      let logHeader: string = '';
+      let logContent: string = '';
+      [logHeader, logContent] = stdLog.split(hostToolKeyWords);
+      if (!logHeader && !logContent) {
+        return;
+      }
+      let logLevel: string = logHeader.trim().split(/\s+/)[logLevelIndex];
+      if (logLevel === 'F' || logLevel === 'E') {
+        errorMessages.push(`ArkTS:ERROR: ${logContent}`);
+      }
+    });
+    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}${errorMessages.join(os.EOL)}`);
   }
 }
 
