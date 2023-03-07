@@ -118,7 +118,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
 
   for (const key in projectConfig.modulePathMap) {
     const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[key]);
-    if (unixFilePath.indexOf(moduleRootPath) !== -1) {
+    if (unixFilePath.indexOf(moduleRootPath + '/') !== -1) {
       const relativeModulePath: string = unixFilePath.replace(moduleRootPath + '/', '');
       if (namespace && moduleName !== namespace) {
         return `${bundleName}/${moduleName}@${namespace}/${relativeModulePath}`;
