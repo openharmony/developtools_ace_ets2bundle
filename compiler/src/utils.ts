@@ -290,7 +290,7 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   projectPath = toUnixPath(projectPath);
 
   if (process.env.compileTool === 'rollup') {
-    const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
+    const projectRootPath: string = toUnixPath(buildInHar ? projectPath : projectConfig.projectRootPath);
     const sufStr: string = filePath.replace(projectRootPath, '');
     const output: string = path.join(buildPath, sufStr);
     return output;
