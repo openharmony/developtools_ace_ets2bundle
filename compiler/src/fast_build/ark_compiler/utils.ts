@@ -33,7 +33,8 @@ import {
   nodeLargeOrEqualTargetVersion,
   genTemporaryPath,
   mkdirsSync,
-  validateFilePathLength
+  validateFilePathLength,
+  toUnixPath
 } from '../../utils';
 import {
   writeMinimizedSourceCode
@@ -65,7 +66,7 @@ export function changeFileExtension(file: string, targetExt: string, originExt =
   return fileWithoutExt + targetExt;
 }
 
-export function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
+export async function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
   if (isCommonJsPluginVirtualFile(id)) {
     return;
   }
@@ -91,7 +92,7 @@ export function writeFileContentToTempDir(id: string, content: string, projectCo
     case EXTNAME_JS:
     case EXTNAME_MJS:
     case EXTNAME_CJS:
-      writeFileContent(id, filePath, content, projectConfig, logger);
+      await writeFileContent(id, filePath, content, projectConfig, logger);
       break;
     case EXTNAME_JSON:
       mkdirsSync(path.dirname(filePath));
@@ -102,7 +103,7 @@ export function writeFileContentToTempDir(id: string, content: string, projectCo
   }
 }
 
-function writeFileContent(sourceFilePath: string, filePath: string, content: string, projectConfig: any, logger: any) {
+async function writeFileContent(sourceFilePath: string, filePath: string, content: string, projectConfig: any, logger: any) {
   if (!isSpecifiedExt(sourceFilePath, EXTNAME_JS)) {
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
@@ -111,7 +112,9 @@ function writeFileContent(sourceFilePath: string, filePath: string, content: str
   // In compile har mode, the code needs to be obfuscated and compressed.
   const isHar: boolean = projectConfig.compileHar && projectConfig.obfuscate === 'uglify';
   if (isHar || !isDebug(projectConfig)) {
-    writeMinimizedSourceCode(content, filePath, logger, isHar);
+    const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
+      + '/', '');
+    await writeMinimizedSourceCode(content, filePath, logger, isHar, relativeSourceFilePath);
     return;
   }
 
