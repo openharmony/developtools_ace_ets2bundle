@@ -80,7 +80,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(packageDir) === -1) {
     if (namespace && moduleName !== namespace) {
-      return `${bundleName}/${moduleName}:${namespace}/${result[2]}/${result[3]}`;
+      return `${bundleName}/${moduleName}@${namespace}/${result[2]}/${result[3]}`;
     }
     return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
@@ -96,9 +96,10 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
         const value: string = projectConfig.modulePathMap[key];
         const tryModulePkg: string = toUnixPath(path.resolve(value, packageDir));
         if (unixFilePath.indexOf(tryModulePkg) !== -1) {
-          return unixFilePath.replace(tryModulePkg, `${packageDir}:${key}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+          return unixFilePath.replace(tryModulePkg, `${packageDir}@${key}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
         }
       }
+
       logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
       return filePath;
     }
@@ -120,7 +121,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
     if (unixFilePath.indexOf(moduleRootPath) !== -1) {
       const relativeModulePath: string = unixFilePath.replace(moduleRootPath + '/', '');
       if (namespace && moduleName !== namespace) {
-        return `${bundleName}/${moduleName}:${namespace}/${relativeModulePath}`;
+        return `${bundleName}/${moduleName}@${namespace}/${relativeModulePath}`;
       }
       return `${bundleName}/${moduleName}/${relativeModulePath}`;
     }
