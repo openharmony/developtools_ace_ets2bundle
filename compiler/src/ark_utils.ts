@@ -75,6 +75,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   // case3: /node_modules/xxx/yyy
   // case4: /entry/node_modules/xxx/yyy
   // case5: /library/node_modules/xxx/yyy
+  // case6: /library/index.ts
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
@@ -114,6 +115,18 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
       return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
     }
   }
+
+  for (const key in projectConfig.modulePathMap) {
+    const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[key]);
+    if (unixFilePath.indexOf(moduleRootPath) !== -1) {
+      const relativeModulePath: string = unixFilePath.replace(moduleRootPath + '/', '');
+      if (namespace && moduleName !== namespace) {
+        return `${bundleName}/${moduleName}:${namespace}/${relativeModulePath}`;
+      }
+      return `${bundleName}/${moduleName}/${relativeModulePath}`;
+    }
+  }
+
   logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
   return filePath;
 }
