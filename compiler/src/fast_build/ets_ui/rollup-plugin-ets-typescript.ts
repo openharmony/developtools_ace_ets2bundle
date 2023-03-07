@@ -75,15 +75,12 @@ export function etsTransform() {
         }
       }
     },
-    buildEnd: {
-      order: 'post',
-      handler() {
-        if (projectConfig.compileHar) {
-          incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
-            const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
-            writeFileSync(jsBuildFilePath, sourceCode);
-          });
-        }
+    afterBuildEnd() {
+      if (projectConfig.compileHar) {
+        incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+          const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
+          writeFileSync(jsBuildFilePath, sourceCode);
+        });
       }
     }
   };
