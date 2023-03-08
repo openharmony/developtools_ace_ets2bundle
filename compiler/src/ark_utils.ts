@@ -70,12 +70,12 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   const moduleName: string = packageInfo[1];
   const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
   const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
-  // case1: /entry/src/main/ets/xxx/yyy
-  // case2: /entry/src/ohosTest/ets/xxx/yyy
-  // case3: /node_modules/xxx/yyy
-  // case4: /entry/node_modules/xxx/yyy
-  // case5: /library/node_modules/xxx/yyy
-  // case6: /library/index.ts
+  // case1: /entry/src/main/ets/xxx/yyy     ---> @bundle:<bundleName>/entry/ets/xxx/yyy
+  // case2: /entry/src/ohosTest/ets/xxx/yyy ---> @bundle:<bundleName>/entry_test@entry/ets/xxx/yyy
+  // case3: /node_modules/xxx/yyy           ---> @package:pkg_modules/xxx/yyy
+  // case4: /entry/node_modules/xxx/yyy     ---> @package:pkg_modules@entry/xxx/yyy
+  // case5: /library/node_modules/xxx/yyy   ---> @package:pkg_modules@library/xxx/yyy
+  // case6: /library/index.ts               ---> @budnle:<bundleName>/library/index
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
@@ -93,11 +93,12 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
         return unixFilePath.replace(tryProjectPkg, `${packageDir}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
       }
       // iterate the modulePathMap to find the moudleName which contains the pkg_module's file
-      for (const key in projectConfig.modulePathMap) {
-        const value: string = projectConfig.modulePathMap[key];
-        const tryModulePkg: string = toUnixPath(path.resolve(value, packageDir));
+      for (const moduleName in projectConfig.modulePathMap) {
+        const modulePath: string = projectConfig.modulePathMap[moduleName];
+        const tryModulePkg: string = toUnixPath(path.resolve(modulePath, packageDir));
         if (unixFilePath.indexOf(tryModulePkg) !== -1) {
-          return unixFilePath.replace(tryModulePkg, `${packageDir}@${key}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+          return unixFilePath.replace(tryModulePkg, `${packageDir}@${moduleName}`).replace(
+            new RegExp(packageDir, 'g'), PACKAGES);
         }
       }
 
