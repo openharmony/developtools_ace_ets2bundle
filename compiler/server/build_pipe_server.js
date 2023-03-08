@@ -27,7 +27,9 @@ const { projectConfig } = require('../main');
 const { props } = require('../lib/compile_info');
 const {
   isResource,
-  processResourceData
+  processResourceData,
+  isAnimateTo,
+  processAnimateTo
 } = require('../lib/process_ui_syntax');
 const { dollarCollection } = require('../lib/ets_checker');
 
@@ -189,6 +191,8 @@ function transformResourceNode(newSource, log) {
 function processResourceNode(node, log) {
   if (isResource(node)) {
     return processResourceData(node, {isAcceleratePreview: true, log: log});
+  } else if (isAnimateTo(node)) {
+    return processAnimateTo(node);
   } else {
     return node;
   }
