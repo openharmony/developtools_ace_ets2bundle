@@ -130,12 +130,7 @@ export function isCommonJsPluginVirtualFile(filePath: string): boolean {
 }
 
 export function isCurrentProjectFiles(filePath: string, projectConfig: any): boolean {
-  const packageDir: string = projectConfig.packageDir;
-  let modulePath: string = projectConfig.modulePathMap[projectConfig.moduleName];
-  return filePath.indexOf(projectConfig.projectPath) >= 0 ||
-    (projectConfig.moduleRootPath && filePath.indexOf(projectConfig.moduleRootPath) >= 0) ||
-    filePath.indexOf(path.join(projectConfig.projectRootPath, packageDir)) >= 0 ||
-    filePath.indexOf(path.join(modulePath, packageDir)) >= 0;
+  return filePath.indexOf(projectConfig.projectRootPath) >= 0;
 }
 
 export function genTemporaryModuleCacheDirectoryForBundle(projectConfig: any) {
