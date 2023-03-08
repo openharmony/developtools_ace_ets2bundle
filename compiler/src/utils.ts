@@ -291,8 +291,8 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
 
   if (process.env.compileTool === 'rollup') {
     const projectRootPath: string = toUnixPath(buildInHar ? projectPath : projectConfig.projectRootPath);
-    const sufStr: string = filePath.replace(projectRootPath, '');
-    const output: string = path.join(buildPath, sufStr);
+    const relativeFilePath: string = filePath.replace(projectRootPath, '');
+    const output: string = path.join(buildPath, relativeFilePath);
     return output;
   }
 
@@ -303,8 +303,8 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     if (filePath.indexOf(fakePkgModulesPath) === -1) {
       const hapPath: string = toUnixPath(projectConfig.projectRootPath);
       const tempFilePath: string = filePath.replace(hapPath, '');
-      const sufStr: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
-      output = path.join(buildPath, buildInHar ? '' : TEMPORARY, packageDir, MAIN, sufStr);
+      const relativeFilePath: string = tempFilePath.substring(tempFilePath.indexOf(packageDir) + packageDir.length + 1);
+      output = path.join(buildPath, buildInHar ? '' : TEMPORARY, packageDir, MAIN, relativeFilePath);
     } else {
       output = filePath.replace(fakePkgModulesPath,
         path.join(buildPath, buildInHar ? '' : TEMPORARY, packageDir, AUXILIARY));
@@ -313,8 +313,8 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   }
 
   if (filePath.indexOf(projectPath) !== -1) {
-    const sufStr: string = filePath.replace(projectPath, '');
-    const output: string = path.join(buildPath, buildInHar ? '' : TEMPORARY, sufStr);
+    const relativeFilePath: string = filePath.replace(projectPath, '');
+    const output: string = path.join(buildPath, buildInHar ? '' : TEMPORARY, relativeFilePath);
     return output;
   }
 
