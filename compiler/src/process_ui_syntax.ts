@@ -398,7 +398,7 @@ export function isResource(node: ts.Node): boolean {
     node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
 }
 
-function isAnimateTo(node: ts.Node): boolean {
+export function isAnimateTo(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
     node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
 }
@@ -536,7 +536,7 @@ function processWorker(node: ts.NewExpression): ts.Node {
   return node;
 }
 
-function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
+export function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
   return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
     ts.factory.createIdentifier(GLOBAL_CONTEXT), ts.factory.createIdentifier(ATTRIBUTE_ANIMATETO)),
   node.typeArguments, node.arguments);
