@@ -59,7 +59,7 @@ export const SRC_MAIN: string = 'src/main';
 export var newSourceMaps: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
-export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any): string {
+export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any, namespace?: string): string {
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
   const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
@@ -69,17 +69,43 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   const moduleName: string = packageInfo[1];
   const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
   const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
-  // case1: /entry/src/main/ets/xxx/yyy
-  // case2: /node_modules/xxx/yyy
-  // case3: /entry/node_modules/xxx/yyy
+  // case1: /entry/src/main/ets/xxx/yyy     ---> @bundle:<bundleName>/entry/ets/xxx/yyy
+  // case2: /entry/src/ohosTest/ets/xxx/yyy ---> @bundle:<bundleName>/entry_test@entry/ets/xxx/yyy
+  // case3: /node_modules/xxx/yyy           ---> @package:pkg_modules/xxx/yyy
+  // case4: /entry/node_modules/xxx/yyy     ---> @package:pkg_modules@entry/xxx/yyy
+  // case5: /library/node_modules/xxx/yyy   ---> @package:pkg_modules@library/xxx/yyy
+  // case6: /library/index.ts               ---> @budnle:<bundleName>/library/index
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(packageDir) === -1) {
+    if (namespace && moduleName !== namespace) {
+      return `${bundleName}/${moduleName}@${namespace}/${result[2]}/${result[3]}`;
+    }
     return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
   }
 
   if (projectFilePath.indexOf(packageDir) !== -1) {
+    if (process.env.compileTool === 'rollup') {
+      const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
+      if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
+        return unixFilePath.replace(tryProjectPkg, `${packageDir}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+      }
+      // iterate the modulePathMap to find the moudleName which contains the pkg_module's file
+      for (const moduleName in projectConfig.modulePathMap) {
+        const modulePath: string = projectConfig.modulePathMap[moduleName];
+        const tryModulePkg: string = toUnixPath(path.resolve(modulePath, packageDir));
+        if (unixFilePath.indexOf(tryModulePkg) !== -1) {
+          return unixFilePath.replace(tryModulePkg, `${packageDir}@${moduleName}`).replace(
+            new RegExp(packageDir, 'g'), PACKAGES);
+        }
+      }
+
+      logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
+      return filePath;
+    }
+
+    // webpack with old implematation
     const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
     if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
       return unixFilePath.replace(tryProjectPkg, `${packageDir}/${ONE}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
@@ -88,6 +114,17 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
     const tryModulePkg: string = toUnixPath(path.join(moduleRootPath, packageDir));
     if (unixFilePath.indexOf(tryModulePkg) !== -1) {
       return unixFilePath.replace(tryModulePkg, `${packageDir}/${ZERO}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
+    }
+  }
+
+  for (const key in projectConfig.modulePathMap) {
+    const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[key]);
+    if (unixFilePath.indexOf(moduleRootPath + '/') !== -1) {
+      const relativeModulePath: string = unixFilePath.replace(moduleRootPath + '/', '');
+      if (namespace && moduleName !== namespace) {
+        return `${bundleName}/${moduleName}@${namespace}/${relativeModulePath}`;
+      }
+      return `${bundleName}/${moduleName}/${relativeModulePath}`;
     }
   }
 
