@@ -601,7 +601,7 @@ function traverseBuild(node: ts.Node, index: number): void {
     }
     node = node.expression;
     if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-      !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+      ts.isIdentifier(node.expression) && !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
       node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
         traverseBuild(item, indexBlock);
       });
@@ -630,7 +630,7 @@ function isPropertiesAddDoubleDollar(node: ts.Node): boolean {
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments && node.arguments.length) {
     return true;
   } else if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-    $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+    ts.isIdentifier(node.expression) && $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
     return true;
   } else {
     return false;
