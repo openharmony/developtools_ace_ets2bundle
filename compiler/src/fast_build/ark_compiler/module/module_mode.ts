@@ -52,7 +52,8 @@ import {
 } from '../common/ark_define';
 import {
   needAotCompiler,
-  isMasterOrPrimary
+  isMasterOrPrimary,
+  isAotMode
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
 import { newSourceMaps } from '../transform';
@@ -329,6 +330,9 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
+    if (isAotMode(this.projectConfig) && isEs2Abc(this.projectConfig)) {
+      this.cmdArgs.push("--type-extractor");
+    }
   }
 
   addCacheFileArgs() {
@@ -389,6 +393,7 @@ export class ModuleMode extends CommonMode {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
         this.triggerEndSignal();
+        this.processAotIfNeeded();
       });
 
       child.on('error', (err: any) => {
@@ -530,8 +535,8 @@ export class ModuleMode extends CommonMode {
       return;
     }
     let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
-    const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.cmdArgs,
-      this.projectConfig.cachePath, this.logger, faultHandler);
+    const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.initCmdEnv(),
+      this.projectConfig.cachePath, this.logger, faultHandler, this.projectConfig.pandaMode);
     generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 

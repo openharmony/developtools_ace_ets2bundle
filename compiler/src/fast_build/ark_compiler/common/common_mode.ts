@@ -67,7 +67,7 @@ export abstract class CommonMode {
     this.triggerEndSignal = rollupObject.signal;
   }
 
-  private initCmdEnv() {
+  initCmdEnv() {
     let args: string[] = [];
 
     if (isTs2Abc(this.projectConfig)) {
