@@ -39,6 +39,7 @@ const { apiTransform } = require('./lib/fast_build/system_api/rollup-plugin-syst
 const { watchChangeFiles } = require('./lib/fast_build/common/rollup-plugin-watch-change');
 const { initArkConfig } = require('./lib/fast_build/ark_compiler/common/process_ark_config');
 const { genAbc } = require('./lib/fast_build/ark_compiler/rollup-plugin-gen-abc');
+const { visualTransform } = require('./lib/fast_build/visual/rollup-plugin-visual');
 
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 process.env.compileTool = 'rollup';
@@ -91,6 +92,7 @@ const config = {
     }),
     watchChangeFiles(),
     etsChecker(),
+    visualTransform(),
     apiTransform(),
     etsTransform(),
     genAbc(),
