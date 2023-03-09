@@ -297,18 +297,21 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
   isHar: boolean = false): Promise<void> {
   let result: MinifyOutput;
   try {
-    result = await minify(content, isHar ? {} : {
+    const minifyOptions = {
       compress: {
         join_vars: false,
         sequences: 0,
         directives: false
-      },
-      format: {
+      }
+    };
+    if (!isHar) {
+      minifyOptions['format'] = {
         semicolons: false,
         beautify: true,
         indent_level: 2
-      }
-    });
+      };
+    }
+    result = await minify(content, minifyOptions);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
     process.exit(FAIL);
