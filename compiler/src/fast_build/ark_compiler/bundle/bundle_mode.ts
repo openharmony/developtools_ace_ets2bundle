@@ -239,14 +239,14 @@ export class BundleMode extends CommonMode {
 
   private collectIntermediateJsBundle(filePath: string, cacheFilePath: string) {
     const fileSize: any = fs.statSync(cacheFilePath).size;
+    let sourceFile: string = changeFileExtension(filePath, '_.js', TEMP_JS);
+    if (!this.arkConfig.isDebug && this.projectConfig.projectRootPath) {
+      sourceFile = sourceFile.replace(this.projectConfig.projectRootPath + path.sep, '');
+    }
+
     filePath = toUnixPath(filePath);
     cacheFilePath = toUnixPath(cacheFilePath);
-    let sourceFile: string = changeFileExtension(filePath, '_.js', TEMP_JS);
-    if (!this.projectConfig.isDebug && this.projectConfig.projectRootPath) {
-      sourceFile = toUnixPath(sourceFile.replace(this.projectConfig.projectRootPath + path.sep, ''));
-    } else {
-      sourceFile = toUnixPath(sourceFile);
-    }
+    sourceFile = toUnixPath(sourceFile);
     const bundleFile: File = {
       filePath: filePath,
       cacheFilePath: cacheFilePath,
