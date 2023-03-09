@@ -26,6 +26,7 @@ const {
 const {
   WORKERS_DIR,
   TS2ABC,
+  ES2ABC,
   FAIL
 } = require('./lib/pre_define');
 
@@ -614,6 +615,8 @@ function loadModuleInfo(projectConfig, envArgs) {
       logger.error(error);
       process.exit(FAIL);
     }
+    projectConfig.es2abcCompileTsInAotMode = false;
+    projectConfig.es2abcCompileTsInNonAotMode = false;
     const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
     if (checkAotConfig(compileMode, buildJsonInfo, faultHandler)) {
       projectConfig.processTs = true;
@@ -621,9 +624,16 @@ function loadModuleInfo(projectConfig, envArgs) {
       projectConfig.anBuildOutPut = buildJsonInfo.anBuildOutPut;
       projectConfig.anBuildMode = buildJsonInfo.anBuildMode;
       projectConfig.apPath = buildJsonInfo.apPath;
+      if (projectConfig.es2abcCompileTsInAotMode) {
+        projectConfig.pandaMode = ES2ABC;
+      }
     } else {
       projectConfig.processTs = false;
       projectConfig.pandaMode = buildJsonInfo.pandaMode;
+      if (projectConfig.es2abcCompileTsInNonAotMode) {
+        projectConfig.pandaMode = ES2ABC;
+        projectConfig.processTs = true;
+      }
     }
     if (envArgs !== undefined) {
       projectConfig.buildArkMode = envArgs.buildMode;
