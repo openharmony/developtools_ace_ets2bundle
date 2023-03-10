@@ -47,7 +47,11 @@ export function transformForModule(code: string, id: string) {
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
-      ModuleSourceFile.newSourceFile(id, this.getModuleInfo(id).originalCode);
+      let code: string = this.getModuleInfo(id).originalCode;
+      if (isJsSourceFile(id)) {
+        code = transformJsByBabelPlugin(code);
+      }
+      ModuleSourceFile.newSourceFile(id, code);
     }
   }
 }
@@ -62,4 +66,13 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig
   sourcemap['sources'] = [ relativeSourceFilePath ];
   sourcemap['file'] = path.basename(relativeSourceFilePath);
   newSourceMaps[relativeSourceFilePath] = sourcemap;
+}
+
+function transformJsByBabelPlugin(code: string): string {
+  const transformed: any = require('@babel/core').transformSync(code,
+    {
+      plugins: ["@babel/plugin-proposal-class-properties"]
+    }
+  );
+  return transformed.code;
 }
