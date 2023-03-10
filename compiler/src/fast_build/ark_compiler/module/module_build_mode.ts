@@ -31,6 +31,7 @@ export class ModuleBuildMode extends ModuleMode {
   executeArkCompiler() {
     if (isEs2Abc(this.projectConfig)) {
       this.generateEs2AbcCmd();
+      this.addCacheFileArgs();
       this.generateMergedAbcOfEs2Abc();
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();
