@@ -27,7 +27,8 @@ import {
   NPMENTRIES_TXT,
   NODE_MODULES,
   PACKAGES,
-  PATCH_SYMBOL_TABLE
+  PATCH_SYMBOL_TABLE,
+  EXTNAME_PROTO_BIN
 } from './pre_define';
 import {
   EntryInfo,
@@ -81,6 +82,24 @@ export function generateNpmEntriesInfo(entryInfos: Map<string, EntryInfo>) {
   fs.writeFileSync(npmEntriesInfoPath, entriesInfo, 'utf-8');
 }
 
+function generateAbcCacheFilesInfo(moduleInfos: Array<ModuleInfo>, npmEntriesInfoPath: string, cacheFilePath: string): void {
+  let abcCacheFilesInfo: string = '';
+
+  // generate source file cache
+  moduleInfos.forEach((info) => {
+    let tempFilePathWithoutExt: string = info.tempFilePath.substring(0, info.tempFilePath.lastIndexOf('.'));
+    let abcCacheFilePath: string = tempFilePathWithoutExt + EXTNAME_PROTO_BIN;
+    abcCacheFilesInfo += `${info.tempFilePath};${abcCacheFilePath}\n`;
+  });
+
+  // generate npm entries cache
+  let npmEntriesCacheFileWithoutExt: string = npmEntriesInfoPath.substring(0, npmEntriesInfoPath.lastIndexOf('.'));
+  let npmEntriesCacheFilePath: string = npmEntriesCacheFileWithoutExt + EXTNAME_PROTO_BIN;
+  abcCacheFilesInfo += `${npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
+
+  fs.writeFileSync(cacheFilePath, abcCacheFilesInfo, 'utf-8');
+}
+
 export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Map<string, EntryInfo>, outputABCPath: string) {
   generateCompileFilesInfo(moduleInfos);
   generateNpmEntriesInfo(entryInfos);
@@ -89,6 +108,8 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   const cacheFilePath: string = path.join(process.env.cachePath, MODULES_CACHE);
   validateFilePathLength(cacheFilePath, logger);
+  generateAbcCacheFilesInfo(moduleInfos, npmEntriesInfoPath, cacheFilePath);
+
   const fileThreads = os.cpus().length < 16 ? os.cpus().length : 16;
   mkdirsSync(projectConfig.buildPath);
   let genAbcCmd: string =
@@ -104,7 +125,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
   }
 
   if (!projectConfig.enableMap) {
-    genAbcCmd += ` --cache-file "${cacheFilePath}"`;
+    genAbcCmd += ` --cache-file "@${cacheFilePath}"`;
   } else {
     // when generating map, cache is forbiden to avoid uncomplete symbol table
     let oldHapSymbolTable = path.join(projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
