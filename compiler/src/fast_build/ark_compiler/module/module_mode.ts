@@ -306,9 +306,12 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"${this.moduleAbcPath}"`);
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
+    this.cmdArgs.push('--merge-abc');
+  }
+
+  addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"${this.cacheFilePath}"`);
-    this.cmdArgs.push('--merge-abc');
   }
 
   private generateCompileFilesInfo() {
