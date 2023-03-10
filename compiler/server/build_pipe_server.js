@@ -17,7 +17,7 @@ const WebSocket = require('ws');
 const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 
 const { processComponentChild } = require('../lib/process_component_build');
@@ -51,6 +51,8 @@ const pluginCommandChannelMessageHandlers = {
 let es2abcFilePath = path.join(__dirname, '../bin/ark/build-win/bin/es2abc');
 
 let previewCacheFilePath;
+let previewJsFilePath;
+let previewAbcFilePath;
 const messages = [];
 let start = false;
 let checkStatus = false;
@@ -63,6 +65,7 @@ let propertyVariable = [];
 let globalDeclaration = new Map();
 let connectNum = 0;
 const maxConnectNum = 8;
+let codeOverMaxlength = false;
 
 let callback = undefined;
 
@@ -86,6 +89,10 @@ function buildPipeServer() {
 function init(port) {
   previewCacheFilePath =
     path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.ets');
+  previewJsFilePath =
+    path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.js');
+  previewAbcFilePath =
+    path.join(projectConfig.cachePath || projectConfig.buildPath, 'preview.abc');
   const rootFileNames = [];
   writeFileSync(previewCacheFilePath, '');
   rootFileNames.push(previewCacheFilePath);
@@ -236,18 +243,38 @@ function es2abc(receivedMsg) {
       ['--base64Input', Buffer.from(receivedMsg.data.script).toString('base64'), '--base64Output'], {windowsHide: true});
     transCode.stdout.on('data', (data) => {
       receivedMsg.data.script = data.toString();
-      compileStatus = true;
-      receivedMsg_ = receivedMsg;
-      responseToPlugin();
+      nextResponse(receivedMsg);
     });
     transCode.stderr.on('data', (data) => {
       receivedMsg.data.script = '';
-      compileStatus = true;
-      receivedMsg_ = receivedMsg;
-      responseToPlugin();
+      nextResponse(receivedMsg);
     });
   } catch (e) {
+    if (checkStatus) {
+      getOverLengthCode(receivedMsg);
+    } else {
+      codeOverMaxlength = true;
+      receivedMsg_ = receivedMsg;
+    }
   }
+}
+
+function getOverLengthCode(receivedMsg) {
+  writeFileSync(previewJsFilePath, receivedMsg.data.script);
+  const cmd = '"' + es2abcFilePath + '" ' + previewJsFilePath + ' --output ' + previewAbcFilePath;
+  execSync(cmd, {windowsHide: true});
+  if (fs.existsSync(previewAbcFilePath)) {
+    receivedMsg.data.script = fs.readFileSync(previewAbcFilePath).toString('base64');
+  } else {
+    receivedMsg.data.script = '';
+  }
+  nextResponse(receivedMsg);
+}
+
+function nextResponse(receivedMsg) {
+  compileStatus = true;
+  receivedMsg_ = receivedMsg;
+  responseToPlugin();
 }
 
 function resolveDiagnostic(diagnostic) {
@@ -267,7 +294,14 @@ function resolveDiagnostic(diagnostic) {
 function delayPrintLogCount() {
   if (start == true) {
     checkStatus = true;
-    responseToPlugin();
+    if (codeOverMaxlength && !errorInfo.length && !receivedMsg_.data.log.length) {
+      getOverLengthCode(receivedMsg_);
+    } else {
+      if (codeOverMaxlength) {
+        compileStatus = true;
+      }
+      responseToPlugin();
+    }
   }
 }
 
@@ -295,6 +329,7 @@ function afterResponse() {
   start = false;
   checkStatus = false;
   compileStatus = false;
+  codeOverMaxlength = false;
   errorInfo = [];
   receivedMsg_ = undefined;
   globalDeclaration.clear();
