@@ -23,7 +23,7 @@ export class ModulePreviewMode extends ModuleMode {
   }
 
   generateAbc(rollupObject: any) {
-    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    this.prepareForCompilation(rollupObject);
     this.executeArkCompiler();
   }
 

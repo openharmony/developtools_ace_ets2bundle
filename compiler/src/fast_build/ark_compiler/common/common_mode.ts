@@ -18,6 +18,7 @@ import path from 'path';
 
 import {
   HASH_FILE_NAME,
+  IS_CACHE_INVALID,
   GEN_ABC_PLUGIN_NAME,
   GEN_ABC_SCRIPT,
   blue,
@@ -38,7 +39,7 @@ import {
   genTemporaryModuleCacheDirectoryForBundle
 } from '../utils';
 
-export class CommonMode {
+export abstract class CommonMode {
   projectConfig: any;
   arkConfig: any;
   cmdArgs: string[] = [];
@@ -126,4 +127,17 @@ export class CommonMode {
       });
     }
   }
+
+  protected needRemoveCacheInfo(rollupObject: any): boolean {
+    return rollupObject.cache.get(IS_CACHE_INVALID) || rollupObject.cache.get(IS_CACHE_INVALID) === undefined;
+  }
+
+  protected removeCacheInfo(rollupObject: any): void {
+    if (this.needRemoveCacheInfo(rollupObject)) {
+      this.removeCompilationCache();
+    }
+    rollupObject.cache.set(IS_CACHE_INVALID, false);
+  }
+
+  abstract removeCompilationCache(): void;
 }
