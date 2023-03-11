@@ -68,7 +68,7 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   private compileAllFiles(rollupObject: any) {
-    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    this.prepareForCompilation(rollupObject);
     this.buildModuleSourceMapInfo();
     this.generateAbcByEs2abc();
   }
