@@ -114,7 +114,7 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['bindPopup', 'bindMenu', 'bindContextMenu', 'title',
-  'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction']);
+  'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction', 'bindContentCover']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {

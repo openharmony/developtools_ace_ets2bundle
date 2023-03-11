@@ -248,8 +248,9 @@ export const $$_THIS: string = '$$this';
 export const $$_NEW_VALUE: string = 'newValue';
 export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
+export const BINDCONTENTCOVER: string = 'bindContentCover';
 export const $$_BLOCK_INTERFACE: Set<string> = new Set([REFRESH]);
-export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY]);
+export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY, BINDCONTENTCOVER]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])], [REFRESH, new Set([REFRESHING])]
 ]);
@@ -299,10 +300,10 @@ export const EXTNAME_D_ETS: string = '.d.ets';
 export const EXTNAME_JSON: string = '.json';
 export const EXTNAME_ABC: string = '.abc';
 export const EXTNAME_PROTO_BIN: string = '.protoBin';
-export const PATCH_SYMBOL_TABLE: string = "symbol.txt";
+export const PATCH_SYMBOL_TABLE: string = 'symbol.txt';
 export const MANAGE_WORKERS_SCRIPT: string = 'manage_workers.js';
-export const GEN_ABC_SCRIPT: string = "gen_abc.js";
-export const GEN_MODULE_ABC_SCRIPT: string = "gen_module_abc.js";
+export const GEN_ABC_SCRIPT: string = 'gen_abc.js';
+export const GEN_MODULE_ABC_SCRIPT: string = 'gen_module_abc.js';
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;

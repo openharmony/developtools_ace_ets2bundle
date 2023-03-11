@@ -1627,7 +1627,7 @@ function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: t
   propertyName: string): ts.CallExpression {
   const newArguments: ts.Expression[] = [];
   node.arguments.forEach((argument: ts.Expression | ts.Identifier, index: number) => {
-    if (index === 0 && isBuilderChangeNode(argument, identifierNode, propertyName)) {
+    if (isBuilderChangeNode(argument, identifierNode, propertyName)) {
       newArguments.push(parseBuilderNode(argument));
     } else {
       newArguments.push(argument);
@@ -2056,9 +2056,9 @@ function changeEtsComponentKind(node: ts.Node): ts.Node {
 
 function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
   identifierNode: ts.Identifier): void {
-  if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 2) {
+  if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length >= 2) {
     const varExp: ts.Expression = updateArgumentFor$$(args[0]);
-    argumentsArr.push(generateObjectFor$$(varExp), args[1]);
+    argumentsArr.push(generateObjectFor$$(varExp), ...args.slice(1));
   } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.getText()) && args.length === 1 &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.getText()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 1) {
