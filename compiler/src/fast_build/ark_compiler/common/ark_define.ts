@@ -96,3 +96,6 @@ export const RELEASE: string = 'release';
 
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
+
+export const IS_CACHE_INVALID: string = 'is_cache_invalid';
+export const ARK_COMPILER_META_INFO: string = 'ark_compiler_meta_info';
