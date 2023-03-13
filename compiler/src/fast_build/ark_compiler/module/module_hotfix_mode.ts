@@ -59,10 +59,7 @@ export class ModuleHotfixMode extends ModuleMode {
       this.cmdArgs.push('--generate-patch');
     }
 
-    if (!this.projectConfig.enableMap) {
-      this.cmdArgs.push('--cache-file');
-      this.cmdArgs.push(`"${this.cacheFilePath}"`);
-    } else {
+    if (this.projectConfig.enableMap) {
       // when generating map, cache is forbiden to avoid uncomplete symbol table
       const oldHapSymbolTable: string = path.join(this.projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
       this.cmdArgs.push('--dump-symbol-table');
