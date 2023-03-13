@@ -57,21 +57,21 @@ export class ModuleSourceFile {
 
   static async processModuleSourceFiles(rollupObject: any) {
     this.initPluginEnv(rollupObject);
-    await ModuleSourceFile.sourceFiles.forEach((source: ModuleSourceFile) => {
+    for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         source.processModuleRequest(rollupObject);
       }
-      source.writeSourceFile();
-    });
+      await source.writeSourceFile();
+    }
     ModuleSourceFile.sourceFiles = [];
   }
 
-  private writeSourceFile() {
+  private async writeSourceFile() {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       writeFileSyncByNode(<ts.SourceFile>this.source, true, ModuleSourceFile.projectConfig);
     } else {
-      writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig,
+      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig,
         ModuleSourceFile.logger);
     }
   }
