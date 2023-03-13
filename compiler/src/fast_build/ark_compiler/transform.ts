@@ -40,9 +40,7 @@ export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && !isAotMode(projectConfig)) {
-      if (isDebug(projectConfig)) {
-        preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
-      }
+      preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
       ModuleSourceFile.newSourceFile(id, code);
     }
 
@@ -51,9 +49,7 @@ export function transformForModule(code: string, id: string) {
       if (isJsSourceFile(id)) {
         const transformedResult: any = transformJsByBabelPlugin(code);
         code = transformedResult.code;
-        if (isDebug(projectConfig)) {
-          preserveSourceMap(id, transformedResult.map, projectConfig);
-        }
+        preserveSourceMap(id, transformedResult.map, projectConfig);
       }
       ModuleSourceFile.newSourceFile(id, code);
     }
@@ -69,6 +65,7 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig
   const relativeSourceFilePath = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
   sourcemap['sources'] = [ relativeSourceFilePath ];
   sourcemap['file'] = path.basename(relativeSourceFilePath);
+  sourcemap.sourcesContent && delete sourcemap.sourcesContent;
   newSourceMaps[relativeSourceFilePath] = sourcemap;
 }
 

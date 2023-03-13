@@ -137,7 +137,8 @@ export class ModuleMode extends CommonMode {
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
     const outPutABC: string = this.projectConfig.widgetCompile ? WIDGETS_ABC : MODULES_ABC;
     this.moduleAbcPath = path.join(this.projectConfig.aceModuleBuild, outPutABC);
-    this.sourceMapPath = path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS);
+    this.sourceMapPath = this.arkConfig.isDebug ? path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS) :
+      path.join(this.projectConfig.cachePath, SOURCEMAPS);
     this.cacheFilePath = path.join(this.projectConfig.cachePath, MODULES_CACHE);
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.workerNumber = MAX_WORKER_NUMBER;
@@ -284,7 +285,7 @@ export class ModuleMode extends CommonMode {
   }
 
   buildModuleSourceMapInfo() {
-    if (!this.arkConfig.isDebug || this.projectConfig.widgetCompile) {
+    if (this.projectConfig.widgetCompile) {
       return;
     }
 
