@@ -68,7 +68,8 @@ import {
   STYLES_ATTRIBUTE,
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
-  INNER_CUSTOM_BUILDER_METHOD
+  INNER_CUSTOM_BUILDER_METHOD,
+  INNER_STYLE_FUNCTION
 } from './component_map';
 import {
   LogType,
@@ -375,20 +376,23 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       } else {
         INNER_CUSTOM_BUILDER_METHOD.add(node.name.getText());
       }
+    } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
+      const componentName: string = isExtendFunction(node);
+      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
+    } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+      if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+        if (ts.isFunctionDeclaration(node)) {
+          GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
+        } else {
+          INNER_STYLE_FUNCTION.set(node.name.getText(), node.body);
+        }
+        STYLES_ATTRIBUTE.add(node.name.getText());
+        BUILDIN_STYLE_NAMES.add(node.name.getText());
+      }
     }
     if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
-    }
-  }
-  if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
-    const componentName: string = isExtendFunction(node);
-    collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
-  } else if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-    if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
-      GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
-      STYLES_ATTRIBUTE.add(node.name.getText());
-      BUILDIN_STYLE_NAMES.add(node.name.getText());
     }
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));

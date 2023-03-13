@@ -873,7 +873,9 @@ function isForbiddenUseStateType(typeNode: ts.TypeNode): boolean {
 }
 
 export function isSimpleType(typeNode: ts.TypeNode, program: ts.Program, log?: LogInfo[]): boolean {
-  typeNode = typeNode || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
+  if (!typeNode) {
+    return false;
+  }
   let checker: ts.TypeChecker;
   if (globalProgram.program) {
     checker = globalProgram.program.getTypeChecker();
