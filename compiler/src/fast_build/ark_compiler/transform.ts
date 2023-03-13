@@ -76,7 +76,7 @@ function transformJsByBabelPlugin(code: string): any {
   const transformed: any = require('@babel/core').transformSync(code,
     {
       plugins: [
-        ["@babel/plugin-proposal-class-properties", { "loose": true }]
+        [require("@babel/plugin-proposal-class-properties"), { "loose": true }]
       ],
       compact: false,
       sourceMaps: true
