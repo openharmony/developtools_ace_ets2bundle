@@ -51,6 +51,7 @@ import {
 import {
   projectConfig
 } from '../main';
+import { newSourceMaps as rollupNewSourceMaps } from './fast_build/ark_compiler/transform';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -294,7 +295,7 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 }
 
 export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
-  isHar: boolean = false): Promise<void> {
+  isHar: boolean = false, relativeSourceFilePath: string = ''): Promise<void> {
   let result: MinifyOutput;
   try {
     const minifyOptions = {
@@ -310,11 +311,22 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
         beautify: true,
         indent_level: 2
       };
+      if (process.env.compileTool === 'rollup' && relativeSourceFilePath.length > 0) {
+        minifyOptions['sourceMap'] = {
+          content: rollupNewSourceMaps[relativeSourceFilePath],
+          asObject: true
+        };
+      }
     }
     result = await minify(content, minifyOptions);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
     process.exit(FAIL);
+  }
+  if (process.env.compileTool === 'rollup' && result.map) {
+    result.map.sourcesContent && delete result.map.sourcesContent;
+    result.map.sources = [relativeSourceFilePath];
+    rollupNewSourceMaps[relativeSourceFilePath] = result.map;
   }
   fs.writeFileSync(filePath, result.code);
 }
