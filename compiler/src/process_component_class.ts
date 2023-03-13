@@ -839,7 +839,7 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
 }
 
 function checkAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
-  if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+  if (typeNode && typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
     log.push({
       type: LogType.WARN,
       message: `Please define an explicit type, not any.`,
