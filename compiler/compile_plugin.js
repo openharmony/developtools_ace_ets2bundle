@@ -20,6 +20,7 @@ const { etsChecker } = require('./lib/fast_build/ets_ui/rollup-plugin-ets-checke
 const { apiTransform } = require('./lib/fast_build/system_api/rollup-plugin-system-api');
 const { genAbc } = require('./lib/fast_build/ark_compiler/rollup-plugin-gen-abc');
 const { watchChangeFiles } = require('./lib/fast_build/common/rollup-plugin-watch-change');
+const { visualTransform } = require('./lib/fast_build/visual/rollup-plugin-visual');
 
 exports.etsTransform = etsTransform;
 exports.apiTransform = apiTransform;
@@ -28,3 +29,4 @@ exports.genAbc = genAbc;
 exports.watchChangeFiles = watchChangeFiles;
 exports.initConfig = initConfig;
 exports.getCleanConfig = getCleanConfig;
+exports.visualTransform = visualTransform;
