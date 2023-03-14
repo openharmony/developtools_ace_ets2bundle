@@ -36,6 +36,7 @@ import {
   PROPERTIES_ADD_DOUBLE_DOLLAR,
   $$_BLOCK_INTERFACE,
   COMPONENT_EXTEND_DECORATOR,
+  COMPONENT_BUILDER_DECORATOR,
   FOREACH_LAZYFOREACH,
   EXTNAME_D_ETS,
   EXTNAME_JS
@@ -569,7 +570,9 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       });
     }
   }
-  if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION) {
+  if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION ||
+    (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
+    hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
     if (node.body && node.body.statements && node.body.statements.length) {
       const checkProp: ts.NodeArray<ts.Statement> = node.body.statements;
       checkProp.forEach((item, index) => {
