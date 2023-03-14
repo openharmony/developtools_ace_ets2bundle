@@ -35,14 +35,8 @@ export function apiTransform() {
   return {
     name: 'apiTransform',
     transform(code: string, id: string) {
-      let magicString = new MagicString(code);
+      const magicString = new MagicString(code);
       if (filter(id)) {
-        const logger = this.share.getLogger('apiTransform');
-        const content = visualTransform(code, id, logger);
-        if (content && content !== code) {
-          code = content;
-          magicString = new MagicString(code);
-        }
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
         } else {
@@ -52,7 +46,7 @@ export function apiTransform() {
       }
       return {
         code: code,
-        map: magicString.generateMap()
+        map: magicString.generateMap({ hires: true })
       };
     },
     buildEnd() {
