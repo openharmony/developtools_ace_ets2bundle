@@ -38,6 +38,7 @@ import {
   MODULES_CACHE,
   NPM_ENTRIES_PROTO_BIN,
   NPMENTRIES_TXT,
+  OH_MODULES,
   PACKAGES,
   PROTO_FILESINFO_TXT,
   PROTOS,
@@ -126,6 +127,7 @@ export class ModuleMode extends CommonMode {
   npmEntriesProtoFilePath: string;
   protoFilePath: string;
   filterModuleInfos: Map<String, ModuleInfo>;
+  symlinkMap: any;
 
   constructor(rollupObject: any) {
     super(rollupObject);
@@ -146,6 +148,7 @@ export class ModuleMode extends CommonMode {
     this.protoFilePath = path.join(this.projectConfig.cachePath, PROTOS, PROTO_FILESINFO_TXT);
     this.hashJsonObject = {};
     this.filterModuleInfos = new Map<String, ModuleInfo>();
+    this.symlinkMap = rollupObject.share.symlinkMap;
   }
 
   collectModuleFileList(module: any, fileList: IterableIterator<string>) {
@@ -195,6 +198,21 @@ export class ModuleMode extends CommonMode {
     pkgBuildPath = toUnixPath(pkgBuildPath.substring(0, pkgBuildPath.lastIndexOf('.')));
     if (!pkgEntryInfos.has(pkgEntryPath)) {
       pkgEntryInfos.set(pkgEntryPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
+    }
+    // create symlink path to actual path mapping in ohpm
+    if (this.projectConfig.packageDir == OH_MODULES && this.symlinkMap) {
+      const symlinkEntries: any = Object.entries(this.symlinkMap);
+      for (const [actualPath, symlinkPaths] of symlinkEntries) {
+        if (actualPath === pkgPath) {
+          (<string[]>symlinkPaths).forEach((symlink: string) => {
+            const symlinkPkgEntryPath: string = toUnixPath(this.getPkgModulesFilePkgName(symlink));
+            if (!pkgEntryInfos.has(symlinkPkgEntryPath)) {
+              pkgEntryInfos.set(symlinkPkgEntryPath, new PackageEntryInfo(symlinkPkgEntryPath, pkgEntryPath));
+            }
+          });
+          break;
+        }
+      }
     }
   }
 
