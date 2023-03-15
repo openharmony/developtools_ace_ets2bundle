@@ -52,11 +52,24 @@ const compilerOptions = ts.readConfigFile(
 compilerOptions['moduleResolution'] = 'nodenext';
 compilerOptions['module'] = 'es2020';
 
+let shouldDisableCache: boolean = false;
+const disableCacheOptions = {
+  bundleName: 'default',
+  entryModuleName: 'default',
+  runtimeOS: 'default',
+  resourceTableHash: 'default',
+  etsLoaderVersion: 'default'
+};
+
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
   return {
     name: 'etsTransform',
     transform: transform,
+    buildStart: judgeCacheShouldDisabled,
+    shouldInvalidCache(options) {
+      return shouldDisableCache;
+    },
     moduleParsed(moduleInfo) {
       if (projectConfig.compileHar) {
         if (moduleInfo.id && !moduleInfo.id.match(/node_modules/)) {
@@ -82,8 +95,23 @@ export function etsTransform() {
           writeFileSync(jsBuildFilePath, sourceCode);
         });
       }
+      shouldDisableCache = false;
+      this.cache.set('disableCacheOptions', disableCacheOptions);
     }
   };
+}
+
+function judgeCacheShouldDisabled() {
+  for (const key in disableCacheOptions) {
+    if (!shouldDisableCache && this.cache.get('disableCacheOptions') && this.share &&
+      this.share.projectConfig && this.share.projectConfig[key] &&
+      this.cache.get('disableCacheOptions')[key] !== this.share.projectConfig[key]) {
+      shouldDisableCache = true;
+    }
+    if (this.share && this.share.projectConfig && this.share.projectConfig[key]) {
+      disableCacheOptions[key] = this.share.projectConfig[key];
+    }
+  }
 }
 
 function transform(code: string, id: string) {
