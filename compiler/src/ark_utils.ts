@@ -51,7 +51,6 @@ import {
 import {
   projectConfig
 } from '../main';
-import { newSourceMaps as rollupNewSourceMaps } from './fast_build/ark_compiler/transform';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -295,7 +294,7 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 }
 
 export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
-  isHar: boolean = false, relativeSourceFilePath: string = ''): Promise<void> {
+  isHar: boolean = false, relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
   let result: MinifyOutput;
   try {
     const minifyOptions = {
