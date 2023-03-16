@@ -40,6 +40,7 @@ import {
   writeMinimizedSourceCode
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
+import { newSourceMaps } from './transform';
 
 export function needAotCompiler(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
@@ -114,7 +115,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
   if (isHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeMinimizedSourceCode(content, filePath, logger, isHar, relativeSourceFilePath);
+    await writeMinimizedSourceCode(content, filePath, logger, isHar, relativeSourceFilePath, newSourceMaps);
     return;
   }
 
