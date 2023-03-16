@@ -271,7 +271,7 @@ function getProjectRootPath(): string {
   return projectRootPath;
 }
 
-function findVisualFile(filePath: string): string {
+export function findVisualFile(filePath: string): string {
   if (!/\.ets$/.test(filePath)) {
     return '';
   }
