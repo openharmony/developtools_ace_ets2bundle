@@ -356,19 +356,6 @@ export function mkdirsSync(dirname: string): boolean {
   return false;
 }
 
-function locateActualFilePathWithModuleRequest(absolutePath: string): string {
-  if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isDirectory()) {
-    return absolutePath
-  }
-
-  const filePath: string = absolutePath + getExtensionIfUnfullySpecifiedFilepath(absolutePath);
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    return absolutePath;
-  }
-
-  return path.join(absolutePath, 'index');
-}
-
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
