@@ -1,6 +1,11 @@
+import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
-import { visualTransform as processVisual } from '../../process_visual';
+import { 
+  findVisualFile, 
+  visualTransform as processVisual 
+} from '../../process_visual';
 import MagicString from 'magic-string';
+import { PluginContext } from 'rollup';
 
 const filter: any = createFilter(/(?<!\.d)\.ets$/);
 
@@ -18,6 +23,31 @@ export function visualTransform() {
         code,
         map: magicString.generateMap({ hires: true })
       };
+    },
+    shouldInvalidCache(this: PluginContext, options: any): boolean {
+      const moduleId: string = options.id;
+      if (!filter(moduleId) || !moduleId) {
+        return false;
+      }
+      const visualId: string = findVisualFile(moduleId);
+      if (!visualId) {
+        if (this.cache.has(visualId)) {
+          this.cache.delete(visualId);
+        }
+        return false;
+      }
+      const stat: fs.Stats = fs.statSync(visualId);
+      const currentTimestamp: number = stat.mtime.getTime();
+      if (!this.cache.has(visualId)) {
+        this.cache.set(visualId, currentTimestamp);
+        return true;
+      }
+      const lastTimestamp: number = this.cache.get(visualId);
+      this.cache.set(visualId, currentTimestamp);
+      if (currentTimestamp === lastTimestamp) {
+        return false;
+      }
+      return true;
     }
   }
 }
