@@ -332,7 +332,11 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
       return;
     }
     for (let i = 0; i < value.children.length; ++i) {
-      checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
+      if (fs.existsSync(value.children[i])) {
+        checkNeedUpdateFiles(value.children[i], needUpdate, alreadyCheckedFiles);
+      } else {
+        needUpdate.flag = true;
+      }
     }
   } else {
     cache[file] = { mtimeMs, children: [], parent: [], error: false };
@@ -432,7 +436,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       }
     }
     if (!projectConfig.xtsMode) {
-      createOrUpdateCache(resolvedModules, containingFile);
+      createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
     return resolvedModules;
