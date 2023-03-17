@@ -680,32 +680,19 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
     }
   } else {
     const statementsArray: ts.Statement =
-      createPreviewComponentFunction(componentCollection.entryComponent, context, cardRelativePath, id);
+      createPreviewComponentFunction(componentCollection.entryComponent, context, cardRelativePath, entryNodeKey, id);
     return context.factory.updateSourceFile(node, [...node.statements, statementsArray]);
   }
 }
 
 function createEntryFunction(name: string, context: ts.TransformationContext, cardRelativePath: string,
   entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | ts.ExpressionStatement[] {
-  let localStorageName: string;
-  const localStorageNum: number = localStorageLinkCollection.get(name).size +
-    localStoragePropCollection.get(name).size;
-  if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
-    localStorageName = componentCollection.localStorageName;
-  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
-    && localStorageNum) {
-    transformLog.errors.push({
-      type: LogType.WARN,
-      message: `@Entry should have a parameter, like '@Entry (storage)'.`,
-      pos: componentCollection.entryComponentPos
-    });
-    return;
-  }
   const newArray: ts.Expression[] = [
     context.factory.createStringLiteral(id.toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
+  const localStorageName: string = addStorageParam(name);
   if (localStorageName) {
     newArray.push(entryNodeKey);
   }
@@ -722,7 +709,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
   } else {
     return [
       createStartGetAccessRecording(context),
-      createLoadDocument(context, name, cardRelativePath, localStorageName),
+      createLoadDocument(context, name, cardRelativePath, localStorageName, entryNodeKey),
       createStopGetAccessRecording(context)
     ];
   }
@@ -749,13 +736,13 @@ function createStartGetAccessRecording(context: ts.TransformationContext): ts.Ex
 }
 
 function createLoadDocument(context: ts.TransformationContext, name: string,
-  cardRelativePath: string, localStorageName: string): ts.ExpressionStatement {
+  cardRelativePath: string, localStorageName: string, entryNodeKey: ts.Expression): ts.ExpressionStatement {
   const newArray: ts.Expression[] = [
     context.factory.createIdentifier('undefined'),
     context.factory.createObjectLiteralExpression([], false)
   ];
   if (localStorageName) {
-    newArray.push(context.factory.createIdentifier(localStorageName));
+    newArray.push(entryNodeKey);
   }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
@@ -782,8 +769,26 @@ function createStopGetAccessRecording(context: ts.TransformationContext): ts.Exp
   );
 }
 
+function addStorageParam(name: string): string {
+  let localStorageName: string;
+  const localStorageNum: number = localStorageLinkCollection.get(name).size +
+    localStoragePropCollection.get(name).size;
+  if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
+    localStorageName = componentCollection.localStorageName;
+  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
+    && localStorageNum) {
+    transformLog.errors.push({
+      type: LogType.WARN,
+      message: `@Entry should have a parameter, like '@Entry (storage)'.`,
+      pos: componentCollection.entryComponentPos
+    });
+    return;
+  }
+  return localStorageName
+}
+
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
-  cardRelativePath: string, id: number): ts.Statement {
+  cardRelativePath: string, entryNodeKey: ts.Expression, id: number): ts.Statement {
   const newArray: ts.Expression[] = partialUpdateConfig.partialUpdateMode ?
     [
       context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
@@ -794,6 +799,9 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
       context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
       context.factory.createObjectLiteralExpression([], false)
     ];
+  if (addStorageParam(name)) {
+    newArray.push(entryNodeKey);
+  }
   const argsArr: ts.Expression[] = [];
   componentCollection.previewComponent.forEach(componentName => {
     const newExpression: ts.Expression = context.factory.createNewExpression(
