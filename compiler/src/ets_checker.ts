@@ -137,7 +137,8 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
     getDirectories: ts.sys.getDirectories,
     getTagNameNeededCheckByFile: (fileName, sourceFileName) => {
       let needCheckResult: boolean = false;
-      if (/compiler\/declarations/.test(sourceFileName) || /ets-loader\/declarations/.test(sourceFileName)) {
+      if ((/compiler\/declarations/.test(sourceFileName) || /ets-loader\/declarations/.test(sourceFileName)) &&
+        isCardFile(fileName)) {
         needCheckResult = true;
       }
       return {
