@@ -61,6 +61,7 @@ export class ModuleHotreloadMode extends ModuleMode {
       this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
       return;
     }
+    this.addCacheFileArgs();
     this.cmdArgs.push('--input-symbol-table');
     this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
     this.cmdArgs.push('--hot-reload');
