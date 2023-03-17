@@ -170,7 +170,7 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
       }
     }
     if (!projectConfig.xtsMode) {
-      createOrUpdateCache(resolvedModules, containingFile);
+      createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
     return resolvedModules;

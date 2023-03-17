@@ -87,6 +87,7 @@ export const CUSTOM_DECORATOR_NAME: Set<string> = new Set([
 export const EXTNAME_ETS: string = '.ets';
 export const NODE_MODULES: string = 'node_modules';
 export const INDEX_ETS: string = 'index.ets';
+export const INDEX_TS: string = 'index.ts';
 export const PACKAGE_JSON: string = 'package.json';
 export const CUSTOM_COMPONENT_DEFAULT: string = 'default';
 
