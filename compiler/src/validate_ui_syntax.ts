@@ -92,7 +92,7 @@ export interface ComponentCollection {
   localStorageName: string;
   entryComponentPos: number;
   entryComponent: string;
-  previewComponent: Set<string>;
+  previewComponent: Array<string>;
   customDialogs: Set<string>;
   customComponents: Set<string>;
   currentClassName: string;
@@ -119,7 +119,7 @@ export const componentCollection: ComponentCollection = {
   localStorageName: null,
   entryComponentPos: null,
   entryComponent: null,
-  previewComponent: new Set([]),
+  previewComponent: new Array(),
   customDialogs: new Set([]),
   customComponents: new Set([]),
   currentClassName: null
@@ -290,7 +290,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
           break;
         case COMPONENT_DECORATOR_PREVIEW:
           result.previewCount++;
-          componentCollection.previewComponent.add(componentName);
+          componentCollection.previewComponent.push(componentName);
           break;
         case COMPONENT_DECORATOR_COMPONENT:
           hasComponentDecorator = true;
@@ -1124,7 +1124,7 @@ function validateAllowListModule(moduleType: string, systemKey: string): boolean
 export function resetComponentCollection() {
   componentCollection.entryComponent = null;
   componentCollection.entryComponentPos = null;
-  componentCollection.previewComponent = new Set([]);
+  componentCollection.previewComponent = new Array();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
