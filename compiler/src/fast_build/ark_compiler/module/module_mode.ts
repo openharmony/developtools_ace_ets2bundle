@@ -46,7 +46,9 @@ import {
   reset,
   SOURCEMAPS,
   SOURCEMAPS_JSON,
-  WIDGETS_ABC
+  WIDGETS_ABC,
+  TS2ABC,
+  ES2ABC
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -69,7 +71,9 @@ import {
 } from '../../../utils';
 import {
   getPackageInfo,
-  getOhmUrlByFilepath
+  getOhmUrlByFilepath,
+  isTs2Abc,
+  isEs2Abc
 } from '../../../ark_utils';
 import {
   generateAot,
@@ -143,6 +147,11 @@ export class ModuleMode extends CommonMode {
     this.hashJsonObject = {};
     this.filterModuleInfos = new Map<String, ModuleInfo>();
     this.symlinkMap = rollupObject.share.symlinkMap;
+  }
+
+  prepareForCompilation(rollupObject: any): void {
+    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    this.removeCacheInfo(rollupObject);
   }
 
   collectModuleFileList(module: any, fileList: IterableIterator<string>) {
@@ -619,6 +628,48 @@ export class ModuleMode extends CommonMode {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
       this.throwArkTsCompilerError(`ArkTS:ERROR failed to generate npm proto file to abc. Error message: ` + e.toString());
+    }
+  }
+
+  private removeCompilationCache(): void {
+    if (isEs2Abc(this.projectConfig)) {
+      this.removeEs2abcCompilationCache();
+    } else if (isTs2Abc(this.projectConfig)) {
+      this.removeTs2abcCompilationCache();
+    } else {
+      this.throwArkTsCompilerError(`Invalid projectConfig.pandaMode for module build, should be either
+      "${TS2ABC}" or "${ES2ABC}"`);
+    }
+  }
+
+  private removeEs2abcCompilationCache(): void {
+    if (fs.existsSync(this.cacheFilePath)) {
+      const data: string = fs.readFileSync(this.cacheFilePath, 'utf-8');
+      const lines: any = data.split(/\r?\n/);
+      lines.forEach(line => {
+        const [, abcCacheFilePath]: any = line.split(';');
+        if (fs.existsSync(abcCacheFilePath)) {
+          fs.unlinkSync(abcCacheFilePath);
+        }
+      });
+      fs.unlinkSync(this.cacheFilePath);
+    }
+  }
+
+  private removeTs2abcCompilationCache(): void {
+    if (fs.existsSync(this.hashJsonFilePath)) {
+      fs.unlinkSync(this.hashJsonFilePath);
+    }
+    if (fs.existsSync(this.protoFilePath)) {
+      const data: string = fs.readFileSync(this.protoFilePath, 'utf-8');
+      const lines: any = data.split(/\r?\n/);
+      lines.forEach(line => {
+        const protoFilePath: string = line;
+        if (fs.existsSync(protoFilePath)) {
+          fs.unlinkSync(protoFilePath);
+        }
+      });
+      fs.unlinkSync(this.protoFilePath);
     }
   }
 }
