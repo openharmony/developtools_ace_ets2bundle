@@ -72,11 +72,12 @@ export class BundleMode extends CommonMode {
     this.filterIntermediateJsBundle = [];
     this.hashJsonObject = {};
     this.filesInfoPath = '';
-    this.prepareBundleFileListForCompilation(rollupBundleFileSet);
+    this.prepareForCompilation(rollupObject, rollupBundleFileSet);
   }
 
-  prepareBundleFileListForCompilation(rollupBundleFileSet: any) {
+  prepareForCompilation(rollupObject: any, rollupBundleFileSet: any) {
     this.collectBundleFileList(rollupBundleFileSet);
+    this.removeCacheInfo(rollupObject);
     this.filterBundleFileListWithHashJson();
   }
 
@@ -159,7 +160,7 @@ export class BundleMode extends CommonMode {
   afterCompilationProcess() {
     this.writeHashJson();
     this.copyFileFromCachePathToOutputPath();
-    this.cleanCacheFiles();
+    this.cleanTempCacheFiles();
   }
 
   private generateEs2AbcCmd(filesInfoPath: string) {
@@ -369,7 +370,7 @@ export class BundleMode extends CommonMode {
     }
   }
 
-  private cleanCacheFiles() {
+  private cleanTempCacheFiles() {
     // in xts mode, as cache path is not provided, cache files are located in output path, clear them
     if (this.projectConfig.cachePath !== undefined) {
       return;
@@ -383,6 +384,12 @@ export class BundleMode extends CommonMode {
 
     if (isEs2Abc(this.projectConfig) && fs.existsSync(this.filesInfoPath)) {
       unlinkSync(this.filesInfoPath);
+    }
+  }
+
+  private removeCompilationCache(): void {
+    if (fs.existsSync(this.hashJsonFilePath)) {
+      fs.unlinkSync(this.hashJsonFilePath);
     }
   }
 }

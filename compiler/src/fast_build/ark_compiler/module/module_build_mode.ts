@@ -23,7 +23,7 @@ export class ModuleBuildMode extends ModuleMode {
   }
 
   generateAbc(rollupObject: any) {
-    this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    this.prepareForCompilation(rollupObject);
     this.buildModuleSourceMapInfo();
     this.executeArkCompiler();
   }
