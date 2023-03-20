@@ -660,7 +660,7 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
   if (projectConfig && projectConfig.cardObj) {
     cardRelativePath = projectConfig.cardObj[resourceFileName];
   }
-  if (componentCollection.previewComponent.size === 0 || !projectConfig.isPreview) {
+  if (componentCollection.previewComponent.length === 0 || !projectConfig.isPreview) {
     if (componentCollection.entryComponent) {
       if (!partialUpdateConfig.partialUpdateMode) {
         const entryNode: ts.ExpressionStatement =
@@ -827,7 +827,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
           context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
           undefined,
           [
-            context.factory.createNumericLiteral(componentCollection.previewComponent.size),
+            context.factory.createNumericLiteral(componentCollection.previewComponent.length),
             ...argsArr
           ]
         )),
