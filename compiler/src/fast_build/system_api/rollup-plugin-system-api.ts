@@ -26,7 +26,6 @@ import {
   projectConfig
 } from '../../../main';
 import { writeUseOSFiles } from '../../utils';
-import { visualTransform } from '../../process_visual';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 

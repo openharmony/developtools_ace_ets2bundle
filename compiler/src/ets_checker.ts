@@ -37,6 +37,7 @@ import {
   $$_BLOCK_INTERFACE,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_BUILDER_DECORATOR,
+  ESMODULE,
   EXTNAME_D_ETS,
   EXTNAME_JS,
   FOREACH_LAZYFOREACH,
@@ -52,8 +53,12 @@ import {
   logger
 } from './compile_info';
 import { hasDecorator } from './utils';
-import { generateSourceFilesInHar } from './utils';
+import {
+  generateSourceFilesInHar,
+  EtsResult
+} from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
+import { visualTransform } from './process_visual';
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -84,7 +89,6 @@ function setCompilerOptions() {
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
-    'noEmit': true,
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
     'paths': {
@@ -94,6 +98,11 @@ function setCompilerOptions() {
       'lib.es2020.d.ts'
     ]
   });
+  if (projectConfig.compileMode === ESMODULE) {
+    Object.assign(compilerOptions, {
+      'module': ts.ModuleKind.ES2020,
+    });
+  }
   if (projectConfig.packageDir === 'oh_modules') {
     Object.assign(compilerOptions, {
       'packageManagerType': 'ohpm'
@@ -107,10 +116,17 @@ interface extendInfo {
   compName: string
 }
 
-export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
+export function createLanguageService(rootFileNames: string[], etsResult: EtsResult): ts.LanguageService {
   setCompilerOptions();
   const files: ts.MapLike<{ version: number }> = {};
   const servicesHost: ts.LanguageServiceHost = {
+    writeFile: (fileName: string, content: string) => {
+      if (/.map$/.test(fileName)) {
+        etsResult.sourceMapText = content;
+      } else {
+        etsResult.outputText = content;
+      }
+    },
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
     getScriptVersion: fileName =>
       files[fileName] && files[fileName].version.toString(),
@@ -119,7 +135,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        let content: string = processContent(fs.readFileSync(fileName).toString());
+        let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
         return ts.ScriptSnapshot.fromString(content);
@@ -184,12 +200,12 @@ const allResolvedModules: Set<string> = new Set();
 let fastBuildLogger = null;
 
 export const checkerResult: CheckerResult = {count: 0};
-export function serviceChecker(rootFileNames: string[], newLogger: any = null): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, etsResult: EtsResult): void {
   fastBuildLogger = newLogger;
   let languageService: ts.LanguageService = null;
   let cacheFile: string = null;
   if (projectConfig.xtsMode) {
-    languageService = createLanguageService(rootFileNames);
+    languageService = createLanguageService(rootFileNames, etsResult);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -201,7 +217,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    languageService = createLanguageService(filterFiles);
+    languageService = createLanguageService(filterFiles, etsResult);
   }
   globalProgram.program = languageService.getProgram();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
@@ -508,7 +524,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      let content: string = processContent(fs.readFileSync(fileName).toString());
+      let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
       const extendFunctionInfo: extendInfo[] = [];
       content = instanceInsteadThis(content, fileName, extendFunctionInfo);
       return content;
@@ -525,7 +541,7 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null): vo
     createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}));
 }
 
-function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
+export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
   checkUISyntax(content, fileName, extendFunctionInfo);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
@@ -725,8 +741,17 @@ function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boole
     ts.isIdentifier(item.expression.arguments[0]);
 }
 
-function processContent(source: string): string {
-  source = processSystemApi(source, false);
+function processDraw(source: string): string {
+  const reg: RegExp = /new\s+\b(Circle|Ellipse|Rect|Path)\b/g;
+  return source.replace(reg, (item:string, item1: string) => {
+    return '\xa0'.repeat(item.length - item1.length) + item1;
+  });
+}
+
+function processContent(source: string, id: string): string {
+  if (fastBuildLogger) {
+    source = visualTransform(source, id, fastBuildLogger);
+  }
   source = preprocessExtend(source, extendCollection);
   source = preprocessNewExtend(source, extendCollection);
   return source;
