@@ -595,3 +595,8 @@ function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
     parameters[0].name.escapedText.toString() === $$ && parameters[0].type && ts.isTypeLiteralNode(parameters[0].type) &&
     parameters[0].type.members && parameters[0].type.members.length > 0;
 }
+
+export interface EtsResult {
+  outputText: string,
+  sourceMapText: string,
+}
