@@ -17,13 +17,16 @@ import { initArkProjectConfig } from './common/process_ark_config';
 import { generateBundleAbc } from './generate_bundle_abc';
 import { generateModuleAbc } from './generate_module_abc';
 import { transformForModule } from './transform';
+import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
 
 export function genAbc() {
   return {
     name: 'genAbc',
     buildStart() {
       this.share.arkProjectConfig = initArkProjectConfig(this.share);
+      checkArkCompilerCacheInfo(this);
     },
+    shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
     buildEnd: generateModuleAbc,
     generateBundle: generateBundleAbc
