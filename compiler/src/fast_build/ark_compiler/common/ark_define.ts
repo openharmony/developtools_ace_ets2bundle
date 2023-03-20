@@ -69,6 +69,7 @@ export const GEN_ABC_SCRIPT: string = 'gen_abc.js';
 export const NODE_MODULES: string = 'node_modules';
 export const OH_MODULES: string = 'oh_modules';
 export const PACKAGES: string = 'pkg_modules';
+export const OHPM: string = 'ohpm';
 
 export const TS_NOCHECK: string = '// @ts-nocheck';
 
