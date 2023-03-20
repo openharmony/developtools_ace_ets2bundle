@@ -589,11 +589,17 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
     } else if (isPackageJsonEntry(fileResolvePath)) {
       fileResolvePath = packageJsonEntry;
-      if (fs.statSync(fileResolvePath).isDirectory() && fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
-        fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
+      if (fs.statSync(fileResolvePath).isDirectory()) {
+        if (fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
+          fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
+        } else if (fs.existsSync(path.join(fileResolvePath, INDEX_TS))) {
+          fileResolvePath = path.join(fileResolvePath, INDEX_TS);
+        }
       }
     } else if (fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
       fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
+    } else if (fs.existsSync(path.join(fileResolvePath, INDEX_TS))) {
+      fileResolvePath = path.join(fileResolvePath, INDEX_TS);
     }
     if (curPageDir === path.parse(curPageDir).root) {
       break;
