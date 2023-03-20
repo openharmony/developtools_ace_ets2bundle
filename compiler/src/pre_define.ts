@@ -95,6 +95,7 @@ export const INDEX_ETS: string = 'index.ets';
 export const INDEX_TS: string = 'index.ts';
 export const PACKAGE_JSON: string = 'package.json';
 export const CUSTOM_COMPONENT_DEFAULT: string = 'default';
+export const TS_WATCH_END_MSG: string = 'TS Watch End';
 
 export const BASE_COMPONENT_NAME: string = 'View';
 export const STRUCT: string = 'struct';
