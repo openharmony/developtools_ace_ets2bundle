@@ -102,12 +102,6 @@ export class ModuleInfo {
 }
 
 export class PackageEntryInfo {
-  // There are two types of modules : node_modules and oh_modules. Only one type exists in a project.
-  // And there are two types of directories modules placed in: project root directory and entry directory.
-  // take json5, a node_moduels placed in project root directory, as an example:
-  // pkgEntryPath will be 'pkg_modules/0/json5', pkgBuildPath will be 'pkg_modules/0/json5/index'
-  // 'pkg_modules' represents both oh_modules and node_moduels
-  // '0' represents this module is placed in project root dir, modules placed in entry dir will be '1'
   pkgEntryPath: string;
   pkgBuildPath: string;
   constructor(pkgEntryPath: string, pkgBuildPath: string) {
@@ -339,7 +333,7 @@ export class ModuleMode extends CommonMode {
 
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
-    this.cmdArgs.push(`"${this.cacheFilePath}"`);
+    this.cmdArgs.push(`"@${this.cacheFilePath}"`);
   }
 
   private generateCompileFilesInfo() {
@@ -359,9 +353,26 @@ export class ModuleMode extends CommonMode {
     fs.writeFileSync(this.npmEntriesInfoPath, entriesInfo, 'utf-8');
   }
 
+  private generateAbcCacheFilesInfo(): void {
+    let abcCacheFilesInfo: string = '';
+
+    // generate source file cache
+    this.moduleInfos.forEach((info) => {
+      let abcCacheFilePath: string = changeFileExtension(info.cacheFilePath, EXTNAME_PROTO_BIN);
+      abcCacheFilesInfo += `${info.cacheFilePath};${abcCacheFilePath}\n`;
+    });
+
+    // generate npm entries cache
+    let npmEntriesCacheFilePath: string = changeFileExtension(this.npmEntriesInfoPath, EXTNAME_PROTO_BIN);
+    abcCacheFilesInfo += `${this.npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
+
+    fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
+  }
+
   private genDescriptionsForMergedEs2abc() {
     this.generateCompileFilesInfo();
     this.generateNpmEntriesInfo();
+    this.generateAbcCacheFilesInfo();
   }
 
   generateMergedAbcOfEs2Abc() {
