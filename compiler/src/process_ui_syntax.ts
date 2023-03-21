@@ -771,8 +771,8 @@ function createStopGetAccessRecording(context: ts.TransformationContext): ts.Exp
 
 function addStorageParam(name: string): string {
   let localStorageName: string;
-  const localStorageNum: number = localStorageLinkCollection.get(name).size +
-    localStoragePropCollection.get(name).size;
+  const localStorageNum: number = (localStorageLinkCollection.get(name) || new Set()).size +
+    (localStoragePropCollection.get(name) || new Set()).size;
   if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
     localStorageName = componentCollection.localStorageName;
   } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
@@ -784,7 +784,7 @@ function addStorageParam(name: string): string {
     });
     return;
   }
-  return localStorageName
+  return localStorageName;
 }
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
