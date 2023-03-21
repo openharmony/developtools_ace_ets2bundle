@@ -1551,7 +1551,7 @@ function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
       item.initializer.getText() == XCOMPONENT_DOUBLE_QUOTATION)) {
       flag = true;
     }
-  })
+  });
   return flag;
 }
 
