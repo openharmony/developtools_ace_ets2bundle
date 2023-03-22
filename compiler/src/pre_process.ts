@@ -17,7 +17,8 @@ import {
   validateUISyntax,
   processSystemApi,
   ReplaceResult,
-  sourceReplace
+  sourceReplace,
+  componentCollection
 } from './validate_ui_syntax';
 import {
   LogInfo,
@@ -25,10 +26,16 @@ import {
 } from './utils';
 import { BUILD_ON } from './pre_define';
 import { parseVisual } from './process_visual';
+import {
+  CUSTOM_BUILDER_METHOD,
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_BUILDER_METHOD
+} from './component_map';
 
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
   if (/\.ets$/.test(this.resourcePath)) {
+    clearCollection();
     const result: ReplaceResult = sourceReplace(source, this.resourcePath);
     let newContent: string = result.content;
     const log: LogInfo[] = result.log.concat(validateUISyntax(source, newContent,
@@ -41,6 +48,13 @@ function preProcess(source: string): string {
   } else {
     return processSystemApi(source, false, this.resourcePath);
   }
+}
+
+function clearCollection(): void {
+  componentCollection.customComponents.clear();
+  CUSTOM_BUILDER_METHOD.clear();
+  GLOBAL_CUSTOM_BUILDER_METHOD.clear();
+  INNER_CUSTOM_BUILDER_METHOD.clear();
 }
 
 module.exports = preProcess;
