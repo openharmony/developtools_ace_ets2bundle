@@ -33,7 +33,8 @@ import {
   validateUISyntax,
   propertyCollection,
   linkCollection,
-  resetComponentCollection
+  resetComponentCollection,
+  componentCollection
 } from '../../validate_ui_syntax';
 import {
   processUISyntax,
@@ -46,6 +47,12 @@ import {
   abilityPagesFullPath
 } from '../../../main';
 import { ESMODULE, JSBUNDLE } from '../../pre_define';
+import {
+  CUSTOM_BUILDER_METHOD,
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_BUILDER_METHOD
+} from '../../component_map';
+
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
@@ -148,6 +155,7 @@ function transform(code: string, id: string) {
 
 function preProcess(code: string, id: string, isEntry: boolean, logger: any): string {
   if (/\.ets$/.test(id)) {
+    clearCollection();
     let content = preprocessExtend(code);
     content = preprocessNewExtend(content);
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
@@ -158,6 +166,13 @@ function preProcess(code: string, id: string, isEntry: boolean, logger: any): st
     return content;
   }
   return code;
+}
+
+function clearCollection(): void {
+  componentCollection.customComponents.clear();
+  CUSTOM_BUILDER_METHOD.clear();
+  GLOBAL_CUSTOM_BUILDER_METHOD.clear();
+  INNER_CUSTOM_BUILDER_METHOD.clear();
 }
 
 function resetCollection() {
