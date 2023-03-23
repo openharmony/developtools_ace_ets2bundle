@@ -148,7 +148,10 @@ function handlePluginCompileComponent(jsonData) {
     'sourceMap': false
   });
   const sourceNode = ts.createSourceFile('preview.ets',
-    'struct preview{build(){' + receivedMsg.data.script + '}}',
+    'struct preview{build(){' + receivedMsg.data.script.replace(/new\s+\b(Circle|Ellipse|Rect|Path)\b/g,
+      (item, item1) => {
+        return 'special' + item1 + 'ForPreview';
+      }) + '}}',
     ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   compileWithCheck = jsonData.data.compileWithCheck || 'true';
   receivedMsg.data.variableScript = '';
@@ -167,7 +170,10 @@ function handlePluginCompileComponent(jsonData) {
   const transformedSourceFile = transformResourceNode(newSource, log);
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const result = printer.printNode(ts.EmitHint.Unspecified, transformedSourceFile, transformedSourceFile);
-  receivedMsg.data.script = ts.transpileModule(result, {}).outputText;
+  receivedMsg.data.script = ts.transpileModule(result, {}).outputText.replace(
+    /\bspecial(Circle|Ellipse|Rect|Path)ForPreview\b/g, (item, item1) => {
+      return 'new ' + item1;
+    });
   receivedMsg.data.log = log;
   if (receivedMsg.data.viewID) {
     receivedMsg.data.script = receivedMsg.data.variableScript + `function quickPreview(context) {
