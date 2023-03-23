@@ -76,7 +76,7 @@ export function etsTransform() {
     },
     moduleParsed(moduleInfo) {
       if (projectConfig.compileHar) {
-        if (moduleInfo.id && !moduleInfo.id.match(/node_modules/)) {
+        if (moduleInfo.id && !moduleInfo.id.match(/node_modules/) && !moduleInfo.id.startsWith('\x00')) {
           const filePath: string = moduleInfo.id;
           const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
             process.env.cachePath, projectConfig);
