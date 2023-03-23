@@ -21,12 +21,35 @@ const { apiTransform } = require('./lib/fast_build/system_api/rollup-plugin-syst
 const { genAbc } = require('./lib/fast_build/ark_compiler/rollup-plugin-gen-abc');
 const { watchChangeFiles } = require('./lib/fast_build/common/rollup-plugin-watch-change');
 const { visualTransform } = require('./lib/fast_build/visual/rollup-plugin-visual');
+const { terserPlugin } = require('./lib/fast_build/ark_compiler/terser-plugin');
+const { babelPlugin } = require('./lib/fast_build/ark_compiler/babel-plugin');
+const { JSBUNDLE, RELEASE } = require('./lib/fast_build/ark_compiler/common/ark_define');
 
-exports.etsTransform = etsTransform;
-exports.apiTransform = apiTransform;
-exports.etsChecker = etsChecker;
-exports.genAbc = genAbc;
-exports.watchChangeFiles = watchChangeFiles;
 exports.initConfig = initConfig;
 exports.getCleanConfig = getCleanConfig;
-exports.visualTransform = visualTransform;
+
+// list of functional plugins
+exports.sdkPlugins = (projectConfig) => {
+    return [
+        watchChangeFiles(),
+        etsChecker(),
+        visualTransform(),
+        etsTransform(),
+        apiTransform(),
+        genAbc(),
+        projectConfig.buildMode?.toLowerCase() === RELEASE && terserPlugin(),
+        projectConfig.compileMode === JSBUNDLE && babelPlugin(projectConfig)
+    ];
+};
+exports.sdkPluginsMap = {
+    "watchChangeFiles": 0,
+    "etsChecker": 1,
+    "visualTransform": 2,
+    "etsTransform": 3,
+    "apiTransform": 4,
+    "genAbc": 5,
+    "terserPlugin": 6,
+    "babelPlugin": 7,
+};
+
+exports.resolveFileExtensions = [];
