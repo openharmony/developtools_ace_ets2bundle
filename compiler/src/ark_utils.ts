@@ -61,6 +61,10 @@ export var newSourceMaps: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any, namespace?: string): string {
+  // remove '\x00' from the rollup virtual commonjs file's filePath
+  if (filePath.startsWith('\x00')) {
+    filePath = filePath.replace('\x00', '');
+  }
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
   const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
