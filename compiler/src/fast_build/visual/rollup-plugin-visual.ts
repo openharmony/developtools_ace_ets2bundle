@@ -30,7 +30,7 @@ export function visualTransform() {
         return false;
       }
       const visualId: string = findVisualFile(moduleId);
-      if (!visualId) {
+      if (!visualId || !fs.existsSync(visualId)) {
         if (this.cache.has(visualId)) {
           this.cache.delete(visualId);
         }
