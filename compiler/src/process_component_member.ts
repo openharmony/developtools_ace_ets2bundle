@@ -890,6 +890,10 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
   if (simpleTypes.has(typeNode.kind)) {
     return true;
   }
+  if (ts.isTypeReferenceNode(typeNode) && typeNode.typeName && ts.isIdentifier(typeNode.typeName) &&
+    enumCollection.has(typeNode.typeName.escapedText.toString())) {
+    return true;
+  }
   if (checker) {
     const type: ts.Type = checker.getTypeFromTypeNode(typeNode);
     /* Enum */
