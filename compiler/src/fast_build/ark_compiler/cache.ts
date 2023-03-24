@@ -54,7 +54,8 @@ function getMetaInfo(projectConfig: any): string {
     const allModuleNameHash: string = projectConfig.allModuleNameHash ? projectConfig.allModuleNameHash :
       'null_allModuleNameHash';
     const aotCompileMode: string = projectConfig.aotCompileMode ? projectConfig.aotCompileMode : 'null_aotCompileMode';
-    metaInfoArr.push(bundleName, allModuleNameHash, aotCompileMode);
+    const apPath: string = projectConfig.apPath ? projectConfig.apPath : 'null_apPath';
+    metaInfoArr.push(bundleName, allModuleNameHash, aotCompileMode, apPath);
   }
 
   return metaInfoArr.join(':');
