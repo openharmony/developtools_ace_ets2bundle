@@ -358,6 +358,9 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
         },
         readFile(fileName: string): string | undefined {
           return ts.sys.readFile(fileName);
+        },
+        realpath(path: string): string {
+          return ts.sys.realpath(path);
         }
       });
       if (result.resolvedModule) {
