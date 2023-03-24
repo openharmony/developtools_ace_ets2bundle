@@ -53,10 +53,7 @@ import {
   logger
 } from './compile_info';
 import { hasDecorator } from './utils';
-import {
-  generateSourceFilesInHar,
-  EtsResult
-} from './utils';
+import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 
@@ -71,7 +68,7 @@ export function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
-const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
+export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions() {
   const allPath: Array<string> = [
@@ -116,17 +113,10 @@ interface extendInfo {
   compName: string
 }
 
-export function createLanguageService(rootFileNames: string[], etsResult: EtsResult): ts.LanguageService {
+export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
   setCompilerOptions();
   const files: ts.MapLike<{ version: number }> = {};
   const servicesHost: ts.LanguageServiceHost = {
-    writeFile: (fileName: string, content: string) => {
-      if (/.map$/.test(fileName)) {
-        etsResult.sourceMapText = content;
-      } else {
-        etsResult.outputText = content;
-      }
-    },
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
     getScriptVersion: fileName =>
       files[fileName] && files[fileName].version.toString(),
@@ -200,12 +190,12 @@ const allResolvedModules: Set<string> = new Set();
 let fastBuildLogger = null;
 
 export const checkerResult: CheckerResult = {count: 0};
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, etsResult: EtsResult): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null): void {
   fastBuildLogger = newLogger;
   let languageService: ts.LanguageService = null;
   let cacheFile: string = null;
   if (projectConfig.xtsMode) {
-    languageService = createLanguageService(rootFileNames, etsResult);
+    languageService = createLanguageService(rootFileNames);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -217,7 +207,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, e
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    languageService = createLanguageService(filterFiles, etsResult);
+    languageService = createLanguageService(filterFiles);
   }
   globalProgram.program = languageService.getProgram();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
@@ -362,7 +352,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
 
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
-function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
