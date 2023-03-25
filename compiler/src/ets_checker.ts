@@ -725,18 +725,10 @@ function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boole
     ts.isIdentifier(item.expression.arguments[0]);
 }
 
-function processDraw(source: string): string {
-  const reg: RegExp = /new\s+\b(Circle|Ellipse|Rect|Path)\b/g;
-  return source.replace(reg, (item:string, item1: string) => {
-    return '\xa0'.repeat(item.length - item1.length) + item1;
-  });
-}
-
 function processContent(source: string): string {
   source = processSystemApi(source, false);
   source = preprocessExtend(source, extendCollection);
   source = preprocessNewExtend(source, extendCollection);
-  source = processDraw(source);
   return source;
 }
 
