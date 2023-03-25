@@ -416,7 +416,7 @@ export function isMac(): boolean {
 
 export function maxFilePathLength(): number {
   if (isWindows()) {
-    return (process.env.minPlatformVersion && process.env.minPlatformVersion === "8") ? 259 : 32766;
+    return 32766;
   } else if (isLinux()) {
     return 4095;
   } else if (isMac()) {
