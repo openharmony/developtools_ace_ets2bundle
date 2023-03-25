@@ -230,9 +230,6 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['NavDestination', new Set(['title'])],
   ['ListItem', new Set(['swipeAction'])]
 ]);
-export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup']);
-export const HEADER: string = 'header';
-export const FOOTER: string = 'footer';
 
 export const CHECKED: string = 'checked';
 export const RADIO: string = 'Radio';
@@ -254,6 +251,10 @@ export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISI
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])], [REFRESH, new Set([REFRESHING])]
 ]);
+
+export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
+export const HEADER: string = 'header';
+export const FOOTER: string = 'footer';
 
 export const INTERFACE_NAME_SUFFIX:string = '_Params';
 export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
