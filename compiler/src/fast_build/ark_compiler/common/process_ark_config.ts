@@ -114,8 +114,6 @@ export function initArkProjectConfig(share: any) {
       arkProjectConfig.bundleName = moduleJsonInfo.app.bundleName;
     }
   }
-  // add minPlatformVersion env for maxFilePathLength function
-  process.env.minPlatformVersion = arkProjectConfig.minPlatformVersion;
 
   // Hotreload attributes are initialized by arkui in main.js, just copy them.
   arkProjectConfig.hotReload = mainProjectConfig.hotReload;
