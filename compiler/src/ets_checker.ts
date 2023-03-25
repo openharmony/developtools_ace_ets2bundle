@@ -23,7 +23,6 @@ import {
   globalProgram
 } from '../main';
 import {
-  processSystemApi,
   preprocessExtend,
   preprocessNewExtend
 } from './validate_ui_syntax';
@@ -82,7 +81,7 @@ function setCompilerOptions() {
     allPath.push('../*');
   }
   Object.assign(compilerOptions, {
-    'allowJs': true,
+    'allowJs': false,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
@@ -103,6 +102,13 @@ function setCompilerOptions() {
   if (projectConfig.packageDir === 'oh_modules') {
     Object.assign(compilerOptions, {
       'packageManagerType': 'ohpm'
+    });
+  }
+  if (process.env.watchMode === 'true') {
+    // tsc watchConfig will always emit file when sensing the changes of files
+    // so we redirect the output emit file to cache.
+    Object.assign(compilerOptions, {
+      'outDir': path.join(projectConfig.cachePath, 'tscOutputs')
     });
   }
 }
@@ -729,13 +735,6 @@ function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boole
     item.expression.arguments && item.expression.arguments.length &&
     // @ts-ignore
     ts.isIdentifier(item.expression.arguments[0]);
-}
-
-function processDraw(source: string): string {
-  const reg: RegExp = /new\s+\b(Circle|Ellipse|Rect|Path)\b/g;
-  return source.replace(reg, (item:string, item1: string) => {
-    return '\xa0'.repeat(item.length - item1.length) + item1;
-  });
 }
 
 function processContent(source: string, id: string): string {

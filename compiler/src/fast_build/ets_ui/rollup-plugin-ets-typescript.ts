@@ -14,7 +14,6 @@
  */
 
 import ts from 'typescript';
-import path from 'path';
 import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import MagicString from 'magic-string';
@@ -29,8 +28,6 @@ import {
   generateCollectionFile
 } from '../../utils';
 import {
-  preprocessExtend,
-  preprocessNewExtend,
   validateUISyntax,
   propertyCollection,
   linkCollection,
@@ -47,7 +44,6 @@ import {
   abilityPagesFullPath,
   globalProgram
 } from '../../../main';
-import { ESMODULE } from '../../pre_define';
 import {
   appComponentCollection,
   compilerOptions as etsCheckerCompilerOptions,
@@ -60,10 +56,6 @@ import {
 } from '../../component_map';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
-const compilerOptions = ts.readConfigFile(
-  path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-compilerOptions['moduleResolution'] = 'nodenext';
-compilerOptions['module'] = 'es2020';
 
 let shouldDisableCache: boolean = false;
 const disableCacheOptions = {
@@ -146,84 +138,52 @@ function transform(code: string, id: string) {
     return null;
   }
 
-  if (projectConfig.compileMode === ESMODULE) {
-    compilerOptions['importsNotUsedAsValues'] = 'remove';
-  }
-
   const logger = this.share.getLogger('etsTransform');
 
-  let result;
-  if (process.env.watchMode !== 'true') {
-    let tsProgram: ts.Program = globalProgram.program;
-    let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
-    // createProgram from the file which does not have corresponding ast from ets-checker's program
-    if (!targetSourceFile) {
-      if (/\.ets$/.test(id)) {
-        logger.error('\u001b[31m' + `ArkTS:ERROR: the .ets file ${id} cann't be imported by .js file`);
-      }
-      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
-      targetSourceFile = tsProgram.getSourceFile(id)!;
-    }
-
-    if (/\.ets$/.test(id)) {
-      const fileQuery: string = this.getModuleInfo(id).isEntry &&
-        !abilityPagesFullPath.includes(id) ? '?entry' : '';
-      const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, targetSourceFile);
-      if (log.length) {
-        emitLogInfo(logger, log, true, id);
-      }
-    }
-
-    const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
-    const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
-      if (/.map$/.test(fileName)) {
-        emitResult.sourceMapText = data;
-      } else {
-        emitResult.outputText = data;
-      }
-    }
-
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
-    result = {
-      code: emitResult.outputText,
-      map: JSON.parse(emitResult.sourceMapText)
-    };
-  } else {
-    const magicString = new MagicString(code);
-    const newContent: string = preProcess(code, id, this.getModuleInfo(id).isEntry, logger);
-
-    const transpileResult: ts.TranspileOutput = ts.transpileModule(newContent, {
-      compilerOptions: compilerOptions,
-      fileName: id,
-      transformers: { before: [ processUISyntax(null) ] }
-    });
-    result = {
-      code: transpileResult.outputText,
-      map: transpileResult.sourceMapText ? JSON.parse(transpileResult.sourceMapText) : magicString.generateMap()
-    };
+  let tsProgram: ts.Program = process.env.watchMode !== 'true' ?
+    globalProgram.program : globalProgram.watchProgram.getProgram();
+  let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
+  // createProgram from the file which does not have corresponding ast from ets-checker's program
+  if (!targetSourceFile) {
+    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    targetSourceFile = tsProgram.getSourceFile(id)!;
   }
+
+  validateEts(code, id, this.getModuleInfo(id).isEntry, targetSourceFile, logger);
+
+  const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
+  const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
+    if (/.map$/.test(fileName)) {
+      emitResult.sourceMapText = data;
+    } else {
+      emitResult.outputText = data;
+    }
+  }
+
+  tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+
   resetCollection();
   if (transformLog && transformLog.errors.length) {
     emitLogInfo(logger, getTransformLog(transformLog), true, id);
     resetLog();
   }
 
-  return result;
+  return {
+    code: emitResult.outputText,
+    // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in watchMode
+    map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap()
+  };
 }
 
-function preProcess(code: string, id: string, isEntry: boolean, logger: any): string {
+function validateEts(code: string, id: string, isEntry: boolean, targetSourceFile: ts.SourceFile, logger: any) {
   if (/\.ets$/.test(id)) {
     clearCollection();
-    let content = preprocessExtend(code);
-    content = preprocessNewExtend(content);
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
-    const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
+    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, targetSourceFile);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }
-    return content;
   }
-  return code;
 }
 
 function clearCollection(): void {
