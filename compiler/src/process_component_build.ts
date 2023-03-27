@@ -1662,7 +1662,8 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
     if (property.name && ts.isIdentifier(property.name) &&
       [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END].includes(
         property.name.escapedText.toString()) && property.initializer) {
-      if (isPropertyAccessExpressionNode(property.initializer)) {
+      if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
+        CUSTOM_BUILDER_METHOD.has(property.initializer.escapedText.toString())) {
         newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
           ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(
@@ -1694,7 +1695,7 @@ function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.Pro
       ),
       undefined,
       [ts.factory.createThis(), ...(property.initializer.arguments || [])]
-    ))
+    ));
 }
 
 function isInnerBuilderCallExpressionNode(node: ts.Node): boolean {
