@@ -1186,4 +1186,3 @@ export function getLocalStorageCollection(componentName: string, collection: Set
     }
   }
 }
- 
