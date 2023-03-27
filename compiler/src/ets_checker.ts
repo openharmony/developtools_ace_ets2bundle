@@ -40,7 +40,8 @@ import {
   EXTNAME_D_ETS,
   EXTNAME_JS,
   FOREACH_LAZYFOREACH,
-  COMPONENT_IF
+  COMPONENT_IF,
+  TS_WATCH_END_MSG
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -55,6 +56,7 @@ import { hasDecorator } from './utils';
 import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
+import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -509,7 +511,8 @@ export function createWatchCompilerHost(rootFileNames: string[],
         if (!isPipe) {
           process.env.watchTs = 'end';
           if (fastBuildLogger) {
-            fastBuildLogger.debug('TS Watch End');
+            fastBuildLogger.debug(TS_WATCH_END_MSG);
+            tsWatchEmitter.emit(TS_WATCH_END_MSG);
           }
         }
         delayPrintLogCount();
