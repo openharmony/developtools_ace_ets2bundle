@@ -54,6 +54,7 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD
 } from '../../component_map';
+import { tsWatchEndPromise } from './rollup-plugin-ets-checker';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -133,12 +134,17 @@ compilerHost.resolveModuleNames = resolveModuleNames;
 compilerHost.getCurrentDirectory = () => process.cwd();
 compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
 
-function transform(code: string, id: string) {
+async function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
 
   const logger = this.share.getLogger('etsTransform');
+
+  if (process.env.watchMode === 'true') {
+    // need to wait the tsc watch end signal to continue emitting in watch mode
+    await tsWatchEndPromise;
+  }
 
   let tsProgram: ts.Program = process.env.watchMode !== 'true' ?
     globalProgram.program : globalProgram.watchProgram.getProgram();
