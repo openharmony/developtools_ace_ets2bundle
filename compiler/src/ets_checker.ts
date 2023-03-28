@@ -84,6 +84,7 @@ function setCompilerOptions() {
   }
   Object.assign(compilerOptions, {
     'allowJs': false,
+    'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
