@@ -1477,8 +1477,8 @@ function createIfBranchFunc(id: number, innerStatements: ts.Statement[],
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
     isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis(),
     ts.factory.createIdentifier(IFELSEBRANCHUPDATEFUNCTION)), undefined,
-      [ts.factory.createNumericLiteral(id), ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock(innerStatements, true))]));
+  [ts.factory.createNumericLiteral(id), ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock(innerStatements, true))]));
 }
 
 interface CreateResult {
@@ -1517,10 +1517,8 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
       res.isContainerComponent = true;
     }
     res.newNode = type === COMPONENT_POP_FUNCTION
-      ? ts.factory.updateExpressionStatement(node,
-        createFunction(temp, identifierNode, null))
-      : ts.factory.updateExpressionStatement(node,
-        createFunction(temp, identifierNode, checkArguments(temp, type)));
+      ? ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null))
+      : ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
