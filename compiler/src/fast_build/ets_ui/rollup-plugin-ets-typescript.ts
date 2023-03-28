@@ -14,6 +14,7 @@
  */
 
 import ts from 'typescript';
+import path from 'path';
 import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import MagicString from 'magic-string';
@@ -28,6 +29,8 @@ import {
   generateCollectionFile
 } from '../../utils';
 import {
+  preprocessExtend,
+  preprocessNewExtend,
   validateUISyntax,
   propertyCollection,
   linkCollection,
@@ -141,6 +144,30 @@ async function transform(code: string, id: string) {
 
   const logger = this.share.getLogger('etsTransform');
 
+  if (projectConfig.compileMode !== "esmodule") {
+    const compilerOptions = ts.readConfigFile(
+      path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    compilerOptions['moduleResolution'] = 'nodenext';
+    compilerOptions['module'] = 'es2020'
+    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+    const result: ts.TranspileOutput = ts.transpileModule(newContent, {
+      compilerOptions: compilerOptions,
+      fileName: id,
+      transformers: { before: [ processUISyntax(null) ] }
+    });
+
+    resetCollection();
+    if (transformLog && transformLog.errors.length) {
+      emitLogInfo(logger, getTransformLog(transformLog), true, id);
+      resetLog();
+    }
+
+    return {
+      code: result.outputText,
+      map: result.sourceMapText ? JSON.parse(result.sourceMapText) : new MagicString(code).generateMap()
+    };
+  }
+
   if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
     // need to wait the tsc watch end signal to continue emitting in watch mode
     await tsWatchEndPromise;
@@ -190,6 +217,21 @@ function validateEts(code: string, id: string, isEntry: boolean, logger: any) {
       emitLogInfo(logger, log, true, id);
     }
   }
+}
+
+function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any): string {
+  if (/\.ets$/.test(id)) {
+    clearCollection();
+    let content = preprocessExtend(code);
+    content = preprocessNewExtend(content);
+    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
+    const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
+    if (log.length) {
+      emitLogInfo(logger, log, true, id);
+    }
+    return content;
+  }
+  return code;
 }
 
 function clearCollection(): void {
