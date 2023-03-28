@@ -23,7 +23,7 @@ import {
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 
-export let tsWatchEmitter: any = undefined;
+export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
 
 export function etsChecker() {
@@ -31,7 +31,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-      if (process.env.watchMode === 'true') {
+      if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
           tsWatchEmitter.on(TS_WATCH_END_MSG, () => {

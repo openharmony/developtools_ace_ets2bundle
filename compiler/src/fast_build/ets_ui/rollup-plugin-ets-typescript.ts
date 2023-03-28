@@ -141,7 +141,7 @@ async function transform(code: string, id: string) {
 
   const logger = this.share.getLogger('etsTransform');
 
-  if (process.env.watchMode === 'true') {
+  if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
     // need to wait the tsc watch end signal to continue emitting in watch mode
     await tsWatchEndPromise;
   }
