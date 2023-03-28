@@ -23,7 +23,6 @@ import {
   globalProgram
 } from '../main';
 import {
-  processSystemApi,
   preprocessExtend,
   preprocessNewExtend
 } from './validate_ui_syntax';
@@ -37,9 +36,11 @@ import {
   $$_BLOCK_INTERFACE,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_BUILDER_DECORATOR,
-  FOREACH_LAZYFOREACH,
+  ESMODULE,
   EXTNAME_D_ETS,
-  EXTNAME_JS
+  EXTNAME_JS,
+  FOREACH_LAZYFOREACH,
+  TS_WATCH_END_MSG
 } from './pre_define';
 import { getName } from './process_component_build';
 import { INNER_COMPONENT_NAMES } from './component_map';
@@ -50,6 +51,8 @@ import {
 import { hasDecorator } from './utils';
 import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
+import { visualTransform } from './process_visual';
+import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -62,7 +65,7 @@ export function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
-const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
+export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions() {
   const allPath: Array<string> = [
@@ -77,10 +80,10 @@ function setCompilerOptions() {
   }
   Object.assign(compilerOptions, {
     'allowJs': false,
+    'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
-    'noEmit': true,
     'target': ts.ScriptTarget.ES2017,
     'baseUrl': path.resolve(projectConfig.projectPath),
     'paths': {
@@ -90,9 +93,21 @@ function setCompilerOptions() {
       'lib.es2020.d.ts'
     ]
   });
+  if (projectConfig.compileMode === ESMODULE) {
+    Object.assign(compilerOptions, {
+      'module': ts.ModuleKind.ES2020,
+    });
+  }
   if (projectConfig.packageDir === 'oh_modules') {
     Object.assign(compilerOptions, {
       'packageManagerType': 'ohpm'
+    });
+  }
+  if (process.env.watchMode === 'true') {
+    // tsc watchConfig will always emit file when sensing the changes of files
+    // so we redirect the output emit file to cache.
+    Object.assign(compilerOptions, {
+      'outDir': path.join(projectConfig.cachePath, 'tscOutputs')
     });
   }
 }
@@ -115,7 +130,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        let content: string = processContent(fs.readFileSync(fileName).toString());
+        let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
         return ts.ScriptSnapshot.fromString(content);
@@ -341,7 +356,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
 
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
-function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
@@ -492,7 +507,8 @@ export function createWatchCompilerHost(rootFileNames: string[],
         if (!isPipe) {
           process.env.watchTs = 'end';
           if (fastBuildLogger) {
-            fastBuildLogger.debug('TS Watch End');
+            fastBuildLogger.debug(TS_WATCH_END_MSG);
+            tsWatchEmitter.emit(TS_WATCH_END_MSG);
           }
         }
         delayPrintLogCount();
@@ -503,7 +519,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
       return undefined;
     }
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-      let content: string = processContent(fs.readFileSync(fileName).toString());
+      let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
       const extendFunctionInfo: extendInfo[] = [];
       content = instanceInsteadThis(content, fileName, extendFunctionInfo);
       return content;
@@ -520,7 +536,7 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null): vo
     createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}));
 }
 
-function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
+export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
   checkUISyntax(content, fileName, extendFunctionInfo);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
@@ -704,8 +720,10 @@ function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boole
     ts.isIdentifier(item.expression.arguments[0]);
 }
 
-function processContent(source: string): string {
-  source = processSystemApi(source, false);
+function processContent(source: string, id: string): string {
+  if (fastBuildLogger) {
+    source = visualTransform(source, id, fastBuildLogger);
+  }
   source = preprocessExtend(source, extendCollection);
   source = preprocessNewExtend(source, extendCollection);
   return source;
