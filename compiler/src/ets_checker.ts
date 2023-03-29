@@ -193,7 +193,8 @@ type Cache = Record<string, CacheFileName>;
 export let cache: Cache = {};
 export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
-export const appComponentCollection: Set<string> = new Set();
+const appComponentCollection: Set<string> = new Set();
+export const appPathComponentCollection: Map<string, Array<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
 
 let fastBuildLogger = null;
@@ -574,6 +575,10 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
+      if (sourceFile.fileName) {
+        appPathComponentCollection.set(sourceFile.fileName, Array.from(appComponentCollection));
+        appComponentCollection.clear();
+      }
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
   }

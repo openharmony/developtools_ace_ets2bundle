@@ -562,11 +562,35 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
   fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
 }
 
-export function generateCollectionFile(projectConfig: any, appComponentCollection: Set<string>): void {
-  const componentContent: string = Array.from(appComponentCollection).join(',');
+export function generateComponentCollectionFile(projectConfig: any, appPathComponentCollection: Map<string, Array<string>>): void {
+  const oldAppPathComponentCollection: Map<string, Array<string>> = new Map();
+  let componentContent: string = JSON.stringify(Object.fromEntries(appPathComponentCollection), null, 2);
+  const appComponentFile: string = path.resolve(projectConfig.cachePath, 'component_collection.json');
+  if (fs.existsSync(appComponentFile)) {
+    const lastAppComponentCollection: string = fs.readFileSync(appComponentFile).toString();
+    if (lastAppComponentCollection) {
+      const jsonLastAppComponentCollection: Map<string, Array<string>> = JSON.parse(lastAppComponentCollection);
+      for (const key in jsonLastAppComponentCollection) {
+        oldAppPathComponentCollection.set(key, jsonLastAppComponentCollection[key]);
+      }
+    }
+    const appPathComponentCollectionKeyArr: string[] = Array.from(appPathComponentCollection.keys());
+    if (appPathComponentCollectionKeyArr.length) {
+      const oldAppPathComponentCollectionKeyArr: string[] = Array.from(oldAppPathComponentCollection.keys());
+      appPathComponentCollectionKeyArr.forEach((item: string) => {
+        if (oldAppPathComponentCollectionKeyArr.includes(item)) {
+          oldAppPathComponentCollection.delete(item);
+          oldAppPathComponentCollection.set(item, appPathComponentCollection.get(item));
+        } else {
+          oldAppPathComponentCollection.set(item, appPathComponentCollection.get(item));
+        }
+      });
+      componentContent = JSON.stringify(Object.fromEntries(oldAppPathComponentCollection), null, 2);
+    }
+  }
   if (projectConfig.cachePath) {
-    writeFileSync(path.resolve(projectConfig.cachePath, 'component_collection.txt'), componentContent);
-    appComponentCollection.clear();
+    writeFileSync(appComponentFile, componentContent);
+    appPathComponentCollection.clear();
   }
 }
 
