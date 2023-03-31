@@ -562,36 +562,34 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
   fs.writeFileSync(projectConfig.aceSoPath, info + Array.from(useOSFiles).join('\n'));
 }
 
-export function generateComponentCollectionFile(projectConfig: any, appPathComponentCollection: Map<string, Array<string>>): void {
-  const oldAppPathComponentCollection: Map<string, Array<string>> = new Map();
-  let componentContent: string = JSON.stringify(Object.fromEntries(appPathComponentCollection), null, 2);
-  const appComponentFile: string = path.resolve(projectConfig.cachePath, 'component_collection.json');
-  if (fs.existsSync(appComponentFile)) {
-    const lastAppComponentCollection: string = fs.readFileSync(appComponentFile).toString();
-    if (lastAppComponentCollection) {
-      const jsonLastAppComponentCollection: Map<string, Array<string>> = JSON.parse(lastAppComponentCollection);
-      for (const key in jsonLastAppComponentCollection) {
-        oldAppPathComponentCollection.set(key, jsonLastAppComponentCollection[key]);
-      }
+
+export function writeCollectionFile(cachePath: string, appCollection: Map<string, Set<string>>, 
+  allComponentsOrModules: Map<string, Array<string>>, fileName: string) {
+  for (let key of appCollection.keys()) {
+    if (appCollection.get(key).size === 0) {
+      allComponentsOrModules.delete(key);
+      continue;
     }
-    const appPathComponentCollectionKeyArr: string[] = Array.from(appPathComponentCollection.keys());
-    if (appPathComponentCollectionKeyArr.length) {
-      const oldAppPathComponentCollectionKeyArr: string[] = Array.from(oldAppPathComponentCollection.keys());
-      appPathComponentCollectionKeyArr.forEach((item: string) => {
-        if (oldAppPathComponentCollectionKeyArr.includes(item)) {
-          oldAppPathComponentCollection.delete(item);
-          oldAppPathComponentCollection.set(item, appPathComponentCollection.get(item));
-        } else {
-          oldAppPathComponentCollection.set(item, appPathComponentCollection.get(item));
-        }
-      });
-      componentContent = JSON.stringify(Object.fromEntries(oldAppPathComponentCollection), null, 2);
+    allComponentsOrModules.set(key, Array.from(appCollection.get(key)));
+  }
+  const content: string = JSON.stringify(Object.fromEntries(allComponentsOrModules), null, 2);
+  writeFileSync(path.resolve(cachePath, fileName), content);
+}
+
+export function getAllComponentsOrModules(allFiles: Set<string>, 
+  cacheCollectionFileName: string): Map<string, Array<string>> {
+  const cacheCollectionFilePath: string = path.resolve(projectConfig.cachePath, cacheCollectionFileName);
+  const allComponentsOrModules: Map<string, Array<string>> = new Map();
+  if (!fs.existsSync(cacheCollectionFilePath)) {
+    return allComponentsOrModules;
+  }
+  const lastComponentsOrModules = require(cacheCollectionFilePath);
+  for (let key in lastComponentsOrModules) {
+    if (allFiles.has(key)) {
+      allComponentsOrModules.set(key, lastComponentsOrModules[key]);
     }
   }
-  if (projectConfig.cachePath) {
-    writeFileSync(appComponentFile, componentContent);
-    appPathComponentCollection.clear();
-  }
+  return allComponentsOrModules;
 }
 
 export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclaration[]): string[] {
