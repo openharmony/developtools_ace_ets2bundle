@@ -6,7 +6,6 @@ import {
 } from '../../process_visual';
 import MagicString from 'magic-string';
 import { PluginContext } from 'rollup';
-import { projectConfig } from '../../../main';
 
 const filter: any = createFilter(/(?<!\.d)\.ets$/);
 
@@ -15,9 +14,6 @@ export function visualTransform() {
     name: 'visualTransform',
     transform(code: string, id: string) {
       if (!filter(id)) {
-        return null;
-      }
-      if (process.env.watchMode !== 'true' && 'esmodule' === projectConfig.compileMode) {
         return null;
       }
       const logger = this.share.getLogger('visualTransform');
