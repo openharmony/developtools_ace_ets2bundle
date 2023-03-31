@@ -16,6 +16,7 @@
 import ts from 'typescript';
 import path from 'path';
 
+import validateReExportType from './validate_module_syntax';
 import {
   PAGE_ENTRY_FUNCTION_NAME,
   PREVIEW_COMPONENT_FUNCTION_NAME,
@@ -121,6 +122,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE) {
+            validateReExportType(node, pagesDir, transformLog.errors);
             if (projectConfig.processTs === true) {
               process.env.compileTool === 'rollup' ?
                 ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
@@ -132,6 +134,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
         node = createEntryNode(node, context, entryNodeKey, id);
+        if (projectConfig.compileMode === ESMODULE) {
+          validateReExportType(node, pagesDir, transformLog.errors);
+        }
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
         });
@@ -563,7 +568,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
         ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
-    if (ts.isExpressionStatement(node) && isDollarNode(node, componentName)) {
+    if (ts.isExpressionStatement(node) && isDollarNode(node)) {
       const changeCompName: ts.ExpressionStatement =
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
@@ -599,16 +604,12 @@ export function isOriginalExtend(node: ts.Block): boolean {
   return false;
 }
 
-function isDollarNode(node: ts.ExpressionStatement, componentName: string): boolean {
+function isDollarNode(node: ts.ExpressionStatement): boolean {
   let innerNode: ts.Node = node;
   while (innerNode.expression) {
     innerNode = innerNode.expression;
   }
-  let changedIdentifier: string = '$';
-  if (process.env.compileTool === 'rollup') {
-    changedIdentifier = `${componentName}Instance`;
-  }
-  if (ts.isIdentifier(innerNode) && innerNode.getText() === changedIdentifier) {
+  if (ts.isIdentifier(innerNode) && innerNode.getText() === '$') {
     return true;
   } else {
     return false;
