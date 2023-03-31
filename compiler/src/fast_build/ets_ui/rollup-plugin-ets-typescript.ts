@@ -26,7 +26,7 @@ import {
   getTransformLog,
   genTemporaryPath,
   writeFileSync,
-  generateCollectionFile
+  generateComponentCollectionFile
 } from '../../utils';
 import {
   preprocessExtend,
@@ -48,9 +48,9 @@ import {
   globalProgram
 } from '../../../main';
 import {
-  appComponentCollection,
   compilerOptions as etsCheckerCompilerOptions,
-  resolveModuleNames
+  resolveModuleNames,
+  appPathComponentCollection
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -104,8 +104,8 @@ export function etsTransform() {
           writeFileSync(jsBuildFilePath, sourceCode);
         });
       }
-      if (!projectConfig.isPreview) {
-        generateCollectionFile(projectConfig, appComponentCollection);
+      if (!projectConfig.isPreview && !projectConfig.xtsMode) {
+        generateComponentCollectionFile(projectConfig, appPathComponentCollection);
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);

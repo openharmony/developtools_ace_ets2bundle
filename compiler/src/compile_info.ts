@@ -40,7 +40,7 @@ import {
   genTemporaryPath,
   shouldWriteChangedList,
   getHotReloadFiles,
-  generateCollectionFile
+  generateComponentCollectionFile
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -56,7 +56,7 @@ import {
   printDiagnostic,
   checkerResult,
   incrementWatchFile,
-  appComponentCollection
+  appPathComponentCollection
 } from './ets_checker';
 import {
   globalProgram,
@@ -296,10 +296,10 @@ export class ResultStates {
       }
       this.printResult();
     });
-    if (!projectConfig.isPreview) {
+    if (!projectConfig.isPreview && !projectConfig.xtsMode) {
       compiler.hooks.compilation.tap('Collect Components And Modules', compilation => {
         compilation.hooks.additionalAssets.tapAsync('Collect Components And Modules', callback => {
-          generateCollectionFile(projectConfig, appComponentCollection);
+          generateComponentCollectionFile(projectConfig, appPathComponentCollection);
           callback();
         });
       });
