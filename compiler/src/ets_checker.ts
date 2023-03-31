@@ -95,8 +95,7 @@ function setCompilerOptions() {
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
-      'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Remove,
-      'module': ts.ModuleKind.ES2020
+      'module': ts.ModuleKind.ES2020,
     });
   }
   if (projectConfig.packageDir === 'oh_modules') {
