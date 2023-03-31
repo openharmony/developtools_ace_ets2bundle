@@ -16,9 +16,6 @@ export function visualTransform() {
       if (!filter(id)) {
         return null;
       }
-      if (process.env.watchMode !== 'true') {
-        return null;
-      }
       const logger = this.share.getLogger('visualTransform');
       code = processVisual(code, id, logger);
       const magicString = new MagicString(code);
