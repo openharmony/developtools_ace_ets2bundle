@@ -135,6 +135,7 @@ export function createLanguageService(rootFileNames: string[]): ts.LanguageServi
         return undefined;
       }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
+        appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
@@ -194,8 +195,7 @@ type Cache = Record<string, CacheFileName>;
 export let cache: Cache = {};
 export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
-const appComponentCollection: Set<string> = new Set();
-export const appPathComponentCollection: Map<string, Array<string>> = new Map();
+export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
 
 let fastBuildLogger = null;
@@ -576,10 +576,6 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
-      if (sourceFile.fileName) {
-        appPathComponentCollection.set(sourceFile.fileName, Array.from(appComponentCollection));
-        appComponentCollection.clear();
-      }
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
   }
@@ -591,7 +587,7 @@ function collectComponents(node: ts.SourceFile): void {
     // @ts-ignore
     for (const key of node.identifiers.keys()) {
       if (JS_BIND_COMPONENTS.has(key)) {
-        appComponentCollection.add(key);
+        appComponentCollection.get(path.join(node.fileName)).add(key);
       }
     }
   }
@@ -619,7 +615,7 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
     }
   }
   if (ts.isIfStatement(node)) {
-    appComponentCollection.add(COMPONENT_IF);
+    appComponentCollection.get(path.join(sourceFileNode.fileName)).add(COMPONENT_IF);
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION ||
     (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
