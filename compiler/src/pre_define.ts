@@ -20,6 +20,8 @@ export const NATIVE_MODULE: Set<string> = new Set(
 export const VALIDATE_MODULE: string[] = ['application', 'util', 'screen', 'mediaquery'];
 export const SYSTEM_PLUGIN: string = 'system';
 export const OHOS_PLUGIN: string = 'ohos';
+// 'arkui-x' represents cross platform related APIs, processed as 'ohos'
+export const ARKUI_X_PLUGIN: string = 'arkui-x';
 
 export const COMPONENT_DECORATOR_ENTRY: string = '@Entry';
 export const COMPONENT_DECORATOR_PREVIEW: string = '@Preview';
