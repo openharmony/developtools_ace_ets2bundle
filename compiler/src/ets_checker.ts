@@ -85,7 +85,7 @@ function setCompilerOptions() {
     allPath.push('../*');
   }
   Object.assign(compilerOptions, {
-    'allowJs': true,
+    'allowJs': false,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
