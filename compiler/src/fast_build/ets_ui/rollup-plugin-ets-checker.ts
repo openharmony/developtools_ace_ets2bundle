@@ -41,15 +41,11 @@ export function etsChecker() {
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
         rootFileNames.push(path.resolve(fileName));
       });
-      this.share.etsResult = {
-        outputText: '',
-        sourceMapText: '',
-      };
       if (process.env.watchMode === 'true') {
         executedOnce = true;
         watchChecker(rootFileNames, logger);
       } else {
-        serviceChecker(rootFileNames, logger, this.share.etsResult);
+        serviceChecker(rootFileNames, logger);
       }
     }
   };
