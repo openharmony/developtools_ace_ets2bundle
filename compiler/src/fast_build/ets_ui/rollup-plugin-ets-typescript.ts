@@ -157,7 +157,7 @@ async function transform(code: string, id: string) {
     targetSourceFile = tsProgram.getSourceFile(id)!;
   }
 
-  validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
+  validateEts(code, id, this.getModuleInfo(id).isEntry, targetSourceFile, logger);
 
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
@@ -183,11 +183,11 @@ async function transform(code: string, id: string) {
   };
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any) {
+function validateEts(code: string, id: string, isEntry: boolean, targetSourceFile: ts.SourceFile, logger: any) {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
-    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery);
+    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, targetSourceFile);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }
