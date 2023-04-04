@@ -557,7 +557,9 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
-      collectComponents(sourceFile);
+      if (process.env.watchMode !== 'true') {
+        collectComponents(sourceFile);
+      }
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
@@ -597,7 +599,7 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       });
     }
   }
-  if (ts.isIfStatement(node)) {
+  if (process.env.watchMode !== 'true' && ts.isIfStatement(node)) {
     appComponentCollection.get(path.join(sourceFileNode.fileName)).add(COMPONENT_IF);
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION ||
