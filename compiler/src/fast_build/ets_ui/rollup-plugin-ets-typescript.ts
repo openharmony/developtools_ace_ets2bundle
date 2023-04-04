@@ -108,8 +108,8 @@ export function etsTransform() {
         });
       }
       if (!projectConfig.isPreview && !projectConfig.xtsMode) {
-        writeCollectionFile(projectConfig.cachePath, appComponentCollection, 
-          this.share.allComponents, 'component_collection.json');
+        writeCollectionFile(projectConfig.cachePath, appComponentCollection,
+          this.share.allComponents, 'component_collection.json', this.share.allFiles);
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
