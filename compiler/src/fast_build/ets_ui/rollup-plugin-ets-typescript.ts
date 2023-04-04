@@ -44,13 +44,13 @@ import {
   transformLog
 } from '../../process_ui_syntax';
 import {
+  abilityConfig,
   projectConfig,
-  abilityPagesFullPath,
-  globalProgram
+  abilityPagesFullPath
 } from '../../../main';
-import { ESMODULE } from '../../pre_define';
+import { ESMODULE, JSBUNDLE } from '../../pre_define';
 import {
-  appComponentCollection,
+  appComponentCollection
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -141,43 +141,25 @@ function transform(code: string, id: string) {
 
   const logger = this.share.getLogger('etsTransform');
 
-  let result;
-  if (process.env.watchMode !== 'true') {
-    const sourceFile: ts.SourceFile = globalProgram.program.getSourceFile(id);
-    if (/\.ets$/.test(id)) {
-      const fileQuery: string = this.getModuleInfo(id).isEntry &&
-        !abilityPagesFullPath.includes(id) ? '?entry' : '';
-      const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
-      if (log.length) {
-        emitLogInfo(logger, log, true, id);
-      }
-    }
-    globalProgram.program.emit(sourceFile, undefined, undefined, undefined, { before: [ processUISyntax(null) ] });
-    result = {
-      code: this.share.etsResult.outputText,
-      map: JSON.parse(this.share.etsResult.sourceMapText)
-    };
-  } else {
-    const magicString = new MagicString(code);
-    const newContent: string = preProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+  const magicString = new MagicString(code);
+  const newContent: string = preProcess(code, id, this.getModuleInfo(id).isEntry, logger);
 
-    const transpileResult: ts.TranspileOutput = ts.transpileModule(newContent, {
-      compilerOptions: compilerOptions,
-      fileName: id,
-      transformers: { before: [ processUISyntax(null) ] }
-    });
-    result = {
-      code: transpileResult.outputText,
-      map: transpileResult.sourceMapText ? JSON.parse(transpileResult.sourceMapText) : magicString.generateMap()
-    };
-  }
+  const result: ts.TranspileOutput = ts.transpileModule(newContent, {
+    compilerOptions: compilerOptions,
+    fileName: id,
+    transformers: { before: [ processUISyntax(null) ] }
+  });
+
   resetCollection();
   if (transformLog && transformLog.errors.length) {
     emitLogInfo(logger, getTransformLog(transformLog), true, id);
     resetLog();
   }
 
-  return result;
+  return {
+    code: result.outputText,
+    map: result.sourceMapText ? JSON.parse(result.sourceMapText) : magicString.generateMap()
+  };
 }
 
 function preProcess(code: string, id: string, isEntry: boolean, logger: any): string {

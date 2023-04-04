@@ -27,7 +27,7 @@ import {
   projectConfig
 } from '../../../main';
 
-import { 
+import {
   writeUseOSFiles,
   writeCollectionFile,
   getAllComponentsOrModules
