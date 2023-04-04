@@ -139,7 +139,8 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
 
 export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
 {
-  const REG_SYSTEM_MODULE: RegExp = /@(system|ohos)\.(\S+)/;
+  // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
+  const REG_SYSTEM_MODULE: RegExp = /@(system|ohos|arkui\-x)\.(\S+)/;
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
 
   if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {

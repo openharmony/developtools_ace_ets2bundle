@@ -20,7 +20,8 @@ import path from 'path';
 import {
   NATIVE_MODULE,
   SYSTEM_PLUGIN,
-  OHOS_PLUGIN
+  OHOS_PLUGIN,
+  ARKUI_X_PLUGIN
 } from '../../pre_define';
 import {
   systemModules,
@@ -78,8 +79,9 @@ export function apiTransform() {
 
 
 function processSystemApi(content: string, sourcePath: string): string {
+  // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM: RegExp =
-    /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+    /import\s+(.+)\s+from\s+['"]@(system|ohos|arkui\-x)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos|arkui\-x)\.(\S+)['"]\s*\)/g;
   appImportModuleCollection.set(path.join(sourcePath), new Set());
   return content.replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6) => {
     const moduleType: string = item2 || item5;
@@ -90,7 +92,7 @@ function processSystemApi(content: string, sourcePath: string): string {
     checkModuleExist(systemModule, sourcePath);
     if (NATIVE_MODULE.has(systemModule)) {
       item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-    } else if (moduleType === SYSTEM_PLUGIN || moduleType === OHOS_PLUGIN) {
+    } else if (moduleType === SYSTEM_PLUGIN || moduleType === OHOS_PLUGIN || moduleType === ARKUI_X_PLUGIN) {
       item = `var ${systemValue} = globalThis.requireNapi('${systemKey}')`;
     }
     return item;
@@ -122,11 +124,13 @@ function processLibso(content: string, sourcePath: string, useOSFiles: Set<strin
 // It is rare to use `import xxx = require('module')` for system module and user native library,
 // Here keep tackling with this for compatibility concern.
 function processSystemApiAndLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
-  const REG_REQUIRE_SYSTEM: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos)\.(\S+)['"]\s*\)/g;
+  // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
+  const REG_REQUIRE_SYSTEM: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos|arkui\-x)\.(\S+)['"]\s*\)/g;
   // Import libso should be recored in useOSFiles.
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
-  const REG_IMPORT_SYSTEM = /import\s+(.+)\s+from\s+['"]@(system|ohos)\.(\S+)['"]/g;
+  // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
+  const REG_IMPORT_SYSTEM = /import\s+(.+)\s+from\s+['"]@(system|ohos|arkui\-x)\.(\S+)['"]/g;
   appImportModuleCollection.set(path.join(sourcePath), new Set());
   content.replace(REG_IMPORT_SYSTEM, (_, item1, item2, item3, item4, item5, item6) => {
     const moduleType: string = item2 || item5;
