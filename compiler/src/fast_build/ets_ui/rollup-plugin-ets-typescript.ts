@@ -50,9 +50,7 @@ import {
 } from '../../../main';
 import { ESMODULE } from '../../pre_define';
 import {
-  compilerOptions as etsCheckerCompilerOptions,
-  resolveModuleNames,
-  appComponentCollection
+  appComponentCollection,
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -132,17 +130,6 @@ function judgeCacheShouldDisabled() {
   }
 }
 
-interface EmitResult {
-  outputText: string,
-  sourceMapText: string,
-}
-
-const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
-compilerHost.writeFile = () => {};
-compilerHost.resolveModuleNames = resolveModuleNames;
-compilerHost.getCurrentDirectory = () => process.cwd();
-compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
-
 function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
@@ -156,39 +143,19 @@ function transform(code: string, id: string) {
 
   let result;
   if (process.env.watchMode !== 'true') {
-    let tsProgram: ts.Program = globalProgram.program;
-    let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
-    // createProgram from the file which does not have corresponding ast from ets-checker's program
-    if (!targetSourceFile) {
-      if (/\.ets$/.test(id)) {
-        logger.error('\u001b[31m' + `ArkTS:ERROR: the .ets file ${id} cann't be imported by .js file`);
-      }
-      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
-      targetSourceFile = tsProgram.getSourceFile(id)!;
-    }
-
+    const sourceFile: ts.SourceFile = globalProgram.program.getSourceFile(id);
     if (/\.ets$/.test(id)) {
       const fileQuery: string = this.getModuleInfo(id).isEntry &&
         !abilityPagesFullPath.includes(id) ? '?entry' : '';
-      const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, targetSourceFile);
+      const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
       if (log.length) {
         emitLogInfo(logger, log, true, id);
       }
     }
-
-    const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
-    const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
-      if (/.map$/.test(fileName)) {
-        emitResult.sourceMapText = data;
-      } else {
-        emitResult.outputText = data;
-      }
-    }
-
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+    globalProgram.program.emit(sourceFile, undefined, undefined, undefined, { before: [ processUISyntax(null) ] });
     result = {
-      code: emitResult.outputText,
-      map: JSON.parse(emitResult.sourceMapText)
+      code: this.share.etsResult.outputText,
+      map: JSON.parse(this.share.etsResult.sourceMapText)
     };
   } else {
     const magicString = new MagicString(code);
