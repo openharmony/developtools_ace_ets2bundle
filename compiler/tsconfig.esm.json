@@ -184,7 +184,8 @@
         "GridRow",
         "GridCol",
         "WaterFlow",
-        "FlowItem"
+        "FlowItem",
+        "ImageSpan"
       ],
       "extend": {
         "decorator": "Extend",
@@ -658,6 +659,11 @@
             "name": "FlowItem",
             "type": "FlowItemAttribute",
             "instance": "FlowItemInterface"
+          },
+          {
+            "name": "ImageSpan",
+            "type": "ImageSpanAttribute",
+            "instance": "ImageSpanInterface"
           }
         ]
       },
