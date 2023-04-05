@@ -63,6 +63,7 @@ export function apiTransform() {
     },
     beforeBuildEnd() {
       this.share.allComponents = getAllComponentsOrModules(allFiles, 'component_collection.json');
+      this.share.allFiles = allFiles;
     },
     buildEnd() {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
