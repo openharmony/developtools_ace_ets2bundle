@@ -3,6 +3,6 @@
   "attrs": [
     "index", "autoPlay", "interval", "indicator", "loop", "duration", "vertical", "itemSpace",
     "cachedCount", "displayMode", "displayCount", "effectMode", "disableSwipe", "curve", "onChange", 
-    "indicatorStyle"
+    "indicatorStyle", "nextMargin", "prevMargin"
   ]
 }
