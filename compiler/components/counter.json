@@ -2,6 +2,7 @@
   "name": "Counter",
   "attrs": [
     "onStateChange", "onInc",
-    "onDec", "height", "width"
+    "onDec", "height", "width",
+    "enableDec", "enableInc"
   ]
 }
