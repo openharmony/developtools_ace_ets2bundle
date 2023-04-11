@@ -70,7 +70,7 @@ export function apiTransform() {
         useOSFiles && useOSFiles.size > 0) {
         writeUseOSFiles(useOSFiles);
       }
-      if (!projectConfig.isPreview && !projectConfig.xtsMode) {
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }

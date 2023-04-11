@@ -54,14 +54,14 @@ compilerOptions['sourceMap'] = false;
 
 export function visualTransform(code: string, id: string, logger: any) {
   const log: LogInfo[] = [];
-  const content: string | null = getParsedContent(code, id, log);
+  const content: string | null = getParsedContent(code, path.normalize(id), log);
   if (!content) {
     return code;
   }
   if (log.length) {
     emitLogInfo(logger, log, true, id);
   }
-  generateSourceMapForNewAndOriEtsFile(id, code);
+  generateSourceMapForNewAndOriEtsFile(path.normalize(id), code);
   return content;
 }
 
