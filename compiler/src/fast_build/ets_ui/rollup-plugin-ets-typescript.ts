@@ -27,7 +27,9 @@ import {
   genTemporaryPath,
   writeFileSync,
   getAllComponentsOrModules,
-  writeCollectionFile
+  writeCollectionFile,
+  storedFileInfo,
+  fileInfo
 } from '../../utils';
 import {
   preprocessExtend,
@@ -79,8 +81,25 @@ export function etsTransform() {
     name: 'etsTransform',
     transform: transform,
     buildStart: judgeCacheShouldDisabled,
+    load(id: string) {
+      let fileCacheInfo: fileInfo;
+      if (this.cache.get('fileTransformCacheInfo')) {
+        fileCacheInfo = this.cache.get('fileTransformCacheInfo')[path.resolve(id)];
+      }
+      // Exclude Component Preview page
+      if (projectConfig.isPreview && !projectConfig.checkEntry && id.match(/(?<!\.d)\.(ets)$/)) {
+        abilityPagesFullPath.push(path.resolve(id));
+        storedFileInfo.judgeShouldHaveEntryFiles(abilityPagesFullPath);
+      }
+      storedFileInfo.addFileCacheInfo(path.resolve(id), fileCacheInfo);
+    },
     shouldInvalidCache(options) {
-      return shouldDisableCache;
+      const fileName: string = path.resolve(options.id);
+      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
+      if (!shouldDisable) {
+        storedFileInfo.collectCachedFiles(fileName);
+      }
+      return shouldDisable;
     },
     moduleParsed(moduleInfo) {
       if (projectConfig.compileHar) {
@@ -113,11 +132,20 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
+      storedFileInfo.buildStart = false;
+      storedFileInfo.saveCacheFileInfo(this.cache);
     }
   };
 }
 
-function judgeCacheShouldDisabled() {
+// If a ArkTS file don't have @Entry decorator but it is entry file this time
+function disableNonEntryFileCache(filePath: string): boolean {
+  return storedFileInfo.buildStart && filePath.match(/(?<!\.d)\.(ets)$/) &&
+    !storedFileInfo.wholeFileInfo[filePath].hasEntry &&
+    storedFileInfo.shouldHaveEntry.includes(filePath);
+}
+
+function judgeCacheShouldDisabled(): void {
   for (const key in disableCacheOptions) {
     if (!shouldDisableCache && this.cache.get('disableCacheOptions') && this.share &&
       this.share.projectConfig && this.share.projectConfig[key] &&
@@ -127,6 +155,7 @@ function judgeCacheShouldDisabled() {
     if (this.share && this.share.projectConfig && this.share.projectConfig[key]) {
       disableCacheOptions[key] = this.share.projectConfig[key];
     }
+    storedFileInfo.judgeShouldHaveEntryFiles(abilityPagesFullPath);
   }
 }
 
@@ -134,6 +163,8 @@ function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
+
+  storedFileInfo.collectTransformedFiles(path.resolve(id));
 
   if (projectConfig.compileMode === ESMODULE) {
     compilerOptions['importsNotUsedAsValues'] = 'remove';
