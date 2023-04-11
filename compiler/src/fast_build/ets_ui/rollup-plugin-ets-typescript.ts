@@ -44,25 +44,23 @@ import {
   transformLog
 } from '../../process_ui_syntax';
 import {
-  abilityConfig,
   projectConfig,
-  abilityPagesFullPath
+  abilityPagesFullPath,
+  globalProgram
 } from '../../../main';
-import { ESMODULE, JSBUNDLE } from '../../pre_define';
 import {
-  appComponentCollection
+  appComponentCollection,
+  compilerOptions as etsCheckerCompilerOptions,
+  resolveModuleNames
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD
 } from '../../component_map';
+import { tsWatchEndPromise } from './rollup-plugin-ets-checker';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
-const compilerOptions = ts.readConfigFile(
-  path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-compilerOptions['moduleResolution'] = 'nodenext';
-compilerOptions['module'] = 'es2020';
 
 let shouldDisableCache: boolean = false;
 const disableCacheOptions = {
@@ -130,25 +128,83 @@ function judgeCacheShouldDisabled() {
   }
 }
 
-function transform(code: string, id: string) {
+interface EmitResult {
+  outputText: string,
+  sourceMapText: string,
+}
+
+const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
+compilerHost.writeFile = () => {};
+compilerHost.resolveModuleNames = resolveModuleNames;
+compilerHost.getCurrentDirectory = () => process.cwd();
+compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+
+async function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
 
-  if (projectConfig.compileMode === ESMODULE) {
-    compilerOptions['importsNotUsedAsValues'] = 'remove';
-  }
-
   const logger = this.share.getLogger('etsTransform');
 
-  const magicString = new MagicString(code);
-  const newContent: string = preProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+  if (projectConfig.compileMode !== "esmodule") {
+    const compilerOptions = ts.readConfigFile(
+      path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
+    compilerOptions['moduleResolution'] = 'nodenext';
+    compilerOptions['module'] = 'es2020'
+    const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
+    const result: ts.TranspileOutput = ts.transpileModule(newContent, {
+      compilerOptions: compilerOptions,
+      fileName: id,
+      transformers: { before: [ processUISyntax(null) ] }
+    });
 
-  const result: ts.TranspileOutput = ts.transpileModule(newContent, {
-    compilerOptions: compilerOptions,
-    fileName: id,
-    transformers: { before: [ processUISyntax(null) ] }
-  });
+    resetCollection();
+    if (transformLog && transformLog.errors.length) {
+      emitLogInfo(logger, getTransformLog(transformLog), true, id);
+      resetLog();
+    }
+
+    return {
+      code: result.outputText,
+      map: result.sourceMapText ? JSON.parse(result.sourceMapText) : new MagicString(code).generateMap()
+    };
+  }
+
+  if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
+    // need to wait the tsc watch end signal to continue emitting in watch mode
+    await tsWatchEndPromise;
+  }
+
+  let tsProgram: ts.Program = process.env.watchMode !== 'true' ?
+    globalProgram.program : globalProgram.watchProgram.getCurrentProgram().getProgram();
+  let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
+  // close `noEmit` to make invoking emit() effective.
+  tsProgram.getCompilerOptions().noEmit = false;
+
+  // createProgram from the file which does not have corresponding ast from ets-checker's program
+  // by those following cases:
+  // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
+  // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
+  if (!targetSourceFile) {
+    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    targetSourceFile = tsProgram.getSourceFile(id)!;
+  }
+
+  validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
+
+  const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
+  const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
+    if (/.map$/.test(fileName)) {
+      emitResult.sourceMapText = data;
+    } else {
+      emitResult.outputText = data;
+    }
+  }
+
+  tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+
+  // restore `noEmit` to prevent tsc's watchService emitting automatically.
+  tsProgram.getCompilerOptions().noEmit = true;
 
   resetCollection();
   if (transformLog && transformLog.errors.length) {
@@ -157,12 +213,24 @@ function transform(code: string, id: string) {
   }
 
   return {
-    code: result.outputText,
-    map: result.sourceMapText ? JSON.parse(result.sourceMapText) : magicString.generateMap()
+    code: emitResult.outputText,
+    // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in watchMode
+    map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap()
   };
 }
 
-function preProcess(code: string, id: string, isEntry: boolean, logger: any): string {
+function validateEts(code: string, id: string, isEntry: boolean, logger: any) {
+  if (/\.ets$/.test(id)) {
+    clearCollection();
+    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
+    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery);
+    if (log.length) {
+      emitLogInfo(logger, log, true, id);
+    }
+  }
+}
+
+function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: any): string {
   if (/\.ets$/.test(id)) {
     clearCollection();
     let content = preprocessExtend(code);
