@@ -107,7 +107,7 @@ export function etsTransform() {
           writeFileSync(jsBuildFilePath, sourceCode);
         });
       }
-      if (!projectConfig.isPreview && !projectConfig.xtsMode) {
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
         writeCollectionFile(projectConfig.cachePath, appComponentCollection,
           this.share.allComponents, 'component_collection.json', this.share.allFiles);
       }

@@ -557,9 +557,7 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
-      if (process.env.watchMode !== 'true') {
-        collectComponents(sourceFile);
-      }
+      collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
