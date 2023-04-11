@@ -579,7 +579,7 @@ export function writeCollectionFile(cachePath: string, appCollection: Map<string
   writeFileSync(path.resolve(cachePath, fileName), content);
 }
 
-export function getAllComponentsOrModules(allFiles: Set<string>, 
+export function getAllComponentsOrModules(allFiles: Set<string>,
   cacheCollectionFileName: string): Map<string, Array<string>> {
   const cacheCollectionFilePath: string = path.resolve(projectConfig.cachePath, cacheCollectionFileName);
   const allComponentsOrModules: Map<string, Array<string>> = new Map();
@@ -619,4 +619,67 @@ function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
   return parameters.length === 1 && parameters[0].name && ts.isIdentifier(parameters[0].name) &&
     parameters[0].name.escapedText.toString() === $$ && parameters[0].type && ts.isTypeLiteralNode(parameters[0].type) &&
     parameters[0].type.members && parameters[0].type.members.length > 0;
+}
+
+// Global Information
+class ProcessFileInfo {
+  buildStart: boolean = true;
+  wholeFileInfo: {[id: string]: SpecialArkTSFileInfo} = {}; // Saved ArkTS file's infomation
+  transformedFiles: string[] = []; // ArkTS Files which should be transformed in this compilation
+  cachedFiles: string[] = []; // ArkTS Files which should not be transformed in this compilation
+  shouldHaveEntry: string[] = []; // Which file should have @Entry decorator
+
+  addFileCacheInfo(id: string, fileCacheInfo: fileInfo): void {
+    if (id.match(/(?<!\.d)\.(ets)$/)) {
+      this.wholeFileInfo[id] = new SpecialArkTSFileInfo(fileCacheInfo);
+    }
+  }
+
+  collectTransformedFiles(id: string): void {
+    if (id.match(/(?<!\.d)\.(ets)$/)) {
+      this.transformedFiles.push(id);
+    }
+  }
+
+  collectCachedFiles(id: string): void {
+    if (id.match(/(?<!\.d)\.(ets)$/)) {
+      this.cachedFiles.push(id);
+    }
+  }
+
+  judgeShouldHaveEntryFiles(entryFileWithoutEntryDecorator: string[]): void {
+    this.shouldHaveEntry = Object.values(projectConfig.entryObj as string[]).filter((item) => {
+      return !entryFileWithoutEntryDecorator.includes(item) && item.match(/(?<!\.d)\.(ets)$/);
+    });
+  }
+
+  saveCacheFileInfo(cache) {
+    const cacheInfo: {[id: string]: fileInfo} = cache.get('fileCacheInfo') || {};
+    for (const id of this.transformedFiles) {
+      cacheInfo[id] = this.wholeFileInfo[id].fileInfo;
+    }
+    cache.set('fileCacheInfo', cacheInfo);
+  }
+}
+
+export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
+
+export interface fileInfo {
+  hasEntry: boolean; // Has @Entry decorator or not
+}
+
+// Save single file information
+class SpecialArkTSFileInfo {
+  fileInfo: fileInfo = {
+    hasEntry: false
+  };
+  constructor(cacheInfo: fileInfo) {
+    this.fileInfo = cacheInfo || this.fileInfo;
+  }
+  get hasEntry() {
+    return this.fileInfo.hasEntry;
+  }
+  set hasEntry(value: boolean) {
+    this.fileInfo.hasEntry = value;
+  }
 }
