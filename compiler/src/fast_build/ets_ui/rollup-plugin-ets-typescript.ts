@@ -209,8 +209,6 @@ async function transform(code: string, id: string) {
   let tsProgram: ts.Program = process.env.watchMode !== 'true' ?
     globalProgram.program : globalProgram.watchProgram.getCurrentProgram().getProgram();
   let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
-  // close `noEmit` to make invoking emit() effective.
-  tsProgram.getCompilerOptions().noEmit = false;
 
   // createProgram from the file which does not have corresponding ast from ets-checker's program
   // by those following cases:
@@ -220,6 +218,9 @@ async function transform(code: string, id: string) {
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
     targetSourceFile = tsProgram.getSourceFile(id)!;
   }
+
+  // close `noEmit` to make invoking emit() effective.
+  tsProgram.getCompilerOptions().noEmit = false;
 
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
 
