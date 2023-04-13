@@ -408,7 +408,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
       }
     } else if (curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR && node.initializer &&
       (ts.isPropertyAccessExpression(node.initializer) ||
-        ts.isElementAccessExpression(node.initializer))) {
+        ts.isElementAccessExpression(node.initializer) || ts.isIdentifier(node.initializer))) {
       return;
     } else {
       parentPropertyName =
