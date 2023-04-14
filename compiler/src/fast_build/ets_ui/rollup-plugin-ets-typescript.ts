@@ -29,7 +29,7 @@ import {
   getAllComponentsOrModules,
   writeCollectionFile,
   storedFileInfo,
-  fileInfo
+  fileInfo,
 } from '../../utils';
 import {
   preprocessExtend,
