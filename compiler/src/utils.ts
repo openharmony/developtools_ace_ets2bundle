@@ -35,7 +35,10 @@ import {
   FAIL,
   TEMPORARY,
   ESMODULE,
-  $$
+  $$,
+  EXTEND_DECORATORS,
+  COMPONENT_EXTEND_DECORATOR,
+  COMPONENT_ANIMATABLE_EXTEND_DECORATOR
 } from './pre_define';
 
 export enum LogType {
@@ -174,16 +177,40 @@ class ComponentInfo {
 export const componentInfo: ComponentInfo = new ComponentInfo();
 
 export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
-  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string, customBuilder?: ts.Decorator[]): boolean {
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,
+  customBuilder: ts.Decorator[] = null, log: LogInfo[] = null): boolean {
   if (node.decorators && node.decorators.length) {
+    const extendResult = {
+      Extend: false,
+      AnimatableExtend: false
+    }
     for (let i = 0; i < node.decorators.length; i++) {
-      if (node.decorators[i].getText().replace(/\(.*\)$/, '').trim() === decortorName) {
-        if (customBuilder) {
-          customBuilder.push(...node.decorators.slice(i + 1), ...node.decorators.slice(0, i));
+      const originalDecortor: string = node.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      if (log && EXTEND_DECORATORS.includes(decortorName)) {
+        if (originalDecortor === COMPONENT_EXTEND_DECORATOR) {
+          extendResult.Extend = true;
         }
-        return true;
+        if (originalDecortor === COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
+          extendResult.AnimatableExtend = true;
+        }
+      } else {
+        if (originalDecortor === decortorName) {
+          if (customBuilder) {
+            customBuilder.push(...node.decorators.slice(i + 1), ...node.decorators.slice(0, i));
+          }
+          return true;
+        }
       }
     }
+    if (log && extendResult.Extend && extendResult.AnimatableExtend) {
+      log.push({
+        type: LogType.ERROR,
+        message: `The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.`,
+        pos: node.getStart()
+      });
+    }
+    return (decortorName === COMPONENT_EXTEND_DECORATOR && extendResult.Extend)
+      || (decortorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR && extendResult.AnimatableExtend);
   }
   return false;
 }
@@ -801,6 +828,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
   }
   recycleComponents: Set<string> = new Set([]);
   compFromDETS: Set<string> = new Set();
+  animatableExtendAttribute: Map<string, Set<string>> = new Map();
 
   constructor(cacheInfo?: fileInfo) {
     super(cacheInfo, true);
@@ -821,4 +849,8 @@ export function setChecker(): void {
   } else if (globalProgram.watchProgram) {
     globalProgram.checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   }
+}
+export interface ExtendResult {
+  decoratorName: string;
+  componentName: string;
 }

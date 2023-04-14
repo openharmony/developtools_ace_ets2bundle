@@ -56,7 +56,16 @@ import {
   CARD_ENTRY_FUNCTION_NAME,
   CARD_LOG_TYPE_COMPONENTS,
   CARD_LOG_TYPE_DECORATORS,
-  CARD_LOG_TYPE_IMPORT
+  CARD_LOG_TYPE_IMPORT,
+  COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
+  CHECK_EXTEND_DECORATORS,
+  ELMTID,
+  ISINITIALRENDER,
+  PROPERTY_ID,
+  CREATE_ANIMATABLE_PROPERTY,
+  COMPONENT_CREATE_FUNCTION,
+  COMPONENT_POP_FUNCTION,
+  UPDATE_ANIMATABLE_PROPERTY
 } from './pre_define';
 import {
   componentInfo,
@@ -65,7 +74,8 @@ import {
   hasDecorator,
   FileLog,
   getPossibleBuilderTypeParameter,
-  storedFileInfo
+  storedFileInfo,
+  ExtendResult,
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -82,7 +92,9 @@ import processImport from './process_import';
 import {
   processComponentBlock,
   bindComponentAttr,
-  getName
+  getName,
+  createViewStackProcessorStatement,
+  createFunction
 } from './process_component_build';
 import {
   BUILDIN_STYLE_NAMES,
@@ -186,8 +198,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         });
         INNER_STYLE_FUNCTION.clear();
       } else if (ts.isFunctionDeclaration(node)) {
-        if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
-          node = processExtend(node, transformLog.errors);
+        if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR, null, transformLog.errors)) {
+          node = processExtend(node, transformLog.errors, COMPONENT_EXTEND_DECORATOR);
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
@@ -214,6 +226,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
           // ark compiler's feature
           node = processConcurrent(node);
+        } else if (hasDecorator(node, COMPONENT_ANIMATABLE_EXTEND_DECORATOR, null, transformLog.errors)) {
+          node = processExtend(node, transformLog.errors, COMPONENT_ANIMATABLE_EXTEND_DECORATOR);
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -548,30 +562,41 @@ export function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
   node.typeArguments, node.arguments);
 }
 
-function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.FunctionDeclaration {
-  const componentName: string = isExtendFunction(node);
+function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
+  decoratorName: string): ts.FunctionDeclaration {
+  const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' });
   if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
     let bodynode: ts.Block;
-    const attrSet: ts.CallExpression = node.body.statements[0].expression;
-    if (isOriginalExtend(node.body)) {
-      const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
-      bindComponentAttr(changeCompName as ts.ExpressionStatement,
+    if (decoratorName === COMPONENT_EXTEND_DECORATOR) {
+      const attrSet: ts.CallExpression = node.body.statements[0].expression;
+      if (isOriginalExtend(node.body)) {
+        const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
+        bindComponentAttr(changeCompName as ts.ExpressionStatement,
+          ts.factory.createIdentifier(componentName), statementArray, log);
+      } else {
+        bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
+      }
+      let extendFunctionName: string;
+      if (node.name.getText().startsWith('__' + componentName + '__')) {
+        extendFunctionName = node.name.getText();
+      } else {
+        extendFunctionName = '__' + componentName + '__' + node.name.getText();
+        collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
+      }
+      return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
+        ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
+        node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
+          ts.factory.updateBlock(node.body, statementArray) : bodynode);
+    }
+    if (decoratorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
+      bindComponentAttr(node.body.statements[0],
         ts.factory.createIdentifier(componentName), statementArray, log);
-    } else {
-      bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
+      return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
+        node.name, node.typeParameters,
+        [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
+          ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.parameters, statementArray)));
     }
-    let extendFunctionName: string;
-    if (node.name.getText().startsWith('__' + componentName + '__')) {
-      extendFunctionName = node.name.getText();
-    } else {
-      extendFunctionName = '__' + componentName + '__' + node.name.getText();
-      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
-    }
-    return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
-      ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
-      node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
-        ts.factory.updateBlock(node.body, statementArray) : bodynode);
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
     if (ts.isExpressionStatement(node) && isDollarNode(node, componentName)) {
@@ -583,6 +608,84 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[]): ts.Functio
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
+}
+
+function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
+  return [
+    ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined, ts.factory.createIdentifier(ELMTID)),
+    ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined, ts.factory.createIdentifier(ISINITIALRENDER))
+  ];
+}
+
+function createAnimatableBody(componentName: string,
+  parameters: ts.NodeArray<ts.ParameterDeclaration>, attrArray: ts.Statement[]): ts.Statement[] {
+  const paramNode: ts.Identifier[] = [];
+  parameters.forEach((item: ts.ParameterDeclaration) => {
+    if (item.name && ts.isIdentifier(item.name)) {
+      paramNode.push(item.name);
+    }
+  });
+  return [
+    createPropertyId(),
+    ts.factory.createIfStatement(
+      ts.factory.createIdentifier(ISINITIALRENDER),
+      ts.factory.createBlock([
+        createAnimatableProperty(componentName, parameters, paramNode, attrArray),
+        ...attrArray
+      ], true),
+      ts.factory.createBlock([
+        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(componentName),
+            ts.factory.createIdentifier(UPDATE_ANIMATABLE_PROPERTY)
+          ), undefined,
+          [
+            ts.factory.createIdentifier(PROPERTY_ID),
+            ...paramNode
+          ]
+        ))
+      ])
+    )
+  ];
+}
+
+function createPropertyId(): ts.Statement {
+  return ts.factory.createVariableStatement(undefined,
+    ts.factory.createVariableDeclarationList([
+      ts.factory.createVariableDeclaration(ts.factory.createIdentifier(PROPERTY_ID))
+    ], ts.NodeFlags.Let));
+}
+
+function createAnimatableProperty(componentName: string,
+  parameters: ts.NodeArray<ts.ParameterDeclaration>,
+  paramNode: ts.Identifier[], attrArray: ts.Statement[]) {
+  const componentIdentifier: ts.Identifier = ts.factory.createIdentifier(componentName);
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createIdentifier(PROPERTY_ID),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+      componentIdentifier,
+      ts.factory.createIdentifier(CREATE_ANIMATABLE_PROPERTY)),
+      undefined, [
+        ...paramNode,
+        ts.factory.createArrowFunction(undefined, undefined, parameters, undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock([
+            createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+            ts.factory.createExpressionStatement(
+              createFunction(componentIdentifier,
+                ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)),
+            ...attrArray,
+            ts.factory.createExpressionStatement(
+              createFunction(componentIdentifier,
+                ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)),
+            createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+          ], true))
+      ]
+    ),)
+  );
 }
 
 function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration {
@@ -651,17 +754,27 @@ export function collectExtend(collectionSet: Map<string, Set<string>>, component
   }
 }
 
-export function isExtendFunction(node: ts.FunctionDeclaration): string {
+export function isExtendFunction(node: ts.FunctionDeclaration, extendResult: ExtendResult): string {
   if (node.decorators && node.decorators.length) {
     for (let i = 0, len = node.decorators.length; i < len; i++) {
-      if (node.decorators[i].expression && node.decorators[i].expression.expression &&
-        node.decorators[i].expression.expression.escapedText.toString() === CHECK_COMPONENT_EXTEND_DECORATOR &&
-        node.decorators[i].expression.arguments) {
-        return node.decorators[i].expression.arguments[0].escapedText.toString();
+      if (ts.isCallExpression(node.decorators[i].expression)) {
+        parseExtendNode(node.decorators[i].expression as ts.CallExpression, extendResult);
+        if (CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) && extendResult.componentName) {
+          return extendResult.componentName;
+        }
       }
     }
   }
   return null;
+}
+
+function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult): void {
+  if (ts.isIdentifier(node.expression)) {
+    extendResult.decoratorName = node.expression.escapedText.toString();
+  }
+  if (node.arguments.length && ts.isIdentifier(node.arguments[0])) {
+    extendResult.componentName = node.arguments[0].escapedText.toString();
+  }
 }
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,

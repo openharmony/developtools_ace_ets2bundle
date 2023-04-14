@@ -103,7 +103,9 @@ import {
   START,
   END,
   BUILDER_PARAM_PROXY,
-  BUILDER_TYPE
+  BUILDER_TYPE,
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -137,7 +139,8 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo
+  componentInfo,
+  storedFileInfo
 } from './utils';
 import {
   globalProgram,
@@ -730,7 +733,7 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
   );
 }
 
-function createViewStackProcessorStatement(propertyAccessName: string, elmtId?: string): ts.Statement {
+export function createViewStackProcessorStatement(propertyAccessName: string, elmtId?: string): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1979,6 +1982,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   isStyleFunction: boolean = false): void {
   const propName: string = node.getText();
   verifyComponentId(temp, node, propName, log);
+  const extendType: ExtendType = {type: ''};
   if (propName === ATTRIBUTE_ANIMATION) {
     const animationNullNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(GLOBAL_CONTEXT), node,
@@ -1999,7 +2003,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   } else if (GESTURE_ATTRS.has(propName)) {
     parseGesture(temp, propName, statements, log, updateStatements);
     lastStatement.kind = true;
-  } else if (isExtendFunctionNode(identifierNode, propName)) {
+  } else if (isExtendFunctionNode(identifierNode, propName, extendType)) {
     if (newsupplement.isAcceleratePreview) {
       log.push({
         type: LogType.ERROR,
@@ -2007,9 +2011,21 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         pos: temp.getStart()
       });
     }
-    const extendNode: ts.Statement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-      ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
-      undefined, temp.arguments));
+    let functionName: string = '';
+    if (extendType.type === CHECK_COMPONENT_EXTEND_DECORATOR) {
+      functionName = `__${identifierNode.escapedText.toString()}__${propName}`;
+    } else {
+      functionName = propName;
+    }
+    const extendNode: ts.Statement = ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(ts.factory.createIdentifier(functionName), undefined,
+      extendType.type === CHECK_COMPONENT_EXTEND_DECORATOR
+        ? temp.arguments
+        : [
+            ...temp.arguments, ts.factory.createIdentifier(ELMTID),
+            ts.factory.createIdentifier(ISINITIALRENDER)
+          ]
+      ));
     statements.push(extendNode);
     updateStatements.push(extendNode);
     lastStatement.kind = true;
@@ -2264,13 +2280,23 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
   });
 }
 
-function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string): boolean {
-  if (identifierNode && EXTEND_ATTRIBUTE.has(identifierNode.escapedText.toString())) {
-    const attributeArray: string[] =
-      [...EXTEND_ATTRIBUTE.get(identifierNode.escapedText.toString())];
-    if (attributeArray.includes(propName)) {
-      return true;
-    }
+interface ExtendType {
+  type: string
+}
+
+function isExtendFunctionNode(identifierNode: ts.Identifier, propName: string,
+  extendType: ExtendType): boolean {
+  const componentName: string = identifierNode.escapedText.toString();
+  if (EXTEND_ATTRIBUTE.has(componentName) && [...EXTEND_ATTRIBUTE.get(componentName)].includes(propName)) {
+    extendType.type = CHECK_COMPONENT_EXTEND_DECORATOR;
+    return true;
+  }
+  const animatableExtendAttribute: Map<string, Set<string>> =
+    storedFileInfo.getCurrentArkTsFile().animatableExtendAttribute;
+  if (animatableExtendAttribute.has(componentName) &&
+    [...animatableExtendAttribute.get(componentName)].includes(propName)) {
+    extendType.type = CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR;
+    return true;
   }
   return false;
 }

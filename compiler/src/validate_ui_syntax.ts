@@ -44,7 +44,7 @@ import {
   VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_CONCURRENT_DECORATOR,
-  COMPONENT_EXTEND_DECORATOR,
+  CHECK_EXTEND_DECORATORS,
   COMPONENT_STYLES_DECORATOR,
   RESOURCE_NAME_TYPE,
   TTOGGLE_CHECKBOX,
@@ -60,6 +60,7 @@ import {
   STRUCT_DECORATORS,
   STRUCT_CONTEXT_METHOD_DECORATORS,
   CHECK_COMPONENT_EXTEND_DECORATOR,
+  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -81,7 +82,8 @@ import {
   componentInfo,
   addLog,
   hasDecorator,
-  storedFileInfo
+  storedFileInfo,
+  ExtendResult
 } from './utils';
 import { getPackageInfo } from './ark_utils'
 import { projectConfig, abilityPagesFullPath } from '../main';
@@ -388,6 +390,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     collectComponentProps(node);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
+    const extendResult: ExtendResult = { decoratorName: '', componentName: '' }
     if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(node.name.getText());
       if (ts.isFunctionDeclaration(node)) {
@@ -395,9 +398,14 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       } else {
         INNER_CUSTOM_BUILDER_METHOD.add(node.name.getText());
       }
-    } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node)) {
-      const componentName: string = isExtendFunction(node);
-      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.getText());
+    } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node, extendResult)) {
+      if (extendResult.decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) {
+        collectExtend(EXTEND_ATTRIBUTE, extendResult.componentName, node.name.getText());
+      }
+      if (extendResult.decoratorName === CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
+        collectExtend(storedFileInfo.getCurrentArkTsFile().animatableExtendAttribute,
+          extendResult.componentName, node.name.getText());
+      }
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
         if (ts.isFunctionDeclaration(node)) {
@@ -441,7 +449,7 @@ function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
     if (!structContext && STRUCT_CONTEXT_METHOD_DECORATORS.has(`@${decoratorName}`)) {
       message = `The '@${decoratorName}' decorator can only be used in 'struct'.`;
     }
-    if (decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) {
+    if (CHECK_EXTEND_DECORATORS.includes(decoratorName)) {
       message = `The '@${decoratorName}' decorator can not be a member property method of a 'class' or 'struct'.`;
     }
     if (message) {
