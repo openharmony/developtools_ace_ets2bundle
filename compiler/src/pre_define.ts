@@ -250,9 +250,18 @@ export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
 export const BINDCONTENTCOVER: string = 'bindContentCover';
 export const $$_BLOCK_INTERFACE: Set<string> = new Set([REFRESH]);
-export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY, BINDCONTENTCOVER]);
+export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY, BINDCONTENTCOVER,
+  "DatePicker", "TimePicker", "Marquee"]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
-  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])], [REFRESH, new Set([REFRESHING])]
+  [RADIO, new Set([CHECKED])],
+  [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
+  [REFRESH, new Set([REFRESHING])],
+  ["Checkbox", new Set(["select"])],
+  ["CheckboxGroup", new Set(["selectAll"])],
+  ["DatePicker", new Set(["selected"])],
+  ["TimePicker", new Set(["selected"])],
+  ["Marquee", new Set(["start"])],
+  
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
