@@ -95,6 +95,7 @@ export function etsTransform() {
         storedFileInfo.judgeShouldHaveEntryFiles(abilityPagesFullPath);
       }
       storedFileInfo.addFileCacheInfo(path.resolve(id), fileCacheInfo);
+      storedFileInfo.setCurrentArkTsFile();
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);

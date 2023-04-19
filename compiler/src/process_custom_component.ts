@@ -46,7 +46,13 @@ import {
   ISINITIALRENDER,
   UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
   COMPONENT_CUSTOM_DECORATOR,
-  $$
+  $$,
+  COMPONENT_RECYCLE,
+  COMPONENT_CREATE_RECYCLE,
+  RECYCLE_NODE,
+  ON_RECYCLE,
+  COMPONENT_RERENDER_FUNCTION,
+  OBSERVE_RECYCLE_COMPONENT_CREATION
 } from './pre_define';
 import {
   propertyCollection,
@@ -73,7 +79,8 @@ import {
 import {
   LogType,
   LogInfo,
-  componentInfo
+  componentInfo,
+  storedFileInfo,
 } from './utils';
 import {
   bindComponentAttr,
@@ -98,6 +105,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       [COMPONENT_OBJECT_LINK_DECORATOR, objectLinkCollection]]);
   const componentNode: ts.CallExpression = getCustomComponentNode(node);
   if (componentNode) {
+    const isRecycleComponent: boolean = isRecycle(name);
     const hasChainCall: boolean = componentNode.parent &&
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
@@ -128,8 +136,11 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         const commomComponentNode: ts.Statement[] = [ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
             ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))];
-        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode, log);
-        newStatements.push(createComponentCreationStatement(componentAttributes(), commomComponentNode, isGlobalBuilder));
+        const immutableStatements: ts.Statement[] = [];
+        bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode,
+          log, true, false, immutableStatements);
+        newStatements.push(createComponentCreationStatement(componentAttributes(COMPONENT_COMMON),
+          commomComponentNode, isGlobalBuilder, false, undefined, immutableStatements));
       } else {
         newStatements.push(ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -137,21 +148,39 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), newStatements, log);
       }
     }
+    if (isRecycleComponent && partialUpdateConfig.partialUpdateMode) {
+      newStatements.push(createRecycleComponent(isGlobalBuilder));
+    }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isBuilder, isGlobalBuilder);
+      isBuilder, isGlobalBuilder, isRecycleComponent);
     if (hasChainCall) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     }
+    if (isRecycleComponent && partialUpdateConfig.partialUpdateMode) {
+      newStatements.push(componentAttributes(COMPONENT_RECYCLE));
+    }
   }
 }
 
-function componentAttributes(): ts.Statement {
+export function isRecycle(componentName: string): boolean {
+  return storedFileInfo.getCurrentArkTsFile().recycleComponents.has(componentName);
+}
+
+function createRecycleComponent(isGlobalBuilder: boolean): ts.Statement {
+  return createComponentCreationStatement(componentAttributes(COMPONENT_RECYCLE),
+    [ts.factory.createExpressionStatement(
+      createFunction(ts.factory.createIdentifier(COMPONENT_RECYCLE),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))
+    ], isGlobalBuilder);
+}
+
+function componentAttributes(componentName: string): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        ts.factory.createIdentifier(COMPONENT_COMMON),
+        ts.factory.createIdentifier(componentName),
         ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)
       ), undefined, []
     ));
@@ -180,24 +209,28 @@ function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isRecycleComponent: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log, isBuilder);
-    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode, isBuilder, isGlobalBuilder);
+    addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode,
+      isBuilder, isGlobalBuilder, isRecycleComponent);
   }
 }
 
 function addCustomComponentStatements(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
-  componentNode: ts.CallExpression, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  componentNode: ts.CallExpression, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isRecycleComponent: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
       ts.factory.updateExpressionStatement(node, createViewCreate(newNode)),
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
-    newStatements.push(createCustomComponent(node, newNode, name, componentNode, isGlobalBuilder));
+    newStatements.push(createCustomComponent(newNode, name, componentNode, isGlobalBuilder,
+      isRecycleComponent));
   }
 }
 
@@ -220,66 +253,76 @@ function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAs
   return childParam;
 }
 
-function createCustomComponent(node: ts.ExpressionStatement, newNode: ts.NewExpression, name: string,
-  componentNode: ts.CallExpression, isGlobalBuilder: boolean = false): ts.Block {
+function createCustomComponent(newNode: ts.NewExpression, name: string,
+  componentNode: ts.CallExpression, isGlobalBuilder: boolean = false,
+  isRecycleComponent: boolean = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (componentNode.arguments && componentNode.arguments.length) {
     componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
+  const arrowArgArr: ts.ParameterDeclaration[] = [
+    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      ts.factory.createIdentifier(ELMTID)
+    ),
+    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      ts.factory.createIdentifier(ISINITIALRENDER)
+    )
+  ];
+  if (isRecycleComponent) {
+    arrowArgArr.push(ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
+      undefined, undefined, ts.factory.createNull()
+    ));
+  }
+  const observeArgArr: ts.Expression[] = [
+    ts.factory.createArrowFunction(undefined, undefined, arrowArgArr, undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock(
+        [
+          ts.factory.createExpressionStatement(
+            ts.factory.createCallExpression(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+                ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
+              ), undefined,
+              [ts.factory.createIdentifier(ELMTID)]
+            )),
+          createIfCustomComponent(newNode, componentParameter, name, isGlobalBuilder, isRecycleComponent),
+          ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
+              ts.factory.createIdentifier(STOPGETACCESSRECORDING)
+            ),
+            undefined,
+            []
+          ))
+        ], true))
+  ];
+  if (isRecycleComponent) {
+    observeArgArr.unshift(ts.factory.createStringLiteral(name));
+  }
   return ts.factory.createBlock(
     [
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-        ), undefined,
-        [ts.factory.createArrowFunction(undefined, undefined,
-          [
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-              ts.factory.createIdentifier(ELMTID)
-            ),
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-              ts.factory.createIdentifier(ISINITIALRENDER)
-            )
-          ], undefined,
-          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-          ts.factory.createBlock(
-            [
-              ts.factory.createExpressionStatement(
-                ts.factory.createCallExpression(
-                  ts.factory.createPropertyAccessExpression(
-                    ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-                    ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
-                  ), undefined,
-                  [ts.factory.createIdentifier(ELMTID)]
-                )),
-              createIfCustomComponent(newNode, componentParameter, isGlobalBuilder),
-              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                ts.factory.createPropertyAccessExpression(
-                  ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-                  ts.factory.createIdentifier(STOPGETACCESSRECORDING)
-                ),
-                undefined,
-                []
-              ))
-            ], true))]))
+          isRecycleComponent ?
+            ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
+            ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+          ),
+          undefined, observeArgArr))
     ], true);
 }
 
 function createIfCustomComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression,
-  isGlobalBuilder: boolean = false): ts.IfStatement {
+  name: string, isGlobalBuilder: boolean = false, isRecycleComponent: boolean = false): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [
-        ts.factory.createExpressionStatement(
-          ts.factory.createCallExpression(
-            ts.factory.createPropertyAccessExpression(
-              ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
-              ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
-            ), undefined, [newNode]))
+        isRecycleComponent ? createNewRecycleComponent(newNode, name) : createNewComponent(newNode)
       ], true),
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -289,6 +332,55 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentParameter: 
         ), undefined,
         [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
   );
+}
+
+function createNewComponent(newNode: ts.NewExpression): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
+      ), undefined, [newNode]))
+}
+
+function createNewRecycleComponent(newNode: ts.NewExpression, name: string): ts.Statement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+        ts.factory.createIdentifier(COMPONENT_CREATE_RECYCLE)
+      ), undefined,
+      [
+        ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(RECYCLE_NODE),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(RECYCLE_NODE),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken),
+          newNode
+        ),
+        ts.factory.createBinaryExpression(
+          ts.factory.createIdentifier(RECYCLE_NODE),
+          ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+          ts.factory.createNull()
+        ),
+        ts.factory.createStringLiteral(name),
+        ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock([
+            ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(RECYCLE_NODE),
+                ts.factory.createIdentifier(ON_RECYCLE),
+              ), undefined, newNode.arguments
+            )),
+            ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(RECYCLE_NODE),
+                ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION),
+              ), undefined, []
+            )),
+          ], true))
+      ]))
 }
 
 function validateCustomComponentPrams(node: ts.CallExpression, name: string,
