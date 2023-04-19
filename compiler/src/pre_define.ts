@@ -27,6 +27,9 @@ export const COMPONENT_DECORATOR_ENTRY: string = '@Entry';
 export const COMPONENT_DECORATOR_PREVIEW: string = '@Preview';
 export const COMPONENT_DECORATOR_COMPONENT: string = '@Component';
 export const COMPONENT_DECORATOR_CUSTOM_DIALOG: string = '@CustomDialog';
+export const COMPONENT_DECORATOR_RECYCLE: string = '@Recycle';
+
+export const COMPONENT_RECYCLE: string = '__Recycle__';
 
 export const COMPONENT_NON_DECORATOR: string = 'regular';
 export const COMPONENT_STATE_DECORATOR: string = '@State';
@@ -47,7 +50,8 @@ export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSU
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_WATCH_DECORATOR]);
 export const INNER_COMPONENT_DECORATORS: Set<string> = new Set([COMPONENT_DECORATOR_ENTRY,
-  COMPONENT_DECORATOR_PREVIEW, COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_CUSTOM_DIALOG]);
+  COMPONENT_DECORATOR_PREVIEW, COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_CUSTOM_DIALOG,
+  COMPONENT_DECORATOR_RECYCLE]);
 export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_STORAGE_PROP_DECORATOR,
   COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR,
@@ -148,8 +152,18 @@ export const COMPONENT_POP_FUNCTION: string = 'pop';
 export const COMPONENT_DEBUGLINE_FUNCTION: string = 'debugLine';
 export const COMPONENT_COMMON: string = '__Common__';
 
+export const OBSERVE_RECYCLE_COMPONENT_CREATION: string = 'observeRecycleComponentCreation';
+export const COMPONENT_CREATE_RECYCLE: string = 'createRecycle';
+export const RECYCLE_NODE: string = 'recycleNode';
+export const ON_RECYCLE: string = 'onRecycle';
+export const COMPONENT_UPDATE_ELMT_ID: string = 'updateElmtId';
+export const UPDATE_RECYCLE_ELMT_ID: string = 'updateRecycleElmtId';
+export const OLD_ELMT_ID: string = 'oldElmtId';
+export const NEW_ELMT_ID: string = 'newElmtId';
+
 export const COMPONENT_CONSTRUCTOR_UPDATE_PARAMS: string = 'updateWithValueParams';
 export const COMPONENT_CONSTRUCTOR_DELETE_PARAMS: string = 'aboutToBeDeleted';
+
 export const CREATE_GET_METHOD: string = 'get';
 export const CREATE_SET_METHOD: string = 'set';
 export const CREATE_NEWVALUE_IDENTIFIER: string = 'newValue';

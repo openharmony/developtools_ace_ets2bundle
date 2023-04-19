@@ -728,7 +728,8 @@ function partialUpdateController(minAPIVersion, metadata = null) {
 
 const globalProgram = {
   program: null,
-  watchProgram: null
+  watchProgram: null,
+  checker: null,
 };
 
 const partialUpdateConfig = {
