@@ -14,6 +14,7 @@
  */
 
 import path from 'path';
+import { EventEmitter } from 'events';
 
 import { initConfig } from '../common/init_config';
 import { projectConfig } from '../../../main';
@@ -21,12 +22,24 @@ import {
   serviceChecker,
   watchChecker
 } from '../../ets_checker';
+import { TS_WATCH_END_MSG } from '../../pre_define';
+
+export let tsWatchEmitter: EventEmitter | undefined = undefined;
+export let tsWatchEndPromise: Promise<void>;
 
 export function etsChecker() {
   let executedOnce: boolean = false;
   return {
     name: 'etsChecker',
     buildStart() {
+      if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
+        tsWatchEmitter = new EventEmitter();
+        tsWatchEndPromise = new Promise<void>(resolve => {
+          tsWatchEmitter.on(TS_WATCH_END_MSG, () => {
+            resolve();
+          });
+        });
+      }
       if (executedOnce) {
         return;
       }
