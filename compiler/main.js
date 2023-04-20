@@ -246,7 +246,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
   if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isFile()) {
     const entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
-    abilityPagesFullPath.push(mainEntryPath);
+    abilityPagesFullPath.push(path.resolve(mainEntryPath).toLowerCase());
   } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
   }
@@ -314,10 +314,10 @@ function setFaTestRunnerFile(projectConfig) {
     testRunnerFiles.forEach((item) => {
       if (/\.(ts|js|ets)$/.test(item)) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
-		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
+        projectConfig.entryObj["../TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
-    })
+    });
   }
 }
 
@@ -330,10 +330,10 @@ function setStageTestRunnerFile(projectConfig) {
     testRunnerFiles.forEach((item) => {
       if (/\.(ts|js|ets)$/.test(item)) {
         const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
-		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
+        projectConfig.entryObj["./TestRunner/" + relativePath] = item;
         abilityConfig.testRunnerFile.push(item);
       }
-    })
+    });
   }
 }
 
@@ -365,7 +365,7 @@ function setAbilityFile(projectConfig, abilityPages) {
 }
 
 function readAbilityEntrance(moduleJson) {
-  let abilityPages = [];
+  const abilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
@@ -442,12 +442,11 @@ function readCardForm(form) {
 }
 
 function getAbilityFullPath(projectPath, abilityPath) {
-  let finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
-  finalPath = finalPath.replace(/\\/g, '/');
+  const finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
   if (fs.existsSync(finalPath)) {
-    return finalPath;
+    return finalPath.toLowerCase();
   } else {
-    return abilityPath;
+    return path.resolve(abilityPath).toLowerCase();
   }
 }
 
@@ -465,7 +464,7 @@ function loadWorker(projectConfig, workerFileEntry) {
             .replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
         }
-      })
+      });
     }
   }
 }

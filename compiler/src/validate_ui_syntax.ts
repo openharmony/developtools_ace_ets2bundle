@@ -243,7 +243,7 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
       fileName: fileName
     });
   } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry' &&
-    !abilityPagesFullPath.includes(fileName)) {
+    !abilityPagesFullPath.includes(path.resolve(fileName).toLowerCase())) {
     log.push({
       type: LogType.ERROR,
       message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
