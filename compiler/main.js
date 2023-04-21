@@ -16,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const md5 = require('md5');
+const JSON5 = require('json5');
 
 const {
   readFile,
@@ -93,6 +94,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
   projectConfig.packageDir = 'node_modules';
   projectConfig.packageJson = 'package.json';
+  projectConfig.packageManagerType = 'npm';
   projectConfig.cardEntryObj = {};
 }
 
@@ -195,7 +197,8 @@ function buildManifest(manifest, aceConfigPath) {
 function getPackageJsonEntryPath() {
   const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
-    const rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    const rootPackageJsonContent =
+      (projectConfig.packageManagerType === 'npm' ? JSON : JSON5).parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
     if (rootPackageJsonContent) {
       if (rootPackageJsonContent.module) {
         getEntryPath(rootPackageJsonContent.module, rootPackageJsonPath);
@@ -476,6 +479,7 @@ function loadBuildJson() {
     aceBuildJson = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
   }
   if (aceBuildJson.packageManagerType === 'ohpm') {
+    projectConfig.packageManagerType = 'ohpm';
     projectConfig.packageDir = 'oh_modules';
     projectConfig.packageJson = 'oh-package.json5';
   }
