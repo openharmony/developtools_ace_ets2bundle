@@ -16,6 +16,7 @@
 import ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
+import JSON5 from 'json5';
 
 import {
   EXTNAME_ETS,
@@ -528,7 +529,8 @@ function isPackageJsonEntry(filePath: string): boolean {
     let entryTypes: string;
     let entryMain: string;
     try {
-      const packageJson: Object = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+      const packageJson: Object =
+        (projectConfig.packageManagerType === 'npm' ? JSON : JSON5).parse(fs.readFileSync(packageJsonPath).toString());
       entryTypes = packageJson.types;
       entryMain = packageJson.main;
     } catch (e) {
