@@ -602,7 +602,7 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   return fileResolvePath;
 }
 
-export function getFileFullPath(filePath: string, pagesDir: string): string {
+function getFileFullPath(filePath: string, pagesDir: string): string {
   if (filePath && path.extname(filePath) !== EXTNAME_ETS && path.extname(filePath) !== EXTNAME_TS &&
       !isModule(filePath)) {
     const dirIndexEtsPath: string = path.resolve(path.resolve(pagesDir, filePath), INDEX_ETS);

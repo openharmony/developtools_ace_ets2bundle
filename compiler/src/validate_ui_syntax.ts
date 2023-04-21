@@ -153,17 +153,17 @@ export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Ma
 export const originalImportNamesMap: Map<string, string> = new Map();
 
 export function validateUISyntax(source: string, content: string, filePath: string,
-  fileQuery: string): LogInfo[] {
+  fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
   let log: LogInfo[] = [];
   if (process.env.compileMode === 'moduleJson' ||
     path.resolve(filePath) !== path.resolve(projectConfig.projectPath || '', 'app.ets')) {
-    const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery);
+    const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery, sourceFile);
     if (res) {
       log = log.concat(res);
     }
     const allComponentNames: Set<string> =
       new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]);
-    checkUISyntax(filePath, allComponentNames, content, log);
+    checkUISyntax(filePath, allComponentNames, content, log, sourceFile);
     componentCollection.customComponents.forEach(item => componentInfo.componentNames.add(item));
   }
 
@@ -171,10 +171,11 @@ export function validateUISyntax(source: string, content: string, filePath: stri
 }
 
 function checkComponentDecorator(source: string, filePath: string,
-  fileQuery: string): LogInfo[] | null {
+  fileQuery: string, sourceFile: ts.SourceFile | null): LogInfo[] | null {
   const log: LogInfo[] = [];
-  const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, source,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+  if (!sourceFile) {
+    sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+  }
   if (sourceFile && sourceFile.statements && sourceFile.statements.length) {
     const result: DecoratorResult = {
       entryCount: 0,
@@ -365,9 +366,10 @@ function collectLocalStorageName(node: ts.Decorator): void {
 }
 
 function checkUISyntax(filePath: string, allComponentNames: Set<string>, content: string,
-  log: LogInfo[]): void {
-  const sourceFile: ts.SourceFile = ts.createSourceFile(filePath, content,
-    ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+  log: LogInfo[], sourceFile: ts.SourceFile | null): void {
+  if (!sourceFile) {
+    sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+  }
   visitAllNode(sourceFile, sourceFile, allComponentNames, log);
 }
 
