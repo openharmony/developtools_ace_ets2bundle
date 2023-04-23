@@ -274,22 +274,18 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
         return;
     }
 
-    const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
-    const etsCheckerLogger = fastBuildLogger ? fastBuildLogger : logger;
-    let logMessage: string;
     checkerResult.count += 1;
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-      logMessage = `ArkTS:${logPrefix} File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`;
+      fastBuildLogger ?
+        fastBuildLogger.error('\u001b[31m' +
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`) :
+        logger.error('\u001b[31m',
+          `ArkTS:ERROR File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`);
     } else {
-      logMessage = `ArkTS:${logPrefix}: ${message}`;
-    }
-
-    if (diagnostic.category === ts.DiagnosticCategory.Error) {
-      etsCheckerLogger.error('\u001b[31m' + logMessage);
-    } else {
-      etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      fastBuildLogger ? fastBuildLogger.error('\u001b[31m' + `ArkTS:ERROR: ${message}`) :
+        logger.error('\u001b[31m', `ArkTS:ERROR: ${message}`);
     }
   }
 }
