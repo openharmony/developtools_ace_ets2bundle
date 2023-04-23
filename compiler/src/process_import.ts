@@ -69,8 +69,9 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import { validatorCard } from './process_ui_syntax';
+import { SOURCE_FILES } from './ets_checker';
 
-export const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = new Map();
+const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = process.env.watchMode === 'true' ? new Map() : SOURCE_FILES;
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
@@ -135,7 +136,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   }
 }
 
-export function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.SourceFile {
+function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.SourceFile {
   const originContent: string = fs.readFileSync(fileResolvePath, { encoding: 'utf-8' });
   const content: string = path.extname(fileResolvePath) === EXTNAME_ETS ?
     preprocessNewExtend(preprocessExtend(processSystemApi(originContent))) : originContent;
