@@ -240,7 +240,7 @@ function validateFirstNode(node: ts.Statement): boolean {
 function validateContainerComponent(node: ts.Statement): boolean {
   if (ts.isExpressionStatement(node) && node.expression &&
     (ts.isEtsComponentExpression(node.expression) || ts.isCallExpression(node.expression))) {
-    const nameResult: NameResult = { name: null, node: null };
+    const nameResult: NameResult = { name: null, node: null, arguments: [] };
     validateEtsComponentNode(node.expression, nameResult);
     if (nameResult.name && checkContainer(nameResult.name, nameResult.node)) {
       return true;
@@ -265,6 +265,7 @@ let newsupplement: supplementType = {
 
 type NameResult = {
   name: string,
+  arguments: ts.NodeArray<ts.Expression> | [],
   node?: ts.Node
 }
 
@@ -279,6 +280,7 @@ function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpre
     if (ts.isIdentifier(childNode.expression)) {
       result.name = childNode.expression.getText();
       result.node = childNode;
+      result.arguments = childNode.arguments || [];
     }
     return true;
   } else {
@@ -592,7 +594,7 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
-  const nameResult: NameResult = { name: null };
+  const nameResult: NameResult = { name: null, arguments: [] };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder);
@@ -776,7 +778,8 @@ function createItemCreate(nameResult: NameResult): ts.Statement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(nameResult.name),
       ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
-    [ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createIdentifier(ISLAZYCREATE)]));
+    [ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createIdentifier(ISLAZYCREATE),
+      ...nameResult.arguments]));
 }
 
 function createItemBlock(
