@@ -16,6 +16,7 @@
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
+const fse = require('fs-extra');
 
 import {
   projectConfig,
@@ -71,16 +72,23 @@ export function readDeaclareFiles(): string[] {
 
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-function setCompilerOptions() {
+function setCompilerOptions(resolveModulePaths: string[]) {
   const allPath: Array<string> = [
     '*'
   ];
-  if (!projectConfig.aceModuleJsonPath) {
-    allPath.push('../../../../../*');
-    allPath.push('../../*');
+  const basePath: string = path.resolve(projectConfig.projectPath);
+  if (process.env.compileTool === 'rollup' && resolveModulePaths && resolveModulePaths.length) {
+    resolveModulePaths.forEach((item: string) => {
+      allPath.push(path.join(path.relative(basePath, item), '*'));
+    });
   } else {
-    allPath.push('../../../../*');
-    allPath.push('../*');
+    if (!projectConfig.aceModuleJsonPath) {
+      allPath.push('../../../../../*');
+      allPath.push('../../*');
+    } else {
+      allPath.push('../../../../*');
+      allPath.push('../*');
+    }
   }
   Object.assign(compilerOptions, {
     'allowJs': false,
@@ -90,7 +98,7 @@ function setCompilerOptions() {
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
     'target': ts.ScriptTarget.ES2017,
-    'baseUrl': path.resolve(projectConfig.projectPath),
+    'baseUrl': basePath,
     'paths': {
       '*': allPath
     },
@@ -117,8 +125,8 @@ interface extendInfo {
   compName: string
 }
 
-export function createLanguageService(rootFileNames: string[]): ts.LanguageService {
-  setCompilerOptions();
+export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[]): ts.LanguageService {
+  setCompilerOptions(resolveModulePaths);
   const files: ts.MapLike<{ version: number }> = {};
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
@@ -195,12 +203,12 @@ const allResolvedModules: Set<string> = new Set();
 let fastBuildLogger = null;
 
 export const checkerResult: CheckerResult = {count: 0};
-export function serviceChecker(rootFileNames: string[], newLogger: any = null): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
   fastBuildLogger = newLogger;
   let languageService: ts.LanguageService = null;
   let cacheFile: string = null;
   if (projectConfig.xtsMode) {
-    languageService = createLanguageService(rootFileNames);
+    languageService = createLanguageService(rootFileNames, resolveModulePaths);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -212,7 +220,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    languageService = createLanguageService(filterFiles);
+    languageService = createLanguageService(filterFiles, resolveModulePaths);
   }
   globalProgram.program = languageService.getProgram();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
@@ -223,6 +231,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null): 
     printDiagnostic(diagnostic);
   });
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+    fse.ensureDirSync(projectConfig.cachePath);
     fs.writeFileSync(cacheFile, JSON.stringify({
       'runtimeOS': projectConfig.runtimeOS,
       'sdkInfo': projectConfig.sdkInfo,
@@ -485,13 +494,13 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
 
 export function createWatchCompilerHost(rootFileNames: string[],
   reportDiagnostic: ts.DiagnosticReporter, delayPrintLogCount: Function, resetErrorCount: Function,
-  isPipe: boolean = false): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
+  isPipe: boolean = false, resolveModulePaths: string[] = null): ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.BuilderProgram> {
   if (projectConfig.hotReload) {
     rootFileNames.forEach(fileName => {
       hotReloadSupportFiles.add(fileName);
     });
   }
-  setCompilerOptions();
+  setCompilerOptions(resolveModulePaths);
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
     [...rootFileNames, ...readDeaclareFiles()], compilerOptions,
@@ -531,10 +540,10 @@ export function createWatchCompilerHost(rootFileNames: string[],
   return host;
 }
 
-export function watchChecker(rootFileNames: string[], newLogger: any = null): void {
+export function watchChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
   fastBuildLogger = newLogger;
   globalProgram.watchProgram = ts.createWatchProgram(
-    createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}));
+    createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}, false, resolveModulePaths));
 }
 
 export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
