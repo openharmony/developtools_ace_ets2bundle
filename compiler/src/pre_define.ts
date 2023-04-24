@@ -283,7 +283,7 @@ export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
 
 export const $$_BLOCK_INTERFACE: Set<string> = new Set([
-  REFRESH, DATE_PICKER, TIME_PICKER, RATING, SEAECH, CALENDAR,STEPPER, TABS, MENU_ITEM,
+  REFRESH, DATE_PICKER, TIME_PICKER, RATING, SEAECH, CALENDAR, STEPPER, TABS, MENU_ITEM,
   TIME_PICKER]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, MODE, SHOW_SIDE_BAR, SELECTED]);
@@ -306,7 +306,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [TABS, new Set([INDEX])],
   [TEXT_AREA, new Set([TEXT])],
   [TEXT_INPUT, new Set([TEXT])],
-  [TEXT_PICKER, new Set([VALUE])],
+  [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
