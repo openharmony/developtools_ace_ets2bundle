@@ -269,7 +269,13 @@ function stageOptimization(metadata) {
 
 function getPages(configJson) {
   const pages = [];
-  const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  let pagesJsonFileName = '';
+  // pages is not necessary in shared library
+  if (projectConfig.compileShared && configJson.module && configJson.module.pages || !projectConfig.compileShared) {
+    pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  } else {
+    return pages;
+  }
   const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
     try {
