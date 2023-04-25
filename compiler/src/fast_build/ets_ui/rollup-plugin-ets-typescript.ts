@@ -244,7 +244,7 @@ async function transform(code: string, id: string) {
 function validateEts(code: string, id: string, isEntry: boolean, logger: any) {
   if (/\.ets$/.test(id)) {
     clearCollection();
-    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
+    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
@@ -257,7 +257,7 @@ function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: 
     clearCollection();
     let content = preprocessExtend(code);
     content = preprocessNewExtend(content);
-    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(id) ? '?entry' : '';
+    const fileQuery: string = isEntry && !abilityPagesFullPath.includes(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
