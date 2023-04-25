@@ -16,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const md5 = require('md5');
+const JSON5 = require('json5');
 
 const {
   readFile,
@@ -93,6 +94,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
   projectConfig.packageDir = 'node_modules';
   projectConfig.packageJson = 'package.json';
+  projectConfig.packageManagerType = 'npm';
   projectConfig.cardEntryObj = {};
 }
 
@@ -195,7 +197,8 @@ function buildManifest(manifest, aceConfigPath) {
 function getPackageJsonEntryPath() {
   const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
-    const rootPackageJsonContent = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    const rootPackageJsonContent =
+      (projectConfig.packageManagerType === 'npm' ? JSON : JSON5).parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
     if (rootPackageJsonContent) {
       if (rootPackageJsonContent.module) {
         getEntryPath(rootPackageJsonContent.module, rootPackageJsonPath);
@@ -246,7 +249,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
   if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isFile()) {
     const entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
-    abilityPagesFullPath.push(mainEntryPath);
+    abilityPagesFullPath.push(path.resolve(mainEntryPath).toLowerCase());
   } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
   }
@@ -266,7 +269,13 @@ function stageOptimization(metadata) {
 
 function getPages(configJson) {
   const pages = [];
-  const pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  let pagesJsonFileName = '';
+  // pages is not necessary in shared library
+  if (projectConfig.compileShared && configJson.module && configJson.module.pages || !projectConfig.compileShared) {
+    pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
+  } else {
+    return pages;
+  }
   const modulePagePath = path.resolve(projectConfig.aceProfilePath, pagesJsonFileName);
   if (fs.existsSync(modulePagePath)) {
     try {
@@ -365,7 +374,7 @@ function setAbilityFile(projectConfig, abilityPages) {
 }
 
 function readAbilityEntrance(moduleJson) {
-  let abilityPages = [];
+  const abilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
@@ -442,12 +451,11 @@ function readCardForm(form) {
 }
 
 function getAbilityFullPath(projectPath, abilityPath) {
-  let finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
-  finalPath = finalPath.replace(/\\/g, '/');
+  const finalPath = path.resolve(path.resolve(projectPath, '../'), abilityPath);
   if (fs.existsSync(finalPath)) {
-    return finalPath;
+    return finalPath.toLowerCase();
   } else {
-    return abilityPath;
+    return path.resolve(abilityPath).toLowerCase();
   }
 }
 
@@ -476,6 +484,7 @@ function loadBuildJson() {
     aceBuildJson = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
   }
   if (aceBuildJson.packageManagerType === 'ohpm') {
+    projectConfig.packageManagerType = 'ohpm';
     projectConfig.packageDir = 'oh_modules';
     projectConfig.packageJson = 'oh-package.json5';
   }
