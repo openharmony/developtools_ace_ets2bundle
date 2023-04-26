@@ -216,6 +216,8 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    // init TypeChecker to run binding
+    tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
   }
 
