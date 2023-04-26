@@ -78,8 +78,8 @@ export function etsTransform() {
     buildStart: judgeCacheShouldDisabled,
     load(id: string) {
       let fileCacheInfo: fileInfo;
-      if (this.cache.get('fileTransformCacheInfo')) {
-        fileCacheInfo = this.cache.get('fileTransformCacheInfo')[path.resolve(id)];
+      if (this.cache.get('fileCacheInfo')) {
+        fileCacheInfo = this.cache.get('fileCacheInfo')[path.resolve(id)];
       }
       // Exclude Component Preview page
       if (projectConfig.isPreview && !projectConfig.checkEntry && id.match(/(?<!\.d)\.(ets)$/)) {
