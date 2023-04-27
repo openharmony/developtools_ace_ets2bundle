@@ -248,11 +248,69 @@ export const $$_THIS: string = '$$this';
 export const $$_NEW_VALUE: string = 'newValue';
 export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
-export const BINDCONTENTCOVER: string = 'bindContentCover';
-export const $$_BLOCK_INTERFACE: Set<string> = new Set([REFRESH]);
-export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([BIND_POPUP, $$_VISIBILITY, BINDCONTENTCOVER]);
+export const BIND_CONTENT_COVER: string = 'bindContentCover';
+export const BIND_SHEET: string = 'bindSheet';
+export const DATE_PICKER: string = 'DatePicker';
+export const TIME_PICKER: string = 'TimePicker';
+export const RATING: string = 'Rating';
+export const SEAECH: string = 'Search';
+export const CALENDAR: string = 'Calendar';
+export const MODE: string = 'mode';
+export const SHOW_SIDE_BAR: string = 'showSideBar';
+export const CHECK_BOX: string = 'Checkbox';
+export const SELECT_LOW: string = 'select';
+export const CHECKBOX_GROUP: string = 'CheckboxGroup';
+export const SELECT_ALL: string = 'selectAll';
+export const SELECTED: string = 'selected';
+export const MENU_ITEM: string = 'MenuItem';
+export const PANEL: string = 'Panel';
+export const RATING_LOW: string = 'rating';
+export const VALUE: string = 'value';
+export const SIDE_BAR_CONTAINER: string = 'SideBarContainer';
+export const SLIDER: string = 'Slider';
+export const STEPPER: string = 'Stepper';
+export const INDEX: string = 'index';
+export const SWIPER: string = 'Swiper';
+export const TABS: string = 'Tabs';
+export const TEXT_AREA: string = 'TextArea';
+export const TEXT: string = 'text';
+export const SELECT: string = 'Select';
+export const TEXT_INPUT: string = 'TextInput';
+export const TEXT_PICKER: string = 'TextPicker';
+export const TOGGLE: string = 'Toggle';
+export const ALPHABET_INDEXER: string = 'AlphabetIndexer';
+export const IS_ON: string = 'isOn';
+export const DATE: string = 'date';
+
+export const $$_BLOCK_INTERFACE: Set<string> = new Set([
+  REFRESH, DATE_PICKER, TIME_PICKER, RATING, SEAECH, CALENDAR, STEPPER, TABS, MENU_ITEM,
+  TIME_PICKER]);
+export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
+  BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
-  [RADIO, new Set([CHECKED])], [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])], [REFRESH, new Set([REFRESHING])]
+  [RADIO, new Set([CHECKED])],
+  [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
+  [REFRESH, new Set([REFRESHING])],
+  [CHECK_BOX, new Set([SELECT_LOW])],
+  [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [DATE_PICKER, new Set([SELECTED])],
+  [TIME_PICKER, new Set([SELECTED])],
+  [MENU_ITEM, new Set([SELECTED])],
+  [PANEL, new Set([MODE])],
+  [RATING, new Set([RATING_LOW])],
+  [SEAECH, new Set([VALUE])],
+  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR])],
+  [SLIDER, new Set([VALUE])],
+  [STEPPER, new Set([INDEX])],
+  [SWIPER, new Set([INDEX])],
+  [TABS, new Set([INDEX])],
+  [TEXT_AREA, new Set([TEXT])],
+  [TEXT_INPUT, new Set([TEXT])],
+  [TEXT_PICKER, new Set([VALUE, SELECTED])],
+  [TOGGLE, new Set([IS_ON])],
+  [ALPHABET_INDEXER, new Set([SELECTED])],
+  [SELECT, new Set([SELECTED, VALUE])],
+  [CALENDAR, new Set([DATE])],
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
