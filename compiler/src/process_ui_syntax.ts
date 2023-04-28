@@ -123,9 +123,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           node = ts.visitEachChild(node, processResourceNode, context);
           if (projectConfig.compileMode === ESMODULE) {
             if (projectConfig.processTs === true) {
+              const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
               process.env.compileTool === 'rollup' ?
-                ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
-                writeFileSyncByNode(node, true, projectConfig);
+                ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
+                writeFileSyncByNode(processedNode, true, projectConfig);
             }
           }
           return node;
@@ -147,8 +148,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
-          process.env.compileTool === 'rollup' ? ModuleSourceFile.newSourceFile(path.normalize(node.fileName), node) :
-            writeFileSyncByNode(node, true, projectConfig);
+          const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
+          process.env.compileTool === 'rollup' ?
+            ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
+            writeFileSyncByNode(processedNode, true, projectConfig);
         }
         return node;
       } else {
