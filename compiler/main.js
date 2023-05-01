@@ -19,7 +19,8 @@ const md5 = require('md5');
 
 const {
   readFile,
-  writeFileSync
+  writeFileSync,
+  storedFileInfo
 } = require('./lib/utils');
 
 const {
@@ -66,7 +67,7 @@ function initProjectConfig(projectConfig) {
     path.join(process.cwd(), 'sample');
   projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
     path.resolve(projectConfig.projectPath, 'build');
-  projectConfig.aceModuleBuild = projectConfig.buildPath;  // To be compatible with both webpack and rollup
+  projectConfig.aceModuleBuild = projectConfig.buildPath; // To be compatible with both webpack and rollup
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
     path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
@@ -565,7 +566,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
       continue;
     }
     const resourceData = resourceArr[i].split(/\s/);
-    if (resourceData.length === 3 && !isNaN(Number(resourceData[2])) ) {
+    if (resourceData.length === 3 && !isNaN(Number(resourceData[2]))) {
       if (resourceMap.get(resourceData[0])) {
         const resourceKeys = resourceMap.get(resourceData[0]);
         if (!resourceKeys[resourceData[1]] || resourceKeys[resourceData[1]] !== Number(resourceData[2])) {
@@ -575,6 +576,9 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
         let obj = {};
         obj[resourceData[1]] = Number(resourceData[2]);
         resourceMap.set(resourceData[0], obj);
+      }
+      if (process.env.compileTool === 'rollup') {
+        storedFileInfo.updateResourceList(resourceData[0] + '_' + resourceData[1]);
       }
     } else {
       logger.warn(`\u001b[31m ArkTS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);
