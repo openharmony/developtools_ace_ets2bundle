@@ -655,27 +655,27 @@
           {
             "name": "GridRow",
             "type": "GridRowAttribute",
-            "instance": "GridRowInterface"
+            "instance": "GridRowInstance"
           },
           {
             "name": "GridCol",
             "type": "GridColAttribute",
-            "instance": "GridColInterface"
+            "instance": "GridColInstance"
           },
           {
             "name": "WaterFlow",
             "type": "WaterFlowAttribute",
-            "instance": "WaterFlowInterface"
+            "instance": "WaterFlowInstance"
           },
           {
             "name": "FlowItem",
             "type": "FlowItemAttribute",
-            "instance": "FlowItemInterface"
+            "instance": "FlowItemInstance"
           },
           {
             "name": "ImageSpan",
             "type": "ImageSpanAttribute",
-            "instance": "ImageSpanInterface"
+            "instance": "ImageSpanInstance"
           }
         ]
       },

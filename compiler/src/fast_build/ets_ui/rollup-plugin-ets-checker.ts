@@ -51,14 +51,19 @@ export function etsChecker() {
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
+      const resolveModulePaths: string[] = [];
       Object.values(projectConfig.entryObj).forEach((fileName: string) => {
         rootFileNames.push(path.resolve(fileName));
       });
+      if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
+        Array.isArray(this.share.projectConfig.resolveModulePaths)) {
+        resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
+      }
       if (process.env.watchMode === 'true') {
         executedOnce = true;
-        watchChecker(rootFileNames, logger);
+        watchChecker(rootFileNames, logger, resolveModulePaths);
       } else {
-        serviceChecker(rootFileNames, logger);
+        serviceChecker(rootFileNames, logger, resolveModulePaths);
       }
     }
   };
