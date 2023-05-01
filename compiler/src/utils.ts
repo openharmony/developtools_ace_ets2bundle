@@ -665,7 +665,7 @@ class ProcessFileInfo {
 
   judgeShouldHaveEntryFiles(entryFileWithoutEntryDecorator: string[]): void {
     this.shouldHaveEntry = Object.values(projectConfig.entryObj as string[]).filter((item) => {
-      return !entryFileWithoutEntryDecorator.includes(item) && item.match(/(?<!\.d)\.(ets)$/);
+      return !entryFileWithoutEntryDecorator.includes(item.toLowerCase()) && item.match(/(?<!\.d)\.(ets)$/);
     });
   }
 
