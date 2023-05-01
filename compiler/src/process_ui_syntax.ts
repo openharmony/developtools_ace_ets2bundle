@@ -64,7 +64,8 @@ import {
   LogType,
   hasDecorator,
   FileLog,
-  getPossibleBuilderTypeParameter
+  getPossibleBuilderTypeParameter,
+  storedFileInfo
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -490,26 +491,31 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
       message: 'The input parameter is not supported.',
       pos: pos
     });
-  } else if (!resources[resourceData[0]]) {
-    log.push({
-      type: LogType.ERROR,
-      message: `Unknown resource source '${resourceData[0]}'.`,
-      pos: pos
-    });
-  } else if (!resources[resourceData[0]][resourceData[1]]) {
-    log.push({
-      type: LogType.ERROR,
-      message: `Unknown resource type '${resourceData[1]}'.`,
-      pos: pos
-    });
-  } else if (!resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
-    log.push({
-      type: LogType.ERROR,
-      message: `Unknown resource name '${resourceData[2]}'.`,
-      pos: pos
-    });
   } else {
-    return true;
+    if (process.env.compileTool === 'rollup') {
+      storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
+    }
+    if (!resources[resourceData[0]]) {
+      log.push({
+        type: LogType.ERROR,
+        message: `Unknown resource source '${resourceData[0]}'.`,
+        pos: pos
+      });
+    } else if (!resources[resourceData[0]][resourceData[1]]) {
+      log.push({
+        type: LogType.ERROR,
+        message: `Unknown resource type '${resourceData[1]}'.`,
+        pos: pos
+      });
+    } else if (!resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
+      log.push({
+        type: LogType.ERROR,
+        message: `Unknown resource name '${resourceData[2]}'.`,
+        pos: pos
+      });
+    } else {
+      return true;
+    }
   }
   return false;
 }

@@ -621,28 +621,44 @@ function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
     parameters[0].type.members && parameters[0].type.members.length > 0;
 }
 
-// Global Information
+// Global Information & Method
 class ProcessFileInfo {
   buildStart: boolean = true;
-  wholeFileInfo: {[id: string]: SpecialArkTSFileInfo} = {}; // Saved ArkTS file's infomation
-  transformedFiles: string[] = []; // ArkTS Files which should be transformed in this compilation
-  cachedFiles: string[] = []; // ArkTS Files which should not be transformed in this compilation
+  wholeFileInfo: {[id: string]: SpecialArkTSFileInfo | TSFileInfo} = {}; // Save ArkTS & TS file's infomation
+  transformedFiles: string[] = []; // ArkTS & TS Files which should be transformed in this compilation
+  cachedFiles: string[] = []; // ArkTS & TS Files which should not be transformed in this compilation
   shouldHaveEntry: string[] = []; // Which file should have @Entry decorator
+  resourceToFile: {[resource: string]: Set<string>} = {}; // Resource is used by which file
+  lastResourceList: Set<string> = new Set();
+  resourceList: Set<string> = new Set(); // Whole project resource
+  shouldInvalidFiles: Set<string> = new Set();
 
-  addFileCacheInfo(id: string, fileCacheInfo: fileInfo): void {
+  addGlobalCacheInfo(resourceListCacheInfo: string[], resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
+    if (this.buildStart) {
+      for (const element in resourceToFileCacheInfo) {
+        this.resourceToFile[element] = new Set(resourceToFileCacheInfo[element]);
+      }
+    }
+    this.lastResourceList = new Set(resourceListCacheInfo);
+    this.compareResourceDiff();
+  }
+
+  addFileCacheInfo(id: string, fileCacheInfo: fileInfo) {
     if (id.match(/(?<!\.d)\.(ets)$/)) {
       this.wholeFileInfo[id] = new SpecialArkTSFileInfo(fileCacheInfo);
+    } else if (id.match(/(?<!\.d)\.(ts)$/)) {
+      this.wholeFileInfo[id] = new TSFileInfo(fileCacheInfo);
     }
   }
 
-  collectTransformedFiles(id: string): void {
-    if (id.match(/(?<!\.d)\.(ets)$/)) {
+  collectTransformedFiles(id: string) {
+    if (id.match(/(?<!\.d)\.(ets|ts)$/)) {
       this.transformedFiles.push(id);
     }
   }
 
-  collectCachedFiles(id: string): void {
-    if (id.match(/(?<!\.d)\.(ets)$/)) {
+  collectCachedFiles(id: string) {
+    if (id.match(/(?<!\.d)\.(ets|ts)$/)) {
       this.cachedFiles.push(id);
     }
   }
@@ -654,26 +670,114 @@ class ProcessFileInfo {
   }
 
   saveCacheFileInfo(cache) {
-    const cacheInfo: {[id: string]: fileInfo} = cache.get('fileCacheInfo') || {};
-    for (const id of this.transformedFiles) {
-      cacheInfo[id] = this.wholeFileInfo[id].fileInfo;
+    const fileCacheInfo: {[id: string]: fileInfo | tsFileInfo} = cache.get('fileCacheInfo') || {};
+    const resourceToFileCacheInfo = cache.get('resourceToFileCacheInfo') || {};
+    for (const i in resourceToFileCacheInfo) {
+      resourceToFileCacheInfo[i] = new Set(resourceToFileCacheInfo[i]);
     }
-    cache.set('fileCacheInfo', cacheInfo);
+    const resourceToFile: {[resource: string]: Set<string> | string[]} = Object.assign(resourceToFileCacheInfo, this.resourceToFile);
+    for (const id of this.transformedFiles) {
+      fileCacheInfo[id] = this.wholeFileInfo[id].fileInfo;
+      for (const resource of this.wholeFileInfo[id].newFileToResourceList) {
+        if (!(fileCacheInfo[id].fileToResourceList as Set<string>).has(resource)) {
+          if (!resourceToFile[resource]) {
+            resourceToFile[resource] = new Set();
+          }
+          (resourceToFile[resource] as Set<string>).add(id);
+        }
+      }
+      for (const resource of fileCacheInfo[id].fileToResourceList) {
+        if (!this.wholeFileInfo[id].newFileToResourceList.has(resource)) {
+          (resourceToFile[resource] as Set<string>).delete(id);
+        }
+      }
+      fileCacheInfo[id].fileToResourceList = [...this.wholeFileInfo[id].newFileToResourceList];
+    }
+    this.resourceToFile = resourceToFile as {[resource: string]: Set<string>};
+    for (const resource in resourceToFile) {
+      resourceToFile[resource] = [...resourceToFile[resource]];
+    }
+    cache.set('fileCacheInfo', fileCacheInfo);
+    cache.set('resourceListCacheInfo', [...this.resourceList]);
+    cache.set('resourceToFileCacheInfo', resourceToFile);
+  }
+
+  updateResourceList(resource: string) {
+    this.resourceList.add(resource);
+  }
+
+  compareResourceDiff() {
+    // deleted resource
+    for (const resource of this.lastResourceList) {
+      if (!this.resourceList.has(resource)) {
+        this.resourceToFile[resource].forEach(file => {
+          this.shouldInvalidFiles.add(file);
+        });
+        if (!this.resourceToFile[resource].size) {
+          delete this.resourceToFile[resource];
+        }
+      }
+    }
+    // created resource
+    for (const resource of this.resourceList) {
+      if (!this.resourceToFile[resource]) {
+        this.resourceToFile[resource] = new Set();
+      }
+      if (!this.lastResourceList.has(resource)) {
+        this.resourceToFile[resource].forEach(file => {
+          this.shouldInvalidFiles.add(file);
+        });
+      }
+    }
+  }
+
+  collectResourceInFile(resource: string, file: string) {
+    this.wholeFileInfo[file].newFileToResourceList.add(resource);
+  }
+
+  clearCollectedInfo(cache) {
+    this.buildStart = false;
+    this.saveCacheFileInfo(cache);
+    this.transformedFiles = [];
+    this.cachedFiles = [];
+    this.lastResourceList = this.resourceList;
+    this.resourceList.clear();
+    this.shouldInvalidFiles.clear();
   }
 }
 
+
 export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
 
-export interface fileInfo {
+export interface fileInfo extends tsFileInfo {
   hasEntry: boolean; // Has @Entry decorator or not
 }
 
-// Save single file information
-class SpecialArkTSFileInfo {
+export interface tsFileInfo {
+  fileToResourceList: Set<string> | string[]; // How much Resource is used
+}
+
+// Save single TS file information
+class TSFileInfo {
+  fileInfo: tsFileInfo = {
+    fileToResourceList: new Set()
+  }
+  newFileToResourceList: Set<string> = new Set()
+  constructor(cacheInfo: fileInfo, etsFile?: boolean) {
+    if (!etsFile) {
+      this.fileInfo = cacheInfo || this.fileInfo;
+    }
+  }
+}
+
+// Save single ArkTS file information
+class SpecialArkTSFileInfo extends TSFileInfo {
   fileInfo: fileInfo = {
-    hasEntry: false
-  };
+    hasEntry: false,
+    fileToResourceList: new Set()
+  }
   constructor(cacheInfo: fileInfo) {
+    super(cacheInfo, true);
     this.fileInfo = cacheInfo || this.fileInfo;
   }
   get hasEntry() {

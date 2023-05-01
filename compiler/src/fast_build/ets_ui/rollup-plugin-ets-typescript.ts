@@ -78,7 +78,10 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
-    buildStart: judgeCacheShouldDisabled,
+    buildStart() {
+      judgeCacheShouldDisabled.call(this);
+      storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'), this.cache.get('resourceToFileCacheInfo'));
+    },
     load(id: string) {
       let fileCacheInfo: fileInfo;
       if (this.cache.get('fileTransformCacheInfo')) {
@@ -93,7 +96,8 @@ export function etsTransform() {
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
-      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
+      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) ||
+        storedFileInfo.shouldInvalidFiles.has(fileName);
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
@@ -130,8 +134,7 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
-      storedFileInfo.buildStart = false;
-      storedFileInfo.saveCacheFileInfo(this.cache);
+      storedFileInfo.clearCollectedInfo(this.cache);
     }
   };
 }
