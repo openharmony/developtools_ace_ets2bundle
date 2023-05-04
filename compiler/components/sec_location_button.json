@@ -1,0 +1,11 @@
+{
+  "name": "SecLocationButton",
+  "atomic": true,
+  "attrs": [
+    "iconSize", "layoutDirection", "layoutOrder", "position",
+    "markAnchor", "offset", "fontSize", "fontStyle", "fontWeight",
+    "fontFamily", "fontColor", "iconColor", "backgroundColor",
+    "borderStyle", "borderWidth", "borderColor", "borderRadius",
+    "backgroundPadding", "textIconPadding", "onClick"
+  ]
+}
