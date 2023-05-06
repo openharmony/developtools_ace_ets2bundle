@@ -96,6 +96,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.packageJson = 'package.json';
   projectConfig.packageManagerType = 'npm';
   projectConfig.cardEntryObj = {};
+  projectConfig.compilerTypes = [];
 }
 
 function loadEntryObj(projectConfig) {

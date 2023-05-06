@@ -53,7 +53,8 @@ import {
 import {
   appComponentCollection,
   compilerOptions as etsCheckerCompilerOptions,
-  resolveModuleNames
+  resolveModuleNames,
+  resolveTypeReferenceDirectives
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -167,6 +168,7 @@ compilerHost.writeFile = () => {};
 compilerHost.resolveModuleNames = resolveModuleNames;
 compilerHost.getCurrentDirectory = () => process.cwd();
 compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
 
 async function transform(code: string, id: string) {
   if (!filter(id)) {

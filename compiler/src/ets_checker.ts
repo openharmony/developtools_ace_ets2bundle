@@ -104,7 +104,8 @@ function setCompilerOptions(resolveModulePaths: string[]) {
     },
     'lib': [
       'lib.es2020.d.ts'
-    ]
+    ],
+    'types': projectConfig.compilerTypes
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -152,6 +153,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     readFile: ts.sys.readFile,
     readDirectory: ts.sys.readDirectory,
     resolveModuleNames: resolveModuleNames,
+    resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
     getTagNameNeededCheckByFile: (fileName, sourceFileName) => {
@@ -368,6 +370,44 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
   }
 }
 
+const moduleResolutionHost: ts.ModuleResolutionHost = {
+  fileExists(fileName: string): boolean {
+    return ts.sys.fileExists(fileName);
+  },
+  readFile(fileName: string): string | undefined {
+    return ts.sys.readFile(fileName);
+  },
+  realpath(path: string): string {
+    return ts.sys.realpath(path);
+  },
+  trace(s: string): void {
+    console.info(s);
+  }
+}
+
+export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts.ResolvedTypeReferenceDirective[] {
+  if (typeDirectiveNames.length === 0) {
+    return [];
+  }
+
+  const resolvedTypeReferenceCache: ts.ResolvedTypeReferenceDirective[] = [];
+  const cache: Map<string, ts.ResolvedTypeReferenceDirective> = new Map<string, ts.ResolvedTypeReferenceDirective>();
+  const containingFile: string = path.join(projectConfig.modulePath, "build-profile.json5");
+
+  for (const typeName of typeDirectiveNames) {
+    if (!cache.has(typeName)) {
+      const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
+      if (!resolvedFile || !resolvedFile.resolvedTypeReferenceDirective) {
+        logger.error('\u001b[31m', `ArkTS:Caonnot find type definition file for: ${typeName}\n`);
+      }
+      const result: ts.ResolvedTypeReferenceDirective = resolvedFile.resolvedTypeReferenceDirective;
+      cache.set(typeName, result);
+      resolvedTypeReferenceCache.push(result);
+    }
+  }
+  return resolvedTypeReferenceCache;
+}
+
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
@@ -376,17 +416,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
       resolvedModulesCache[path.resolve(containingFile)].length === moduleNames.length)) {
     for (const moduleName of moduleNames) {
-      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, {
-        fileExists(fileName: string): boolean {
-          return ts.sys.fileExists(fileName);
-        },
-        readFile(fileName: string): string | undefined {
-          return ts.sys.readFile(fileName);
-        },
-        realpath(path: string): string {
-          return ts.sys.realpath(path);
-        }
-      });
+      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost);
       if (result.resolvedModule) {
         if (result.resolvedModule.resolvedFileName &&
           path.extname(result.resolvedModule.resolvedFileName) === EXTNAME_JS) {
@@ -541,6 +571,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
     return fs.readFileSync(fileName).toString();
   };
   host.resolveModuleNames = resolveModuleNames;
+  host.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
   return host;
 }
 
