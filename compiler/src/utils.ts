@@ -632,18 +632,25 @@ class ProcessFileInfo {
   lastResourceList: Set<string> = new Set();
   resourceList: Set<string> = new Set(); // Whole project resource
   shouldInvalidFiles: Set<string> = new Set();
+  resourceTableChanged: boolean = false;
 
-  addGlobalCacheInfo(resourceListCacheInfo: string[], resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
+  addGlobalCacheInfo(resourceListCacheInfo: string[],
+    resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
     if (this.buildStart) {
       for (const element in resourceToFileCacheInfo) {
         this.resourceToFile[element] = new Set(resourceToFileCacheInfo[element]);
       }
+      this.lastResourceList = new Set(resourceListCacheInfo);
     }
-    this.lastResourceList = new Set(resourceListCacheInfo);
-    this.compareResourceDiff();
+    if (this.resourceTableChanged) {
+      this.compareResourceDiff();
+    }
   }
 
   addFileCacheInfo(id: string, fileCacheInfo: fileInfo) {
+    if (fileCacheInfo) {
+      fileCacheInfo.fileToResourceList = new Set(fileCacheInfo.fileToResourceList);
+    }
     if (id.match(/(?<!\.d)\.(ets)$/)) {
       this.wholeFileInfo[id] = new SpecialArkTSFileInfo(fileCacheInfo);
     } else if (id.match(/(?<!\.d)\.(ts)$/)) {
@@ -693,6 +700,9 @@ class ProcessFileInfo {
       }
       fileCacheInfo[id].fileToResourceList = [...this.wholeFileInfo[id].newFileToResourceList];
     }
+    for (const id of this.cachedFiles) {
+      fileCacheInfo[id].fileToResourceList = [...fileCacheInfo[id].fileToResourceList];
+    }
     this.resourceToFile = resourceToFile as {[resource: string]: Set<string>};
     for (const resource in resourceToFile) {
       resourceToFile[resource] = [...resourceToFile[resource]];
@@ -707,18 +717,15 @@ class ProcessFileInfo {
   }
 
   compareResourceDiff() {
-    // deleted resource
+    // delete resource
     for (const resource of this.lastResourceList) {
       if (!this.resourceList.has(resource)) {
         this.resourceToFile[resource].forEach(file => {
           this.shouldInvalidFiles.add(file);
         });
-        if (!this.resourceToFile[resource].size) {
-          delete this.resourceToFile[resource];
-        }
       }
     }
-    // created resource
+    // create resource
     for (const resource of this.resourceList) {
       if (!this.resourceToFile[resource]) {
         this.resourceToFile[resource] = new Set();
@@ -737,15 +744,14 @@ class ProcessFileInfo {
 
   clearCollectedInfo(cache) {
     this.buildStart = false;
+    this.resourceTableChanged = false;
     this.saveCacheFileInfo(cache);
     this.transformedFiles = [];
     this.cachedFiles = [];
-    this.lastResourceList = this.resourceList;
-    this.resourceList.clear();
+    this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
   }
 }
-
 
 export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
 

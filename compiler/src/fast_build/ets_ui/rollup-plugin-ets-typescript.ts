@@ -80,7 +80,8 @@ export function etsTransform() {
     transform: transform,
     buildStart() {
       judgeCacheShouldDisabled.call(this);
-      storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'), this.cache.get('resourceToFileCacheInfo'));
+      storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
+        this.cache.get('resourceToFileCacheInfo'));
     },
     load(id: string) {
       let fileCacheInfo: fileInfo;
@@ -148,10 +149,14 @@ function disableNonEntryFileCache(filePath: string): boolean {
 
 function judgeCacheShouldDisabled(): void {
   for (const key in disableCacheOptions) {
-    if (!shouldDisableCache && this.cache.get('disableCacheOptions') && this.share &&
+    if (this.cache.get('disableCacheOptions') && this.share &&
       this.share.projectConfig && this.share.projectConfig[key] &&
       this.cache.get('disableCacheOptions')[key] !== this.share.projectConfig[key]) {
-      shouldDisableCache = true;
+      if (key === 'resourceTableHash') {
+        storedFileInfo.resourceTableChanged = true;
+      } else if (!shouldDisableCache) {
+        shouldDisableCache = true;
+      }
     }
     if (this.share && this.share.projectConfig && this.share.projectConfig[key]) {
       disableCacheOptions[key] = this.share.projectConfig[key];

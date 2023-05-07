@@ -18,7 +18,8 @@ import path from 'path';
 import {
   shouldWriteChangedList,
   writeFileSync,
-  getHotReloadFiles
+  getHotReloadFiles,
+  storedFileInfo
 } from '../../utils';
 import {
   projectConfig,
@@ -50,6 +51,8 @@ export function watchChangeFiles() {
         addFileToCache.call(this, 'watchRemovedFiles', id);
       }
       if (path.resolve(id) === path.resolve(process.env.appResource)) {
+        storedFileInfo.resourceTableChanged = true;
+        storedFileInfo.resourceList.clear();
         readAppResource(process.env.appResource);
       }
     },
