@@ -56,7 +56,7 @@ class ParentView extends ViewPU {
             const isLazyCreate = true && (Grid.willUseProxy() === true);
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                GridItem.create(deepRenderFunction, isLazyCreate);
+                GridItem.create(deepRenderFunction, isLazyCreate, 'true');
                 GridItem.width(200);
                 GridItem.height(100);
                 if (!isInitialRender) {
