@@ -126,8 +126,10 @@ export function etsTransform() {
     afterBuildEnd() {
       if (projectConfig.compileHar) {
         incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
-          const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
-          writeFileSync(jsBuildFilePath, sourceCode);
+          if (fs.existsSync(jsCacheFilePath)) {
+            const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
+            writeFileSync(jsBuildFilePath, sourceCode);
+          }
         });
       }
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
