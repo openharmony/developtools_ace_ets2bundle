@@ -187,7 +187,8 @@
         "GridCol",
         "WaterFlow",
         "FlowItem",
-        "ImageSpan"
+        "ImageSpan",
+        "SecLocationButton"
       ],
       "extend": {
         "decorator": "Extend",
@@ -676,6 +677,11 @@
             "name": "ImageSpan",
             "type": "ImageSpanAttribute",
             "instance": "ImageSpanInstance"
+          },
+          {
+            "name": "SecLocationButton",
+            "type": "SecLocationButtonAttribute",
+            "instance": "SecLocationButtonInterface"
           }
         ]
       },
