@@ -79,7 +79,11 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
-    buildStart: judgeCacheShouldDisabled,
+    buildStart() {
+      judgeCacheShouldDisabled.call(this);
+      storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
+        this.cache.get('resourceToFileCacheInfo'));
+    },
     load(id: string) {
       let fileCacheInfo: fileInfo;
       if (this.cache.get('fileCacheInfo')) {
@@ -94,7 +98,8 @@ export function etsTransform() {
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
-      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
+      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) ||
+        storedFileInfo.shouldInvalidFiles.has(fileName);
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
@@ -131,8 +136,7 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
-      storedFileInfo.buildStart = false;
-      storedFileInfo.saveCacheFileInfo(this.cache);
+      storedFileInfo.clearCollectedInfo(this.cache);
     }
   };
 }
@@ -146,10 +150,14 @@ function disableNonEntryFileCache(filePath: string): boolean {
 
 function judgeCacheShouldDisabled(): void {
   for (const key in disableCacheOptions) {
-    if (!shouldDisableCache && this.cache.get('disableCacheOptions') && this.share &&
+    if (this.cache.get('disableCacheOptions') && this.share &&
       this.share.projectConfig && this.share.projectConfig[key] &&
       this.cache.get('disableCacheOptions')[key] !== this.share.projectConfig[key]) {
-      shouldDisableCache = true;
+      if (key === 'resourceTableHash') {
+        storedFileInfo.resourceTableChanged = true;
+      } else if (!shouldDisableCache) {
+        shouldDisableCache = true;
+      }
     }
     if (this.share && this.share.projectConfig && this.share.projectConfig[key]) {
       disableCacheOptions[key] = this.share.projectConfig[key];
