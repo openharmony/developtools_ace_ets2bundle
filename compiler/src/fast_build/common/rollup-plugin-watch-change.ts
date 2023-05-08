@@ -13,12 +13,18 @@
  * limitations under the License.
  */
 
+import path from 'path';
+
 import {
   shouldWriteChangedList,
   writeFileSync,
-  getHotReloadFiles
+  getHotReloadFiles,
+  storedFileInfo
 } from '../../utils';
-import { projectConfig } from '../../../main';
+import {
+  projectConfig,
+  readAppResource
+} from '../../../main';
 import {
   incrementWatchFile,
   hotReloadSupportFiles
@@ -43,6 +49,11 @@ export function watchChangeFiles() {
       }
       if (['create', 'delete'].includes(change.event)) {
         addFileToCache.call(this, 'watchRemovedFiles', id);
+      }
+      if (path.resolve(id) === path.resolve(process.env.appResource)) {
+        storedFileInfo.resourceTableChanged = true;
+        storedFileInfo.resourceList.clear();
+        readAppResource(process.env.appResource);
       }
     },
     beforeBuild() {
