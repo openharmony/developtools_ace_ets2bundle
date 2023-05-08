@@ -56,7 +56,7 @@ class ParentView extends ViewPU {
             const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, isLazyCreate);
+                ListItem.create(deepRenderFunction, isLazyCreate, 'true');
                 ListItem.width(200);
                 ListItem.height(100);
                 if (!isInitialRender) {
