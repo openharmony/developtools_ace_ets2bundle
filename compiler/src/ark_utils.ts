@@ -49,6 +49,7 @@ import {
   validateFilePathLength
 } from './utils';
 import {
+  extendSdkConfigs,
   projectConfig,
   sdkConfigPrefix
 } from '../main';
@@ -147,6 +148,16 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
   if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {
     return moduleRequest.replace(REG_SYSTEM_MODULE, (_, moduleType, systemKey) => {
       const systemModule: string = `${moduleType}.${systemKey}`;
+      if (extendSdkConfigs) {
+        for (let config of extendSdkConfigs.values()) {
+          if (config.prefix == '@arkui-x') {
+            continue;
+          }
+          if (moduleRequest.startsWith(config.prefix + '.')) {
+            return `${config.prefix}:${systemKey}`;
+          }
+        }
+      }
       if (NATIVE_MODULE.has(systemModule)) {
         return `@native:${systemModule}`;
       } else {
