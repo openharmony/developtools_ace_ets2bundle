@@ -143,7 +143,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
     faultHandler(`ArkTS:ERROR generateAot failed. AppAbc not found in "${appAbc}"`);
   }
   const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${builtinAbcPath}" ` +
-    `--aot-file="${appAot}" --target-triple=aarch64-unknown-linux-gnu `;
+    `--aot-file="${appAot}" --compiler-target-triple=aarch64-unknown-linux-gnu `;
   let singleCmd: string = "";
   if (projectConfig.anBuildMode === AOT_FULL) {
     singleCmd = singleCmdPrefix + ` "${appAbc}"`;
@@ -155,7 +155,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
     if (!fs.existsSync(profile)) {
       faultHandler(`ArkTS:ERROR generateAot failed. Partial mode lost profile in "${profile}"`);
     }
-    singleCmd = singleCmdPrefix + ` --enable-pgo-profiler=true --pgo-profiler-path="${profile}" "${appAbc}"`;
+    singleCmd = singleCmdPrefix + ` --enable-pgo-profiler=true --compiler-pgo-profiler-path="${profile}" "${appAbc}"`;
   } else {
     faultHandler(`ArkTS:ERROR generateAot failed. unknown anBuildMode: ${projectConfig.anBuildMode}`);
   }
