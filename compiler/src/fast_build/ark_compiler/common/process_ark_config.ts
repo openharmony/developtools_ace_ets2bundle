@@ -120,6 +120,11 @@ export function initArkProjectConfig(share: any) {
   arkProjectConfig.patchAbcPath = mainProjectConfig.patchAbcPath;
   arkProjectConfig.changedFileList = mainProjectConfig.changedFileList;
 
+  if(mainProjectConfig.es2abcCompileTsInAotMode || mainProjectConfig.es2abcCompileTsInNonAotMode) {
+    arkProjectConfig.pandaMode = mainProjectConfig.pandaMode;
+    arkProjectConfig.processTs = mainProjectConfig.processTs;
+  }
+
   return arkProjectConfig;
 }
 

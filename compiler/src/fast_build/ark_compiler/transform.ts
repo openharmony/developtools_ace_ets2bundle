@@ -39,7 +39,7 @@ export let newSourceMaps: Object = {};
 export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
-    if (isTsOrEtsSourceFile(id) && !isAotMode(projectConfig)) {
+    if (isTsOrEtsSourceFile(id) && !projectConfig.processTs) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
       ModuleSourceFile.newSourceFile(id, code);
     }
