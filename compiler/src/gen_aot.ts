@@ -25,7 +25,8 @@ import {
   AOT_FULL,
   AOT_TYPE,
   AOT_PARTIAL,
-  AOT_PROFILE_SUFFIX
+  AOT_PROFILE_SUFFIX,
+  TS2ABC
 } from './pre_define';
 import {
   isWindows,
@@ -187,7 +188,7 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
 }
 
 export function generateBuiltinAbc(arkDir: string, abcArgs: string[], cachePath: string,
-  logger: any, faultHandler: FaultHandler): string {
+  logger: any, faultHandler: FaultHandler, pandaMode: string | undefined): string {
   const builtinFilePath: string = path.join(getArkBuildDir(arkDir), "aot", "src", "lib_ark_builtins.d.ts");
   const builtinAbcPath: string = path.join(cachePath, TEMPORARY, "aot", "lib_ark_builtins.d.abc");
   if (fs.existsSync(builtinAbcPath)) {
@@ -199,7 +200,12 @@ export function generateBuiltinAbc(arkDir: string, abcArgs: string[], cachePath:
     faultHandler(`ArkTS:ERROR generateBuiltinAbc failed. Invalid file path.`);
   }
   const tempAbcArgs: string[] = abcArgs.slice(0);
-  let singleCmd: string = `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
+  let singleCmd: string;
+  if (pandaMode === TS2ABC) {
+    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
+  } else {
+    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" --type-dts-builtin --type-extractor --module --merge-abc --output "${builtinAbcPath}"`;
+  }
   try {
     logger.debug(`generateBuiltinAbc cmd: ${singleCmd}`);
     childProcess.execSync(singleCmd, { windowsHide: true });

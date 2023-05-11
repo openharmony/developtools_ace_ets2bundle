@@ -1349,7 +1349,7 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
           let faultHandler: FaultHandler = (error) => { logger.error(error); process.exit(FAIL); }
           let abcArgs: string[] = initAbcEnv();
           abcArgs.unshift(nodeJs);
-          const builtinAbcPath: string = generateBuiltinAbc(arkDir, abcArgs, process.env.cachePath, logger, faultHandler);
+          const builtinAbcPath: string = generateBuiltinAbc(arkDir, abcArgs, process.env.cachePath, logger, faultHandler, projectConfig.pandaMode);
           generateAot(arkDir, builtinAbcPath, projectConfig, logger, faultHandler);
         }
       }
