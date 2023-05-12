@@ -27,7 +27,8 @@ const {
 } = require('../lib/validate_ui_syntax');
 const {
   componentInfo,
-  readFile
+  readFile,
+  storedFileInfo,
 } = require('../lib/utils');
 const { 
   BUILD_ON,
@@ -43,6 +44,7 @@ function expectActual(name, filePath) {
   const content = require(filePath);
   const source = content.source;
   process.env.compiler = BUILD_ON;
+  storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
   validateUISyntax(source, afterProcess.content, `${name}.ts`);
   const compilerOptions = ts.readConfigFile(

@@ -23,6 +23,7 @@ import {
 import {
   LogInfo,
   emitLogInfo,
+  storedFileInfo
 } from './utils';
 import { BUILD_ON } from './pre_define';
 import { parseVisual } from './process_visual';
@@ -35,6 +36,7 @@ import {
 function preProcess(source: string): string {
   process.env.compiler = BUILD_ON;
   if (/\.ets$/.test(this.resourcePath)) {
+    storedFileInfo.setCurrentArkTsFile();
     clearCollection();
     const result: ReplaceResult = sourceReplace(source, this.resourcePath);
     let newContent: string = result.content;

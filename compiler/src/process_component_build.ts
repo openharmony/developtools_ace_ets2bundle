@@ -127,11 +127,12 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  getObservedPropertyCollection
+  enumCollection,
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
-  createConditionParent
+  createConditionParent,
+  isRecycle,
 } from './process_custom_component';
 import {
   LogType,
@@ -150,6 +151,7 @@ import {
   builderTypeParameter
 } from './process_ui_syntax';
 import { props } from './compile_info';
+import { regularCollection } from './validate_ui_syntax';
 
 const checkComponents: Set<string> = new Set([
   "TextArea", "TextInput", "GridContainer"
@@ -610,6 +612,7 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined,
   isGlobalBuilder: boolean = false, isTransition: boolean = false): void {
   const newStatements: ts.Statement[] = [];
+  const immutableStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   processDebug(node, nameResult, newStatements);
@@ -629,14 +632,16 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
       }
     }
     if (etsComponentResult.hasAttr) {
-      bindComponentAttr(node, res.identifierNode, newStatements, log);
+      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
     }
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder, isTransition);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+      isTransition, undefined, immutableStatements);
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false);
   } else {
-    bindComponentAttr(node, res.identifierNode, newStatements, log);
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder, isTransition);
+    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+      isTransition, undefined, immutableStatements);
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -681,19 +686,20 @@ function processInnerCompStatements(
   node: ts.Statement,
   isGlobalBuilder: boolean = false,
   isTransition: boolean = false,
-  nameResult: NameResult = undefined
+  nameResult: NameResult = undefined,
+  immutableStatements: ts.Statement[] = null
 ): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
     innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder,
-      isTransition, nameResult));
+      isTransition, nameResult, immutableStatements));
   }
 }
 
 export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
   isGlobalBuilder: boolean = false, isTransition: boolean = false,
-  nameResult: NameResult = undefined): ts.Statement {
+  nameResult: NameResult = undefined, immutableStatements: ts.Statement[] = null): ts.Statement {
   const blockArr: ts.Node[] = [
     createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
     ...innerStatements
@@ -702,7 +708,7 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
     blockArr.push(processDebug(node, nameResult, innerStatements, true));
   }
   if (!isTransition) {
-    blockArr.push(createInitRenderStatement(node));
+    blockArr.push(createInitRenderStatement(node, immutableStatements));
   }
   blockArr.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   return ts.factory.createExpressionStatement(
@@ -737,7 +743,8 @@ function createViewStackProcessorStatement(propertyAccessName: string, elmtId?: 
   );
 }
 
-function createInitRenderStatement(node: ts.Statement): ts.Statement {
+function createInitRenderStatement(node: ts.Statement,
+  immutableStatements: ts.Statement[] = null): ts.Statement {
   return ts.factory.createIfStatement(
     ts.factory.createPrefixUnaryExpression(
       ts.SyntaxKind.ExclamationToken,
@@ -749,13 +756,16 @@ function createInitRenderStatement(node: ts.Statement): ts.Statement {
           createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
       ],
       true
-    )
+    ),
+    immutableStatements && immutableStatements.length ?
+      ts.factory.createBlock(immutableStatements, true) : undefined
   );
 }
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
   log: LogInfo[], isGlobalBuilder: boolean = false): void {
   const itemRenderInnerStatements: ts.Statement[] = [];
+  const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
@@ -763,15 +773,16 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (etsComponentResult.hasAttr) {
-      bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+      bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
     }
     processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, undefined, undefined, isGlobalBuilder, false);
   } else {
-    bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log);
+    bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
   }
   innerCompStatements.push(createItemBlock(
-    node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements));
+    node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
+      immutableStatements));
 }
 
 function createItemCreate(nameResult: NameResult): ts.Statement {
@@ -786,12 +797,13 @@ function createItemBlock(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
   deepItemRenderInnerStatements: ts.Statement[],
-  nameResult: NameResult, innerCompStatements: ts.Statement[]
+  nameResult: NameResult, innerCompStatements: ts.Statement[],
+  immutableStatements: ts.Statement[]
 ): ts.Block {
   return ts.factory.createBlock(
     [
       createIsLazyCreate(node),
-      createItemCreation(node, itemRenderInnerStatements, nameResult),
+      createItemCreation(node, itemRenderInnerStatements, nameResult, immutableStatements),
       createObservedShallowRender(node, itemRenderInnerStatements, nameResult, innerCompStatements),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
@@ -863,7 +875,8 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
 function createItemCreation(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
-  nameResult: NameResult
+  nameResult: NameResult,
+  immutableStatements: ts.Statement[]
 ): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
@@ -891,7 +904,9 @@ function createItemCreation(
                 ts.factory.createBlock(
                   [createComponent(node, COMPONENT_POP_FUNCTION).newNode],
                   true
-                )
+                ),
+                immutableStatements && immutableStatements.length ?
+                  ts.factory.createBlock(immutableStatements, true) : undefined
               ),
               createViewStackProcessorStatement(STOPGETACCESSRECORDING)
             ],
@@ -1033,6 +1048,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
       ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)), undefined, []));
   const tabAttrs: ts.Statement[] = [];
+  const immutableStatements: ts.Statement[] = [];
   if (TabContentBody && TabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
     processComponentChild(TabContentBody, newTabContentChildren, log);
@@ -1042,16 +1058,18 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
       undefined, [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock([...newTabContentChildren], true))]));
-    bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log);
+    bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
-      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false, nameResult);
+      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
+      nameResult, immutableStatements);
   } else {
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
-    bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log);
+    bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
-      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false, nameResult);
+      innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
+      nameResult, immutableStatements);
   }
   innerCompStatements.push(tabContentPop);
 }
@@ -1558,15 +1576,24 @@ function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
 
 interface AnimationInfo {
   statement: ts.Statement,
-  kind: boolean
+  kind: boolean,
+  hasAnimationAttr: boolean,
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
-  isStylesAttr: boolean = false): void {
+  isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
+  isStyleFunction: boolean = false): void {
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
-  const lastStatement: AnimationInfo = { statement: null, kind: false };
+  const immutableStatements: ts.Statement[] = [];
+  const updateStatements: ts.Statement[] = [];
+  const lastStatement: AnimationInfo = {
+    statement: null,
+    kind: false,
+    hasAnimationAttr: false,
+  };
+  const isRecycleComponent: boolean = isRecycle(componentCollection.currentClassName);
   if (ts.isPropertyAccessExpression(temp)) {
     log.push({
       type: LogType.ERROR,
@@ -1600,7 +1627,8 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       temp.expression.name && ts.isIdentifier(temp.expression.name) &&
       !componentCollection.customComponents.has(temp.expression.name.getText())) {
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
-        isStylesAttr);
+        isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
+        isRecycleComponent, isStyleFunction);
       temp = temp.expression.expression;
       flag = true;
     } else if (ts.isIdentifier(temp.expression)) {
@@ -1608,7 +1636,8 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
         !GESTURE_TYPE_NAMES.has(temp.expression.getText()) &&
         !componentCollection.customComponents.has(temp.expression.getText())) {
         addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
-          isStylesAttr);
+          isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
+          isRecycleComponent, isStyleFunction);
       }
       break;
     }
@@ -1619,8 +1648,17 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (lastStatement.statement && lastStatement.kind) {
     statements.push(lastStatement.statement);
   }
-  if (statements.length) {
-    reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
+  if (!isRecycleComponent || lastStatement.hasAnimationAttr) {
+    if (statements.length) {
+      reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
+    }
+  } else {
+    if (updateStatements.length) {
+      reverse ? newStatements.push(...updateStatements.reverse()) : newStatements.push(...updateStatements);
+    }
+    if (newImmutableStatements && immutableStatements.length) {
+      reverse ? newImmutableStatements.push(...immutableStatements.reverse()) : newImmutableStatements.push(...immutableStatements);
+    }
   }
 }
 
@@ -1936,7 +1974,9 @@ function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
 
 function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
-  isStylesAttr: boolean): void {
+  isStylesAttr: boolean, immutableStatements: ts.Statement[], updateStatements: ts.Statement[],
+  newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false,
+  isStyleFunction: boolean = false): void {
   const propName: string = node.getText();
   verifyComponentId(temp, node, propName, log);
   if (propName === ATTRIBUTE_ANIMATION) {
@@ -1955,8 +1995,9 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     lastStatement.statement = ts.factory.createExpressionStatement(createFunction(
       ts.factory.createIdentifier(GLOBAL_CONTEXT), node, temp.arguments));
     lastStatement.kind = false;
+    lastStatement.hasAnimationAttr = true;
   } else if (GESTURE_ATTRS.has(propName)) {
-    parseGesture(temp, propName, statements, log);
+    parseGesture(temp, propName, statements, log, updateStatements);
     lastStatement.kind = true;
   } else if (isExtendFunctionNode(identifierNode, propName)) {
     if (newsupplement.isAcceleratePreview) {
@@ -1966,14 +2007,20 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         pos: temp.getStart()
       });
     }
-    statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    const extendNode: ts.Statement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createIdentifier(`__${identifierNode.escapedText.toString()}__${propName}`),
-      undefined, temp.arguments)));
+      undefined, temp.arguments));
+    statements.push(extendNode);
+    updateStatements.push(extendNode);
     lastStatement.kind = true;
   } else if (propName === ATTRIBUTE_STATESTYLES) {
     if (temp.arguments.length === 1 && ts.isObjectLiteralExpression(temp.arguments[0])) {
       statements.push(createViewStackProcessor(temp, true));
-      traverseStateStylesAttr(temp, statements, identifierNode, log);
+      if (isRecycleComponent) {
+        updateStatements.push(createViewStackProcessor(temp, true));
+      }
+      traverseStateStylesAttr(temp, statements, identifierNode, log, updateStatements,
+        newImmutableStatements, isRecycleComponent);
       lastStatement.kind = true;
     } else {
       validateStateStyleSyntax(temp, log);
@@ -1982,13 +2029,19 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     const styleBlock: ts.Block =
         INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
     bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
-      statements, log, false, true);
+      statements, log, false, true, newImmutableStatements);
+    if (isRecycleComponent) {
+      bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+        updateStatements, log, false, true, newImmutableStatements, true);
+    }
     lastStatement.kind = true;
   } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
     const argumentsArr: ts.Expression[] = [];
     classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode);
-    statements.push(ts.factory.createExpressionStatement(
-      createFunction(identifierNode, node, argumentsArr)));
+    const doubleDollarNode: ts.Statement = ts.factory.createExpressionStatement(
+      createFunction(identifierNode, node, argumentsArr));
+    statements.push(doubleDollarNode);
+    updateStatements.push(doubleDollarNode);
     lastStatement.kind = true;
   } else {
     if (isStylesAttr) {
@@ -1997,9 +2050,71 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       }
     }
     temp = loopEtscomponent(temp, isStylesAttr);
-    statements.push(ts.factory.createExpressionStatement(
-      createFunction(identifierNode, node, temp.arguments)));
+    const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
+      createFunction(identifierNode, node, temp.arguments));
+    statements.push(attrStatement);
+    if ((!isStylesAttr || isStyleFunction) && isRecycleComponent &&
+      filterRegularAttrNode(temp.arguments)) {
+      immutableStatements.push(attrStatement);
+    } else {
+      updateStatements.push(attrStatement);
+    }
     lastStatement.kind = true;
+  }
+}
+
+function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>) {
+  return argumentsNode.every((argument: ts.Expression) => {
+    return isRegularAttrNode(argument)
+  });
+}
+
+type AttrResult = { isRegularNode: boolean };
+function isRegularAttrNode(node: ts.Expression): boolean {
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.properties.every((propNode: ts.PropertyAssignment) => {
+      if (propNode.initializer) {
+        return isRegularAttrNode(propNode.initializer);
+      }
+      return false;
+    });
+  }
+  // literal e.g. 'hello', 1, true, false
+  if (ts.isStringLiteral(node) || ts.isNumericLiteral(node) ||
+    [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(node.kind)) {
+    return true;
+  }
+  // enum e.g. Color.Red
+  if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) &&
+    ts.isIdentifier(node.name)) {
+    if (enumCollection.has(node.expression.escapedText.toString())) {
+      return true;
+    }
+    if (globalProgram.checker) {
+      const type: ts.Type = globalProgram.checker.getTypeAtLocation(node);
+      /* Enum */
+      if (type.flags & (32 | 1024)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  // regular variable, e.g. this.regularValue
+  const result: AttrResult = { isRegularNode: false };
+  if (ts.isPropertyAccessExpression(node)) {
+    traversePropNode(node, result);
+  }
+  return result.isRegularNode || false;
+}
+
+function traversePropNode(node: ts.PropertyAccessExpression, result: AttrResult): void {
+  if (node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+    regularCollection.get(componentCollection.currentClassName).has(node.name.escapedText.toString())) {
+    result.isRegularNode = true;
+    return;
+  }
+  if (ts.isPropertyAccessExpression(node.expression)) {
+    traversePropNode(node.expression, result);
   }
 }
 
@@ -2101,31 +2216,50 @@ function createViewStackProcessor(item: any, endViewStack: boolean): ts.Expressi
 }
 
 function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
-  identifierNode: ts.Identifier, log: LogInfo[]): void {
+  identifierNode: ts.Identifier, log: LogInfo[], updateStatements: ts.Statement[],
+  newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false): void {
   temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
     if (ts.isPropertyAccessExpression(item.initializer) &&
       item.initializer.expression.getText() === THIS &&
       INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {
       const name: string = item.initializer.name.getText();
       bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
-        identifierNode, statements, log, false, true);
+        identifierNode, statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+          identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      }
     } else if (ts.isIdentifier(item.initializer) &&
       GLOBAL_STYLE_FUNCTION.get(item.initializer.getText())) {
       const name: string = item.initializer.getText();
       bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
-        identifierNode, statements, log, false, true);
+        identifierNode, statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+          identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      }
     } else if (ts.isObjectLiteralExpression(item.initializer) &&
       item.initializer.properties.length === 1 &&
       ts.isPropertyAssignment(item.initializer.properties[0])) {
       bindComponentAttr(ts.factory.createExpressionStatement(
-        item.initializer.properties[0].initializer), identifierNode, statements, log, false, true);
+        item.initializer.properties[0].initializer), identifierNode, statements, log, false, true,
+        newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(ts.factory.createExpressionStatement(
+          item.initializer.properties[0].initializer), identifierNode, updateStatements, log, false, true,
+          newImmutableStatements);
+      }
     } else {
       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
         validateStateStyleSyntax(temp, log);
       }
     }
     if (item.name) {
-      statements.push(createViewStackProcessor(item, false));
+      const viewNode: ts.Statement = createViewStackProcessor(item, false);
+      statements.push(viewNode);
+      if (isRecycleComponent) {
+        updateStatements.push(viewNode);
+      }
     }
   });
 }
@@ -2148,11 +2282,13 @@ const gestureMap: Map<string, string> = new Map([
 ]);
 
 function parseGesture(node: ts.CallExpression, propName: string, statements: ts.Statement[],
-  log: LogInfo[]): void {
-  statements.push(ts.factory.createExpressionStatement(
+  log: LogInfo[], updateStatements: ts.Statement[]): void {
+  const popNode: ts.Statement = ts.factory.createExpressionStatement(
     createFunction(ts.factory.createIdentifier(COMPONENT_GESTURE),
-      ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
-  parseGestureInterface(node, statements, log);
+      ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
+  statements.push(popNode);
+  updateStatements.push(popNode);
+  parseGestureInterface(node, statements, log, updateStatements);
   const argumentArr: ts.NodeArray<ts.PropertyAccessExpression> = ts.factory.createNodeArray(
     [ts.factory.createPropertyAccessExpression(
       ts.factory.createIdentifier(GESTURE_ENUM_KEY),
@@ -2164,13 +2300,15 @@ function parseGesture(node: ts.CallExpression, propName: string, statements: ts.
     // @ts-ignore
     argumentArr.push(node.arguments[1]);
   }
-  statements.push(ts.factory.createExpressionStatement(
+  const createNode: ts.Statement = ts.factory.createExpressionStatement(
     createFunction(ts.factory.createIdentifier(COMPONENT_GESTURE),
-      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), argumentArr)));
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), argumentArr));
+  statements.push(createNode);
+  updateStatements.push(createNode);
 }
 
 function processGestureType(node: ts.CallExpression, statements: ts.Statement[], log: LogInfo[],
-  reverse: boolean = false): void {
+  updateStatements: ts.Statement[], reverse: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const newNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(node);
   let temp: any = node.expression;
@@ -2183,7 +2321,7 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
       createFunction(temp, ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     if (temp.escapedText.toString() === COMPONENT_GESTURE_GROUP) {
       const gestureStatements: ts.Statement[] = [];
-      parseGestureInterface(temp.parent, gestureStatements, log, true);
+      parseGestureInterface(temp.parent, gestureStatements, log, updateStatements, true);
       newStatements.push(...gestureStatements.reverse());
       bindComponentAttr(newNode, temp, newStatements, log, false);
       let argumentArr: ts.NodeArray<ts.Expression> = null;
@@ -2201,15 +2339,16 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
   }
   if (newStatements.length) {
     reverse ? statements.push(...newStatements.reverse()) : statements.push(...newStatements);
+    reverse ? updateStatements.push(...newStatements.reverse()) : updateStatements.push(...newStatements);
   }
 }
 
 function parseGestureInterface(node: ts.CallExpression, statements: ts.Statement[], log: LogInfo[],
-  reverse: boolean = false): void {
+  updateStatements: ts.Statement[], reverse: boolean = false): void {
   if (node.arguments && node.arguments.length) {
     node.arguments.forEach((item: ts.Node) => {
       if (ts.isCallExpression(item)) {
-        processGestureType(item, statements, log, reverse);
+        processGestureType(item, statements, log, updateStatements, reverse);
       }
     });
   }

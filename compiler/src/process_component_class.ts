@@ -78,7 +78,11 @@ import {
   CREATE_LOCAL_STORAGE_PROP,
   COMPONENT_UPDATE_STATE_VARS,
   COMPONENT_WATCH_DECORATOR,
-  $$
+  $$,
+  COMPONENT_UPDATE_ELMT_ID,
+  OLD_ELMT_ID,
+  NEW_ELMT_ID,
+  UPDATE_RECYCLE_ELMT_ID,
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -106,7 +110,7 @@ import {
   stateObjectCollection,
   curPropMap,
   decoratorParamSet,
-  isSimpleType
+  isSimpleType,
 } from './process_component_member';
 import {
   processComponentBuild,
@@ -116,7 +120,8 @@ import {
   LogType,
   LogInfo,
   hasDecorator,
-  getPossibleBuilderTypeParameter
+  getPossibleBuilderTypeParameter,
+  storedFileInfo,
 } from './utils';
 import { partialUpdateConfig } from '../main';
 import { builderTypeParameter } from './process_ui_syntax';
@@ -212,6 +217,9 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   INTERFACE_NODE_SET.add(interfaceNode);
   validateBuildMethodCount(buildCount, parentComponentName, log);
   validateHasController(parentComponentName, checkController, log);
+  if (storedFileInfo.getCurrentArkTsFile().recycleComponents.has(parentComponentName.getText())) {
+    newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements, true));
+  }
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
@@ -620,16 +628,24 @@ function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclarati
       ts.factory.createBlock(statements, true));
 }
 
-function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDeclaration {
+function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
+  updateRecyle: boolean = false): ts.MethodDeclaration {
   const deleteStatements: ts.ExpressionStatement[] = [];
+  const updateStatements: ts.ExpressionStatement[] = [];
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
     if (!partialUpdateConfig.partialUpdateMode || statement.decorators) {
       paramsStatement = createParamsWithUnderlineStatement(name);
     }
+    if (partialUpdateConfig.partialUpdateMode && statement.decorators) {
+      updateStatements.push(createElmtIdWithUnderlineStatement(name));
+    }
     deleteStatements.push(paramsStatement);
   });
+  if (partialUpdateConfig.partialUpdateMode && updateRecyle) {
+    return createRecycleElmt(updateStatements);
+  }
   const defaultStatement: ts.ExpressionStatement =
     ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -652,12 +668,32 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[]): ts.MethodDec
   return deleteParamsMethod;
 }
 
+function createRecycleElmt(statements: ts.Statement[]): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+    ts.factory.createIdentifier(UPDATE_RECYCLE_ELMT_ID), undefined, undefined, [
+      ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createIdentifier(OLD_ELMT_ID)),
+      ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createIdentifier(NEW_ELMT_ID))
+    ], undefined, ts.factory.createBlock(statements, true));
+}
+
 function createParamsWithUnderlineStatement(name: ts.Identifier): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
         ts.factory.createIdentifier(`__${name.escapedText.toString()}`)),
       ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_DELETE_PARAMS)), undefined, []));
+}
+
+function createElmtIdWithUnderlineStatement(name: ts.Identifier): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
+      ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
+        ts.factory.createIdentifier(`__${name.escapedText.toString()}`)),
+      ts.factory.createIdentifier(COMPONENT_UPDATE_ELMT_ID)), undefined, [
+        ts.factory.createIdentifier(OLD_ELMT_ID), ts.factory.createIdentifier(NEW_ELMT_ID)
+      ]));
 }
 
 function createDeletedInternalStatement(): ts.ExpressionStatement {

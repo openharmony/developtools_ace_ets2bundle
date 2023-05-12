@@ -22,6 +22,7 @@ import {
   watchChecker
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
+import { setChecker } from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -65,6 +66,7 @@ export function etsChecker() {
       } else {
         serviceChecker(rootFileNames, logger, resolveModulePaths);
       }
+      setChecker();
     }
   };
 }

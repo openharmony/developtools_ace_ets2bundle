@@ -39,7 +39,8 @@ import {
   parseErrorMessage,
   genTemporaryPath,
   shouldWriteChangedList,
-  getHotReloadFiles
+  getHotReloadFiles,
+  setChecker,
 } from './utils';
 import {
   MODULE_ETS_PATH,
@@ -247,6 +248,7 @@ export class ResultStates {
       } else {
         serviceChecker(rootFileNames);
       }
+      setChecker();
     });
 
     compiler.hooks.watchRun.tap('WatchRun', (comp) => {
