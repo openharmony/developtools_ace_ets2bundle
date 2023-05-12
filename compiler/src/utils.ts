@@ -21,7 +21,8 @@ import uglifyJS from 'uglify-js';
 
 import {
   partialUpdateConfig,
-  projectConfig
+  projectConfig,
+  globalProgram
 } from '../main';
 import { createHash } from 'crypto';
 import {
@@ -633,6 +634,7 @@ class ProcessFileInfo {
   resourceList: Set<string> = new Set(); // Whole project resource
   shouldInvalidFiles: Set<string> = new Set();
   resourceTableChanged: boolean = false;
+  currentArkTsFile: SpecialArkTSFileInfo;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
@@ -751,6 +753,12 @@ class ProcessFileInfo {
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
   }
+  setCurrentArkTsFile(): void {
+    this.currentArkTsFile = new SpecialArkTSFileInfo();
+  }
+  getCurrentArkTsFile(): SpecialArkTSFileInfo {
+    return this.currentArkTsFile;
+  }
 }
 
 export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
@@ -782,14 +790,25 @@ class SpecialArkTSFileInfo extends TSFileInfo {
     hasEntry: false,
     fileToResourceList: new Set()
   }
-  constructor(cacheInfo: fileInfo) {
+  recycleComponents: Set<string> = new Set([]);
+
+  constructor(cacheInfo?: fileInfo) {
     super(cacheInfo, true);
     this.fileInfo = cacheInfo || this.fileInfo;
   }
+
   get hasEntry() {
     return this.fileInfo.hasEntry;
   }
   set hasEntry(value: boolean) {
     this.fileInfo.hasEntry = value;
+  }
+}
+
+export function setChecker(): void {
+  if (globalProgram.program) {
+    globalProgram.checker = globalProgram.program.getTypeChecker();
+  } else if (globalProgram.watchProgram) {
+    globalProgram.checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   }
 }

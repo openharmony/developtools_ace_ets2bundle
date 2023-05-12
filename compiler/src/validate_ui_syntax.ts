@@ -55,7 +55,8 @@ import {
   ESMODULE,
   CARD_ENABLE_DECORATORS,
   CARD_LOG_TYPE_DECORATORS,
-  JSBUNDLE
+  JSBUNDLE,
+  COMPONENT_DECORATOR_RECYCLE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -305,6 +306,10 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
           break;
         case COMPONENT_DECORATOR_CUSTOM_DIALOG:
           componentCollection.customDialogs.add(componentName);
+          hasComponentDecorator = true;
+          break;
+        case COMPONENT_DECORATOR_RECYCLE:
+          storedFileInfo.getCurrentArkTsFile().recycleComponents.add(componentName);
           hasComponentDecorator = true;
           break;
       }
