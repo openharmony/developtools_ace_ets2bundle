@@ -83,6 +83,7 @@ import {
   OLD_ELMT_ID,
   NEW_ELMT_ID,
   UPDATE_RECYCLE_ELMT_ID,
+  DECORATOR_TYPE_ANY
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -123,7 +124,10 @@ import {
   getPossibleBuilderTypeParameter,
   storedFileInfo,
 } from './utils';
-import { partialUpdateConfig } from '../main';
+import {
+  partialUpdateConfig,
+  globalProgram 
+} from '../main';
 import { builderTypeParameter } from './process_ui_syntax';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
@@ -813,7 +817,7 @@ function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogI
       break;
   }
   if (isCheckAny) {
-    checkAny(type, log);
+    isAnyType(type, log);
   }
   return newType;
 }
@@ -870,17 +874,32 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
       break;
   }
   if (isCheckAny) {
-    checkAny(type, log);
+    isAnyType(type, log);
   }
   return newType;
 }
 
 function checkAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
-  if (typeNode && typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
-    log.push({
-      type: LogType.WARN,
-      message: `Please define an explicit type, not any.`,
-      pos: typeNode.getStart()
-    });
+  log.push({
+    type: LogType.WARN,
+    message: `Please define an explicit type, not any.`,
+    pos: typeNode.getStart()
+  });
+}
+
+function isAnyType(typeNode: ts.TypeNode, log: LogInfo[]): void {
+  let value: string = '';
+  if (typeNode) {
+    if (typeNode.kind === ts.SyntaxKind.AnyKeyword && log) {
+      checkAny(typeNode, log);
+      return;
+    }
+    if (globalProgram.checker && globalProgram.checker.getTypeAtLocation(typeNode) &&
+      globalProgram.checker.getTypeAtLocation(typeNode).intrinsicName) {
+      value = globalProgram.checker.getTypeAtLocation(typeNode).intrinsicName;
+    }
+    if (value && value === DECORATOR_TYPE_ANY && log) {
+      checkAny(typeNode, log);
+    }
   }
 }
