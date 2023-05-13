@@ -23,7 +23,8 @@ const { getBabelOutputPlugin } = require('@rollup/plugin-babel');
 const {
   projectConfig,
   readAppResource,
-  getCleanConfig
+  getCleanConfig,
+  globalModulePaths
 } = require('./main');
 const {
   getEntryObj,
@@ -77,7 +78,7 @@ const config = {
         path.resolve(projectConfig.projectPath),
         path.resolve('node_modules'),
         path.resolve(__dirname, 'node_modules'),
-        path.resolve(__dirname, '../../api'),
+        ...globalModulePaths,
         projectConfig.aceModuleJsonPath ?
           ...getResolveModules(path.resolve(projectConfig.projectPath), false) :
           ...getResolveModules(path.resolve(projectConfig.projectPath), true)

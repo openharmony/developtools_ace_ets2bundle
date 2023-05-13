@@ -31,7 +31,8 @@ const {
   checkAppResourcePath,
   addSDKBuildDependencies,
   readPatchConfig,
-  getCleanConfig
+  getCleanConfig,
+  globalModulePaths
 } = require('./main');
 const { ResultStates } = require('./lib/compile_info');
 const { processUISyntax } = require('./lib/process_ui_syntax');
@@ -113,7 +114,7 @@ function initConfig(config) {
         projectPath,
         './node_modules',
         path.join(__dirname, 'node_modules'),
-        path.join(__dirname, '../../api')
+        ...globalModulePaths
       ]
     },
     stats: { preset: 'none' },

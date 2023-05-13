@@ -36,7 +36,7 @@ import {
   TS2ABC,
   ES2ABC,
   EXTNAME_PROTO_BIN,
-  NATIVE_MODULE,
+  NATIVE_MODULE
 } from './pre_define';
 import {
   isMac,
@@ -49,7 +49,8 @@ import {
   validateFilePathLength
 } from './utils';
 import {
-  projectConfig
+  projectConfig,
+  sdkConfigPrefix
 } from '../main';
 
 const red: string = '\u001b[31m';
@@ -140,7 +141,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
 export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
 {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
-  const REG_SYSTEM_MODULE: RegExp = /@(system|ohos|arkui\-x)\.(\S+)/;
+  const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
 
   if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {
