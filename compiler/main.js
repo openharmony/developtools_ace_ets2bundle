@@ -61,6 +61,11 @@ const resources = {
 };
 const systemModules = [];
 const abilityPagesFullPath = [];
+const globalModulePaths = [];
+let sdkConfigs = [];
+let defaultSdkConfigs = [];
+const extendSdkConfigs = [];
+let sdkConfigPrefix = 'ohos|system';
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
@@ -555,8 +560,34 @@ function filterWorker(workerPath) {
 ;(function readSystemModules() {
   const systemModulesPath = path.resolve(__dirname, '../../api');
   if (fs.existsSync(systemModulesPath)) {
+    globalModulePaths.push(systemModulesPath);
     systemModules.push(...fs.readdirSync(systemModulesPath));
+    defaultSdkConfigs = [
+      {
+        'apiPath': systemModulesPath,
+        'prefix': '@ohos'
+      }, {
+        'apiPath': systemModulesPath,
+        'prefix': '@system'
+      }
+    ];
   }
+  const externalApiPathStr = process.env.externalApiPaths || '';
+  const externalApiPaths = externalApiPathStr.split(path.delimiter);
+  externalApiPaths.forEach(sdkPath => {
+    const sdkConfigPath = path.resolve(sdkPath, 'sdkConfig.json');
+    if (fs.existsSync(sdkConfigPath)) {
+      const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, "utf-8"));
+      sdkConfig.apiPath = path.resolve(sdkPath, sdkConfig.apiPath);
+      if (fs.existsSync(sdkConfig.apiPath)) {
+        globalModulePaths.push(sdkConfig.apiPath);
+        systemModules.push(...fs.readdirSync(sdkConfig.apiPath));
+        sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
+        extendSdkConfigs.push(sdkConfig);
+      }
+    }
+  });
+  sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })()
 
 function readAppResource(filePath) {
@@ -764,3 +795,8 @@ exports.partialUpdateConfig = partialUpdateConfig;
 exports.readPatchConfig = readPatchConfig;
 exports.initBuildInfo = initBuildInfo;
 exports.getCleanConfig = getCleanConfig;
+exports.globalModulePaths = globalModulePaths;
+exports.defaultSdkConfigs = defaultSdkConfigs;
+exports.extendSdkConfigs = extendSdkConfigs;
+exports.sdkConfigs = sdkConfigs;
+exports.sdkConfigPrefix = sdkConfigPrefix;
