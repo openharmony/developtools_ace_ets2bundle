@@ -21,7 +21,9 @@ const fse = require('fs-extra');
 import {
   projectConfig,
   systemModules,
-  globalProgram
+  globalProgram,
+  sdkConfigs,
+  sdkConfigPrefix
 } from '../main';
 import {
   preprocessExtend,
@@ -430,11 +432,18 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         } else {
           resolvedModules.push(result.resolvedModule);
         }
-      } else if (/^@(system|ohos)\./i.test(moduleName.trim())) {
-        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-        if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
-          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-        } else {
+      } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
+        let apiFileExist: boolean = false;
+        for (let i = 0; i < sdkConfigs.length; i++) {
+          const sdkConfig = sdkConfigs[i];
+          const modulePath: string = path.resolve(sdkConfig.apiPath, moduleName + '.d.ts');
+          if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
+            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+            apiFileExist = true;
+            break;
+          }
+        }
+        if (!apiFileExist) {
           resolvedModules.push(null);
         }
       } else if (/\.ets$/.test(moduleName) && !/\.d\.ets$/.test(moduleName)) {
