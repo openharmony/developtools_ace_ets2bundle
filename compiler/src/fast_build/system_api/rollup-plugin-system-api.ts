@@ -16,16 +16,12 @@
 import MagicString from 'magic-string';
 import { createFilter } from '@rollup/pluginutils';
 import path from 'path';
-
-import {
-  NATIVE_MODULE,
-  SYSTEM_PLUGIN,
-  OHOS_PLUGIN,
-  ARKUI_X_PLUGIN
-} from '../../pre_define';
+import { NATIVE_MODULE } from '../../pre_define';
 import {
   systemModules,
-  projectConfig
+  projectConfig,
+  sdkConfigs,
+  sdkConfigPrefix
 } from '../../../main';
 
 import {
@@ -82,7 +78,7 @@ export function apiTransform() {
 function processSystemApi(content: string, sourcePath: string): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM: RegExp =
-    /import\s+(.+)\s+from\s+['"]@(system|ohos|arkui\-x)\.(\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos|arkui\-x)\.(\S+)['"]\s*\)/g;
+    new RegExp(`import\\s+(.+)\\s+from\\s+['"]@(${sdkConfigPrefix})\\.(\\S+)['"]|import\\s+(.+)\\s*=\\s*require\\(\\s*['"]@(${sdkConfigPrefix})\\.(\\S+)['"]\\s*\\)`, 'g');
   appImportModuleCollection.set(path.join(sourcePath), new Set());
   return content.replace(REG_SYSTEM, (item, item1, item2, item3, item4, item5, item6) => {
     const moduleType: string = item2 || item5;
@@ -93,11 +89,21 @@ function processSystemApi(content: string, sourcePath: string): string {
     checkModuleExist(systemModule, sourcePath);
     if (NATIVE_MODULE.has(systemModule)) {
       item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
-    } else if (moduleType === SYSTEM_PLUGIN || moduleType === OHOS_PLUGIN || moduleType === ARKUI_X_PLUGIN) {
+    } else if (checkModuleType(moduleType)) {
       item = `var ${systemValue} = globalThis.requireNapi('${systemKey}')`;
     }
     return item;
   });
+}
+
+function checkModuleType(moduleType: string): boolean {
+  for (let i = 0; i < sdkConfigs.length; i++) {
+    const config = sdkConfigs[i];
+    if (config.prefix === `@${moduleType}`) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function checkModuleExist(systemModule: string, sourcePath: string): void {
@@ -126,12 +132,12 @@ function processLibso(content: string, sourcePath: string, useOSFiles: Set<strin
 // Here keep tackling with this for compatibility concern.
 function processSystemApiAndLibso(content: string, sourcePath: string, useOSFiles: Set<string>): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
-  const REG_REQUIRE_SYSTEM: RegExp = /import\s+(.+)\s*=\s*require\(\s*['"]@(system|ohos|arkui\-x)\.(\S+)['"]\s*\)/g;
+  const REG_REQUIRE_SYSTEM: RegExp = new RegExp(`import\\s+(.+)\\s*=\\s*require\\(\\s*['"]@(${sdkConfigPrefix})\\.(\\S+)['"]\\s*\\)`, 'g');
   // Import libso should be recored in useOSFiles.
   const REG_LIB_SO: RegExp =
     /import\s+(.+)\s+from\s+['"]lib(\S+)\.so['"]|import\s+(.+)\s*=\s*require\(\s*['"]lib(\S+)\.so['"]\s*\)/g;
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
-  const REG_IMPORT_SYSTEM = /import\s+(.+)\s+from\s+['"]@(system|ohos|arkui\-x)\.(\S+)['"]/g;
+  const REG_IMPORT_SYSTEM = new RegExp(`import\\s+(.+)\\s+from\\s+['"]@(${sdkConfigPrefix})\\.(\\S+)['"]`, 'g');
   appImportModuleCollection.set(path.join(sourcePath), new Set());
   content.replace(REG_IMPORT_SYSTEM, (_, item1, item2, item3, item4, item5, item6) => {
     const moduleType: string = item2 || item5;

@@ -15,7 +15,8 @@
 
 import {
   readAppResource,
-  projectConfig
+  projectConfig,
+  globalModulePaths
 } from '../../../main';
 import {
   getEntryObj,
@@ -30,7 +31,8 @@ export function initConfig() {
   return {
     entryObj: projectConfig.entryObj,
     cardEntryObj: projectConfig.cardEntryObj,
-    workerFile: workerFile
+    workerFile: workerFile,
+    globalModulePaths: globalModulePaths
   };
 }
 
