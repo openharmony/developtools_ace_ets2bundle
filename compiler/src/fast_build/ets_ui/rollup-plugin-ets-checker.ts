@@ -48,7 +48,8 @@ export function etsChecker() {
         compileHar: projectConfig.compileHar,
         compileShared: projectConfig.compileShared,
         moduleRootPath: projectConfig.moduleRootPath,
-        buildPath: projectConfig.buildPath
+        buildPath: projectConfig.buildPath,
+        isCrossplatform: projectConfig.isCrossplatform
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];

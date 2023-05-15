@@ -66,6 +66,7 @@ let sdkConfigs = [];
 let defaultSdkConfigs = [];
 const extendSdkConfigs = [];
 let sdkConfigPrefix = 'ohos|system';
+let ohosSystemModulePaths = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
@@ -104,6 +105,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.packageManagerType = 'npm';
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
+  projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -561,7 +563,8 @@ function filterWorker(workerPath) {
   const systemModulesPath = path.resolve(__dirname, '../../api');
   if (fs.existsSync(systemModulesPath)) {
     globalModulePaths.push(systemModulesPath);
-    systemModules.push(...fs.readdirSync(systemModulesPath));
+    ohosSystemModulePaths = fs.readdirSync(systemModulesPath);
+    systemModules.push(...ohosSystemModulePaths);
     defaultSdkConfigs = [
       {
         'apiPath': systemModulesPath,
@@ -800,3 +803,4 @@ exports.defaultSdkConfigs = defaultSdkConfigs;
 exports.extendSdkConfigs = extendSdkConfigs;
 exports.sdkConfigs = sdkConfigs;
 exports.sdkConfigPrefix = sdkConfigPrefix;
+exports.ohosSystemModulePaths = ohosSystemModulePaths;
