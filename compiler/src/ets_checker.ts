@@ -23,7 +23,8 @@ import {
   systemModules,
   globalProgram,
   sdkConfigs,
-  sdkConfigPrefix
+  sdkConfigPrefix,
+  ohosSystemModulePaths
 } from '../main';
 import {
   preprocessExtend,
@@ -122,6 +123,51 @@ function setCompilerOptions(resolveModulePaths: string[]) {
   }
 }
 
+interface InitCheckConfig {
+  tagName: string;
+  message: string;
+  needConditionCheck: boolean;
+  type: ts.DiagnosticCategory;
+  specifyCheckConditionFuncName: string;
+  tagNameShouldExisted: boolean;
+}
+
+interface CheckJSDocTagNameConfig {
+  needCheck: boolean;
+  checkConfig: InitCheckConfig[];
+}
+
+function getInitCheckConfig(tagName: string, message: string): InitCheckConfig {
+  return {
+    tagName: tagName,
+    message: message,
+    needConditionCheck: false,
+    type: ts.DiagnosticCategory.Error,
+    specifyCheckConditionFuncName: '',
+    tagNameShouldExisted: true
+  };
+}
+
+function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): CheckJSDocTagNameConfig {
+  let needCheckResult: boolean = false;
+  const checkConfigArray: InitCheckConfig[] = [];
+  if (ohosSystemModulePaths.includes(sourceFileName) || isArkuiDependence(sourceFileName)) {
+    if (isArkuiDependence(sourceFileName) && isCardFile(fileName)) {
+      needCheckResult = true;
+      checkConfigArray.push(getInitCheckConfig('form', "'{0}' can't support form application."));
+    }
+    if (projectConfig.isCrossplatform) {
+      needCheckResult = true;
+      checkConfigArray.push(getInitCheckConfig('crossplatform', "'{0}' can't support crossplatform application."));
+    }
+  }
+
+  return {
+    needCheck: needCheckResult,
+    checkConfig: checkConfigArray
+  };
+}
+
 interface extendInfo {
   start: number,
   end: number,
@@ -158,23 +204,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
-    getTagNameNeededCheckByFile: (fileName, sourceFileName) => {
-      let needCheckResult: boolean = false;
-      if ((/compiler\/declarations/.test(sourceFileName) || /ets-loader\/declarations/.test(sourceFileName)) &&
-        isCardFile(fileName)) {
-        needCheckResult = true;
-      }
-      return {
-        needCheck: needCheckResult,
-        checkConfig: [{
-          tagName: "form",
-          message: "'{0}' can't support form application.",
-          needConditionCheck: false,
-          type: ts.DiagnosticCategory.Error,
-          specifyCheckConditionFuncName: '',
-          tagNameShouldExisted: true
-        }]
-      }
+    getTagNameNeededCheckByFile: (fileName: string, sourceFileName: string) => {
+      return getCheckJSDocTagNameConfig(fileName, sourceFileName);
     }
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
@@ -258,6 +289,10 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
       }
     });
   }
+}
+
+function isArkuiDependence(file: string): boolean {
+  return /compiler\/declarations/.test(file) || /ets-loader\/declarations/.test(file);
 }
 
 function isCardFile(file: string): boolean {
