@@ -71,6 +71,7 @@ export const SYNCHED_PROPERTY_SIMPLE_ONE_WAY: string = 'SynchedPropertySimpleOne
 export const SYNCHED_PROPERTY_SIMPLE_TWO_WAY: string = 'SynchedPropertySimpleTwoWay';
 export const SYNCHED_PROPERTY_OBJECT_TWO_WAY: string = 'SynchedPropertyObjectTwoWay';
 export const SYNCHED_PROPERTY_NESED_OBJECT: string = 'SynchedPropertyNesedObject';
+export const DECORATOR_TYPE_ANY: string = 'any';
 
 export const INITIALIZE_CONSUME_FUNCTION: string = 'initializeConsume';
 export const ADD_PROVIDED_VAR: string = 'addProvidedVar';
