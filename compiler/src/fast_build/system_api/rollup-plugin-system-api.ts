@@ -16,12 +16,13 @@
 import MagicString from 'magic-string';
 import { createFilter } from '@rollup/pluginutils';
 import path from 'path';
-import { NATIVE_MODULE } from '../../pre_define';
+import { NATIVE_MODULE, ARKUI_X_PLUGIN } from '../../pre_define';
 import {
   systemModules,
   projectConfig,
   sdkConfigs,
-  sdkConfigPrefix
+  sdkConfigPrefix,
+  extendSdkConfigs
 } from '../../../main';
 
 import {
@@ -87,13 +88,30 @@ function processSystemApi(content: string, sourcePath: string): string {
     const systemModule: string = `${moduleType}.${systemKey}`;
     appImportModuleCollection.get(path.join(sourcePath)).add(systemModule);
     checkModuleExist(systemModule, sourcePath);
+    const externalModuleParam: string = isExtendModuleType(moduleType) &&
+      moduleType !== ARKUI_X_PLUGIN ? `, false, '', '${moduleType}'` : ``;
     if (NATIVE_MODULE.has(systemModule)) {
       item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
     } else if (checkModuleType(moduleType)) {
-      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}')`;
+      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}'${externalModuleParam})`;
     }
     return item;
   });
+}
+
+interface SdkConfig {
+  apiPath: string;
+  prefix: string;
+}
+
+function isExtendModuleType(moduleType: string): boolean {
+  for (let i = 0; i < extendSdkConfigs.length; i++) {
+    const config: SdkConfig = extendSdkConfigs[i];
+    if (config.prefix === `@${moduleType}`) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function checkModuleType(moduleType: string): boolean {
