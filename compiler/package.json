@@ -54,7 +54,7 @@
     "rollup-plugin-delete": "^2.0.0",
     "ts-loader": "^8.0.12",
     "typescript": "file:./deps/ohos-typescript-4.2.3-r2.tgz",
-    "webpack": "^5.70.0",
+    "webpack": "5.72.1",
     "webpack-cli": "^4.6.0",
     "ws": "^8.3.0"
   }
