@@ -14,6 +14,7 @@
  */
 
 import ts from 'typescript';
+import { cloneDeep } from 'lodash';
 
 import {
   COMPONENT_NON_DECORATOR,
@@ -349,6 +350,16 @@ function createNewComponent(newNode: ts.NewExpression): ts.Statement {
 
 function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
   name: string): ts.Statement {
+  let argNode: ts.Expression[];
+  if (componentNode.arguments && componentNode.arguments.length) {
+    argNode = cloneDeep(componentNode.arguments);
+  } else {
+    argNode = [ts.factory.createObjectLiteralExpression([], false)];
+  }
+  let recycleNode: ts.CallExpression = ts.factory.createCallExpression(
+    createRecyclePropertyNode(), undefined, argNode);
+  // @ts-ignore
+  argNode[0].parent = recycleNode;
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -379,13 +390,7 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
                 ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
                 ts.factory.createStringLiteral(FUNCTION)
                 )),
-              ts.factory.createBlock([
-                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                  createRecyclePropertyNode(), undefined,
-                  componentNode.arguments && componentNode.arguments.length ? componentNode.arguments :
-                    [ts.factory.createObjectLiteralExpression([], false)]
-                ))
-              ], true)),
+              ts.factory.createBlock([ts.factory.createExpressionStatement(recycleNode)], true)),
             ts.factory.createExpressionStatement(ts.factory.createCallExpression(
               ts.factory.createPropertyAccessExpression(
                 ts.factory.createIdentifier(RECYCLE_NODE),
