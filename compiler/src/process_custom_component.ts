@@ -52,7 +52,8 @@ import {
   RECYCLE_NODE,
   ON_RECYCLE,
   COMPONENT_RERENDER_FUNCTION,
-  OBSERVE_RECYCLE_COMPONENT_CREATION
+  OBSERVE_RECYCLE_COMPONENT_CREATION,
+  FUNCTION,
 } from './pre_define';
 import {
   propertyCollection,
@@ -289,7 +290,8 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
               ), undefined,
               [ts.factory.createIdentifier(ELMTID)]
             )),
-          createIfCustomComponent(newNode, componentParameter, name, isGlobalBuilder, isRecycleComponent),
+          createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
+            isRecycleComponent),
           ts.factory.createExpressionStatement(ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(
               ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
@@ -316,13 +318,15 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
     ], true);
 }
 
-function createIfCustomComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression,
-  name: string, isGlobalBuilder: boolean = false, isRecycleComponent: boolean = false): ts.IfStatement {
+function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
+  componentParameter: ts.ObjectLiteralExpression, name: string, isGlobalBuilder: boolean = false,
+  isRecycleComponent: boolean = false): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [
-        isRecycleComponent ? createNewRecycleComponent(newNode, name) : createNewComponent(newNode)
+        isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name) :
+          createNewComponent(newNode)
       ], true),
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -343,7 +347,8 @@ function createNewComponent(newNode: ts.NewExpression): ts.Statement {
       ), undefined, [newNode]))
 }
 
-function createNewRecycleComponent(newNode: ts.NewExpression, name: string): ts.Statement {
+function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
+  name: string): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -367,12 +372,20 @@ function createNewRecycleComponent(newNode: ts.NewExpression, name: string): ts.
         ts.factory.createArrowFunction(undefined, undefined, [], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
           ts.factory.createBlock([
-            ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(RECYCLE_NODE),
-                ts.factory.createIdentifier(ON_RECYCLE),
-              ), undefined, newNode.arguments
-            )),
+            ts.factory.createIfStatement(ts.factory.createBinaryExpression(
+              createRecyclePropertyNode(), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+              ts.factory.createBinaryExpression(
+                ts.factory.createTypeOfExpression(createRecyclePropertyNode()),
+                ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                ts.factory.createStringLiteral(FUNCTION)
+                )),
+              ts.factory.createBlock([
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                  createRecyclePropertyNode(), undefined,
+                  componentNode.arguments && componentNode.arguments.length ? componentNode.arguments :
+                    [ts.factory.createObjectLiteralExpression([], false)]
+                ))
+              ], true)),
             ts.factory.createExpressionStatement(ts.factory.createCallExpression(
               ts.factory.createPropertyAccessExpression(
                 ts.factory.createIdentifier(RECYCLE_NODE),
@@ -381,6 +394,11 @@ function createNewRecycleComponent(newNode: ts.NewExpression, name: string): ts.
             )),
           ], true))
       ]))
+}
+
+function createRecyclePropertyNode(): ts.PropertyAccessExpression {
+  return ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(RECYCLE_NODE), ts.factory.createIdentifier(ON_RECYCLE));
 }
 
 function validateCustomComponentPrams(node: ts.CallExpression, name: string,
