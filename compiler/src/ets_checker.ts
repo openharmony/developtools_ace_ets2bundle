@@ -60,8 +60,8 @@ import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
-function collectSourceFilesMap(program: ts.Program) {
-  program.getSourceFiles().forEach(sourceFile => {
+function collectSourceFilesMap(program: ts.Program): void {
+  program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
     SOURCE_FILES.set(path.normalize(sourceFile.fileName), sourceFile);
   });
 }
