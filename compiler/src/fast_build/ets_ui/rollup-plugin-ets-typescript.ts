@@ -229,13 +229,15 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    // init TypeChecker to run binding
+    tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
   }
 
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
 
-  validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
+  validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
 
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
@@ -264,11 +266,11 @@ async function transform(code: string, id: string) {
   };
 }
 
-function validateEts(code: string, id: string, isEntry: boolean, logger: any) {
+function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile) {
   if (/\.ets$/.test(id)) {
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(path.resolve(id).toLowerCase()) ? '?entry' : '';
-    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery);
+    const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length) {
       emitLogInfo(logger, log, true, id);
     }

@@ -62,6 +62,14 @@ import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 
+export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
+
+function collectSourceFilesMap(program: ts.Program): void {
+  program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
+    SOURCE_FILES.set(path.normalize(sourceFile.fileName), sourceFile);
+  });
+}
+
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
   fs.readdirSync(path.resolve(__dirname, '../declarations'))
@@ -258,6 +266,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     languageService = createLanguageService(filterFiles, resolveModulePaths);
   }
   globalProgram.program = languageService.getProgram();
+  collectSourceFilesMap(globalProgram.program);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
     .getSyntacticDiagnostics()
     .concat(globalProgram.program.getSemanticDiagnostics())
