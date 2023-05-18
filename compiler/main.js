@@ -654,7 +654,7 @@ function loadModuleInfo(projectConfig, envArgs) {
       logger.error(error);
       process.exit(FAIL);
     }
-    projectConfig.es2abcCompileTsInAotMode = false;
+    projectConfig.es2abcCompileTsInAotMode = true;
     projectConfig.es2abcCompileTsInNonAotMode = false;
     const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
     if (checkAotConfig(compileMode, buildJsonInfo, faultHandler)) {
