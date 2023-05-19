@@ -90,7 +90,9 @@ function setCompilerOptions(resolveModulePaths: string[]) {
   const basePath: string = path.resolve(projectConfig.projectPath);
   if (process.env.compileTool === 'rollup' && resolveModulePaths && resolveModulePaths.length) {
     resolveModulePaths.forEach((item: string) => {
-      allPath.push(path.join(path.relative(basePath, item), '*'));
+      if (!(/oh_modules$/.test(item) || /node_modules$/.test(item))) {
+        allPath.push(path.join(path.relative(basePath, item), '*'));
+      }
     });
   } else {
     if (!projectConfig.aceModuleJsonPath) {
