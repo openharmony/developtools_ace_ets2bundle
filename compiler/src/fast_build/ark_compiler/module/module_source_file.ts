@@ -100,8 +100,9 @@ export class ModuleSourceFile {
   private processJsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]/g;
-    this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, moduleRequest) => {
+    const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]|(?:import)(?:\s*)\(['"]([^'"]+)['"]\)/g;
+    this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, staticModuleRequest, dynamicModuleRequest) => {
+      const moduleRequest: string = staticModuleRequest || dynamicModuleRequest;
       const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
       if (ohmUrl !== undefined) {
         item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
@@ -121,14 +122,16 @@ export class ModuleSourceFile {
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
                                ROLLUP_DYNAMICIMPORT_NODE);
 
-    for (let node of moduleNodeMap.values()) {
-      if (node.source && node.source.type === ROLLUP_LITERAL_NODE) {
-        const ohmUrl: string | undefined =
-          this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
-        if (ohmUrl !== undefined) {
-          code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
+    for (let nodeSet of moduleNodeMap.values()) {
+      nodeSet.forEach(node => {
+        if (node.source && node.source.type === ROLLUP_LITERAL_NODE) {
+          const ohmUrl: string | undefined =
+            this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+          if (ohmUrl !== undefined) {
+            code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
+          }
         }
-      }
+      });
     }
 
     this.source = code.toString();
