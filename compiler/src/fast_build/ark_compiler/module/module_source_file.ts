@@ -34,6 +34,8 @@ import {
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
+const ROLLUP_DYNAMICIMPORT_NODE: string = 'ImportExpression';
+const ROLLUP_LITERAL_NODE: string = 'Literal';
 
 export class ModuleSourceFile {
   private static sourceFiles: ModuleSourceFile[] = [];
@@ -115,16 +117,20 @@ export class ModuleSourceFile {
     const importMap: any = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
     const ast = moduleInfo.ast;
-    ast.body.forEach(node => {
-      if (node.type === ROLLUP_IMPORT_NODE || (node.type === ROLLUP_EXPORTNAME_NODE && node.source) ||
-          node.type === ROLLUP_EXPORTALL_NODE) {
+    const moduleNodeMap: Map<string, any> =
+      moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
+                               ROLLUP_DYNAMICIMPORT_NODE);
+
+    for (let node of moduleNodeMap.values()) {
+      if (node.source && node.source.type === ROLLUP_LITERAL_NODE) {
         const ohmUrl: string | undefined =
           this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
         if (ohmUrl !== undefined) {
           code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
         }
       }
-    });
+    }
+
     this.source = code.toString();
   }
 
