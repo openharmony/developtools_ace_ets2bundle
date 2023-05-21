@@ -622,7 +622,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
         obj[resourceData[1]] = Number(resourceData[2]);
         resourceMap.set(resourceData[0], obj);
       }
-      if (process.env.compileTool === 'rollup') {
+      if (process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
         storedFileInfo.updateResourceList(resourceData[0] + '_' + resourceData[1]);
       }
     } else {
