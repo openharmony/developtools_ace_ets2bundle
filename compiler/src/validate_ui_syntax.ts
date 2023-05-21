@@ -56,7 +56,10 @@ import {
   CARD_ENABLE_DECORATORS,
   CARD_LOG_TYPE_DECORATORS,
   JSBUNDLE,
-  COMPONENT_DECORATOR_RECYCLE
+  COMPONENT_DECORATOR_RECYCLE,
+  STRUCT_DECORATORS,
+  STRUCT_CONTEXT_METHOD_DECORATORS,
+  CHECK_COMPONENT_EXTEND_DECORATOR,
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -375,12 +378,13 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false);
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
-  log: LogInfo[]) {
+  log: LogInfo[], structContext: boolean) {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+    structContext = true;
     collectComponentProps(node);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
@@ -410,7 +414,40 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
   }
-  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log));
+  if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
+    (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
+    const decoratorName: string = node.escapedText.toString();
+    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName);
+    validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
+  }
+  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
+    log, structContext));
+  structContext = false;
+}
+
+function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
+  structContext: boolean, decoratorName: string): void {
+  if (!structContext && STRUCT_DECORATORS.has(`@${decoratorName}`)) {
+    const message: string = `The '@${decoratorName}' decorator can only be used with 'struct'.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  }
+}
+
+function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
+  structContext: boolean, decoratorName: string): void {
+  let message: string;
+  if (ts.isMethodDeclaration(node.parent.parent) ||
+    (ts.isDecorator(node.parent.parent) && ts.isMethodDeclaration(node.parent.parent.parent))) {
+    if (!structContext && STRUCT_CONTEXT_METHOD_DECORATORS.has(`@${decoratorName}`)) {
+      message = `The '@${decoratorName}' decorator can only be used in 'struct'.`;
+    }
+    if (decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) {
+      message = `The '@${decoratorName}' decorator can not be a member property method of a 'class' or 'struct'.`;
+    }
+    if (message) {
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    }
+  }
 }
 
 export function checkAllNode(
