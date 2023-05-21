@@ -311,11 +311,11 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-          isRecycleComponent ?
-            ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
-            ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-          ),
-          undefined, observeArgArr))
+        isRecycleComponent ?
+          ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
+          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+        ),
+        undefined, observeArgArr))
     ], true);
 }
 
@@ -345,7 +345,7 @@ function createNewComponent(newNode: ts.NewExpression): ts.Statement {
       ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
-      ), undefined, [newNode]))
+      ), undefined, [newNode]));
 }
 
 function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
@@ -429,7 +429,9 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
-  validateInitDecorator(node, name, curChildProps, log);
+  if (!storedFileInfo.getCurrentArkTsFile().compFromDETS.has(name)) {
+    validateInitDecorator(node, name, curChildProps, log);
+  }
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
