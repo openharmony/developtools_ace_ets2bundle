@@ -297,6 +297,7 @@ function clearCollection(): void {
   CUSTOM_BUILDER_METHOD.clear();
   GLOBAL_CUSTOM_BUILDER_METHOD.clear();
   INNER_CUSTOM_BUILDER_METHOD.clear();
+  storedFileInfo.getCurrentArkTsFile().compFromDETS.clear();
 }
 
 function resetCollection() {
