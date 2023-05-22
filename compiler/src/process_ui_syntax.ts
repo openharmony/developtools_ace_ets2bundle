@@ -613,7 +613,7 @@ function isDollarNode(node: ts.ExpressionStatement, componentName: string): bool
     innerNode = innerNode.expression;
   }
   let changedIdentifier: string = '$';
-  if (process.env.compileTool === 'rollup') {
+  if (process.env.compileTool === 'rollup' && storedFileInfo.reUseProgram) {
     changedIdentifier = `${componentName}Instance`;
   }
   if (ts.isIdentifier(innerNode) && innerNode.getText() === changedIdentifier) {
