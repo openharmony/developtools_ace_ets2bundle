@@ -81,8 +81,10 @@ export function etsTransform() {
     transform: transform,
     buildStart() {
       judgeCacheShouldDisabled.call(this);
-      storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
-        this.cache.get('resourceToFileCacheInfo'));
+      if (process.env.compileMode === 'moduleJson') {
+        storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
+          this.cache.get('resourceToFileCacheInfo'));
+      }
     },
     load(id: string) {
       let fileCacheInfo: fileInfo;
@@ -99,8 +101,10 @@ export function etsTransform() {
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
-      const shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) ||
-        storedFileInfo.shouldInvalidFiles.has(fileName);
+      let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
+      if (process.env.compileMode === 'moduleJson') {
+        shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName);
+      }
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
@@ -156,7 +160,7 @@ function judgeCacheShouldDisabled(): void {
     if (this.cache.get('disableCacheOptions') && this.share &&
       this.share.projectConfig && this.share.projectConfig[key] &&
       this.cache.get('disableCacheOptions')[key] !== this.share.projectConfig[key]) {
-      if (key === 'resourceTableHash') {
+      if (key === 'resourceTableHash' && process.env.compileMode === 'moduleJson') {
         storedFileInfo.resourceTableChanged = true;
       } else if (!shouldDisableCache) {
         shouldDisableCache = true;
