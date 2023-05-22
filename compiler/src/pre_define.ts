@@ -223,6 +223,8 @@ export const RESOURCE_TYPE = {
 export const WORKERS_DIR: string = 'workers';
 export const WORKER_OBJECT: string = 'Worker';
 
+export const TEST_RUNNER_DIR_SET: Set<string> = new Set(['TestRunner', 'testrunner']);
+
 export const SET_CONTROLLER_METHOD: string = 'setController';
 export const SET_CONTROLLER_CTR: string = 'ctr';
 export const SET_CONTROLLER_CTR_TYPE: string = 'CustomDialogController';
