@@ -50,7 +50,7 @@ export function watchChangeFiles() {
       if (['create', 'delete'].includes(change.event)) {
         addFileToCache.call(this, 'watchRemovedFiles', id);
       }
-      if (path.resolve(id) === path.resolve(process.env.appResource)) {
+      if (path.resolve(id) === path.resolve(process.env.appResource) && process.env.compileMode === 'moduleJson') {
         storedFileInfo.resourceTableChanged = true;
         storedFileInfo.resourceList.clear();
         readAppResource(process.env.appResource);
