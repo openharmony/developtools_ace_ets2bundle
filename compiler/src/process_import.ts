@@ -60,7 +60,8 @@ import {
   hasDecorator,
   LogInfo,
   LogType,
-  repeatLog
+  repeatLog,
+  storedFileInfo
 } from './utils';
 import { projectConfig } from '../main';
 import {
@@ -128,7 +129,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
         IMPORT_FILE_ASTCACHE[fileResolvePath] = sourceFile;
       }
       visitAllNode(sourceFile, sourceFile, defaultName, asName, path.dirname(fileResolvePath), log,
-        new Set(), new Set(), new Set(), new Map(), pathCollection, fileResolvePath);
+        new Set(), new Set(), new Set(), new Map(), pathCollection, fileResolvePath, /\.d\.ets$/.test(fileResolvePath));
     }
   } catch (e) {
     // ignore
@@ -145,7 +146,7 @@ export function generateSourceFileAST(fileResolvePath: string, filePath: string)
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>, pagesDir: string, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
-  pathCollection: Set<string>, fileResolvePath: string) {
+  pathCollection: Set<string>, fileResolvePath: string, isDETS: boolean) {
   if (isObservedClass(node)) {
     collectSpecialFunctionNode(node as ts.ClassDeclaration, asNameFromParent, defaultNameFromParent, defaultCollection,
       asExportCollection, observedClassCollection);
@@ -162,22 +163,31 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
     enumCollection.add(node.name.getText());
   }
   if (ts.isStructDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
-    addDependencies(node, defaultNameFromParent, asNameFromParent);
+    addDependencies(node, defaultNameFromParent, asNameFromParent, isDETS);
     isExportEntry(node, log, entryCollection, exportCollection, defaultCollection, fileResolvePath, sourceFile);
     if (asExportCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
+      if (isDETS) {
+        storedFileInfo.getCurrentArkTsFile().compFromDETS.add(asExportCollection.get(node.name.getText()));
+      }
     }
     if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
       node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
       node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
       if (!defaultNameFromParent && hasCollection(node.name)) {
-        addDefaultExport(node);
+        addDefaultExport(node, isDETS);
       } else if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
         componentCollection.customComponents.add(asNameFromParent.get(defaultNameFromParent));
+        if (isDETS) {
+          storedFileInfo.getCurrentArkTsFile().compFromDETS.add(asNameFromParent.get(defaultNameFromParent));
+        }
       }
     }
     if (defaultCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(CUSTOM_COMPONENT_DEFAULT);
+      if (isDETS) {
+        storedFileInfo.getCurrentArkTsFile().compFromDETS.add(CUSTOM_COMPONENT_DEFAULT);
+      }
     }
   }
   if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
@@ -197,9 +207,9 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         storageLinkCollection.get(propertiesName), provideCollection.get(propertiesName),
         consumeCollection.get(propertiesName), objectLinkCollection.get(propertiesName),
         localStorageLinkCollection.get(propertiesName), localStoragePropCollection.get(propertiesName),
-        builderParamInitialization.get(propertiesName));
+        builderParamInitialization.get(propertiesName), isDETS);
     }
-    addDefaultExport(node);
+    addDefaultExport(node, isDETS);
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression)) {
     if (defaultNameFromParent) {
@@ -232,7 +242,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
               storagePropCollection.get(asExportPropertyName), storageLinkCollection.get(asExportPropertyName),
               provideCollection.get(asExportPropertyName), consumeCollection.get(asExportPropertyName),
               objectLinkCollection.get(asExportPropertyName), localStorageLinkCollection.get(asExportPropertyName),
-              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName));
+              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName), isDETS);
           }
           asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
         }
@@ -283,7 +293,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   node.getChildren().reverse().forEach((item: ts.Node) => visitAllNode(item, sourceFile,
     defaultNameFromParent, asNameFromParent, pagesDir, log, entryCollection, exportCollection,
-    defaultCollection, asExportCollection, pathCollection, fileResolvePath));
+    defaultCollection, asExportCollection, pathCollection, fileResolvePath, isDETS));
 }
 
 function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDeclaration | ts.StructDeclaration,
@@ -356,7 +366,7 @@ function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePa
 }
 
 function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: string,
-  asNameFromParent: Map<string, string>): void {
+  asNameFromParent: Map<string, string>, isDETS: boolean): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node);
   if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
@@ -366,23 +376,23 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
   } else {
     setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
       ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
   }
 }
 
-function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment): void {
+function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDETS: boolean): void {
   let name: string;
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     name = node.name.escapedText.toString();
@@ -429,7 +439,7 @@ function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment): voi
     getNewLocalStorageMap(localStoragePropCollection, name),
     builderParamInitialization.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...builderParamInitialization.get(CUSTOM_COMPONENT_DEFAULT),
-        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name)
+        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name), isDETS
   );
 }
 
@@ -460,12 +470,15 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   regularArray: Set<string>, storagePropsArray: Set<string>, storageLinksArray: Set<string>,
   providesArray: Set<string>, consumesArray: Set<string>, objectLinksArray: Set<string>,
   localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
-  builderParamData: Set<string>): void {
+  builderParamData: Set<string>, isDETS: boolean): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
   builderParamObjectCollection.set(component, builderParamArray);
   componentCollection.customComponents.add(component);
+  if (isDETS) {
+    storedFileInfo.getCurrentArkTsFile().compFromDETS.add(component);
+  }
   stateCollection.set(component, stateArray);
   regularCollection.set(component, regularArray);
   storagePropCollection.set(component, storagePropsArray);
