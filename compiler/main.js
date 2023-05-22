@@ -26,6 +26,7 @@ const {
 
 const {
   WORKERS_DIR,
+  TEST_RUNNER_DIR_SET,
   TS2ABC,
   ES2ABC,
   FAIL
@@ -324,36 +325,35 @@ function setAbilityPages(projectConfig) {
   }
 }
 
-function setFaTestRunnerFile(projectConfig) {
+function setTestRunnerFile(projectConfig, isStageBased) {
   const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
-  const testRunnerPath = path.resolve(projectConfig.projectPath.substring(0,index + 1), "TestRunner");
-  if (fs.existsSync(testRunnerPath)) {
-    const testRunnerFiles = [];
-    readFile(testRunnerPath, testRunnerFiles);
-    testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js|ets)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
-		projectConfig.entryObj["../TestRunner/" + relativePath] = item;
-        abilityConfig.testRunnerFile.push(item);
-      }
-    })
-  }
+  TEST_RUNNER_DIR_SET.forEach((dir) => {
+    let projectPath = isStageBased ? projectConfig.projectPath : projectConfig.projectPath.substring(0,index + 1);
+    const testRunnerPath = path.resolve(projectPath, dir);
+    if (fs.existsSync(testRunnerPath)) {
+      const testRunnerFiles = [];
+      readFile(testRunnerPath, testRunnerFiles);
+      testRunnerFiles.forEach((item) => {
+        if (/\.(ts|js|ets)$/.test(item)) {
+          const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
+          if (isStageBased) {
+            projectConfig.entryObj[`./${dir}/${relativePath}`] = item;
+          } else {
+            projectConfig.entryObj[`../${dir}/${relativePath}`] = item;
+          }
+          abilityConfig.testRunnerFile.push(item);
+        }
+      })
+    }
+  });
+}
+
+function setFaTestRunnerFile(projectConfig) {
+  setTestRunnerFile(projectConfig, false);
 }
 
 function setStageTestRunnerFile(projectConfig) {
-  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
-  const testRunnerPath = path.resolve(projectConfig.projectPath, "TestRunner");
-  if (fs.existsSync(testRunnerPath)) {
-    const testRunnerFiles = [];
-    readFile(testRunnerPath, testRunnerFiles);
-    testRunnerFiles.forEach((item) => {
-      if (/\.(ts|js|ets)$/.test(item)) {
-        const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
-		projectConfig.entryObj["./TestRunner/" + relativePath] = item;
-        abilityConfig.testRunnerFile.push(item);
-      }
-    })
-  }
+  setTestRunnerFile(projectConfig, true);
 }
 
 function setBundleModuleInfo(projectConfig, moduleJson) {
