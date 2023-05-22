@@ -791,6 +791,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
     fileToResourceList: new Set()
   }
   recycleComponents: Set<string> = new Set([]);
+  compFromDETS: Set<string> = new Set();
 
   constructor(cacheInfo?: fileInfo) {
     super(cacheInfo, true);
