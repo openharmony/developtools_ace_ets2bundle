@@ -232,6 +232,9 @@ async function transform(code: string, id: string) {
     // init TypeChecker to run binding
     tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
+    storedFileInfo.reUseProgram = false;
+  } else {
+    storedFileInfo.reUseProgram = true;
   }
 
   // close `noEmit` to make invoking emit() effective.
