@@ -492,7 +492,7 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
       pos: pos
     });
   } else {
-    if (process.env.compileTool === 'rollup') {
+    if (process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
       storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
     }
     if (!resources[resourceData[0]]) {
