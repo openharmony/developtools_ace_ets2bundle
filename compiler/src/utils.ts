@@ -651,24 +651,24 @@ class ProcessFileInfo {
   }
 
   addFileCacheInfo(id: string, fileCacheInfo: fileInfo) {
-    if (fileCacheInfo) {
+    if (fileCacheInfo && process.env.compileMode === 'moduleJson') {
       fileCacheInfo.fileToResourceList = new Set(fileCacheInfo.fileToResourceList);
     }
     if (id.match(/(?<!\.d)\.(ets)$/)) {
       this.wholeFileInfo[id] = new SpecialArkTSFileInfo(fileCacheInfo);
-    } else if (id.match(/(?<!\.d)\.(ts)$/)) {
+    } else if (id.match(/(?<!\.d)\.(ts)$/) && process.env.compileMode === 'moduleJson') {
       this.wholeFileInfo[id] = new TSFileInfo(fileCacheInfo);
     }
   }
 
   collectTransformedFiles(id: string) {
-    if (id.match(/(?<!\.d)\.(ets|ts)$/)) {
+    if (id.match(process.env.compileMode === 'moduleJson' ? /(?<!\.d)\.(ets|ts)$/ : /(?<!\.d)\.(ets)$/)) {
       this.transformedFiles.push(id);
     }
   }
 
   collectCachedFiles(id: string) {
-    if (id.match(/(?<!\.d)\.(ets|ts)$/)) {
+    if (id.match(process.env.compileMode === 'moduleJson' ? /(?<!\.d)\.(ets|ts)$/ : /(?<!\.d)\.(ets)$/)) {
       this.cachedFiles.push(id);
     }
   }
@@ -680,39 +680,47 @@ class ProcessFileInfo {
   }
 
   saveCacheFileInfo(cache) {
-    const fileCacheInfo: {[id: string]: fileInfo | tsFileInfo} = cache.get('fileCacheInfo') || {};
-    const resourceToFileCacheInfo = cache.get('resourceToFileCacheInfo') || {};
-    for (const i in resourceToFileCacheInfo) {
-      resourceToFileCacheInfo[i] = new Set(resourceToFileCacheInfo[i]);
-    }
-    const resourceToFile: {[resource: string]: Set<string> | string[]} = Object.assign(resourceToFileCacheInfo, this.resourceToFile);
-    for (const id of this.transformedFiles) {
-      fileCacheInfo[id] = this.wholeFileInfo[id].fileInfo;
-      for (const resource of this.wholeFileInfo[id].newFileToResourceList) {
-        if (!(fileCacheInfo[id].fileToResourceList as Set<string>).has(resource)) {
-          if (!resourceToFile[resource]) {
-            resourceToFile[resource] = new Set();
+    if (process.env.compileMode === 'moduleJson') {
+      const fileCacheInfo: {[id: string]: fileInfo | tsFileInfo} = cache.get('fileCacheInfo') || {};
+      const resourceToFileCacheInfo = cache.get('resourceToFileCacheInfo') || {};
+      for (const i in resourceToFileCacheInfo) {
+        resourceToFileCacheInfo[i] = new Set(resourceToFileCacheInfo[i]);
+      }
+      const resourceToFile: {[resource: string]: Set<string> | string[]} = Object.assign(resourceToFileCacheInfo, this.resourceToFile);
+      for (const id of this.transformedFiles) {
+        fileCacheInfo[id] = this.wholeFileInfo[id].fileInfo;
+        for (const resource of this.wholeFileInfo[id].newFileToResourceList) {
+          if (!(fileCacheInfo[id].fileToResourceList as Set<string>).has(resource)) {
+            if (!resourceToFile[resource]) {
+              resourceToFile[resource] = new Set();
+            }
+            (resourceToFile[resource] as Set<string>).add(id);
           }
-          (resourceToFile[resource] as Set<string>).add(id);
         }
-      }
-      for (const resource of fileCacheInfo[id].fileToResourceList) {
-        if (!this.wholeFileInfo[id].newFileToResourceList.has(resource)) {
-          (resourceToFile[resource] as Set<string>).delete(id);
+        for (const resource of fileCacheInfo[id].fileToResourceList) {
+          if (!this.wholeFileInfo[id].newFileToResourceList.has(resource)) {
+            (resourceToFile[resource] as Set<string>).delete(id);
+          }
         }
+        fileCacheInfo[id].fileToResourceList = [...this.wholeFileInfo[id].newFileToResourceList];
       }
-      fileCacheInfo[id].fileToResourceList = [...this.wholeFileInfo[id].newFileToResourceList];
+      for (const id of this.cachedFiles) {
+        fileCacheInfo[id].fileToResourceList = [...fileCacheInfo[id].fileToResourceList];
+      }
+      this.resourceToFile = resourceToFile as {[resource: string]: Set<string>};
+      for (const resource in resourceToFile) {
+        resourceToFile[resource] = [...resourceToFile[resource]];
+      }
+      cache.set('fileCacheInfo', fileCacheInfo);
+      cache.set('resourceListCacheInfo', [...this.resourceList]);
+      cache.set('resourceToFileCacheInfo', resourceToFile);
+    } else {
+      const cacheInfo: {[id: string]: fileInfo} = cache.get('fileCacheInfo') || {};
+      for (const id of this.transformedFiles) {
+        cacheInfo[id] = this.wholeFileInfo[id].fileInfo;
+      }
+      cache.set('fileCacheInfo', cacheInfo);
     }
-    for (const id of this.cachedFiles) {
-      fileCacheInfo[id].fileToResourceList = [...fileCacheInfo[id].fileToResourceList];
-    }
-    this.resourceToFile = resourceToFile as {[resource: string]: Set<string>};
-    for (const resource in resourceToFile) {
-      resourceToFile[resource] = [...resourceToFile[resource]];
-    }
-    cache.set('fileCacheInfo', fileCacheInfo);
-    cache.set('resourceListCacheInfo', [...this.resourceList]);
-    cache.set('resourceToFileCacheInfo', resourceToFile);
   }
 
   updateResourceList(resource: string) {
