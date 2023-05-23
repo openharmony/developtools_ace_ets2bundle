@@ -635,6 +635,7 @@ class ProcessFileInfo {
   shouldInvalidFiles: Set<string> = new Set();
   resourceTableChanged: boolean = false;
   currentArkTsFile: SpecialArkTSFileInfo;
+  reUseProgram: boolean = false;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
