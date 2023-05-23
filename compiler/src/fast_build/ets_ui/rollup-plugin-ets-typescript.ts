@@ -234,6 +234,9 @@ async function transform(code: string, id: string) {
   if (!targetSourceFile) {
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
     targetSourceFile = tsProgram.getSourceFile(id)!;
+    storedFileInfo.reUseProgram = false;
+  } else {
+    storedFileInfo.reUseProgram = true;
   }
 
   // close `noEmit` to make invoking emit() effective.
