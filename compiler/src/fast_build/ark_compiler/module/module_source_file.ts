@@ -14,7 +14,9 @@
  */
 
 import * as ts from 'typescript';
+import path from 'path';
 import MagicString from 'magic-string';
+import merge from 'merge-source-map';
 import {
   GEN_ABC_PLUGIN_NAME,
   PACKAGES
@@ -30,6 +32,8 @@ import {
   isJsSourceFile,
   writeFileContentToTempDir
 } from '../utils';
+import { toUnixPath } from '../../../utils';
+import { newSourceMaps } from '../transform';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -120,7 +124,7 @@ export class ModuleSourceFile {
     const ast = moduleInfo.ast;
     const moduleNodeMap: Map<string, any> =
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
-                               ROLLUP_DYNAMICIMPORT_NODE);
+        ROLLUP_DYNAMICIMPORT_NODE);
 
     for (let nodeSet of moduleNodeMap.values()) {
       nodeSet.forEach(node => {
@@ -134,32 +138,61 @@ export class ModuleSourceFile {
       });
     }
 
+    // update sourceMap
+    const relativeSourceFilePath =
+      toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, ''));
+    const updatedMap = code.generateMap({
+      source: relativeSourceFilePath,
+      file: `${path.basename(this.moduleId)}`,
+      includeContent: false,
+      hires: true
+    });
+    newSourceMaps[relativeSourceFilePath] = merge(newSourceMaps[relativeSourceFilePath], updatedMap);
+
     this.source = code.toString();
   }
 
   private processTransformedTsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
-    const statements: ts.Statement[] = [];
-    (<ts.SourceFile>this.source)!.forEachChild((childNode: ts.Statement) => {
-      if (ts.isImportDeclaration(childNode) || (ts.isExportDeclaration(childNode) && childNode.moduleSpecifier)) {
-        // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
-        // so we need to remove the quotation marks from moduleRequest.
-        const moduleRequest: string = childNode.moduleSpecifier.getText().replace(/'|"/g, '');
-        const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
-        if (ohmUrl !== undefined) {
-          if (ts.isImportDeclaration(childNode)) {
-            childNode = ts.factory.updateImportDeclaration(childNode, childNode.decorators, childNode.modifiers,
-                          childNode.importClause, ts.factory.createStringLiteral(ohmUrl));
-          } else {
-            childNode = ts.factory.updateExportDeclaration(childNode, childNode.decorators, childNode.modifiers,
-                          childNode.isTypeOnly, childNode.exportClause, ts.factory.createStringLiteral(ohmUrl));
+
+    const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
+      const visitor: ts.Visitor = node => {
+        node = ts.visitEachChild(node, visitor, context);
+        // staticImport node
+        if (ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier)) {
+          // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
+          // so we need to remove the quotation marks from moduleRequest.
+          const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
+          const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+          if (ohmUrl !== undefined) {
+            if (ts.isImportDeclaration(node)) {
+              return ts.factory.createImportDeclaration(node.decorators, node.modifiers,
+                node.importClause, ts.factory.createStringLiteral(ohmUrl));
+            } else {
+              return ts.factory.createExportDeclaration(node.decorators, node.modifiers,
+                node.isTypeOnly, node.exportClause, ts.factory.createStringLiteral(ohmUrl));
+            }
           }
         }
-      }
-      statements.push(childNode);
-    });
-    this.source = ts.factory.updateSourceFile(<ts.SourceFile>this.source, statements);
+        // dynamicImport node
+        if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+          ts.isStringLiteral(node.arguments[0])) {
+          const moduleRequest: string = node.arguments[0].getText().replace(/'|"/g, '');
+          const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+          const args: ts.Expression[] = [...node.arguments];
+          args[0] = ts.factory.createStringLiteral(ohmUrl);
+          return ts.factory.createCallExpression(node.expression, node.typeArguments, args);
+        }
+        return node;
+      };
+      return node => ts.visitNode(node, visitor);
+    };
+
+    const result: ts.TransformationResult<ts.SourceFile> =
+      ts.transform(<ts.SourceFile>this.source!, [moduleNodeTransformer]);
+
+    this.source = result.transformed[0];
   }
 
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.

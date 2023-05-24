@@ -52,6 +52,7 @@
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "md5": "^2.3.0",
+    "merge-source-map": "1.0.4",
     "rollup": "^3.5.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-delete": "^2.0.0",
