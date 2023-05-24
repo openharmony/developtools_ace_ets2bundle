@@ -563,8 +563,10 @@ function filterWorker(workerPath) {
   const systemModulesPath = path.resolve(__dirname, '../../api');
   if (fs.existsSync(systemModulesPath)) {
     globalModulePaths.push(systemModulesPath);
-    ohosSystemModulePaths = fs.readdirSync(systemModulesPath);
-    systemModules.push(...ohosSystemModulePaths);
+    const modulePaths = [];
+    readFile(systemModulesPath, modulePaths);
+    systemModules.push(...fs.readdirSync(systemModulesPath));
+    ohosSystemModulePaths.push(...modulePaths);
     defaultSdkConfigs = [
       {
         'apiPath': systemModulesPath,
