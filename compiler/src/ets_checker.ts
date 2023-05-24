@@ -153,7 +153,7 @@ function getInitCheckConfig(tagName: string, message: string): InitCheckConfig {
 function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): CheckJSDocTagNameConfig {
   let needCheckResult: boolean = false;
   const checkConfigArray: InitCheckConfig[] = [];
-  if (ohosSystemModulePaths.includes(sourceFileName) || isArkuiDependence(sourceFileName)) {
+  if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
     if (isArkuiDependence(sourceFileName) && isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getInitCheckConfig('form', "'{0}' can't support form application."));
