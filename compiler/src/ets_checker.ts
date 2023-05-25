@@ -446,7 +446,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts
     if (!cache.has(typeName)) {
       const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
       if (!resolvedFile || !resolvedFile.resolvedTypeReferenceDirective) {
-        logger.error('\u001b[31m', `ArkTS:Caonnot find type definition file for: ${typeName}\n`);
+        logger.error('\u001b[31m', `ArkTS:Cannot find type definition file for: ${typeName}\n`);
       }
       const result: ts.ResolvedTypeReferenceDirective = resolvedFile.resolvedTypeReferenceDirective;
       cache.set(typeName, result);
