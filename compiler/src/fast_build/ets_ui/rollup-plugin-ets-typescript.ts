@@ -243,6 +243,8 @@ async function transform(code: string, id: string) {
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
 
+  targetSourceFile.fileName = id;
+
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
 
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
