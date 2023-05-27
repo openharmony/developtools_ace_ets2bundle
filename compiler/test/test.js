@@ -46,7 +46,7 @@ function expectActual(name, filePath) {
   process.env.compiler = BUILD_ON;
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
-  validateUISyntax(source, afterProcess.content, `${name}.ts`);
+  validateUISyntax(source, afterProcess.content, `${name}.ets`);
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     Object.assign(compilerOptions, {
