@@ -15,7 +15,10 @@
 
 import path from 'path';
 import fs from 'fs';
-import { ArkObfuscator } from 'arkguard';
+import {
+  ArkObfuscator,
+  readProjectProperties
+} from "arkguard"
 
 import {
   TS2ABC,
@@ -26,7 +29,8 @@ import {
   AOT_PROFILE_SUFFIX,
   NODE_MODULES,
   OH_MODULES,
-  FAIL
+  FAIL,
+  OBFUSCATION_TOOL
 } from './ark_define';
 import { isAotMode, isDebug } from '../utils';
 import {
@@ -34,9 +38,10 @@ import {
   isMac,
   isWindows
 } from '../../../utils';
-import { getArkBuildDir } from '../../../ark_utils';
+import { getArkBuildDir, identifierCaches } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
+import { MergedConfig, ObConfigResolver, readNameCache} from './ob_config_resolver'
 
 type ArkConfig = {
   arkRootPath: string;
@@ -50,7 +55,7 @@ type ArkConfig = {
 };
 
 let arkConfig: ArkConfig = {};
-
+export var applyIdentifierCache: Object = {};
 export function initArkConfig(projectConfig: any) {
   let arkRootPath: string = path.join(__dirname, '..', '..', '..', '..', 'bin', 'ark');
   if (projectConfig.arkFrontendDir) {
@@ -126,30 +131,110 @@ export function initArkProjectConfig(share: any) {
     arkProjectConfig.processTs = mainProjectConfig.processTs;
   }
   arkProjectConfig.compileMode = projectConfig.compileMode;
-  if (!isDebug(projectConfig) && isAotMode(arkProjectConfig)) {
-    arkProjectConfig.arkObfuscator = initArkGuard();
-  }
 
+  if (projectConfig.compileHar || !isDebug(projectConfig))  {
+    const logger: any = share.getLogger(OBFUSCATION_TOOL);
+    initObfuscationConfig(projectConfig, arkProjectConfig, logger);
+  }
   return arkProjectConfig;
 }
 
-function initArkGuard(): ArkObfuscator {
-  const baseConfig = {
-    mCompact: false,
+function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger: any): void {
+  const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, logger, true);
+  const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
+  const isHarCompiled: boolean = projectConfig.compileHar;
+  if (mergedObConfig.options.disableObfuscation) {
+    return;
+  }
+
+  let projectAndLibsReservedProperties: string[];
+  if (mergedObConfig.options.enablePropertyObfuscation) {
+    projectAndLibsReservedProperties = readProjectProperties([projectConfig.modulePath], { mNameObfuscation: {mReservedProperties: [] } }, true);
+    mergedObConfig.reservedPropertyNames.push(...projectAndLibsReservedProperties);
+  }
+  arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;
+
+  if (isAotMode(arkProjectConfig)) {
+    arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig);
+    return;
+  }
+  arkProjectConfig.terserConfig = initTerserConfig(projectConfig, logger, mergedObConfig, isHarCompiled);
+}
+
+function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): any {
+  const minifyOptions = {
+    format: {
+      semicolons: projectConfig.obfuscationOptions ? !mergedObConfig.options.compact : isHarCompiled ? false : true,
+      beautify: true,
+      indent_level: 2
+    },
+    compress: {
+      join_vars: false,
+      sequences: 0,
+      directives: false,
+      drop_console: mergedObConfig.options.removeLog
+    },
+    mangle: {
+      reserved: mergedObConfig.reservedNames,
+      toplevel: mergedObConfig.options.enableToplevelObfuscation
+    }
+  }
+  const applyNameCache: string | undefined = mergedObConfig.options.applyNameCache;
+  if (applyNameCache &&  applyNameCache.length > 0) {
+    if (fs.existsSync(applyNameCache)) {
+      minifyOptions.nameCache = JSON.parse(fs.readFileSync(applyNameCache, 'utf-8'));
+    } else {
+      logger.error(`ArkTS:ERROR Namecache file ${applyNameCache} does not exist`);
+    }
+  } else {
+    if (projectConfig.obfuscationOptions && projectConfig.obfuscationOptions.obfuscationCacheDir) {
+      const defaultNameCachePath: string = path.join(projectConfig.obfuscationOptions.obfuscationCacheDir,"nameCache.json");
+      if (fs.existsSync(defaultNameCachePath)) {
+        minifyOptions.nameCache = JSON.parse(fs.readFileSync(defaultNameCachePath, 'utf-8'));
+      } else {
+        minifyOptions.nameCache = {};
+      }
+    }
+  }
+
+  if (mergedObConfig.options.enablePropertyObfuscation) {
+    minifyOptions.mangle.properties = {
+      reserved: mergedObConfig.reservedPropertyNames
+    };
+  }
+  return minifyOptions;
+}
+
+function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any, mergedObConfig: any) {
+  const arkguardConfig = {
+    mCompact: mergedObConfig.options.compact,
     mDisableHilog: false,
-    mDisableConsole: false,
+    mDisableConsole: mergedObConfig.options.removeLog,
     mSimplify: false,
-    mTopLevel: false,
+    mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
     mNameObfuscation: {
       mEnable: true,
       mNameGeneratorType: 1,
-      mRenameProperties: false,
+      mReservedNames: mergedObConfig.reservedNames,
+      mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
+      mReservedProperties: mergedObConfig.reservedPropertyNames
     },
     mEnableSourceMap: true,
-    mEnableNameCache: false,
-  };
+    mEnableNameCache: true
+  }
+
   const arkObfuscator: ArkObfuscator = new ArkObfuscator();
-  arkObfuscator.init(baseConfig);
+  arkObfuscator.init(arkguardConfig);
+  if (mergedObConfig.options.applyNameCache && mergedObConfig.options.applyNameCache.length > 0) {
+    applyIdentifierCache = readNameCache(mergedObConfig.options.applyNameCache, logger);
+  } else {
+    if (obfuscationCacheDir) {
+      const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
+      if (fs.existsSync(defaultNameCachePath)) {
+        applyIdentifierCache = readNameCache(defaultNameCachePath, logger);
+      }
+    }
+  }
   return arkObfuscator;
 }
 
