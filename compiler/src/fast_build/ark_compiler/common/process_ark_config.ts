@@ -15,6 +15,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import { ArkObfuscator } from 'arkguard';
 
 import {
   TS2ABC,
@@ -27,7 +28,7 @@ import {
   OH_MODULES,
   FAIL
 } from './ark_define';
-import { isDebug } from '../utils';
+import { isAotMode, isDebug } from '../utils';
 import {
   isLinux,
   isMac,
@@ -124,8 +125,32 @@ export function initArkProjectConfig(share: any) {
     arkProjectConfig.pandaMode = mainProjectConfig.pandaMode;
     arkProjectConfig.processTs = mainProjectConfig.processTs;
   }
+  arkProjectConfig.compileMode = projectConfig.compileMode;
+  if (!isDebug(projectConfig) && isAotMode(arkProjectConfig)) {
+    arkProjectConfig.arkObfuscator = initArkGuard();
+  }
 
   return arkProjectConfig;
+}
+
+function initArkGuard(): ArkObfuscator {
+  const baseConfig = {
+    mCompact: false,
+    mDisableHilog: false,
+    mDisableConsole: false,
+    mSimplify: false,
+    mTopLevel: false,
+    mNameObfuscation: {
+      mEnable: true,
+      mNameGeneratorType: 1,
+      mRenameProperties: false,
+    },
+    mEnableSourceMap: true,
+    mEnableNameCache: false,
+  };
+  const arkObfuscator: ArkObfuscator = new ArkObfuscator();
+  arkObfuscator.init(baseConfig);
+  return arkObfuscator;
 }
 
 function processPlatformInfo(arkRootPath: string): void {

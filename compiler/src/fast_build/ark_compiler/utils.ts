@@ -38,7 +38,7 @@ import {
   toUnixPath
 } from '../../utils';
 import {
-  writeMinimizedSourceCode
+  writeObfuscatedSourceCode
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { newSourceMaps } from './transform';
@@ -112,11 +112,10 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
 
   mkdirsSync(path.dirname(filePath));
   // In compile har mode, the code needs to be obfuscated and compressed.
-  const isHar: boolean = projectConfig.compileHar && projectConfig.obfuscate === 'uglify';
-  if (isHar || !isDebug(projectConfig)) {
+  if (projectConfig.compileHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeMinimizedSourceCode(content, filePath, logger, isHar, relativeSourceFilePath, newSourceMaps);
+    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, newSourceMaps);
     return;
   }
 

@@ -16,6 +16,7 @@
 import path from 'path';
 import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
+import type { ArkObfuscator } from 'arkguard';
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -209,7 +210,7 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, pr
       fs.writeFileSync(filePath, sourceCode);
       return;
     }
-    writeMinimizedSourceCode(sourceCode, filePath, logger);
+    writeObfuscatedSourceCode(sourceCode, filePath, logger, projectConfig);
   }
   if (/\.json$/.test(sourcePath)) {
     fs.writeFileSync(filePath, sourceCode);
@@ -317,6 +318,31 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
     }
   }
   return item;
+}
+
+export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+  if (projectConfig.arkObfuscator) {
+    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig.arkObfuscator, relativeSourceFilePath, rollupNewSourceMaps);
+    return;
+  }
+
+  await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar, relativeSourceFilePath, rollupNewSourceMaps);
+}
+
+export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, arkObfuscator: ArkObfuscator,
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+  const previousStageSourceMap: string = rollupNewSourceMaps[relativeSourceFilePath];
+  let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
+  try {
+    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap);
+  } catch {
+    logger.error(`ArkTS:ERROR Failed to source code obfuscation. Filename: ${relativeSourceFilePath}`);
+    process.exit(FAIL);
+  }
+  mixedInfo.sourceMap.sources = [relativeSourceFilePath];
+  rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMap;
+  fs.writeFileSync(filePath, mixedInfo.content);
 }
 
 export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
@@ -429,7 +455,7 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
     return;
   }
 
-  writeMinimizedSourceCode(sourceContent, jsFilePath, logger);
+  writeObfuscatedSourceCode(sourceContent, jsFilePath, logger, projectConfig);
 }
 
 export function genAbcFileName(temporaryFile: string): string {
