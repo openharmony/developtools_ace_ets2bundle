@@ -83,6 +83,7 @@ export const SCRIPT: string = 'script';
 
 export const SRC_MAIN: string = 'src/main';
 export const GEN_ABC_PLUGIN_NAME: string = 'Gen_Abc_Plugin';
+export const OBFUSCATION_TOOL: string = "Obfuscation_Tool";
 
 export const SUCCESS: number = 0;
 export const FAIL: number = 1;
