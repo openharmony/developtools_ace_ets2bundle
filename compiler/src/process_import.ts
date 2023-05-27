@@ -141,7 +141,7 @@ function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.So
   const originContent: string = fs.readFileSync(fileResolvePath, { encoding: 'utf-8' });
   const content: string = path.extname(fileResolvePath) === EXTNAME_ETS ?
     preprocessNewExtend(preprocessExtend(processSystemApi(originContent))) : originContent;
-  return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+  return ts.createSourceFile(fileResolvePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
 }
 
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
