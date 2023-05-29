@@ -723,7 +723,10 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
   if (ts.isFunctionDeclaration(node) && hasDecorator(node, COMPONENT_EXTEND_DECORATOR)) {
     if (node.body && node.body.statements && node.body.statements.length &&
       !isOriginalExtend(node.body)) {
-      extendFunctionInfo.push({start: node.pos, end: node.end, compName: isExtendFunction(node)});
+      extendFunctionInfo.push({
+        start: node.pos,
+        end: node.end,
+        compName: isExtendFunction(node, { decoratorName: '', componentName: '' })});
     }
   }
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
