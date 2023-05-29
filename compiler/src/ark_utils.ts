@@ -79,15 +79,24 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   // case3: /node_modules/xxx/yyy           ---> @package:pkg_modules/xxx/yyy
   // case4: /entry/node_modules/xxx/yyy     ---> @package:pkg_modules@entry/xxx/yyy
   // case5: /library/node_modules/xxx/yyy   ---> @package:pkg_modules@library/xxx/yyy
-  // case6: /library/index.ts               ---> @budnle:<bundleName>/library/index
+  // case6: /library/index.ts               ---> @bundle:<bundleName>/library/index
   const projectFilePath: string = unixFilePath.replace(projectRootPath, '');
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(packageDir) === -1) {
-    if (namespace && moduleName !== namespace) {
-      return `${bundleName}/${moduleName}@${namespace}/${result[2]}/${result[3]}`;
+    let langType: string = result[2];
+    let relativePath: string = result[3];
+    // case7: /entry/src/main/ets/xxx/src/main/js/yyy ---> @bundle:<bundleName>/entry/ets/xxx/src/main/js/yyy
+    const REG_SRC_MAIN: RegExp = /src\/(?:main|ohosTest)\/(ets|js)\//;
+    const srcMainIndex: number = result[1].search(REG_SRC_MAIN);
+    if (srcMainIndex !== -1) {
+      relativePath = projectFilePath.substring(srcMainIndex).replace(REG_SRC_MAIN, '');
+      langType = projectFilePath.replace(relativePath, '').match(REG_SRC_MAIN)[1];
     }
-    return `${bundleName}/${moduleName}/${result[2]}/${result[3]}`;
+    if (namespace && moduleName !== namespace) {
+      return `${bundleName}/${moduleName}@${namespace}/${langType}/${relativePath}`;
+    }
+    return `${bundleName}/${moduleName}/${langType}/${relativePath}`;
   }
 
   if (projectFilePath.indexOf(packageDir) !== -1) {
