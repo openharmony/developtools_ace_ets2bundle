@@ -1,6 +1,5 @@
 {
   "name": "Span",
-  "parents":["Text"],
   "atomic": true,
   "attrs": [
     "fontColor", "fontSize", "fontStyle", "fontFamily", "fontWeight", "decoration", "letterSpacing",
