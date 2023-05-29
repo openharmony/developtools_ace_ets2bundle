@@ -64,10 +64,23 @@ export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
 export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
+export const COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = '@AnimatableExtend';
 export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR]);
+export const CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = 'AnimatableExtend';
+export const EXTEND_DECORATORS: string[] = [
+  COMPONENT_EXTEND_DECORATOR,
+  COMPONENT_ANIMATABLE_EXTEND_DECORATOR
+];
+export const CHECK_EXTEND_DECORATORS: string[] = [
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
+];
+export const PROPERTY_ID: string = 'propertyId';
+export const CREATE_ANIMATABLE_PROPERTY: string = 'createAnimatableProperty';
+export const UPDATE_ANIMATABLE_PROPERTY: string = 'updateAnimatableProperty';
 
 export const OBSERVED_PROPERTY_SIMPLE: string = 'ObservedPropertySimple';
 export const OBSERVED_PROPERTY_OBJECT: string = 'ObservedPropertyObject';
