@@ -482,9 +482,14 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         let apiFileExist: boolean = false;
         for (let i = 0; i < sdkConfigs.length; i++) {
           const sdkConfig = sdkConfigs[i];
-          const modulePath: string = path.resolve(sdkConfig.apiPath, moduleName + '.d.ts');
-          if (systemModules.includes(moduleName + '.d.ts') && ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+          let modulePath: string = path.resolve(sdkConfig.apiPath, moduleName + '.d.ts');
+          let isDETS: boolean = false;
+          if (!fs.existsSync(modulePath)) {
+            modulePath = path.resolve(sdkConfig.apiPath, moduleName + '.d.ets');
+            isDETS = true;
+          }
+          if (systemModules.includes(moduleName + (isDETS ? '.d.ets' : '.d.ts')) && ts.sys.fileExists(modulePath)) {
+            resolvedModules.push(getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts'));
             apiFileExist = true;
             break;
           }
@@ -508,6 +513,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         }
       } else {
         const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
         const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
         const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
         const fileModulePath: string =
@@ -516,6 +522,8 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
         if (ts.sys.fileExists(modulePath)) {
           resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(systemDETSModulePath)) {
+          resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
         } else if (ts.sys.fileExists(jsModulePath)) {
           resolvedModules.push(getResolveModule(jsModulePath, '.js'));
         } else if (ts.sys.fileExists(fileModulePath)) {
