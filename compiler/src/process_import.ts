@@ -63,7 +63,11 @@ import {
   repeatLog,
   storedFileInfo
 } from './utils';
-import { projectConfig } from '../main';
+import {
+  projectConfig,
+  sdkConfigs,
+  sdkConfigPrefix
+} from '../main';
 import {
   CUSTOM_BUILDER_METHOD,
   INNER_COMPONENT_NAMES,
@@ -118,7 +122,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   }
 
   try {
-    let fileResolvePath: string = getFileFullPath(filePath, pagesDir);
+    const fileResolvePath: string = getFileFullPath(filePath, pagesDir);
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
       !pathCollection.has(fileResolvePath)) {
       let sourceFile: ts.SourceFile;
@@ -572,6 +576,14 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   }
   let entryModule: string;
   let etsModule: string;
+  if (new RegExp(`^@(${sdkConfigPrefix})\\.`).test(filePath.trim())) {
+    for (let i = 0; i < sdkConfigs.length; i++) {
+      const systemModule: string = path.resolve(sdkConfigs[i].apiPath, filePath + '.d.ets');
+      if (fs.existsSync(systemModule)) {
+        return systemModule;
+      }
+    }
+  }
   if (!projectConfig.aceModuleJsonPath) {
     entryModule = path.join(projectPath, '../../../../../', moduleFilePath);
     etsModule = path.join(projectPath, '../../', moduleFilePath);
