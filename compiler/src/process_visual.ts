@@ -52,7 +52,38 @@ const compilerOptions = ts.readConfigFile(
 ).config.compilerOptions;
 compilerOptions['sourceMap'] = false;
 
-export function visualTransform(code: string, id: string, logger: any) {
+let hasVisual: boolean = false;
+let hasSearched: boolean = false;
+
+export function findIfVisualFileExists(): void {
+  hasSearched = true;
+  const modules: any = projectConfig.modulePathMap;
+  if (modules) {
+    for (const module of Object.values(modules)) {
+      const visual_module_path: string = path.join(module, MODULE_VISUAL_PATH);
+      if (fs.existsSync(visual_module_path)) {
+        hasVisual = true;
+        return;
+      }
+    }
+  }
+}
+
+export function getHasSearchedVisualFiles(): boolean {
+  return hasSearched;
+}
+
+export function getHasVisual(): boolean {
+  return hasVisual;
+}
+
+export function visualTransform(code: string, id: string, logger: any): string {
+  if (!hasSearched) {
+    findIfVisualFileExists();
+  }
+  if (projectConfig.modulePathMap !== undefined && !hasVisual) {
+    return code;
+  }
   const log: LogInfo[] = [];
   const content: string | null = getParsedContent(code, path.normalize(id), log);
   if (!content) {
