@@ -730,7 +730,7 @@ class ProcessFileInfo {
   compareResourceDiff() {
     // delete resource
     for (const resource of this.lastResourceList) {
-      if (!this.resourceList.has(resource)) {
+      if (!this.resourceList.has(resource) && this.resourceToFile[resource]) {
         this.resourceToFile[resource].forEach(file => {
           this.shouldInvalidFiles.add(file);
         });
