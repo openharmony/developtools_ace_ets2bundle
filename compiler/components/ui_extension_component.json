@@ -1,0 +1,9 @@
+{
+    "name": "UIExtensionComponent",
+    "attrs": [
+        "onResult",
+        "onRelease",
+        "onError"
+    ],
+    "atomic": true
+}
