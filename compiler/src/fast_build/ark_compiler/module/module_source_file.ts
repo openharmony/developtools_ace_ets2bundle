@@ -121,18 +121,23 @@ export class ModuleSourceFile {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
-    const ast = moduleInfo.ast;
     const moduleNodeMap: Map<string, any> =
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
         ROLLUP_DYNAMICIMPORT_NODE);
 
     for (let nodeSet of moduleNodeMap.values()) {
       nodeSet.forEach(node => {
-        if (node.source && node.source.type === ROLLUP_LITERAL_NODE) {
-          const ohmUrl: string | undefined =
-            this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
-          if (ohmUrl !== undefined) {
-            code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
+        if (node.source) {
+          if (node.source.type === ROLLUP_LITERAL_NODE) {
+            const ohmUrl: string | undefined =
+              this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+            if (ohmUrl !== undefined) {
+              code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
+            }
+          } else {
+            const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}\n`
+              +`DynamicImport only support stringLiteral argument currently.\n`;
+            ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
           }
         }
       });
@@ -176,13 +181,22 @@ export class ModuleSourceFile {
           }
         }
         // dynamicImport node
-        if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-          ts.isStringLiteral(node.arguments[0])) {
+        if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+          if (!ts.isStringLiteral(node.arguments[0])) {
+            const { line, character }: ts.LineAndCharacter =
+              ts.getLineAndCharacterOfPosition(<ts.SourceFile>this.source!, node.arguments[0].pos);
+            const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}:${line + 1}:${character + 1}\n`
+              +`DynamicImport only accept stringLiteral argument currently.\n`;
+            ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
+            return node;
+          }
           const moduleRequest: string = node.arguments[0].getText().replace(/'|"/g, '');
           const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
-          const args: ts.Expression[] = [...node.arguments];
-          args[0] = ts.factory.createStringLiteral(ohmUrl);
-          return ts.factory.createCallExpression(node.expression, node.typeArguments, args);
+          if (ohmUrl !== undefined) {
+            const args: ts.Expression[] = [...node.arguments];
+            args[0] = ts.factory.createStringLiteral(ohmUrl);
+            return ts.factory.createCallExpression(node.expression, node.typeArguments, args);
+          }
         }
         return node;
       };
