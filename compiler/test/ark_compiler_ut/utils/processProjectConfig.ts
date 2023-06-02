@@ -23,5 +23,8 @@ projectConfig.modulePathMap = {
 }
 projectConfig.projectRootPath = "testProjectRootPath";
 projectConfig.packageDir = 'oh_modules';
+projectConfig.harNameOhmMap = {
+    "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
+}
 
 export default projectConfig;
