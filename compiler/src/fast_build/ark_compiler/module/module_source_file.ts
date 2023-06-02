@@ -136,7 +136,7 @@ export class ModuleSourceFile {
             }
           } else {
             const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}\n`
-              +`DynamicImport only support stringLiteral argument currently.\n`;
+              +`DynamicImport only accept stringLiteral as argument currently.\n`;
             ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
           }
         }
@@ -186,7 +186,7 @@ export class ModuleSourceFile {
             const { line, character }: ts.LineAndCharacter =
               ts.getLineAndCharacterOfPosition(<ts.SourceFile>this.source!, node.arguments[0].pos);
             const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}:${line + 1}:${character + 1}\n`
-              +`DynamicImport only accept stringLiteral argument currently.\n`;
+              +`DynamicImport only accept stringLiteral as argument currently.\n`;
             ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
             return node;
           }
