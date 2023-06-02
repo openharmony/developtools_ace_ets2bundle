@@ -191,7 +191,7 @@
         "SecLocationButton"
       ],
       "extend": {
-        "decorator": "Extend",
+        "decorator": ["Extend", "AnimatableExtend"],
         "components": [
           {
             "name": "AbilityComponent",
