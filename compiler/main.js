@@ -280,8 +280,8 @@ function stageOptimization(metadata) {
 function getPages(configJson) {
   const pages = [];
   let pagesJsonFileName = '';
-  // pages is not necessary in shared library
-  if (projectConfig.compileShared && configJson.module && configJson.module.pages || !projectConfig.compileShared) {
+  // pages is not necessary in stage
+  if (process.env.compileMode === 'moduleJson' && configJson.module && configJson.module.pages) {
     pagesJsonFileName = `${configJson.module.pages.replace(/\$profile\:/, '')}.json`;
   } else {
     return pages;
