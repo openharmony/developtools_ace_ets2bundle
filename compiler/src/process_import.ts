@@ -27,7 +27,8 @@ import {
   CUSTOM_DECORATOR_NAME,
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
-  CARD_LOG_TYPE_IMPORT
+  CARD_LOG_TYPE_IMPORT,
+  DECORATOR_RECYCLE,
 } from './pre_define';
 import {
   propertyCollection,
@@ -144,6 +145,10 @@ function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.So
   return ts.createSourceFile(fileResolvePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
 }
 
+type structDecoratorResult = {
+  hasRecycle: boolean
+}
+
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>, pagesDir: string, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
@@ -163,24 +168,31 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   if (ts.isEnumDeclaration(node) && node.name) {
     enumCollection.add(node.name.getText());
   }
-  if (ts.isStructDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node)) {
-    addDependencies(node, defaultNameFromParent, asNameFromParent, isDETS);
+  const structDecorator: structDecoratorResult = { hasRecycle: false };
+  if (ts.isStructDeclaration(node) && ts.isIdentifier(node.name) && isCustomComponent(node, structDecorator)) {
+    addDependencies(node, defaultNameFromParent, asNameFromParent, isDETS, structDecorator);
     isExportEntry(node, log, entryCollection, exportCollection, defaultCollection, fileResolvePath, sourceFile);
     if (asExportCollection.has(node.name.getText())) {
       componentCollection.customComponents.add(asExportCollection.get(node.name.getText()));
       if (isDETS) {
         storedFileInfo.getCurrentArkTsFile().compFromDETS.add(asExportCollection.get(node.name.getText()));
       }
+      if (structDecorator.hasRecycle) {
+        storedFileInfo.getCurrentArkTsFile().recycleComponents.add(asExportCollection.get(node.name.getText()));
+      }
     }
     if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
       node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
       node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
       if (!defaultNameFromParent && hasCollection(node.name)) {
-        addDefaultExport(node, isDETS);
+        addDefaultExport(node, isDETS, structDecorator);
       } else if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
         componentCollection.customComponents.add(asNameFromParent.get(defaultNameFromParent));
         if (isDETS) {
           storedFileInfo.getCurrentArkTsFile().compFromDETS.add(asNameFromParent.get(defaultNameFromParent));
+        }
+        if (structDecorator.hasRecycle) {
+          storedFileInfo.getCurrentArkTsFile().recycleComponents.add(asNameFromParent.get(defaultNameFromParent));
         }
       }
     }
@@ -188,6 +200,9 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
       componentCollection.customComponents.add(CUSTOM_COMPONENT_DEFAULT);
       if (isDETS) {
         storedFileInfo.getCurrentArkTsFile().compFromDETS.add(CUSTOM_COMPONENT_DEFAULT);
+      }
+      if (structDecorator.hasRecycle) {
+        storedFileInfo.getCurrentArkTsFile().recycleComponents.add(CUSTOM_COMPONENT_DEFAULT);
       }
     }
   }
@@ -208,9 +223,9 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         storageLinkCollection.get(propertiesName), provideCollection.get(propertiesName),
         consumeCollection.get(propertiesName), objectLinkCollection.get(propertiesName),
         localStorageLinkCollection.get(propertiesName), localStoragePropCollection.get(propertiesName),
-        builderParamInitialization.get(propertiesName), isDETS);
+        builderParamInitialization.get(propertiesName), isDETS, structDecorator);
     }
-    addDefaultExport(node, isDETS);
+    addDefaultExport(node, isDETS, structDecorator);
   }
   if (ts.isExportAssignment(node) && node.expression && ts.isIdentifier(node.expression)) {
     if (defaultNameFromParent) {
@@ -243,7 +258,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
               storagePropCollection.get(asExportPropertyName), storageLinkCollection.get(asExportPropertyName),
               provideCollection.get(asExportPropertyName), consumeCollection.get(asExportPropertyName),
               objectLinkCollection.get(asExportPropertyName), localStorageLinkCollection.get(asExportPropertyName),
-              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName), isDETS);
+              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName), isDETS,
+              structDecorator);
           }
           asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
         }
@@ -367,7 +383,7 @@ function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePa
 }
 
 function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: string,
-  asNameFromParent: Map<string, string>, isDETS: boolean): void {
+  asNameFromParent: Map<string, string>, isDETS: boolean, structDecorator: structDecoratorResult): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node);
   if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
@@ -377,23 +393,24 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
   } else {
     setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
       ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
   }
 }
 
-function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDETS: boolean): void {
+function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDETS: boolean,
+  structDecorator: structDecoratorResult): void {
   let name: string;
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     name = node.name.escapedText.toString();
@@ -440,7 +457,8 @@ function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDE
     getNewLocalStorageMap(localStoragePropCollection, name),
     builderParamInitialization.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...builderParamInitialization.get(CUSTOM_COMPONENT_DEFAULT),
-        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name), isDETS
+        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name), isDETS,
+    structDecorator
   );
 }
 
@@ -471,7 +489,7 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   regularArray: Set<string>, storagePropsArray: Set<string>, storageLinksArray: Set<string>,
   providesArray: Set<string>, consumesArray: Set<string>, objectLinksArray: Set<string>,
   localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
-  builderParamData: Set<string>, isDETS: boolean): void {
+  builderParamData: Set<string>, isDETS: boolean, structDecorator: structDecoratorResult): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
@@ -479,6 +497,9 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   componentCollection.customComponents.add(component);
   if (isDETS) {
     storedFileInfo.getCurrentArkTsFile().compFromDETS.add(component);
+  }
+  if (structDecorator.hasRecycle) {
+    storedFileInfo.getCurrentArkTsFile().recycleComponents.add(component);
   }
   stateCollection.set(component, stateArray);
   regularCollection.set(component, regularArray);
@@ -513,17 +534,23 @@ function isModule(filePath: string): boolean {
   return !/^(\.|\.\.)?\//.test(filePath) || filePath.indexOf(projectConfig.packageDir) > -1;
 }
 
-function isCustomComponent(node: ts.StructDeclaration): boolean {
+function isCustomComponent(node: ts.StructDeclaration, structDecorator: structDecoratorResult): boolean {
+  let isComponent: boolean = false;
   if (node.decorators && node.decorators.length) {
     for (let i = 0; i < node.decorators.length; ++i) {
       const decoratorName: ts.Identifier = node.decorators[i].expression as ts.Identifier;
-      if (ts.isIdentifier(decoratorName) &&
-        CUSTOM_DECORATOR_NAME.has(decoratorName.escapedText.toString())) {
-        return true;
+      if (ts.isIdentifier(decoratorName)) {
+        const name: string = decoratorName.escapedText.toString();
+        if (CUSTOM_DECORATOR_NAME.has(name)) {
+          isComponent = true;
+        }
+        if (name === DECORATOR_RECYCLE) {
+          structDecorator.hasRecycle = true;
+        }
       }
     }
   }
-  return false;
+  return isComponent;
 }
 
 let packageJsonEntry: string = '';
