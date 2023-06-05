@@ -28,6 +28,7 @@ export const COMPONENT_DECORATOR_PREVIEW: string = '@Preview';
 export const COMPONENT_DECORATOR_COMPONENT: string = '@Component';
 export const COMPONENT_DECORATOR_CUSTOM_DIALOG: string = '@CustomDialog';
 export const COMPONENT_DECORATOR_RECYCLE: string = '@Recycle';
+export const DECORATOR_RECYCLE: string = 'Recycle';
 
 export const COMPONENT_RECYCLE: string = '__Recycle__';
 
