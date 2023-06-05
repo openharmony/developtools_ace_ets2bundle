@@ -16,7 +16,10 @@
     "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate",
     "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib",
     "postinstall": "node npm-install.js",
-    "fastbuild": "rollup -c rollup.config.js"
+    "fastbuild": "rollup -c rollup.config.js",
+    "run:arkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\"",
+    "run:cleanArkTest": "rm -rf arkTest_build",
+    "arkTest": "npm run build && ./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest"
   },
   "devDependencies": {
     "@babel/cli": "7.20.7",
@@ -45,6 +48,7 @@
     "ignore-loader": "^0.1.2",
     "lodash": "4.17.21",
     "log4js": "6.7.1",
+    "merge-source-map": "1.0.4",
     "rollup": "3.19.1",
     "rollup-plugin-copy": "3.4.0",
     "rollup-plugin-delete": "2.0.0",

@@ -78,7 +78,7 @@ export const CHECK_EXTEND_DECORATORS: string[] = [
   CHECK_COMPONENT_EXTEND_DECORATOR,
   CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
 ];
-export const PROPERTY_ID: string = 'propertyId';
+
 export const CREATE_ANIMATABLE_PROPERTY: string = 'createAnimatableProperty';
 export const UPDATE_ANIMATABLE_PROPERTY: string = 'updateAnimatableProperty';
 

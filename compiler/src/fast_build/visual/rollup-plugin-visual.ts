@@ -1,7 +1,10 @@
 import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import { 
+  findIfVisualFileExists,
   findVisualFile, 
+  getHasSearchedVisualFiles, 
+  getHasVisual, 
   visualTransform as processVisual 
 } from '../../process_visual';
 import MagicString from 'magic-string';
@@ -29,6 +32,12 @@ export function visualTransform() {
       };
     },
     shouldInvalidCache(this: PluginContext, options: any): boolean {
+      if (!getHasSearchedVisualFiles()) {
+        findIfVisualFileExists();
+      }
+      if (projectConfig.modulePathMap !== undefined && !getHasVisual()) {
+        return false;
+      }
       const moduleId: string = options.id;
       if (!filter(moduleId) || !moduleId) {
         return false;
