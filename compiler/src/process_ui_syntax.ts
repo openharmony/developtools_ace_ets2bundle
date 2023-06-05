@@ -61,7 +61,6 @@ import {
   CHECK_EXTEND_DECORATORS,
   ELMTID,
   ISINITIALRENDER,
-  PROPERTY_ID,
   CREATE_ANIMATABLE_PROPERTY,
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_POP_FUNCTION,
@@ -595,7 +594,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
         node.name, node.typeParameters,
         [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
-          ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.parameters, statementArray)));
+          ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.name,
+            node.parameters, statementArray)));
     }
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
@@ -619,7 +619,7 @@ function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
   ];
 }
 
-function createAnimatableBody(componentName: string,
+function createAnimatableBody(componentName: string, funcName: ts.Identifier,
   parameters: ts.NodeArray<ts.ParameterDeclaration>, attrArray: ts.Statement[]): ts.Statement[] {
   const paramNode: ts.Identifier[] = [];
   parameters.forEach((item: ts.ParameterDeclaration) => {
@@ -628,11 +628,10 @@ function createAnimatableBody(componentName: string,
     }
   });
   return [
-    createPropertyId(),
     ts.factory.createIfStatement(
       ts.factory.createIdentifier(ISINITIALRENDER),
       ts.factory.createBlock([
-        createAnimatableProperty(componentName, parameters, paramNode, attrArray),
+        createAnimatableProperty(componentName, funcName, parameters, paramNode, attrArray),
         ...attrArray
       ], true),
       ts.factory.createBlock([
@@ -641,34 +640,23 @@ function createAnimatableBody(componentName: string,
             ts.factory.createIdentifier(componentName),
             ts.factory.createIdentifier(UPDATE_ANIMATABLE_PROPERTY)
           ), undefined,
-          [
-            ts.factory.createIdentifier(PROPERTY_ID),
-            ...paramNode
-          ]
+          [ ts.factory.createStringLiteral(funcName.escapedText.toString()), ...paramNode ]
         ))
       ])
     )
   ];
 }
 
-function createPropertyId(): ts.Statement {
-  return ts.factory.createVariableStatement(undefined,
-    ts.factory.createVariableDeclarationList([
-      ts.factory.createVariableDeclaration(ts.factory.createIdentifier(PROPERTY_ID))
-    ], ts.NodeFlags.Let));
-}
-
-function createAnimatableProperty(componentName: string,
+function createAnimatableProperty(componentName: string, funcName: ts.Identifier,
   parameters: ts.NodeArray<ts.ParameterDeclaration>,
   paramNode: ts.Identifier[], attrArray: ts.Statement[]) {
   const componentIdentifier: ts.Identifier = ts.factory.createIdentifier(componentName);
-  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-    ts.factory.createIdentifier(PROPERTY_ID),
-    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+  return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       componentIdentifier,
       ts.factory.createIdentifier(CREATE_ANIMATABLE_PROPERTY)),
       undefined, [
+        ts.factory.createStringLiteral(funcName.escapedText.toString()),
         ...paramNode,
         ts.factory.createArrowFunction(undefined, undefined, parameters, undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -684,7 +672,7 @@ function createAnimatableProperty(componentName: string,
             createViewStackProcessorStatement(STOPGETACCESSRECORDING)
           ], true))
       ]
-    ),)
+    )
   );
 }
 

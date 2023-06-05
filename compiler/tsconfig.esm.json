@@ -188,10 +188,12 @@
         "WaterFlow",
         "FlowItem",
         "ImageSpan",
-        "SecLocationButton"
+        "SecLocationButton",
+        "SecPasteButton",
+        "SecSaveButton",
       ],
       "extend": {
-        "decorator": "Extend",
+        "decorator": ["Extend", "AnimatableExtend"],
         "components": [
           {
             "name": "AbilityComponent",
@@ -681,7 +683,17 @@
           {
             "name": "SecLocationButton",
             "type": "SecLocationButtonAttribute",
-            "instance": "SecLocationButtonInterface"
+            "instance": "SecLocationButtonInstance"
+          },
+          {
+            "name": "SecPasteButton",
+            "type": "SecPasteButtonAttribute",
+            "instance": "SecPasteButtonInstance"
+          },
+          {
+            "name": "SecSaveButton",
+            "type": "SecSaveButtonAttribute",
+            "instance": "SecSaveButtonInstance"
           }
         ]
       },
