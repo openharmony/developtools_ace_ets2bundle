@@ -5,7 +5,7 @@
     "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
     "border", "borderStyle", "borderWidth", "borderColor", "borderRadius",
     "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition", "backgroundBlurStyle",
-    "opacity", "animation", "transition", "stateStyles",
+    "obscured", "opacity", "animation", "transition", "stateStyles",
     "onClick", "onTouch", "touchable", "onKeyEvent", "onHover", "hoverEffect", "onMouse", "onAreaChange",
     "blur", "backdropBlur", "windowBlur", "translate", "rotate", "scale", "transform",
     "onAppear", "onDisAppear", "visibility", "flexBasis", "flexShrink", "flexGrow", "alignSelf",
