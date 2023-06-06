@@ -242,9 +242,6 @@ async function transform(code: string, id: string) {
     storedFileInfo.reUseProgram = true;
   }
 
-  // close `noEmit` to make invoking emit() effective.
-  tsProgram.getCompilerOptions().noEmit = false;
-
   targetSourceFile.fileName = id;
 
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
@@ -258,10 +255,15 @@ async function transform(code: string, id: string) {
     }
   }
 
-  tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
-
-  // restore `noEmit` to prevent tsc's watchService emitting automatically.
-  tsProgram.getCompilerOptions().noEmit = true;
+  // close `noEmit` to make invoking emit() effective.
+  tsProgram.getCompilerOptions().noEmit = false;
+  // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
+  try {
+    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+  } finally {
+    // restore `noEmit` to prevent tsc's watchService emitting automatically.
+    tsProgram.getCompilerOptions().noEmit = true;
+  }
 
   resetCollection();
   if (transformLog && transformLog.errors.length) {
