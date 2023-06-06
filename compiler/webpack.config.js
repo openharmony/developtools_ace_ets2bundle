@@ -66,12 +66,6 @@ function initConfig(config) {
     module: {
       rules: [
         {
-          test:/\.(jpg|png|gif|jpeg|mp3|mp4|svg)$/,
-          use:{
-            loader:'url-loader'
-          }
-        },
-        {
           test: /\.d\.ts/,
           loader: 'ignore-loader'
         },
