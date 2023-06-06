@@ -15,7 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const md5 = require('md5');
+const crypto = require('crypto');
 const JSON5 = require('json5');
 
 const {
@@ -635,7 +635,9 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
 }
 
 function hashProjectPath(projectPath) {
-  process.env.hashProjectPath = "_" + md5(projectPath);
+  const hash = crypto.createHash('sha256');
+  hash.update(projectPath.toString());
+  process.env.hashProjectPath = "_" + hash.digest('hex');
   return process.env.hashProjectPath;
 }
 
