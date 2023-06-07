@@ -54,7 +54,8 @@ import {
   hotReloadSupportFiles,
   printDiagnostic,
   checkerResult,
-  incrementWatchFile
+  incrementWatchFile,
+  warnCheckerResult
 } from './ets_checker';
 import {
   globalProgram,
@@ -289,6 +290,7 @@ export class ResultStates {
 
   private resetTsErrorCount(): void {
     checkerResult.count = 0;
+    warnCheckerResult.count = 0;
   }
 
   private printResult(): void {
@@ -315,7 +317,8 @@ export class ResultStates {
 
   private printLogCount(): void {
     let errorCount: number = this.mErrorCount + checkerResult.count;
-    if (errorCount + this.warningCount + this.noteCount > 0 || process.env.abcCompileSuccess === 'false') {
+    const warnCount: number = this.warningCount + warnCheckerResult.count;
+    if (errorCount + warnCount + this.noteCount > 0 || process.env.abcCompileSuccess === 'false') {
       let result: string;
       let resultInfo: string = '';
       if (errorCount > 0) {
@@ -328,8 +331,8 @@ export class ResultStates {
       if (process.env.abcCompileSuccess === 'false') {
         result = 'FAIL ';
       }
-      if (this.warningCount > 0) {
-        resultInfo += ` WARN:${this.warningCount}`;
+      if (warnCount > 0) {
+        resultInfo += ` WARN:${warnCount}`;
       }
       if (this.noteCount > 0) {
         resultInfo += ` NOTE:${this.noteCount}`;
