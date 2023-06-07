@@ -47,7 +47,6 @@
     "ignore-loader": "^0.1.2",
     "lodash": "4.17.21",
     "log4js": "6.7.1",
-    "merge-source-map": "1.0.4",
     "rollup": "3.19.1",
     "rollup-plugin-copy": "3.4.0",
     "rollup-plugin-delete": "2.0.0",
@@ -55,6 +54,7 @@
     "typescript": "file:./deps/ohos-typescript-4.2.3-r2.tgz",
     "webpack": "5.72.1",
     "webpack-cli": "5.0.2",
-    "ws": "8.12.1"
+    "ws": "8.12.1",
+    "source-map": "0.7.4"
   }
 }
