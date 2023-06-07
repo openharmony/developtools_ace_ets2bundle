@@ -233,6 +233,11 @@ interface NeedUpdateFlag {
 interface CheckerResult {
   count: number
 }
+
+interface WarnCheckerResult {
+  count: number
+}
+
 interface WholeCache {
   runtimeOS: string,
   sdkInfo: string,
@@ -248,6 +253,7 @@ const allResolvedModules: Set<string> = new Set();
 let fastBuildLogger = null;
 
 export const checkerResult: CheckerResult = {count: 0};
+export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
   fastBuildLogger = newLogger;
   let languageService: ts.LanguageService = null;
@@ -336,7 +342,11 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger ? fastBuildLogger : logger;
     let logMessage: string;
-    checkerResult.count += 1;
+    if (logPrefix === 'ERROR') {
+      checkerResult.count += 1;
+    } else {
+      warnCheckerResult.count += 1;
+    }
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
