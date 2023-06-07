@@ -16,7 +16,6 @@
 import * as ts from 'typescript';
 import path from 'path';
 import MagicString from 'magic-string';
-import merge from 'merge-source-map';
 import {
   GEN_ABC_PLUGIN_NAME,
   PACKAGES
@@ -30,6 +29,7 @@ import { writeFileSyncByNode } from '../../../process_module_files';
 import {
   isJsonSourceFile,
   isJsSourceFile,
+  updateSourceMap,
   writeFileContentToTempDir
 } from '../utils';
 import { toUnixPath } from '../../../utils';
@@ -66,7 +66,7 @@ export class ModuleSourceFile {
     for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
-        source.processModuleRequest(rollupObject);
+        await source.processModuleRequest(rollupObject);
       }
       await source.writeSourceFile();
     }
@@ -117,7 +117,7 @@ export class ModuleSourceFile {
     });
   }
 
-  private processTransformedJsModuleRequest(rollupObject: any) {
+  private async processTransformedJsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
@@ -152,7 +152,7 @@ export class ModuleSourceFile {
       includeContent: false,
       hires: true
     });
-    newSourceMaps[relativeSourceFilePath] = merge(newSourceMaps[relativeSourceFilePath], updatedMap);
+    newSourceMaps[relativeSourceFilePath] = await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
 
     this.source = code.toString();
   }
@@ -212,7 +212,7 @@ export class ModuleSourceFile {
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
   // This 'ohmUrl' will be the same as the record name for each file, to make sure runtime can find the corresponding
   // record based on each module request.
-  processModuleRequest(rollupObject: any) {
+  async processModuleRequest(rollupObject: any) {
     if (isJsonSourceFile(this.moduleId)) {
       return;
     }
@@ -224,7 +224,7 @@ export class ModuleSourceFile {
     // Only when files were transformed to ts, the corresponding ModuleSourceFile were initialized with sourceFile node,
     // if files were transformed to js, ModuleSourceFile were initialized with srouce string.
     this.isSourceNode ? this.processTransformedTsModuleRequest(rollupObject) :
-      this.processTransformedJsModuleRequest(rollupObject);
+      await this.processTransformedJsModuleRequest(rollupObject);
   }
 
   private static initPluginEnv(rollupObject: any) {

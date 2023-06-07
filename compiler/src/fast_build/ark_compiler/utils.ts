@@ -17,6 +17,7 @@ import cluster from 'cluster';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import sourceMap from "source-map";
 
 import {
   DEBUG,
@@ -169,4 +170,33 @@ export function isJsSourceFile(file: string): boolean {
 
 export function isJsonSourceFile(file: string): boolean {
   return /\.json$/.test(file);
+}
+
+export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap: sourceMap.RawSourceMap): Promise<any> {
+  if (!originMap) {
+    return newMap;
+  }
+  if (!newMap) {
+    return originMap;
+  }
+  const originConsumer: sourceMap.SourceMapConsumer = await new sourceMap.SourceMapConsumer(originMap);
+  const newConsumer: sourceMap.SourceMapConsumer = await new sourceMap.SourceMapConsumer(newMap);
+  const newMappingList: sourceMap.MappingItem[] = [];
+  newConsumer.eachMapping((mapping: sourceMap.MappingItem) => {
+    if (mapping.originalLine == null) {
+      return;
+    }
+    const originalPos =
+      originConsumer.originalPositionFor({line: mapping.originalLine, column: mapping.originalColumn});
+    if (originalPos.source == null) {
+      return;
+    }
+    mapping.originalLine = originalPos.line;
+    mapping.originalColumn = originalPos.column;
+    newMappingList.push(mapping);
+  });
+  const updatedGenerator: sourceMap.SourceMapGenerator = sourceMap.SourceMapGenerator.fromSourceMap(newConsumer);
+  updatedGenerator['_file'] = originMap.file;
+  updatedGenerator['_mappings']['_array'] = newMappingList;
+  return JSON.parse(updatedGenerator.toString());
 }
