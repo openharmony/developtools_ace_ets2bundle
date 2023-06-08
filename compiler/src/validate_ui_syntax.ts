@@ -93,6 +93,7 @@ import {
   transformLog,
   validatorCard
 } from './process_ui_syntax';
+import { stateObjectCollection } from './process_component_member';
 import { logger } from './compile_info';
 
 export interface ComponentCollection {
@@ -1185,6 +1186,7 @@ export function resetComponentCollection() {
   componentCollection.entryComponent = null;
   componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = new Array();
+  stateObjectCollection.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
