@@ -45,15 +45,16 @@ struct HomeComponent {
 `
 
 exports.expectResult = `"use strict";
-function animatablePoints(points, elmtId, isInitialRender) {
+function animatablePoints(points, elmtId, isInitialRender, parent) {
     if (isInitialRender) {
         Polyline.createAnimatableProperty("animatablePoints", points, (points) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Polyline.create();
+            ViewStackProcessor.GetAndPushFrameNode("Polyline", elmtId);
             Polyline.strokeOpacity(points);
             Polyline.backgroundColor(Color.Red);
             Polyline.pop();
             ViewStackProcessor.StopGetAccessRecording();
+            parent.finishUpdateFunc(elmtId);
         });
         Polyline.strokeOpacity(points);
         Polyline.backgroundColor(Color.Red);
@@ -62,14 +63,15 @@ function animatablePoints(points, elmtId, isInitialRender) {
         Polyline.updateAnimatableProperty("animatablePoints", points);
     }
 }
-function attributeExtend(elmtId, isInitialRender) {
+function attributeExtend(elmtId, isInitialRender, parent) {
     if (isInitialRender) {
         Text.createAnimatableProperty("attributeExtend", () => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Text.create();
+            ViewStackProcessor.GetAndPushFrameNode("Text", elmtId);
             Text.fontSize(50);
             Text.pop();
             ViewStackProcessor.StopGetAccessRecording();
+            parent.finishUpdateFunc(elmtId);
         });
         Text.fontSize(50);
     }
@@ -108,7 +110,7 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Polyline.create();
-            animatablePoints(this.points, elmtId, isInitialRender);
+            animatablePoints(this.points, elmtId, isInitialRender, this);
             Polyline.strokeWidth(3);
             Polyline.height(100);
             Polyline.width(100);
@@ -120,7 +122,7 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("hello");
-            attributeExtend(elmtId, isInitialRender);
+            attributeExtend(elmtId, isInitialRender, this);
             if (!isInitialRender) {
                 Text.pop();
             }
