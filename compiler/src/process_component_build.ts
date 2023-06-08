@@ -2023,7 +2023,8 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
         ? temp.arguments
         : [
             ...temp.arguments, ts.factory.createIdentifier(ELMTID),
-            ts.factory.createIdentifier(ISINITIALRENDER)
+            ts.factory.createIdentifier(ISINITIALRENDER),
+            ts.factory.createThis()
           ]
       ));
     statements.push(extendNode);

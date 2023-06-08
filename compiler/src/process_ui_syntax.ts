@@ -64,7 +64,11 @@ import {
   CREATE_ANIMATABLE_PROPERTY,
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_POP_FUNCTION,
-  UPDATE_ANIMATABLE_PROPERTY
+  UPDATE_ANIMATABLE_PROPERTY,
+  VIEW_STACK_PROCESSOR,
+  GET_AND_PUSH_FRAME_NODE,
+  COMPONENT_CONSTRUCTOR_PARENT,
+  FINISH_UPDATE_FUNC,
 } from './pre_define';
 import {
   componentInfo,
@@ -615,7 +619,9 @@ function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
     ts.factory.createParameterDeclaration(
       undefined, undefined, undefined, ts.factory.createIdentifier(ELMTID)),
     ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(ISINITIALRENDER))
+      undefined, undefined, undefined, ts.factory.createIdentifier(ISINITIALRENDER)),
+    ts.factory.createParameterDeclaration(
+      undefined, undefined, undefined, ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT))
   ];
 }
 
@@ -662,18 +668,39 @@ function createAnimatableProperty(componentName: string, funcName: ts.Identifier
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
           ts.factory.createBlock([
             createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-            ts.factory.createExpressionStatement(
-              createFunction(componentIdentifier,
-                ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null)),
+            createAnimatableFrameNode(componentName),
             ...attrArray,
             ts.factory.createExpressionStatement(
               createFunction(componentIdentifier,
                 ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)),
-            createViewStackProcessorStatement(STOPGETACCESSRECORDING)
+            createViewStackProcessorStatement(STOPGETACCESSRECORDING),
+            createAnimatableUpdateFunc()
           ], true))
       ]
     )
   );
+}
+
+function createAnimatableFrameNode(componentName: string): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(VIEW_STACK_PROCESSOR),
+      ts.factory.createIdentifier(GET_AND_PUSH_FRAME_NODE),
+    ), undefined,
+    [
+      ts.factory.createStringLiteral(componentName),
+      ts.factory.createIdentifier(ELMTID)
+    ]
+  ));
+}
+
+function createAnimatableUpdateFunc(): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+      ts.factory.createIdentifier(FINISH_UPDATE_FUNC),
+    ), undefined, [ts.factory.createIdentifier(ELMTID)]
+  ));
 }
 
 function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration {
