@@ -82,6 +82,8 @@ export const CHECK_EXTEND_DECORATORS: string[] = [
 
 export const CREATE_ANIMATABLE_PROPERTY: string = 'createAnimatableProperty';
 export const UPDATE_ANIMATABLE_PROPERTY: string = 'updateAnimatableProperty';
+export const GET_AND_PUSH_FRAME_NODE: string = 'GetAndPushFrameNode';
+export const FINISH_UPDATE_FUNC: string = 'finishUpdateFunc';
 
 export const OBSERVED_PROPERTY_SIMPLE: string = 'ObservedPropertySimple';
 export const OBSERVED_PROPERTY_OBJECT: string = 'ObservedPropertyObject';
