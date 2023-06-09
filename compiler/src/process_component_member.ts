@@ -943,18 +943,22 @@ function isBasicType(flags: number): boolean {
 }
 
 function isObservedClassType(type: ts.TypeNode): boolean {
-  if (ts.isTypeReferenceNode(type) && observedClassCollection.has(type.getText())) {
+  if (judgmentTypedeclaration(type) && observedClassCollection.has(type.typeName.escapedText.toString())) {
     return true;
   } else if (ts.isUnionTypeNode(type) && type.types) {
     const types: ts.NodeArray<ts.TypeNode> = type.types;
     for (let i = 0; i < types.length; i++) {
-      if (!observedClassCollection.has(types[i].getText())) {
+      if (judgmentTypedeclaration(types[i]) && !observedClassCollection.has(types[i].typeName.escapedText.toString())) {
         return false;
       }
     }
     return true;
   }
   return false;
+}
+
+function judgmentTypedeclaration(type: ts.TypeNode): boolean {
+  return ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName);
 }
 
 function validateAppStorageDecoractorsNonSingleKey(node: ts.PropertyDeclaration,
