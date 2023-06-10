@@ -5,6 +5,6 @@
     "type", "placeholderColor", "placeholderFont", "enterKeyType", "caretColor", "maxLength",
     "onEditChanged", "onSubmit", "onChange", "onCopy", "OnCut", "OnPaste", "fontSize",
     "fontColor", "fontStyle", "fontWeight", "fontFamily", "inputFilter", "onEditChange",
-    "copyOption", "style"
+    "copyOption", "style", "passwordIcon", "showError", "showUnit", "showUnderline"
   ]
 }
