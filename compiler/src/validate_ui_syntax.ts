@@ -98,6 +98,7 @@ import { logger } from './compile_info';
 
 export interface ComponentCollection {
   localStorageName: string;
+  localStorageNode: ts.Identifier | ts.ObjectLiteralExpression;
   entryComponentPos: number;
   entryComponent: string;
   previewComponent: Array<string>;
@@ -125,6 +126,7 @@ export interface IComponentSet {
 
 export const componentCollection: ComponentCollection = {
   localStorageName: null,
+  localStorageNode: null,
   entryComponentPos: null,
   entryComponent: null,
   previewComponent: new Array(),
@@ -293,7 +295,10 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
   decorators.forEach((element) => {
-    const name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
+    let name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
+    if (element.expression && element.expression.expression && ts.isIdentifier(element.expression.expression)) {
+      name = '@' + element.expression.expression.getText();
+    }
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       componentCollection.customComponents.add(componentName);
       switch (name) {
@@ -368,11 +373,16 @@ function collectLocalStorageName(node: ts.Decorator): void {
       node.expression.arguments.forEach((item: ts.Node, index: number) => {
         if (ts.isIdentifier(item) && index === 0) {
           componentCollection.localStorageName = item.getText();
+          componentCollection.localStorageNode = item;
+        } else if (ts.isObjectLiteralExpression(item) && index === 0) {
+          componentCollection.localStorageName = null;
+          componentCollection.localStorageNode = item;
         }
       });
     }
   } else {
     componentCollection.localStorageName = null;
+    componentCollection.localStorageNode = null;
   }
 }
 

@@ -113,7 +113,20 @@ class LocalStorageComponent extends ViewPU {
         this.updateDirtyElements();
     }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new LocalStorageComponent(undefined, {}, storage));
-ViewStackProcessor.StopGetAccessRecording();
+if (storage && storage.routeName != undefined && storage.storage != undefined) {
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
+}
+else if (storage && storage.routeName != undefined && storage.storage == undefined) {
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
+}
+else if (storage && storage.routeName == undefined && storage.storage != undefined) {
+    ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+    loadDocument(new LocalStorageComponent(undefined, {}, storage.storage));
+    ViewStackProcessor.StopGetAccessRecording();
+}
+else {
+    ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+    loadDocument(new LocalStorageComponent(undefined, {}, storage));
+    ViewStackProcessor.StopGetAccessRecording();
+}
 `
