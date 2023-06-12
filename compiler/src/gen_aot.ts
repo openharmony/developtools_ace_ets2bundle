@@ -163,10 +163,11 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
   try {
     logger.debug(`generateAot cmd: ${singleCmd}`);
     mkdirsSync(projectConfig.anBuildOutPut);
+    fs.closeSync(fs.openSync(appAot + '.an', 'w'));
+    fs.closeSync(fs.openSync(appAot + '.ai', 'w'));
     childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
     // Extract HostTool log information from hilog, which outputs to stdout.
-    let errorMessages: string[] = [];
     let outStream: Buffer = e.stdout;
     outStream.toString().split(os.EOL).forEach((stdLog: string) => {
       if (!stdLog.includes(hostToolKeyWords)) {
@@ -180,10 +181,11 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
       }
       let logLevel: string = logHeader.trim().split(/\s+/)[logLevelIndex];
       if (logLevel === 'F' || logLevel === 'E') {
-        errorMessages.push(`ArkTS:ERROR: ${logContent}`);
+        logger.warn(`ArkTS:WARN ${logContent}`);
       }
     });
-    faultHandler(`ArkTS:ERROR Failed to generate aot file. Error message: ${e}${errorMessages.join(os.EOL)}`);
+    logger.warn(`ArkTS:WARN ${e}`);
+    logger.warn(`ArkTS:WARN Failed to generate aot file, the module may run with an interpreter`);
   }
 }
 
