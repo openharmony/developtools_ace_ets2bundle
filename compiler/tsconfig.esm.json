@@ -153,9 +153,11 @@
         "Refresh",
         "RelativeContainer",
         "RemoteWindow",
+        "RootScene",
         "Row",
         "RowSplit",
         "RichText",
+        "Screen",
         "Scroll",
         "ScrollBar",
         "Search",
@@ -182,6 +184,7 @@
         "Toggle",
         "Video",
         "Web",
+        "WindowScene",
         "XComponent",
         "GridRow",
         "GridCol",
@@ -506,6 +509,11 @@
             "instance": "RemoteWindowInstance"
           },
           {
+            "name": "RootScene",
+            "type": "RootSceneAttribute",
+            "instance": "RootSceneInstance"
+          },
+          {
             "name": "Row",
             "type": "RowAttribute",
             "instance": "RowInstance"
@@ -519,6 +527,11 @@
             "name": "RichText",
             "type": "RichTextAttribute",
             "instance": "RichTextInstance"
+          },
+          {
+            "name": "Screen",
+            "type": "ScreenAttribute",
+            "instance": "ScreenInstance"
           },
           {
             "name": "Scroll",
@@ -649,6 +662,11 @@
             "name": "Web",
             "type": "WebAttribute",
             "instance": "WebInstance"
+          },
+          {
+            "name": "WindowScene",
+            "type": "WindowSceneAttribute",
+            "instance": "WindowSceneInstance"
           },
           {
             "name": "XComponent",
