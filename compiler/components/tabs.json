@@ -3,6 +3,6 @@
   "children": ["TabContent"],
   "attrs": [
     "vertical", "scrollable", "barMode", "barWidth", "barHeight", "animationDuration",
-    "onChange", "barPosition"
+    "onChange", "barPosition", "barOverlap", "barBackgroundColor"
   ]
 }
