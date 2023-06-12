@@ -495,3 +495,10 @@ export const BUILDER_PARAM_PROXY: string = 'makeBuilderParameterProxy';
 export const BUILDER_TYPE: string = 'BuilderType';
 
 export const FUNCTION: string = 'function';
+
+export const ROUTENAME_NODE: string = 'routeNameNode';
+export const STORAGE_NODE: string = 'storageNode';
+export const STORAGE: string = 'storage';
+export const REGISTER_NAMED_ROUTE: string = 'registerNamedRoute';
+export const ROUTE_NAME: string = 'routeName';
+export const PAGE_PATH: string = 'pagePath';

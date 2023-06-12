@@ -60,6 +60,12 @@ import {
   COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
   CHECK_EXTEND_DECORATORS,
   ELMTID,
+  ROUTENAME_NODE,
+  STORAGE_NODE,
+  STORAGE,
+  REGISTER_NAMED_ROUTE,
+  ROUTE_NAME,
+  PAGE_PATH,
   ISINITIALRENDER,
   CREATE_ANIMATABLE_PROPERTY,
   COMPONENT_CREATE_FUNCTION,
@@ -794,7 +800,7 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult): v
 
 function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
   entryNodeKey: ts.Expression, id: number): ts.SourceFile {
-  let cardRelativePath: string = undefined;
+  let cardRelativePath: string;
   if (projectConfig && projectConfig.cardObj) {
     cardRelativePath = projectConfig.cardObj[resourceFileName];
   }
@@ -824,19 +830,19 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
 }
 
 function createEntryFunction(name: string, context: ts.TransformationContext, cardRelativePath: string,
-  entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | ts.ExpressionStatement[] {
+  entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | (ts.ExpressionStatement | ts.Block | ts.IfStatement)[] {
   const newArray: ts.Expression[] = [
     context.factory.createStringLiteral(id.toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
-  const localStorageName: string = addStorageParam(name);
+  const [localStorageName, entryOptionNode]: [string, ts.Expression] = addStorageParam(name);
   if (localStorageName) {
     newArray.push(entryNodeKey);
   }
   const newExpressionParams: any[] = [
     context.factory.createNewExpression(
-      context.factory.createIdentifier(name),undefined, newArray)];
+      context.factory.createIdentifier(name), undefined, newArray)];
   addCardStringliteral(newExpressionParams, context, cardRelativePath);
   if (!partialUpdateConfig.partialUpdateMode) {
     const newExpressionStatement: ts.ExpressionStatement =
@@ -845,11 +851,321 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
           PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams));
     return newExpressionStatement;
   } else {
+    if (cardRelativePath) {
+      if (entryOptionNode && ts.isObjectLiteralExpression(entryOptionNode)) {
+        transformLog.errors.push({
+          type: LogType.ERROR,
+          message: `@Entry doesn't support {} parameter in card`,
+          pos: componentCollection.entryComponentPos
+        });
+      }
+      return [
+        createStartGetAccessRecording(context),
+        createLoadDocument(context, name, cardRelativePath, localStorageName, entryNodeKey),
+        createStopGetAccessRecording(context)
+      ];
+    } else {
+      return createLoadPageConditionalJudgMent(context, name, cardRelativePath, localStorageName, entryOptionNode);
+    }
+  }
+}
+
+function createLoadPageConditionalJudgMent(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, localStorageName: string, entryOptionNode: ts.Expression,
+  argsArr: ts.Expression[] = undefined, isComponentPreview: boolean = false)
+  : (ts.ExpressionStatement | ts.Block | ts.IfStatement)[] {
+  let isObject: boolean = false;
+  let routeNameNode: ts.Expression;
+  let storageNode: ts.Expression;
+  if (!entryOptionNode) {
     return [
       createStartGetAccessRecording(context),
-      createLoadDocument(context, name, cardRelativePath, localStorageName, entryNodeKey),
+      createLoadDocument(context, name, cardRelativePath, localStorageName, entryOptionNode),
       createStopGetAccessRecording(context)
     ];
+  }
+  if (ts.isObjectLiteralExpression(entryOptionNode)) {
+    isObject = true;
+    if (entryOptionNode.properties) {
+      entryOptionNode.properties.forEach((property) => {
+        if (ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name)) {
+          if (property.name.escapedText.toString() === ROUTE_NAME) {
+            routeNameNode = property.initializer;
+          } else if (property.name.escapedText.toString() === STORAGE) {
+            storageNode = property.initializer;
+          }
+        }
+      });
+    }
+  } else {
+    isObject = false;
+  }
+  if (isObject) {
+    if (routeNameNode && !storageNode) {
+      return isComponentPreview ? [
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, false),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, true, false, false, argsArr)
+      ] : [ts.factory.createBlock([
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, false),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, true, false, false, argsArr)
+      ])];
+    } else if (!routeNameNode && !storageNode) {
+      return isComponentPreview ? [
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, false),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, false, false, true, argsArr)
+      ] : [ts.factory.createBlock([
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, false),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, false, false, true, argsArr)
+      ])];
+    } else if (!routeNameNode && storageNode) {
+      return isComponentPreview ? [
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, true),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, false, true, true, argsArr)
+      ] : [ts.factory.createBlock([
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, true),
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, false, true, true, argsArr)
+      ])];
+    } else {
+      return isComponentPreview ? [
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, true),
+        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
+          storageNode, argsArr)
+      ] : [ts.factory.createBlock([
+        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, true),
+        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
+          storageNode, argsArr)
+      ])];
+    }
+  } else {
+    return [
+      judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
+        storageNode, argsArr)];
+  }
+}
+
+function judgeRouteNameAndStorage(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, isObject: boolean, entryOptionNode: ts.Expression, routeNameNode: ts.Expression,
+  storageNode: ts.Expression, argsArr: ts.Expression[] = undefined): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    isObject ? judgeRouteAndStorageForObject(true, true) :
+      judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, true),
+    ts.factory.createBlock(
+      [
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, true, true, false, argsArr)
+      ],
+      true
+    ),
+    ts.factory.createIfStatement(
+      isObject ? judgeRouteAndStorageForObject(true, false) :
+        judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, false),
+      ts.factory.createBlock(
+        [
+          ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+            routeNameNode, storageNode, true, false, false, argsArr)
+        ],
+        true
+      ),
+      ts.factory.createIfStatement(
+        isObject ? judgeRouteAndStorageForObject(false, true) :
+          judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, false, true),
+        ts.factory.createBlock(
+          [
+            ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+              routeNameNode, storageNode, false, true, true, argsArr)
+          ],
+          true
+        ),
+        ts.factory.createBlock(
+          [
+            ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+              routeNameNode, storageNode, false, false, true, argsArr)
+          ],
+          true
+        )
+      )
+    )
+  );
+}
+
+function judgeRouteAndStorageForObject(hasRouteName: boolean, hasStorage: boolean): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(ROUTENAME_NODE),
+      ts.factory.createToken(hasRouteName ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(STORAGE_NODE),
+      ts.factory.createToken(hasStorage ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+    )
+  );
+}
+
+function judgeRouteAndStorageForIdentifier(entryOptionNode: ts.Identifier, hasRouteName: boolean,
+  hasStorage: boolean): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    ts.factory.createBinaryExpression(
+      entryOptionNode,
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createPropertyAccessExpression(
+          entryOptionNode,
+          ts.factory.createIdentifier(ROUTE_NAME)
+        ),
+        ts.factory.createToken(hasRouteName ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+      )
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        entryOptionNode,
+        ts.factory.createIdentifier(STORAGE)
+      ),
+      ts.factory.createToken(hasStorage ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+    )
+  );
+}
+
+function assignRouteNameAndStorage(routeNameNode, storageNode, hasRouteName, hasStorage): ts.ExpressionStatement[] {
+  const assignOperation: ts.VariableStatement[] = [];
+  if (hasRouteName) {
+    assignOperation.push(ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(ROUTENAME_NODE),
+          undefined,
+          undefined,
+          routeNameNode
+        )],
+        ts.NodeFlags.Let
+      )
+    ));
+  }
+  if (hasStorage) {
+    assignOperation.push(ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(STORAGE_NODE),
+          undefined,
+          undefined,
+          storageNode
+        )],
+        ts.NodeFlags.Let
+      )
+    ));
+  }
+  return assignOperation;
+}
+
+function createLoadDocumentWithRoute(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, isObject: boolean, entryOptionNode: ts.Expression,
+  routeNameNode: ts.Node, storageNode: ts.Node, hasRouteName: boolean, hasStorage: boolean,
+  shouldCreateAccsessRecording: boolean, argsArr: ts.Expression[]): ts.ExpressionStatement[] {
+  const newArray: ts.Expression[] = [
+    context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    context.factory.createObjectLiteralExpression([], false)
+  ];
+  if (entryOptionNode) {
+    if (!isObject) {
+      if (hasStorage) {
+        newArray.push(ts.factory.createPropertyAccessExpression(
+          entryOptionNode,
+          ts.factory.createIdentifier(STORAGE)
+        ));
+      } else if (!hasRouteName) {
+        newArray.push(entryOptionNode);
+      }
+    } else if (storageNode && hasStorage) {
+      newArray.push(ts.factory.createIdentifier(STORAGE_NODE));
+    }
+  }
+  const newExpressionParams: any[] = [
+    context.factory.createNewExpression(
+      context.factory.createIdentifier(name),
+      undefined, newArray)];
+  if (argsArr) {
+    argsArr.pop();
+    argsArr.push(newExpressionParams[0]);
+  }
+  if (hasRouteName) {
+    return [
+      argsArr ? context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+        undefined,
+        [
+          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+          ...argsArr
+        ]
+      )) : undefined,
+      shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
+      context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
+        undefined,
+        [
+          context.factory.createArrowFunction(
+            undefined,
+            undefined,
+            [],
+            undefined,
+            context.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            newExpressionParams[0]
+          ),
+          isObject ? ts.factory.createIdentifier(ROUTENAME_NODE) : context.factory.createPropertyAccessExpression(
+            entryOptionNode,
+            context.factory.createIdentifier(ROUTE_NAME)
+          ),
+          context.factory.createObjectLiteralExpression(
+            [
+              context.factory.createPropertyAssignment(
+                context.factory.createIdentifier(RESOURCE_NAME_BUNDLE),
+                context.factory.createStringLiteral(projectConfig.bundleName || '')
+              ),
+              context.factory.createPropertyAssignment(
+                context.factory.createIdentifier(RESOURCE_NAME_MODULE),
+                context.factory.createStringLiteral(projectConfig.moduleName || '')
+              ),
+              context.factory.createPropertyAssignment(
+                context.factory.createIdentifier(PAGE_PATH),
+                context.factory.createStringLiteral(
+                  projectConfig.compileHar ? '' :
+                    path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+                )
+              )
+            ],
+            false
+          )
+        ]
+      )),
+      shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
+  } else {
+    return [
+      argsArr ? context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+        undefined,
+        [
+          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+          ...argsArr
+        ]
+      )) : undefined,
+      shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
+      context.factory.createExpressionStatement(
+        context.factory.createCallExpression(
+          context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
+            PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)),
+      shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   }
 }
 
@@ -876,7 +1192,7 @@ function createStartGetAccessRecording(context: ts.TransformationContext): ts.Ex
 function createLoadDocument(context: ts.TransformationContext, name: string,
   cardRelativePath: string, localStorageName: string, entryNodeKey: ts.Expression): ts.ExpressionStatement {
   const newArray: ts.Expression[] = [
-    context.factory.createIdentifier('undefined'),
+    context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
   if (localStorageName) {
@@ -907,14 +1223,18 @@ function createStopGetAccessRecording(context: ts.TransformationContext): ts.Exp
   );
 }
 
-function addStorageParam(name: string): string {
+function addStorageParam(name: string): [string, ts.Expression] {
   let localStorageName: string;
+  let localStorageNode: ts.Identifier | ts.ObjectLiteralExpression;
   const localStorageNum: number = (localStorageLinkCollection.get(name) || new Set()).size +
     (localStoragePropCollection.get(name) || new Set()).size;
+  if (componentCollection.entryComponent === name && componentCollection.localStorageNode) {
+    localStorageNode = componentCollection.localStorageNode;
+  }
   if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
     localStorageName = componentCollection.localStorageName;
-  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName
-    && localStorageNum) {
+  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName &&
+    !componentCollection.localStorageNode && localStorageNum) {
     transformLog.errors.push({
       type: LogType.WARN,
       message: `@Entry should have a parameter, like '@Entry (storage)'.`,
@@ -922,7 +1242,7 @@ function addStorageParam(name: string): string {
     });
     return;
   }
-  return localStorageName;
+  return [localStorageName, localStorageNode];
 }
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
@@ -937,8 +1257,9 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
       context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
       context.factory.createObjectLiteralExpression([], false)
     ];
-  if (addStorageParam(name)) {
-    newArray.push(entryNodeKey);
+  const [localStorageName, entryOptionNode]: [string, ts.Expression] = addStorageParam(name);
+  if (entryOptionNode) {
+    newArray.push(entryOptionNode);
   }
   const argsArr: ts.Expression[] = [];
   componentCollection.previewComponent.forEach(componentName => {
@@ -968,26 +1289,70 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
       true
     ),
     context.factory.createBlock(
-      [
-        context.factory.createExpressionStatement(context.factory.createCallExpression(
-          context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-          undefined,
-          [
-            context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-            ...argsArr
-          ]
-        )),
-        name && partialUpdateConfig.partialUpdateMode ? createStartGetAccessRecording(context) : undefined,
-        name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
-          context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-            PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams
-        )) : undefined,
-        name && partialUpdateConfig.partialUpdateMode ? createStopGetAccessRecording(context) : undefined
-      ],
+      createPreviewElseBlock(name, context, cardRelativePath, localStorageName, entryOptionNode,
+        newExpressionParams, argsArr),
       true
     )
   );
   return ifStatement;
+}
+
+function createPreviewElseBlock(name: string, context: ts.TransformationContext, cardRelativePath: string,
+  localStorageName: string, entryOptionNode: ts.Expression, newExpressionParams: ts.Expression[],
+  argsArr: ts.Expression[]): (ts.ExpressionStatement | ts.IfStatement | ts.Block)[] {
+  if (name) {
+    if (!partialUpdateConfig.partialUpdateMode) {
+      return [context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+        undefined,
+        [
+          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+          ...argsArr
+        ]
+      )),
+      context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
+          PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams
+      ))];
+    } else {
+      if (cardRelativePath) {
+        if (entryOptionNode && ts.isObjectLiteralExpression(entryOptionNode)) {
+          transformLog.errors.push({
+            type: LogType.ERROR,
+            message: `@Entry doesn't support {} parameter in card`,
+            pos: componentCollection.entryComponentPos
+          });
+        }
+        return [
+          context.factory.createExpressionStatement(context.factory.createCallExpression(
+            context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+            undefined,
+            [
+              context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+              ...argsArr
+            ]
+          )),
+          name ? createStartGetAccessRecording(context) : undefined,
+          name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
+            context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
+              PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams
+          )) : undefined,
+          name ? createStopGetAccessRecording(context) : undefined
+        ];
+      }
+      return createLoadPageConditionalJudgMent(context, name, cardRelativePath, localStorageName,
+        entryOptionNode, argsArr, true);
+    }
+  } else {
+    return [context.factory.createExpressionStatement(context.factory.createCallExpression(
+      context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+      undefined,
+      [
+        context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+        ...argsArr
+      ]
+    ))];
+  }
 }
 
 export function resetLog(): void {
