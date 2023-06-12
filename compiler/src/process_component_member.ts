@@ -564,16 +564,18 @@ function createStateVarsParams(name: ts.Identifier, decorator: string): ts.State
   return updateParamsNode;
 }
 
-function createUpdateParamsWithIf(name: ts.Identifier, isSet: boolean = false,
+function createUpdateParamsWithIf(name: ts.Identifier, isProp: boolean = false,
   initializeNode: ts.Expression = undefined): ts.IfStatement {
   return ts.factory.createIfStatement(ts.factory.createBinaryExpression(
     ts.factory.createPropertyAccessExpression(
       ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS),
       ts.factory.createIdentifier(name.escapedText.toString())),
-    ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)), ts.factory.createBlock([
-    isSet ? createUpdateParamsWithSet(name) : createUpdateParamsWithoutIf(name)], true),
-    isSet ? ts.factory.createBlock([createUpdateParamsWithSet(name, true, initializeNode)]) : undefined);
+    isProp ? ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken) :
+      ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)),
+  isProp ? ts.factory.createBlock([createUpdateParamsWithSet(name, true, initializeNode)]) :
+    ts.factory.createBlock([
+      createUpdateParamsWithoutIf(name)], true), undefined);
 }
 
 function createUpdateParamsWithoutIf(name: ts.Identifier): ts.ExpressionStatement {

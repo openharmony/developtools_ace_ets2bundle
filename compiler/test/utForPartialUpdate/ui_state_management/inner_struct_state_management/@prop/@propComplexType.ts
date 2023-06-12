@@ -75,10 +75,7 @@ class CustomX extends ViewPU {
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
-        if (params.fruit !== undefined) {
-            this.__fruit.set(params.fruit);
-        }
-        else {
+        if (params.fruit === undefined) {
             this.__fruit.set(new ClassA(1));
         }
     }
