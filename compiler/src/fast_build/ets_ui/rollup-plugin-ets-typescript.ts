@@ -212,9 +212,6 @@ async function transform(code: string, id: string) {
     targetSourceFile = tsProgram.getSourceFile(id)!;
   }
 
-  // close `noEmit` to make invoking emit() effective.
-  tsProgram.getCompilerOptions().noEmit = false;
-
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger);
 
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
@@ -226,10 +223,14 @@ async function transform(code: string, id: string) {
     }
   }
 
-  tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
-
-  // restore `noEmit` to prevent tsc's watchService emitting automatically.
-  tsProgram.getCompilerOptions().noEmit = true;
+  try {
+    // close `noEmit` to make invoking emit() effective.
+    tsProgram.getCompilerOptions().noEmit = false;
+    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+  } finally {
+    // restore `noEmit` to prevent tsc's watchService emitting automatically.
+    tsProgram.getCompilerOptions().noEmit = true;
+  }
 
   resetCollection();
   if (transformLog && transformLog.errors.length) {
