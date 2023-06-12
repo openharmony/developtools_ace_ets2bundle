@@ -1,5 +1,5 @@
 {
   "name": "DataPanel",
   "atomic": false,
-  "attrs": ["closeEffect"]
+  "attrs": ["closeEffect", "valueColors", "trackBackgroundColor","strokeWidth","trackShadow"]
 }
