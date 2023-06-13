@@ -75,7 +75,7 @@ export class ModuleSourceFile {
 
   private async writeSourceFile() {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      writeFileSyncByNode(<ts.SourceFile>this.source, true, ModuleSourceFile.projectConfig);
+      writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig);
     } else {
       await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig,
         ModuleSourceFile.logger);
