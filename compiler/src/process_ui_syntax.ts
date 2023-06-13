@@ -851,11 +851,22 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   let routeNameNode: ts.Expression;
   let storageNode: ts.Expression;
   if (!entryOptionNode) {
-    return [
+    const originArray: ts.ExpressionStatement[] = [
       createStartGetAccessRecording(context),
       createLoadDocument(context, name, cardRelativePath, localStorageName, entryOptionNode),
       createStopGetAccessRecording(context)
     ];
+    if (isComponentPreview) {
+      originArray.unshift(context.factory.createExpressionStatement(context.factory.createCallExpression(
+        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+        undefined,
+        [
+          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
+          ...argsArr
+        ]
+      )));
+    }
+    return originArray;
   }
   if (ts.isObjectLiteralExpression(entryOptionNode)) {
     isObject = true;
@@ -1070,8 +1081,15 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
       context.factory.createIdentifier(name),
       undefined, newArray)];
   if (argsArr) {
-    argsArr.pop();
-    argsArr.push(newExpressionParams[0]);
+    argsArr = [];
+    componentCollection.previewComponent.forEach((componentName: string) => {
+      const newExpression: ts.Expression = context.factory.createNewExpression(
+        context.factory.createIdentifier(componentName),
+        undefined,
+        componentName === name ? newArray : newArray.slice(0, newArray.length - 1)
+      );
+      argsArr.push(context.factory.createStringLiteral(componentName), newExpression);
+    });
   }
   if (hasRouteName) {
     return [
