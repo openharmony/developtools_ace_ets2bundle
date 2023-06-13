@@ -1,6 +1,6 @@
 {
   "attrs": [
-    "width", "height", "size", "constraintSize", "layoutPriority", "layoutWeight",
+    "reuseId", "width", "height", "size", "constraintSize", "layoutPriority", "layoutWeight",
     "padding", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom",
     "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
     "border", "borderStyle", "borderWidth", "borderColor", "borderRadius",

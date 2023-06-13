@@ -28,7 +28,7 @@ import {
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
   CARD_LOG_TYPE_IMPORT,
-  DECORATOR_RECYCLE,
+  DECORATOR_REUSEABLE,
 } from './pre_define';
 import {
   propertyCollection,
@@ -548,7 +548,7 @@ function isCustomComponent(node: ts.StructDeclaration, structDecorator: structDe
         if (CUSTOM_DECORATOR_NAME.has(name)) {
           isComponent = true;
         }
-        if (name === DECORATOR_RECYCLE) {
+        if (name === DECORATOR_REUSEABLE) {
           structDecorator.hasRecycle = true;
         }
       }
