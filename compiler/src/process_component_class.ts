@@ -881,7 +881,7 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
 
 function checkAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
   log.push({
-    type: LogType.WARN,
+    type: LogType.ERROR,
     message: `Please define an explicit type, not any.`,
     pos: typeNode.getStart()
   });
@@ -894,8 +894,9 @@ function isAnyType(typeNode: ts.TypeNode, log: LogInfo[]): void {
       checkAny(typeNode, log);
       return;
     }
-    if (globalProgram.checker && globalProgram.checker.getTypeAtLocation(typeNode) &&
-      globalProgram.checker.getTypeAtLocation(typeNode).intrinsicName) {
+    if (process.env.compileMode === 'moduleJson' && globalProgram.checker &&
+    globalProgram.checker.getTypeAtLocation(typeNode) &&
+    globalProgram.checker.getTypeAtLocation(typeNode).intrinsicName) {
       value = globalProgram.checker.getTypeAtLocation(typeNode).intrinsicName;
     }
     if (value && value === DECORATOR_TYPE_ANY && log) {
