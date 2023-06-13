@@ -715,7 +715,7 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   getLocalStorageCollection(customComponentName, localStorageSet);
   if (isThisProperty(node, forbiddenToInitViaParamSet) || isThisProperty(node, localStorageSet)) {
     log.push({
-      type: localStorageSet.has(node.name.getText()) ? LogType.WARN : LogType.ERROR,
+      type: LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot initialize here (forbidden to specify).`,
       pos: node.name.getStart()
