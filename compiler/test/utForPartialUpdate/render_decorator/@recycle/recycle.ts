@@ -33,7 +33,7 @@ struct HomeComponent {
   }
 }
 
-@Recycle
+@Reuseable
 @Component
 struct child {
   @Prop propvalue: number;
@@ -121,7 +121,7 @@ struct NormalComponent {
   }
 }
 
-@Recycle
+@Reuseable
 @Component
 struct AnimationTest {
   @State width_value: string = "100%"
@@ -210,8 +210,8 @@ class HomeComponent extends ViewPU {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
                     ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, "child", () => {
-                        if (recycleNode.onRecycle && typeof recycleNode.onRecycle === "function") {
-                            recycleNode.onRecycle({ propvalue: this.value, linkvalue: this.value });
+                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
                         }
                         recycleNode.rerender();
                     });
@@ -360,8 +360,8 @@ class child extends ViewPU {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
                     ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId), recycleNode !== null, "AnimationTest", () => {
-                        if (recycleNode.onRecycle && typeof recycleNode.onRecycle === "function") {
-                            recycleNode.onRecycle({});
+                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                            recycleNode.aboutToReuse({});
                         }
                         recycleNode.rerender();
                     });
