@@ -52,7 +52,6 @@ function animatablePoints(points, elmtId, isInitialRender, parent) {
             ViewStackProcessor.GetAndPushFrameNode("Polyline", elmtId);
             Polyline.strokeOpacity(points);
             Polyline.backgroundColor(Color.Red);
-            Polyline.pop();
             ViewStackProcessor.StopGetAccessRecording();
             parent.finishUpdateFunc(elmtId);
         });
@@ -69,7 +68,6 @@ function attributeExtend(elmtId, isInitialRender, parent) {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             ViewStackProcessor.GetAndPushFrameNode("Text", elmtId);
             Text.fontSize(50);
-            Text.pop();
             ViewStackProcessor.StopGetAccessRecording();
             parent.finishUpdateFunc(elmtId);
         });
