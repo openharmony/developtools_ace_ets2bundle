@@ -676,9 +676,6 @@ function createAnimatableProperty(componentName: string, funcName: ts.Identifier
             createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
             createAnimatableFrameNode(componentName),
             ...attrArray,
-            ts.factory.createExpressionStatement(
-              createFunction(componentIdentifier,
-                ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)),
             createViewStackProcessorStatement(STOPGETACCESSRECORDING),
             createAnimatableUpdateFunc()
           ], true))
