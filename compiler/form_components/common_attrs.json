@@ -7,6 +7,7 @@
     "saturate", "sepia", "invert", "hueRotate", "backdropBlur", "translate", "scale", "rotate", "onAppear",
     "onDisAppear", "visibility", "flexGrow", "flexShrink", "flexBasis", "alignSelf", "displayPriority",
     "zIndex", "direction", "align", "position", "markAnchor", "offset", "enabled", "alignRules", "aspectRatio",
-    "overlay", "linearGradient", "sweepGradient", "radialGradient", "shadow", "clip", "mask", "id", "stateStyles"
+    "overlay", "linearGradient", "sweepGradient", "radialGradient", "shadow", "clip", "mask", "id", "stateStyles",
+    "useEffect"
   ]
 }
