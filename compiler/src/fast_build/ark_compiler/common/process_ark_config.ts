@@ -137,7 +137,7 @@ function processPlatformInfo(arkRootPath: string): void {
     arkConfig.es2abcPath = path.join(arkPlatformPath, 'bin', 'es2abc');
     arkConfig.ts2abcPath = path.join(arkPlatformPath, 'src', 'index.js');
     arkConfig.mergeAbcPath = path.join(arkPlatformPath, 'bin', 'merge_abc');
-    arkConfig.js2abcPath = path.join(arkPlatformPath, 'bin', 'js2abc ');
+    arkConfig.js2abcPath = path.join(arkPlatformPath, 'bin', 'js2abc');
     arkConfig.aotCompilerPath = path.join(arkPlatformPath, 'bin', 'ark_aot_compiler');
     return;
   }
