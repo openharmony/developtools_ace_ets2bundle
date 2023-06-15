@@ -17,7 +17,7 @@ const value5: boolean[] = [true, false]
 let value6: {item1: boolean} = {item1: true}
 let isCountDown: boolean = false
 
-@Reuseable
+@Reusable
 @Component
 struct $$Component {
   private value1: string = "hello world 1"

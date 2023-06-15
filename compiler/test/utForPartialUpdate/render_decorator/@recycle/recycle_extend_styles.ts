@@ -20,7 +20,7 @@ exports.source = `
   .height(100)
 }
 
-@Reuseable
+@Reusable
 @Component
 struct ExtendComponent {
   @State width_value: string = "100%"
@@ -36,7 +36,7 @@ struct ExtendComponent {
   .backgroundColor(Color.Red)
 }
 
-@Reuseable
+@Reusable
 @Component
 struct StylesComponent {
   enable: boolean = true

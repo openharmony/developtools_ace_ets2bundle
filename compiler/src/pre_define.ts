@@ -27,8 +27,8 @@ export const COMPONENT_DECORATOR_ENTRY: string = '@Entry';
 export const COMPONENT_DECORATOR_PREVIEW: string = '@Preview';
 export const COMPONENT_DECORATOR_COMPONENT: string = '@Component';
 export const COMPONENT_DECORATOR_CUSTOM_DIALOG: string = '@CustomDialog';
-export const COMPONENT_DECORATOR_REUSEABLE: string = '@Reuseable';
-export const DECORATOR_REUSEABLE: string = 'Reuseable';
+export const COMPONENT_DECORATOR_REUSEABLE: string = '@Reusable';
+export const DECORATOR_REUSEABLE: string = 'Reusable';
 
 export const COMPONENT_RECYCLE: string = '__Recycle__';
 export const RECYCLE_REUSE_ID: string = 'reuseId';
