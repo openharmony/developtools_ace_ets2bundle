@@ -17,6 +17,7 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 
 import { getOhmUrlByFilepath, getOhmUrlBySystemApiOrLibRequest, getOhmUrlByHarName } from '../../../../lib/ark_utils';
+import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 
@@ -25,9 +26,22 @@ mocha.describe('generate ohmUrl', function() {
         const filePath = `${projectConfig.projectRootPath}/entry/src/main/ets/feature/src/main/js/`
             + `subfeature/src/main/ets/pages/test.ts`;
         const moduleName = 'entry';
-        const namespace = 'library';
+        const moduleNamespace = 'library';
         let ohmUrl_1 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
-        let ohmUrl_2 = getOhmUrlByFilepath(filePath, projectConfig, undefined, namespace);
+        let ohmUrl_2 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleNamespace);
+        let expected_1 = 'UtTestApplication/entry/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
+        let expected_2 = 'UtTestApplication/entry@library/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
+        expect(ohmUrl_1 == expected_1).to.be.true;
+        expect(ohmUrl_2 == expected_2).to.be.true;
+    });
+
+    mocha.it('nested src ohosTest ets|js in filePath', function() {
+        const filePath = `${projectConfig.projectRootPath}/entry/src/ohosTest/ets/feature/src/main/js/`
+            + `subfeature/src/main/ets/pages/test.ts`;
+        const moduleName = 'entry';
+        const moduleNamespace = 'library';
+        let ohmUrl_1 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
+        let ohmUrl_2 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleNamespace);
         let expected_1 = 'UtTestApplication/entry/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
         let expected_2 = 'UtTestApplication/entry@library/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
         expect(ohmUrl_1 == expected_1).to.be.true;
@@ -64,5 +78,47 @@ mocha.describe('generate ohmUrl', function() {
         expect(sharedLibraryPackageNameOhmUrl == expectedSharedLibraryOhmUrl).to.be.true;
         expect(sharedLibraryPageOhmUrl == expectedSharedLibraryPageOhmUrl).to.be.true;
         expect(errorSharedLibraryOhmUrl == expectedErrorSharedLibraryOhmUrl).to.be.true;
-    })
+    });
+
+    mocha.it('project module', function() {
+        const filePath = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/test.ts`;
+        const harFilePath = `${projectConfig.projectRootPath}/library/src/main/ets/pages/test.ts`;
+        const moduleName = 'entry';
+        const moduleNamespace = 'library';
+        const ohmUrl = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
+        const harOhmUrl = getOhmUrlByFilepath(harFilePath, projectConfig, undefined, moduleNamespace);
+        const expected = 'UtTestApplication/entry/ets/pages/test';
+        const harOhmUrlExpected = 'UtTestApplication/entry@library/ets/pages/test';
+        expect(ohmUrl == expected).to.be.true;
+        expect(harOhmUrl == harOhmUrlExpected).to.be.true;
+    });
+
+    mocha.it('thirdParty module', function() {
+        const moduleLevelPkgPath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+        const projectLevelPkgPath = `${projectConfig.projectRootPath}/oh_modules/json5/dist/index.js`;
+        const moduleName = 'entry';
+        const moduleLevelPkgOhmUrl = getOhmUrlByFilepath(moduleLevelPkgPath, projectConfig, undefined, undefined);
+        const projectLevelPkgOhmUrl = getOhmUrlByFilepath(projectLevelPkgPath, projectConfig, undefined, undefined);
+        const moduleLevelPkgOhmUrlExpected = `${PACKAGES}@${moduleName}/json5/dist/index`;
+        const projectLevelPkgOhmUrlExpected = `${PACKAGES}/json5/dist/index`;
+        expect(moduleLevelPkgOhmUrl == moduleLevelPkgOhmUrlExpected).to.be.true;
+        expect(projectLevelPkgOhmUrl == projectLevelPkgOhmUrlExpected).to.be.true;
+    });
+
+    mocha.it('static library entry', function() {
+        const staticLibraryEntry = `${projectConfig.projectRootPath}/library/index.ets`;
+        const moduleNamespace = 'library';
+        const staticLibraryEntryOhmUrl =
+            getOhmUrlByFilepath(staticLibraryEntry, projectConfig, undefined, moduleNamespace);
+        const staticLibraryEntryOhmUrlExpected = 'UtTestApplication/entry@library/index';
+        expect(staticLibraryEntryOhmUrl == staticLibraryEntryOhmUrlExpected).to.be.true;
+    });
+
+    mocha.it('ohosTest module', function() {
+        const ohosTestfilePath = `${projectConfig.projectRootPath}/entry/src/ohosTest/ets/pages/test.ts`;
+        const moduleName = 'entry';
+        const ohmUrl = getOhmUrlByFilepath(ohosTestfilePath, projectConfig, undefined, moduleName);
+        const expected = 'UtTestApplication/entry/ets/pages/test';
+        expect(ohmUrl == expected).to.be.true;
+    });
 });
