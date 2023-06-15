@@ -40,7 +40,7 @@ struct HomeComponent {
   }
 }
 
-@Reuseable
+@Reusable
 @Component
 struct child {
   @Prop propvalue: number;
@@ -108,7 +108,6 @@ class HomeComponent extends ViewPU {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
             __Common__.width(this.state_value);
-            __Common__.reuseId("reuse_key");
             if (!isInitialRender) {
                 __Common__.pop();
             }
@@ -147,7 +146,6 @@ class HomeComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
-            __Common__.reuseId(this.state_value);
             if (!isInitialRender) {
                 __Common__.pop();
             }
@@ -185,7 +183,6 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.reuseId("reuse_key11111111111");
             if (!isInitialRender) {
                 __Common__.pop();
             }
@@ -262,7 +259,6 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.reuseId(a);
             if (!isInitialRender) {
                 __Common__.pop();
             }

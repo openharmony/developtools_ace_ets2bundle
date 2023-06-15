@@ -2083,14 +2083,16 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       }
     }
     temp = loopEtscomponent(temp, isStylesAttr);
-    const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
-      createFunction(identifierNode, node, temp.arguments));
-    statements.push(attrStatement);
-    if ((!isStylesAttr || isStyleFunction) && isRecycleComponent &&
-      filterRegularAttrNode(temp.arguments)) {
-      immutableStatements.push(attrStatement);
-    } else {
-      updateStatements.push(attrStatement);
+    if (propName !== RECYCLE_REUSE_ID) {
+      const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
+        createFunction(identifierNode, node, temp.arguments));
+      statements.push(attrStatement);
+      if ((!isStylesAttr || isStyleFunction) && isRecycleComponent &&
+        filterRegularAttrNode(temp.arguments)) {
+        immutableStatements.push(attrStatement);
+      } else {
+        updateStatements.push(attrStatement);
+      }
     }
     lastStatement.kind = true;
   }

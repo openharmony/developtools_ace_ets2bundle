@@ -33,7 +33,7 @@ struct HomeComponent {
   }
 }
 
-@Reuseable
+@Reusable
 @Component
 struct child {
   @Prop propvalue: number;
@@ -121,7 +121,7 @@ struct NormalComponent {
   }
 }
 
-@Reuseable
+@Reusable
 @Component
 struct AnimationTest {
   @State width_value: string = "100%"
