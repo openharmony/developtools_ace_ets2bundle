@@ -3,6 +3,6 @@
   "atomic": true,
   "attrs": [
     "searchButton", "placeholderColor", "placeholderFont", "textFont", "onSubmit", "onChange",
-    "onCopy", "OnCut", "OnPaste", "copyOption"
+    "onCopy", "OnCut", "OnPaste", "copyOption", "enableKeyboardOnFocus"
   ]
 }
