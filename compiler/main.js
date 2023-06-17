@@ -326,15 +326,18 @@ function setAbilityPages(projectConfig) {
 }
 
 function setTestRunnerFile(projectConfig, isStageBased) {
-  const index =projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
+  const index = projectConfig.projectPath.split(path.sep).join('/').lastIndexOf('\/');
   TEST_RUNNER_DIR_SET.forEach((dir) => {
-    let projectPath = isStageBased ? projectConfig.projectPath : projectConfig.projectPath.substring(0,index + 1);
+    const projectPath = isStageBased ? projectConfig.projectPath : projectConfig.projectPath.substring(0, index + 1);
     const testRunnerPath = path.resolve(projectPath, dir);
     if (fs.existsSync(testRunnerPath)) {
       const testRunnerFiles = [];
       readFile(testRunnerPath, testRunnerFiles);
       testRunnerFiles.forEach((item) => {
         if (/\.(ts|js|ets)$/.test(item)) {
+          if (/\.ets$/.test(item)) {
+            abilityPagesFullPath.push(path.resolve(item).toLowerCase());
+          }
           const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
           if (isStageBased) {
             projectConfig.entryObj[`./${dir}/${relativePath}`] = item;
@@ -343,7 +346,7 @@ function setTestRunnerFile(projectConfig, isStageBased) {
           }
           abilityConfig.testRunnerFile.push(item);
         }
-      })
+      });
     }
   });
 }
