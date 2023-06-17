@@ -21,6 +21,6 @@
     "bindPopup", "colorBlend", "invert", "sepia", "hueRotate", "bindMenu", "bindContextMenu",
     "onFocus", "onBlur", "onFocusMove", "focusable", "tabIndex", "defaultFocus", "groupDefaultFocus", "focusOnTouch",
     "responseRegion", "alignRules", "onVisibleAreaChange",
-    "borderImage", "hitTestBehavior", "clickEffect"
+    "borderImage", "hitTestBehavior", "clickEffect", "foregroundColor", "bindContentCover", "bindSheet"
   ]
 }
