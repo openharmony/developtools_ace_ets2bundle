@@ -165,7 +165,6 @@ export function generateAot(arkDir: string, builtinAbcPath: string, projectConfi
     mkdirsSync(projectConfig.anBuildOutPut);
     fs.closeSync(fs.openSync(appAot + '.an', 'w'));
     fs.closeSync(fs.openSync(appAot + '.ai', 'w'));
-    childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {
     // Extract HostTool log information from hilog, which outputs to stdout.
     let outStream: Buffer = e.stdout;
