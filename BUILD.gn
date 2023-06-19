@@ -73,24 +73,7 @@ action("build_ets_loader_library") {
     _build_declarations_file_js,
   ]
 
-  # different host platform nodejs tool directory
-  if (host_os == "linux") {
-    if (is_standard_system) {
-      nodejs_path = "//prebuilts/build-tools/common/nodejs/node-v12.18.4-linux-x64/bin/node"
-    } else {
-      nodejs_path =
-          "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-linux-x64/bin/node"
-    }
-  } else if (host_os == "mac") {
-    if (is_standard_system) {
-      nodejs_path = "//prebuilts/build-tools/common/nodejs/node-v12.18.4-darwin-x64/bin/node"
-    } else {
-      nodejs_path =
-          "//prebuilts/ace-toolkit/nodejs/node-v12.18.4-darwin-x64/bin/node"
-    }
-  } else {
-    assert(false, "Unsupported host_os: $host_os")
-  }
+  nodejs_path = "//prebuilts/build-tools/common/nodejs/current/bin/node"
 
   args = [
     "--depfile",
