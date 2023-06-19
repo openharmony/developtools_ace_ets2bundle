@@ -192,15 +192,15 @@ function buildManifest(manifest, aceConfigPath) {
       }
     } else {
       throw Error('\u001b[31m' +
-        'ERROR: the config.json file miss key word module || module[abilities].' +
+        'BUIDERROR: the config.json file miss key word module || module[abilities].' +
         '\u001b[39m').message;
     }
   } catch (e) {
     if (/BUIDERROR/.test(e)) {
       throw Error(e.replace('BUIDERROR', 'ERROR')).message;
     } else {
-      throw Error("\x1B[31m" + 'ERROR: the module.json file is lost or format is invalid.' +
-        "\x1B[39m").message;
+      throw Error('\x1B[31m' + 'ERROR: the module.json file is lost or format is invalid.' +
+        '\x1B[39m').message;
     }
   }
 }
@@ -208,8 +208,13 @@ function buildManifest(manifest, aceConfigPath) {
 function getPackageJsonEntryPath() {
   const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
-    const rootPackageJsonContent =
-      (projectConfig.packageManagerType === 'npm' ? JSON : JSON5).parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    let rootPackageJsonContent;
+    try {
+      rootPackageJsonContent = (projectConfig.packageManagerType === 'npm' ?
+        JSON : JSON5).parse(fs.readFileSync(rootPackageJsonPath, 'utf-8'));
+    } catch (e) {
+      throw Error('\u001b[31m' + 'BUIDERROR: ' + rootPackageJsonPath + ' format is invalid.' + '\u001b[39m').message;
+    }
     if (rootPackageJsonContent) {
       if (rootPackageJsonContent.module) {
         getEntryPath(rootPackageJsonContent.module, rootPackageJsonPath);
@@ -219,7 +224,8 @@ function getPackageJsonEntryPath() {
         getEntryPath('', rootPackageJsonPath);
       }
     } else if (projectConfig.compileHar) {
-      throw Error('\u001b[31m' + 'lack message in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
+      throw Error('\u001b[31m' + 'BUIDERROR: lack message in ' + projectConfig.packageJson + '.' +
+        '\u001b[39m').message;
     }
   }
 }
@@ -232,7 +238,8 @@ function supportSuffix(mainEntryPath) {
   } else if (fs.existsSync(path.join(mainEntryPath, 'index.js'))) {
     mainEntryPath = path.join(mainEntryPath, 'index.js');
   } else if (projectConfig.compileHar) {
-    throw Error('\u001b[31m' + 'not find entry file in ' + projectConfig.packageJson + '.' + '\u001b[39m').message;
+    throw Error('\u001b[31m' + 'BUIDERROR: not find entry file in ' + projectConfig.packageJson +
+      '.' + '\u001b[39m').message;
   }
   return mainEntryPath;
 }
@@ -262,7 +269,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
     projectConfig.entryObj[entryKey] = mainEntryPath;
     abilityPagesFullPath.push(path.resolve(mainEntryPath).toLowerCase());
   } else if (projectConfig.compileHar) {
-    throw Error('\u001b[31m' + 'not find entry file in package.json.' + '\u001b[39m').message;
+    throw Error('\u001b[31m' + `BUIDERROR: not find entry file in ${rootPackageJsonPath}.` + '\u001b[39m').message;
   }
 }
 
