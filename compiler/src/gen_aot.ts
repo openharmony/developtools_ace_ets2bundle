@@ -21,11 +21,9 @@ import * as os from 'os';
 import {
   MODULES_ABC,
   TEMPORARY,
-  ESMODULE,
   AOT_FULL,
   AOT_TYPE,
   AOT_PARTIAL,
-  AOT_PROFILE_SUFFIX,
   TS2ABC
 } from './pre_define';
 import {
@@ -52,30 +50,6 @@ function checkAotPartialConfig(compileMode: string, buildJsonInfo: any, faultHan
     // no AOT's partial related configuration is hit, pass the configuration to next compile mode
     return false;
   }
-  if (compileMode !== ESMODULE) {
-    faultHandler(`ArkTS:ERROR Aot's partial mode must config compileMode with esmodule.`);
-    return true;
-  }
-  if (buildJsonInfo.anBuildMode !== AOT_PARTIAL) {
-    faultHandler(`ArkTS:ERROR Aot's partial mode must config aotBuildMode with partial.`);
-    return true;
-  }
-  if (!buildJsonInfo.apPath) {
-    faultHandler(`ArkTS:ERROR Aot's partial mode must config a valid apPath.`);
-    return true;
-  }
-  if (path.extname(buildJsonInfo.apPath) !== AOT_PROFILE_SUFFIX) {
-    faultHandler(`ArkTS:ERROR apPath for Aot's partial mode must with suffix "${AOT_PROFILE_SUFFIX}".`);
-    return true;
-  }
-  if (!fs.existsSync(buildJsonInfo.apPath)) {
-    faultHandler(`ArkTS:ERROR apPath for Aot's partial mode is not found in "${buildJsonInfo.apPath}".`);
-    return true;
-  }
-  if (!buildJsonInfo.anBuildOutPut) {
-    faultHandler(`ArkTS:ERROR Aot's partial mode need anBuildOutPut.`);
-    return true;
-  }
   // Aot compiler's partial mode.
   return true;
 }
@@ -85,18 +59,6 @@ function checkAotFullConfig(compileMode: string, buildJsonInfo: any, faultHandle
     // no AOT's full related configuration is hit, pass the configuration to next compile mode
     return false;
   }
-  if (compileMode !== ESMODULE) {
-    faultHandler(`ArkTS:ERROR Aot's full mode must config compileMode with esmodule.`);
-    return true;
-  }
-  if (buildJsonInfo.apPath) {
-    faultHandler(`ArkTS:ERROR Aot's full mode do not need apPath.`);
-    return true;
-  }
-  if (!buildJsonInfo.anBuildOutPut) {
-    faultHandler(`ArkTS:ERROR Aot's full mode need anBuildOutPut.`);
-    return true;
-  }
   // Aot compiler's full mode.
   return true;
 }
@@ -105,14 +67,6 @@ function checkAotTypeConfig(compileMode: string, buildJsonInfo: any, faultHandle
   if (buildJsonInfo.anBuildMode !== AOT_TYPE) {
     // no AOT's type related configuration is hit, pass the configuration to next compile mode
     return false;
-  }
-  if (compileMode !== ESMODULE) {
-    faultHandler(`ArkTS:ERROR Aot's type mode must config compileMode with esmodule.`);
-    return true;
-  }
-  if (buildJsonInfo.apPath) {
-    faultHandler(`ArkTS:ERROR Aot's type mode do not need apPath.`);
-    return true;
   }
   // Aot compiler's type mode.
   return true;
