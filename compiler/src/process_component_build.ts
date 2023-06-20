@@ -1591,7 +1591,8 @@ export interface ComponentAttrInfo {
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
-  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
+  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null,
+  isExtendFunction: boolean = false): void {
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
@@ -1658,7 +1659,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (lastStatement.statement && lastStatement.kind) {
     statements.push(lastStatement.statement);
   }
-  if (!isRecycleComponent || lastStatement.hasAnimationAttr) {
+  if (!partialUpdateConfig.partialUpdateMode || lastStatement.hasAnimationAttr || isExtendFunction) {
     if (statements.length) {
       reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
     }
@@ -2047,7 +2048,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   } else if (propName === ATTRIBUTE_STATESTYLES) {
     if (temp.arguments.length === 1 && ts.isObjectLiteralExpression(temp.arguments[0])) {
       statements.push(createViewStackProcessor(temp, true));
-      if (isRecycleComponent) {
+      if (partialUpdateConfig.partialUpdateMode) {
         updateStatements.push(createViewStackProcessor(temp, true));
       }
       traverseStateStylesAttr(temp, statements, identifierNode, log, updateStatements,
@@ -2060,11 +2061,12 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     const styleBlock: ts.Block =
         INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
     if (styleBlock.statements.length > 0) {
-      bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
-        statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
+      if (partialUpdateConfig.partialUpdateMode) {
         bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
           updateStatements, log, false, true, newImmutableStatements, true);
+      } else {
+        bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+          statements, log, false, true, newImmutableStatements);
       }
     }
     lastStatement.kind = true;
@@ -2087,8 +2089,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
         createFunction(identifierNode, node, temp.arguments));
       statements.push(attrStatement);
-      if ((!isStylesAttr || isStyleFunction) && isRecycleComponent &&
-        filterRegularAttrNode(temp.arguments)) {
+      if ((!isStylesAttr || isStyleFunction) && filterRegularAttrNode(temp.arguments, isRecycleComponent)) {
         immutableStatements.push(attrStatement);
       } else {
         updateStatements.push(attrStatement);
@@ -2098,18 +2099,19 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   }
 }
 
-function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>) {
+function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>,
+  isRecycleComponent: boolean): boolean {
   return argumentsNode.every((argument: ts.Expression) => {
-    return isRegularAttrNode(argument)
+    return isRegularAttrNode(argument, isRecycleComponent)
   });
 }
 
 type AttrResult = { isRegularNode: boolean };
-function isRegularAttrNode(node: ts.Expression): boolean {
+function isRegularAttrNode(node: ts.Expression, isRecycleComponent: boolean): boolean {
   if (ts.isObjectLiteralExpression(node)) {
     return node.properties.every((propNode: ts.PropertyAssignment) => {
       if (propNode.initializer) {
-        return isRegularAttrNode(propNode.initializer);
+        return isRegularAttrNode(propNode.initializer, isRecycleComponent);
       }
       return false;
     });
@@ -2136,7 +2138,7 @@ function isRegularAttrNode(node: ts.Expression): boolean {
   }
   // regular variable, e.g. this.regularValue
   const result: AttrResult = { isRegularNode: false };
-  if (ts.isPropertyAccessExpression(node)) {
+  if (isRecycleComponent && ts.isPropertyAccessExpression(node)) {
     traversePropNode(node, result);
   }
   return result.isRegularNode || false;
@@ -2259,31 +2261,25 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {
       const name: string = item.initializer.name.getText();
       bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
         identifierNode, statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
-        bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
-          identifierNode, updateStatements, log, false, true, newImmutableStatements);
-      }
     } else if (ts.isIdentifier(item.initializer) &&
       GLOBAL_STYLE_FUNCTION.get(item.initializer.getText())) {
       const name: string = item.initializer.getText();
       bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
         identifierNode, statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
-        bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
-          identifierNode, updateStatements, log, false, true, newImmutableStatements);
-      }
     } else if (ts.isObjectLiteralExpression(item.initializer) &&
       item.initializer.properties.length === 1 &&
       ts.isPropertyAssignment(item.initializer.properties[0])) {
       bindComponentAttr(ts.factory.createExpressionStatement(
+        item.initializer.properties[0].initializer), identifierNode, updateStatements, log, false,
+        true, newImmutableStatements);
+      bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true,
         newImmutableStatements);
-      if (isRecycleComponent) {
-        bindComponentAttr(ts.factory.createExpressionStatement(
-          item.initializer.properties[0].initializer), identifierNode, updateStatements, log, false, true,
-          newImmutableStatements);
-      }
     } else {
       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
         validateStateStyleSyntax(temp, log);
@@ -2292,7 +2288,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
     if (item.name) {
       const viewNode: ts.Statement = createViewStackProcessor(item, false);
       statements.push(viewNode);
-      if (isRecycleComponent) {
+      if (partialUpdateConfig.partialUpdateMode) {
         updateStatements.push(viewNode);
       }
     }
@@ -2366,7 +2362,7 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
       createFunction(temp, ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     if (temp.escapedText.toString() === COMPONENT_GESTURE_GROUP) {
       const gestureStatements: ts.Statement[] = [];
-      parseGestureInterface(temp.parent, gestureStatements, log, updateStatements, true);
+      parseGestureInterface(temp.parent, gestureStatements, log, [], true);
       newStatements.push(...gestureStatements.reverse());
       bindComponentAttr(newNode, temp, newStatements, log, false);
       let argumentArr: ts.NodeArray<ts.Expression> = null;

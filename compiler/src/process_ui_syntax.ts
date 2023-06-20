@@ -582,7 +582,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       if (isOriginalExtend(node.body)) {
         const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
         bindComponentAttr(changeCompName as ts.ExpressionStatement,
-          ts.factory.createIdentifier(componentName), statementArray, log);
+          ts.factory.createIdentifier(componentName), statementArray, log, true, false, null, false, null, true);
       } else {
         bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
       }
@@ -599,8 +599,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
           ts.factory.updateBlock(node.body, statementArray) : bodynode);
     }
     if (decoratorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
-      bindComponentAttr(node.body.statements[0],
-        ts.factory.createIdentifier(componentName), statementArray, log);
+      bindComponentAttr(node.body.statements[0] as ts.ExpressionStatement,
+        ts.factory.createIdentifier(componentName), statementArray, log, true, false, null, false, null, true);
       return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
         node.name, node.typeParameters,
         [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
@@ -613,7 +613,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       const changeCompName: ts.ExpressionStatement =
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
-      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
+      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, [],
+        true, false, null, false, null, true);
       return ts.factory.createBlock(statementArray, true);
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);

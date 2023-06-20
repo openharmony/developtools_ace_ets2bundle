@@ -95,30 +95,36 @@ class TabSimple extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Flex.create();
-                    Flex.height(100);
-                    Flex.width(200);
                     if (!isInitialRender) {
                         Flex.pop();
+                    }
+                    else {
+                        Flex.height(100);
+                        Flex.width(200);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Column.create();
-                    Column.height(100);
-                    Column.width(200);
                     if (!isInitialRender) {
                         Column.pop();
+                    }
+                    else {
+                        Column.height(100);
+                        Column.width(200);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('text1');
-                    Text.height(100);
-                    Text.width(200);
                     if (!isInitialRender) {
                         Text.pop();
+                    }
+                    else {
+                        Text.height(100);
+                        Text.width(200);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
@@ -126,10 +132,12 @@ class TabSimple extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('xxx');
-                    Text.height(100);
-                    Text.width(200);
                     if (!isInitialRender) {
                         Text.pop();
+                    }
+                    else {
+                        Text.height(100);
+                        Text.width(200);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
@@ -137,11 +145,13 @@ class TabSimple extends ViewPU {
                 Column.pop();
                 Flex.pop();
             });
-            TabContent.tabBar("TabBar");
-            TabContent.height(100);
-            TabContent.width(200);
             if (!isInitialRender) {
                 TabContent.pop();
+            }
+            else {
+                TabContent.tabBar("TabBar");
+                TabContent.height(100);
+                TabContent.width(200);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -159,11 +169,13 @@ class TabSimple extends ViewPU {
                 });
                 Text.pop();
             });
-            TabContent.tabBar("TabBar 2");
-            TabContent.height(100);
-            TabContent.width(200);
             if (!isInitialRender) {
                 TabContent.pop();
+            }
+            else {
+                TabContent.tabBar("TabBar 2");
+                TabContent.height(100);
+                TabContent.width(200);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
