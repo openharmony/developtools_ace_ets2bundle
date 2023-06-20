@@ -1255,7 +1255,6 @@ function addStorageParam(name: string): [string, ts.Expression] {
       message: `@Entry should have a parameter, like '@Entry (storage)'.`,
       pos: componentCollection.entryComponentPos
     });
-    return;
   }
   return [localStorageName, localStorageNode];
 }
