@@ -67,7 +67,7 @@ function initConfig(config) {
       rules: [
         {
           test: /\.d\.ts/,
-          loader: 'ignore-loader'
+          use: [{ loader: path.resolve(__dirname, 'lib/process_dts_file.js') }]
         },
         {
           test: /(?<!\.d)\.(ets|ts)$/,
