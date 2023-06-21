@@ -68,11 +68,11 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, proj
   } else {
     if (!toTsFile) {
       temporaryFile = temporaryFile.replace(/\.ts$/, EXTNAME_JS);
-      temporarySourceMapFile = genSourceMapFileName(temporaryFile);
     }
+    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
   }
   mkdirsSync(path.dirname(temporaryFile));
-  if (temporarySourceMapFile.length > 0 && getBuildModeInLowerCase(projectConfig) === DEBUG) {
+  if (temporarySourceMapFile.length > 0) {
     let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
     process.env.compileTool === 'rollup' ? rollupNewSourceMaps[source] = mixedInfo.sourceMapJson :
                                            webpackNewSourceMaps[source] = mixedInfo.sourceMapJson;
