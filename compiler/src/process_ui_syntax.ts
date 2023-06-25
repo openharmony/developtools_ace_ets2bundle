@@ -147,7 +147,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
               process.env.compileTool === 'rollup' ?
                 ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
-                writeFileSyncByNode(processedNode, true, projectConfig);
+                writeFileSyncByNode(processedNode, projectConfig);
             }
           }
           return node;
@@ -172,7 +172,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
           process.env.compileTool === 'rollup' ?
             ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
-            writeFileSyncByNode(processedNode, true, projectConfig);
+            writeFileSyncByNode(processedNode, projectConfig);
         }
         return node;
       } else {

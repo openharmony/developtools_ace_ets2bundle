@@ -19,10 +19,8 @@ import fs from 'fs';
 
 import { newSourceMaps as rollupNewSourceMaps } from './fast_build/ark_compiler/transform';
 import {
-  EXTNAME_JS,
   EXTNAME_TS,
   EXTNAME_ETS,
-  TS_NOCHECK
 } from './pre_define';
 import {
   genTemporaryPath,
@@ -32,26 +30,14 @@ import {
 import {
   genSourceMapFileName,
   newSourceMaps as webpackNewSourceMaps,
-  transformModuleSpecifier,
-  getBuildModeInLowerCase
+  transformModuleSpecifier
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
-import { DEBUG } from './fast_build/ark_compiler/common/ark_define';
 
 export const SRC_MAIN: string = 'src/main';
 
-export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): void {
-  if (toTsFile) {
-    const newStatements: ts.Node[] = [];
-    const tsIgnoreNode: ts.Node = ts.factory.createExpressionStatement(ts.factory.createIdentifier(TS_NOCHECK));
-    newStatements.push(tsIgnoreNode);
-    if (node.statements && node.statements.length) {
-      newStatements.push(...node.statements);
-    }
-
-    node = ts.factory.updateSourceFile(node, newStatements);
-  }
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, toTsFile, projectConfig);
+export function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any): void {
+  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, projectConfig);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig);
   if (temporaryFile.length === 0) {
@@ -59,18 +45,9 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, proj
   }
   let temporarySourceMapFile: string = '';
   if (temporaryFile.endsWith(EXTNAME_ETS)) {
-    if (toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
-    } else {
-      temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_JS);
-    }
-    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  } else {
-    if (!toTsFile) {
-      temporaryFile = temporaryFile.replace(/\.ts$/, EXTNAME_JS);
-    }
-    temporarySourceMapFile = genSourceMapFileName(temporaryFile);
+    temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
+  temporarySourceMapFile = genSourceMapFileName(temporaryFile);
   mkdirsSync(path.dirname(temporaryFile));
   if (temporarySourceMapFile.length > 0) {
     let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
@@ -80,7 +57,7 @@ export function writeFileSyncByNode(node: ts.SourceFile, toTsFile: boolean, proj
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean, projectConfig: any): any {
+function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: any): any {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
@@ -110,11 +87,8 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, toTsFile: boolean, proj
     ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
   printer['writeFile'](node, writer, sourceMapGenerator);
   const sourceMapJson: any = sourceMapGenerator.toJSON();
-  sourceMapJson['sources'] = [fileName.replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
+  sourceMapJson['sources'] = [toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
   let content: string = writer.getText();
-  if (toTsFile) {
-    content = content.replace(`${TS_NOCHECK};`, TS_NOCHECK);
-  }
   if (process.env.compileTool !== 'rollup') {
     content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
   }
