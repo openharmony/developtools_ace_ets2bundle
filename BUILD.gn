@@ -142,6 +142,7 @@ action("build_ets_sysResource") {
 ets_loader_sources = [
   "compiler/compile_plugin.js",
   "compiler/main.js",
+  "compiler/node_modules",
   "compiler/npm-install.js",
   "compiler/package-lock.json",
   "compiler/package.json",
@@ -311,16 +312,9 @@ ohos_copy("ohos_declaration_ets_ark") {
   outputs = [ target_out_dir + "/../api" ]
 }
 
-ohos_copy("common_api_ark") {
+ohos_copy("ets_loader_ark_hap") {
   sources = common_api_src
-  deps = [ ":ohos_declaration_ets_ark" ]
-  outputs = [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
-  module_install_name = ""
-}
-
-ohos_copy("ets_loader_node_modules") {
   deps = [
-    ":common_api_ark",
     ":ets_loader_ark",
     ":ets_loader_ark_codegen",
     ":ets_loader_ark_components",
@@ -328,7 +322,8 @@ ohos_copy("ets_loader_node_modules") {
     ":ets_loader_ark_form_components",
     ":ets_loader_ark_lib",
     ":ets_loader_ark_server",
+    ":ohos_declaration_ets_ark",
   ]
-  sources = [ "//developtools/ace_ets2bundle/compiler/node_modules" ]
-  outputs = [ target_out_dir + "/ets_loader_ark/node_modules" ]
+  outputs = [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
+  module_install_name = ""
 }
