@@ -653,7 +653,7 @@ function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
 class ProcessFileInfo {
   buildStart: boolean = true;
   wholeFileInfo: {[id: string]: SpecialArkTSFileInfo | TSFileInfo} = {}; // Save ArkTS & TS file's infomation
-  transformedFiles: string[] = []; // ArkTS & TS Files which should be transformed in this compilation
+  transformedFiles: Set<string> = new Set(); // ArkTS & TS Files which should be transformed in this compilation
   cachedFiles: string[] = []; // ArkTS & TS Files which should not be transformed in this compilation
   shouldHaveEntry: string[] = []; // Which file should have @Entry decorator
   resourceToFile: {[resource: string]: Set<string>} = {}; // Resource is used by which file
@@ -690,7 +690,7 @@ class ProcessFileInfo {
 
   collectTransformedFiles(id: string) {
     if (id.match(process.env.compileMode === 'moduleJson' ? /(?<!\.d)\.(ets|ts)$/ : /(?<!\.d)\.(ets)$/)) {
-      this.transformedFiles.push(id);
+      this.transformedFiles.add(id);
     }
   }
 
@@ -784,7 +784,7 @@ class ProcessFileInfo {
     this.buildStart = false;
     this.resourceTableChanged = false;
     this.saveCacheFileInfo(cache);
-    this.transformedFiles = [];
+    this.transformedFiles = new Set();
     this.cachedFiles = [];
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
