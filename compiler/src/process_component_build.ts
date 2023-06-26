@@ -2045,11 +2045,13 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   } else if (GLOBAL_STYLE_FUNCTION.has(propName) || INNER_STYLE_FUNCTION.has(propName)) {
     const styleBlock: ts.Block =
         INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
-    bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
-      statements, log, false, true, newImmutableStatements);
-    if (isRecycleComponent) {
+    if (styleBlock.statements.length > 0) {
       bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
-        updateStatements, log, false, true, newImmutableStatements, true);
+        statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+          updateStatements, log, false, true, newImmutableStatements, true);
+      }
     }
     lastStatement.kind = true;
   } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {

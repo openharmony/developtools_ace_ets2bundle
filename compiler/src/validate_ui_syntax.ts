@@ -418,7 +418,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
           extendResult.componentName, node.name.getText());
       }
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-      if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+      if (ts.isBlock(node.body) && node.body.statements) {
         if (ts.isFunctionDeclaration(node)) {
           GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
         } else {
