@@ -58,6 +58,8 @@ import {
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   BIND_DRAG_SET,
   BIND_POPUP_SET,
+  BIND_POPUP,
+  CUSTOM_COMPONENT_DEFAULT,
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
   ATTRIBUTE_ID,
@@ -1619,7 +1621,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           temp = processBindPopupBuilder(temp);
           break;
         case BIND_DRAG_SET.has(propertyName):
-          temp = processDragStartBuilder(temp);
+          temp = processDragStartBuilder(temp, propertyName);
           break;
         default:
           temp = processCustomBuilderProperty(temp, identifierNode, propertyName);
@@ -1669,7 +1671,9 @@ function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: t
   propertyName: string): ts.CallExpression {
   const newArguments: ts.Expression[] = [];
   node.arguments.forEach((argument: ts.Expression | ts.Identifier, index: number) => {
-    if (isBuilderChangeNode(argument, identifierNode, propertyName)) {
+    if (ts.isConditionalExpression(argument)) {
+      newArguments.push(processConditionalBuilder(argument, identifierNode, propertyName));
+    } else if (isBuilderChangeNode(argument, identifierNode, propertyName)) {
       newArguments.push(parseBuilderNode(argument));
     } else {
       newArguments.push(argument);
@@ -1775,14 +1779,14 @@ function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
   return node;
 }
 
-function processDragStartBuilder(node: ts.CallExpression): ts.CallExpression {
+function processDragStartBuilder(node: ts.CallExpression, propertyName: string): ts.CallExpression {
   const newStatements: ts.Statement[] = [];
   if (isNodeFunction(node)) {
     // @ts-ignore
     for (let i = 0; i < node.arguments[0].body.statements.length; i++) {
       // @ts-ignore
       const statement: ts.Statement = node.arguments[0].body.statements[i];
-      newStatements.push(checkStatement(statement));
+      newStatements.push(checkStatement(statement, propertyName));
     }
     node = ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.updateArrowFunction(
       // @ts-ignore
@@ -1798,29 +1802,44 @@ function isNodeFunction(node: ts.CallExpression): boolean {
     ts.isBlock(node.arguments[0].body);
 }
 
-function checkStatement(statement: ts.Statement): ts.Statement {
+function checkStatement(statement: ts.Statement, propertyName: string): ts.Statement {
   if (ts.isReturnStatement(statement)) {
     if (ts.isObjectLiteralExpression(statement.expression)) {
       const newProperties: ts.ObjectLiteralElementLike[] = [];
       for (let j = 0; j < statement.expression.properties.length; j++) {
-        const property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
-        checkProperty(property);
+        let property: ts.ObjectLiteralElementLike = statement.expression.properties[j];
+        property = checkProperty(property, propertyName);
         newProperties.push(property);
       }
       return ts.factory.createReturnStatement(ts.factory.createObjectLiteralExpression(newProperties));
     } else {
-      return ts.factory.updateReturnStatement(statement, parseBuilderNode(statement.expression));
+      let initializer: ts.Expression = statement.expression;
+      initializer = processInitializer(initializer, propertyName);
+      return ts.factory.updateReturnStatement(statement, initializer);
     }
   } else {
     return statement;
   }
 }
 
-function checkProperty(property: ts.ObjectLiteralElementLike): void {
+function checkProperty(property: ts.ObjectLiteralElementLike, propertyName: string): ts.ObjectLiteralElementLike {
   if (isPropertyFunction(property)) {
-    // @ts-ignore
-    property = ts.factory.createPropertyAssignment(property.name, parseBuilderNode(property.initializer));
+    let initializer: ts.Expression = property.initializer;
+    initializer = processInitializer(initializer, propertyName);
+    property = ts.factory.createPropertyAssignment(property.name, initializer);
   }
+  return property;
+}
+
+function processInitializer(initializer: ts.Expression, propertyName: string): ts.Expression {
+  if (initializer && ts.isConditionalExpression(initializer)) {
+    return processConditionalBuilder(initializer, ts.factory.createIdentifier(CUSTOM_COMPONENT_DEFAULT),
+      propertyName);
+  } else if (isBuilderChangeNode(initializer, ts.factory.createIdentifier(CUSTOM_COMPONENT_DEFAULT),
+    propertyName)) {
+    return parseBuilderNode(initializer);
+  }
+  return initializer;
 }
 
 function isPropertyFunction(property: ts.ObjectLiteralElementLike): boolean {
@@ -1831,19 +1850,35 @@ function isPropertyFunction(property: ts.ObjectLiteralElementLike): boolean {
 function processBindPopupBuilderProperty(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment, index: number) => {
-    if (index === 0) {
-      if (property.name && ts.isIdentifier(property.name) &&
-        property.name.escapedText.toString() === CUSTOM_DIALOG_CONTROLLER_BUILDER) {
-        newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
-          parseBuilderNode(property.initializer)));
-      } else {
-        newProperties.push(property);
-      }
+    if (property.name && ts.isIdentifier(property.name) && property.initializer &&
+      property.name.escapedText.toString() === CUSTOM_DIALOG_CONTROLLER_BUILDER) {
+      let initializer: ts.Expression = property.initializer;
+      initializer = processInitializer(initializer, BIND_POPUP);
+      newProperties.push(ts.factory.updatePropertyAssignment(property, property.name, initializer));
     } else {
       newProperties.push(property);
     }
   });
   return ts.factory.updateObjectLiteralExpression(node, newProperties);
+}
+
+function processConditionalBuilder(initializer: ts.ConditionalExpression, identifierNode: ts.Identifier,
+  propertyName: string): ts.ConditionalExpression {
+  let whenTrue: ts.Expression = initializer.whenTrue;
+  let whenFalse: ts.Expression = initializer.whenFalse;
+  if (isBuilderChangeNode(initializer.whenTrue, identifierNode, propertyName)) {
+    whenTrue = parseBuilderNode(initializer.whenTrue);
+  }
+  if (isBuilderChangeNode(initializer.whenFalse, identifierNode, propertyName)) {
+    whenFalse = parseBuilderNode(initializer.whenFalse);
+  }
+  return ts.factory.createConditionalExpression(
+    initializer.condition,
+    initializer.questionToken,
+    whenTrue,
+    initializer.colonToken,
+    whenFalse
+  );
 }
 
 function processPropertyBuilder(node: ts.PropertyAccessExpression): ts.ObjectLiteralExpression {
