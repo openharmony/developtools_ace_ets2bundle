@@ -56,7 +56,7 @@ import {
   CARD_ENABLE_DECORATORS,
   CARD_LOG_TYPE_DECORATORS,
   JSBUNDLE,
-  COMPONENT_DECORATOR_RECYCLE,
+  COMPONENT_DECORATOR_REUSEABLE,
   STRUCT_DECORATORS,
   STRUCT_CONTEXT_METHOD_DECORATORS,
   CHECK_COMPONENT_EXTEND_DECORATOR,
@@ -320,7 +320,7 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
           componentCollection.customDialogs.add(componentName);
           hasComponentDecorator = true;
           break;
-        case COMPONENT_DECORATOR_RECYCLE:
+        case COMPONENT_DECORATOR_REUSEABLE:
           storedFileInfo.getCurrentArkTsFile().recycleComponents.add(componentName);
           hasComponentDecorator = true;
           break;
