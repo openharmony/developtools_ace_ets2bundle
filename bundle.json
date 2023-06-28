@@ -32,7 +32,7 @@
           "//developtools/ace_ets2bundle:server",
           "//developtools/ace_ets2bundle:codegen",
           "//developtools/ace_ets2bundle:ets_loader_declaration",
-          "//developtools/ace_ets2bundle:ets_loader_node_modules"
+          "//developtools/ace_ets2bundle:ets_loader_ark_hap"
         ]
       }
     }
