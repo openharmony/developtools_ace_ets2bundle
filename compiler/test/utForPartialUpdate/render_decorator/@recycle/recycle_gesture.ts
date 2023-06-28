@@ -14,7 +14,7 @@
  */
 
 exports.source = `
-@Recycle
+@Reusable
 @Component
 struct GestureTest {
   @State count: number = 0
