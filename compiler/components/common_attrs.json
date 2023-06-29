@@ -3,7 +3,7 @@
     "width", "height", "size", "constraintSize", "layoutPriority", "layoutWeight",
     "padding", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom",
     "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
-    "border", "borderStyle", "borderWidth", "borderColor", "borderRadius",
+    "border", "borderStyle", "borderWidth", "borderColor", "borderRadius", "background",
     "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition", "backgroundBlurStyle",
     "obscured", "opacity", "animation", "transition", "stateStyles",
     "onClick", "onTouch", "touchable", "onKeyEvent", "onHover", "hoverEffect", "onMouse", "onAreaChange",
