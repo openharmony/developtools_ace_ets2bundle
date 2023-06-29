@@ -65,6 +65,8 @@ class LocalStorageComponent extends ViewPU {
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__simpleVarName.purgeDependencyOnElmtId(rmElmtId);
+        this.__objectName.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__simpleVarName.aboutToBeDeleted();
