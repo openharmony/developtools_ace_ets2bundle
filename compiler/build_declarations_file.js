@@ -29,7 +29,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
   'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow', 'WaterFlow', 'FlowItem', 'ImageSpan',
-  'RootScene', 'Screen', 'WindowScene', "EffectComponent"];
+  'RootScene', 'Screen', 'WindowScene', "EffectComponent", "RichEditor"];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {

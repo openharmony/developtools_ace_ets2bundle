@@ -195,7 +195,8 @@
         "SecLocationButton",
         "SecPasteButton",
         "SecSaveButton",
-        "UIExtensionComponent"
+        "UIExtensionComponent",
+        "RichEditor"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -724,6 +725,11 @@
             "name": "UIExtensionComponent",
             "type": "UIExtensionComponentAttribute",
             "instance": "UIExtensionComponentInstance"
+          },
+          {
+            "name": "RichEditor",
+            "type": "RichEditorAttribute",
+            "instance": "RichEditorInstance"
           }
         ]
       },
