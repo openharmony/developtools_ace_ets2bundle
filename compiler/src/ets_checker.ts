@@ -294,13 +294,18 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
       if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {
-          const emit: any = languageService.getEmitOutput(moduleFile, true, true);
-          if (emit.outputFiles[0]) {
-            generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile),
+          if ((/\.d\.e?ts$/).test(moduleFile)) {
+            generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
               projectConfig);
           } else {
-            console.warn(this.yellow,
-              "ArkTS:WARN doesn't generate .d" + path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
+            const emit: any = languageService.getEmitOutput(moduleFile, true, true);
+            if (emit.outputFiles[0]) {
+              generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile),
+                projectConfig);
+            } else {
+              console.warn(this.yellow,
+                "ArkTS:WARN doesn't generate .d" + path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
+            }
           }
         } catch (err) {}
       }
@@ -560,8 +565,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         resolvedModules[resolvedModules.length - 1]) {
         hotReloadSupportFiles.add(path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName));
       }
-      if ((projectConfig.compileHar || projectConfig.compileShared) && resolvedModules[resolvedModules.length - 1] &&
-        path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/(\.[^d]|[^\.]d|[^\.][^d])\.e?ts$/)) {
+      if (collectShouldPackedFiles(resolvedModules)) {
         allResolvedModules.add(resolvedModules[resolvedModules.length - 1].resolvedFileName);
       }
     }
@@ -572,6 +576,15 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
     return resolvedModules;
   }
   return resolvedModulesCache[path.resolve(containingFile)];
+}
+
+function collectShouldPackedFiles(resolvedModules: ts.ResolvedModuleFull[]): boolean | RegExpMatchArray {
+  return (projectConfig.compileHar || projectConfig.compileShared) && resolvedModules[resolvedModules.length - 1] &&
+    resolvedModules[resolvedModules.length - 1].resolvedFileName &&
+    (path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/(\.[^d]|[^\.]d|[^\.][^d])\.e?ts$/) ||
+    path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/\.d\.e?ts$/) &&
+    path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(
+      new RegExp('\\' + path.sep + 'src' + '\\' + path.sep + 'main' + '\\' + path.sep)));
 }
 
 function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
