@@ -78,18 +78,22 @@ class Index extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
-            Row.height('100%');
             if (!isInitialRender) {
                 Row.pop();
+            }
+            else {
+                Row.height('100%');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
-            Column.width('100%');
             if (!isInitialRender) {
                 Column.pop();
+            }
+            else {
+                Column.width('100%');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

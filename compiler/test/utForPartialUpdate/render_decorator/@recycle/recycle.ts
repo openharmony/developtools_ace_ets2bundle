@@ -181,9 +181,11 @@ class HomeComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
             Column.width(this.state_value);
-            Column.height(100);
             if (!isInitialRender) {
                 Column.pop();
+            }
+            else {
+                Column.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -230,9 +232,11 @@ class HomeComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("aa");
             Text.width(this.state_value);
-            Text.height(100);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -661,9 +665,11 @@ class NormalComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("hello");
             Text.width(this.width_value);
-            Text.height(100);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

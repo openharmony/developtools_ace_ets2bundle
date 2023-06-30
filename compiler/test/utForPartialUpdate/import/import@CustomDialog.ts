@@ -136,10 +136,12 @@ class CustomDialogUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
-            Column.width('100%');
-            Column.margin({ top: 5 });
             if (!isInitialRender) {
                 Column.pop();
+            }
+            else {
+                Column.width('100%');
+                Column.margin({ top: 5 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -149,9 +151,11 @@ class CustomDialogUser extends ViewPU {
             Button.onClick(() => {
                 this.dialogController.open();
             });
-            Button.backgroundColor(0x317aff);
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.backgroundColor(0x317aff);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

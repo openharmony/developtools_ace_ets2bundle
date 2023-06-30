@@ -70,11 +70,13 @@ class ButtonExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel('Ok', { type: ButtonType.Normal, stateEffect: true });
-            Button.borderRadius(8);
-            Button.backgroundColor(0x317aff);
-            Button.width(90);
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.borderRadius(8);
+                Button.backgroundColor(0x317aff);
+                Button.width(90);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -82,11 +84,13 @@ class ButtonExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithChild({ type: ButtonType.Normal, stateEffect: true });
-            Button.borderRadius(8);
-            Button.backgroundColor(0x317aff);
-            Button.width(90);
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.borderRadius(8);
+                Button.backgroundColor(0x317aff);
+                Button.width(90);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -102,11 +106,13 @@ class ButtonExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('loading');
-            Text.fontSize(12);
-            Text.fontColor(0xffffff);
-            Text.margin({ left: 5, right: 12 });
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(12);
+                Text.fontColor(0xffffff);
+                Text.margin({ left: 5, right: 12 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -116,12 +122,14 @@ class ButtonExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel('Disable', { type: ButtonType.Normal, stateEffect: false });
-            Button.opacity(0.5);
-            Button.borderRadius(8);
-            Button.backgroundColor(0x317aff);
-            Button.width(90);
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.opacity(0.5);
+                Button.borderRadius(8);
+                Button.backgroundColor(0x317aff);
+                Button.width(90);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

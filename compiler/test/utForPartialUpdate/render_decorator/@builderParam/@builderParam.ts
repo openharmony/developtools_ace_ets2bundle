@@ -230,9 +230,11 @@ function specificWithParam(label1, label2, parent = null) {
     (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Text.create(label1);
-        Text.fontSize(50);
         if (!isInitialRender) {
             Text.pop();
+        }
+        else {
+            Text.fontSize(50);
         }
         ViewStackProcessor.StopGetAccessRecording();
     });
@@ -240,9 +242,11 @@ function specificWithParam(label1, label2, parent = null) {
     (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
         Text.create(label2);
-        Text.fontSize(50);
         if (!isInitialRender) {
             Text.pop();
+        }
+        else {
+            Text.fontSize(50);
         }
         ViewStackProcessor.StopGetAccessRecording();
     });
@@ -288,9 +292,11 @@ class CustomContainerUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("content");
-            Text.fontSize(50);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(50);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -309,9 +315,11 @@ class CustomContainerUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(label1);
-            Text.fontSize(50);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(50);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -319,9 +327,11 @@ class CustomContainerUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(label2);
-            Text.fontSize(50);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(50);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,95 +16,82 @@
 exports.source = `
 @Entry
 @Component
-struct SwipeGestureExample {
-  @State rotateAngle : number = 0
-  @State speed : number = 1
+struct GestureGroupExample {
+  @State value: string = ''
 
   build() {
-    Column() {
-      Text("SwipGesture speed ： " + this.speed)
-      Text("SwipGesture angle ： " + this.rotateAngle)
+    Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween }) {
+      Text('Click twice')
+      Text(this.value)
     }
-    .border({width:2})
-    .width(260).height(260)
-    .rotate({x: 0, y: 0, z: 1, angle: this.rotateAngle})
+    .height(200)
     .gesture(
-    SwipeGesture({fingers: 1, direction:SwipeDirection.Vertical})
-      .onAction((event: GestureEvent) => {
-        this.speed = event.speed
-        this.rotateAngle = event.angle
-      })
-    )
+      GestureGroup(
+        GestureMode.Sequence,
+        TapGesture({ count: 2 })
+        .onAction(() => {
+          this.value = 'TapGesture onAction'
+        })
+      ))
+     .border({ width: 1 })
+     .margin(30)
   }
 }`
 
-exports.expectResult =
-`"use strict";
-class SwipeGestureExample extends ViewPU {
+exports.expectResult = `"use strict";
+class GestureGroupExample extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1) {
         super(parent, __localStorage, elmtId);
-        this.__rotateAngle = new ObservedPropertySimplePU(0, this, "rotateAngle");
-        this.__speed = new ObservedPropertySimplePU(1, this, "speed");
+        this.__value = new ObservedPropertySimplePU('', this, "value");
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
-        if (params.rotateAngle !== undefined) {
-            this.rotateAngle = params.rotateAngle;
-        }
-        if (params.speed !== undefined) {
-            this.speed = params.speed;
+        if (params.value !== undefined) {
+            this.value = params.value;
         }
     }
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__rotateAngle.purgeDependencyOnElmtId(rmElmtId);
-        this.__speed.purgeDependencyOnElmtId(rmElmtId);
+        this.__value.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.__rotateAngle.aboutToBeDeleted();
-        this.__speed.aboutToBeDeleted();
+        this.__value.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    get rotateAngle() {
-        return this.__rotateAngle.get();
+    get value() {
+        return this.__value.get();
     }
-    set rotateAngle(newValue) {
-        this.__rotateAngle.set(newValue);
-    }
-    get speed() {
-        return this.__speed.get();
-    }
-    set speed(newValue) {
-        this.__speed.set(newValue);
+    set value(newValue) {
+        this.__value.set(newValue);
     }
     initialRender() {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Column.create();
-            Column.rotate({ x: 0, y: 0, z: 1, angle: this.rotateAngle });
+            Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
             Gesture.create(GesturePriority.Low);
-            SwipeGesture.create({ fingers: 1, direction: SwipeDirection.Vertical });
-            SwipeGesture.onAction((event) => {
-                this.speed = event.speed;
-                this.rotateAngle = event.angle;
+            GestureGroup.create(GestureMode.Sequence);
+            TapGesture.create({ count: 2 });
+            TapGesture.onAction(() => {
+                this.value = 'TapGesture onAction';
             });
-            SwipeGesture.pop();
+            TapGesture.pop();
+            GestureGroup.pop();
             Gesture.pop();
             if (!isInitialRender) {
-                Column.pop();
+                Flex.pop();
             }
             else {
-                Column.border({ width: 2 });
-                Column.width(260);
-                Column.height(260);
+                Flex.height(200);
+                Flex.border({ width: 1 });
+                Flex.margin(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Text.create("SwipGesture speed ： " + this.speed);
+            Text.create('Click twice');
             if (!isInitialRender) {
                 Text.pop();
             }
@@ -113,20 +100,20 @@ class SwipeGestureExample extends ViewPU {
         Text.pop();
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-            Text.create("SwipGesture angle ： " + this.rotateAngle);
+            Text.create(this.value);
             if (!isInitialRender) {
                 Text.pop();
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
         Text.pop();
-        Column.pop();
+        Flex.pop();
     }
     rerender() {
         this.updateDirtyElements();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new SwipeGestureExample(undefined, {}));
+loadDocument(new GestureGroupExample(undefined, {}));
 ViewStackProcessor.StopGetAccessRecording();
 `
