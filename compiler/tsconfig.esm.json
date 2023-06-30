@@ -4,7 +4,7 @@
     "ets": {
       "emitDecorators":[
         {
-          "name":"Entry", 
+          "name":"Entry",
           "emitParameters" : true
         },
         {
@@ -16,7 +16,7 @@
           "emitParameters" : false
         },
         {
-          "name":"Consume", 
+          "name":"Consume",
           "emitParameters" : true
         },
         {
@@ -32,7 +32,7 @@
           "emitParameters" : true
         },
         {
-          "name":"ObjectLink", 
+          "name":"ObjectLink",
           "emitParameters" : false
         },
         {
@@ -195,6 +195,7 @@
         "SecLocationButton",
         "SecPasteButton",
         "SecSaveButton",
+        "UIExtensionComponent"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -718,6 +719,11 @@
             "name": "SecSaveButton",
             "type": "SecSaveButtonAttribute",
             "instance": "SecSaveButtonInstance"
+          },
+          {
+            "name": "UIExtensionComponent",
+            "type": "UIExtensionComponentAttribute",
+            "instance": "UIExtensionComponentInstance"
           }
         ]
       },
