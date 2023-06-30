@@ -124,9 +124,11 @@ class CompA extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('' + this.reviewVotes);
-            Text.fontSize(30);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -227,9 +229,11 @@ class CompC extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('' + this.reviewVotes);
-            Text.fontSize(30);
             if (!isInitialRender) {
                 Text.pop();
+            }
+            else {
+                Text.fontSize(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

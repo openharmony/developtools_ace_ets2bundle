@@ -73,11 +73,6 @@ class PinchGestureExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
-            Flex.height(100);
-            Flex.width(200);
-            Flex.padding(20);
-            Flex.border({ width: 1 });
-            Flex.margin(80);
             Flex.scale({ x: this.scale2, y: this.scale2, z: this.scale2 });
             Gesture.create(GesturePriority.Low);
             PinchGesture.create();
@@ -94,6 +89,13 @@ class PinchGestureExample extends ViewPU {
             Gesture.pop();
             if (!isInitialRender) {
                 Flex.pop();
+            }
+            else {
+                Flex.height(100);
+                Flex.width(200);
+                Flex.padding(20);
+                Flex.border({ width: 1 });
+                Flex.margin(80);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

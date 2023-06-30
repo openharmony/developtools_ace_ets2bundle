@@ -86,9 +86,11 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.width(100);
             if (!isInitialRender) {
                 __Common__.pop();
+            }
+            else {
+                __Common__.width(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -108,10 +110,12 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.width(100);
-            __Common__.height(200);
             if (!isInitialRender) {
                 __Common__.pop();
+            }
+            else {
+                __Common__.width(100);
+                __Common__.height(200);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -143,9 +147,11 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.width(100);
             if (!isInitialRender) {
                 __Common__.pop();
+            }
+            else {
+                __Common__.width(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -165,10 +171,12 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             __Common__.create();
-            __Common__.width(100);
-            __Common__.height(200);
             if (!isInitialRender) {
                 __Common__.pop();
+            }
+            else {
+                __Common__.width(100);
+                __Common__.height(200);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

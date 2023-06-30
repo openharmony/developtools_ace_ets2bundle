@@ -98,9 +98,11 @@ class ViewA extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
-            Row.margin({ top: 10 });
             if (!isInitialRender) {
                 Row.pop();
+            }
+            else {
+                Row.margin({ top: 10 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -153,9 +155,11 @@ class ViewB extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
-            Column.width('100%');
             if (!isInitialRender) {
                 Column.pop();
+            }
+            else {
+                Column.width('100%');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -217,12 +221,14 @@ class ViewB extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel('ViewB: reset array');
-            Button.margin({ top: 10 });
             Button.onClick(() => {
                 this.arrA = [new import_Observed_1.ClassB(0), new import_Observed_1.ClassB(0)];
             });
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.margin({ top: 10 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -230,12 +236,14 @@ class ViewB extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel('ViewB: push');
-            Button.margin({ top: 10 });
             Button.onClick(() => {
                 this.arrA.push(new import_Observed_1.ClassB(0));
             });
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.margin({ top: 10 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -243,12 +251,14 @@ class ViewB extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel('ViewB: shift');
-            Button.margin({ top: 10 });
             Button.onClick(() => {
                 this.arrA.shift();
             });
             if (!isInitialRender) {
                 Button.pop();
+            }
+            else {
+                Button.margin({ top: 10 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
