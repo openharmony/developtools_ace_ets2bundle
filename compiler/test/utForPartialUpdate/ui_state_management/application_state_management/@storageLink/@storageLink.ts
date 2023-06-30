@@ -67,6 +67,8 @@ class MyComponent extends ViewPU {
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__varA.purgeDependencyOnElmtId(rmElmtId);
+        this.__lang.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__varA.aboutToBeDeleted();
