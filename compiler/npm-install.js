@@ -43,13 +43,6 @@ if (isWin) {
     cwd = path.join(arkDir, "build");
 }
 
-exec('npm install', { cwd: cwd }, function(err, stdout, stderr) {
-  console.log('[31m', stdout, '[39m');
-  if (err !== null) {
-    console.error('[31m', `npm install filed: ${err}`, '[39m');
-  }
-});
-
 cwd = path.join(cwd, "legacy_api8");
 
 exec('npm install', { cwd: cwd }, function(err, stdout, stderr) {
