@@ -30,13 +30,15 @@ import {
 import {
   genSourceMapFileName,
   newSourceMaps as webpackNewSourceMaps,
+  writeObfuscatedSourceCode,
   transformModuleSpecifier
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
+import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
-export function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any): void {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any, logger?: any): Promise<void> {
   const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, projectConfig);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig);
@@ -49,10 +51,18 @@ export function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any): vo
   }
   temporarySourceMapFile = genSourceMapFileName(temporaryFile);
   mkdirsSync(path.dirname(temporaryFile));
-  if (temporarySourceMapFile.length > 0) {
-    let source = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-    process.env.compileTool === 'rollup' ? rollupNewSourceMaps[source] = mixedInfo.sourceMapJson :
-                                           webpackNewSourceMaps[source] = mixedInfo.sourceMapJson;
+  let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+  let sourceMaps: Object;
+  if (process.env.compileTool === 'rollup') {
+    rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
+    sourceMaps = rollupNewSourceMaps;
+  } else {
+    webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
+    sourceMaps = webpackNewSourceMaps;
+  }
+  if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
+    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps);
+    return;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
 }
