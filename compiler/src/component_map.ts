@@ -115,7 +115,7 @@ export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['bindPopup', 'bindMenu', 'bindContextMenu', 'title',
   'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction', 'bindContentCover', 'bindSheet',
-  'navDestination']);
+  'navDestination', 'overlay']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {
