@@ -122,6 +122,7 @@ export interface IComponentSet {
   localStorageProp: Map<string, Set<string>>;
   builderParams: Set<string>;
   builderParamData: Set<string>;
+  propData: Set<string>;
 }
 
 export const componentCollection: ComponentCollection = {
@@ -154,6 +155,7 @@ export const builderParamObjectCollection: Map<string, Set<string>> = new Map();
 export const localStorageLinkCollection: Map<string, Map<string, Set<string>>> = new Map();
 export const localStoragePropCollection: Map<string, Map<string, Set<string>>> = new Map();
 export const builderParamInitialization: Map<string, Set<string>> = new Map();
+export const propInitialization: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -806,6 +808,7 @@ function collectComponentProps(node: ts.StructDeclaration): void {
   localStoragePropCollection.set(componentName, ComponentSet.localStorageProp);
   builderParamObjectCollection.set(componentName, ComponentSet.builderParams);
   builderParamInitialization.set(componentName, ComponentSet.builderParamData);
+  propInitialization.set(componentName, ComponentSet.propData);
 }
 
 export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
@@ -823,12 +826,13 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const localStorageLink: Map<string, Set<string>> = new Map();
   const localStorageProp: Map<string, Set<string>> = new Map();
   const builderParamData: Set<string> = new Set();
+  const propData: Set<string> = new Set();
   traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
     storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp, builderParams,
-    builderParamData);
+    builderParamData, propData);
   return {
-    properties, regulars, states, links, props, storageProps, storageLinks, provides,
-    consumes, objectLinks, localStorageLink, localStorageProp, builderParams, builderParamData
+    properties, regulars, states, links, props, storageProps, storageLinks, provides, consumes,
+    objectLinks, localStorageLink, localStorageProp, builderParams, builderParamData, propData
   };
 }
 
@@ -837,7 +841,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
   consumes: Set<string>, objectLinks: Set<string>,
   localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
-  builderParams: Set<string>, builderParamData: Set<string>): void {
+  builderParams: Set<string>, builderParamData: Set<string>, propData: Set<string>): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
@@ -855,7 +859,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
               dollarCollection.add('$' + propertyName);
               collectionStates(item.decorators[i], decoratorName, propertyName, states, links, props, storageProps,
                 storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp,
-                builderParams, item.initializer, builderParamData);
+                builderParams, item.initializer, builderParamData, propData);
             }
           }
         }
@@ -874,7 +878,8 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
   states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
   storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
   localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
-  builderParams: Set<string>, initializationtName: ts.Expression, builderParamData: Set<string>): void {
+  builderParams: Set<string>, initializationtName: ts.Expression, builderParamData: Set<string>,
+  propData: Set<string>): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
       states.add(name);
@@ -883,6 +888,9 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       links.add(name);
       break;
     case COMPONENT_PROP_DECORATOR:
+      if (initializationtName) {
+        propData.add(name);
+      }
       props.add(name);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
