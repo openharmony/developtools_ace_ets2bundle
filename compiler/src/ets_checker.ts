@@ -118,7 +118,8 @@ function setCompilerOptions(resolveModulePaths: string[]) {
     'lib': [
       'lib.es2020.d.ts'
     ],
-    'types': projectConfig.compilerTypes
+    'types': projectConfig.compilerTypes,
+    'etsLoaderPath': projectConfig.etsLoaderPath
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
