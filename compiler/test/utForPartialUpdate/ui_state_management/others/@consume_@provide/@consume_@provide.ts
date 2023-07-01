@@ -76,6 +76,7 @@ class CompA extends ViewPU {
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__reviewVotes.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__reviewVotes.aboutToBeDeleted();
@@ -190,6 +191,7 @@ class CompC extends ViewPU {
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__reviewVotes.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__reviewVotes.aboutToBeDeleted();
