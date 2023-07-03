@@ -223,12 +223,10 @@ class ImportTest extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('space');
+            Text.fontSize(20);
             Text.fontColor(Color.Red);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

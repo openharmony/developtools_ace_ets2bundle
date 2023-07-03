@@ -320,11 +320,9 @@ class CustomDialogUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('current countInitValue is: ' + this.countInitValue);
+            Text.fontSize(20);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -332,11 +330,9 @@ class CustomDialogUser extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('current playingInitValue is: ' + this.playingInitValue);
+            Text.fontSize(20);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

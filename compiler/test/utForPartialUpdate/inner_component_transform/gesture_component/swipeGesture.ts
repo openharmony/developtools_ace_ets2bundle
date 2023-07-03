@@ -83,6 +83,9 @@ class SwipeGestureExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
+            Column.border({ width: 2 });
+            Column.width(260);
+            Column.height(260);
             Column.rotate({ x: 0, y: 0, z: 1, angle: this.rotateAngle });
             Gesture.create(GesturePriority.Low);
             SwipeGesture.create({ fingers: 1, direction: SwipeDirection.Vertical });
@@ -94,11 +97,6 @@ class SwipeGestureExample extends ViewPU {
             Gesture.pop();
             if (!isInitialRender) {
                 Column.pop();
-            }
-            else {
-                Column.border({ width: 2 });
-                Column.width(260);
-                Column.height(260);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

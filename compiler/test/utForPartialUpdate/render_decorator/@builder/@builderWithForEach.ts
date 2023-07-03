@@ -54,11 +54,9 @@ function ComB(param, parent = null) {
             (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 __Common__.create();
+                __Common__.backgroundColor('red');
                 if (!isInitialRender) {
                     __Common__.pop();
-                }
-                else {
-                    __Common__.backgroundColor('red');
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             });
@@ -154,11 +152,9 @@ class ComA extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('自定义组件');
+            Text.fontSize(30);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
