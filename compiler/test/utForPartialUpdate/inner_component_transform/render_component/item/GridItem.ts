@@ -57,12 +57,10 @@ class ParentView extends ViewPU {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 GridItem.create(deepRenderFunction, isLazyCreate, 'true');
+                GridItem.width(200);
+                GridItem.height(100);
                 if (!isInitialRender) {
                     GridItem.pop();
-                }
-                else {
-                    GridItem.width(200);
-                    GridItem.height(100);
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             };
@@ -75,11 +73,9 @@ class ParentView extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('xx');
+                    Text.width(100);
                     if (!isInitialRender) {
                         Text.pop();
-                    }
-                    else {
-                        Text.width(100);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
@@ -92,11 +88,9 @@ class ParentView extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('xx');
+                    Text.width(100);
                     if (!isInitialRender) {
                         Text.pop();
-                    }
-                    else {
-                        Text.width(100);
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });

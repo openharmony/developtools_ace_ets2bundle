@@ -98,12 +98,10 @@ class FancyUseExp extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("Fancy");
             Text.backgroundColor(Color.Red);
+            Text.width(100);
+            Text.height(100);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.width(100);
-                Text.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -112,12 +110,10 @@ class FancyUseExp extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("Fancy");
             Text.backgroundColor(Color.Blue);
+            Text.width(100);
+            Text.height(100);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.width(100);
-                Text.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

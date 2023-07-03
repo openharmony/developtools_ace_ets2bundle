@@ -67,6 +67,11 @@ class TapGestureExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
+            Flex.height(200);
+            Flex.width(300);
+            Flex.padding(60);
+            Flex.border({ width: 1 });
+            Flex.margin(30);
             Gesture.create(GesturePriority.Low);
             TapGesture.create({ count: 2 });
             TapGesture.onAction(() => {
@@ -76,13 +81,6 @@ class TapGestureExample extends ViewPU {
             Gesture.pop();
             if (!isInitialRender) {
                 Flex.pop();
-            }
-            else {
-                Flex.height(200);
-                Flex.width(300);
-                Flex.padding(60);
-                Flex.border({ width: 1 });
-                Flex.margin(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
