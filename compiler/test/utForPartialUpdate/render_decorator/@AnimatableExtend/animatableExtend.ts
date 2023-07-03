@@ -109,13 +109,11 @@ class HomeComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Polyline.create();
             animatablePoints(this.points, elmtId, isInitialRender, this);
+            Polyline.strokeWidth(3);
+            Polyline.height(100);
+            Polyline.width(100);
             if (!isInitialRender) {
                 Polyline.pop();
-            }
-            else {
-                Polyline.strokeWidth(3);
-                Polyline.height(100);
-                Polyline.width(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

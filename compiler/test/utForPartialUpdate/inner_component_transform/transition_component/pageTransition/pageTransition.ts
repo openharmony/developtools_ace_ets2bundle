@@ -123,12 +123,10 @@ class PageTransitionExample1 extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('page transition');
+            Text.width("100%");
+            Text.height("100%");
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.width("100%");
-                Text.height("100%");
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

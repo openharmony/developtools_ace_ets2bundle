@@ -194,11 +194,9 @@ class ImportTest extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.testText1);
+            Text.fontSize(50);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(50);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -226,11 +224,9 @@ class ImportTest extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.testText4);
+            Text.fontSize(50);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(50);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

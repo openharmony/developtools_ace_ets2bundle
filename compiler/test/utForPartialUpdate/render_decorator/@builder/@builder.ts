@@ -231,11 +231,9 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create("文本");
+            Text.fontSize(30);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(30);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -253,12 +251,10 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(label);
+            Text.width(80);
             Text.bindMenu({ builder: this.textBuilder.bind(this) });
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.width(80);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -269,22 +265,18 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });
+            Flex.width(100);
             if (!isInitialRender) {
                 Flex.pop();
-            }
-            else {
-                Flex.width(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('Test menu item 1');
+            Text.fontSize(20);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -292,22 +284,18 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Divider.create();
+            Divider.height(10);
             if (!isInitialRender) {
                 Divider.pop();
-            }
-            else {
-                Divider.height(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create('Test menu item 2');
+            Text.fontSize(20);
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -326,14 +314,12 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.padding(10);
             Row.bindMenu({ builder: () => {
                     this.NavigationTitlePara.call(this, "111");
                 } });
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.padding(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -354,6 +340,7 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.padding(10);
             Row.bindPopup(false, {
                 builder: { builder: this.MenuBuilder.bind(this) },
                 onStateChange: (e) => {
@@ -364,9 +351,6 @@ class MyComponent extends ViewPU {
             });
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.padding(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -383,12 +367,10 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.padding(10);
             Row.bindContextMenu({ builder: this.MenuBuilder.bind(this) }, ResponseType.RightClick);
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.padding(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -405,11 +387,9 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.padding(10);
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.padding(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -439,13 +419,11 @@ class MyComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             List.create({ space: 5, initialIndex: 0 });
             List.listDirection(Axis.Vertical);
+            List.height(300);
+            List.margin({ top: 10, left: 18 });
+            List.width('100%');
             if (!isInitialRender) {
                 List.pop();
-            }
-            else {
-                List.height(300);
-                List.margin({ top: 10, left: 18 });
-                List.width('100%');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -459,11 +437,9 @@ class MyComponent extends ViewPU {
                     const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                         ListItem.create(deepRenderFunction, isLazyCreate);
+                        ListItem.editable(true);
                         if (!isInitialRender) {
                             ListItem.pop();
-                        }
-                        else {
-                            ListItem.editable(true);
                         }
                         ViewStackProcessor.StopGetAccessRecording();
                     };
@@ -476,16 +452,14 @@ class MyComponent extends ViewPU {
                         this.observeComponentCreation((elmtId, isInitialRender) => {
                             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                             Text.create('' + item);
+                            Text.width('90%');
+                            Text.height(80);
+                            Text.backgroundColor('#3366CC');
+                            Text.borderRadius(15);
+                            Text.fontSize(16);
                             Text.textAlign(TextAlign.Center);
                             if (!isInitialRender) {
                                 Text.pop();
-                            }
-                            else {
-                                Text.width('90%');
-                                Text.height(80);
-                                Text.backgroundColor('#3366CC');
-                                Text.borderRadius(15);
-                                Text.fontSize(16);
                             }
                             ViewStackProcessor.StopGetAccessRecording();
                         });
@@ -498,16 +472,14 @@ class MyComponent extends ViewPU {
                         this.observeComponentCreation((elmtId, isInitialRender) => {
                             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                             Text.create('' + item);
+                            Text.width('90%');
+                            Text.height(80);
+                            Text.backgroundColor('#3366CC');
+                            Text.borderRadius(15);
+                            Text.fontSize(16);
                             Text.textAlign(TextAlign.Center);
                             if (!isInitialRender) {
                                 Text.pop();
-                            }
-                            else {
-                                Text.width('90%');
-                                Text.height(80);
-                                Text.backgroundColor('#3366CC');
-                                Text.borderRadius(15);
-                                Text.fontSize(16);
                             }
                             ViewStackProcessor.StopGetAccessRecording();
                         });
@@ -536,11 +508,9 @@ class MyComponent extends ViewPU {
             Button.onClick(() => {
                 this.hideBar = !this.hideBar;
             });
+            Button.margin({ left: 135, top: 60 });
             if (!isInitialRender) {
                 Button.pop();
-            }
-            else {
-                Button.margin({ left: 135, top: 60 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -550,11 +520,9 @@ class MyComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.padding(10);
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.padding(10);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -572,23 +540,19 @@ class MyComponent extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('111');
+                    Text.width('100%');
+                    Text.height('20');
                     Text.backgroundColor(Color.Pink);
                     if (!isInitialRender) {
                         Text.pop();
-                    }
-                    else {
-                        Text.width('100%');
-                        Text.height('20');
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
                 Text.pop();
             });
+            TabContent.tabBar('pink');
             if (!isInitialRender) {
                 TabContent.pop();
-            }
-            else {
-                TabContent.tabBar('pink');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -599,23 +563,19 @@ class MyComponent extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('222');
+                    Text.width('100%');
+                    Text.height('20');
                     Text.backgroundColor(Color.Yellow);
                     if (!isInitialRender) {
                         Text.pop();
-                    }
-                    else {
-                        Text.width('100%');
-                        Text.height('20');
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
                 Text.pop();
             });
+            TabContent.tabBar('yellow');
             if (!isInitialRender) {
                 TabContent.pop();
-            }
-            else {
-                TabContent.tabBar('yellow');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -626,23 +586,19 @@ class MyComponent extends ViewPU {
                 this.observeComponentCreation((elmtId, isInitialRender) => {
                     ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                     Text.create('333');
+                    Text.width('100%');
+                    Text.height('20');
                     Text.backgroundColor(Color.Blue);
                     if (!isInitialRender) {
                         Text.pop();
-                    }
-                    else {
-                        Text.width('100%');
-                        Text.height('20');
                     }
                     ViewStackProcessor.StopGetAccessRecording();
                 });
                 Text.pop();
             });
+            TabContent.tabBar('blue');
             if (!isInitialRender) {
                 TabContent.pop();
-            }
-            else {
-                TabContent.tabBar('blue');
             }
             ViewStackProcessor.StopGetAccessRecording();
         });

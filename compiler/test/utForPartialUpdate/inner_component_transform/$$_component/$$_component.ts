@@ -134,11 +134,9 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create();
+            Column.height(500);
             if (!isInitialRender) {
                 Column.pop();
-            }
-            else {
-                Column.height(500);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -172,11 +170,9 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Row.create();
+            Row.width(20);
             if (!isInitialRender) {
                 Row.pop();
-            }
-            else {
-                Row.width(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -184,12 +180,10 @@ class HomeComponent extends ViewPU {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithChild();
             Button.bindPopup({ value: this.value4, changeEvent: newValue => { this.value4 = newValue; } }, { message: "This is $$ for regular" });
+            Button.width(100);
+            Button.height(20);
             if (!isInitialRender) {
                 Button.pop();
-            }
-            else {
-                Button.width(100);
-                Button.height(20);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -207,12 +201,10 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Text.create(this.value2);
+            Text.fontSize(100);
             Text.bindPopup({ value: value6.item1, changeEvent: newValue => { value6.item1 = newValue; } }, { message: "This is $$ for Obj" });
             if (!isInitialRender) {
                 Text.pop();
-            }
-            else {
-                Text.fontSize(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
