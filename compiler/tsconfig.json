@@ -115,6 +115,7 @@
         "Ellipse",
         "Flex",
         "FormComponent",
+        "FormLink",
         "Gauge",
         "GeometryView",
         "Grid",
@@ -319,6 +320,11 @@
             "name": "FormComponent",
             "type": "FormComponentAttribute",
             "instance": "FormComponentInstance"
+          },
+          {
+            "name": "FormLink",
+            "type": "FormLinkAttribute",
+            "instance": "FormLinkInstance"
           },
           {
             "name": "Gauge",
