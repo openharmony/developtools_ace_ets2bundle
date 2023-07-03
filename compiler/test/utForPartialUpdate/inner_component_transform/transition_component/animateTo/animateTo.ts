@@ -211,13 +211,11 @@ class TransitionExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, });
+            Flex.height(400);
+            Flex.width("100%");
+            Flex.padding({ top: 100 });
             if (!isInitialRender) {
                 Flex.pop();
-            }
-            else {
-                Flex.height(400);
-                Flex.width("100%");
-                Flex.padding({ top: 100 });
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
@@ -249,14 +247,12 @@ class TransitionExample extends ViewPU {
                     this.observeComponentCreation((elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                         Button.createWithLabel();
+                        Button.width("80%");
+                        Button.height(30);
                         Button.transition({ type: TransitionType.Insert, scale: { x: 0, y: 1.0 } });
                         Button.transition({ type: TransitionType.Delete, scale: { x: 1.0, y: 0.0 } });
                         if (!isInitialRender) {
                             Button.pop();
-                        }
-                        else {
-                            Button.width("80%");
-                            Button.height(30);
                         }
                         ViewStackProcessor.StopGetAccessRecording();
                     });
@@ -297,12 +293,10 @@ class TransitionExample extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Column.create({ space: 5 });
+            Column.width("100%");
+            Column.height("100%");
             if (!isInitialRender) {
                 Column.pop();
-            }
-            else {
-                Column.width("100%");
-                Column.height("100%");
             }
             ViewStackProcessor.StopGetAccessRecording();
         });
