@@ -119,10 +119,6 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
     }
   }
 
-  if (filePath) {
-    validatorCard(log, CARD_LOG_TYPE_IMPORT, node.getStart());
-  }
-
   try {
     const fileResolvePath: string = getFileFullPath(filePath, pagesDir);
     if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
