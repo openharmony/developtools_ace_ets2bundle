@@ -505,7 +505,9 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   structDecorator: structDecoratorResult): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
-  propCollection.set(component, propArray);
+  if (!propCollection.get(component)) {
+    propCollection.set(component, propArray);
+  }
   builderParamObjectCollection.set(component, builderParamArray);
   componentCollection.customComponents.add(component);
   if (isDETS) {
@@ -523,8 +525,12 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   objectLinkCollection.set(component, objectLinksArray);
   localStorageLinkCollection.set(component, localStorageLinkMap);
   localStoragePropCollection.set(component, localStoragePropMap);
-  builderParamInitialization.set(component, builderParamData);
-  propInitialization.set(component, propData);
+  if (!builderParamInitialization.get(component)) {
+    builderParamInitialization.set(component, builderParamData);
+  }
+  if (!propInitialization.get(component)) {
+    propInitialization.set(component, propData);
+  }
 }
 
 function hasCollection(node: ts.Identifier): boolean {
