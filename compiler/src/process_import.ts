@@ -54,7 +54,8 @@ import {
   objectLinkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  builderParamInitialization
+  builderParamInitialization,
+  propInitialization
 } from './validate_ui_syntax';
 import {
   getExtensionIfUnfullySpecifiedFilepath,
@@ -227,7 +228,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         storageLinkCollection.get(propertiesName), provideCollection.get(propertiesName),
         consumeCollection.get(propertiesName), objectLinkCollection.get(propertiesName),
         localStorageLinkCollection.get(propertiesName), localStoragePropCollection.get(propertiesName),
-        builderParamInitialization.get(propertiesName), isDETS, structDecorator);
+        builderParamInitialization.get(propertiesName), propInitialization.get(propertiesName), isDETS,
+        structDecorator);
     }
     addDefaultExport(node, isDETS, structDecorator);
   }
@@ -262,8 +264,8 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
               storagePropCollection.get(asExportPropertyName), storageLinkCollection.get(asExportPropertyName),
               provideCollection.get(asExportPropertyName), consumeCollection.get(asExportPropertyName),
               objectLinkCollection.get(asExportPropertyName), localStorageLinkCollection.get(asExportPropertyName),
-              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName), isDETS,
-              structDecorator);
+              localStoragePropCollection.get(asExportPropertyName), builderParamInitialization.get(asExportPropertyName),
+              propInitialization.get(asExportPropertyName), isDETS, structDecorator);
           }
           asExportCollection.set(item.propertyName.escapedText.toString(), item.name.escapedText.toString());
         }
@@ -397,19 +399,22 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
+      structDecorator);
   } else if (asNameFromParent.has(componentName)) {
     setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
+      structDecorator);
   } else {
     setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
       ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, isDETS, structDecorator);
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
+      structDecorator);
   }
 }
 
@@ -461,7 +466,10 @@ function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDE
     getNewLocalStorageMap(localStoragePropCollection, name),
     builderParamInitialization.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...builderParamInitialization.get(CUSTOM_COMPONENT_DEFAULT),
-        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name), isDETS,
+        ...builderParamInitialization.get(name)]) : builderParamInitialization.get(name),
+    propInitialization.has(CUSTOM_COMPONENT_DEFAULT) ?
+      new Set([...propInitialization.get(CUSTOM_COMPONENT_DEFAULT),
+        ...propInitialization.get(name)]) : propInitialization.get(name), isDETS,
     structDecorator
   );
 }
@@ -493,7 +501,8 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   regularArray: Set<string>, storagePropsArray: Set<string>, storageLinksArray: Set<string>,
   providesArray: Set<string>, consumesArray: Set<string>, objectLinksArray: Set<string>,
   localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
-  builderParamData: Set<string>, isDETS: boolean, structDecorator: structDecoratorResult): void {
+  builderParamData: Set<string>, propData: Set<string>, isDETS: boolean,
+  structDecorator: structDecoratorResult): void {
   linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   propCollection.set(component, propArray);
@@ -515,6 +524,7 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   localStorageLinkCollection.set(component, localStorageLinkMap);
   localStoragePropCollection.set(component, localStoragePropMap);
   builderParamInitialization.set(component, builderParamData);
+  propInitialization.set(component, propData);
 }
 
 function hasCollection(node: ts.Identifier): boolean {
