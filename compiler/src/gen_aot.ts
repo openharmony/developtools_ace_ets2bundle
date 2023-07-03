@@ -86,9 +86,9 @@ export function checkAotConfig(compileMode: string, buildJsonInfo: any, faultHan
     checkAotPartialConfig(compileMode, buildJsonInfo, faultHandler);
 }
 
-export function generateAot(arkDir: string, builtinAbcPath: string, projectConfig: any, logger: any, faultHandler: FaultHandler): void {
+export function generateAot(arkDir: string, builtinAbcPath: string, appAbc: string,
+                            projectConfig: any, logger: any, faultHandler: FaultHandler): void {
   let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? "ark_aot_compiler.exe" : "ark_aot_compiler");
-  const appAbc: string = path.join(projectConfig.buildPath, MODULES_ABC);
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
   if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot], logger)) {
