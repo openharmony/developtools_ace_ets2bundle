@@ -6,6 +6,6 @@
     "scrollBarColor", "editMode", "maxCount", "minCount", "cellLength", "onItemDragStart",
     "onItemDragMove", "onItemDragEnter", "onItemDragMove", "onItemDrop", "layoutDirection", "direction",
     "supportAnimation", "dragAnimation", "edgeEffection", "onItemDragLeave", "multiSelectable", "onScrollIndex", "edgeEffect",
-    "onScrollBarUpdate"
+    "onScrollBarUpdate", "enableScrollInteraction"
   ]
 }

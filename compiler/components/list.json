@@ -5,6 +5,6 @@
     "listDirection", "scrollBar", "edgeEffect", "divider", "editMode", "cachedCount", "sticky",
     "chainAnimation", "onScroll", "onReachStart", "onReachEnd", "onScrollStop", "onItemDelete",
     "onItemMove", "onItemDragStart", "onItemDragEnter", "onItemDragMove", "onItemDragLeave", "onItemDrop",
-    "multiSelectable", "onScrollIndex", "onScrollBegin"
+    "multiSelectable", "enableScrollInteraction", "onScrollIndex", "onScrollBegin"
   ]
 }
