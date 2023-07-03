@@ -70,7 +70,8 @@ import {
   isStaticViewCollection,
   builderParamObjectCollection,
   getLocalStorageCollection,
-  builderParamInitialization
+  builderParamInitialization,
+  propInitialization
 } from './validate_ui_syntax';
 import {
   propAndLinkDecorators,
@@ -622,6 +623,7 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       }
       break;
     case COMPONENT_LINK_DECORATOR:
+    case COMPONENT_OBJECT_LINK_DECORATOR:
       return ![COMPONENT_NON_DECORATOR].includes(parent);
   }
   return false;
@@ -773,8 +775,11 @@ function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customCom
 function validateInitDecorator(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
   const mandatoryToInitViaParamSet: Set<string> = new Set([
-    ...getCollectionSet(customComponentName, builderParamObjectCollection)]);
-  const decoratorVariable: Set<string> = builderParamInitialization.get(customComponentName);
+    ...getCollectionSet(customComponentName, builderParamObjectCollection),
+    ...getCollectionSet(customComponentName, propCollection)]);
+  const decoratorVariable: Set<string> = new Set([
+    ...(builderParamInitialization.get(customComponentName) || []),
+    ...(propInitialization.get(customComponentName) || [])]);
   mandatoryToInitViaParamSet.forEach((item: string) => {
     if (item && !curChildProps.has(item) && decoratorVariable && !decoratorVariable.has(item)) {
       log.push({
