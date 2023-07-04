@@ -1205,6 +1205,9 @@ export function resetComponentCollection() {
   componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = new Array();
   stateObjectCollection.clear();
+  builderParamInitialization.clear();
+  propInitialization.clear();
+  propCollection.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
