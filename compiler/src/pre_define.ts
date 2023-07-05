@@ -319,10 +319,12 @@ export const TOGGLE: string = 'Toggle';
 export const ALPHABET_INDEXER: string = 'AlphabetIndexer';
 export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
+export const GRID_ITEM: string = 'GridItem';
+export const LIST_ITEM: string = 'ListItem';
 
 export const $$_BLOCK_INTERFACE: Set<string> = new Set([
   REFRESH, DATE_PICKER, TIME_PICKER, RATING, SEAECH, CALENDAR, STEPPER, TABS, MENU_ITEM,
-  TIME_PICKER]);
+  TIME_PICKER, GRID_ITEM, LIST_ITEM]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
@@ -349,6 +351,8 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
+  [GRID_ITEM, new Set([SELECTED])],
+  [LIST_ITEM, new Set([SELECTED])],
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
