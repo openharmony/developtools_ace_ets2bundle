@@ -127,12 +127,15 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: {params: string[]} = {params: []};
 
+export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
+
 export function processUISyntax(program: ts.Program, ut = false): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
     return (node: ts.SourceFile) => {
+      const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
@@ -145,9 +148,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           if (projectConfig.compileMode === ESMODULE) {
             if (projectConfig.processTs === true) {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-              process.env.compileTool === 'rollup' ?
-                ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
+              if (process.env.compileTool === 'rollup') {
+                hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
+                  ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
+              } else {
                 writeFileSyncByNode(processedNode, projectConfig);
+              }
             }
           }
           return node;
@@ -170,9 +176,12 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
           const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-          process.env.compileTool === 'rollup' ?
-            ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode) :
+          if (process.env.compileTool === 'rollup') {
+            hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
+              ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
+          } else {
             writeFileSyncByNode(processedNode, projectConfig);
+          }
         }
         return node;
       } else {
