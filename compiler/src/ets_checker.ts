@@ -184,13 +184,21 @@ interface extendInfo {
   compName: string
 }
 
+export const files: ts.MapLike<{ version: number }> = {};
+
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[]): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
-  const files: ts.MapLike<{ version: number }> = {};
+  rootFileNames.forEach((fileName: string) => {
+    files[fileName] = {version: 0};
+  });
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
-    getScriptVersion: fileName =>
-      files[fileName] && files[fileName].version.toString(),
+    getScriptVersion: fileName => {
+      if (!files[path.resolve(fileName)]) {
+        files[path.resolve(fileName)] = {version: 0};
+      }
+      return files[path.resolve(fileName)].version.toString();
+    },
     getScriptSnapshot: fileName => {
       if (!fs.existsSync(fileName)) {
         return undefined;
@@ -250,15 +258,20 @@ export const shouldResolvedFiles: Set<string> = new Set();
 export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
 
-let fastBuildLogger = null;
+export let fastBuildLogger = null;
 
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
+export let languageService: ts.LanguageService = null;
 export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
   fastBuildLogger = newLogger;
-  let languageService: ts.LanguageService = null;
   let cacheFile: string = null;
-  if (projectConfig.xtsMode) {
+  if (projectConfig.xtsMode || process.env.watchMode === 'true') {
+    if (projectConfig.hotReload) {
+      rootFileNames.forEach(fileName => {
+        hotReloadSupportFiles.add(fileName);
+      });
+    }
     languageService = createLanguageService(rootFileNames, resolveModulePaths);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -275,6 +288,12 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
   }
   globalProgram.program = languageService.getProgram();
   collectSourceFilesMap(globalProgram.program);
+  if (process.env.watchMode !== 'true') {
+    processBuildHap(cacheFile, rootFileNames);
+  }
+}
+
+function processBuildHap(cacheFile: string, rootFileNames: string[]): void {
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
     .getSyntacticDiagnostics()
     .concat(globalProgram.program.getSemanticDiagnostics())
@@ -282,7 +301,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
-  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+  if (!projectConfig.xtsMode) {
     fse.ensureDirSync(projectConfig.cachePath);
     fs.writeFileSync(cacheFile, JSON.stringify({
       'runtimeOS': projectConfig.runtimeOS,
@@ -341,7 +360,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     }
 
     if (containFormError(message) && !isCardFile(diagnostic.file.fileName)) {
-        return;
+      return;
     }
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
