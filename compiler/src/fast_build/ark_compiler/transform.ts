@@ -28,6 +28,7 @@ import {
   isTsOrEtsSourceFile
 } from './utils';
 import { toUnixPath } from '../../utils';
+import { hasTsNoCheckOrTsIgnoreFiles } from '../../process_ui_syntax';
 
 export let newSourceMaps: Object = {};
 
@@ -39,7 +40,7 @@ export let newSourceMaps: Object = {};
 export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
-    if (isTsOrEtsSourceFile(id) && !projectConfig.processTs) {
+    if (isTsOrEtsSourceFile(id) && (!projectConfig.processTs || hasTsNoCheckOrTsIgnoreFiles.indexOf(id) !== -1)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig);
       ModuleSourceFile.newSourceFile(id, code);
     }

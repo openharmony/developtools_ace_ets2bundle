@@ -80,7 +80,8 @@ import {
   generateAot,
   generateBuiltinAbc,
   FaultHandler
-} from '../../../gen_aot'
+} from '../../../gen_aot';
+import { hasTsNoCheckOrTsIgnoreFiles } from '../../../process_ui_syntax';
 
 export class ModuleInfo {
   filePath: string;
@@ -223,12 +224,14 @@ export class ModuleMode extends CommonMode {
   private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
-        const extName: string = this.projectConfig.processTs ? EXTNAME_TS : EXTNAME_JS;
+        const extName: string = this.projectConfig.processTs && (hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) === -1) ?
+          EXTNAME_TS : EXTNAME_JS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
       case EXTNAME_TS: {
-        const extName: string = this.projectConfig.processTs ? '' : EXTNAME_JS;
+        const extName: string = this.projectConfig.processTs && (hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) === -1) ?
+          '' : EXTNAME_JS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
