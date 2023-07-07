@@ -73,7 +73,8 @@ import {
   CREATE_STORAGE_PROP,
   ELMTID,
   COMPONENT_CONSTRUCTOR_PARAMS,
-  RESERT
+  RESERT,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -789,7 +790,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
         if (!isCutomDialog) {
-          argumentsArray.push(ts.factory.createIdentifier('undefined'), ts.factory.createIdentifier(ELMTID));
+          argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), ts.factory.createIdentifier(ELMTID));
         }
       }
       node =
