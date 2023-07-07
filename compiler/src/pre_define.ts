@@ -321,6 +321,7 @@ export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
 export const GRID_ITEM: string = 'GridItem';
 export const LIST_ITEM: string = 'ListItem';
+export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 
 export const $$_BLOCK_INTERFACE: Set<string> = new Set([
   REFRESH, DATE_PICKER, TIME_PICKER, RATING, SEAECH, CALENDAR, STEPPER, TABS, MENU_ITEM,

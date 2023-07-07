@@ -55,6 +55,7 @@ import {
   COMPONENT_RERENDER_FUNCTION,
   OBSERVE_RECYCLE_COMPONENT_CREATION,
   FUNCTION,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 import {
   propertyCollection,
@@ -658,7 +659,7 @@ function createFindChildById(id: string, name: string, isBuilder: boolean = fals
           undefined, []) : ts.factory.createStringLiteral(id)]),
       ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name))),
       ts.factory.createToken(ts.SyntaxKind.ColonToken),
-      ts.factory.createIdentifier('undefined')))], ts.NodeFlags.Let));
+      ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)))], ts.NodeFlags.Let));
 }
 
 export function createConditionParent(isBuilder: boolean): ts.ParenthesizedExpression | ts.ThisExpression {
