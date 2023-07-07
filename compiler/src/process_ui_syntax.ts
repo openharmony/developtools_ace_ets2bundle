@@ -332,6 +332,8 @@ function createCustomDialogController(parent: ts.Expression, node: ts.NewExpress
     });
     return ts.factory.createNewExpression(node.expression, node.typeArguments,
       [ts.factory.createObjectLiteralExpression(newproperties, true), ts.factory.createThis()]);
+  } else {
+    return node;
   }
 }
 
