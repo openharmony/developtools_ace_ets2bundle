@@ -109,6 +109,8 @@ import {
   CHECK_COMPONENT_EXTEND_DECORATOR,
   CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
   RECYCLE_REUSE_ID,
+  UPDATE_FUNC_BY_ELMT_ID,
+  CREATE_SET_METHOD
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -955,9 +957,9 @@ function createDeepRenderFunction(
                 ts.factory.createPropertyAccessExpression(
                   ts.factory.createPropertyAccessExpression(
                     ts.factory.createThis(),
-                    ts.factory.createIdentifier('updateFuncByElmtId')
+                    ts.factory.createIdentifier(UPDATE_FUNC_BY_ELMT_ID)
                   ),
-                  ts.factory.createIdentifier('set')
+                  ts.factory.createIdentifier(CREATE_SET_METHOD)
                 ), undefined,
                 [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
               )),
