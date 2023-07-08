@@ -881,7 +881,7 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
 
 function checkAny(typeNode: ts.TypeNode, log: LogInfo[]): void {
   log.push({
-    type: LogType.ERROR,
+    type: partialUpdateConfig.allowAny ? LogType.WARN : LogType.ERROR,
     message: `Please define an explicit type, not any.`,
     pos: typeNode.getStart()
   });
