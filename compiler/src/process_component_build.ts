@@ -110,7 +110,8 @@ import {
   CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
   RECYCLE_REUSE_ID,
   UPDATE_FUNC_BY_ELMT_ID,
-  CREATE_SET_METHOD
+  CREATE_SET_METHOD,
+  CAN_RETAKE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -315,6 +316,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
     sourceNode = ts.createSourceFile('', node.getText(), ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
   }
   if (node.statements.length) {
+    // Save parent component
+    const savedParent: string = parent;
     node.statements.forEach((item) => {
       if (ts.isExpressionStatement(item)) {
         checkEtsComponent(item, log);
@@ -323,13 +326,15 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
           validatorCard(log, CARD_LOG_TYPE_COMPONENTS, item.getStart(), name);
         }
         switch (getComponentType(item, log, name, parent, forEachParameters)) {
-          case ComponentType.innerComponent:
-            const etsExpression: ts.EtsComponentExpression = getEtsComponentExpression(item);
+          case ComponentType.innerComponent: {
+            const [etsExpression, idName]: [ts.EtsComponentExpression, ts.Expression] =
+              checkEtsAndIdInIf(item, savedParent);
             if (ts.isIdentifier(etsExpression.expression)) {
               parent = etsExpression.expression.escapedText.toString();
             }
-            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition);
+            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition, idName);
             break;
+          }
           case ComponentType.customComponent:
             parent = undefined;
             if (!newsupplement.isAcceleratePreview) {
@@ -600,25 +605,25 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
 
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
-  isTransition: boolean = false): void {
+  isTransition: boolean = false, idName: ts.Expression = undefined): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null, arguments: [] };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
-    processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder);
+    processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder, idName);
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
-    processTabAndNav(node, innerCompStatements, nameResult, log, isGlobalBuilder);
+    processTabAndNav(node, innerCompStatements, nameResult, log, isGlobalBuilder, idName);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder,
-      isTransition);
+      isTransition, idName);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
   innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined,
-  isGlobalBuilder: boolean = false, isTransition: boolean = false): void {
+  isGlobalBuilder: boolean = false, isTransition: boolean = false, idName: ts.Expression = undefined): void {
   const newStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
@@ -629,6 +634,10 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
     etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
       res.identifierNode.getText());
+  }
+  let judgeIdStart: number;
+  if (partialUpdateConfig.partialUpdateMode && idName) {
+    judgeIdStart = innerCompStatements.length;
   }
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (res.isButton) {
@@ -654,6 +663,31 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
   }
+  if (partialUpdateConfig.partialUpdateMode && idName) {
+    innerCompStatements.splice(judgeIdStart, innerCompStatements.length - judgeIdStart,
+      ifRetakeId(innerCompStatements.slice(judgeIdStart), idName));
+  }
+}
+
+function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.ExclamationToken,
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(COMPONENT_IF),
+          ts.factory.createIdentifier(CAN_RETAKE)
+        ),
+        undefined,
+        [idName]
+      )
+    ),
+    ts.factory.createBlock(
+      blockContent,
+      true
+    ),
+    undefined
+  );
 }
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
@@ -771,7 +805,7 @@ function createInitRenderStatement(node: ts.Statement,
 }
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
-  log: LogInfo[], isGlobalBuilder: boolean = false): void {
+  log: LogInfo[], isGlobalBuilder: boolean = false, idName: ts.Expression = undefined): void {
   const itemRenderInnerStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
@@ -788,9 +822,17 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
   }
-  innerCompStatements.push(createItemBlock(
-    node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
-      immutableStatements));
+  let generateItem: ts.IfStatement | ts.Block;
+  if (idName) {
+    generateItem = ifRetakeId([createItemBlock(
+      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
+      immutableStatements)], idName);
+  } else {
+    generateItem = createItemBlock(
+      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
+      immutableStatements);
+  }
+  innerCompStatements.push(generateItem);
 }
 
 function createItemCreate(nameResult: NameResult): ts.Statement {
@@ -1047,7 +1089,7 @@ function createObservedDeepRender(
 }
 
 function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  nameResult: NameResult, log: LogInfo[], isGlobalBuilder: boolean = false): void {
+  nameResult: NameResult, log: LogInfo[], isGlobalBuilder: boolean = false, idName: ts.Expression = undefined): void {
   const name: string = nameResult.name;
   const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const TabContentBody: ts.Block = TabContentComp.body;
@@ -1057,6 +1099,10 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
       ts.factory.createIdentifier(COMPONENT_POP_FUNCTION)), undefined, []));
   const tabAttrs: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
+  let judgeIdStart: number;
+  if (idName) {
+    judgeIdStart = innerCompStatements.length;
+  }
   if (TabContentBody && TabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
     processComponentChild(TabContentBody, newTabContentChildren, log);
@@ -1080,6 +1126,10 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
       nameResult, immutableStatements);
   }
   innerCompStatements.push(tabContentPop);
+  if (idName) {
+    innerCompStatements.splice(judgeIdStart, innerCompStatements.length - judgeIdStart,
+      ifRetakeId(innerCompStatements.slice(judgeIdStart), idName));
+  }
 }
 
 function getRealNodePos(node: ts.Node): number {
@@ -1468,7 +1518,7 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
 function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
   isGlobalBuilder: boolean = false): ts.Block {
   return addIfBranchId(id, isGlobalBuilder,
-    processComponentBlock(block, false, log, false, isBuilder, undefined, undefined, isGlobalBuilder));
+    processComponentBlock(block, false, log, false, isBuilder, COMPONENT_IF, undefined, isGlobalBuilder));
 }
 
 function addIfBranchId(id: number, isGlobalBuilder: boolean = false, container: ts.Block): ts.Block {
@@ -2583,6 +2633,23 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
     current = current.expression;
   }
   return null;
+}
+
+function checkEtsAndIdInIf(node:ts.ExpressionStatement, parent: string): [ts.EtsComponentExpression, ts.Expression] {
+  let current: any = node.expression;
+  let idName: ts.Expression;
+  while (current) {
+    if (ts.isEtsComponentExpression(current)) {
+      break;
+    }
+    if (!idName && parent === COMPONENT_IF && ts.isPropertyAccessExpression(current) && current.name &&
+      ts.isIdentifier(current.name) && current.name.escapedText.toString() === ATTRIBUTE_ID &&
+      current.parent && current.parent.arguments && current.parent.arguments.length) {
+      idName = current.parent.arguments[0];
+    }
+    current = current.expression;
+  }
+  return [current, idName];
 }
 
 function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
