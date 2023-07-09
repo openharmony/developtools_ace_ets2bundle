@@ -37,8 +37,11 @@ const {
   SYSTEM_PLUGIN
 } = require('../lib/pre_define');
 const {
-  partialUpdateConfig
+  partialUpdateConfig,
+  projectConfig
 } = require('../main');
+
+projectConfig.projectPath = path.resolve(process.cwd());
 
 function expectActual(name, filePath) {
   const content = require(filePath);
