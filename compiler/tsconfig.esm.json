@@ -98,6 +98,7 @@
         "Blank",
         "Button",
         "Calendar",
+        "CalendarPicker",
         "Camera",
         "Canvas",
         "Checkbox",
@@ -235,6 +236,11 @@
             "name": "Calendar",
             "type": "CalendarAttribute",
             "instance": "CalendarInstance"
+          },
+          {
+            "name": "CalendarPicker",
+            "type": "CalendarPickerAttribute",
+            "instance": "CalendarPickerInstance"
           },
           {
             "name": "Camera",

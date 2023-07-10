@@ -20,8 +20,8 @@ const fs = require('fs')
 const addTSInterfaceSet = ['ForEach', 'LazyForEach', 'TapGesture', 'LongPressGesture', 'LongPressGesture',
   'PanGesture', 'SwipeGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup','PageTransitionEnter',
   'PageTransitionExit'];
-const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'Button', 'Calendar', 'Canvas',
-  'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
+const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'Button', 'Calendar', 'CalendarPicker',
+  'Canvas', 'Checkbox', 'CheckboxGroup', 'Circle', 'Column', 'ColumnSplit', 'Counter', 'DataPanel', 'DatePicker',
   'Divider', 'Ellipse', 'Flex', 'FormComponent', 'Gauge', 'Grid', 'GridItem', 'GridContainer', 'Image',
   'ImageAnimator', 'Line', 'List', 'ListItem', 'ListItemGroup', 'LoadingProgress', 'Marquee', 'Navigation', 'Navigator',
   'Panel', 'Path', 'PatternLock', 'Piece', 'PluginComponent', 'Polygon', 'Polyline', 'Progress',
