@@ -88,8 +88,24 @@ struct MyComponent {
             }
         }
       }
+
+      if (this.pass) {
+          Child()
+            .id('id14')
+          Text('111')
+      }
     }
   }
+}
+
+@Component
+struct Child {
+    build() {
+        Column() {
+            Text('Child')
+                .fontSize(50)
+        }
+    }
 }
 `
 
@@ -535,6 +551,95 @@ class MyComponent extends ViewPU {
             ViewStackProcessor.StopGetAccessRecording();
         });
         If.pop();
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            If.create();
+            if (this.pass) {
+                this.ifElseBranchUpdateFunction(0, () => {
+                    if (!If.canRetake('id14')) {
+                        this.observeComponentCreation((elmtId, isInitialRender) => {
+                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            __Common__.create();
+                            __Common__.id('id14');
+                            if (!isInitialRender) {
+                                __Common__.pop();
+                            }
+                            ViewStackProcessor.StopGetAccessRecording();
+                        });
+                        {
+                            this.observeComponentCreation((elmtId, isInitialRender) => {
+                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                                if (isInitialRender) {
+                                    ViewPU.create(new Child(this, {}, undefined, elmtId));
+                                }
+                                else {
+                                    this.updateStateVarsOfChildByElmtId(elmtId, {});
+                                }
+                                ViewStackProcessor.StopGetAccessRecording();
+                            });
+                        }
+                        __Common__.pop();
+                    }
+                    this.observeComponentCreation((elmtId, isInitialRender) => {
+                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        Text.create('111');
+                        if (!isInitialRender) {
+                            Text.pop();
+                        }
+                        ViewStackProcessor.StopGetAccessRecording();
+                    });
+                    Text.pop();
+                });
+            }
+            else {
+                If.branchId(1);
+            }
+            if (!isInitialRender) {
+                If.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        If.pop();
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class Child extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1) {
+        super(parent, __localStorage, elmtId);
+        this.setInitiallyProvidedValue(params);
+    }
+    setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    initialRender() {
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Column.create();
+            if (!isInitialRender) {
+                Column.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        this.observeComponentCreation((elmtId, isInitialRender) => {
+            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            Text.create('Child');
+            Text.fontSize(50);
+            if (!isInitialRender) {
+                Text.pop();
+            }
+            ViewStackProcessor.StopGetAccessRecording();
+        });
+        Text.pop();
         Column.pop();
     }
     rerender() {

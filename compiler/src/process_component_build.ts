@@ -335,7 +335,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition, idName);
             break;
           }
-          case ComponentType.customComponent:
+          case ComponentType.customComponent: {
+            const idName: ts.Expression = checkIdInIf(item, savedParent);
             parent = undefined;
             if (!newsupplement.isAcceleratePreview) {
               if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
@@ -346,9 +347,10 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                 }
               }
               processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
-                isBuilder, isGlobalBuilder);
+                isBuilder, isGlobalBuilder, idName);
             }
             break;
+          }
           case ComponentType.forEachComponent:
             parent = undefined;
             if (!partialUpdateConfig.partialUpdateMode) {
@@ -669,7 +671,7 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   }
 }
 
-function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression): ts.IfStatement {
+export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createPrefixUnaryExpression(
       ts.SyntaxKind.ExclamationToken,
@@ -2650,6 +2652,21 @@ function checkEtsAndIdInIf(node:ts.ExpressionStatement, parent: string): [ts.Ets
     current = current.expression;
   }
   return [current, idName];
+}
+
+function checkIdInIf(node:ts.ExpressionStatement, parent: string): ts.Expression {
+  let current: any = node.expression;
+  let idName: ts.Expression;
+  while (current) {
+    if (parent === COMPONENT_IF && ts.isPropertyAccessExpression(current) && current.name &&
+      ts.isIdentifier(current.name) && current.name.escapedText.toString() === ATTRIBUTE_ID &&
+      current.parent && current.parent.arguments && current.parent.arguments.length) {
+      idName = current.parent.arguments[0];
+      break;
+    }
+    current = current.expression;
+  }
+  return idName;
 }
 
 function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
