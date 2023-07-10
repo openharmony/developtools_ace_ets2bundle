@@ -125,8 +125,12 @@ export class ModuleSourceFile {
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
         ROLLUP_DYNAMICIMPORT_NODE);
 
+    let hasDynamicImport: boolean = false;
     for (let nodeSet of moduleNodeMap.values()) {
       nodeSet.forEach(node => {
+        if (!hasDynamicImport && node.type === ROLLUP_DYNAMICIMPORT_NODE) {
+          hasDynamicImport = true;
+        }
         if (node.source) {
           if (node.source.type === ROLLUP_LITERAL_NODE) {
             const ohmUrl: string | undefined =
@@ -143,16 +147,18 @@ export class ModuleSourceFile {
       });
     }
 
-    // update sourceMap
-    const relativeSourceFilePath =
-      toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, ''));
-    const updatedMap = code.generateMap({
-      source: relativeSourceFilePath,
-      file: `${path.basename(this.moduleId)}`,
-      includeContent: false,
-      hires: true
-    });
-    newSourceMaps[relativeSourceFilePath] = await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
+    if (hasDynamicImport) {
+      // update sourceMap
+      const relativeSourceFilePath: string =
+        toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, ''));
+      const updatedMap: any = code.generateMap({
+        source: relativeSourceFilePath,
+        file: `${path.basename(this.moduleId)}`,
+        includeContent: false,
+        hires: true
+      });
+      newSourceMaps[relativeSourceFilePath] = await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
+    }
 
     this.source = code.toString();
   }
