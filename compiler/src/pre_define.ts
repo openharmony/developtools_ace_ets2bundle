@@ -131,6 +131,8 @@ export const COMPONENT_RENDER_FUNCTION: string = 'render';
 export const COMPONENT_TRANSITION_FUNCTION: string = 'pageTransition';
 export const COMPONENT_TRANSITION_NAME: string = 'PageTransition';
 export const CUSTOM_COMPONENT: string = 'CustomComponent';
+export const GLOBAL_THIS_REQUIRE_NATIVE_MODULE: string = 'globalThis.requireNativeModule';
+export const GLOBAL_THIS_REQUIRE_NAPI: string = 'globalThis.requireNapi';
 
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';

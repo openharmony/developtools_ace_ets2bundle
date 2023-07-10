@@ -16,7 +16,12 @@
 import MagicString from 'magic-string';
 import { createFilter } from '@rollup/pluginutils';
 import path from 'path';
-import { NATIVE_MODULE, ARKUI_X_PLUGIN } from '../../pre_define';
+import {
+  NATIVE_MODULE,
+  ARKUI_X_PLUGIN,
+  GLOBAL_THIS_REQUIRE_NATIVE_MODULE,
+  GLOBAL_THIS_REQUIRE_NAPI
+} from '../../pre_define';
 import {
   systemModules,
   projectConfig,
@@ -91,9 +96,9 @@ function processSystemApi(content: string, sourcePath: string): string {
     const externalModuleParam: string = isExtendModuleType(moduleType) &&
       moduleType !== ARKUI_X_PLUGIN ? `, false, '', '${moduleType}'` : ``;
     if (NATIVE_MODULE.has(systemModule)) {
-      item = `var ${systemValue} = globalThis.requireNativeModule('${moduleType}.${systemKey}')`;
+      item = `var ${systemValue} = ${GLOBAL_THIS_REQUIRE_NATIVE_MODULE}('${moduleType}.${systemKey}')`;
     } else if (checkModuleType(moduleType)) {
-      item = `var ${systemValue} = globalThis.requireNapi('${systemKey}'${externalModuleParam})`;
+      item = `var ${systemValue} = ${GLOBAL_THIS_REQUIRE_NAPI}('${systemKey}'${externalModuleParam})`;
     }
     return item;
   });
