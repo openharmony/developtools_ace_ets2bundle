@@ -92,6 +92,7 @@ import {
   createComponentCreationStatement,
   createFunction,
   ComponentAttrInfo,
+  ifRetakeId
 } from './process_component_build';
 import {
   partialUpdateConfig
@@ -100,7 +101,8 @@ import {
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false): void {
+  log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  idName: ts.Expression = undefined): void {
   decoractorMap = new Map(
     [[COMPONENT_STATE_DECORATOR, stateCollection],
       [COMPONENT_LINK_DECORATOR, linkCollection],
@@ -137,6 +139,10 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           newNode.expression as ts.CallExpression, name, isBuilder);
       }
     }
+    let judgeIdStart: number;
+    if (partialUpdateConfig.partialUpdateMode && idName) {
+      judgeIdStart = newStatements.length;
+    }
     if (hasChainCall) {
       if (partialUpdateConfig.partialUpdateMode) {
         const commomComponentNode: ts.Statement[] = [ts.factory.createExpressionStatement(
@@ -167,6 +173,10 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
     if (isRecycleComponent && partialUpdateConfig.partialUpdateMode) {
       newStatements.push(componentAttributes(COMPONENT_RECYCLE));
     }
+    if (partialUpdateConfig.partialUpdateMode && idName) {
+      newStatements.splice(judgeIdStart, newStatements.length - judgeIdStart,
+        ifRetakeId(newStatements.slice(judgeIdStart), idName));
+    }
   }
 }
 
@@ -178,7 +188,7 @@ function createRecycleComponent(isGlobalBuilder: boolean): ts.Statement {
   return createComponentCreationStatement(componentAttributes(COMPONENT_RECYCLE),
     [ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(COMPONENT_RECYCLE),
-      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))
     ], isGlobalBuilder);
 }
 
