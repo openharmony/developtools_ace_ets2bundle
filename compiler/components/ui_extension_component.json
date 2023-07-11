@@ -3,7 +3,9 @@
     "attrs": [
         "onResult",
         "onRelease",
-        "onError"
+        "onError",
+        "onReceive",
+        "onRemoteReady"
     ],
     "atomic": true
 }
