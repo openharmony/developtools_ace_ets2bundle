@@ -16,7 +16,7 @@
 import path from 'path';
 import fs from 'fs';
 import { minify, MinifyOutput } from 'terser';
-import type { ArkObfuscator } from 'arkguard';
+import { ArkObfuscator, getMapFromJson } from "arkguard"
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -54,13 +54,17 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-
+import config from '../rollup.config';
+import { isAotMode } from './fast_build/ark_compiler/utils';
+import { MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { applyIdentifierCache } from './fast_build/ark_compiler/common/process_ark_config';
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
 export const SRC_MAIN: string = 'src/main';
 
 export var newSourceMaps: Object = {};
+export var identifierCaches: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any, namespace?: string): string {
@@ -323,30 +327,75 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
   if (projectConfig.arkObfuscator) {
-    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig.arkObfuscator, relativeSourceFilePath, rollupNewSourceMaps);
+    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig.arkObfuscator, relativeSourceFilePath, rollupNewSourceMaps,
+      projectConfig.obfuscationMergedObConfig);
+    return;
+  }
+  if (projectConfig.terserConfig) {
+    await writeTerserObfuscatedSourceCode(content, filePath, logger, projectConfig.terserConfig, relativeSourceFilePath, rollupNewSourceMaps);
     return;
   }
 
-  await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar, relativeSourceFilePath, rollupNewSourceMaps);
+  await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
 }
 
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, arkObfuscator: ArkObfuscator,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
-  const previousStageSourceMap: string = rollupNewSourceMaps[relativeSourceFilePath];
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, obfuscationMergedObConfig: MergedConfig): Promise<void> {
+  let previousStageSourceMap: string | undefined = undefined;
+  if (relativeSourceFilePath.length > 0) {
+    previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
+  }
+
+  let historyNameCache: Map<string, string> = undefined;
+  if (obfuscationMergedObConfig.options.applyNameCache && obfuscationMergedObConfig.options.applyNameCache.length > 0) {
+    historyNameCache = getMapFromJson(applyIdentifierCache[relativeSourceFilePath]);
+  }
+
   let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
   try {
-    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap);
+    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache);
   } catch {
-    logger.error(`ArkTS:ERROR Failed to source code obfuscation. Filename: ${relativeSourceFilePath}`);
+    logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
     process.exit(FAIL);
   }
   mixedInfo.sourceMap.sources = [relativeSourceFilePath];
   rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMap;
+  if (mixedInfo.nameCache) {
+    identifierCaches[relativeSourceFilePath] = mixedInfo.nameCache;
+  }
+
   fs.writeFileSync(filePath, mixedInfo.content);
 }
 
+export async function writeTerserObfuscatedSourceCode(content: string, filePath: string, logger: any,
+  minifyOptions: any, relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+  let result: MinifyOutput;
+
+  if (relativeSourceFilePath.length > 0) {
+    minifyOptions['sourceMap'] = {
+      content: rollupNewSourceMaps[relativeSourceFilePath],
+      asObject: true
+    };
+  }
+
+  try {
+    result = await minify(content, minifyOptions);
+  } catch {
+    logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
+    process.exit(FAIL);
+  }
+
+  if (result.map) {
+    result.map.sourcesContent && delete result.map.sourcesContent;
+    result.map.sources = [relativeSourceFilePath];
+    rollupNewSourceMaps[relativeSourceFilePath] = result.map;
+  }
+
+  fs.writeFileSync(filePath, result.code);
+}
+
 export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
-  isHar: boolean = false, relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+  isHar: boolean = false): Promise<void> {
   let result: MinifyOutput;
   try {
     const minifyOptions = {
@@ -362,23 +411,13 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
         beautify: true,
         indent_level: 2
       };
-      if (process.env.compileTool === 'rollup' && relativeSourceFilePath.length > 0) {
-        minifyOptions['sourceMap'] = {
-          content: rollupNewSourceMaps[relativeSourceFilePath],
-          asObject: true
-        };
-      }
     }
     result = await minify(content, minifyOptions);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
     process.exit(FAIL);
   }
-  if (process.env.compileTool === 'rollup' && result.map) {
-    result.map.sourcesContent && delete result.map.sourcesContent;
-    result.map.sources = [relativeSourceFilePath];
-    rollupNewSourceMaps[relativeSourceFilePath] = result.map;
-  }
+
   fs.writeFileSync(filePath, result.code);
 }
 

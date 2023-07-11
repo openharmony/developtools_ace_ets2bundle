@@ -30,8 +30,8 @@ import {
 import {
   genSourceMapFileName,
   newSourceMaps as webpackNewSourceMaps,
-  writeObfuscatedSourceCode,
-  transformModuleSpecifier
+  transformModuleSpecifier,
+  writeObfuscatedSourceCode
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
 import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
