@@ -27,6 +27,7 @@ import {
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
+  isDebug,
   isJsonSourceFile,
   isJsSourceFile,
   updateSourceMap,
@@ -35,6 +36,7 @@ import {
 import { toUnixPath } from '../../../utils';
 import { newSourceMaps } from '../transform';
 
+import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -70,15 +72,20 @@ export class ModuleSourceFile {
       }
       await source.writeSourceFile();
     }
+
+    if ((ModuleSourceFile.projectConfig.compileHar || !isDebug(ModuleSourceFile.projectConfig)) &&
+      ModuleSourceFile.projectConfig.obfuscationOptions) {
+      writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
+        ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
+    }
+
     ModuleSourceFile.sourceFiles = [];
   }
-
   private async writeSourceFile() {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger);
+      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
     }
   }
 
