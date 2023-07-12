@@ -312,11 +312,14 @@ export class ModuleMode extends CommonMode {
     }
 
     this.updateCachedSourceMaps();
-    fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
-      if (err) {
-        this.throwArkTsCompilerError('ArkTS:ERROR failed to write sourceMaps');
-      }
-      fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
+    this.triggerAsync(() => {
+      fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
+        if (err) {
+          this.throwArkTsCompilerError('ArkTS:ERROR failed to write sourceMaps');
+        }
+        fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
+        this.triggerEndSignal();
+      });
     });
   }
 
