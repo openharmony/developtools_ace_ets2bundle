@@ -73,7 +73,7 @@ export class ModuleSourceFile {
       await source.writeSourceFile();
     }
 
-    if ((ModuleSourceFile.projectConfig.compileHar || !isDebug(ModuleSourceFile.projectConfig)) &&
+    if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&
       ModuleSourceFile.projectConfig.obfuscationOptions) {
       writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
         ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
