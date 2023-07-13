@@ -6,6 +6,6 @@
     "markAnchor", "offset", "fontSize", "fontStyle", "fontWeight",
     "fontFamily", "fontColor", "iconColor", "backgroundColor",
     "borderStyle", "borderWidth", "borderColor", "borderRadius",
-    "backgroundPadding", "textIconPadding", "onClick"
+    "padding", "textIconSpace", "onClick", "key"
   ]
 }
