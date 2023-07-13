@@ -172,6 +172,8 @@ export class ObConfigResolver {
     if (enableObfuscation) {
       this.getSelfConfigs(selfConfig);
       enableObfuscation = !selfConfig.options.disableObfuscation;
+    } else {
+      selfConfig.options.disableObfuscation = true;
     }
 
     let needConsumerConfigs: boolean = this.isHarCompiled && sourceObConfig.selfConfig.consumerRules &&
@@ -506,15 +508,19 @@ export function getArkguardNameCache(enablePropertyObfuscation: any) {
 
 }
 
-export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir: string, printNameCache?: string) {
+export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir?: string, printNameCache?: string): void {
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
     writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation)
-  } else {
+  } else if (projectConfig.terserConfig) {
     writeContent = JSON.stringify(projectConfig.terserConfig.nameCache, null, 2);
+  } else {
+    return;
   }
-  const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
-  fs.writeFileSync(defaultNameCachePath, writeContent);
+  if (obfuscationCacheDir && obfuscationCacheDir.length > 0) {
+    const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
+    fs.writeFileSync(defaultNameCachePath, writeContent);
+  }
   if (printNameCache && printNameCache.length > 0) {
     fs.writeFileSync(printNameCache, writeContent);
   }
