@@ -335,8 +335,11 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
     await writeTerserObfuscatedSourceCode(content, filePath, logger, projectConfig.terserConfig, relativeSourceFilePath, rollupNewSourceMaps);
     return;
   }
-
-  await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
+  if (process.env.compileTool !== 'rollup') {
+    await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
+    return;
+  }
+  fs.writeFileSync(filePath, content);
 }
 
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, arkObfuscator: ArkObfuscator,

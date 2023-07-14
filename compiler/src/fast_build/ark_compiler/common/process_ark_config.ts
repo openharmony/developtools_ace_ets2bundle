@@ -162,10 +162,10 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
 }
 
 function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): any {
+  const isCompact = projectConfig.obfuscationOptions ? mergedObConfig.options.compact : isHarCompiled;
   const minifyOptions = {
     format: {
-      semicolons: projectConfig.obfuscationOptions ? !mergedObConfig.options.compact : isHarCompiled ? false : true,
-      beautify: true,
+      beautify: !isCompact,
       indent_level: 2
     },
     compress: {
