@@ -409,7 +409,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
   }
 }
 
-function transferBuilderCall(node: ts.ExpressionStatement, name: string,
+export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   isBuilder: boolean = false): ts.ExpressionStatement {
   if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments &&
     node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
