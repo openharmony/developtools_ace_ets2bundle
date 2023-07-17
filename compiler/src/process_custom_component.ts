@@ -92,12 +92,15 @@ import {
   createComponentCreationStatement,
   createFunction,
   ComponentAttrInfo,
-  ifRetakeId
+  ifRetakeId,
+  transferBuilderCall
 } from './process_component_build';
 import {
   partialUpdateConfig
 } from '../main';
-
+import {
+  GLOBAL_CUSTOM_BUILDER_METHOD
+} from './component_map';
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
@@ -218,9 +221,14 @@ function isToChange(item: ts.PropertyAssignment, name: string): boolean {
 }
 
 function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
+  let builderBindThis: ts.ExpressionStatement = ts.factory.createExpressionStatement(node);
+  if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    GLOBAL_CUSTOM_BUILDER_METHOD.has(node.expression.escapedText.toString())) {
+    builderBindThis = transferBuilderCall(ts.factory.createExpressionStatement(node), node.expression.escapedText.toString());
+  }
   return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    ts.factory.createBlock([ts.factory.createExpressionStatement(node)], true));
+    ts.factory.createBlock([builderBindThis], true));
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
