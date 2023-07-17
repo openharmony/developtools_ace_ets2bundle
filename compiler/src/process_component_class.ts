@@ -165,7 +165,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {
-      if (/\bstatic\b/.test(item.getText())) {
+      if (isStaticProperty(item)) {
         newMembers.push(item);
         validateDecorators(item, log);
       } else {
@@ -220,6 +220,12 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   return newMembers;
 }
 
+function isStaticProperty(property: ts.PropertyDeclaration): boolean {
+  return property.modifiers && property.modifiers.length && property.modifiers.some(modifier => {
+    return modifier.kind === ts.SyntaxKind.StaticKeyword;
+  });
+}
+
 function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
   if (item.decorators && item.decorators.length) {
     item.decorators.map((decorator: ts.Decorator) => {
@@ -240,7 +246,7 @@ function processPropertyUnchanged(
   purgeVariableDepStatements: ts.Statement[]
 ): void {
   if (partialUpdateConfig.partialUpdateMode) {
-    if(result.getPurgeVariableDepStatement()) {
+    if (result.getPurgeVariableDepStatement()) {
       purgeVariableDepStatements.push(result.getPurgeVariableDepStatement());
     }
   }
