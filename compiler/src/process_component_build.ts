@@ -2176,8 +2176,8 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
         createFunction(identifierNode, node, temp.arguments));
       statements.push(attrStatement);
-      if ((!isStylesAttr || isStyleFunction) && isRecycleComponent &&
-        filterRegularAttrNode(temp.arguments)) {
+      if (isRecycleComponent && (!isStylesAttr || isStyleFunction) &&
+        !isGestureType(identifierNode) && filterRegularAttrNode(temp.arguments)) {
         immutableStatements.push(attrStatement);
       } else {
         updateStatements.push(attrStatement);
@@ -2187,9 +2187,13 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   }
 }
 
+function isGestureType(node: ts.Identifier): boolean {
+  return GESTURE_TYPE_NAMES.has(node.escapedText.toString());
+}
+
 function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>) {
   return argumentsNode.every((argument: ts.Expression) => {
-    return isRegularAttrNode(argument)
+    return isRegularAttrNode(argument);
   });
 }
 
@@ -2203,9 +2207,13 @@ function isRegularAttrNode(node: ts.Expression): boolean {
       return false;
     });
   }
-  // literal e.g. 'hello', 1, true, false
-  if (ts.isStringLiteral(node) || ts.isNumericLiteral(node) ||
-    [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(node.kind)) {
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.every((child: ts.Expression) => {
+      return isRegularAttrNode(child);
+    });
+  }
+  // literal e.g. 'hello', 1, true, false, () => {}
+  if (isLiteralNode(node)) {
     return true;
   }
   // enum e.g. Color.Red
@@ -2229,6 +2237,11 @@ function isRegularAttrNode(node: ts.Expression): boolean {
     traversePropNode(node, result);
   }
   return result.isRegularNode || false;
+}
+
+function isLiteralNode(node: ts.Expression): boolean {
+  return ts.isStringLiteral(node) || ts.isNumericLiteral(node) || ts.isArrowFunction(node) ||
+    [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(node.kind);
 }
 
 function traversePropNode(node: ts.PropertyAccessExpression, result: AttrResult): void {
