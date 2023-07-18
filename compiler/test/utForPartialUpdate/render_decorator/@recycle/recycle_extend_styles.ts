@@ -244,9 +244,6 @@ class StylesComponent extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithChild();
-            Button.onClick(() => {
-                this.enable = false;
-            });
             Button.backgroundColor(Color.Blue);
             Button.width(this.width_value);
             ViewStackProcessor.visualState("normal");
@@ -263,6 +260,9 @@ class StylesComponent extends ViewPU {
             }
             else {
                 Button.enabled(this.enable);
+                Button.onClick(() => {
+                    this.enable = false;
+                });
                 Button.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
