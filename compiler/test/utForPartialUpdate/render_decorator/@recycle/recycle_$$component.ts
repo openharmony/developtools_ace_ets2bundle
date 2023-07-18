@@ -298,14 +298,14 @@ class $$Component extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel("start");
-            Button.onClick(() => {
-                this.myTimeController.start();
-            });
             Button.width(this.width_value);
             if (!isInitialRender) {
                 Button.pop();
             }
             else {
+                Button.onClick(() => {
+                    this.myTimeController.start();
+                });
                 Button.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
@@ -314,14 +314,14 @@ class $$Component extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel("pause");
-            Button.onClick(() => {
-                this.myTimeController.pause();
-            });
             Button.width(this.width_value);
             if (!isInitialRender) {
                 Button.pop();
             }
             else {
+                Button.onClick(() => {
+                    this.myTimeController.pause();
+                });
                 Button.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
@@ -330,14 +330,14 @@ class $$Component extends ViewPU {
         this.observeComponentCreation((elmtId, isInitialRender) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             Button.createWithLabel("reset");
-            Button.onClick(() => {
-                this.myTimeController.reset();
-            });
             Button.width(this.width_value);
             if (!isInitialRender) {
                 Button.pop();
             }
             else {
+                Button.onClick(() => {
+                    this.myTimeController.reset();
+                });
                 Button.height(100);
             }
             ViewStackProcessor.StopGetAccessRecording();
