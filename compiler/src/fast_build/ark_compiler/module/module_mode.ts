@@ -221,16 +221,23 @@ export class ModuleMode extends CommonMode {
     }
   }
 
+  private shouldETSOrTSFileNameTransformToJS(moduleId: string): boolean {
+    let cacheFilePath: string =
+      this.genFileCachePath(moduleId, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+    cacheFilePath = toUnixPath(changeFileExtension(cacheFilePath, EXTNAME_JS));
+    return hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) !== -1 || fs.existsSync(cacheFilePath);
+  }
+
   private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
-        const extName: string = this.projectConfig.processTs && (hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) === -1) ?
+        const extName: string = this.projectConfig.processTs && !this.shouldETSOrTSFileNameTransformToJS(moduleId) ?
           EXTNAME_TS : EXTNAME_JS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
       case EXTNAME_TS: {
-        const extName: string = this.projectConfig.processTs && (hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) === -1) ?
+        const extName: string = this.projectConfig.processTs && !this.shouldETSOrTSFileNameTransformToJS(moduleId) ?
           '' : EXTNAME_JS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
