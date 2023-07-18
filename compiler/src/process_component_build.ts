@@ -2586,12 +2586,12 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
-  } else if ((['XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
-    ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
-    return ComponentType.function;
   } else if (!partialUpdateConfig.builderCheck && builderTypeParameter.params.includes(name) &&
     judgeBuilderType(node)) {
     return ComponentType.builderTypeFunction;
+  } else if ((['XComponent'].includes(parent) || CUSTOM_BUILDER_METHOD.has(parent)) &&
+    ts.isCallExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
+    return ComponentType.function;
   } else if (!isAttributeNode(node)) {
     log.push({
       type: LogType.ERROR,
