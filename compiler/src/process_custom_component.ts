@@ -456,6 +456,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   if (!storedFileInfo.getCurrentArkTsFile().compFromDETS.has(name)) {
     validateInitDecorator(node, name, curChildProps, log);
   }
+  validateMandatoryToInitViaParam(node, name, curChildProps, log);
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
@@ -773,14 +774,13 @@ function validateMandatoryToAssignmentViaParam(node: ts.CallExpression, customCo
   }
 }
 
-function validateMandatoryToInitViaParam(node: ts.ExpressionStatement, customComponentName: string,
+function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
   const mandatoryToInitViaParamSet: Set<string> = new Set([
-    ...getCollectionSet(customComponentName, propCollection),
     ...getCollectionSet(customComponentName, linkCollection),
     ...getCollectionSet(customComponentName, objectLinkCollection)]);
   mandatoryToInitViaParamSet.forEach(item => {
-    if (!curChildProps.has(item)) {
+    if (item && !curChildProps.has(item)) {
       log.push({
         type: LogType.ERROR,
         message: `Property '${item}' in the custom component '${customComponentName}'` +
