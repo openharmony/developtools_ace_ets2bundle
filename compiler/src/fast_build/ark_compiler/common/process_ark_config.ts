@@ -38,7 +38,7 @@ import {
   isMac,
   isWindows
 } from '../../../utils';
-import { getArkBuildDir, identifierCaches } from '../../../ark_utils';
+import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 import { MergedConfig, ObConfigResolver, readNameCache} from './ob_config_resolver'
@@ -55,7 +55,6 @@ type ArkConfig = {
 };
 
 let arkConfig: ArkConfig = {};
-export var applyIdentifierCache: Object = {};
 export function initArkConfig(projectConfig: any) {
   let arkRootPath: string = path.join(__dirname, '..', '..', '..', '..', 'bin', 'ark');
   if (projectConfig.arkFrontendDir) {
@@ -226,12 +225,12 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
   const arkObfuscator: ArkObfuscator = new ArkObfuscator();
   arkObfuscator.init(arkguardConfig);
   if (mergedObConfig.options.applyNameCache && mergedObConfig.options.applyNameCache.length > 0) {
-    applyIdentifierCache = readNameCache(mergedObConfig.options.applyNameCache, logger);
+    readNameCache(mergedObConfig.options.applyNameCache, logger);
   } else {
     if (obfuscationCacheDir) {
       const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
       if (fs.existsSync(defaultNameCachePath)) {
-        applyIdentifierCache = readNameCache(defaultNameCachePath, logger);
+        readNameCache(defaultNameCachePath, logger);
       }
     }
   }
