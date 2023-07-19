@@ -99,7 +99,8 @@ export function etsTransform() {
     moduleParsed(moduleInfo) {
       if (projectConfig.compileHar) {
         if (moduleInfo.id && !moduleInfo.id.match(new RegExp(projectConfig.packageDir)) &&
-          !moduleInfo.id.startsWith('\x00')) {
+          !moduleInfo.id.startsWith('\x00') &&
+          path.resolve(moduleInfo.id).startsWith(projectConfig.moduleRootPath + path.sep)) {
           const filePath: string = moduleInfo.id;
           const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
             process.env.cachePath, projectConfig);
