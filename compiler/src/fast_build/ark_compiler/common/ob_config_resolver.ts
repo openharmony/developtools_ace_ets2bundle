@@ -187,8 +187,9 @@ export class ObConfigResolver {
       this.getDependencyConfigs(sourceObConfig, dependencyConfigs);
       enableObfuscation = enableObfuscation && !dependencyConfigs.options.disableObfuscation;
     }
+    const mergedConfigs: MergedConfig = this.getMergedConfigs(selfConfig, dependencyConfigs);
 
-    if (enableObfuscation) {
+    if (enableObfuscation && mergedConfigs.options.enablePropertyObfuscation) {
       const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, "systemApiCache.json");
       if (isFileExist(systemApiCachePath)) {
         this.getSystemApiConfigsByCache(selfConfig, systemApiCachePath);
@@ -197,7 +198,6 @@ export class ObConfigResolver {
       }
     }
 
-    const mergedConfigs: MergedConfig = this.getMergedConfigs(selfConfig, dependencyConfigs);
     if (needConsumerConfigs) {
       let selfConsumerConfig = new MergedConfig();
       this.getSelfConsumerConfig(selfConsumerConfig);
@@ -481,14 +481,14 @@ export class ObConfigResolver {
   }
 }
 
-export function readNameCache(nameCachePath: string, logger: any): any {
+export function readNameCache(nameCachePath: string, logger: any): void {
   try {
     const fileContent = fs.readFileSync(nameCachePath, 'utf-8');
-    const nameCache: { IdentifierCache?: string, PropertyCache?: string } = JSON.parse(fileContent);
+    const nameCache: { IdentifierCache?, PropertyCache? } = JSON.parse(fileContent);
     if (nameCache.PropertyCache) {
       renamePropertyModule.historyMangledTable = getMapFromJson(nameCache.PropertyCache);
     }
-    return nameCache.IdentifierCache;
+    Object.assign(identifierCaches, nameCache.IdentifierCache);
   } catch (err) {
     logger.error(`Failed to open ${nameCachePath}. Error message: ${err}`);
   }
@@ -498,14 +498,24 @@ export function getArkguardNameCache(enablePropertyObfuscation: any) {
   let writeContent: string = "";
   const nameCacheCollection: Object = {};
   nameCacheCollection['IdentifierCache'] = identifierCaches;
-
+  const mergedNameCache: Map<string, string> = new Map();
   if (enablePropertyObfuscation) {
-    nameCacheCollection['PropertyCache'] = Object.fromEntries(renamePropertyModule.globalMangledTable);
+    if (renamePropertyModule.historyMangledTable) {
+      for (const [key, value] of renamePropertyModule.historyMangledTable.entries()) {
+        mergedNameCache.set(key, value);
+      }
+    }
+  
+    if (renamePropertyModule.globalMangledTable) {
+      for (const [key, value] of renamePropertyModule.globalMangledTable.entries()) {
+        mergedNameCache.set(key, value);
+      }
+    }
+    nameCacheCollection['PropertyCache'] = Object.fromEntries(mergedNameCache);
   }
 
   writeContent += JSON.stringify(nameCacheCollection, null, 2);
   return writeContent;
-
 }
 
 export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir?: string, printNameCache?: string): void {
@@ -519,6 +529,9 @@ export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir
   }
   if (obfuscationCacheDir && obfuscationCacheDir.length > 0) {
     const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
+    if (!fs.existsSync(path.dirname(defaultNameCachePath))) {
+      fs.mkdirSync(path.dirname(defaultNameCachePath), {recursive: true});
+    }
     fs.writeFileSync(defaultNameCachePath, writeContent);
   }
   if (printNameCache && printNameCache.length > 0) {
