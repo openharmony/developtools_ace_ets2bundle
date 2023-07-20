@@ -55,9 +55,7 @@ import {
   sdkConfigPrefix
 } from '../main';
 import config from '../rollup.config';
-import { isAotMode } from './fast_build/ark_compiler/utils';
 import { MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
-import { applyIdentifierCache } from './fast_build/ark_compiler/common/process_ark_config';
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
@@ -350,8 +348,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   }
 
   let historyNameCache: Map<string, string> = undefined;
-  if (obfuscationMergedObConfig.options.applyNameCache && obfuscationMergedObConfig.options.applyNameCache.length > 0) {
-    historyNameCache = getMapFromJson(applyIdentifierCache[relativeSourceFilePath]);
+  if (identifierCaches && identifierCaches[relativeSourceFilePath]) {
+    historyNameCache = getMapFromJson(identifierCaches[relativeSourceFilePath]);
   }
 
   let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
