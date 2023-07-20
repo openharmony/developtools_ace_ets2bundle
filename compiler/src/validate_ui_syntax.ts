@@ -240,7 +240,7 @@ function checkComponentDecorator(source: string, filePath: string,
 
 function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string,
   fileName: string, isPreview: boolean, checkEntry: boolean, log: LogInfo[]): void {
-  if (result.previewCount > 10 && fileQuery === '?entry') {
+  if (result.previewCount > 10 && (fileQuery === '?entry' || process.env.watchMode === 'true')) {
     log.push({
       type: LogType.ERROR,
       message: `A page can contain at most 10 '@Preview' decorators.`,
