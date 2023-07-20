@@ -1208,6 +1208,8 @@ export function resetComponentCollection() {
   builderParamInitialization.clear();
   propInitialization.clear();
   propCollection.clear();
+  objectLinkCollection.clear();
+  linkCollection.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
