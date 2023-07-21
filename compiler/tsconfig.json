@@ -194,9 +194,9 @@
         "WaterFlow",
         "FlowItem",
         "ImageSpan",
-        "SecLocationButton",
-        "SecPasteButton",
-        "SecSaveButton",
+        "LocationButton",
+        "PasteButton",
+        "SaveButton",
         "UIExtensionComponent",
         "RichEditor"
       ],
@@ -719,19 +719,19 @@
             "instance": "ImageSpanInstance"
           },
           {
-            "name": "SecLocationButton",
-            "type": "SecLocationButtonAttribute",
-            "instance": "SecLocationButtonInstance"
+            "name": "LocationButton",
+            "type": "LocationButtonAttribute",
+            "instance": "LocationButtonInstance"
           },
           {
-            "name": "SecPasteButton",
-            "type": "SecPasteButtonAttribute",
-            "instance": "SecPasteButtonInstance"
+            "name": "PasteButton",
+            "type": "PasteButtonAttribute",
+            "instance": "PasteButtonInstance"
           },
           {
-            "name": "SecSaveButton",
-            "type": "SecSaveButtonAttribute",
-            "instance": "SecSaveButtonInstance"
+            "name": "SaveButton",
+            "type": "SaveButtonAttribute",
+            "instance": "SaveButtonInstance"
           },
           {
             "name": "UIExtensionComponent",
