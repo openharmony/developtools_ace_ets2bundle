@@ -584,7 +584,7 @@ export function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
-  const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' });
+  const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
   if (componentName && node.body && node.body.statements.length) {
     const statementArray: ts.Statement[] = [];
     let bodynode: ts.Block;
@@ -615,8 +615,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
         node.name, node.typeParameters,
         [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
-          ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.name,
-            node.parameters, statementArray)));
+        ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.name,
+          node.parameters, statementArray)));
     }
   }
   function traverseExtendExpression(node: ts.Node): ts.Node {
@@ -783,11 +783,12 @@ export function collectExtend(collectionSet: Map<string, Set<string>>, component
   }
 }
 
-export function isExtendFunction(node: ts.FunctionDeclaration, extendResult: ExtendResult): string {
+export function isExtendFunction(node: ts.FunctionDeclaration, extendResult: ExtendResult,
+  checkArguments: boolean = false): string {
   if (node.decorators && node.decorators.length) {
     for (let i = 0, len = node.decorators.length; i < len; i++) {
       if (ts.isCallExpression(node.decorators[i].expression)) {
-        parseExtendNode(node.decorators[i].expression as ts.CallExpression, extendResult);
+        parseExtendNode(node.decorators[i].expression as ts.CallExpression, extendResult, checkArguments);
         if (CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) && extendResult.componentName) {
           return extendResult.componentName;
         }
@@ -797,9 +798,17 @@ export function isExtendFunction(node: ts.FunctionDeclaration, extendResult: Ext
   return null;
 }
 
-function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult): void {
+function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, checkArguments: boolean): void {
   if (ts.isIdentifier(node.expression)) {
     extendResult.decoratorName = node.expression.escapedText.toString();
+    if (checkArguments && CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) &&
+      node.arguments && node.arguments.length !== 1) {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        message: `@${extendResult.decoratorName} should have one and only one parameter`,
+        pos: node.getStart()
+      });
+    }
   }
   if (node.arguments.length && ts.isIdentifier(node.arguments[0])) {
     extendResult.componentName = node.arguments[0].escapedText.toString();
