@@ -133,28 +133,18 @@ class CustomDialogUser extends ViewPU {
         console.info('Click the callback in the blank area');
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.width('100%');
             Column.margin({ top: 5 });
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.inputValue);
             Button.onClick(() => {
                 this.dialogController.open();
             });
             Button.backgroundColor(0x317aff);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Column.pop();
     }

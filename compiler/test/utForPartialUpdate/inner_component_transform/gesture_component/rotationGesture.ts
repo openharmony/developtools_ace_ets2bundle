@@ -70,8 +70,7 @@ class RotationGestureExample extends ViewPU {
         this.__angle.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
             Flex.height(100);
             Flex.width(200);
@@ -92,19 +91,10 @@ class RotationGestureExample extends ViewPU {
             });
             RotationGesture.pop();
             Gesture.pop();
-            if (!isInitialRender) {
-                Flex.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Flex);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('RotationGesture angle:' + this.angle);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Flex.pop();
     }

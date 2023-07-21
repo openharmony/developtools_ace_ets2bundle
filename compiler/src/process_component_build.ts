@@ -70,6 +70,7 @@ import {
   STOPGETACCESSRECORDING,
   STARTGETACCESSRECORDINGFOR,
   OBSERVECOMPONENTCREATION,
+  OBSERVECOMPONENTCREATION2,
   ISLAZYCREATE,
   DEEPRENDERFUNCTION,
   ITEMCREATION,
@@ -207,7 +208,7 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)), [ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
-          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))], false, isTransition));
+          ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))], COMPONENT_TRANSITION_NAME, false, isTransition));
     }
     newStatements.push(ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(COMPONENT_TRANSITION_NAME),
@@ -632,10 +633,11 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   newStatements.push(res.newNode);
   processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
-  if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(res.identifierNode.getText()) &&
+  const componentName: string = res.identifierNode.getText();
+  if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(componentName) &&
     etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
     etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
-      res.identifierNode.getText());
+      componentName);
   }
   let judgeIdStart: number;
   if (partialUpdateConfig.partialUpdateMode && idName) {
@@ -654,13 +656,13 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
       bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
     }
     processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements);
+      isTransition, undefined, immutableStatements, componentName);
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
     processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements);
+      isTransition, undefined, immutableStatements, componentName);
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -724,41 +726,31 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
   }
 }
 
-function processInnerCompStatements(
-  innerCompStatements: ts.Statement[],
-  newStatements: ts.Statement[],
-  node: ts.Statement,
-  isGlobalBuilder: boolean = false,
-  isTransition: boolean = false,
-  nameResult: NameResult = undefined,
-  immutableStatements: ts.Statement[] = null
-): void {
+function processInnerCompStatements(innerCompStatements: ts.Statement[],
+  newStatements: ts.Statement[], node: ts.Statement, isGlobalBuilder: boolean, isTransition: boolean,
+  nameResult: NameResult, immutableStatements: ts.Statement[], componentName: string): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     innerCompStatements.push(...newStatements);
   } else {
-    innerCompStatements.push(createComponentCreationStatement(node, newStatements, isGlobalBuilder,
-      isTransition, nameResult, immutableStatements));
+    innerCompStatements.push(createComponentCreationStatement(node, newStatements, componentName,
+      isGlobalBuilder, isTransition, nameResult, immutableStatements));
   }
 }
 
 export function createComponentCreationStatement(node: ts.Statement, innerStatements: ts.Statement[],
-  isGlobalBuilder: boolean = false, isTransition: boolean = false,
+  componentName: string, isGlobalBuilder: boolean = false, isTransition: boolean = false,
   nameResult: NameResult = undefined, immutableStatements: ts.Statement[] = null): ts.Statement {
-  const blockArr: ts.Node[] = [
-    createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-    ...innerStatements
-  ];
+  const blockArr: ts.Statement[] = [...innerStatements];
   if (nameResult) {
     blockArr.push(processDebug(node, nameResult, innerStatements, true));
   }
-  if (!isTransition) {
+  if (!isTransition && immutableStatements && immutableStatements.length) {
     blockArr.push(createInitRenderStatement(node, immutableStatements));
   }
-  blockArr.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
-        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION2)
       ), undefined,
       [ts.factory.createArrowFunction(undefined, undefined,
         [
@@ -769,7 +761,8 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
         ], undefined,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock(blockArr, true)
-      )]
+      ),
+      isTransition ? ts.factory.createNull() : ts.factory.createIdentifier(componentName)]
     )
   );
 }
@@ -788,21 +781,10 @@ export function createViewStackProcessorStatement(propertyAccessName: string, el
 }
 
 function createInitRenderStatement(node: ts.Statement,
-  immutableStatements: ts.Statement[] = null): ts.Statement {
+  immutableStatements: ts.Statement[]): ts.Statement {
   return ts.factory.createIfStatement(
-    ts.factory.createPrefixUnaryExpression(
-      ts.SyntaxKind.ExclamationToken,
-      ts.factory.createIdentifier(ISINITIALRENDER)
-    ),
-    ts.factory.createBlock(
-      [
-        ts.isExpressionStatement(node) ?
-          createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
-      ],
-      true
-    ),
-    immutableStatements && immutableStatements.length ?
-      ts.factory.createBlock(immutableStatements, true) : undefined
+    ts.factory.createIdentifier(ISINITIALRENDER),
+    ts.factory.createBlock(immutableStatements, true)
   );
 }
 
@@ -845,6 +827,10 @@ function createItemCreate(nameResult: NameResult): ts.Statement {
       ...nameResult.arguments]));
 }
 
+interface LazyItemResult {
+  isLazyCreate: boolean;
+}
+
 function createItemBlock(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
@@ -852,11 +838,27 @@ function createItemBlock(
   nameResult: NameResult, innerCompStatements: ts.Statement[],
   immutableStatements: ts.Statement[]
 ): ts.Block {
-  return ts.factory.createBlock(
-    [
-      createIsLazyCreate(node),
-      createItemCreation(node, itemRenderInnerStatements, nameResult, immutableStatements),
-      createObservedShallowRender(node, itemRenderInnerStatements, nameResult, innerCompStatements),
+  const lazyItemResult: LazyItemResult = { isLazyCreate: false };
+  const blockNode: ts.Statement[] = [
+    createIsLazyCreate(node, lazyItemResult),
+    createItemCreation(node, itemRenderInnerStatements, nameResult, immutableStatements)
+  ];
+  if (lazyItemResult.isLazyCreate) {
+    blockNode.push(
+      createDeepRenderFunction(node, deepItemRenderInnerStatements),
+      ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+        ),
+        undefined,
+        [ts.factory.createIdentifier(ITEMCREATION)]
+      )),
+      createComponent(node, COMPONENT_POP_FUNCTION).newNode
+    );
+  } else {
+    blockNode.push(
+      createObservedShallowRender(node),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
       ts.factory.createIfStatement(
@@ -868,12 +870,12 @@ function createItemBlock(
           [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
             ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))], true)
       )
-    ],
-    true
-  );
+    );
+  }
+  return ts.factory.createBlock(blockNode, true);
 }
 
-function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement {
+function createIsLazyCreate(node: ts.ExpressionStatement, lazyItemResult: LazyItemResult): ts.VariableStatement {
   const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
   if (etsComponent) {
     if ((etsComponent.expression as ts.Identifier).escapedText.toString() === GRIDITEM_COMPONENT) {
@@ -918,6 +920,7 @@ function createIsLazyCreate(node: ts.ExpressionStatement): ts.VariableStatement 
             ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
           ts.NodeFlags.Const));
       } else {
+        lazyItemResult.isLazyCreate = true;
         return createIsLazyWithValue(true);
       }
     }
@@ -1019,11 +1022,7 @@ function createDeepRenderFunction(
   );
 }
 
-function createObservedShallowRender(
-  node: ts.ExpressionStatement,
-  itemRenderInnerStatements: ts.Statement[],
-  nameResult: NameResult, innerCompStatements: ts.Statement[]
-): ts.VariableStatement {
+function createObservedShallowRender(node: ts.ExpressionStatement): ts.VariableStatement {
   return ts.factory.createVariableStatement(undefined,
     ts.factory.createVariableDeclarationList(
       [ts.factory.createVariableDeclaration(
@@ -1117,7 +1116,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
-      nameResult, immutableStatements);
+      nameResult, immutableStatements, name);
   } else {
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
@@ -1125,7 +1124,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
-      nameResult, immutableStatements);
+      nameResult, immutableStatements, name);
   }
   innerCompStatements.push(tabContentPop);
   if (idName) {
@@ -1195,7 +1194,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
       newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
-      newStatements.push(createComponentCreationStatement(node, newForEachStatements, isGlobalBuilder), popNode);
+      newStatements.push(createComponentCreationStatement(node, newForEachStatements, COMPONENT_FOREACH, isGlobalBuilder), popNode);
     } else {
       if (argumentsArray[2]) {
         newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement,
@@ -1433,7 +1432,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   if (!partialUpdateConfig.partialUpdateMode) {
     newStatements.push(ifCreate, newIfNode, ifPop);
   } else {
-    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode], isGlobalBuilder), ifPop);
+    newStatements.push(createComponentCreationStatement(node, [ifCreate, newIfNode], COMPONENT_IF, isGlobalBuilder), ifPop);
   }
 }
 

@@ -47,15 +47,10 @@ class LocalStorageComponent extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.height(500);
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         Column.pop();
     }
     rerender() {

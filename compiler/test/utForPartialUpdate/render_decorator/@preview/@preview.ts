@@ -58,15 +58,10 @@ class HomePreviewComponent extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value);
             Text.fontSize(50);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
     }
     rerender() {
@@ -89,25 +84,18 @@ class HomePreviewComponent_Preview extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new HomePreviewComponent(this, {}, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         Column.pop();
     }

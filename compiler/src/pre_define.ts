@@ -446,6 +446,7 @@ export const STOPGETACCESSRECORDING: string = 'StopGetAccessRecording';
 export const UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID: string = 'updateStateVarsOfChildByElmtId';
 export const VIEWSTACKPROCESSOR: string = 'ViewStackProcessor';
 export const OBSERVECOMPONENTCREATION: string = 'observeComponentCreation';
+export const OBSERVECOMPONENTCREATION2: string = 'observeComponentCreation2';
 export const ISLAZYCREATE: string = 'isLazyCreate';
 export const DEEPRENDERFUNCTION: string = 'deepRenderFunction';
 export const ITEMCREATION: string = 'itemCreation';

@@ -118,37 +118,22 @@ class ExtendComponent extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Fancy Button");
             __Button__fancybut(Color.Green);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Fancy Button");
             __Button__fancybut(Color.Green);
             Button.width(this.width_value);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Column.pop();
     }
@@ -204,45 +189,29 @@ class StylesComponent extends ViewPU {
         this.__size_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create({ space: 10 });
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
             Text.backgroundColor(Color.Red);
             Text.width(this.width_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
             Text.backgroundColor(Color.Blue);
             Text.width(this.width_value);
             Text.fontSize(this.size_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithChild();
             Button.backgroundColor(Color.Blue);
             Button.width(this.width_value);
@@ -255,31 +224,22 @@ class StylesComponent extends ViewPU {
             ViewStackProcessor.visualState("pressed");
             Button.backgroundColor(Color.Red);
             ViewStackProcessor.visualState();
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.enabled(this.enable);
                 Button.onClick(() => {
                     this.enable = false;
                 });
                 Button.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
             Text.backgroundColor(Color.Red);
             Text.fontSize(this.size_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Button.pop();
         Column.pop();

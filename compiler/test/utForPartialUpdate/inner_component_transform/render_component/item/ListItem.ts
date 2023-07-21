@@ -44,14 +44,9 @@ class ParentView extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, List);
         {
             const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
@@ -64,45 +59,18 @@ class ParentView extends ViewPU {
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             };
-            const observedShallowRender = () => {
-                this.observeComponentCreation(itemCreation);
-                ListItem.pop();
-            };
-            const observedDeepRender = () => {
-                this.observeComponentCreation(itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('xx');
-                    Text.width(100);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                Text.pop();
-                ListItem.pop();
-            };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
                     Text.width(100);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 ListItem.pop();
             };
-            if (isLazyCreate) {
-                observedShallowRender();
-            }
-            else {
-                observedDeepRender();
-            }
+            this.observeComponentCreation(itemCreation);
+            ListItem.pop();
         }
         List.pop();
     }

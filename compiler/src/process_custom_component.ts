@@ -43,7 +43,7 @@ import {
   ALLOCATENEWELMETIDFORNEXTCOMPONENT,
   STATE_OBJECTLINK_DECORATORS,
   BASE_COMPONENT_NAME_PU,
-  OBSERVECOMPONENTCREATION,
+  OBSERVECOMPONENTCREATION2,
   ISINITIALRENDER,
   UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
   COMPONENT_CUSTOM_DECORATOR,
@@ -93,7 +93,8 @@ import {
   createFunction,
   ComponentAttrInfo,
   ifRetakeId,
-  transferBuilderCall
+  transferBuilderCall,
+  createViewStackProcessorStatement,
 } from './process_component_build';
 import {
   partialUpdateConfig
@@ -155,7 +156,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode,
           log, true, false, immutableStatements, false, componentAttrInfo);
         newStatements.push(createComponentCreationStatement(componentAttributes(COMPONENT_COMMON),
-          commomComponentNode, isGlobalBuilder, false, undefined, immutableStatements));
+          commomComponentNode, COMPONENT_COMMON, isGlobalBuilder, false, undefined, immutableStatements));
       } else {
         newStatements.push(ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -192,7 +193,7 @@ function createRecycleComponent(isGlobalBuilder: boolean): ts.Statement {
     [ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(COMPONENT_RECYCLE),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION), null))
-    ], isGlobalBuilder);
+    ], COMPONENT_RECYCLE, isGlobalBuilder);
 }
 
 function componentAttributes(componentName: string): ts.Statement {
@@ -294,40 +295,28 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
+  const arrowBolck: ts.Statement[] = [
+    createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
+      isRecycleComponent, componentAttrInfo)
+  ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
       undefined, undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
       undefined, undefined, ts.factory.createNull()
     ));
+    arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
+    arrowBolck.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   }
   const observeArgArr: ts.Node[] = [
     ts.factory.createArrowFunction(undefined, undefined, arrowArgArr, undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-      ts.factory.createBlock(
-        [
-          ts.factory.createExpressionStatement(
-            ts.factory.createCallExpression(
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-                ts.factory.createIdentifier(STARTGETACCESSRECORDINGFOR)
-              ), undefined,
-              [ts.factory.createIdentifier(ELMTID)]
-            )),
-          createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-            isRecycleComponent, componentAttrInfo),
-          ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-            ts.factory.createPropertyAccessExpression(
-              ts.factory.createIdentifier(VIEWSTACKPROCESSOR),
-              ts.factory.createIdentifier(STOPGETACCESSRECORDING)
-            ),
-            undefined,
-            []
-          ))
-        ], true))
+      ts.factory.createBlock(arrowBolck, true))
   ];
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
+  } else {
+    observeArgArr.push(ts.factory.createNull());
   }
   return ts.factory.createBlock(
     [
@@ -336,7 +325,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
         isRecycleComponent ?
           ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
-          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
+          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION2)
         ),
         undefined, observeArgArr as ts.Expression[]))
     ], true);

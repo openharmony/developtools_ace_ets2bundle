@@ -85,8 +85,7 @@ class GestureTest extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
             Flex.width(this.width_value);
             Gesture.create(GesturePriority.Low);
@@ -101,29 +100,20 @@ class GestureTest extends ViewPU {
             });
             LongPressGesture.pop();
             Gesture.pop();
-            if (!isInitialRender) {
-                Flex.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Flex.height(100);
                 Flex.padding(60);
                 Flex.border({ width: 1 });
                 Flex.margin(30);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Flex);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('LongPress onAction:' + this.count);
             Text.width(width_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Flex.pop();
     }

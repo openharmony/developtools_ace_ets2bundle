@@ -95,32 +95,17 @@ class HomeComponent extends ViewPU {
         this.__value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
             __Common__.width(this.state_value);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("reuse_key", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -142,23 +127,13 @@ class HomeComponent extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation(this.state_value, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -180,22 +155,12 @@ class HomeComponent extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("reuse_key11111111111", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -217,24 +182,14 @@ class HomeComponent extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
             __Common__.width(this.state_value);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -256,22 +211,12 @@ class HomeComponent extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation(a, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -338,14 +283,9 @@ class child extends ViewPU {
         this.__linkvalue.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         Column.pop();
     }
     rerender() {
