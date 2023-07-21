@@ -136,33 +136,18 @@ class CustomContainer extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.header);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         this.content.bind(this)();
         this.callContent.bind(this)();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.footer);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
@@ -194,22 +179,12 @@ class CustomContainer2 extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.header);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         this.content.bind(this)();
         Column.pop();
@@ -219,33 +194,18 @@ class CustomContainer2 extends ViewPU {
     }
 }
 function specificWithParam(label1, label2, parent = null) {
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Column.create();
-        if (!isInitialRender) {
-            Column.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    }, Column);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label1);
         Text.fontSize(50);
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label2);
         Text.fontSize(50);
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
     Column.pop();
 }
@@ -277,84 +237,48 @@ class CustomContainerUser extends ViewPU {
         this.__text.set(newValue);
     }
     specificParam(parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("content");
             Text.fontSize(50);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
     callSpecificParam(label1, label2, parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label1);
             Text.fontSize(50);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label2);
             Text.fontSize(50);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new TestComponent_1.CustomContainerExport(this, {
                         header: this.text,
                         closer: () => {
-                            this.observeComponentCreation((elmtId, isInitialRender) => {
-                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
                                 Column.create();
                                 Column.onClick(() => {
                                     this.text = "changeHeader";
                                 });
-                                if (!isInitialRender) {
-                                    Column.pop();
-                                }
-                                ViewStackProcessor.StopGetAccessRecording();
-                            });
+                            }, Column);
                             specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
@@ -363,20 +287,13 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new CustomContainer(this, {
                         header: this.text,
@@ -388,36 +305,24 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new CustomContainer2(this, {
                         header: this.text,
                         content: () => {
-                            this.observeComponentCreation((elmtId, isInitialRender) => {
-                                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
                                 Column.create();
                                 Column.onClick(() => {
                                     this.text = "changeHeader";
                                 });
-                                if (!isInitialRender) {
-                                    Column.pop();
-                                }
-                                ViewStackProcessor.StopGetAccessRecording();
-                            });
+                            }, Column);
                             this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
@@ -426,8 +331,7 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         Row.pop();
         Column.pop();

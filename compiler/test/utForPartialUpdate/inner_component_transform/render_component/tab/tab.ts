@@ -73,66 +73,35 @@ class TabSimple extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Tabs.create({ barPosition: BarPosition.Start, index: 1, controller: this.controller });
-            if (!isInitialRender) {
-                Tabs.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Tabs);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Flex.create();
                     Flex.height(100);
                     Flex.width(200);
-                    if (!isInitialRender) {
-                        Flex.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                }, Flex);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Column.create();
                     Column.height(100);
                     Column.width(200);
-                    if (!isInitialRender) {
-                        Column.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                }, Column);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('text1');
                     Text.height(100);
                     Text.width(200);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xxx');
                     Text.height(100);
                     Text.width(200);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 Column.pop();
                 Flex.pop();
@@ -140,33 +109,19 @@ class TabSimple extends ViewPU {
             TabContent.tabBar("TabBar");
             TabContent.height(100);
             TabContent.width(200);
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('text2');
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             });
             TabContent.tabBar("TabBar 2");
             TabContent.height(100);
             TabContent.width(200);
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
         Tabs.pop();
         Column.pop();

@@ -46,40 +46,28 @@ struct ComA {
 exports.expectResult =
 `"use strict";
 function ComB(param, parent = null) {
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         ForEach.create();
         const forEachItemGenFunction = _item => {
             const item = _item;
-            (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
                 __Common__.create();
                 __Common__.backgroundColor('red');
-                if (!isInitialRender) {
-                    __Common__.pop();
-                }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, __Common__);
             {
-                (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
                     if (isInitialRender) {
                         ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId));
                     }
                     else {
                         (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, null);
             }
             __Common__.pop();
         };
         (parent ? parent : this).forEachUpdateFunction(elmtId, param, forEachItemGenFunction);
-        if (!isInitialRender) {
-            ForEach.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, ForEach);
     ForEach.pop();
 }
 class Index extends ViewPU {
@@ -110,14 +98,9 @@ class Index extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         ComB.bind(this)(this.arr);
         Column.pop();
     }
@@ -141,23 +124,13 @@ class ComA extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('自定义组件');
             Text.fontSize(30);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Row.pop();
     }
