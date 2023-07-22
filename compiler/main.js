@@ -765,6 +765,10 @@ function isPartialUpdate(metadata) {
       if (item.name && item.name === 'ArkTSPartialUpdate' &&
         item.value && item.value === 'false') {
         partialUpdateConfig.partialUpdateMode = false;
+        if (projectConfig.aceModuleJsonPath) {
+          logger.warn('\u001b[33m ArkTS:WARN File: ' + projectConfig.aceModuleJsonPath + '.' + '\n' +
+          " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
+        }
       }
       if (item.name && item.name === 'ArkTSBuilderCheck' &&
         item.value && item.value === 'false') {
