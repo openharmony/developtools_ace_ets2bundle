@@ -1,6 +1,6 @@
 {
   "name": "Span",
-  "parents": ["Text"],
+  "parents": ["Text", "RichEditor"],
   "atomic": true,
   "attrs": [
     "fontColor", "fontSize", "fontStyle", "fontFamily", "fontWeight", "decoration", "letterSpacing",
