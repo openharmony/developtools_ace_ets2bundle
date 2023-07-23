@@ -44,6 +44,7 @@ enum OptionType {
   KEEP_PROPERTY_NAME,
   DISABLE_OBFUSCATION,
   ENABLE_PROPERTY_OBFUSCATION,
+  ENABLE_STRING_PROPERTY_OBFUSCATION,
   ENABLE_TOPLEVEL_OBFUSCATION,
   COMPACT,
   REMOVE_LOG,
@@ -82,6 +83,7 @@ function sortAndDeduplicateStringArr(arr: string[]) {
 class ObOptions {
   disableObfuscation: boolean = false;
   enablePropertyObfuscation: boolean = false;
+  enableStringPropertyObfuscation: boolean = false;
   enableToplevelObfuscation: boolean = false;
   compact: boolean = false;
   removeLog: boolean = false;
@@ -92,6 +94,7 @@ class ObOptions {
     this.disableObfuscation = this.disableObfuscation || other.disableObfuscation;
     this.enablePropertyObfuscation = this.enablePropertyObfuscation || other.enablePropertyObfuscation;
     this.enableToplevelObfuscation = this.enableToplevelObfuscation || other.enableToplevelObfuscation;
+    this.enableStringPropertyObfuscation = this.enableStringPropertyObfuscation || other.enableStringPropertyObfuscation;
     this.compact = this.compact || other.compact;
     this.removeLog = this.removeLog || other.removeLog;
     if (other.printNameCache.length > 0) {
@@ -226,23 +229,25 @@ export class ObConfigResolver {
   }
 
   // obfuscation options
-  static readonly KEEP_DTS = "-keep-dts";
-  static readonly KEEP_GLOBAL_NAME = "-keep-global-name";
-  static readonly KEEP_PROPERTY_NAME = "-keep-property-name";
-  static readonly DISABLE_OBFUSCATION = "-disable-obfuscation";
-  static readonly ENABLE_PROPERTY_OBFUSCATION = "-enable-property-obfuscation";
-  static readonly ENABLE_TOPLEVEL_OBFUSCATION = "-enable-toplevel-obfuscation";
-  static readonly COMPACT = "-compact";
-  static readonly REMOVE_LOG = "-remove-log";
-  static readonly PRINT_NAMECACHE = "-print-namecache";
-  static readonly APPLY_NAMECACHE = "-apply-namecache";
+  static readonly KEEP_DTS = '-keep-dts';
+  static readonly KEEP_GLOBAL_NAME = '-keep-global-name';
+  static readonly KEEP_PROPERTY_NAME = '-keep-property-name';
+  static readonly DISABLE_OBFUSCATION = '-disable-obfuscation';
+  static readonly ENABLE_PROPERTY_OBFUSCATION = '-enable-property-obfuscation';
+  static readonly ENABLE_STRING_PROPERTY_OBFUSCATION = '-enable-string-property-obfuscation';
+  static readonly ENABLE_TOPLEVEL_OBFUSCATION = '-enable-toplevel-obfuscation';
+  static readonly COMPACT = '-compact';
+  static readonly REMOVE_LOG = '-remove-log';
+  static readonly PRINT_NAMECACHE = '-print-namecache';
+  static readonly APPLY_NAMECACHE = '-apply-namecache';
 
   static optionsMap: Map<string, string> = new Map([
-    ["disableObfuscation", ObConfigResolver.KEEP_DTS],
-    ["enablePropertyObfuscation", ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION],
-    ["enableToplevelObfuscation", ObConfigResolver.ENABLE_TOPLEVEL_OBFUSCATION],
-    ["compact", ObConfigResolver.COMPACT],
-    ["removeLog", ObConfigResolver.REMOVE_LOG],
+    ['disableObfuscation', ObConfigResolver.KEEP_DTS],
+    ['enablePropertyObfuscation', ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION],
+    ['enableStringPropertyObfuscation', ObConfigResolver.ENABLE_STRING_PROPERTY_OBFUSCATION],
+    ['enableToplevelObfuscation', ObConfigResolver.ENABLE_TOPLEVEL_OBFUSCATION],
+    ['compact', ObConfigResolver.COMPACT],
+    ['removeLog', ObConfigResolver.REMOVE_LOG],
   ]);
 
   private getTokenType(token: string): OptionType {
@@ -257,6 +262,8 @@ export class ObConfigResolver {
         return OptionType.DISABLE_OBFUSCATION;
       case ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION:
         return OptionType.ENABLE_PROPERTY_OBFUSCATION;
+      case ObConfigResolver.ENABLE_STRING_PROPERTY_OBFUSCATION:
+        return OptionType.ENABLE_STRING_PROPERTY_OBFUSCATION;
       case ObConfigResolver.ENABLE_TOPLEVEL_OBFUSCATION:
         return OptionType.ENABLE_TOPLEVEL_OBFUSCATION;
       case ObConfigResolver.COMPACT:
@@ -295,6 +302,9 @@ export class ObConfigResolver {
         case OptionType.ENABLE_PROPERTY_OBFUSCATION: {
           configs.options.enablePropertyObfuscation = true;
           continue;
+        }
+        case OptionType.ENABLE_STRING_PROPERTY_OBFUSCATION: {
+          configs.options.enableStringPropertyObfuscation = true;
         }
         case OptionType.ENABLE_TOPLEVEL_OBFUSCATION: {
           configs.options.enableToplevelObfuscation = true;
