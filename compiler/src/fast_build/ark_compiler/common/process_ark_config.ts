@@ -148,7 +148,8 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
 
   let projectAndLibsReservedProperties: string[];
   if (mergedObConfig.options.enablePropertyObfuscation) {
-    projectAndLibsReservedProperties = readProjectProperties([projectConfig.modulePath], { mNameObfuscation: {mReservedProperties: [] } }, true);
+    projectAndLibsReservedProperties = readProjectProperties([projectConfig.modulePath], 
+      { mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation } }, true);
     mergedObConfig.reservedPropertyNames.push(...projectAndLibsReservedProperties);
   }
   arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;
@@ -198,7 +199,8 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
 
   if (mergedObConfig.options.enablePropertyObfuscation) {
     minifyOptions.mangle.properties = {
-      reserved: mergedObConfig.reservedPropertyNames
+      reserved: mergedObConfig.reservedPropertyNames,
+      keep_quoted: !mergedObConfig.options.enableStringPropertyObfuscation
     };
   }
   return minifyOptions;
@@ -216,7 +218,8 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mNameGeneratorType: 1,
       mReservedNames: mergedObConfig.reservedNames,
       mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
-      mReservedProperties: mergedObConfig.reservedPropertyNames
+      mReservedProperties: mergedObConfig.reservedPropertyNames,
+      mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
     },
     mEnableSourceMap: true,
     mEnableNameCache: true
