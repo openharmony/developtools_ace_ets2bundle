@@ -6,3 +6,5 @@ compiler/sample/build/
 compiler/component_config.json
 compiler/form_config.json
 compiler/syntax_parser/dist/
+compiler/.nyc_output
+compiler/.test_output
