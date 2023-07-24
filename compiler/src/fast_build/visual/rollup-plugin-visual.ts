@@ -44,7 +44,7 @@ export function visualTransform() {
       const currentTimestamp: number = stat.mtime.getTime();
       if (!this.cache.has(visualId)) {
         this.cache.set(visualId, currentTimestamp);
-        return true;
+        return !(process.env.watchMode !== 'true' && 'esmodule' === projectConfig.compileMode);
       }
       const lastTimestamp: number = this.cache.get(visualId);
       this.cache.set(visualId, currentTimestamp);
