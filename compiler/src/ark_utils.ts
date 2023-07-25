@@ -15,6 +15,8 @@
 
 import path from 'path';
 import fs from 'fs';
+import type sourceMap from 'source-map';
+
 import { minify, MinifyOutput } from 'terser';
 import { ArkObfuscator, getMapFromJson } from "arkguard"
 
@@ -342,7 +344,7 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
 
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, arkObfuscator: ArkObfuscator,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, obfuscationMergedObConfig: MergedConfig): Promise<void> {
-  let previousStageSourceMap: string | undefined = undefined;
+  let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
   }
