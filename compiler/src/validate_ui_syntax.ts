@@ -174,7 +174,7 @@ export function validateUISyntax(source: string, content: string, filePath: stri
     }
     const allComponentNames: Set<string> =
       new Set([...INNER_COMPONENT_NAMES, ...componentCollection.customComponents]);
-    checkUISyntax(filePath, allComponentNames, content, log, sourceFile);
+    checkUISyntax(filePath, allComponentNames, content, log, sourceFile, fileQuery);
     componentCollection.customComponents.forEach(item => componentInfo.componentNames.add(item));
   }
 
@@ -389,21 +389,25 @@ function collectLocalStorageName(node: ts.Decorator): void {
 }
 
 function checkUISyntax(filePath: string, allComponentNames: Set<string>, content: string,
-  log: LogInfo[], sourceFile: ts.SourceFile | null): void {
+  log: LogInfo[], sourceFile: ts.SourceFile | null, fileQuery: string): void {
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, fileQuery);
+}
+
+function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
+  return fileQuery === '?entry' && name === componentCollection.entryComponent;
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
-  log: LogInfo[], structContext: boolean) {
+  log: LogInfo[], structContext: boolean, fileQuery: string): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
-    collectComponentProps(node);
+    collectComponentProps(node, propertyInitializeInEntry(fileQuery, node.name.escapedText.toString()));
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
-    const extendResult: ExtendResult = { decoratorName: '', componentName: '' }
+    const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
     if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
       CUSTOM_BUILDER_METHOD.add(node.name.getText());
       if (ts.isFunctionDeclaration(node)) {
@@ -442,7 +446,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext));
+    log, structContext, fileQuery));
   structContext = false;
 }
 
@@ -791,9 +795,9 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   return false;
 }
 
-function collectComponentProps(node: ts.StructDeclaration): void {
+function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean): void {
   const componentName: string = node.name.getText();
-  const ComponentSet: IComponentSet = getComponentSet(node);
+  const ComponentSet: IComponentSet = getComponentSet(node, judgeInitializeInEntry);
   propertyCollection.set(componentName, ComponentSet.properties);
   stateCollection.set(componentName, ComponentSet.states);
   linkCollection.set(componentName, ComponentSet.links);
@@ -811,7 +815,7 @@ function collectComponentProps(node: ts.StructDeclaration): void {
   propInitialization.set(componentName, ComponentSet.propData);
 }
 
-export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
+export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEntry: boolean): IComponentSet {
   const properties: Set<string> = new Set();
   const states: Set<string> = new Set();
   const links: Set<string> = new Set();
@@ -827,17 +831,17 @@ export function getComponentSet(node: ts.StructDeclaration): IComponentSet {
   const localStorageProp: Map<string, Set<string>> = new Map();
   const builderParamData: Set<string> = new Set();
   const propData: Set<string> = new Set();
-  traversalComponentProps(node, properties, regulars, states, links, props, storageProps,
-    storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp, builderParams,
-    builderParamData, propData);
+  traversalComponentProps(node, judgeInitializeInEntry, properties, regulars, states, links, props,
+    storageProps, storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp,
+    builderParams, builderParamData, propData);
   return {
     properties, regulars, states, links, props, storageProps, storageLinks, provides, consumes,
     objectLinks, localStorageLink, localStorageProp, builderParams, builderParamData, propData
   };
 }
 
-function traversalComponentProps(node: ts.StructDeclaration, properties: Set<string>,
-  regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
+function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
+  properties: Set<string>, regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
   consumes: Set<string>, objectLinks: Set<string>,
   localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
@@ -857,9 +861,10 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
             const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
-              collectionStates(item.decorators[i], decoratorName, propertyName, states, links, props, storageProps,
-                storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp,
-                builderParams, item.initializer, builderParamData, propData);
+              collectionStates(item.decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
+                states, links, props, storageProps, storageLinks, provides, consumes, objectLinks,
+                localStorageLink, localStorageProp, builderParams, item.initializer, builderParamData,
+                propData);
             }
           }
         }
@@ -874,7 +879,7 @@ function traversalComponentProps(node: ts.StructDeclaration, properties: Set<str
   isStaticViewCollection.set(node.name.getText(), isStatic);
 }
 
-function collectionStates(node: ts.Decorator, decorator: string, name: string,
+function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, decorator: string, name: string,
   states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
   storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
   localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
@@ -911,6 +916,12 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
     case COMPONENT_BUILDERPARAM_DECORATOR:
       if (initializationtName) {
         builderParamData.add(name);
+      } else if (judgeInitializeInEntry) {
+        transformLog.errors.push({
+          type: LogType.WARN,
+          message: `'${name}' should be initialized in @Entry Component`,
+          pos: node.getStart()
+        });
       }
       builderParams.add(name);
       break;
