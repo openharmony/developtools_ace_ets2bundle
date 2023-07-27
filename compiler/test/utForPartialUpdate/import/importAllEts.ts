@@ -157,17 +157,11 @@ class ImportTest extends ViewPU {
         this.__myState4.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new AllComponent.NamespaceComponent1(this, {
                         NamespaceComponent1Link1: this.__myState1,
@@ -181,21 +175,14 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.width(100);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Common__);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new AllComponent.NamespaceComponent1(this, {
                         NamespaceComponent1Link1: this.__myState1,
@@ -209,13 +196,11 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         __Common__.pop();
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new AllComponent.default(this, {
                         NamespaceComponent3Link1: this.__myState1,
@@ -229,21 +214,14 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.height(200);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Common__);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new AllComponent.default(this, {
                         NamespaceComponent3Link1: this.__myState1,
@@ -257,8 +235,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         __Common__.pop();
         Column.pop();

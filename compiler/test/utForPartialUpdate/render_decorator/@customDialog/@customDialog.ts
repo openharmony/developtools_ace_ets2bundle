@@ -154,89 +154,49 @@ class DialogExample extends ViewPU {
         this.controller = ctr;
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel('current count is: ' + this.count);
             Button.onClick(() => {
                 this.count++;
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.isPlaying ? 'play' : 'pause');
             Button.onClick(() => {
                 this.isPlaying = !this.isPlaying;
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Option A");
             Button.onClick(() => {
                 this.controller.close();
                 this.action1();
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Option B");
             Button.onClick(() => {
                 this.controller.close();
                 this.action2(47, "Option B is great choice");
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Row.pop();
         Column.pop();
@@ -309,59 +269,34 @@ class CustomDialogUser extends ViewPU {
         console.log("Cancel dialog!");
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('current countInitValue is: ' + this.countInitValue);
             Text.fontSize(20);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('current playingInitValue is: ' + this.playingInitValue);
             Text.fontSize(20);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Click to open Dialog -1");
             Button.onClick(() => {
                 this.countInitValue--;
                 this.dialogController.open();
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("Click to close Dialog +1");
             Button.onClick(() => {
                 this.countInitValue++;
                 this.dialogController.close();
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Column.pop();
     }

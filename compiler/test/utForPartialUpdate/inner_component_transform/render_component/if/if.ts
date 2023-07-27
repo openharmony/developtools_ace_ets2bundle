@@ -93,99 +93,59 @@ class IFView extends ViewPU {
         this.__toggle3.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             If.create();
             if (this.toggle1) {
                 this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Text.create('toggle1');
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Text);
                     Text.pop();
                 });
             }
             else if (this.toggle2) {
                 this.ifElseBranchUpdateFunction(1, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Text.create('toggle2');
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Text);
                     Text.pop();
                 });
             }
             else if (this.toggle3) {
                 this.ifElseBranchUpdateFunction(2, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Text.create('toggle3');
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Text);
                     Text.pop();
                 });
             }
             else {
                 this.ifElseBranchUpdateFunction(3, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Text.create('toggle no thing');
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Text);
                     Text.pop();
                 });
             }
-            if (!isInitialRender) {
-                If.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, If);
         If.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             If.create();
             if (this.toggle1) {
                 this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Text.create('toggle1 Single');
-                        if (!isInitialRender) {
-                            Text.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Text);
                     Text.pop();
                 });
             }
             else {
                 If.branchId(1);
             }
-            if (!isInitialRender) {
-                If.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, If);
         If.pop();
         Column.pop();
     }

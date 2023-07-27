@@ -50,11 +50,11 @@ struct child {
         .height(this.heightValue)
 
       Text("hello")
-        .width(this.value)
+        .width(this.propvalue)
         .fontSize(this.reguar_value)
         .height(100)
         .fontColor(Color.Red)
-        .border({width: this.value, color: Color.Red, radius: 100})
+        .border({width: this.propvalue, color: Color.Red, radius: 100})
       Button() {
         Text("hhhhhhhhhhhhh")
           .fontSize(this.state_value)
@@ -177,34 +177,19 @@ class HomeComponent extends ViewPU {
         this.__value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.width(this.state_value);
             Column.height(100);
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
             __Common__.width(this.state_value);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -226,16 +211,11 @@ class HomeComponent extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("aa");
             Text.width(this.state_value);
             Text.height(100);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
@@ -329,32 +309,17 @@ class child extends ViewPU {
         this.__heightValue.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
             __Common__.border({ width: 3, color: Color.Red });
             __Common__.height(this.heightValue);
-            if (!isInitialRender) {
-                __Common__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, __Common__);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -374,43 +339,28 @@ class child extends ViewPU {
         }
         __Common__.pop();
         __Recycle__.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
-            Text.width(this.value);
+            Text.width(this.propvalue);
             Text.fontColor(Color.Red);
-            Text.border({ width: this.value, color: Color.Red, radius: 100 });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            Text.border({ width: this.propvalue, color: Color.Red, radius: 100 });
+            if (isInitialRender) {
                 Text.fontSize(this.reguar_value);
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithChild();
             Button.border({ width: this.reguar_value, color: Color.Red, radius: 100 });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hhhhhhhhhhhhh");
             Text.fontSize(this.state_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.width(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Button.pop();
         {
@@ -427,51 +377,21 @@ class child extends ViewPU {
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             };
-            const observedShallowRender = () => {
-                this.observeComponentCreation(itemCreation);
-                ListItem.pop();
-            };
-            const observedDeepRender = () => {
-                this.observeComponentCreation(itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                    Text.create('ListItem');
-                    Text.width(this.width_value);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    else {
-                        Text.height(100);
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                Text.pop();
-                ListItem.pop();
-            };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('ListItem');
                     Text.width(this.width_value);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    else {
+                    if (isInitialRender) {
                         Text.height(100);
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 ListItem.pop();
             };
-            if (isLazyCreate) {
-                observedShallowRender();
-            }
-            else {
-                observedDeepRender();
-            }
+            this.observeComponentCreation(itemCreation);
+            ListItem.pop();
         }
         {
             const isLazyCreate = true;
@@ -487,132 +407,80 @@ class child extends ViewPU {
                 }
                 ViewStackProcessor.StopGetAccessRecording();
             };
-            const observedShallowRender = () => {
-                this.observeComponentCreation(itemCreation);
-                ListItem.pop();
-            };
-            const observedDeepRender = () => {
-                this.observeComponentCreation(itemCreation);
-                ListItem.pop();
-            };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
                 ListItem.pop();
             };
-            if (isLazyCreate) {
-                observedShallowRender();
-            }
-            else {
-                observedDeepRender();
-            }
+            this.observeComponentCreation(itemCreation);
+            ListItem.pop();
         }
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Tabs.create({ barPosition: BarPosition.Start, index: 1, controller: this.controller });
             Tabs.width(this.width_value);
-            if (!isInitialRender) {
-                Tabs.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Tabs.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Tabs);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Flex.create();
                     Flex.width(this.width_value);
-                    if (!isInitialRender) {
-                        Flex.pop();
-                    }
-                    else {
+                    if (isInitialRender) {
                         Flex.height(100);
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                }, Flex);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Column.create();
                     Column.width(this.width_value);
-                    if (!isInitialRender) {
-                        Column.pop();
-                    }
-                    else {
+                    if (isInitialRender) {
                         Column.height(100);
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                }, Column);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('text1');
                     Text.width(this.width_value);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    else {
+                    if (isInitialRender) {
                         Text.height(100);
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 Column.pop();
                 Flex.pop();
             });
             TabContent.width(this.width_value);
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            else {
+            if (isInitialRender) {
                 TabContent.tabBar("TabBar");
                 TabContent.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('text2');
                     Text.width(this.width_value);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    else {
+                    if (isInitialRender) {
                         Text.height(100);
                     }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             });
             TabContent.width(this.width_value);
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            else {
+            if (isInitialRender) {
                 TabContent.tabBar("TabBar 2");
                 TabContent.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create();
             TabContent.width(this.width_value);
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            else {
+            if (isInitialRender) {
                 TabContent.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
         Tabs.pop();
         Column.pop();
@@ -649,24 +517,14 @@ class NormalComponent extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
             Text.width(this.width_value);
             Text.height(100);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
@@ -705,26 +563,16 @@ class AnimationTest extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
             Context.animation({ duration: 300 });
             Text.height(100);
             Text.width(this.width_value);
             Context.animation(null);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }

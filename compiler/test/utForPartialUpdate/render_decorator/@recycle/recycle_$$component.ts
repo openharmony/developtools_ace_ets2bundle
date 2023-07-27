@@ -162,186 +162,116 @@ class $$Component extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.width(this.width_value);
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Column.height(500);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Radio.create({ value: "Radio", group: "1" });
             Radio.checked(this.value4, newValue => { this.value4 = newValue; });
             Radio.width(this.width_value);
-            if (!isInitialRender) {
-                Radio.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Radio.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Radio);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.width(this.width_value);
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Row.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithChild();
             Button.bindPopup({ value: this.value4, changeEvent: newValue => { this.value4 = newValue; } }, { message: "This is $$ for regular" });
             Button.width(this.width_value);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.height(20);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value1);
             Text.bindPopup({ value: value5[0], changeEvent: newValue => { value5[0] = newValue; } }, { message: "This is $$ for Array" });
             Text.width(this.width_value);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value2);
             Text.width(this.width_value);
             Text.bindPopup({ value: value6.item1, changeEvent: newValue => { value6.item1 = newValue; } }, { message: "This is $$ for Obj" });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.fontSize(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value3);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Radio.create({ value: "Radio", group: "1" });
             Radio.checked(value5[0], newValue => { value5[0] = newValue; });
             Radio.width(this.width_value);
-            if (!isInitialRender) {
-                Radio.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Radio.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Radio);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TextTimer.create({ controller: this.myTimeController, isCountDown: { value: isCountDown, changeEvent: newValue => { isCountDown = newValue; } }, count: { value: this.count, changeEvent: newValue => { this.count = newValue; } } });
             TextTimer.format(this.format, newValue => { this.format = newValue; });
             TextTimer.width(this.width_value);
-            if (!isInitialRender) {
-                TextTimer.pop();
-            }
-            else {
+            if (isInitialRender) {
                 TextTimer.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TextTimer);
         TextTimer.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("start");
             Button.width(this.width_value);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.onClick(() => {
                     this.myTimeController.start();
                 });
                 Button.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("pause");
             Button.width(this.width_value);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.onClick(() => {
                     this.myTimeController.pause();
                 });
                 Button.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel("reset");
             Button.width(this.width_value);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Button.onClick(() => {
                     this.myTimeController.reset();
                 });
                 Button.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Row.pop();
         Column.pop();

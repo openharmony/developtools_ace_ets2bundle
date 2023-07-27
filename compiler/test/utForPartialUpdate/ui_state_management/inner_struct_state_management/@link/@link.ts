@@ -60,14 +60,9 @@ class LinkComponent extends ViewPU {
         this.__counter.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.counter);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
     }
     rerender() {
@@ -102,25 +97,18 @@ class ParentComponent extends ViewPU {
         this.__value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         {
-            this.observeComponentCreation((elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-                ViewStackProcessor.StopGetAccessRecording();
-            });
+            }, null);
         }
         Column.pop();
     }

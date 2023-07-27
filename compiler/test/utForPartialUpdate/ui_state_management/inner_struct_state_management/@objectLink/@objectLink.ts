@@ -95,22 +95,12 @@ class CustomText extends ViewPU {
         return this.__model.get();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.model.text);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Row.pop();
     }
@@ -150,22 +140,15 @@ class Parent extends ViewPU {
         this.__models.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
                 {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         if (isInitialRender) {
                             ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId));
                         }
@@ -174,16 +157,11 @@ class Parent extends ViewPU {
                                 model: item
                             });
                         }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, null);
                 }
             };
             this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, (item) => item.text, false, false);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         Column.pop();
     }

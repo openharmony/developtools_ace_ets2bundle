@@ -144,51 +144,26 @@ struct MyComponent {
 exports.expectResult =
 `"use strict";
 function noParam(parent = null) {
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Row.create();
-        if (!isInitialRender) {
-            Row.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    }, Row);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create('this is a no param builder');
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
     Row.pop();
 }
 function specificParam(label1, label2, parent = null) {
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Column.create();
-        if (!isInitialRender) {
-            Column.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    }, Column);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label1);
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label2);
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
     Column.pop();
 }
@@ -228,117 +203,66 @@ class MyComponent extends ViewPU {
         this.__hideBar.set(newValue);
     }
     textBuilder(parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("文本");
             Text.fontSize(30);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
     }
     NavigationTitlePara(label, parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label);
             Text.width(80);
             Text.bindMenu({ builder: this.textBuilder.bind(this) });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }
     MenuBuilder(parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Flex.create({ direction: FlexDirection.Column, justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center });
             Flex.width(100);
-            if (!isInitialRender) {
-                Flex.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Flex);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Test menu item 1');
             Text.fontSize(20);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Divider.create();
             Divider.height(10);
-            if (!isInitialRender) {
-                Divider.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Divider);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Test menu item 2');
             Text.fontSize(20);
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Flex.pop();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.padding(10);
             Row.bindMenu({ builder: () => {
                     this.NavigationTitlePara.call(this, "111");
                 } });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Drag Me");
             Text.onDragStart((event, extraParams) => {
                 console.log('Text onDragStarts, ' + extraParams);
             });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         specificParam.bind(this)('test1', 'test2');
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.padding(10);
             Row.bindPopup(false, {
@@ -349,52 +273,27 @@ class MyComponent extends ViewPU {
                     }
                 }
             });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Test Text');
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.padding(10);
             Row.bindContextMenu({ builder: this.MenuBuilder.bind(this) }, ResponseType.RightClick);
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('rightclick for menu');
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.padding(10);
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Navigation.create();
             Navigation.title({ builder: noParam.bind(this) });
             Navigation.menus({ builder: this.textBuilder.bind(this) });
@@ -410,25 +309,15 @@ class MyComponent extends ViewPU {
                         } }
                 ] });
             Navigation.hideToolBar(this.hideBar);
-            if (!isInitialRender) {
-                Navigation.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Navigation);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create({ space: 5, initialIndex: 0 });
             List.listDirection(Axis.Vertical);
             List.height(300);
             List.margin({ top: 10, left: 18 });
             List.width('100%');
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
@@ -443,34 +332,10 @@ class MyComponent extends ViewPU {
                         }
                         ViewStackProcessor.StopGetAccessRecording();
                     };
-                    const observedShallowRender = () => {
-                        this.observeComponentCreation(itemCreation);
-                        ListItem.pop();
-                    };
-                    const observedDeepRender = () => {
-                        this.observeComponentCreation(itemCreation);
-                        this.observeComponentCreation((elmtId, isInitialRender) => {
-                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                            Text.create('' + item);
-                            Text.width('90%');
-                            Text.height(80);
-                            Text.backgroundColor('#3366CC');
-                            Text.borderRadius(15);
-                            Text.fontSize(16);
-                            Text.textAlign(TextAlign.Center);
-                            if (!isInitialRender) {
-                                Text.pop();
-                            }
-                            ViewStackProcessor.StopGetAccessRecording();
-                        });
-                        Text.pop();
-                        ListItem.pop();
-                    };
                     const deepRenderFunction = (elmtId, isInitialRender) => {
                         itemCreation(elmtId, isInitialRender);
                         this.updateFuncByElmtId.set(elmtId, itemCreation);
-                        this.observeComponentCreation((elmtId, isInitialRender) => {
-                            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                        this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create('' + item);
                             Text.width('90%');
                             Text.height(80);
@@ -478,130 +343,73 @@ class MyComponent extends ViewPU {
                             Text.borderRadius(15);
                             Text.fontSize(16);
                             Text.textAlign(TextAlign.Center);
-                            if (!isInitialRender) {
-                                Text.pop();
-                            }
-                            ViewStackProcessor.StopGetAccessRecording();
-                        });
+                        }, Text);
                         Text.pop();
                         ListItem.pop();
                     };
-                    if (isLazyCreate) {
-                        observedShallowRender();
-                    }
-                    else {
-                        observedDeepRender();
-                    }
+                    this.observeComponentCreation(itemCreation);
+                    ListItem.pop();
                 }
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, item => item, false, false);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.hideBar ? "tool bar" : "hide bar");
             Button.onClick(() => {
                 this.hideBar = !this.hideBar;
             });
             Button.margin({ left: 135, top: 60 });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Navigation.pop();
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.padding(10);
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Tabs.create({ barPosition: BarPosition.Start, controller: this.controller });
-            if (!isInitialRender) {
-                Tabs.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Tabs);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('111');
                     Text.width('100%');
                     Text.height('20');
                     Text.backgroundColor(Color.Pink);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             });
             TabContent.tabBar('pink');
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('222');
                     Text.width('100%');
                     Text.height('20');
                     Text.backgroundColor(Color.Yellow);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             });
             TabContent.tabBar('yellow');
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             TabContent.create(() => {
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('333');
                     Text.width('100%');
                     Text.height('20');
                     Text.backgroundColor(Color.Blue);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             });
             TabContent.tabBar('blue');
-            if (!isInitialRender) {
-                TabContent.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, TabContent);
         TabContent.pop();
         Tabs.pop();
         Row.pop();
