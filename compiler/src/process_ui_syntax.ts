@@ -854,7 +854,7 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
     context.factory.createObjectLiteralExpression([], false)
   ];
   const [localStorageName, entryOptionNode]: [string, ts.Expression] = addStorageParam(name);
-  if (localStorageName) {
+  if (localStorageName && entryNodeKey) {
     newArray.push(entryNodeKey);
   }
   const newExpressionParams: any[] = [
@@ -1230,7 +1230,7 @@ function createLoadDocument(context: ts.TransformationContext, name: string,
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
     context.factory.createObjectLiteralExpression([], false)
   ];
-  if (localStorageName) {
+  if (localStorageName && entryNodeKey) {
     newArray.push(entryNodeKey);
   }
   const newExpressionParams: any[] = [
