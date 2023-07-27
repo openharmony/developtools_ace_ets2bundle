@@ -44,14 +44,9 @@ class ParentView extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Grid.create();
-            if (!isInitialRender) {
-                Grid.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Grid);
         {
             const isLazyCreate = true && (Grid.willUseProxy() === true);
             const itemCreation = (elmtId, isInitialRender) => {
@@ -70,30 +65,20 @@ class ParentView extends ViewPU {
             };
             const observedDeepRender = () => {
                 this.observeComponentCreation(itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
                     Text.width(100);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 GridItem.pop();
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
                     Text.width(100);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
                 GridItem.pop();
             };

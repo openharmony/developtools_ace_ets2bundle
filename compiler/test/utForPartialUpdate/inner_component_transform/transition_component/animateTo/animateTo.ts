@@ -208,19 +208,13 @@ class TransitionExample extends ViewPU {
         this.__borderRaius1.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, });
             Flex.height(400);
             Flex.width("100%");
             Flex.padding({ top: 100 });
-            if (!isInitialRender) {
-                Flex.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Flex);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.show);
             Button.onClick(() => {
                 Context.animateTo({ duration: 1000 }, () => {
@@ -233,43 +227,28 @@ class TransitionExample extends ViewPU {
                     }
                 });
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             If.create();
             if (this.btn1) {
                 this.ifElseBranchUpdateFunction(0, () => {
-                    this.observeComponentCreation((elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    this.observeComponentCreation2((elmtId, isInitialRender) => {
                         Button.createWithLabel();
                         Button.width("80%");
                         Button.height(30);
                         Button.transition({ type: TransitionType.Insert, scale: { x: 0, y: 1.0 } });
                         Button.transition({ type: TransitionType.Delete, scale: { x: 1.0, y: 0.0 } });
-                        if (!isInitialRender) {
-                            Button.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    });
+                    }, Button);
                     Button.pop();
                 });
             }
             else {
                 If.branchId(1);
             }
-            if (!isInitialRender) {
-                If.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, If);
         If.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel('animation');
             Context.animation({
                 duration: 1000,
@@ -284,24 +263,14 @@ class TransitionExample extends ViewPU {
                 this.btnW += 50;
             });
             Context.animation(null);
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create({ space: 5 });
             Column.width("100%");
             Column.height("100%");
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Context.animation({ duration: 1000 });
             Column.opacity(this.opacity1);
@@ -321,11 +290,7 @@ class TransitionExample extends ViewPU {
                 this.height1 = 200;
                 this.width1 = 200;
             });
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Column);
         Column.pop();
         Column.pop();
         Flex.pop();

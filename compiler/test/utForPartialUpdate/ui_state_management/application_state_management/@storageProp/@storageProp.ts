@@ -92,28 +92,17 @@ class MyComponent extends ViewPU {
         this.label = (this.lang === 'zh') ? '数' : 'Count';
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create({ space: 20 });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.label + ': ' + this.varA);
             Button.onClick(() => {
                 AppStorage.Set('varA', AppStorage.Get('varA') + 1);
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel('lang: ' + this.lang);
             Button.onClick(() => {
                 if (this.lang === 'zh') {
@@ -124,11 +113,7 @@ class MyComponent extends ViewPU {
                 }
                 this.label = (this.lang === 'zh') ? '数' : 'Count';
             });
-            if (!isInitialRender) {
-                Button.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Button);
         Button.pop();
         Row.pop();
     }

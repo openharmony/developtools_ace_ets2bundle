@@ -76,22 +76,12 @@ class HomeComponent extends ViewPU {
         this.__value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
-            if (!isInitialRender) {
-                __Recycle__.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, __Recycle__);
         {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
@@ -151,51 +141,31 @@ class child extends ViewPU {
         this.__state_value.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Circle.create();
-            if (!isInitialRender) {
-                Circle.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Circle.onClick(() => {
                     console.log("hello");
                 });
                 Circle.strokeDashArray(["hello", this.reguar_value]);
                 Circle.height(100);
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Circle);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Circle.create();
             Circle.strokeDashArray([this.state_value]);
-            if (!isInitialRender) {
-                Circle.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Circle);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            else {
+            if (isInitialRender) {
                 Text.onClick(() => {
                     console.log("hello");
                 });
             }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }

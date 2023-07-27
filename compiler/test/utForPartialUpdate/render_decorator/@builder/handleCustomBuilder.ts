@@ -67,14 +67,9 @@ struct Index {
 exports.expectResult =
 `"use strict";
 function global(parent = null) {
-    (parent ? parent : this).observeComponentCreation((elmtId, isInitialRender) => {
-        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create('Global Builder');
-        if (!isInitialRender) {
-            Text.pop();
-        }
-        ViewStackProcessor.StopGetAccessRecording();
-    });
+    }, Text);
     Text.pop();
 }
 class Index extends ViewPU {
@@ -97,8 +92,7 @@ class Index extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     inner(param, parent = null) {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Inner Builder Text');
             Text.bindPopup(false, {
                 onStateChange: (e) => { },
@@ -106,61 +100,36 @@ class Index extends ViewPU {
                         global.call(this);
                     } }
             });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Inner Builder Text2');
             Text.bindPopup(false, {
                 onStateChange: (e) => { },
                 builder: this.judge ? { builder: global.bind(this) } : undefined
             });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.bindMenu({ builder: () => {
                     this.inner.call(this, "111");
                 } });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.bindMenu(this.judge ? { builder: () => {
                     this.inner.call(this, "111");
                 } } : { builder: global.bind(this) });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.onDragStart((event, extraParams) => {
                 console.log('Text onDragStarts, ' + extraParams);
@@ -168,14 +137,9 @@ class Index extends ViewPU {
                         global.call(this);
                     } };
             });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
             Row.onDragStart((event, extraParams) => {
                 console.log('Text onDragStarts, ' + extraParams);
@@ -183,24 +147,15 @@ class Index extends ViewPU {
                             this.inner.call(this);
                         } } : undefined };
             });
-            if (!isInitialRender) {
-                Row.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Row);
         Row.pop();
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Text');
             Text.bindPopup(false, {
                 onStateChange: (e) => { },
                 builder: undefined
             });
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Column.pop();
     }

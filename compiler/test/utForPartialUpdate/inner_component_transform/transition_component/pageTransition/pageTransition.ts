@@ -99,65 +99,44 @@ class PageTransitionExample1 extends ViewPU {
         this.__active.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.scale({ x: this.scale2 });
             Column.opacity(this.opacity2);
-            if (!isInitialRender) {
-                Column.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Navigator.create({ target: 'pages/page1', type: NavigationType.Push });
             Navigator.onClick(() => {
                 this.active = true;
             });
-            if (!isInitialRender) {
-                Navigator.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, Navigator);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('page transition');
             Text.width("100%");
             Text.height("100%");
-            if (!isInitialRender) {
-                Text.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, Text);
         Text.pop();
         Navigator.pop();
         Column.pop();
     }
     pageTransition() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             PageTransition.create();
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, null);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             PageTransitionEnter.create({ duration: 1200, curve: Curve.Linear });
             PageTransitionEnter.onEnter((type, progress) => {
                 this.scale2 = 1;
                 this.opacity2 = progress;
             });
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, null);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             PageTransitionExit.create({ duration: 1500, curve: Curve.Ease });
             PageTransitionExit.onExit((type, progress) => {
                 this.scale2 = 1 - progress;
                 this.opacity2 = 1;
             });
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, null);
         PageTransition.pop();
     }
     rerender() {

@@ -133,35 +133,20 @@ class ParentView extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
@@ -197,35 +182,20 @@ class ParentView1 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = (_item, index) => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, undefined, true, false);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
@@ -261,35 +231,20 @@ class ParentView2 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = (_item, index) => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, item => item.toString(), true, false);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
@@ -325,35 +280,20 @@ class ParentView3 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = (_item, index) => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, (item, index) => item.toString(), true, true);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
@@ -389,35 +329,20 @@ class ParentView4 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, (item, index) => item.toString(), false, true);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
@@ -453,35 +378,20 @@ class ParentView5 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
-            if (!isInitialRender) {
-                List.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
-        this.observeComponentCreation((elmtId, isInitialRender) => {
-            ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
             const forEachItemGenFunction = _item => {
                 const item = _item;
-                this.observeComponentCreation((elmtId, isInitialRender) => {
-                    ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(item);
-                    if (!isInitialRender) {
-                        Text.pop();
-                    }
-                    ViewStackProcessor.StopGetAccessRecording();
-                });
+                }, Text);
                 Text.pop();
             };
             this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, item => item.toString(), false, false);
-            if (!isInitialRender) {
-                ForEach.pop();
-            }
-            ViewStackProcessor.StopGetAccessRecording();
-        });
+        }, ForEach);
         ForEach.pop();
         List.pop();
     }
