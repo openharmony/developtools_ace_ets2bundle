@@ -678,19 +678,19 @@ function createAnimatableProperty(componentName: string, funcName: ts.Identifier
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       componentIdentifier,
       ts.factory.createIdentifier(CREATE_ANIMATABLE_PROPERTY)),
-      undefined, [
-        ts.factory.createStringLiteral(funcName.escapedText.toString()),
-        ...paramNode,
-        ts.factory.createArrowFunction(undefined, undefined, parameters, undefined,
-          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-          ts.factory.createBlock([
-            createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-            createAnimatableFrameNode(componentName),
-            ...attrArray,
-            createViewStackProcessorStatement(STOPGETACCESSRECORDING),
-            createAnimatableUpdateFunc()
-          ], true))
-      ]
+    undefined, [
+      ts.factory.createStringLiteral(funcName.escapedText.toString()),
+      ...paramNode,
+      ts.factory.createArrowFunction(undefined, undefined, parameters, undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock([
+          createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
+          createAnimatableFrameNode(componentName),
+          ...attrArray,
+          createViewStackProcessorStatement(STOPGETACCESSRECORDING),
+          createAnimatableUpdateFunc()
+        ], true))
+    ]
     )
   );
 }
@@ -900,16 +900,6 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
       createLoadDocument(context, name, cardRelativePath, localStorageName, entryOptionNode),
       createStopGetAccessRecording(context)
     ];
-    if (isComponentPreview) {
-      originArray.unshift(context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-        undefined,
-        [
-          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-          ...argsArr
-        ]
-      )));
-    }
     return originArray;
   }
   if (ts.isObjectLiteralExpression(entryOptionNode)) {
@@ -1137,14 +1127,6 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
   }
   if (hasRouteName) {
     return [
-      argsArr ? context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-        undefined,
-        [
-          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-          ...argsArr
-        ]
-      )) : undefined,
       shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
       context.factory.createExpressionStatement(context.factory.createCallExpression(
         context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
@@ -1187,14 +1169,6 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
     return [
-      argsArr ? context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-        undefined,
-        [
-          context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-          ...argsArr
-        ]
-      )) : undefined,
       shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
       context.factory.createExpressionStatement(
         context.factory.createCallExpression(
@@ -1315,11 +1289,12 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
       []
     ),
     context.factory.createBlock(
-      [context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(PREVIEW_COMPONENT_FUNCTION_NAME),
-        undefined,
-        []
-      ))],
+      [...storePreviewComponents(name, entryOptionNode, argsArr),
+        context.factory.createExpressionStatement(context.factory.createCallExpression(
+          context.factory.createIdentifier(PREVIEW_COMPONENT_FUNCTION_NAME),
+          undefined,
+          []
+        ))],
       true
     ),
     context.factory.createBlock(
@@ -1329,6 +1304,148 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
     )
   );
   return ifStatement;
+}
+
+function storePreviewComponents(name: string, entryOptionNode: ts.Expression, argsArr: ts.Expression[]):
+  (ts.ExpressionStatement|ts.VariableStatement|ts.IfStatement)[] {
+  let isObject: boolean = false;
+  let storageNode: ts.Expression;
+  if (!entryOptionNode) {
+    return [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+      undefined,
+      [
+        ts.factory.createNumericLiteral(componentCollection.previewComponent.length),
+        ...argsArr
+      ]
+    ))];
+  }
+  if (ts.isObjectLiteralExpression(entryOptionNode)) {
+    isObject = true;
+    if (entryOptionNode.properties) {
+      entryOptionNode.properties.forEach((property) => {
+        if (ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name) &&
+          property.name.escapedText.toString() === STORAGE) {
+          storageNode = property.initializer;
+        }
+      });
+    }
+  } else {
+    isObject = false;
+  }
+  const newArray: ts.Expression[] = [
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    ts.factory.createObjectLiteralExpression([], false)
+  ];
+  const newArgsArr: ts.Expression[] = [];
+  if (isObject) {
+    return processObjectStorage(storageNode, newArray, name, newArgsArr);
+  } else {
+    return [ts.factory.createIfStatement(
+      ts.factory.createBinaryExpression(
+        entryOptionNode,
+        ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+        ts.factory.createBinaryExpression(
+          ts.factory.createPropertyAccessExpression(
+            entryOptionNode,
+            ts.factory.createIdentifier(STORAGE)
+          ),
+          ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsToken),
+          ts.factory.createIdentifier('undefined')
+        )
+      ),
+      ts.factory.createBlock(
+        [returnStorePreview(entryOptionNode, true, name)],
+        true
+      ),
+      ts.factory.createBlock(
+        [returnStorePreview(entryOptionNode, false, name)],
+        true
+      )
+    )];
+  }
+}
+
+function processObjectStorage(storageNode: ts.Expression, newArray: ts.Expression[], name: string,
+  newArgsArr: ts.Expression[]): (ts.ExpressionStatement|ts.VariableStatement)[] {
+  if (storageNode) {
+    newArray.push(ts.factory.createIdentifier(STORAGE_NODE));
+    componentCollection.previewComponent.forEach(componentName => {
+      const newExpression: ts.Expression = ts.factory.createNewExpression(
+        ts.factory.createIdentifier(componentName),
+        undefined,
+        componentName === name ? newArray : newArray.slice(0, newArray.length - 1)
+      );
+      newArgsArr.push(ts.factory.createStringLiteral(componentName));
+      newArgsArr.push(newExpression);
+    });
+    return [ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(STORAGE_NODE),
+          undefined,
+          undefined,
+          storageNode
+        )],
+        ts.NodeFlags.Let
+      )
+    ), ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+      undefined,
+      [
+        ts.factory.createNumericLiteral(componentCollection.previewComponent.length),
+        ...newArgsArr
+      ]
+    ))];
+  } else {
+    componentCollection.previewComponent.forEach(componentName => {
+      const newExpression: ts.Expression = ts.factory.createNewExpression(
+        ts.factory.createIdentifier(componentName),
+        undefined,
+        newArray
+      );
+      newArgsArr.push(ts.factory.createStringLiteral(componentName));
+      newArgsArr.push(newExpression);
+    });
+    return [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+      undefined,
+      [
+        ts.factory.createNumericLiteral(componentCollection.previewComponent.length),
+        ...newArgsArr
+      ]
+    ))];
+  }
+}
+
+function returnStorePreview(entryOptionNode: ts.Expression, hasStorage: boolean, name: string): ts.ExpressionStatement {
+  const newArray: ts.Expression[] = [
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    ts.factory.createObjectLiteralExpression([], false)
+  ];
+  const newArgsArr: ts.Expression[] = [];
+  newArray.push(hasStorage ? ts.factory.createPropertyAccessExpression(
+    entryOptionNode,
+    ts.factory.createIdentifier(STORAGE)
+  ) : entryOptionNode);
+  componentCollection.previewComponent.forEach(componentName => {
+    const newExpression: ts.Expression = ts.factory.createNewExpression(
+      ts.factory.createIdentifier(componentName),
+      undefined,
+      componentName === name ? newArray : newArray.slice(0, newArray.length - 1)
+    );
+    newArgsArr.push(ts.factory.createStringLiteral(componentName));
+    newArgsArr.push(newExpression);
+  });
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
+    undefined,
+    [
+      ts.factory.createNumericLiteral(componentCollection.previewComponent.length),
+      ...newArgsArr
+    ]
+  ));
 }
 
 function createPreviewElseBlock(name: string, context: ts.TransformationContext, cardRelativePath: string,
@@ -1358,14 +1475,6 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
           });
         }
         return [
-          context.factory.createExpressionStatement(context.factory.createCallExpression(
-            context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-            undefined,
-            [
-              context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-              ...argsArr
-            ]
-          )),
           name ? createStartGetAccessRecording(context) : undefined,
           name ? context.factory.createExpressionStatement(context.factory.createCallExpression(
             context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
@@ -1377,15 +1486,6 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
       return createLoadPageConditionalJudgMent(context, name, cardRelativePath, localStorageName,
         entryOptionNode, argsArr, true);
     }
-  } else {
-    return [context.factory.createExpressionStatement(context.factory.createCallExpression(
-      context.factory.createIdentifier(STORE_PREVIEW_COMPONENTS),
-      undefined,
-      [
-        context.factory.createNumericLiteral(componentCollection.previewComponent.length),
-        ...argsArr
-      ]
-    ))];
   }
 }
 
