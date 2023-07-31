@@ -663,6 +663,8 @@ class ProcessFileInfo {
   resourceTableChanged: boolean = false;
   currentArkTsFile: SpecialArkTSFileInfo;
   reUseProgram: boolean = false;
+  resourcesArr: Set<string> = new Set();
+  lastResourcesSet: Set<string> = new Set();
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
@@ -788,6 +790,7 @@ class ProcessFileInfo {
     this.cachedFiles = [];
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
+    this.resourcesArr.clear();
   }
   setCurrentArkTsFile(): void {
     this.currentArkTsFile = new SpecialArkTSFileInfo();
@@ -853,4 +856,34 @@ export function setChecker(): void {
 export interface ExtendResult {
   decoratorName: string;
   componentName: string;
+}
+
+export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>, resourceName: string = ''): void {
+  if (fs.existsSync(process.env.rawFileResource) && fs.statSync(rawfilePath).isDirectory()) {
+    const files: string[] = fs.readdirSync(rawfilePath);
+    files.forEach((file: string) => {
+      if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
+        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, file);
+      } else {
+        if (resourceName) {
+          resourcesArr.add(resourceName + '/' + file);
+        } else {
+          resourcesArr.add(file);
+        }
+      }
+    });
+  }
+}
+
+export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: Set<string>): boolean {
+  if (oldRawfile.size !== 0 && oldRawfile.size === newRawfile.size) {
+    for (const singleRawfiles of oldRawfile.values()) {
+      if (!newRawfile.has(singleRawfiles)) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    return true;
+  }
 }
