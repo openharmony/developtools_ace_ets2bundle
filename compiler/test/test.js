@@ -18,7 +18,10 @@ const path = require('path');
 const chai = require('chai');
 const mocha = require('mocha');
 const expect = chai.expect;
-const { processUISyntax } = require('../lib/process_ui_syntax');
+const {
+  processUISyntax,
+  transformLog
+} = require('../lib/process_ui_syntax');
 const {
   validateUISyntax,
   preprocessExtend,
@@ -28,9 +31,9 @@ const {
 const {
   componentInfo,
   readFile,
-  storedFileInfo,
+  storedFileInfo
 } = require('../lib/utils');
-const { 
+const {
   BUILD_ON,
   OHOS_PLUGIN,
   NATIVE_MODULE,
@@ -43,7 +46,7 @@ const {
 
 projectConfig.projectPath = path.resolve(process.cwd());
 
-function expectActual(name, filePath) {
+function expectActual(name, filePath, checkError = false) {
   const content = require(filePath);
   const source = content.source;
   process.env.compiler = BUILD_ON;
@@ -52,9 +55,9 @@ function expectActual(name, filePath) {
   validateUISyntax(source, afterProcess.content, `${name}.ets`);
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-    Object.assign(compilerOptions, {
-      "sourceMap": false,
-    });
+  Object.assign(compilerOptions, {
+    'sourceMap': false
+  });
   const result = ts.transpileModule(afterProcess.content, {
     compilerOptions: compilerOptions,
     fileName: `${name}.ets`,
@@ -63,7 +66,12 @@ function expectActual(name, filePath) {
   componentInfo.id = 0;
   componentCollection.customComponents.clear();
   resetComponentCollection();
-  expect(result.outputText).eql(content.expectResult);
+  if (checkError) {
+    assertError(name);
+    transformLog.errors = [];
+  } else {
+    expect(result.outputText).eql(content.expectResult);
+  }
 }
 
 mocha.describe('compiler', () => {
@@ -71,16 +79,23 @@ mocha.describe('compiler', () => {
   if (process.argv.includes('--partialUpdate')) {
     partialUpdateConfig.partialUpdateMode = true;
     utPath = path.resolve(__dirname, './utForPartialUpdate');
+  } else if (process.argv.includes('--assertError')) {
+    partialUpdateConfig.partialUpdateMode = true;
+    utPath = path.resolve(__dirname, './utForValidate');
   }
   const utFiles = [];
   readFile(utPath, utFiles);
   utFiles.forEach((item) => {
     const fileName = path.basename(item, '.ts');
     mocha.it(fileName, () => {
-      expectActual(fileName, item);
-    })
-  })
-})
+      if (process.argv.includes('--assertError')) {
+        expectActual(fileName, item, true);
+      } else {
+        expectActual(fileName, item);
+      }
+    });
+  });
+});
 
 function sourceReplace(source) {
   let content = source;
@@ -120,4 +135,19 @@ function processSystemApi(content) {
     return item;
   });
   return newContent;
+}
+
+function assertError(fileName) {
+  switch (fileName) {
+    case '@linkInitialize': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @Link property 'link' cannot be specified a default value.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case '@objectLinkInitialize': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @ObjectLink property 'objectLink' cannot be specified a default value.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+  }
 }
