@@ -19,7 +19,9 @@ import {
   shouldWriteChangedList,
   writeFileSync,
   getHotReloadFiles,
-  storedFileInfo
+  storedFileInfo,
+  resourcesRawfile,
+  differenceResourcesRawfile
 } from '../../utils';
 import {
   projectConfig,
@@ -54,6 +56,10 @@ export function watchChangeFiles() {
         storedFileInfo.resourceTableChanged = true;
         storedFileInfo.resourceList.clear();
         readAppResource(process.env.appResource);
+        if (process.env.rawFileResource) {
+          resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
+          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
+        }
       }
     },
     beforeBuild() {
@@ -65,6 +71,9 @@ export function watchChangeFiles() {
           getHotReloadFiles(watchModifiedFiles, watchRemovedFiles, hotReloadSupportFiles)));
       }
       incrementWatchFile(watchModifiedFiles, watchRemovedFiles);
+      if (this.cache.get('lastWatchResourcesArr')) {
+        storedFileInfo.lastResourcesSet = new Set([...this.cache.get('lastWatchResourcesArr')]);
+      }
     }
   };
 }
