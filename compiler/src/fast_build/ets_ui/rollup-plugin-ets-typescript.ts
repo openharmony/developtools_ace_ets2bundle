@@ -30,6 +30,8 @@ import {
   writeCollectionFile,
   storedFileInfo,
   fileInfo,
+  resourcesRawfile,
+  differenceResourcesRawfile
 } from '../../utils';
 import {
   preprocessExtend,
@@ -84,6 +86,13 @@ export function etsTransform() {
       if (process.env.compileMode === 'moduleJson') {
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
           this.cache.get('resourceToFileCacheInfo'));
+        if (this.cache.get('lastResourcesArr')) {
+          storedFileInfo.lastResourcesSet = new Set([...this.cache.get('lastResourcesArr')]);
+        }
+        if (process.env.rawFileResource) {
+          resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
+          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
+        }
       }
     },
     load(id: string) {
@@ -103,7 +112,7 @@ export function etsTransform() {
       const fileName: string = path.resolve(options.id);
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
       if (process.env.compileMode === 'moduleJson') {
-        shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName);
+        shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
       }
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
@@ -145,6 +154,7 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
+      this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
       storedFileInfo.clearCollectedInfo(this.cache);
     }
   };
