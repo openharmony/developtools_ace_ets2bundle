@@ -499,9 +499,7 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
   builderParamData: Set<string>, propData: Set<string>, isDETS: boolean,
   structDecorator: structDecoratorResult): void {
-  if (!linkCollection.get(component)) {
-    linkCollection.set(component, linkArray);
-  }
+  linkCollection.set(component, linkArray);
   propertyCollection.set(component, propertyArray);
   if (!propCollection.get(component)) {
     propCollection.set(component, propArray);
@@ -520,9 +518,7 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   storageLinkCollection.set(component, storageLinksArray);
   provideCollection.set(component, providesArray);
   consumeCollection.set(component, consumesArray);
-  if (!objectLinkCollection.get(component)) {
-    objectLinkCollection.set(component, objectLinksArray);
-  }
+  objectLinkCollection.set(component, objectLinksArray);
   localStorageLinkCollection.set(component, localStorageLinkMap);
   localStoragePropCollection.set(component, localStoragePropMap);
   if (!builderParamInitialization.get(component)) {
