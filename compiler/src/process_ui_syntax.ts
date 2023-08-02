@@ -15,6 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 
 import {
   PAGE_ENTRY_FUNCTION_NAME,
@@ -85,6 +86,7 @@ import {
   getPossibleBuilderTypeParameter,
   storedFileInfo,
   ExtendResult,
+  resourcesRawfile
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -442,6 +444,7 @@ export function processResourceData(node: ts.CallExpression,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
     if (node.expression.getText() === RESOURCE_RAWFILE) {
+      isResourcefile(node, previewLog);
       return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]]);
     } else {
       return getResourceDataNode(node, previewLog);
@@ -468,6 +471,19 @@ function getResourceDataNode(node: ts.CallExpression,
       projectConfig.compileHar ? Array.from(node.arguments) : Array.from(node.arguments).slice(1));
   }
   return node;
+}
+
+function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}) {
+  if (process.env.rawFileResource) {
+    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
+    if (!storedFileInfo.resourcesArr.has(node.arguments[0].text) && !previewLog.isAcceleratePreview) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `No such '${node.arguments[0].text}' resource in current module.`,
+        pos: node.getStart()
+      });
+    }
+}
 }
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
