@@ -215,8 +215,10 @@ class ImportTest extends ViewPU {
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('space');
-            Text.fontSize(20);
             Text.fontColor(Color.Red);
+            if (isInitialRender) {
+                Text.fontSize(20);
+            }
         }, Text);
         Text.pop();
         {

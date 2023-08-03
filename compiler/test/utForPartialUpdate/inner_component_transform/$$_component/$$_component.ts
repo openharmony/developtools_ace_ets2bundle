@@ -165,8 +165,10 @@ class HomeComponent extends ViewPU {
         Button.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value2);
-            Text.fontSize(100);
             Text.bindPopup({ value: value6.item1, changeEvent: newValue => { value6.item1 = newValue; } }, { message: "This is $$ for Obj" });
+            if (isInitialRender) {
+                Text.fontSize(100);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {

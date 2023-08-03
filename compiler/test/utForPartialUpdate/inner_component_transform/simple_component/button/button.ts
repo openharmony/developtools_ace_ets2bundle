@@ -76,9 +76,11 @@ class ButtonExample extends ViewPU {
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('loading');
-            Text.fontSize(12);
-            Text.fontColor(0xffffff);
-            Text.margin({ left: 5, right: 12 });
+            if (isInitialRender) {
+                Text.fontSize(12);
+                Text.fontColor(0xffffff);
+                Text.margin({ left: 5, right: 12 });
+            }
         }, Text);
         Text.pop();
         Row.pop();

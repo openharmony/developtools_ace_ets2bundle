@@ -153,8 +153,10 @@ class MyComponent extends ViewPU {
                                 if (!If.canRetake('id1')) {
                                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                                         Text.create('count is negative');
-                                        Text.fontSize(32);
-                                        Text.id('id1');
+                                        if (isInitialRender) {
+                                            Text.fontSize(32);
+                                            Text.id('id1');
+                                        }
                                     }, Text);
                                     Text.pop();
                                 }
@@ -171,8 +173,10 @@ class MyComponent extends ViewPU {
                                 if (!If.canRetake('id3')) {
                                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                                         Text.create('even');
-                                        Text.fontSize(32);
-                                        Text.id('id3');
+                                        if (isInitialRender) {
+                                            Text.fontSize(32);
+                                            Text.id('id3');
+                                        }
                                     }, Text);
                                     Text.pop();
                                 }
@@ -193,8 +197,10 @@ class MyComponent extends ViewPU {
                                     }, Column);
                                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                                         Text.create('odd');
-                                        Text.fontSize(32);
-                                        Text.id('id5');
+                                        if (isInitialRender) {
+                                            Text.fontSize(32);
+                                            Text.id('id5');
+                                        }
                                     }, Text);
                                     Text.pop();
                                     Column.pop();
@@ -210,8 +216,10 @@ class MyComponent extends ViewPU {
                     if (!If.canRetake('id6')) {
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create('fail');
-                            Text.id('id6');
-                            Text.fontSize(32);
+                            if (isInitialRender) {
+                                Text.id('id6');
+                                Text.fontSize(32);
+                            }
                         }, Text);
                         Text.pop();
                     }
@@ -226,8 +234,10 @@ class MyComponent extends ViewPU {
                     if (!If.canRetake('id7')) {
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create('odd2');
-                            Text.fontSize(32);
-                            Text.id('id7');
+                            if (isInitialRender) {
+                                Text.fontSize(32);
+                                Text.id('id7');
+                            }
                         }, Text);
                         Text.pop();
                     }
@@ -267,8 +277,10 @@ class MyComponent extends ViewPU {
                                 }, Row);
                                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                                     Text.create();
-                                    Text.fontSize(20);
-                                    Text.margin({ left: 10 });
+                                    if (isInitialRender) {
+                                        Text.fontSize(20);
+                                        Text.margin({ left: 10 });
+                                    }
                                 }, Text);
                                 Text.pop();
                                 Row.pop();
@@ -298,9 +310,11 @@ class MyComponent extends ViewPU {
                             TabContent.create(() => {
                                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                                     Text.create('111');
-                                    Text.width('100%');
-                                    Text.height('20');
                                     Text.backgroundColor(Color.Pink);
+                                    if (isInitialRender) {
+                                        Text.width('100%');
+                                        Text.height('20');
+                                    }
                                 }, Text);
                                 Text.pop();
                             });
@@ -431,7 +445,9 @@ class Child extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Child');
-            Text.fontSize(50);
+            if (isInitialRender) {
+                Text.fontSize(50);
+            }
         }, Text);
         Text.pop();
         Column.pop();
