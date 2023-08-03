@@ -166,7 +166,9 @@ class CompA extends ViewPU {
         Button.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('totalPurchase: ' + this.totalPurchase);
-            Text.fontSize(20);
+            if (isInitialRender) {
+                Text.fontSize(20);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -180,7 +182,9 @@ class CompA extends ViewPU {
         Button.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('tips: ' + this.resultTip);
-            Text.fontSize(20);
+            if (isInitialRender) {
+                Text.fontSize(20);
+            }
         }, Text);
         Text.pop();
         Column.pop();

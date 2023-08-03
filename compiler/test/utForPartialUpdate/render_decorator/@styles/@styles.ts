@@ -89,15 +89,19 @@ class FancyUse extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
             Text.backgroundColor(Color.Red);
-            Text.width(100);
-            Text.height(100);
+            if (isInitialRender) {
+                Text.width(100);
+                Text.height(100);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Fancy");
             Text.backgroundColor(Color.Blue);
-            Text.width(100);
-            Text.height(100);
+            if (isInitialRender) {
+                Text.width(100);
+                Text.height(100);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {

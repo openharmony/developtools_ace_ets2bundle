@@ -93,14 +93,18 @@ class TabSimple extends ViewPU {
                 }, Column);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('text1');
-                    Text.height(100);
-                    Text.width(200);
+                    if (isInitialRender) {
+                        Text.height(100);
+                        Text.width(200);
+                    }
                 }, Text);
                 Text.pop();
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xxx');
-                    Text.height(100);
-                    Text.width(200);
+                    if (isInitialRender) {
+                        Text.height(100);
+                        Text.width(200);
+                    }
                 }, Text);
                 Text.pop();
                 Column.pop();
