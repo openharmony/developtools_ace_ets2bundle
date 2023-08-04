@@ -42,6 +42,7 @@ import {
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { newSourceMaps } from './transform';
+import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../process_ui_syntax';
 
 export function needAotCompiler(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
@@ -66,6 +67,33 @@ export function changeFileExtension(file: string, targetExt: string, originExt =
   let currentExt = originExt.length === 0 ? path.extname(file) : originExt;
   let fileWithoutExt = file.substring(0, file.lastIndexOf(currentExt));
   return fileWithoutExt + targetExt;
+}
+
+function removeCacheFile(cacheFilePath: string, ext: string): void {
+  let filePath = toUnixPath(changeFileExtension(cacheFilePath, ext));
+  if (fs.existsSync(filePath)) {
+    fs.rmSync(filePath);
+  }
+}
+
+export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: any): boolean {
+  const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectConfig.projectRootPath), '');
+  let cacheFilePath: string = path.join(projectConfig.cachePath, sufStr);
+
+  if (!projectConfig.processTs) {
+    removeCacheFile(cacheFilePath, EXTNAME_TS);
+    return true;
+  }
+
+  if (compilingEtsOrTsFiles.indexOf(filePath) !== -1) {  // file involves in compilation
+    const hasTsNoCheckOrTsIgnore = hasTsNoCheckOrTsIgnoreFiles.indexOf(filePath) !== -1;
+    // Remove cacheFile whose extension is different the target file
+    removeCacheFile(cacheFilePath, hasTsNoCheckOrTsIgnore ? EXTNAME_TS : EXTNAME_JS);
+    return hasTsNoCheckOrTsIgnore;
+  }
+
+  cacheFilePath = toUnixPath(changeFileExtension(cacheFilePath, EXTNAME_JS));
+  return fs.existsSync(cacheFilePath);
 }
 
 export async function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
