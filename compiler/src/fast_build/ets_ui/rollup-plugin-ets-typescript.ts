@@ -63,7 +63,6 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD
 } from '../../component_map';
-import { tsWatchEndPromise } from './rollup-plugin-ets-checker';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -210,7 +209,7 @@ async function transform(code: string, id: string) {
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     compilerOptions['moduleResolution'] = 'nodenext';
-    compilerOptions['module'] = 'es2020'
+    compilerOptions['module'] = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
@@ -230,13 +229,7 @@ async function transform(code: string, id: string) {
     };
   }
 
-  if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
-    // need to wait the tsc watch end signal to continue emitting in watch mode
-    await tsWatchEndPromise;
-  }
-
-  let tsProgram: ts.Program = process.env.watchMode !== 'true' ?
-    globalProgram.program : globalProgram.watchProgram.getCurrentProgram().getProgram();
+  let tsProgram: ts.Program = globalProgram.program;
   let targetSourceFile: ts.SourceFile | undefined = tsProgram.getSourceFile(id);
 
   // createProgram from the file which does not have corresponding ast from ets-checker's program
