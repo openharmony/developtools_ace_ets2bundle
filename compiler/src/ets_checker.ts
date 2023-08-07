@@ -24,7 +24,8 @@ import {
   globalProgram,
   sdkConfigs,
   sdkConfigPrefix,
-  ohosSystemModulePaths
+  ohosSystemModulePaths,
+  partialUpdateConfig
 } from '../main';
 import {
   preprocessExtend,
@@ -61,6 +62,7 @@ import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
+import { doArkTSLinter, ArkTSLinterMode } from './do_arkTS_linter';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
@@ -288,6 +290,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     languageService = createLanguageService(filterFiles, resolveModulePaths);
   }
   globalProgram.program = languageService.getProgram();
+  runArkTSLinter();
   collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames);
@@ -927,4 +930,52 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   changedFiles.forEach((file) => {
     judgeFileShouldResolved(file, shouldResolvedFiles);
   });
+}
+
+function runArkTSLinter(): void {
+  const arkTSLinterDiagnostics = doArkTSLinter(globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic);
+  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+    arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+      updateErrorFileCache(diagnostic);
+    });
+  }
+}
+
+function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
+  const originalCategory = diagnostic.category;
+  if (isInOhModuleFile(diagnostic)) {
+    diagnostic.category = ts.DiagnosticCategory.Warning;
+  }
+  printDiagnostic(diagnostic);
+  diagnostic.category = originalCategory;
+}
+
+function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
+  return !!(diagnostics.file?.fileName.indexOf('/oh_modules/') !== -1);
+}
+
+export function getArkTSLinterMode(): ArkTSLinterMode {
+  if (projectConfig && projectConfig.compileMode !== ESMODULE) {
+    return ArkTSLinterMode.NOT_USE;
+  }
+
+  if (!partialUpdateConfig.executeArkTSLinter) {
+    return ArkTSLinterMode.NOT_USE;
+  }
+
+  if (isStandardMode()) {
+    // change to STANDARD_MODE when we block the compilation
+    return ArkTSLinterMode.COMPATIBLE_MODE;
+  }
+  return ArkTSLinterMode.COMPATIBLE_MODE;
+}
+
+export function isStandardMode(): boolean {
+  const STANDARD_MODE_COMPATIBLE_SDK_VERSION = 10;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= STANDARD_MODE_COMPATIBLE_SDK_VERSION) {
+    return true;
+  }
+  return false;
 }
