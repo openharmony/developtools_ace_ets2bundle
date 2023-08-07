@@ -149,5 +149,21 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    case 'rootContainerCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`There should have a root container component.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'arkUIComponent': {
+      expect(transformLog.errors[0].message).to.be.equal(`Only UI component syntax can be written in build method.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case '@BuilderParam': {
+      expect(transformLog.errors[0].message).to.be.equal(
+        `In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
   }
 }
