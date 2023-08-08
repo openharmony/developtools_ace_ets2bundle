@@ -784,12 +784,33 @@ function isPartialUpdate(metadata) {
   }
 }
 
+function applicationConfig() {
+  const localProperties = path.resolve(aceBuildJson.projectRootPath, 'local.properties');
+  if (fs.existsSync(localProperties)) {
+    try {
+      const localPropertiesFile = fs.readFileSync(localProperties, {encoding: 'utf-8'}).split(/\r?\n/);
+      localPropertiesFile.some((item) => {
+        const builderCheckValue = item.replace(/\s+|;/g, '');
+        if (builderCheckValue === 'ArkTSConfig.ArkTSBuilderCheck=false') {
+          partialUpdateConfig.builderCheck = false;
+          return true;
+        }
+      });
+    } catch (err) {
+      logger.error(`Failed to read ${localProperties}. Error message: ${err}`);
+    }
+  }
+}
+
 function partialUpdateController(minAPIVersion, metadata = null) {
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
   }
   if (metadata) {
     isPartialUpdate(metadata);
+  }
+  if (aceBuildJson.projectRootPath) {
+    applicationConfig();
   }
 }
 
