@@ -112,7 +112,8 @@ import {
   RECYCLE_REUSE_ID,
   UPDATE_FUNC_BY_ELMT_ID,
   CREATE_SET_METHOD,
-  CAN_RETAKE
+  CAN_RETAKE,
+  COMPONENT_REUSE_ATTR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1646,7 +1647,8 @@ export interface ComponentAttrInfo {
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
-  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
+  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null,
+  isExtendFunction: boolean = false): void {
   let temp: any = node.expression;
   const statements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
@@ -1689,7 +1691,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name) &&
       !componentCollection.customComponents.has(temp.expression.name.getText())) {
-      parseRecycleId(temp, temp.expression.name, isRecycleComponent, componentAttrInfo);
+      parseRecycleId(temp, temp.expression.name, componentAttrInfo);
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
         isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
         isRecycleComponent, isStyleFunction);
@@ -1699,7 +1701,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
         !GESTURE_TYPE_NAMES.has(temp.expression.getText()) &&
         !componentCollection.customComponents.has(temp.expression.getText())) {
-        parseRecycleId(temp, temp.expression.name, isRecycleComponent, componentAttrInfo);
+        parseRecycleId(temp, temp.expression.name, componentAttrInfo);
         addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
           isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
           isRecycleComponent, isStyleFunction);
@@ -1713,7 +1715,8 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (lastStatement.statement && lastStatement.kind) {
     statements.push(lastStatement.statement);
   }
-  if (!isRecycleComponent || lastStatement.hasAnimationAttr) {
+  if (!filterComponentReuse(isRecycleComponent, identifierNode) || lastStatement.hasAnimationAttr ||
+    isExtendFunction) {
     if (statements.length) {
       reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
     }
@@ -1727,7 +1730,12 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
 }
 
-function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, isRecycleComponent: boolean,
+function filterComponentReuse(isRecycleComponent: boolean, identifierNode: ts.Identifier): boolean {
+  return isRecycleComponent || (partialUpdateConfig.partialUpdateMode &&
+    COMPONENT_REUSE_ATTR.has(identifierNode.escapedText.toString()));
+}
+
+function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier,
   componentAttrInfo: ComponentAttrInfo): void {
   if (componentAttrInfo && attr.escapedText.toString() === RECYCLE_REUSE_ID) {
     componentAttrInfo.reuseId = node.arguments[0];
@@ -2135,7 +2143,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
   } else if (propName === ATTRIBUTE_STATESTYLES) {
     if (temp.arguments.length === 1 && ts.isObjectLiteralExpression(temp.arguments[0])) {
       statements.push(createViewStackProcessor(temp, true));
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         updateStatements.push(createViewStackProcessor(temp, true));
       }
       traverseStateStylesAttr(temp, statements, identifierNode, log, updateStatements,
@@ -2150,7 +2158,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     if (styleBlock.statements.length > 0) {
       bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
         statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
           updateStatements, log, false, true, newImmutableStatements, true);
       }
@@ -2175,8 +2183,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
         createFunction(identifierNode, node, temp.arguments));
       statements.push(attrStatement);
-      if (isRecycleComponent && (!isStylesAttr || isStyleFunction) &&
-        !isGestureType(identifierNode) && filterRegularAttrNode(temp.arguments)) {
+      if (isNeedReuseAttr(isRecycleComponent, isStylesAttr, isStyleFunction, identifierNode, temp)) {
         immutableStatements.push(attrStatement);
       } else {
         updateStatements.push(attrStatement);
@@ -2184,6 +2191,13 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     }
     lastStatement.kind = true;
   }
+}
+
+function isNeedReuseAttr(isRecycleComponent: boolean, isStylesAttr: boolean,
+  isStyleFunction: boolean, identifierNode: ts.Identifier, temp: any): boolean {
+  return filterComponentReuse(isRecycleComponent, identifierNode) &&
+    (!isStylesAttr || isStyleFunction) &&
+    !isGestureType(identifierNode) && filterRegularAttrNode(temp.arguments)
 }
 
 function isGestureType(node: ts.Identifier): boolean {
@@ -2361,7 +2375,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       const name: string = item.initializer.name.getText();
       bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
         identifierNode, statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
           identifierNode, updateStatements, log, false, true, newImmutableStatements);
       }
@@ -2370,7 +2384,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       const name: string = item.initializer.getText();
       bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
         identifierNode, statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
           identifierNode, updateStatements, log, false, true, newImmutableStatements);
       }
@@ -2380,7 +2394,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true,
         newImmutableStatements);
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         bindComponentAttr(ts.factory.createExpressionStatement(
           item.initializer.properties[0].initializer), identifierNode, updateStatements, log, false, true,
           newImmutableStatements);
@@ -2393,7 +2407,7 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
     if (item.name) {
       const viewNode: ts.Statement = createViewStackProcessor(item, false);
       statements.push(viewNode);
-      if (isRecycleComponent) {
+      if (filterComponentReuse(isRecycleComponent, identifierNode)) {
         updateStatements.push(viewNode);
       }
     }
@@ -2467,7 +2481,7 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
       createFunction(temp, ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     if (temp.escapedText.toString() === COMPONENT_GESTURE_GROUP) {
       const gestureStatements: ts.Statement[] = [];
-      parseGestureInterface(temp.parent, gestureStatements, log, updateStatements, true);
+      parseGestureInterface(temp.parent, gestureStatements, log, [], true);
       newStatements.push(...gestureStatements.reverse());
       bindComponentAttr(newNode, temp, newStatements, log, false);
       let argumentArr: ts.NodeArray<ts.Expression> = null;

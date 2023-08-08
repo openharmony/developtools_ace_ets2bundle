@@ -205,7 +205,9 @@ class MyComponent extends ViewPU {
     textBuilder(parent = null) {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("文本");
-            Text.fontSize(30);
+            if (isInitialRender) {
+                Text.fontSize(30);
+            }
         }, Text);
         Text.pop();
     }
@@ -215,8 +217,10 @@ class MyComponent extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label);
-            Text.width(80);
             Text.bindMenu({ builder: this.textBuilder.bind(this) });
+            if (isInitialRender) {
+                Text.width(80);
+            }
         }, Text);
         Text.pop();
         Column.pop();
@@ -228,7 +232,9 @@ class MyComponent extends ViewPU {
         }, Flex);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Test menu item 1');
-            Text.fontSize(20);
+            if (isInitialRender) {
+                Text.fontSize(20);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -237,7 +243,9 @@ class MyComponent extends ViewPU {
         }, Divider);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Test menu item 2');
-            Text.fontSize(20);
+            if (isInitialRender) {
+                Text.fontSize(20);
+            }
         }, Text);
         Text.pop();
         Flex.pop();
@@ -255,9 +263,11 @@ class MyComponent extends ViewPU {
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("Drag Me");
-            Text.onDragStart((event, extraParams) => {
-                console.log('Text onDragStarts, ' + extraParams);
-            });
+            if (isInitialRender) {
+                Text.onDragStart((event, extraParams) => {
+                    console.log('Text onDragStarts, ' + extraParams);
+                });
+            }
         }, Text);
         Text.pop();
         specificParam.bind(this)('test1', 'test2');
@@ -337,12 +347,14 @@ class MyComponent extends ViewPU {
                         this.updateFuncByElmtId.set(elmtId, itemCreation);
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create('' + item);
-                            Text.width('90%');
-                            Text.height(80);
-                            Text.backgroundColor('#3366CC');
-                            Text.borderRadius(15);
-                            Text.fontSize(16);
                             Text.textAlign(TextAlign.Center);
+                            if (isInitialRender) {
+                                Text.width('90%');
+                                Text.height(80);
+                                Text.backgroundColor('#3366CC');
+                                Text.borderRadius(15);
+                                Text.fontSize(16);
+                            }
                         }, Text);
                         Text.pop();
                         ListItem.pop();
@@ -376,9 +388,11 @@ class MyComponent extends ViewPU {
             TabContent.create(() => {
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('111');
-                    Text.width('100%');
-                    Text.height('20');
                     Text.backgroundColor(Color.Pink);
+                    if (isInitialRender) {
+                        Text.width('100%');
+                        Text.height('20');
+                    }
                 }, Text);
                 Text.pop();
             });
@@ -389,9 +403,11 @@ class MyComponent extends ViewPU {
             TabContent.create(() => {
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('222');
-                    Text.width('100%');
-                    Text.height('20');
                     Text.backgroundColor(Color.Yellow);
+                    if (isInitialRender) {
+                        Text.width('100%');
+                        Text.height('20');
+                    }
                 }, Text);
                 Text.pop();
             });
@@ -402,9 +418,11 @@ class MyComponent extends ViewPU {
             TabContent.create(() => {
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('333');
-                    Text.width('100%');
-                    Text.height('20');
                     Text.backgroundColor(Color.Blue);
+                    if (isInitialRender) {
+                        Text.width('100%');
+                        Text.height('20');
+                    }
                 }, Text);
                 Text.pop();
             });

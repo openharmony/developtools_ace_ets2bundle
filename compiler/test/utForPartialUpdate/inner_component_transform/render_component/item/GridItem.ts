@@ -67,7 +67,9 @@ class ParentView extends ViewPU {
                 this.observeComponentCreation(itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
-                    Text.width(100);
+                    if (isInitialRender) {
+                        Text.width(100);
+                    }
                 }, Text);
                 Text.pop();
                 GridItem.pop();
@@ -77,7 +79,9 @@ class ParentView extends ViewPU {
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
-                    Text.width(100);
+                    if (isInitialRender) {
+                        Text.width(100);
+                    }
                 }, Text);
                 Text.pop();
                 GridItem.pop();
