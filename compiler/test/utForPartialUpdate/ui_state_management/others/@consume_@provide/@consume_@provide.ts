@@ -111,7 +111,9 @@ class CompA extends ViewPU {
         }, Button);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('' + this.reviewVotes);
-            Text.fontSize(30);
+            if (isInitialRender) {
+                Text.fontSize(30);
+            }
         }, Text);
         Text.pop();
         Button.pop();
@@ -192,7 +194,9 @@ class CompC extends ViewPU {
         }, Button);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('' + this.reviewVotes);
-            Text.fontSize(30);
+            if (isInitialRender) {
+                Text.fontSize(30);
+            }
         }, Text);
         Text.pop();
         Button.pop();

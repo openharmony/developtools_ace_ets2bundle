@@ -199,12 +199,16 @@ function specificWithParam(label1, label2, parent = null) {
     }, Column);
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label1);
-        Text.fontSize(50);
+        if (isInitialRender) {
+            Text.fontSize(50);
+        }
     }, Text);
     Text.pop();
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create(label2);
-        Text.fontSize(50);
+        if (isInitialRender) {
+            Text.fontSize(50);
+        }
     }, Text);
     Text.pop();
     Column.pop();
@@ -242,7 +246,9 @@ class CustomContainerUser extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("content");
-            Text.fontSize(50);
+            if (isInitialRender) {
+                Text.fontSize(50);
+            }
         }, Text);
         Text.pop();
         Column.pop();
@@ -253,12 +259,16 @@ class CustomContainerUser extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label1);
-            Text.fontSize(50);
+            if (isInitialRender) {
+                Text.fontSize(50);
+            }
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(label2);
-            Text.fontSize(50);
+            if (isInitialRender) {
+                Text.fontSize(50);
+            }
         }, Text);
         Text.pop();
         Column.pop();

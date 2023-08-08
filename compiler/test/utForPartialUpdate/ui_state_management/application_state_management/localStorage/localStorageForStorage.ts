@@ -95,10 +95,12 @@ class LocalStorageComponent extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.objectName.a);
-            Text.onClick(() => {
-                this.simpleVarName += 1;
-                this.objectName.a = this.objectName.a === 'x' ? 'yex' : 'no';
-            });
+            if (isInitialRender) {
+                Text.onClick(() => {
+                    this.simpleVarName += 1;
+                    this.objectName.a = this.objectName.a === 'x' ? 'yex' : 'no';
+                });
+            }
         }, Text);
         Text.pop();
         Column.pop();
