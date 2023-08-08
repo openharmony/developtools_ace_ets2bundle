@@ -149,6 +149,7 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    // process_component_build.ts
     case 'rootContainerCheck': {
       expect(transformLog.errors[0].message).to.be.equal(`There should have a root container component.`);
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
@@ -162,6 +163,44 @@ function assertError(fileName) {
     case '@BuilderParam': {
       expect(transformLog.errors[0].message).to.be.equal(
         `In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'forEachParamCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`There should be wrapped in curly braces in ForEach.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'ifComponent': {
+      expect(transformLog.errors[0].message).to.be.equal(`Condition expression cannot be null in if statement.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      expect(transformLog.errors[1].message).to.be.equal(`Then statement cannot be null in if statement.`);
+      expect(transformLog.errors[1].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'idCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(
+        `The current component id "1" is duplicate with /home/bojiang/openharmony/developtools/ace_ets2bundle/compiler/idCheck.ets:7:21.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'arkUIStandard': {
+      expect(transformLog.errors[0].message).to.be.equal(`'Text('Hello').onCilck' does not meet UI component syntax.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'stateStyles': {
+      expect(transformLog.errors[0].message).to.be.equal(`.stateStyles doesn't conform standard.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'buttonCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`The Button component with a label parameter can not have any child.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'attributeCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`'ForEach(this.arr, () =>{}, this.arr[0]).h' does not meet UI component syntax.`);
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
