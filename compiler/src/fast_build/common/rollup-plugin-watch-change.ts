@@ -29,7 +29,8 @@ import {
 } from '../../../main';
 import {
   incrementWatchFile,
-  hotReloadSupportFiles
+  hotReloadSupportFiles,
+  files
 } from '../../ets_checker';
 
 export function watchChangeFiles() {
@@ -52,6 +53,7 @@ export function watchChangeFiles() {
       if (['create', 'delete'].includes(change.event)) {
         addFileToCache.call(this, 'watchRemovedFiles', id);
       }
+      files[path.resolve(id)] ? files[path.resolve(id)].version++ : files[path.resolve(id)] = {version: 1};
       if (path.resolve(id) === path.resolve(process.env.appResource) && process.env.compileMode === 'moduleJson') {
         storedFileInfo.resourceTableChanged = true;
         storedFileInfo.resourceList.clear();

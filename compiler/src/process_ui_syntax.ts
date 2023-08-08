@@ -473,7 +473,7 @@ function getResourceDataNode(node: ts.CallExpression,
   return node;
 }
 
-function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}) {
+function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): void {
   if (process.env.rawFileResource) {
     resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
     if (!storedFileInfo.resourcesArr.has(node.arguments[0].text) && !previewLog.isAcceleratePreview) {
@@ -483,7 +483,7 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
         pos: node.getStart()
       });
     }
-}
+  }
 }
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):

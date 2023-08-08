@@ -15,11 +15,17 @@
 
 import path from 'path';
 import { EventEmitter } from 'events';
+import * as ts from 'typescript';
 
-import { projectConfig } from '../../../main';
+import {
+  projectConfig,
+  globalProgram
+} from '../../../main';
 import {
   serviceChecker,
-  watchChecker
+  languageService,
+  printDiagnostic,
+  fastBuildLogger
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import { setChecker } from '../../utils';
@@ -40,9 +46,6 @@ export function etsChecker() {
           });
         });
       }
-      if (executedOnce) {
-        return;
-      }
       Object.assign(projectConfig, this.share.projectConfig);
       Object.assign(this.share.projectConfig, {
         compileHar: projectConfig.compileHar,
@@ -62,8 +65,18 @@ export function etsChecker() {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
       }
       if (process.env.watchMode === 'true') {
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths);
         executedOnce = true;
-        watchChecker(rootFileNames, logger, resolveModulePaths);
+        globalProgram.program = languageService.getProgram();
+        const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+          .getSyntacticDiagnostics()
+          .concat(globalProgram.program.getSemanticDiagnostics())
+          .concat(globalProgram.program.getDeclarationDiagnostics());
+        allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+          printDiagnostic(diagnostic);
+        });
+        fastBuildLogger.debug(TS_WATCH_END_MSG);
+        tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
         serviceChecker(rootFileNames, logger, resolveModulePaths);
       }
