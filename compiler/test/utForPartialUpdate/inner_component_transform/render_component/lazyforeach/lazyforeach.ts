@@ -200,18 +200,13 @@ class Test extends ViewPU {
             const __lazyForEachItemGenFunction = _item => {
                 const row = _item;
                 {
-                    const isLazyCreate = (globalThis.__lazyForEachItemGenFunction !== undefined) && true && (Grid.willUseProxy() === true);
                     const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        GridItem.create(deepRenderFunction, isLazyCreate);
+                        GridItem.create(() => { }, false);
                         if (!isInitialRender) {
                             GridItem.pop();
                         }
                         ViewStackProcessor.StopGetAccessRecording();
-                    };
-                    const observedShallowRender = () => {
-                        this.observeComponentCreation(itemCreation);
-                        GridItem.pop();
                     };
                     const observedDeepRender = () => {
                         this.observeComponentCreation(itemCreation);
@@ -221,21 +216,7 @@ class Test extends ViewPU {
                         Text.pop();
                         GridItem.pop();
                     };
-                    const deepRenderFunction = (elmtId, isInitialRender) => {
-                        itemCreation(elmtId, isInitialRender);
-                        this.updateFuncByElmtId.set(elmtId, itemCreation);
-                        this.observeComponentCreation2((elmtId, isInitialRender) => {
-                            Text.create(row);
-                        }, Text);
-                        Text.pop();
-                        GridItem.pop();
-                    };
-                    if (isLazyCreate) {
-                        observedShallowRender();
-                    }
-                    else {
-                        observedDeepRender();
-                    }
+                    observedDeepRender();
                 }
             };
             const __lazyForEachItemIdFunc = row => row;
