@@ -61,7 +61,8 @@ import {
   changeFileExtension,
   getEs2abcFileThreadNumber,
   isCommonJsPluginVirtualFile,
-  isCurrentProjectFiles
+  isCurrentProjectFiles,
+  shouldETSOrTSFileTransformToJS
 } from '../utils';
 import {
   isPackageModulesFile,
@@ -81,7 +82,6 @@ import {
   generateBuiltinAbc,
   FaultHandler
 } from '../../../gen_aot';
-import { hasTsNoCheckOrTsIgnoreFiles } from '../../../process_ui_syntax';
 
 export class ModuleInfo {
   filePath: string;
@@ -221,24 +221,15 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private shouldETSOrTSFileNameTransformToJS(moduleId: string): boolean {
-    let cacheFilePath: string =
-      this.genFileCachePath(moduleId, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
-    cacheFilePath = toUnixPath(changeFileExtension(cacheFilePath, EXTNAME_JS));
-    return hasTsNoCheckOrTsIgnoreFiles.indexOf(moduleId) !== -1 || fs.existsSync(cacheFilePath);
-  }
-
   private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
-        const extName: string = this.projectConfig.processTs && !this.shouldETSOrTSFileNameTransformToJS(moduleId) ?
-          EXTNAME_TS : EXTNAME_JS;
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
       case EXTNAME_TS: {
-        const extName: string = this.projectConfig.processTs && !this.shouldETSOrTSFileNameTransformToJS(moduleId) ?
-          '' : EXTNAME_JS;
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : '';
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
