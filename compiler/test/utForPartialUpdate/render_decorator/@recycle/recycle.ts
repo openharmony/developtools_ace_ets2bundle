@@ -366,10 +366,9 @@ class child extends ViewPU {
         Text.pop();
         Button.pop();
         {
-            const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, isLazyCreate, 'true');
+                ListItem.create(deepRenderFunction, true, 'true');
                 ListItem.width(this.width_value);
                 if (!isInitialRender) {
                     ListItem.pop();
@@ -396,10 +395,9 @@ class child extends ViewPU {
             ListItem.pop();
         }
         {
-            const isLazyCreate = true;
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, isLazyCreate, 'true');
+                ListItem.create(deepRenderFunction, true, 'true');
                 ListItem.width(this.width_value);
                 if (!isInitialRender) {
                     ListItem.pop();
