@@ -797,7 +797,6 @@ function applicationConfig() {
         }
       });
     } catch (err) {
-      logger.error(`Failed to read ${localProperties}. Error message: ${err}`);
     }
   }
 }
