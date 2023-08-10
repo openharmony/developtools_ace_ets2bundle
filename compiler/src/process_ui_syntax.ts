@@ -132,6 +132,7 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: {params: string[]} = {params: []};
 
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
+export let compilingEtsOrTsFiles: string[] = [];
 
 export function processUISyntax(program: ts.Program, ut = false): Function {
   let entryNodeKey: ts.Expression;
@@ -140,6 +141,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     let pagesDir: string;
     return (node: ts.SourceFile) => {
       const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
+      compilingEtsOrTsFiles.push(path.normalize(node.fileName));
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
