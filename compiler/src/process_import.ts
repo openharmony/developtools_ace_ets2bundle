@@ -756,7 +756,7 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
   } else {
     realSymbol = null;
   }
-  if (realSymbol) {
+  if (realSymbol && realSymbol.declarations) {
     originNode = realSymbol.declarations[0];
   } else {
     originNode = null;
@@ -766,18 +766,24 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
       const escapedName: string = realSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
       if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
         realSymbol.exports && realSymbol.exports instanceof Map) {
-        for (const usedSymbol of realSymbol.exports) {
-          try {
-            originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
-          } catch (e) {
-            originNode = usedSymbol[1].declarations[0];
-          }
-          processImportNode(originNode, usedNode, true, usedSymbol[0]);
-        }
+        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports);
         return;
       }
     }
     processImportNode(originNode, usedNode, false, null);
+  }
+}
+
+function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, exportsMap: ts.SymbolTable): void {
+  for (const usedSymbol of exportsMap) {
+    try {
+      originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
+    } catch (e) {
+      if (usedSymbol[1] && usedSymbol[1].declarations) {
+        originNode = usedSymbol[1].declarations[0];
+      }
+    }
+    processImportNode(originNode, usedNode, true, usedSymbol[0]);
   }
 }
 
