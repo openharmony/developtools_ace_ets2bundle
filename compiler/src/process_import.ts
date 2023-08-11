@@ -68,7 +68,8 @@ import {
 import {
   projectConfig,
   sdkConfigs,
-  sdkConfigPrefix
+  sdkConfigPrefix,
+  globalProgram
 } from '../main';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -387,7 +388,7 @@ function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePa
 function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>, isDETS: boolean, structDecorator: structDecoratorResult): void {
   const componentName: string = node.name.getText();
-  const ComponentSet: IComponentSet = getComponentSet(node);
+  const ComponentSet: IComponentSet = getComponentSet(node, false);
   if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
     node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
@@ -716,5 +717,116 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
       });
     }
     log.push(error);
+  }
+}
+
+export function processImportModule(node: ts.ImportDeclaration): void {
+  let importSymbol: ts.Symbol;
+  let realSymbol: ts.Symbol;
+  let originNode: ts.Node;
+  // import xxx from 'xxx'
+  if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name);
+  }
+
+  // import {xxx} from 'xxx'
+  if (node.importClause && node.importClause.namedBindings &&
+    ts.isNamedImports(node.importClause.namedBindings) &&
+    node.importClause.namedBindings.elements) {
+    node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
+      if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
+        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name);
+      }
+    });
+  }
+
+  // import * as xxx from 'xxx'
+  if (node.importClause && node.importClause.namedBindings &&
+    ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
+    ts.isIdentifier(node.importClause.namedBindings.name)) {
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name);
+  }
+}
+
+function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
+  usedNode: ts.Identifier): void {
+  importSymbol = globalProgram.checker.getSymbolAtLocation(usedNode);
+  if (importSymbol) {
+    realSymbol = globalProgram.checker.getAliasedSymbol(importSymbol);
+  } else {
+    realSymbol = null;
+  }
+  if (realSymbol && realSymbol.declarations) {
+    originNode = realSymbol.declarations[0];
+  } else {
+    originNode = null;
+  }
+  if (originNode) {
+    if (ts.isSourceFile(originNode) && realSymbol.escapedName) {
+      const escapedName: string = realSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
+      if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
+        realSymbol.exports && realSymbol.exports instanceof Map) {
+        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports);
+        return;
+      }
+    }
+    processImportNode(originNode, usedNode, false, null);
+  }
+}
+
+function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, exportsMap: ts.SymbolTable): void {
+  for (const usedSymbol of exportsMap) {
+    try {
+      originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
+    } catch (e) {
+      if (usedSymbol[1] && usedSymbol[1].declarations) {
+        originNode = usedSymbol[1].declarations[0];
+      }
+    }
+    processImportNode(originNode, usedNode, true, usedSymbol[0]);
+  }
+}
+
+function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
+  usedPropName: string): void {
+  const structDecorator: structDecoratorResult = { hasRecycle: false };
+  let name: string;
+  if (importIntegration) {
+    name = usedPropName;
+  } else {
+    name = usedNode.escapedText.toString();
+  }
+  if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name) &&
+    isCustomComponent(originNode, structDecorator)) {
+    let isDETS: boolean = false;
+    componentCollection.customComponents.add(name);
+    const ComponentSet: IComponentSet = getComponentSet(originNode, false);
+    while (originNode) {
+      if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
+        isDETS = true;
+      }
+      originNode = originNode.parent;
+    }
+    if (isDETS) {
+      storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
+    }
+    if (structDecorator.hasRecycle) {
+      storedFileInfo.getCurrentArkTsFile().recycleComponents.add(name);
+    }
+    setDependencies(name, ComponentSet.links, ComponentSet.properties,
+      ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
+      ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
+      ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
+      ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
+      structDecorator);
+  } else if (isObservedClass(originNode)) {
+    observedClassCollection.add(name);
+  } else if (isCustomDialogClass(originNode)) {
+    componentCollection.customDialogs.add(name);
+  } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
+    CUSTOM_BUILDER_METHOD.add(name);
+    GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
+  } else if (ts.isEnumDeclaration(originNode) && originNode.name) {
+    enumCollection.add(name);
   }
 }
