@@ -212,8 +212,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         processImportModule(node);
-      } else if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
-        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
+        (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
         processImport(node, pagesDir, transformLog.errors);
       }
       if (ts.isStructDeclaration(node)) {
