@@ -99,7 +99,9 @@ import {
   createParentParameter,
   processBuildMember
 } from './process_component_class';
-import processImport from './process_import';
+import processImport, {
+  processImportModule
+} from './process_import';
 import {
   processComponentBlock,
   bindComponentAttr,
@@ -207,10 +209,15 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     }
 
     function processAllNodes(node: ts.Node): ts.Node {
-      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
-        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
+        ts.isImportDeclaration(node)) {
+        processImportModule(node);
+      } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
+        (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
         processImport(node, pagesDir, transformLog.errors);
-      } else if (ts.isStructDeclaration(node)) {
+      }
+      if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         node = processComponentClass(node, context, transformLog.errors, program);
