@@ -204,5 +204,41 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    // process_component_class
+    case 'validateDecorators': {
+      expect(transformLog.errors[0].message).to.be.equal(`The static variable of struct cannot be used together with built-in decorators.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'processComponentMethod': {
+      expect(transformLog.errors[0].message).to.be.equal(`The 'build' method can not have arguments.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case '@StylesParamChack': {
+      expect(transformLog.errors[0].message).to.be.equal(`@Styles can't have parameters.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'updateHeritageClauses': {
+      expect(transformLog.errors[0].message).to.be.equal(`The struct component is not allowed to extends other class or implements other interface.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateBuildMethodCount': {
+      expect(transformLog.errors[0].message).to.be.equal(`struct 'Index' must be at least or at most one 'build' method.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateHasController': {
+      expect(transformLog.errors[0].message).to.be.equal(`@CustomDialog component should have a property of the CustomDialogController type.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'checkAny': {
+      expect(transformLog.errors[0].message).to.be.equal(`Please define an explicit type, not any.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
   }
 }
