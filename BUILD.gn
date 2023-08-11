@@ -136,10 +136,8 @@ ets_loader_sources = [
 ]
 
 ohos_copy("ets_loader_deps") {
-  sources = [
-    "//arkcompiler/ets_frontend/arkguard/build_package/arkguard-1.0.0.tgz",
-    "//third_party/typescript/build_package/ohos-typescript-4.2.3-r2.tgz",
-  ]
+  sources =
+      [ "//third_party/typescript/build_package/ohos-typescript-4.2.3-r2.tgz" ]
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
