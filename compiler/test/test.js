@@ -149,5 +149,96 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    // process_component_build.ts
+    case 'rootContainerCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`There should have a root container component.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'arkUIComponent': {
+      expect(transformLog.errors[0].message).to.be.equal(`Only UI component syntax can be written in build method.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case '@BuilderParam': {
+      expect(transformLog.errors[0].message).to.be.equal(
+        `In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'forEachParamCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`There should be wrapped in curly braces in ForEach.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'ifComponent': {
+      expect(transformLog.errors[0].message).to.be.equal(`Condition expression cannot be null in if statement.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      expect(transformLog.errors[1].message).to.be.equal(`Then statement cannot be null in if statement.`);
+      expect(transformLog.errors[1].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'idCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(
+        `The current component id "1" is duplicate with /home/bojiang/openharmony/developtools/ace_ets2bundle/compiler/idCheck.ets:7:21.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'arkUIStandard': {
+      expect(transformLog.errors[0].message).to.be.equal(`'Text('Hello').onCilck' does not meet UI component syntax.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'stateStyles': {
+      expect(transformLog.errors[0].message).to.be.equal(`.stateStyles doesn't conform standard.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'buttonCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`The Button component with a label parameter can not have any child.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'attributeCheck': {
+      expect(transformLog.errors[0].message).to.be.equal(`'ForEach(this.arr, () =>{}, this.arr[0]).h' does not meet UI component syntax.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    // process_component_class
+    case 'validateDecorators': {
+      expect(transformLog.errors[0].message).to.be.equal(`The static variable of struct cannot be used together with built-in decorators.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'processComponentMethod': {
+      expect(transformLog.errors[0].message).to.be.equal(`The 'build' method can not have arguments.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case '@StylesParamChack': {
+      expect(transformLog.errors[0].message).to.be.equal(`@Styles can't have parameters.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'updateHeritageClauses': {
+      expect(transformLog.errors[0].message).to.be.equal(`The struct component is not allowed to extends other class or implements other interface.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateBuildMethodCount': {
+      expect(transformLog.errors[0].message).to.be.equal(`struct 'Index' must be at least or at most one 'build' method.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateHasController': {
+      expect(transformLog.errors[0].message).to.be.equal(`@CustomDialog component should have a property of the CustomDialogController type.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'checkAny': {
+      expect(transformLog.errors[0].message).to.be.equal(`Please define an explicit type, not any.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
   }
 }
