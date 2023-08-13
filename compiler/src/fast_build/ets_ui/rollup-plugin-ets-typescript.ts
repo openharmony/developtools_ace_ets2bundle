@@ -239,10 +239,13 @@ async function transform(code: string, id: string) {
   if (!targetSourceFile) {
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
     // init TypeChecker to run binding
-    tsProgram.getTypeChecker();
+    globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
   } else {
+    if (!storedFileInfo.reUseProgram) {
+      globalProgram.checker = globalProgram.program.getTypeChecker();
+    }
     storedFileInfo.reUseProgram = true;
   }
 
