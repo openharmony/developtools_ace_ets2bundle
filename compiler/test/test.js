@@ -180,7 +180,7 @@ function assertError(fileName) {
     }
     case 'idCheck': {
       expect(transformLog.errors[0].message).to.be.equal(
-        `The current component id "1" is duplicate with /home/bojiang/openharmony/developtools/ace_ets2bundle/compiler/idCheck.ets:7:21.`);
+        `The current component id "1" is duplicate with ${path.resolve(__dirname, '../idCheck.ets')}:7:21.`);
       expect(transformLog.errors[0].type).to.be.equal('WARN');
       break;
     }
