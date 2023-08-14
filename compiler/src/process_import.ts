@@ -796,33 +796,35 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else {
     name = usedNode.escapedText.toString();
   }
-  if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name) &&
-    isCustomComponent(originNode, structDecorator)) {
-    let isDETS: boolean = false;
-    componentCollection.customComponents.add(name);
-    const ComponentSet: IComponentSet = getComponentSet(originNode, false);
-    while (originNode) {
-      if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
-        isDETS = true;
+  if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
+    if (isCustomDialogClass(originNode)) {
+      componentCollection.customDialogs.add(name);
+    }
+    if (isCustomComponent(originNode, structDecorator)) {
+      let isDETS: boolean = false;
+      componentCollection.customComponents.add(name);
+      const ComponentSet: IComponentSet = getComponentSet(originNode, false);
+      while (originNode) {
+        if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
+          isDETS = true;
+        }
+        originNode = originNode.parent;
       }
-      originNode = originNode.parent;
+      if (isDETS) {
+        storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
+      }
+      if (structDecorator.hasRecycle) {
+        storedFileInfo.getCurrentArkTsFile().recycleComponents.add(name);
+      }
+      setDependencies(name, ComponentSet.links, ComponentSet.properties,
+        ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
+        ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
+        ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
+        ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
+        structDecorator);
     }
-    if (isDETS) {
-      storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
-    }
-    if (structDecorator.hasRecycle) {
-      storedFileInfo.getCurrentArkTsFile().recycleComponents.add(name);
-    }
-    setDependencies(name, ComponentSet.links, ComponentSet.properties,
-      ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
-      ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
-      ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-      ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
-      structDecorator);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
-  } else if (isCustomDialogClass(originNode)) {
-    componentCollection.customDialogs.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(name);
     GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
