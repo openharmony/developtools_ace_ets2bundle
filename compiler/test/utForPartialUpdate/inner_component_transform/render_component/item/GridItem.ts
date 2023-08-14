@@ -48,20 +48,15 @@ class ParentView extends ViewPU {
             Grid.create();
         }, Grid);
         {
-            const isLazyCreate = true && (Grid.willUseProxy() === true);
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                GridItem.create(deepRenderFunction, isLazyCreate, 'true');
+                GridItem.create(() => { }, false, 'true');
                 GridItem.width(200);
                 GridItem.height(100);
                 if (!isInitialRender) {
                     GridItem.pop();
                 }
                 ViewStackProcessor.StopGetAccessRecording();
-            };
-            const observedShallowRender = () => {
-                this.observeComponentCreation(itemCreation);
-                GridItem.pop();
             };
             const observedDeepRender = () => {
                 this.observeComponentCreation(itemCreation);
@@ -74,24 +69,7 @@ class ParentView extends ViewPU {
                 Text.pop();
                 GridItem.pop();
             };
-            const deepRenderFunction = (elmtId, isInitialRender) => {
-                itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
-                this.observeComponentCreation2((elmtId, isInitialRender) => {
-                    Text.create('xx');
-                    if (isInitialRender) {
-                        Text.width(100);
-                    }
-                }, Text);
-                Text.pop();
-                GridItem.pop();
-            };
-            if (isLazyCreate) {
-                observedShallowRender();
-            }
-            else {
-                observedDeepRender();
-            }
+            observedDeepRender();
         }
         Grid.pop();
     }

@@ -257,10 +257,9 @@ class MyComponent extends ViewPU {
                 this.ifElseBranchUpdateFunction(0, () => {
                     if (!If.canRetake('id8')) {
                         {
-                            const isLazyCreate = true;
                             const itemCreation = (elmtId, isInitialRender) => {
                                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                                ListItem.create(deepRenderFunction, isLazyCreate);
+                                ListItem.create(deepRenderFunction, true);
                                 ListItem.id('id8');
                                 if (!isInitialRender) {
                                     ListItem.pop();

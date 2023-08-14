@@ -332,10 +332,9 @@ class MyComponent extends ViewPU {
             const forEachItemGenFunction = _item => {
                 const item = _item;
                 {
-                    const isLazyCreate = true;
                     const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        ListItem.create(deepRenderFunction, isLazyCreate);
+                        ListItem.create(deepRenderFunction, true);
                         ListItem.editable(true);
                         if (!isInitialRender) {
                             ListItem.pop();
