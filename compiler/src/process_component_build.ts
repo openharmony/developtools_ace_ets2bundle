@@ -92,6 +92,8 @@ import {
   RESOURCE_NAME_TYPE,
   XCOMPONENT_SINGLE_QUOTATION,
   XCOMPONENT_DOUBLE_QUOTATION,
+  XCOMPONENTTYPE,
+  XCOMPONENTTYPE_CONTAINER,
   BIND_OBJECT_PROPERTY,
   TRUE,
   FALSE,
@@ -1551,14 +1553,26 @@ function checkContainer(name: string, node: ts.Node): boolean {
 function checkComponentType(properties: ts.PropertyAssignment[]): boolean {
   let flag: boolean = false;
   properties.forEach(item => {
-    if (item.name && ts.isIdentifier(item.name) && item.name.getText() === RESOURCE_NAME_TYPE &&
-      item.initializer && ts.isStringLiteral(item.initializer) &&
-      (item.initializer.getText() == XCOMPONENT_SINGLE_QUOTATION ||
-      item.initializer.getText() == XCOMPONENT_DOUBLE_QUOTATION)) {
+    if (isXComponentContainer(item)) {
       flag = true;
     }
   });
   return flag;
+}
+
+function isXComponentContainer(item: ts.PropertyAssignment): boolean {
+  return item.name && ts.isIdentifier(item.name) && item.name.getText() === RESOURCE_NAME_TYPE &&
+    item.initializer && ((ts.isStringLiteral(item.initializer) &&
+    // value = 'component'
+    (item.initializer.getText() === XCOMPONENT_SINGLE_QUOTATION ||
+    item.initializer.getText() === XCOMPONENT_DOUBLE_QUOTATION)) ||
+    // value = 1
+    (ts.isNumericLiteral(item.initializer) && item.initializer.getText() === '1') ||
+    // value = XComponentType.COMPONENT
+    (ts.isPropertyAccessExpression(item.initializer) && item.initializer.expression &&
+    ts.isIdentifier(item.initializer.expression) && item.initializer.name &&
+    ts.isIdentifier(item.initializer.name) && item.initializer.expression.getText() === XCOMPONENTTYPE) &&
+    item.initializer.name.getText() === XCOMPONENTTYPE_CONTAINER);
 }
 
 interface AnimationInfo {
