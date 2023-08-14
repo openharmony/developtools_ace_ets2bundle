@@ -240,5 +240,83 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    // process_component_member
+    case 'processWatch': {
+      expect(transformLog.errors[0].message).to.be.equal(`Cannot find name 'onWatch' in struct 'Index'.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'updateBuilderParamProperty': {
+      expect(transformLog.errors[0].message).to.be.equal(`BuilderParam property can only initialized by Builder function.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateMultiDecorators': {
+      expect(transformLog.errors[0].message).to.be.equal(`The property 'lang' cannot have mutilate state management decorators.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateDecoratorNonSingleKey': {
+      expect(transformLog.errors[0].message).to.be.equal(`The decorator StorageLink should have a single key.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validatePropertyNonDefaultValue': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @State property 'message' must be specified a default value.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validatePropertyDefaultValue': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @Link property 'message' cannot be specified a default value.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validatePropertyNonType': {
+      expect(transformLog.errors[0].message).to.be.equal(`The property 'message' must specify a type.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateNonObservedClassType': {
+      expect(transformLog.errors[0].message).to.be.equal(
+        `The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateHasIllegalDecoratorInEntry': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @Entry component 'Index' cannot have the @Prop property 'message'.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'validateHasIllegalQuestionToken': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @ObjectLink property 'message' cannot be an optional parameter.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'validateForbiddenUseStateType': {
+      expect(transformLog.errors[0].message).to.be.equal(`The @State property 'message' cannot be a 'CustomDialogController' object.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateDuplicateDecorator': {
+      expect(transformLog.errors[1].message).to.be.equal(
+        `The decorator '@opacity' cannot have the same name as the built-in style attribute 'opacity'.`);
+      expect(transformLog.errors[1].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateWatchDecorator': {
+      expect(transformLog.errors[0].message).to.be.equal(`Regular variable 'message' can not be decorated with @Watch.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateWatchParam': {
+      expect(transformLog.errors[0].message).to.be.equal(`The parameter should be a string.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateCustomDecorator': {
+      expect(transformLog.errors[0].message).to.be.equal(`The inner decorator @State cannot be used together with custom decorator.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
   }
 }

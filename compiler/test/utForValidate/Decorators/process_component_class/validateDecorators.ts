@@ -19,6 +19,7 @@ exports.source = `
 struct Index {
 @State  static message: string = 'Hello';
   build() {
+    Row() {}
   }
 }
 `
