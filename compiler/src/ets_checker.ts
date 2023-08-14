@@ -121,7 +121,9 @@ function setCompilerOptions(resolveModulePaths: string[]) {
       'lib.es2020.d.ts'
     ],
     'types': projectConfig.compilerTypes,
-    'etsLoaderPath': projectConfig.etsLoaderPath
+    'etsLoaderPath': projectConfig.etsLoaderPath,
+    'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
+    'isCompatibleVersion':  getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
