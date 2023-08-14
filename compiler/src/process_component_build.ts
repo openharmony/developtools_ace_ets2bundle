@@ -84,10 +84,7 @@ import {
   __LAZYFOREACHITEMIDFUNC,
   FOREACHUPDATEFUNCTION,
   COMPONENT_INITIAl_RENDER_FUNCTION,
-  GRIDITEM_COMPONENT,
-  GRID_COMPONENT,
-  WILLUSEPROXY,
-  GLOBAL_THIS,
+  LIST_ITEM,
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
   CARD_LOG_TYPE_COMPONENTS,
@@ -795,7 +792,8 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
-  const itemCreateStatement: ts.Statement = createItemCreate(nameResult);
+  const isLazyCreate: boolean = checkLazyCreate(node, nameResult);
+  const itemCreateStatement: ts.Statement = createItemCreate(nameResult, isLazyCreate);
   itemRenderInnerStatements.push(itemCreateStatement);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
@@ -810,41 +808,45 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
   let generateItem: ts.IfStatement | ts.Block;
   if (idName) {
     generateItem = ifRetakeId([createItemBlock(
-      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
+      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, isLazyCreate,
       immutableStatements)], idName);
   } else {
     generateItem = createItemBlock(
-      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, innerCompStatements,
+      node, itemRenderInnerStatements, deepItemRenderInnerStatements, nameResult, isLazyCreate,
       immutableStatements);
   }
   innerCompStatements.push(generateItem);
 }
 
-function createItemCreate(nameResult: NameResult): ts.Statement {
+function createItemCreate(nameResult: NameResult, isLazyCreate: boolean): ts.Statement {
+  const itemCreateArgs: ts.Expression[] = [];
+  if (isLazyCreate) {
+    itemCreateArgs.push(ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createTrue());
+  } else {
+    itemCreateArgs.push(
+      ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock([], false)),
+      ts.factory.createFalse()
+    );
+  }
+  itemCreateArgs.push(...nameResult.arguments);
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(nameResult.name),
-      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
-    [ts.factory.createIdentifier(DEEPRENDERFUNCTION), ts.factory.createIdentifier(ISLAZYCREATE),
-      ...nameResult.arguments]));
-}
-
-interface LazyItemResult {
-  isLazyCreate: boolean;
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, itemCreateArgs));
 }
 
 function createItemBlock(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
   deepItemRenderInnerStatements: ts.Statement[],
-  nameResult: NameResult, innerCompStatements: ts.Statement[],
+  nameResult: NameResult, isLazyCreate: boolean,
   immutableStatements: ts.Statement[]
 ): ts.Block {
-  const lazyItemResult: LazyItemResult = { isLazyCreate: false };
   const blockNode: ts.Statement[] = [
-    createIsLazyCreate(node, lazyItemResult),
     createItemCreation(node, itemRenderInnerStatements, nameResult, immutableStatements)
   ];
-  if (lazyItemResult.isLazyCreate) {
+  if (isLazyCreate) {
     blockNode.push(
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -859,73 +861,26 @@ function createItemBlock(
     );
   } else {
     blockNode.push(
-      createObservedShallowRender(node),
       createObservedDeepRender(node, deepItemRenderInnerStatements),
-      createDeepRenderFunction(node, deepItemRenderInnerStatements),
-      ts.factory.createIfStatement(
-        ts.factory.createIdentifier(ISLAZYCREATE),
-        ts.factory.createBlock(
-          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-            ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, []))], true),
-        ts.factory.createBlock(
-          [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-            ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))], true)
-      )
+      ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))
     );
   }
   return ts.factory.createBlock(blockNode, true);
 }
 
-function createIsLazyCreate(node: ts.ExpressionStatement, lazyItemResult: LazyItemResult): ts.VariableStatement {
-  const etsComponent: ts.EtsComponentExpression = getEtsComponentExpression(node);
-  if (etsComponent) {
-    if ((etsComponent.expression as ts.Identifier).escapedText.toString() === GRIDITEM_COMPONENT) {
-      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
-        return createIsLazyWithValue(false);
-      } else if (isLazyForEachChild(node)) {
-        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
-            ts.factory.createBinaryExpression(ts.factory.createBinaryExpression(
-              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
-                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(GLOBAL_THIS),
-                  ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
-                  ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
-              ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()),
-            ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-            ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
-              ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)),
-              undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-              ts.factory.createTrue()))))],ts.NodeFlags.Const));
-      } else {
-        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
-            ts.factory.createBinaryExpression(
-              ts.factory.createTrue(), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-              ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
-                ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-                  ts.factory.createIdentifier(GRID_COMPONENT), ts.factory.createIdentifier(WILLUSEPROXY)
-                ), undefined, []), ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                ts.factory.createTrue()))))], ts.NodeFlags.Const));
-      }
-    } else {
-      if (etsComponent.arguments[0] && (etsComponent.arguments[0] as ts.StringLiteral).text === 'false') {
-        return createIsLazyWithValue(false);
-      } else if (isLazyForEachChild(node)) {
-        return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-          [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE), undefined, undefined,
-            ts.factory.createBinaryExpression(ts.factory.createParenthesizedExpression(
-              ts.factory.createBinaryExpression(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(
-                GLOBAL_THIS), ts.factory.createIdentifier(__LAZYFOREACHITEMGENFUNCTION)), ts.factory.createToken(
-                ts.SyntaxKind.ExclamationEqualsEqualsToken), ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED))),
-            ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createTrue()))],
-          ts.NodeFlags.Const));
-      } else {
-        lazyItemResult.isLazyCreate = true;
-        return createIsLazyWithValue(true);
-      }
+function checkLazyCreate(node: ts.ExpressionStatement, nameResult: NameResult): boolean {
+  if (nameResult.name === LIST_ITEM) {
+    if (nameResult.arguments.length && ts.isStringLiteral(nameResult.arguments[0]) &&
+      nameResult.arguments[0].text === 'false') {
+      return false;
     }
+    if (isLazyForEachChild(node)) {
+      return false;
+    }
+    return true;
   }
+  return false;
 }
 
 function createItemCreation(
@@ -1012,34 +967,6 @@ function createDeepRenderFunction(
                 [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
               )),
               ...deepItemRenderInnerStatements,
-              createComponent(node, COMPONENT_POP_FUNCTION).newNode
-            ],
-            true
-          )
-        )
-      )],
-      ts.NodeFlags.Const
-    )
-  );
-}
-
-function createObservedShallowRender(node: ts.ExpressionStatement): ts.VariableStatement {
-  return ts.factory.createVariableStatement(undefined,
-    ts.factory.createVariableDeclarationList(
-      [ts.factory.createVariableDeclaration(
-        ts.factory.createIdentifier(OBSERVEDSHALLOWRENDER), undefined, undefined,
-        ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-          ts.factory.createBlock(
-            [
-              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                ts.factory.createPropertyAccessExpression(
-                  ts.factory.createThis(),
-                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-                ),
-                undefined,
-                [ts.factory.createIdentifier(ITEMCREATION)]
-              )),
               createComponent(node, COMPONENT_POP_FUNCTION).newNode
             ],
             true
@@ -2733,18 +2660,6 @@ function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
     return true;
   }
   return false;
-}
-
-function createIsLazyWithValue(value: boolean): ts.VariableStatement {
-  if (value) {
-    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-        undefined, undefined, ts.factory.createTrue())], ts.NodeFlags.Const));
-  } else {
-    return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-      [ts.factory.createVariableDeclaration(ts.factory.createIdentifier(ISLAZYCREATE),
-        undefined, undefined, ts.factory.createFalse())], ts.NodeFlags.Const));
-  }
 }
 
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
