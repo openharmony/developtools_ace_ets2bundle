@@ -18,8 +18,10 @@ exports.source = `
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+ @State message: string = 'Hello'
+ @State message: CustomDialogController
+  build() {
+    Row() {}
   }
 }
 `

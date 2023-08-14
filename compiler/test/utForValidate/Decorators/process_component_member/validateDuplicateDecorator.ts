@@ -18,8 +18,9 @@ exports.source = `
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+ @State @opacity: string = 'Hello';
+  build() {
+    Row() {}
   }
 }
 `

@@ -14,12 +14,12 @@
  */
 
 exports.source = `
-// @ts-nocheck
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+  @State @Watch('onWatch') message: Array<string> = ['1','2','3','4','5']
+  build() {
+    Row() {}
   }
 }
 `

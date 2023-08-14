@@ -18,8 +18,9 @@ exports.source = `
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+ @StorageLink('languageCode')@StorageProp('languageCode') lang: string = 'en'
+  build() {
+    Row() {}
   }
 }
 `
