@@ -681,7 +681,11 @@ class ProcessFileInfo {
 
   addFileCacheInfo(id: string, fileCacheInfo: fileInfo) {
     if (fileCacheInfo && process.env.compileMode === 'moduleJson') {
-      fileCacheInfo.fileToResourceList = new Set(fileCacheInfo.fileToResourceList);
+      if (Array.isArray(fileCacheInfo.fileToResourceList)) {
+        fileCacheInfo.fileToResourceList = new Set(fileCacheInfo.fileToResourceList);
+      } else {
+        fileCacheInfo.fileToResourceList = new Set();
+      }
     }
     if (id.match(/(?<!\.d)\.(ets)$/)) {
       this.wholeFileInfo[id] = new SpecialArkTSFileInfo(fileCacheInfo);
