@@ -19,6 +19,8 @@ exports.source = `
 struct CustomDialogUser {
   @State message: any = 'Hello world';
   build() {
+    Row() {
+    }
   }
 }
 `

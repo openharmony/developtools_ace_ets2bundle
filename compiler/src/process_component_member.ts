@@ -716,7 +716,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
   if (judgeBuilderParamAssignedByBuilder(node)) {
     log.push({
       type: LogType.ERROR,
-      message: `BuilderParam property can only initialized by Builder function`,
+      message: `BuilderParam property can only initialized by Builder function.`,
       pos: node.getStart()
     });
   }

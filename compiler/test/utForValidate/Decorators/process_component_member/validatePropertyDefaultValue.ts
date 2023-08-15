@@ -18,8 +18,20 @@ exports.source = `
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+  @State message: string = 'Hi'
+  build() {
+    Row() {
+      Child({message: this.message})
+    }
+   
+  }
+}
+
+@Component
+struct Child {
+ @Link message:string = 'Hello'
+  build() {
+    Row() {}
   }
 }
 `
