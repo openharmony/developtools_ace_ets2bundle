@@ -14,12 +14,21 @@
  */
 
 exports.source = `
-// @ts-nocheck
+@Component
+struct Child {
+  @BuilderParam componentBuilder: string = 'Hello';
+  build() {
+    Row() {}
+  }
+}
+
 @Entry
 @Component
-struct Index {
-  build(a) {
-    Row(){}
+struct Parent {
+  build() {
+    Column() {
+      Child()
+    }
   }
 }
 `

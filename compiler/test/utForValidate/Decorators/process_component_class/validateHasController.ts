@@ -17,6 +17,7 @@ exports.source = `
 @CustomDialog
 struct CustomDialogExample {
   build() {
+    Row() {}
   }
 }
 
@@ -24,6 +25,7 @@ struct CustomDialogExample {
 @Component
 struct CustomDialogUser {
   build() {
+    Row() {}
   }
 }
 `

@@ -19,6 +19,7 @@ struct CustomContainer {
   // @BuilderParam closer: () => void
 
   build() {
+    Row() {}
   }
 }
 

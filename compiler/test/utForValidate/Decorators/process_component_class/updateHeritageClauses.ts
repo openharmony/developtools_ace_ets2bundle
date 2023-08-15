@@ -25,6 +25,7 @@ class TestCase {
 @Component
 struct Index extends TestCase{
     build() {
+      Row(){}
     }
 }
 `

@@ -18,8 +18,9 @@ exports.source = `
 @Entry
 @Component
 struct Index {
-  build(a) {
-    Row(){}
+ @State @Watch(111) message: string = 'Hello'
+  build() {
+    Row() {}
   }
 }
 `
