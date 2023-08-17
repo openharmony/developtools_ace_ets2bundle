@@ -887,6 +887,8 @@ export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: 
       }
     }
     return false;
+  } else if (oldRawfile.size === 0 && oldRawfile.size === newRawfile.size) {
+    return false;
   } else {
     return true;
   }
