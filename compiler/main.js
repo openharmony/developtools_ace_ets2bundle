@@ -778,8 +778,12 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'true') {
         partialUpdateConfig.allowAny = true;
       }
+      if (item.name && item.name === 'ExecuteArkTSLinter' &&
+        item.value && item.value === 'false') {
+        partialUpdateConfig.executeArkTSLinter = false;
+      }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
-        partialUpdateConfig.allowAny;
+        partialUpdateConfig.allowAny && !partialUpdateConfig.executeArkTSLinter;
     });
   }
 }
@@ -823,6 +827,7 @@ const partialUpdateConfig = {
   partialUpdateMode: false,
   builderCheck: true,
   allowAny: false,
+  executeArkTSLinter: true,
 };
 
 exports.globalProgram = globalProgram;
