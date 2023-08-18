@@ -322,6 +322,43 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
+    // process_custom_component
+    case 'checkBuilder$$': {
+      expect(transformLog.errors[0].message).to.be.equal(`Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'validateForbiddenToInitViaParam': {
+      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' cannot initialize here (forbidden to specify).`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateMandatoryToInitViaParam': {
+      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' is missing (mandatory to specify).`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'validateInitDecorator': {
+      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' is missing assignment or initialization.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateIllegalInitFromParent': {
+      expect(transformLog.errors[0].message).to.be.equal(`The regular property 'message' cannot be assigned to the @Link property 'message'.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'validateNonLinkWithDollar': {
+      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' cannot initialize using '$' to create a reference to a variable.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    // process_import
+    case 'validateModuleName': {
+      expect(transformLog.errors[0].message).to.be.equal(`The module name 'Button' can not be the same as the inner component name.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
     case 'notComponent':{
       expect(transformLog.errors[0].message).to.be.equal(`A struct should use decorator '@Component'.`);
       expect(transformLog.errors[0].type).to.be.equal('WARN');
@@ -350,6 +387,11 @@ function assertError(fileName) {
     case 'vaildateDecorator':{
       expect(transformLog.errors[0].message).to.be.equal(`The struct 'Index' use invalid decorator.`);
       expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'state':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Button' cannot have the same name as the built-in component 'Button'.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
   }
