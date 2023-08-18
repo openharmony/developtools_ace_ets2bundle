@@ -352,5 +352,10 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('WARN');
       break;
     }
+    case 'state':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Button' cannot have the same name as the built-in component 'Button'.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
   }
 }
