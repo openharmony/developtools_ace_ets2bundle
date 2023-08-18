@@ -43,6 +43,7 @@ export const AUXILIARY: string = 'auxiliary';
 export const HAP_PACKAGE: string = '0';
 export const PROJECT_PACKAGE: string = '1';
 export const EXTNAME_ETS: string = '.ets';
+export const EXTNAME_D_ETS: string = '.d.ets';
 export const EXTNAME_JS: string = '.js';
 export const EXTNAME_TS: string = '.ts';
 export const EXTNAME_JS_MAP: string = '.js.map';
