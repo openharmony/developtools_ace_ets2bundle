@@ -208,6 +208,16 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       return entryNodeKey;
     }
 
+    function isESObjectNode(node: ts.Node): boolean {
+      if (node.kind === ts.SyntaxKind.TypeReference) {
+        const n: TypeReferenceNode = node as TypeReferenceNode;
+        if (n.typeName?.kind === ts.SyntaxKind.Identifier && (n.typeName as ts.Identifier).escapedText === 'ESObject') {
+          return true;
+        }
+      }
+      return false;
+    }
+
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
@@ -266,6 +276,8 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = processAnimateTo(node as ts.CallExpression);
       } else if (isCustomDialogController(node)) {
         node = createCustomDialogController(node.parent, node, transformLog.errors);
+      } else if (isESObjectNode(node)) {
+        node = ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
