@@ -63,6 +63,10 @@ export class ModuleSourceFile {
     ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source));
   }
 
+  static getSourceFiles(): ModuleSourceFile[] {
+    return ModuleSourceFile.sourceFiles;
+  }
+
   static async processModuleSourceFiles(rollupObject: any) {
     this.initPluginEnv(rollupObject);
     for (const source of ModuleSourceFile.sourceFiles) {
@@ -81,6 +85,11 @@ export class ModuleSourceFile {
 
     ModuleSourceFile.sourceFiles = [];
   }
+
+  getModuleId(): string {
+    return this.moduleId;
+  }
+
   private async writeSourceFile() {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
