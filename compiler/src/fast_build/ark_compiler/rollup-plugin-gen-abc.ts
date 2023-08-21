@@ -18,6 +18,8 @@ import { generateBundleAbc } from './generate_bundle_abc';
 import { generateModuleAbc } from './generate_module_abc';
 import { transformForModule } from './transform';
 import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
+import { checkIfJsImportingArkts } from './check_import_module';
+import { compilerOptions } from '../../ets_checker';
 
 export function genAbc() {
   return {
@@ -28,6 +30,15 @@ export function genAbc() {
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
+    beforeBuildEnd: {
+      // [pre] means this handler running in first at the stage of beforeBuildEnd.
+      order: 'pre',
+      handler() {
+        if (compilerOptions.needDoArkTsLinter) {
+          checkIfJsImportingArkts(this);
+        }
+      }
+    },
     buildEnd: generateModuleAbc,
     generateBundle: generateBundleAbc
   };
