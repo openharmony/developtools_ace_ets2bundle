@@ -164,7 +164,13 @@ function handlePluginCompileComponent(jsonData) {
     column: parseInt(JSON.parse(receivedMsg.data.offset).column),
     fileName: receivedMsg.data.filePath || ''
   };
-  processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
+  try {
+    processComponentChild(sourceNode.statements[0].members[1].body, previewStatements, log, supplement);
+  } catch (e) {
+    log.push({
+      message: e.stack
+    });
+  }
   supplement.isAcceleratePreview = false;
   const newSource = ts.factory.updateSourceFile(sourceNode, previewStatements);
   const transformedSourceFile = transformResourceNode(newSource, log);
