@@ -981,3 +981,41 @@ export function isStandardMode(): boolean {
   }
   return false;
 }
+
+function initEtsStandaloneCheckerConfig(logger, config): void {
+  fastBuildLogger = logger;
+  if (config.packageManagerType === 'ohpm') {
+    config.packageDir = 'oh_modules';
+    config.packageJson = 'oh-package.json5';
+  } else {
+    config.packageDir = 'node_modules';
+    config.packageJson = 'package.json';
+  }
+  if (config.aceModuleJsonPath && fs.existsSync(config.aceModuleJsonPath)) {
+    process.env.compileMode = 'moduleJson';
+  }
+  Object.assign(projectConfig, config);
+}
+
+export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
+  initEtsStandaloneCheckerConfig(logger, projectConfig);
+  const rootFileNames: string[] = [];
+  const resolveModulePaths: string[] = [];
+  Object.values(entryObj).forEach((fileName: string) => {
+    rootFileNames.push(path.resolve(fileName));
+  });
+  if (projectConfig.resolveModulePaths && Array.isArray(projectConfig.resolveModulePaths)) {
+    resolveModulePaths.push(...projectConfig.resolveModulePaths);
+  }
+  const filterFiles: string[] = filterInput(rootFileNames);
+  languageService = createLanguageService(filterFiles, resolveModulePaths);
+  globalProgram.program = languageService.getProgram();
+  runArkTSLinter();
+  const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+    .getSyntacticDiagnostics()
+    .concat(globalProgram.program.getSemanticDiagnostics())
+    .concat(globalProgram.program.getDeclarationDiagnostics());
+  allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+    printDiagnostic(diagnostic);
+  });
+}
