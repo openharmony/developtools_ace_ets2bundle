@@ -25,10 +25,12 @@ const { terserPlugin } = require('./lib/fast_build/ark_compiler/terser-plugin');
 const { babelPlugin } = require('./lib/fast_build/ark_compiler/babel-plugin');
 const { JSBUNDLE, RELEASE } = require('./lib/fast_build/ark_compiler/common/ark_define');
 const { generateConsumerObConfigFile } = require('./lib/fast_build/ark_compiler/common/ob_config_resolver');
+const { etsStandaloneChecker } = require('./lib/ets_checker');
 
 exports.initConfig = initConfig;
 exports.getCleanConfig = getCleanConfig;
 exports.generateConsumerObConfigFile = generateConsumerObConfigFile;
+exports.etsStandaloneChecker = etsStandaloneChecker;
 
 // list of functional plugins
 exports.sdkPlugins = (projectConfig) => {
