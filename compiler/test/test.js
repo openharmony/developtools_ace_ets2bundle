@@ -52,7 +52,11 @@ function expectActual(name, filePath, checkError = false) {
   process.env.compiler = BUILD_ON;
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
-  validateUISyntax(source, afterProcess.content, `${name}.ets`);
+  if (checkError) {
+    transformLog.errors.push(...validateUISyntax(source, afterProcess.content, `${name}.ets`));
+  } else {
+    validateUISyntax(source, afterProcess.content, `${name}.ets`);
+  }
   const compilerOptions = ts.readConfigFile(
     path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
   Object.assign(compilerOptions, {
@@ -352,6 +356,41 @@ function assertError(fileName) {
     // process_import
     case 'validateModuleName': {
       expect(transformLog.errors[0].message).to.be.equal(`The module name 'Button' can not be the same as the inner component name.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'notComponent':{
+      expect(transformLog.errors[0].message).to.be.equal(`A struct should use decorator '@Component'.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'notConcurrent':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'IndexDecorator' use invalid decorator.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'notConcurrentFun':{
+      expect(transformLog.errors[0].message).to.be.equal(`@Concurrent can not be used on method. please use it on function declaration.`);
+      expect(transformLog.errors[0].type).to.be.equal('ERROR');
+      break;
+    }
+    case 'notDecorator':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'IndexDecorator' use invalid decorator.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'StylesDuplicate':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'StylesDuplicate' use invalid decorator.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'vaildateDecorator':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Index' use invalid decorator.`);
+      expect(transformLog.errors[0].type).to.be.equal('WARN');
+      break;
+    }
+    case 'state':{
+      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Button' cannot have the same name as the built-in component 'Button'.`);
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
