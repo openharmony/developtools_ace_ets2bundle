@@ -935,7 +935,8 @@ export function incrementWatchFile(watchModifiedFiles: string[],
 }
 
 function runArkTSLinter(): void {
-  const arkTSLinterDiagnostics = doArkTSLinter(globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic);
+  const arkTSLinterDiagnostics =
+    doArkTSLinter(globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic, !projectConfig.xtsMode);
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
@@ -944,23 +945,30 @@ function runArkTSLinter(): void {
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
-  const originalCategory = diagnostic.category;
-  if (isInOhModuleFile(diagnostic)) {
+  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic))) {
+    const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
+    printDiagnostic(diagnostic);
+    diagnostic.category = originalCategory;
+    return;
   }
   printDiagnostic(diagnostic);
-  diagnostic.category = originalCategory;
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
   return !!(diagnostics.file?.fileName.indexOf('/oh_modules/') !== -1);
 }
 
-export function getArkTSLinterMode(): ArkTSLinterMode {
-  if (projectConfig && projectConfig.compileMode !== ESMODULE) {
-    return ArkTSLinterMode.NOT_USE;
+function isInSDK(diagnostics: ts.Diagnostic): boolean {
+  const fileName = diagnostics.file?.fileName;
+  if (projectConfig.etsLoaderPath === undefined || fileName === undefined) {
+    return false;
   }
+  const sdkPath = path.resolve(projectConfig.etsLoaderPath, '../../../');
+  return path.resolve(fileName).startsWith(sdkPath);
+}
 
+export function getArkTSLinterMode(): ArkTSLinterMode {
   if (!partialUpdateConfig.executeArkTSLinter) {
     return ArkTSLinterMode.NOT_USE;
   }

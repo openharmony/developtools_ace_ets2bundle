@@ -39,7 +39,8 @@ export enum ArkTSLinterMode {
 
 export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
 
-export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc): ts.Diagnostic[] {
+export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc,
+  shouldWriteFile: boolean = true): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
   }
@@ -52,7 +53,7 @@ export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, p
   }
 
   if (arkTSMode === ArkTSLinterMode.COMPATIBLE_MODE) {
-    processArkTSLinterReportAsWarning(diagnostics, printDiagnostic);
+    processArkTSLinterReportAsWarning(diagnostics, printDiagnostic, shouldWriteFile);
   } else {
     processArkTSLinterReportAsError(diagnostics, printDiagnostic);
   }
@@ -66,8 +67,9 @@ function processArkTSLinterReportAsError(diagnostics: ts.Diagnostic[], printDiag
   });
 }
 
-function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc): void {
-  const filePath = writeOutputFile(diagnostics);
+function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc,
+  shouldWriteFile: boolean): void {
+  const filePath = shouldWriteFile ? writeOutputFile(diagnostics) : undefined;
   if (filePath === undefined) {
     diagnostics.forEach((diagnostic: ts.Diagnostic) => {
       diagnostic.category = ts.DiagnosticCategory.Warning;
@@ -77,7 +79,7 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
     return;
   }
   const logMessage = `Has ${diagnostics.length} ArkTS Linter Error. You can get the output in ${filePath}`;
-  const arkTSDiagnostic:ts.Diagnostic = {
+  const arkTSDiagnostic: ts.Diagnostic = {
     file: undefined,
     start: undefined,
     length: undefined,
