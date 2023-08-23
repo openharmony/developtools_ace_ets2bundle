@@ -94,14 +94,12 @@ class Index extends ViewPU {
     inner(param, parent = null) {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('Inner Builder Text');
-            if (isInitialRender) {
-                Text.bindPopup(false, {
-                    onStateChange: (e) => { },
-                    builder: { builder: () => {
-                            global.call(this);
-                        } }
-                });
-            }
+            Text.bindPopup(false, {
+                onStateChange: (e) => { },
+                builder: { builder: () => {
+                        global.call(this);
+                    } }
+            });
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {

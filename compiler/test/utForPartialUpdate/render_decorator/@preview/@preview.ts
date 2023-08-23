@@ -60,9 +60,7 @@ class HomePreviewComponent extends ViewPU {
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.value);
-            if (isInitialRender) {
-                Text.fontSize(50);
-            }
+            Text.fontSize(50);
         }, Text);
         Text.pop();
     }
