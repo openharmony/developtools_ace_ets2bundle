@@ -43,6 +43,7 @@ import {
   ALLOCATENEWELMETIDFORNEXTCOMPONENT,
   STATE_OBJECTLINK_DECORATORS,
   BASE_COMPONENT_NAME_PU,
+  OBSERVECOMPONENTCREATION,
   OBSERVECOMPONENTCREATION2,
   ISINITIALRENDER,
   UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
@@ -304,6 +305,8 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
       undefined, undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
       undefined, undefined, ts.factory.createNull()
     ));
+  }
+  if (isRecycleComponent || !partialUpdateConfig.optimizeComponent) {
     arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
     arrowBolck.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   }
@@ -315,7 +318,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
-  } else {
+  } else if (partialUpdateConfig.optimizeComponent) {
     observeArgArr.push(ts.factory.createNull());
   }
   return ts.factory.createBlock(
@@ -325,7 +328,8 @@ function createCustomComponent(newNode: ts.NewExpression, name: string,
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
         isRecycleComponent ?
           ts.factory.createIdentifier(OBSERVE_RECYCLE_COMPONENT_CREATION) :
-          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION2)
+          ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
+            OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
         ),
         undefined, observeArgArr as ts.Expression[]))
     ], true);
