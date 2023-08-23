@@ -744,26 +744,35 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
   if (nameResult) {
     blockArr.push(processDebug(node, nameResult, innerStatements, true));
   }
-  if (!isTransition && immutableStatements && immutableStatements.length) {
-    blockArr.push(createInitRenderStatement(node, immutableStatements));
+  if (!isTransition) {
+    createInitRenderStatement(node, immutableStatements, blockArr);
+  }
+  if (!partialUpdateConfig.optimizeComponent) {
+    blockArr.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
+    blockArr.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
+  }
+  const creationArgs: ts.Expression[] = [
+    ts.factory.createArrowFunction(undefined, undefined,
+      [
+        ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+          ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+        ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+          ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+      ], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock(blockArr, true)
+    )
+  ];
+  if (partialUpdateConfig.optimizeComponent) {
+    creationArgs.push(isTransition ? ts.factory.createNull() :
+      ts.factory.createIdentifier(componentName));
   }
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
-        ts.factory.createIdentifier(OBSERVECOMPONENTCREATION2)
-      ), undefined,
-      [ts.factory.createArrowFunction(undefined, undefined,
-        [
-          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-            ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
-          ts.factory.createParameterDeclaration(undefined, undefined, undefined,
-            ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
-        ], undefined,
-        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-        ts.factory.createBlock(blockArr, true)
-      ),
-      isTransition ? ts.factory.createNull() : ts.factory.createIdentifier(componentName)]
-    )
+        ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
+          OBSERVECOMPONENTCREATION2: OBSERVECOMPONENTCREATION)
+      ), undefined, creationArgs)
   );
 }
 
@@ -781,11 +790,31 @@ export function createViewStackProcessorStatement(propertyAccessName: string, el
 }
 
 function createInitRenderStatement(node: ts.Statement,
-  immutableStatements: ts.Statement[]): ts.Statement {
-  return ts.factory.createIfStatement(
-    ts.factory.createIdentifier(ISINITIALRENDER),
-    ts.factory.createBlock(immutableStatements, true)
-  );
+  immutableStatements: ts.Statement[], blockArr: ts.Statement[]): void {
+  if (partialUpdateConfig.optimizeComponent) {
+    if (immutableStatements && immutableStatements.length) {
+      blockArr.push(ts.factory.createIfStatement(
+        ts.factory.createIdentifier(ISINITIALRENDER),
+        ts.factory.createBlock(immutableStatements, true)
+      ));
+    }
+  } else {
+    blockArr.push(ts.factory.createIfStatement(
+      ts.factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.ExclamationToken,
+        ts.factory.createIdentifier(ISINITIALRENDER)
+      ),
+      ts.factory.createBlock(
+        [
+          ts.isExpressionStatement(node) ?
+            createComponent(node, COMPONENT_POP_FUNCTION).newNode : createIfPop()
+        ],
+        true
+      ),
+      immutableStatements && immutableStatements.length ?
+        ts.factory.createBlock(immutableStatements, true) : undefined
+    ));
+  }
 }
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
