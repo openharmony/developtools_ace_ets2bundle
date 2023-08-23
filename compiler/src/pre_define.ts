@@ -517,5 +517,3 @@ export const ROUTE_NAME: string = 'routeName';
 export const PAGE_PATH: string = 'pagePath';
 
 export const CAN_RETAKE: string = 'canRetake';
-
-export const COMPONENT_REUSE_ATTR: Set<string> = new Set(['Text', 'Image']);
