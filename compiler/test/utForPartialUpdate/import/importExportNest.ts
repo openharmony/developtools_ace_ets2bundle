@@ -188,9 +188,7 @@ class ImportTest extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.testText1);
-            if (isInitialRender) {
-                Text.fontSize(50);
-            }
+            Text.fontSize(50);
         }, Text);
         Text.pop();
         ImportNestAll_1.tExtend.bind(this)(20);
@@ -205,9 +203,7 @@ class ImportTest extends ViewPU {
         Button.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.testText4);
-            if (isInitialRender) {
-                Text.fontSize(50);
-            }
+            Text.fontSize(50);
         }, Text);
         Text.pop();
         {

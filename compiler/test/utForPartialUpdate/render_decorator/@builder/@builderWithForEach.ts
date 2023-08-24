@@ -129,9 +129,7 @@ class ComA extends ViewPU {
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('自定义组件');
-            if (isInitialRender) {
-                Text.fontSize(30);
-            }
+            Text.fontSize(30);
         }, Text);
         Text.pop();
         Row.pop();
