@@ -809,6 +809,9 @@ function partialUpdateController(minAPIVersion, metadata = null) {
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
   }
+  if (minAPIVersion < 10) {
+    partialUpdateConfig.optimizeComponent = false;
+  }
   if (metadata) {
     isPartialUpdate(metadata);
   }
@@ -828,6 +831,7 @@ const partialUpdateConfig = {
   builderCheck: true,
   allowAny: false,
   executeArkTSLinter: true,
+  optimizeComponent: true,
 };
 
 exports.globalProgram = globalProgram;
