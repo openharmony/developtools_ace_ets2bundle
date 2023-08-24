@@ -63,9 +63,7 @@ class ParentView extends ViewPU {
                 this.updateFuncByElmtId.set(elmtId, itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
-                    if (isInitialRender) {
-                        Text.width(100);
-                    }
+                    Text.width(100);
                 }, Text);
                 Text.pop();
                 ListItem.pop();

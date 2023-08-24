@@ -274,16 +274,12 @@ class CustomDialogUser extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('current countInitValue is: ' + this.countInitValue);
-            if (isInitialRender) {
-                Text.fontSize(20);
-            }
+            Text.fontSize(20);
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('current playingInitValue is: ' + this.playingInitValue);
-            if (isInitialRender) {
-                Text.fontSize(20);
-            }
+            Text.fontSize(20);
         }, Text);
         Text.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {

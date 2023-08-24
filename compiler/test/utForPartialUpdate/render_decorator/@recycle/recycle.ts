@@ -214,9 +214,7 @@ class HomeComponent extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("aa");
             Text.width(this.state_value);
-            if (isInitialRender) {
-                Text.height(100);
-            }
+            Text.height(100);
         }, Text);
         Text.pop();
         Column.pop();
@@ -523,9 +521,7 @@ class NormalComponent extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
             Text.width(this.width_value);
-            if (isInitialRender) {
-                Text.height(100);
-            }
+            Text.height(100);
         }, Text);
         Text.pop();
         Column.pop();

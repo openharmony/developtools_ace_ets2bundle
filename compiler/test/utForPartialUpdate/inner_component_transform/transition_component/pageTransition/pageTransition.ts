@@ -112,10 +112,8 @@ class PageTransitionExample1 extends ViewPU {
         }, Navigator);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('page transition');
-            if (isInitialRender) {
-                Text.width("100%");
-                Text.height("100%");
-            }
+            Text.width("100%");
+            Text.height("100%");
         }, Text);
         Text.pop();
         Navigator.pop();
