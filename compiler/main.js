@@ -809,7 +809,8 @@ function partialUpdateController(minAPIVersion, metadata = null) {
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
   }
-  if (minAPIVersion < 10) {
+  const MIN_VERSION_OPTIMIZE_COMPONENT = 10;
+  if (minAPIVersion < MIN_VERSION_OPTIMIZE_COMPONENT) {
     partialUpdateConfig.optimizeComponent = false;
   }
   if (metadata) {
