@@ -85,8 +85,7 @@ import {
   FileLog,
   getPossibleBuilderTypeParameter,
   storedFileInfo,
-  ExtendResult,
-  resourcesRawfile
+  ExtendResult
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -495,15 +494,13 @@ function getResourceDataNode(node: ts.CallExpression,
 }
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): void {
-  if (process.env.rawFileResource) {
-    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
-    if (!storedFileInfo.resourcesArr.has(node.arguments[0].text) && !previewLog.isAcceleratePreview) {
-      transformLog.errors.push({
-        type: LogType.WARN,
-        message: `No such '${node.arguments[0].text}' resource in current module.`,
-        pos: node.getStart()
-      });
-    }
+  if (process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
+    !previewLog.isAcceleratePreview) {
+    transformLog.errors.push({
+      type: LogType.WARN,
+      message: `No such '${node.arguments[0].text}' resource in current module.`,
+      pos: node.getStart()
+    });
   }
 }
 
