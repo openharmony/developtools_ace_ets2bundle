@@ -21,6 +21,7 @@ const JSON5 = require('json5');
 const {
   readFile,
   writeFileSync,
+  resourcesRawfile,
   storedFileInfo
 } = require('./lib/utils');
 
@@ -715,6 +716,9 @@ function checkAppResourcePath(appResourcePath, config) {
         config.cache.buildDependencies.config.push(appResourcePathSavePath);
       }
     }
+  }
+  if (process.env.rawFileResource) {
+    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
   }
 }
 
