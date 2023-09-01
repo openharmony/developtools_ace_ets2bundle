@@ -1454,30 +1454,22 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
       elseStatement = ts.factory.createBlock([elseStatement], true);
       elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isBuilder, isGlobalBuilder);
     }
-  } else if (partialUpdateConfig.partialUpdateMode) {
-    elseStatement = ts.factory.createBlock([
-      ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
-          ts.factory.createIdentifier(IFELSEBRANCHUPDATEFUNCTION)
-        ),
-        undefined,
-        [
-          ts.factory.createNumericLiteral(++id),
-          ts.factory.createArrowFunction(
+  } else if (partialUpdateConfig.partialUpdateMode && id === 0) {
+    elseStatement = ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier(COMPONENT_IF),
+              ts.factory.createIdentifier(COMPONENT_IF_BRANCH_ID_FUNCTION)
+            ),
             undefined,
-            undefined,
-            [],
-            undefined,
-            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            ts.factory.createBlock(
-              [],
-              true
-            )
+            [ts.factory.createNumericLiteral(++id)]
           )
-        ]
-      ))
-    ], true);
+        ),
+      ],
+      true
+    );
   }
   return elseStatement;
 }
