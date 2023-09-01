@@ -234,8 +234,7 @@ class MyComponent extends ViewPU {
                 });
             }
             else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
+                If.branchId(1);
             }
         }, If);
         If.pop();
@@ -281,8 +280,7 @@ class MyComponent extends ViewPU {
                 });
             }
             else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
+                If.branchId(1);
             }
         }, If);
         If.pop();
@@ -313,8 +311,7 @@ class MyComponent extends ViewPU {
                 });
             }
             else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
+                If.branchId(1);
             }
         }, If);
         If.pop();
@@ -363,16 +360,14 @@ class MyComponent extends ViewPU {
                             });
                         }
                         else {
-                            this.ifElseBranchUpdateFunction(1, () => {
-                            });
+                            If.branchId(1);
                         }
                     }, If);
                     If.pop();
                 });
             }
             else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
+                If.branchId(1);
             }
         }, If);
         If.pop();
@@ -404,8 +399,7 @@ class MyComponent extends ViewPU {
                 });
             }
             else {
-                this.ifElseBranchUpdateFunction(1, () => {
-                });
+                If.branchId(1);
             }
         }, If);
         If.pop();
