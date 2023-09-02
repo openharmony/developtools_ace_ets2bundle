@@ -945,7 +945,7 @@ function runArkTSLinter(): void {
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
-  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic))) {
+  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic) || isInApplicationsStandard(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
     printDiagnostic(diagnostic);
@@ -956,7 +956,11 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
-  return !!(diagnostics.file?.fileName.indexOf('/oh_modules/') !== -1);
+  return (diagnostics.file !== undefined) && (diagnostics.file.fileName.indexOf('/oh_modules/') !== -1);
+}
+
+function isInApplicationsStandard(diagnostics: ts.Diagnostic): boolean {
+  return (diagnostics.file !== undefined) && (diagnostics.file.fileName.indexOf('/applications/standard/') !== -1);
 }
 
 function isInSDK(diagnostics: ts.Diagnostic): boolean {
@@ -974,8 +978,7 @@ export function getArkTSLinterMode(): ArkTSLinterMode {
   }
 
   if (isStandardMode()) {
-    // change to STANDARD_MODE when we block the compilation
-    return ArkTSLinterMode.COMPATIBLE_MODE;
+    return ArkTSLinterMode.STANDARD_MODE;
   }
   return ArkTSLinterMode.COMPATIBLE_MODE;
 }
