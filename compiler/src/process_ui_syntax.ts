@@ -123,6 +123,10 @@ import {
   partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
+import {
+  assignComponentParams,
+  declareParamsGenerator
+} from './process_custom_component';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 
 export const transformLog: FileLog = new FileLog();
@@ -405,10 +409,10 @@ function processCustomDialogControllerBuilder(parent: ts.Expression,
   node: ts.CallExpression, componentName: string): ts.ArrowFunction {
   const newExp: ts.Expression = createCustomComponentNewExpression(node, componentName, false, false, true);
   const jsDialog: ts.Identifier = ts.factory.createIdentifier(JS_DIALOG);
-  return createCustomComponentBuilderArrowFunction(parent, jsDialog, newExp);
+  return createCustomComponentBuilderArrowFunction(node, parent, jsDialog, newExp);
 }
 
-function createCustomComponentBuilderArrowFunction(parent: ts.Expression,
+function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, parent: ts.Expression,
   jsDialog: ts.Identifier, newExp: ts.Expression): ts.ArrowFunction {
   let mountNodde: ts.PropertyAccessExpression;
   if (ts.isBinaryExpression(parent)) {
@@ -425,6 +429,8 @@ function createCustomComponentBuilderArrowFunction(parent: ts.Expression,
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock(
       [
+        declareParamsGenerator(),
+        assignComponentParams(node),
         ts.factory.createVariableStatement(
           undefined,
           ts.factory.createVariableDeclarationList(
