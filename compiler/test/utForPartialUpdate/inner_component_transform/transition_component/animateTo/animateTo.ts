@@ -244,7 +244,8 @@ class TransitionExample extends ViewPU {
                 });
             }
             else {
-                If.branchId(1);
+                this.ifElseBranchUpdateFunction(1, () => {
+                });
             }
         }, If);
         If.pop();
