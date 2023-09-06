@@ -61,7 +61,7 @@ import {
   COMPONENT_PARAMS_FUNCTION,
   COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
   CREATE_WEAK_REF,
-  DE_REF
+  CREATE_REUSE_PROXY
 } from './pre_define';
 import {
   propertyCollection,
@@ -378,141 +378,80 @@ export function declareParamsGenerator(): ts.VariableStatement {
   );
 }
 
+function isFunctionType(functionName: string): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    ts.factory.createTypeOfExpression(ts.factory.createIdentifier(functionName)),
+    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+    ts.factory.createStringLiteral(FUNCTION)
+  );
+}
+
 export function assignComponentParams(componentNode: ts.CallExpression,
   isBuilder: boolean = false): ts.IfStatement {
-  const [keyArray, valueArray, builder$$, builderParam$$]: [ts.Node[], ts.Node[], boolean, string] = splitComponentParams(componentNode, isBuilder);
+  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder);
   return ts.factory.createIfStatement(
     ts.factory.createBinaryExpression(
-      ts.factory.createTypeOfExpression(ts.factory.createIdentifier(CREATE_WEAK_REF)),
-      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-      ts.factory.createStringLiteral(FUNCTION)
+      isFunctionType(CREATE_REUSE_PROXY),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      isFunctionType(CREATE_WEAK_REF)
     ),
     ts.factory.createBlock(
-      [
-        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-          ts.factory.createParenthesizedExpression(ts.factory.createArrowFunction(
-            undefined,
-            undefined,
-            keyArray.map((item: ts.Identifier) => {
-              return ts.factory.createParameterDeclaration(
-                undefined,
-                undefined,
-                undefined,
-                item,
-                undefined,
-                undefined,
-                undefined
-              );
-            }),
-            undefined,
-            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            ts.factory.createBlock(
-              [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-                ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION),
-                ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-                ts.factory.createArrowFunction(
-                  undefined,
-                  undefined,
-                  [],
-                  undefined,
-                  ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                  ts.factory.createBlock(
-                    [ts.factory.createReturnStatement(ts.factory.createObjectLiteralExpression(
-                      reWriteComponentParams(keyArray, builder$$, builderParam$$),
-                      true
-                    ))],
-                    true
-                  )
-                )
-              ))],
-              true
-            )
-          )),
+      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+        ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION),
+        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+        ts.factory.createArrowFunction(
           undefined,
-          valueArray.map((item: ts.Expression) => {
-            return builder$$ ? ts.factory.createIdentifier($$) : ts.factory.createCallExpression(
-              ts.factory.createIdentifier(CREATE_WEAK_REF),
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [ts.factory.createReturnStatement(ts.factory.createCallExpression(
+              ts.factory.createIdentifier(CREATE_REUSE_PROXY),
               undefined,
-              [item]
-            );
-          })
+              [ts.factory.createObjectLiteralExpression(
+                reWriteComponentParams(keyArray, valueArray),
+                true
+              )]
+            ))],
+            true
+          )
         )
-        )]
+      ))
+      ],
+      true
     )
   );
 }
 
-function reWriteComponentParams(keyArray: ts.Node[], builder$$: boolean, builderParam$$: string): ts.PropertyAssignment[] {
+function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): ts.PropertyAssignment[] {
   const returnProperties: ts.PropertyAssignment[] = [];
-  keyArray.forEach((item: ts.Identifier) => {
+  keyArray.forEach((item: ts.Identifier, index: number) => {
     returnProperties.push(ts.factory.createPropertyAssignment(
       item,
-      builder$$ ? ts.factory.createPropertyAccessExpression(
-        item,
-        ts.factory.createIdentifier(builderParam$$)
-      ) : ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          item,
-          ts.factory.createIdentifier(DE_REF)
-        ),
+      ts.factory.createCallExpression(
+        ts.factory.createIdentifier(CREATE_WEAK_REF),
         undefined,
-        []
+        [valueArray[index] as ts.Identifier]
       )
     ));
   });
   return returnProperties;
 }
 
-function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boolean): [ts.Node[], ts.Node[], boolean, string] {
+function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boolean): [ts.Node[], ts.Node[]] {
   const keyArray: ts.Node[] = [];
   const valueArray: ts.Node[] = [];
-  let builder$$: boolean = false;
-  let builderParam$$: string = COMPONENT_IF_UNDEFINED;
   if (componentNode.arguments && componentNode.arguments.length > 0 &&
     ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties) {
     componentNode.arguments[0].properties.forEach((propertyItem: ts.PropertyAssignment) => {
       const newPropertyItem: ts.PropertyAssignment =
         isProperty(propertyItem) ? createReference(propertyItem, [], isBuilder) : propertyItem;
-      builder$$ = isBuilder && newPropertyItem.initializer && newPropertyItem.initializer.expression &&
-        newPropertyItem.initializer.expression.escapedText &&
-        newPropertyItem.initializer.expression.escapedText.toString() === $$;
-      if (builder$$) {
-        keyArray.push(newPropertyItem.initializer.expression);
-      } else {
-        keyArray.push(newPropertyItem.name);
-      }
-      if (newPropertyItem.initializer && newPropertyItem.initializer.name &&
-        newPropertyItem.initializer.name.escapedText) {
-        const removeUnderline: string = newPropertyItem.initializer.name.escapedText.toString().replace(/^_*/, '');
-        const stateTernaryExpressionl: ts.ConditionalExpression =
-          ts.factory.createConditionalExpression(
-            ts.factory.createElementAccessExpression(
-              ts.factory.createThis(),
-              ts.factory.createStringLiteral('__' + removeUnderline)
-            ),
-            ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-            ts.factory.createElementAccessExpression(
-              ts.factory.createThis(),
-              ts.factory.createStringLiteral('__' + removeUnderline)
-            ),
-            ts.factory.createToken(ts.SyntaxKind.ColonToken),
-            ts.factory.createElementAccessExpression(
-              ts.factory.createThis(),
-              ts.factory.createStringLiteral(removeUnderline)
-            )
-          );
-        if (builder$$) {
-          valueArray.push(newPropertyItem.initializer.expression);
-          builderParam$$ = removeUnderline;
-        } else {
-          valueArray.push(stateTernaryExpressionl);
-        }
-      } else {
-        valueArray.push(newPropertyItem.initializer);
-      }
+      keyArray.push(newPropertyItem.name);
+      valueArray.push(newPropertyItem.initializer);
     });
   }
-  return [keyArray, valueArray, builder$$, builderParam$$];
+  return [keyArray, valueArray];
 }
 
 function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
