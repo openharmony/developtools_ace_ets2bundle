@@ -163,6 +163,7 @@ export const COMPONENT_CONSTRUCTOR_PARAMS: string = 'params';
 export const COMPONENT_PARAMS_FUNCTION: string = 'paramsGenerator_';
 export const COMPONENT_PARAMS_LAMBDA_FUNCTION: string = 'paramsLambda';
 export const CREATE_WEAK_REF: string = 'createWeakRef';
+export const CREATE_REUSE_PROXY: string = 'createReuseProxy';
 export const DE_REF: string = 'deref';
 export const COMPONENT_CONSTRUCTOR_UNDEFINED: string = 'undefined';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE: string = 'localStorage';
