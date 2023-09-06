@@ -123,10 +123,7 @@ import {
   partialUpdateConfig
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
-import {
-  assignComponentParams,
-  declareParamsGenerator
-} from './process_custom_component';
+import { assignComponentParams } from './process_custom_component';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 
 export const transformLog: FileLog = new FileLog();
@@ -429,7 +426,6 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock(
       [
-        declareParamsGenerator(),
         assignComponentParams(node),
         ts.factory.createVariableStatement(
           undefined,

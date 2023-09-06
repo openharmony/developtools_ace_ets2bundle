@@ -59,9 +59,7 @@ import {
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   COMPONENT_PARAMS_FUNCTION,
-  COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
-  CREATE_WEAK_REF,
-  CREATE_REUSE_PROXY
+  COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION
 } from './pre_define';
 import {
   propertyCollection,
@@ -363,65 +361,34 @@ function assignRecycleParams(): ts.IfStatement {
   );
 }
 
-export function declareParamsGenerator(): ts.VariableStatement {
+export function assignComponentParams(componentNode: ts.CallExpression,
+  isBuilder: boolean = false): ts.VariableStatement {
+  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder);
   return ts.factory.createVariableStatement(
     undefined,
-    ts.factory.createVariableDeclarationList(
-      [ts.factory.createVariableDeclaration(
-        ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION),
+    ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
+      ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION),
+      undefined,
+      undefined,
+      ts.factory.createArrowFunction(
         undefined,
         undefined,
-        undefined
-      )],
-      ts.NodeFlags.Let
-    )
-  );
-}
-
-function isFunctionType(functionName: string): ts.BinaryExpression {
-  return ts.factory.createBinaryExpression(
-    ts.factory.createTypeOfExpression(ts.factory.createIdentifier(functionName)),
-    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-    ts.factory.createStringLiteral(FUNCTION)
-  );
-}
-
-export function assignComponentParams(componentNode: ts.CallExpression,
-  isBuilder: boolean = false): ts.IfStatement {
-  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder);
-  return ts.factory.createIfStatement(
-    ts.factory.createBinaryExpression(
-      isFunctionType(CREATE_REUSE_PROXY),
-      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-      isFunctionType(CREATE_WEAK_REF)
-    ),
-    ts.factory.createBlock(
-      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-        ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION),
-        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-        ts.factory.createArrowFunction(
-          undefined,
-          undefined,
-          [],
-          undefined,
-          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-          ts.factory.createBlock(
-            [ts.factory.createReturnStatement(ts.factory.createCallExpression(
-              ts.factory.createIdentifier(CREATE_REUSE_PROXY),
-              undefined,
-              [ts.factory.createObjectLiteralExpression(
-                reWriteComponentParams(keyArray, valueArray),
-                true
-              )]
-            ))],
-            true
-          )
+        [],
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock(
+          [ts.factory.createReturnStatement(
+            ts.factory.createObjectLiteralExpression(
+              reWriteComponentParams(keyArray, valueArray),
+              true
+            )
+          )],
+          true
         )
-      ))
-      ],
-      true
-    )
-  );
+      )
+    )],
+    ts.NodeFlags.Let
+    ));
 }
 
 function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): ts.PropertyAssignment[] {
@@ -429,11 +396,7 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): ts.
   keyArray.forEach((item: ts.Identifier, index: number) => {
     returnProperties.push(ts.factory.createPropertyAssignment(
       item,
-      ts.factory.createCallExpression(
-        ts.factory.createIdentifier(CREATE_WEAK_REF),
-        undefined,
-        [valueArray[index] as ts.Identifier]
-      )
+      valueArray[index] as ts.Identifier
     ));
   });
   return returnProperties;
@@ -445,10 +408,8 @@ function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boole
   if (componentNode.arguments && componentNode.arguments.length > 0 &&
     ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties) {
     componentNode.arguments[0].properties.forEach((propertyItem: ts.PropertyAssignment) => {
-      const newPropertyItem: ts.PropertyAssignment =
-        isProperty(propertyItem) ? createReference(propertyItem, [], isBuilder) : propertyItem;
-      keyArray.push(newPropertyItem.name);
-      valueArray.push(newPropertyItem.initializer);
+      keyArray.push(propertyItem.name);
+      valueArray.push(propertyItem.initializer);
     });
   }
   return [keyArray, valueArray];
@@ -461,7 +422,6 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [
-        declareParamsGenerator(),
         assignComponentParams(componentNode, isBuilder),
         isRecycleComponent ? assignRecycleParams() : undefined,
         isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
@@ -522,15 +482,24 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
         ts.factory.createArrowFunction(undefined, undefined, [], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
           ts.factory.createBlock([
-            ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(RECYCLE_NODE),
-                ts.factory.createIdentifier(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)
+            ts.factory.createIfStatement(
+              ts.factory.createBinaryExpression(
+                ts.factory.createTypeOfExpression(ts.factory.createPropertyAccessExpression(
+                  ts.factory.createIdentifier(RECYCLE_NODE),
+                  ts.factory.createIdentifier(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)
+                )),
+                ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                ts.factory.createStringLiteral(FUNCTION)
               ),
-              undefined,
-              []
-            ))
-          ], true))
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createIdentifier(RECYCLE_NODE),
+                  ts.factory.createIdentifier(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)
+                ),
+                undefined,
+                []
+              ))
+            )], true))
       ]));
 }
 
