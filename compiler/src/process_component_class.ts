@@ -83,7 +83,11 @@ import {
   OLD_ELMT_ID,
   NEW_ELMT_ID,
   UPDATE_RECYCLE_ELMT_ID,
-  DECORATOR_TYPE_ANY
+  DECORATOR_TYPE_ANY,
+  COMPONENT_CONSTRUCTOR_PARAMS,
+  COMPONENT_PARAMS_FUNCTION,
+  FUNCTION,
+  COMPONENT_PARAMS_LAMBDA_FUNCTION
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -102,7 +106,8 @@ import {
 } from './validate_ui_syntax';
 import {
   addConstructor,
-  getInitConstructor
+  getInitConstructor,
+  updateConstructor
 } from './process_component_constructor';
 import {
   ControllerType,
@@ -129,6 +134,7 @@ import {
   globalProgram 
 } from '../main';
 import { builderTypeParameter } from './process_ui_syntax';
+import { isRecycle } from './process_custom_component';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -227,9 +233,33 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements));
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
+  if (partialUpdateConfig.partialUpdateMode) {
+    ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()), true);
+  }
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   curPropMap.clear();
   return newMembers;
+}
+
+function assignParams(parentComponentName: string): ts.Statement[] {
+  return [ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createTypeOfExpression(ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION)),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      ts.factory.createStringLiteral(FUNCTION)
+    ),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(COMPONENT_PARAMS_FUNCTION)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+        ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION)
+      ))],
+      true
+    )
+  )];
 }
 
 function isStaticProperty(property: ts.PropertyDeclaration): boolean {

@@ -160,8 +160,11 @@ export const FOREACH_LAZYFOREACH: Set<string> = new Set([
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
 export const COMPONENT_CONSTRUCTOR_PARAMS: string = 'params';
+export const COMPONENT_PARAMS_FUNCTION: string = 'paramsGenerator_';
+export const COMPONENT_PARAMS_LAMBDA_FUNCTION: string = 'paramsLambda';
 export const COMPONENT_CONSTRUCTOR_UNDEFINED: string = 'undefined';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE: string = 'localStorage';
+export const COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION: string = 'aboutToReuseInternal';
 export const COMPONENT_SET_AND_LINK: string = 'setAndLink';
 export const COMPONENT_SET_AND_PROP: string = 'setAndProp';
 
