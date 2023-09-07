@@ -220,12 +220,14 @@ export class ObConfigResolver {
   }
 
   private getConfigByPath(path: string, configs: MergedConfig) {
+    let fileContent = undefined;
     try {
-      const fileContent = fs.readFileSync(path, 'utf-8');
-      this.handleConfigContent(fileContent, configs);
+      fileContent = fs.readFileSync(path, 'utf-8');
     } catch (err) {
       this.logger.error(`Failed to open ${path}. Error message: ${err}`);
+      throw err;
     }
+    this.handleConfigContent(fileContent, configs, path);
   }
 
   // obfuscation options
@@ -279,7 +281,7 @@ export class ObConfigResolver {
     }
   }
 
-  private handleConfigContent(data: string, configs: MergedConfig) {
+  private handleConfigContent(data: string, configs: MergedConfig, configPath: string) {
     data = this.removeComments(data);
     const tokens = data.split(/[',', '\t', ' ', '\n', '\r\n']/).filter((item) => {
       if (item != "") {
@@ -351,6 +353,7 @@ export class ObConfigResolver {
         case OptionType.APPLY_NAMECACHE: {
           configs.options.applyNameCache = token;
           type = OptionType.NONE;
+          this.determineNameCachePath(token, configPath);
           continue;
         }
         default:
@@ -488,6 +491,12 @@ export class ObConfigResolver {
   public writeConsumerConfigFile(selfConsumerConfig: MergedConfig, outpath: string) {
     const configContent: string = selfConsumerConfig.serializeMergedConfig();
     fs.writeFileSync(outpath, configContent);
+  }
+
+  private determineNameCachePath(nameCachePath: string, configPath: string): void {
+    if (!fs.existsSync(nameCachePath)) {
+      throw new Error(`The applied namecache file '${nameCachePath}' configured by '${configPath}' does not exist.`);
+    }
   }
 }
 
