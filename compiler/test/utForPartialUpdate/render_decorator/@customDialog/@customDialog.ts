@@ -101,8 +101,11 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 class DialogExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__count = new SynchedPropertySimpleOneWayPU(params.count, this, "count");
         this.__isPlaying = new SynchedPropertySimpleTwoWayPU(params.isPlaying, this, "isPlaying");
         this.controller = undefined;
@@ -206,19 +209,31 @@ class DialogExample extends ViewPU {
     }
 }
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__countInitValue = new ObservedPropertySimplePU(10, this, "countInitValue");
         this.__playingInitValue = new ObservedPropertySimplePU(false, this, "playingInitValue");
         this.dialogController = new CustomDialogController({
             builder: () => {
+                let paramsLambda = () => {
+                    return {
+                        termsToAccept: "Please accept the terms.",
+                        action1: this.onAccept,
+                        action2: this.existApp,
+                        count: this.countInitValue,
+                        isPlaying: this.__playingInitValue
+                    };
+                };
                 let jsDialog = new DialogExample(this, {
                     termsToAccept: "Please accept the terms.",
                     action1: this.onAccept,
                     action2: this.existApp,
                     count: this.countInitValue,
                     isPlaying: this.__playingInitValue
-                });
+                }, undefined, elmtId, paramsLambda);
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },
