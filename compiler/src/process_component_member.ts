@@ -74,7 +74,8 @@ import {
   ELMTID,
   COMPONENT_CONSTRUCTOR_PARAMS,
   RESERT,
-  COMPONENT_IF_UNDEFINED
+  COMPONENT_IF_UNDEFINED,
+  COMPONENT_PARAMS_LAMBDA_FUNCTION
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -789,9 +790,8 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        if (!isCutomDialog) {
-          argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), ts.factory.createIdentifier(ELMTID));
-        }
+        argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), ts.factory.createIdentifier(ELMTID),
+          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
