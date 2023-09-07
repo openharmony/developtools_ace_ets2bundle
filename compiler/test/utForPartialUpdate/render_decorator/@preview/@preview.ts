@@ -39,8 +39,11 @@ struct HomePreviewComponent_Preview {
 exports.expectResult =
 `"use strict";
 class HomePreviewComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.value = "hello world";
         this.setInitiallyProvidedValue(params);
     }
@@ -69,8 +72,11 @@ class HomePreviewComponent extends ViewPU {
     }
 }
 class HomePreviewComponent_Preview extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
@@ -90,7 +96,10 @@ class HomePreviewComponent_Preview extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new HomePreviewComponent(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new HomePreviewComponent(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

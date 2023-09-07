@@ -60,8 +60,11 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__testText1 = new ObservedPropertySimplePU('Hello', this, "testText1");
         this.__testText2 = new ObservedPropertySimplePU('World', this, "testText2");
         this.__testText3 = new ObservedPropertySimplePU('Test', this, "testText3");
@@ -209,11 +212,18 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            testStr: this.testState1,
+                            testNum: this.testState2,
+                            testObj: this.testState3
+                        };
+                    };
                     ViewPU.create(new ImportNestAll_1.Base(this, {
                         testStr: this.__testState1,
                         testNum: this.__testState2,
                         testObj: this.__testState3
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -223,10 +233,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            testNum1: this.testState4,
+                            testNum2: this.testState5
+                        };
+                    };
                     ViewPU.create(new ImportNestAll_1.DivideTest(this, {
                         testNum1: this.__testState4,
                         testNum2: this.__testState5
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

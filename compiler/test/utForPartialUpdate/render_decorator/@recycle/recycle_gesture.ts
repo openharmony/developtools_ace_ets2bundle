@@ -42,8 +42,11 @@ struct GestureTest {
 exports.expectResult =
 `"use strict";
 class GestureTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__count = new ObservedPropertySimplePU(0, this, "count");
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);

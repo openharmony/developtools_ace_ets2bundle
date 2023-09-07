@@ -57,7 +57,10 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
                     if (isInitialRender) {
-                        ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId));
+                        let paramsLambda = () => {
+                            return {};
+                        };
+                        ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId, paramsLambda));
                     }
                     else {
                         (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -71,8 +74,11 @@ function ComB(param, parent = null) {
     ForEach.pop();
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3', '4', '5'], this, "arr");
         this.setInitiallyProvidedValue(params);
     }
@@ -109,8 +115,11 @@ class Index extends ViewPU {
     }
 }
 class ComA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

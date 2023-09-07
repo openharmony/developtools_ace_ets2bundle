@@ -61,8 +61,11 @@ struct CompC {
 exports.expectResult =
 `"use strict";
 class CompA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__reviewVotes = new ObservedPropertySimplePU(0, this, "reviewVotes");
         this.addProvidedVar("reviewVote", this.__reviewVotes);
         this.addProvidedVar("reviewVotes", this.__reviewVotes);
@@ -96,7 +99,10 @@ class CompA extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new CompB(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new CompB(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -122,8 +128,11 @@ class CompA extends ViewPU {
     }
 }
 class CompB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
@@ -143,7 +152,10 @@ class CompB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new CompC(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new CompC(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -157,8 +169,11 @@ class CompB extends ViewPU {
     }
 }
 class CompC extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes");
         this.setInitiallyProvidedValue(params);
     }

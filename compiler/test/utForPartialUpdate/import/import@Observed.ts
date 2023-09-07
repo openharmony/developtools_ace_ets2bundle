@@ -68,8 +68,11 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const import_Observed_1 = require("./test/pages/import@Observed");
 class ViewA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.label = 'ViewA1';
         this.__a = new SynchedPropertyNesedObjectPU(params.a, this, "a");
         this.setInitiallyProvidedValue(params);
@@ -113,8 +116,11 @@ class ViewA extends ViewPU {
     }
 }
 class ViewB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__arrA = new ObservedPropertyObjectPU([new import_Observed_1.ClassB(0), new import_Observed_1.ClassB(0)], this, "arrA");
         this.setInitiallyProvidedValue(params);
     }
@@ -151,7 +157,13 @@ class ViewB extends ViewPU {
                 {
                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                         if (isInitialRender) {
-                            ViewPU.create(new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId));
+                            let paramsLambda = () => {
+                                return {
+                                    label: JSON.stringify(item.id),
+                                    a: item
+                                };
+                            };
+                            ViewPU.create(new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId, paramsLambda));
                         }
                         else {
                             this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -167,7 +179,13 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            label: JSON.stringify(this.arrA[0]),
+                            a: this.arrA[0]
+                        };
+                    };
+                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -179,7 +197,13 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            label: JSON.stringify(this.arrA[this.arrA.length - 1]),
+                            a: this.arrA[this.arrA.length - 1]
+                        };
+                    };
+                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
