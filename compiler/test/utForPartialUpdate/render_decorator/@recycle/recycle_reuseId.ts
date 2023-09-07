@@ -56,8 +56,11 @@ struct child {
 exports.expectResult = `"use strict";
 let a = "aaaaaaaaaa";
 class HomeComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__state_value = new ObservedPropertySimplePU("100%", this, "state_value");
         this.__value = new ObservedPropertySimplePU(1, this, "value");
         this.setInitiallyProvidedValue(params);
@@ -110,11 +113,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, "reuse_key", () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "reuse_key", () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -138,11 +155,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(this.state_value, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, this.state_value, () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, this.state_value, () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -165,11 +196,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key11111111111", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, "reuse_key11111111111", () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "reuse_key11111111111", () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -194,11 +239,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, "child", () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "child", () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -221,11 +280,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(a, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, a, () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, a, () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -245,8 +318,11 @@ class HomeComponent extends ViewPU {
     }
 }
 class child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__propvalue = new SynchedPropertySimpleOneWayPU(params.propvalue, this, "propvalue");
         this.__linkvalue = new SynchedPropertySimpleTwoWayPU(params.linkvalue, this, "linkvalue");
         this.setInitiallyProvidedValue(params);

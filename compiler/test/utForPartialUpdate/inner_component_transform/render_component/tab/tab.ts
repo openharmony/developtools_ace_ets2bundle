@@ -54,8 +54,11 @@ struct TabSimple {
 exports.expectResult =
 `"use strict";
 class TabSimple extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.controller = new TabsController();
         this.setInitiallyProvidedValue(params);
     }

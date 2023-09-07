@@ -174,8 +174,11 @@ class MyDataSource extends BasicDataSource {
     }
 }
 class Test extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.data = new MyDataSource();
         this.setInitiallyProvidedValue(params);
     }

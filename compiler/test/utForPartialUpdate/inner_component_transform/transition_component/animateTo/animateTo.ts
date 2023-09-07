@@ -85,8 +85,11 @@ struct TransitionExample {
 exports.expectResult =
 `"use strict";
 class TransitionExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__btnW = new ObservedPropertySimplePU(50, this, "btnW");
         this.__btnH = new ObservedPropertySimplePU(50, this, "btnH");
         this.__btn1 = new ObservedPropertySimplePU(false, this, "btn1");

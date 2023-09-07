@@ -40,8 +40,11 @@ struct TestPage{
 exports.expectResult =
 `"use strict";
 class TitleComp extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__title = new SynchedPropertySimpleTwoWayPU(params.title, this, "title");
         this.setInitiallyProvidedValue(params);
     }
@@ -74,8 +77,11 @@ class TitleComp extends ViewPU {
     }
 }
 class TestPage extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__value = new ObservedPropertySimplePU('hello world', this, "value");
         this.setInitiallyProvidedValue(params);
     }
@@ -104,7 +110,12 @@ class TestPage extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            title: this.value
+                        };
+                    };
+                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
