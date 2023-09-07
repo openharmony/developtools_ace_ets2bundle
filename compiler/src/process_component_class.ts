@@ -580,7 +580,8 @@ function judgmentParentType(node: ts.Node): boolean {
     (ts.isCallExpression(node.parent.parent) || ts.isEtsComponentExpression(node.parent.parent));
 }
 
-export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isBuilder = false): ts.PropertyAssignment {
+export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isBuilder = false,
+  isParamsLambda: boolean = false): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
   const propParentComponent: string[] = getParentNode(node, propCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
@@ -605,7 +606,7 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isB
     initText = initExpression.name.escapedText.toString().replace(LINK_REG, '');
   }
   if (initText) {
-    node = addDoubleUnderline(node, propertyName, initText, is$$);
+    node = addDoubleUnderline(node, propertyName, initText, is$$, isParamsLambda);
   }
   return node;
 }
@@ -618,11 +619,11 @@ function isMatchInitExpression(initExpression: ts.Expression): boolean {
 }
 
 function addDoubleUnderline(node: ts.PropertyAssignment, propertyName: ts.Identifier,
-  initText: string, is$$ = false): ts.PropertyAssignment {
+  initText: string, is$$ = false, isParamsLambda: boolean): ts.PropertyAssignment {
   return ts.factory.updatePropertyAssignment(node, propertyName,
     ts.factory.createPropertyAccessExpression(
       is$$ && partialUpdateConfig.partialUpdateMode ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
-      ts.factory.createIdentifier(`__${initText}`)));
+      isParamsLambda ? ts.factory.createIdentifier(initText) : ts.factory.createIdentifier(`__${initText}`)));
 }
 
 function getParentNode(node: ts.PropertyAssignment, collection: Map<string, Set<string>>): string[] {
