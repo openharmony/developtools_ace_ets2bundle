@@ -106,10 +106,6 @@ import {
 import {
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
-import {
-  createReference,
-  isProperty
-} from './process_component_class';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
