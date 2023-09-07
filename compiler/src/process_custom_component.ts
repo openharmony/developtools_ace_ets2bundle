@@ -106,6 +106,10 @@ import {
 import {
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
+import {
+  createReference,
+  isProperty
+} from './process_component_class';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -359,7 +363,8 @@ function assignRecycleParams(): ts.IfStatement {
 
 export function assignComponentParams(componentNode: ts.CallExpression,
   isBuilder: boolean = false): ts.VariableStatement {
-  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder);
+  const isParamsLambda: boolean = true;
+  const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder, isParamsLambda);
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
@@ -398,14 +403,16 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): ts.
   return returnProperties;
 }
 
-function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boolean): [ts.Node[], ts.Node[]] {
+function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boolean, isParamsLambda: boolean): [ts.Node[], ts.Node[]] {
   const keyArray: ts.Node[] = [];
   const valueArray: ts.Node[] = [];
   if (componentNode.arguments && componentNode.arguments.length > 0 &&
     ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties) {
     componentNode.arguments[0].properties.forEach((propertyItem: ts.PropertyAssignment) => {
-      keyArray.push(propertyItem.name);
-      valueArray.push(propertyItem.initializer);
+      const newPropertyItem: ts.PropertyAssignment =
+        isProperty(propertyItem) ? createReference(propertyItem, [], isBuilder, isParamsLambda) : propertyItem;
+      keyArray.push(newPropertyItem.name);
+      valueArray.push(newPropertyItem.initializer);
     });
   }
   return [keyArray, valueArray];
@@ -451,7 +458,7 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
     argNode = [ts.factory.createObjectLiteralExpression([], false)];
   }
   let recycleNode: ts.CallExpression = ts.factory.createCallExpression(
-    createRecyclePropertyNode(), undefined, argNode);
+    createRecyclePropertyNode(ABOUT_TO_REUSE), undefined, argNode);
   // @ts-ignore
   argNode[0].parent = recycleNode;
   return ts.factory.createExpressionStatement(
@@ -480,28 +487,44 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
           ts.factory.createBlock([
             ts.factory.createIfStatement(
               ts.factory.createBinaryExpression(
-                ts.factory.createTypeOfExpression(ts.factory.createPropertyAccessExpression(
-                  ts.factory.createIdentifier(RECYCLE_NODE),
-                  ts.factory.createIdentifier(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)
+                ts.factory.createIdentifier(RECYCLE_NODE),
+                ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                ts.factory.createBinaryExpression(
+                  ts.factory.createTypeOfExpression(
+                    createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)),
+                  ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                  ts.factory.createStringLiteral(FUNCTION)
                 )),
-                ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                ts.factory.createStringLiteral(FUNCTION)
-              ),
-              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                ts.factory.createPropertyAccessExpression(
-                  ts.factory.createIdentifier(RECYCLE_NODE),
-                  ts.factory.createIdentifier(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION)
-                ),
-                undefined,
-                []
-              ))
+              ts.factory.createBlock([
+                ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                  createRecyclePropertyNode(COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION),
+                  undefined,
+                  []
+                ))
+              ], true),
+              ts.factory.createBlock(
+                [
+                  ts.factory.createIfStatement(ts.factory.createBinaryExpression(
+                    createRecyclePropertyNode(ABOUT_TO_REUSE), ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                    ts.factory.createBinaryExpression(
+                      ts.factory.createTypeOfExpression(createRecyclePropertyNode(ABOUT_TO_REUSE)),
+                      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                      ts.factory.createStringLiteral(FUNCTION)
+                    )),
+                  ts.factory.createBlock([ts.factory.createExpressionStatement(recycleNode)], true)),
+                  ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                    createRecyclePropertyNode(COMPONENT_RERENDER_FUNCTION), undefined, []
+                  ))
+                ],
+                true
+              )
             )], true))
       ]));
 }
 
-function createRecyclePropertyNode(): ts.PropertyAccessExpression {
+function createRecyclePropertyNode(recycleFunctionName: string): ts.PropertyAccessExpression {
   return ts.factory.createPropertyAccessExpression(
-    ts.factory.createIdentifier(RECYCLE_NODE), ts.factory.createIdentifier(ABOUT_TO_REUSE));
+    ts.factory.createIdentifier(RECYCLE_NODE), ts.factory.createIdentifier(recycleFunctionName));
 }
 
 function validateCustomComponentPrams(node: ts.CallExpression, name: string,
