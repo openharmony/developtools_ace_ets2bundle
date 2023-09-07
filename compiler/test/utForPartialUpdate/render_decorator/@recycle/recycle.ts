@@ -138,8 +138,11 @@ struct AnimationTest {
 exports.expectResult =
 `"use strict";
 class HomeComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__state_value = new ObservedPropertySimplePU("100%", this, "state_value");
         this.__value = new ObservedPropertySimplePU(1, this, "value");
         this.setInitiallyProvidedValue(params);
@@ -194,11 +197,25 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId), recycleNode !== null, "child", () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "child", () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({ propvalue: this.value, linkvalue: this.value });
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -224,8 +241,11 @@ class HomeComponent extends ViewPU {
     }
 }
 class child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__propvalue = new SynchedPropertySimpleOneWayPU(params.propvalue, this, "propvalue");
         this.__linkvalue = new SynchedPropertySimpleTwoWayPU(params.linkvalue, this, "linkvalue");
         this.__state_value = new ObservedPropertySimplePU(1, this, "state_value");
@@ -324,11 +344,22 @@ class child extends ViewPU {
             this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId), recycleNode !== null, "AnimationTest", () => {
-                        if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
-                            recycleNode.aboutToReuse({});
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda), recycleNode !== null, "AnimationTest", () => {
+                        if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
+                            recycleNode.aboutToReuseInternal();
                         }
-                        recycleNode.rerender();
+                        else {
+                            if (recycleNode.aboutToReuse && typeof recycleNode.aboutToReuse === "function") {
+                                recycleNode.aboutToReuse({});
+                            }
+                            recycleNode.rerender();
+                        }
                     });
                 }
                 else {
@@ -488,8 +519,11 @@ class child extends ViewPU {
     }
 }
 class NormalComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
     }
@@ -531,8 +565,11 @@ class NormalComponent extends ViewPU {
     }
 }
 class AnimationTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
     }

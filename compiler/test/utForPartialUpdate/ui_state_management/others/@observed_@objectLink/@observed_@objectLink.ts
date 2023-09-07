@@ -83,8 +83,11 @@ ClassB = __decorate([
     Observed
 ], ClassB);
 class ViewA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__varA = new SynchedPropertyNesedObjectPU(params.varA, this, "varA");
         this.setInitiallyProvidedValue(params);
     }
@@ -120,8 +123,11 @@ class ViewA extends ViewPU {
     }
 }
 class ViewB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__varB = new ObservedPropertyObjectPU(new ClassB(new ClassA(0)), this, "varB");
         this.setInitiallyProvidedValue(params);
     }
@@ -156,7 +162,12 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            varA: this.varB.a
+                        };
+                    };
+                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {

@@ -39,8 +39,11 @@ struct LongPressGestureExample {
 exports.expectResult =
 `"use strict";
 class LongPressGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__count = new ObservedPropertySimplePU(0, this, "count");
         this.setInitiallyProvidedValue(params);
     }
