@@ -28,7 +28,9 @@ import {
   BASE_COMPONENT_NAME_PU,
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU,
-  ELMTID
+  ELMTID,
+  COMPONENT_PARAMS_LAMBDA_FUNCTION,
+  COMPONENT_IF_UNDEFINED
 } from './pre_define';
 
 import { partialUpdateConfig } from '../main';
@@ -92,7 +94,8 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
     COMPONENT_CONSTRUCTOR_PARENT,
     COMPONENT_CONSTRUCTOR_PARAMS,
     COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
-    ELMTID
+    ELMTID,
+    COMPONENT_PARAMS_LAMBDA_FUNCTION
   ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
@@ -102,8 +105,9 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
   paramNames.forEach((paramName: string) => {
     newParameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
       ts.factory.createIdentifier(paramName), undefined, undefined,
-      paramName === ELMTID ? ts.factory.createPrefixUnaryExpression(
-        ts.SyntaxKind.MinusToken, ts.factory.createNumericLiteral('1')) : undefined));
+      paramName === ELMTID || paramName === COMPONENT_PARAMS_LAMBDA_FUNCTION ? paramName === ELMTID ?
+        ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.MinusToken, ts.factory.createNumericLiteral('1')) :
+        ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED) : undefined));
   });
 
   return ts.factory.updateConstructorDeclaration(node, undefined, node.modifiers, newParameters,
