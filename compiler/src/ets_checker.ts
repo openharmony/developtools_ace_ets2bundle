@@ -956,7 +956,8 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
-  return !!(diagnostics.file?.fileName.indexOf('/oh_modules/') !== -1);
+  return (diagnostics.file !== undefined) &&
+    ((diagnostics.file.fileName.indexOf('/oh_modules/') !== -1) || diagnostics.file.fileName.indexOf('\\oh_modules\\') !== -1);
 }
 
 function isInSDK(diagnostics: ts.Diagnostic): boolean {
