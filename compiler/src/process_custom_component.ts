@@ -392,13 +392,21 @@ export function assignComponentParams(componentNode: ts.CallExpression,
     ));
 }
 
-function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): ts.PropertyAssignment[] {
-  const returnProperties: ts.PropertyAssignment[] = [];
+function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): (ts.PropertyAssignment |
+  ts.ShorthandPropertyAssignment)[] {
+  const returnProperties: (ts.PropertyAssignment | ts.ShorthandPropertyAssignment)[] = [];
   keyArray.forEach((item: ts.Identifier, index: number) => {
-    returnProperties.push(ts.factory.createPropertyAssignment(
-      item,
-      valueArray[index] as ts.Identifier
-    ));
+    if (!valueArray[index]) {
+      returnProperties.push(ts.factory.createShorthandPropertyAssignment(
+        item,
+        undefined
+      ));
+    } else {
+      returnProperties.push(ts.factory.createPropertyAssignment(
+        item,
+        valueArray[index] as ts.Identifier
+      ));
+    }
   });
   return returnProperties;
 }
