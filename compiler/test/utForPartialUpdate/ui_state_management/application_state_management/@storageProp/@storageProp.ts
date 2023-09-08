@@ -52,8 +52,11 @@ exports.expectResult =
 let varA = AppStorage.Link('varA');
 let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__varA = this.createStorageLink('varA', 2, "varA");
         this.__lang = this.createStorageProp('languageCode', 'en', "lang");
         this.label = 'count';

@@ -112,8 +112,11 @@ struct Child {
 exports.expectResult =
 `"use strict";
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.pass = true;
         this.count = 10;
         this.controller = new TabsController();
@@ -388,7 +391,10 @@ class MyComponent extends ViewPU {
                         {
                             this.observeComponentCreation2((elmtId, isInitialRender) => {
                                 if (isInitialRender) {
-                                    ViewPU.create(new Child(this, {}, undefined, elmtId));
+                                    let paramsLambda = () => {
+                                        return {};
+                                    };
+                                    ViewPU.create(new Child(this, {}, undefined, elmtId, paramsLambda));
                                 }
                                 else {
                                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -416,8 +422,11 @@ class MyComponent extends ViewPU {
     }
 }
 class Child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

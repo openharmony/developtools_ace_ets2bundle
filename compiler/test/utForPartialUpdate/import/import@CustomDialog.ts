@@ -64,18 +64,29 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const import_CustomDialog_1 = require("./test/pages/import@CustomDialog");
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__textValue = new ObservedPropertySimplePU('', this, "textValue");
         this.__inputValue = new ObservedPropertySimplePU('click me', this, "inputValue");
         this.dialogController = new CustomDialogController({
             builder: () => {
+                let paramsLambda = () => {
+                    return {
+                        cancel: this.onCancel,
+                        confirm: this.onAccept,
+                        textValue: this.__textValue,
+                        inputValue: this.__inputValue
+                    };
+                };
                 let jsDialog = new import_CustomDialog_1.CustomDialogExample1(this, {
                     cancel: this.onCancel,
                     confirm: this.onAccept,
                     textValue: this.__textValue,
                     inputValue: this.__inputValue
-                });
+                }, undefined, elmtId, paramsLambda);
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },

@@ -48,7 +48,10 @@ function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
             if (isInitialRender) {
-                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId));
+                let paramsLambda = () => {
+                    return {};
+                };
+                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId, paramsLambda));
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -57,8 +60,11 @@ function myBuilder(parent = null) {
     }
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
@@ -75,7 +81,10 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new child(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -92,7 +101,10 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new child(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -106,8 +118,11 @@ class Index extends ViewPU {
     }
 }
 class child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {

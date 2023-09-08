@@ -105,8 +105,11 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.header = "";
         this.content = undefined;
         this.callContent = undefined;
@@ -156,8 +159,11 @@ class CustomContainer extends ViewPU {
     }
 }
 class CustomContainer2 extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.header = "";
         this.content = undefined;
         this.setInitiallyProvidedValue(params);
@@ -210,8 +216,11 @@ function specificWithParam(label1, label2, parent = null) {
     Column.pop();
 }
 class CustomContainerUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__text = new ObservedPropertySimplePU('header', this, "text");
         this.setInitiallyProvidedValue(params);
     }
@@ -270,6 +279,21 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            header: this.text,
+                            closer: () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Column.create();
+                                    Column.onClick(() => {
+                                        this.text = "changeHeader";
+                                    });
+                                }, Column);
+                                specificWithParam.bind(this)("111", "22");
+                                Column.pop();
+                            }
+                        };
+                    };
                     ViewPU.create(new TestComponent_1.CustomContainerExport(this, {
                         header: this.text,
                         closer: () => {
@@ -282,7 +306,7 @@ class CustomContainerUser extends ViewPU {
                             specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -295,12 +319,20 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            header: this.text,
+                            content: this.specificParam,
+                            callContent: this.callSpecificParam("callContent1", 'callContent2'),
+                            footer: "Footer"
+                        };
+                    };
                     ViewPU.create(new CustomContainer(this, {
                         header: this.text,
                         content: this.specificParam,
                         callContent: this.callSpecificParam("callContent1", 'callContent2'),
                         footer: "Footer",
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -314,6 +346,21 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            header: this.text,
+                            content: () => {
+                                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                    Column.create();
+                                    Column.onClick(() => {
+                                        this.text = "changeHeader";
+                                    });
+                                }, Column);
+                                this.callSpecificParam.bind(this)("111", '222');
+                                Column.pop();
+                            }
+                        };
+                    };
                     ViewPU.create(new CustomContainer2(this, {
                         header: this.text,
                         content: () => {
@@ -326,7 +373,7 @@ class CustomContainerUser extends ViewPU {
                             this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
