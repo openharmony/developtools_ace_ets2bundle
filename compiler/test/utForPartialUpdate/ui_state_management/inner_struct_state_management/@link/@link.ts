@@ -36,8 +36,11 @@ struct ParentComponent {
 exports.expectResult =
 `"use strict";
 class LinkComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");
         this.setInitiallyProvidedValue(params);
     }
@@ -70,8 +73,11 @@ class LinkComponent extends ViewPU {
     }
 }
 class ParentComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__value = new ObservedPropertySimplePU('first init content', this, "value");
         this.setInitiallyProvidedValue(params);
     }
@@ -103,7 +109,12 @@ class ParentComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            counter: this.value
+                        };
+                    };
+                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

@@ -80,8 +80,11 @@ const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
 class HomeComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.value1 = "hello world 1";
         this.value2 = "hello world 2";
         this.value3 = "hello world 3";

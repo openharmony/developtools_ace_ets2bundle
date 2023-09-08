@@ -72,8 +72,11 @@ Model = __decorate([
     Observed
 ], Model);
 class CustomText extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__model = new SynchedPropertyNesedObjectPU(params.model, this, "model");
         this.setInitiallyProvidedValue(params);
     }
@@ -109,8 +112,11 @@ class CustomText extends ViewPU {
     }
 }
 class Parent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.nextId = 1;
         this.__models = new ObservedPropertyObjectPU([new Model('0', '#ffffff'), new Model('1', '#fff456')], this, "models");
         this.setInitiallyProvidedValue(params);
@@ -150,7 +156,12 @@ class Parent extends ViewPU {
                 {
                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                         if (isInitialRender) {
-                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId));
+                            let paramsLambda = () => {
+                                return {
+                                    model: item
+                                };
+                            };
+                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId, paramsLambda));
                         }
                         else {
                             this.updateStateVarsOfChildByElmtId(elmtId, {

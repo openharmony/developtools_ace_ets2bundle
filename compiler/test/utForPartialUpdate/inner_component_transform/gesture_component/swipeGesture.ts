@@ -41,8 +41,11 @@ struct SwipeGestureExample {
 exports.expectResult =
 `"use strict";
 class SwipeGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__rotateAngle = new ObservedPropertySimplePU(0, this, "rotateAngle");
         this.__speed = new ObservedPropertySimplePU(1, this, "speed");
         this.setInitiallyProvidedValue(params);
