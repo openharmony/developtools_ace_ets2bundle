@@ -42,8 +42,11 @@ struct Index {
 exports.expectResult =
 `"use strict";
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__WIDTH_AND_HEIGHT = new ObservedPropertyObjectPU([
             { w: 10, h: 10 },
             { w: 20, h: 20 },

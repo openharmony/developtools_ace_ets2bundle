@@ -88,8 +88,11 @@ function __Button__fancybut(color) {
     Button.height(100);
 }
 class ExtendComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
     }
@@ -142,8 +145,11 @@ class ExtendComponent extends ViewPU {
     }
 }
 class StylesComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.enable = true;
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.__size_value = new ObservedPropertySimplePU(50, this, "size_value");

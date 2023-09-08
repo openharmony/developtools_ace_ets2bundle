@@ -47,8 +47,11 @@ struct PanGestureExample {
 exports.expectResult =
 `"use strict";
 class PanGestureExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__offsetX = new ObservedPropertySimplePU(0, this, "offsetX");
         this.__offsetY = new ObservedPropertySimplePU(0, this, "offsetY");
         this.setInitiallyProvidedValue(params);
