@@ -426,7 +426,7 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock(
       [
-        assignComponentParams(node),
+        partialUpdateConfig.partialUpdateMode ? assignComponentParams(node) : undefined,
         ts.factory.createVariableStatement(
           undefined,
           ts.factory.createVariableDeclarationList(

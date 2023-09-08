@@ -168,8 +168,11 @@ function specificParam(label1, label2, parent = null) {
     Column.pop();
 }
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimplePU(true, this, "hideBar");

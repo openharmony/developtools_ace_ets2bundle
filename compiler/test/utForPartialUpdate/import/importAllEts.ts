@@ -94,8 +94,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__myState1 = new ObservedPropertyObjectPU(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimplePU(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimplePU(false, this, "myState3");
@@ -163,6 +166,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            NamespaceComponent1Link1: this.myState1,
+                            NamespaceComponent1Link2: this.myState2,
+                            NamespaceComponent1Link3: this.myState3,
+                            NamespaceComponent1Link4: this.myState4,
+                            myVar: 100,
+                            myVar2: 80
+                        };
+                    };
                     ViewPU.create(new AllComponent.NamespaceComponent1(this, {
                         NamespaceComponent1Link1: this.__myState1,
                         NamespaceComponent1Link2: this.__myState2,
@@ -170,7 +183,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -184,6 +197,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            NamespaceComponent1Link1: this.myState1,
+                            NamespaceComponent1Link2: this.myState2,
+                            NamespaceComponent1Link3: this.myState3,
+                            NamespaceComponent1Link4: this.myState4,
+                            myVar: 100,
+                            myVar2: 80
+                        };
+                    };
                     ViewPU.create(new AllComponent.NamespaceComponent1(this, {
                         NamespaceComponent1Link1: this.__myState1,
                         NamespaceComponent1Link2: this.__myState2,
@@ -191,7 +214,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -202,6 +225,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            NamespaceComponent3Link1: this.myState1,
+                            NamespaceComponent3Link2: this.myState2,
+                            NamespaceComponent3Link3: this.myState3,
+                            NamespaceComponent3Link4: this.myState4,
+                            myVar: 100,
+                            myVar2: 80
+                        };
+                    };
                     ViewPU.create(new AllComponent.default(this, {
                         NamespaceComponent3Link1: this.__myState1,
                         NamespaceComponent3Link2: this.__myState2,
@@ -209,7 +242,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -223,6 +256,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            NamespaceComponent3Link1: this.myState1,
+                            NamespaceComponent3Link2: this.myState2,
+                            NamespaceComponent3Link3: this.myState3,
+                            NamespaceComponent3Link4: this.myState4,
+                            myVar: 100,
+                            myVar2: 80
+                        };
+                    };
                     ViewPU.create(new AllComponent.default(this, {
                         NamespaceComponent3Link1: this.__myState1,
                         NamespaceComponent3Link2: this.__myState2,
@@ -230,7 +273,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

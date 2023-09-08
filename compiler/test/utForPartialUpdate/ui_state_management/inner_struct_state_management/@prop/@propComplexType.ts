@@ -69,8 +69,11 @@ ClassA = __decorate([
     Observed
 ], ClassA);
 class CustomX extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__fruit = new SynchedPropertyObjectOneWayPU(params.fruit, this, "fruit");
         this.setInitiallyProvidedValue(params);
     }
@@ -111,8 +114,11 @@ class CustomX extends ViewPU {
     }
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__arrA = new ObservedPropertyObjectPU([new ClassA(0), new ClassA(0)], this, "arrA");
         this.setInitiallyProvidedValue(params);
     }
@@ -144,7 +150,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {
+                            fruit: this.arrA[0]
+                        };
+                    };
+                    ViewPU.create(new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -156,7 +167,10 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    ViewPU.create(new CustomX(this, {}, undefined, elmtId));
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

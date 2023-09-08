@@ -128,8 +128,11 @@ const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponen
 const AMDComponentDefault = require("./test/pages/AMDComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1) {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
         this.__myState1 = new ObservedPropertyObjectPU(new TsModule_1.default(1).method(), this, "myState1");
         this.__myState2 = new ObservedPropertySimplePU(0, this, "myState2");
         this.__myState3 = new ObservedPropertySimplePU(false, this, "myState3");
@@ -197,6 +200,18 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            LinkComponent2Link1: this.myState1,
+                            LinkComponent2Link2: this.myState2,
+                            LinkComponent2Link3: this.myState3,
+                            LinkComponent2Link4: this.myState4,
+                            indexState1: { count: 1 },
+                            indexState2: 1,
+                            indexState3: true,
+                            indexState4: 'LinkComponent2'
+                        };
+                    };
                     ViewPU.create(new LinkComponent_1.LinkComponent2(this, {
                         LinkComponent2Link1: this.__myState1,
                         LinkComponent2Link2: this.__myState2,
@@ -206,7 +221,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent2'
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -222,6 +237,18 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            LinkComponent1Link1: this.myState1,
+                            LinkComponent1Link2: this.myState2,
+                            LinkComponent1Link3: this.myState3,
+                            LinkComponent1Link4: this.myState4,
+                            indexState1: { count: 1 },
+                            indexState2: 1,
+                            indexState3: true,
+                            indexState4: 'LinkComponent1'
+                        };
+                    };
                     ViewPU.create(new LinkComponent_1.LinkComponent(this, {
                         LinkComponent1Link1: this.__myState1,
                         LinkComponent1Link2: this.__myState2,
@@ -231,7 +258,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -241,6 +268,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            DefaultComponentLink1: this.myState1,
+                            DefaultComponentLink2: this.myState2,
+                            DefaultComponentLink3: this.myState3,
+                            DefaultComponentLink4: this.myState4,
+                            myVar: 100,
+                            myVar2: 100
+                        };
+                    };
                     ViewPU.create(new DefaultComponent_1.default(this, {
                         DefaultComponentLink1: this.__myState1,
                         DefaultComponentLink2: this.__myState2,
@@ -248,7 +285,7 @@ class ImportTest extends ViewPU {
                         DefaultComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -258,6 +295,18 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            LinkComponent3Link1: this.myState1,
+                            LinkComponent3Link2: this.myState2,
+                            LinkComponent3Link3: this.myState3,
+                            LinkComponent3Link4: this.myState4,
+                            indexState1: { count: 1 },
+                            indexState2: 1,
+                            indexState3: true,
+                            indexState4: 'LinkComponent3'
+                        };
+                    };
                     ViewPU.create(new LinkComponent_1.default(this, {
                         LinkComponent3Link1: this.__myState1,
                         LinkComponent3Link2: this.__myState2,
@@ -267,7 +316,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent3'
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -277,6 +326,16 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            AMDComponentLink1: this.myState1,
+                            AMDComponentLink2: this.myState2,
+                            AMDComponentLink3: this.myState3,
+                            AMDComponentLink4: this.myState4,
+                            myVar: 100,
+                            myVar2: 100
+                        };
+                    };
                     ViewPU.create(new AMDComponentDefault(this, {
                         AMDComponentLink1: this.__myState1,
                         AMDComponentLink2: this.__myState2,
@@ -284,7 +343,7 @@ class ImportTest extends ViewPU {
                         AMDComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -294,6 +353,18 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return {
+                            LinkComponent3Link1: this.myState1,
+                            LinkComponent3Link2: this.myState2,
+                            LinkComponent3Link3: this.myState3,
+                            LinkComponent3Link4: this.myState4,
+                            indexState1: { count: 1 },
+                            indexState2: 1,
+                            indexState3: true,
+                            indexState4: 'LinkComponent1'
+                        };
+                    };
                     ViewPU.create(new LinkComponent_1.LinkComponent3(this, {
                         LinkComponent3Link1: this.__myState1,
                         LinkComponent3Link2: this.__myState2,
@@ -303,7 +374,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, undefined, elmtId));
+                    }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
