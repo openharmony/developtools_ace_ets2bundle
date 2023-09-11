@@ -365,6 +365,10 @@ export function assignComponentParams(componentNode: ts.CallExpression,
   isBuilder: boolean = false): ts.VariableStatement {
   const isParamsLambda: boolean = true;
   const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder, isParamsLambda);
+  let integrateParams: boolean = false;
+  if (!keyArray.length && componentNode.arguments && componentNode.arguments.length > 0 && componentNode.arguments[0]) {
+    integrateParams = true;
+  }
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList([ts.factory.createVariableDeclaration(
@@ -379,7 +383,7 @@ export function assignComponentParams(componentNode: ts.CallExpression,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock(
           [ts.factory.createReturnStatement(
-            ts.factory.createObjectLiteralExpression(
+            integrateParams ? componentNode.arguments[0] : ts.factory.createObjectLiteralExpression(
               reWriteComponentParams(keyArray, valueArray),
               true
             )
