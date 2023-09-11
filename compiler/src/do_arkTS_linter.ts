@@ -18,6 +18,10 @@ import path from 'path';
 import * as ts from 'typescript';
 import { projectConfig } from '../main';
 import { toUnixPath } from './utils';
+import {
+  resolveModuleNames,
+  resolveTypeReferenceDirectives
+} from './ets_checker'
 
 const arkTSDir: string = 'ArkTS';
 const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
@@ -45,7 +49,13 @@ export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, p
     return [];
   }
 
-  let diagnostics: ts.Diagnostic[] = ts.runArkTSLinter(program);
+  const compilerHost: ts.CompilerHost = ts.createCompilerHost(program.getCompilerOptions());
+  compilerHost.resolveModuleNames = resolveModuleNames;
+  compilerHost.getCurrentDirectory = () => process.cwd();
+  compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+  compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
+
+  let diagnostics: ts.Diagnostic[] = ts.runArkTSLinter(program, compilerHost);
 
   removeOutputFile();
   if (diagnostics.length === 0) {
