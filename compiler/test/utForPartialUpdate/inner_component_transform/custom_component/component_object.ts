@@ -25,19 +25,34 @@ struct Index {
   message2: string = 'Hi'
   build() {
     Row() {
-      Chind({options, message1:this.message1, message2: this.message2})
+      Child({options, message1:this.message1, message2: this.message2})
+      Child2(options)
     }
   }
 }
+
 @Component
-struct Chind {
+struct Child {
   private options: optionsType;
   @Link message1: string;
   @Prop message2: string;
   build() {
-
+    Column() {
+        Text(this.message1)
+    }
   }
-}`
+}
+
+@Component
+struct Child2 {
+  private message: string;
+  build() {
+    Column() {
+        Text(this.message)
+    }
+  }
+}
+`;
 
 exports.expectResult =
 `"use strict";
@@ -90,12 +105,25 @@ class Index extends ViewPU {
                             message2: this.message2
                         };
                     };
-                    ViewPU.create(new Chind(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Child(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, paramsLambda));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
                         message2: this.message2
                     });
+                }
+            }, null);
+        }
+        {
+            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                if (isInitialRender) {
+                    let paramsLambda = () => {
+                        return options;
+                    };
+                    ViewPU.create(new Child2(this, options, undefined, elmtId, paramsLambda));
+                }
+                else {
+                    this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
             }, null);
         }
@@ -105,7 +133,7 @@ class Index extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class Chind extends ViewPU {
+class Child extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
         super(parent, __localStorage, elmtId);
         if (typeof paramsLambda === "function") {
@@ -147,6 +175,50 @@ class Chind extends ViewPU {
         this.__message2.set(newValue);
     }
     initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(this.message1);
+        }, Text);
+        Text.pop();
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class Child2 extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
+        super(parent, __localStorage, elmtId);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.message = undefined;
+        this.setInitiallyProvidedValue(params);
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.message !== undefined) {
+            this.message = params.message;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create(this.message);
+        }, Text);
+        Text.pop();
+        Column.pop();
     }
     rerender() {
         this.updateDirtyElements();
@@ -155,4 +227,4 @@ class Chind extends ViewPU {
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
 loadDocument(new Index(undefined, {}));
 ViewStackProcessor.StopGetAccessRecording();
-`
+`;
