@@ -1185,7 +1185,7 @@ function createItemGenFunctionStatement(
             ts.factory.createBlock(
               argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
                 isForEachItemGeneratorParam(argumentsArray, newArrowNode) :
-                [...newArrowNode],
+                newArrowNode ? [...newArrowNode] : undefined,
               true
             )
           )
@@ -1268,19 +1268,21 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
   // @ts-ignore
-  if (argumentsArray[1] && argumentsArray[1].parameters[1]) {
+  if (argumentsArray[1] && argumentsArray[1].parameters && argumentsArray[1].parameters[1]) {
     if (!argumentsArray[2]) {
       addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
     } else {
       // @ts-ignore
-      argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, TRUE)) :
+      argumentsArray[2].parameters && argumentsArray[2].parameters[1] ?
+        addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, TRUE)) :
         addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], TRUE, FALSE));
     }
   }
   // @ts-ignore
   if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
     // @ts-ignore
-    argumentsArray[2].parameters[1] ? addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
+    argumentsArray[2].parameters && argumentsArray[2].parameters[1] ?
+      addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
       addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, FALSE));
   }
   return addForEachIdFuncParameterArr;
