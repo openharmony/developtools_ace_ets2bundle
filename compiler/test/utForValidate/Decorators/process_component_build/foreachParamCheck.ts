@@ -21,7 +21,7 @@ struct Index {
 
   build() {
     Column({ space: 5 }) {
-      ForEach(this.arr, function() {}, '111')
+      ForEach(this.arr, () =>{}, '111')
     }
   }
 }
