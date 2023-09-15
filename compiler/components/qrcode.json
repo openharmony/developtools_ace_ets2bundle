@@ -1,4 +1,4 @@
 {
   "name": "QRCode",
-  "attrs": ["color", "backgroundColor"]
+  "attrs": ["color", "backgroundColor", "contentOpacity"]
 }
