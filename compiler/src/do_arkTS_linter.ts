@@ -82,9 +82,10 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
   const filePath = shouldWriteFile ? writeOutputFile(diagnostics) : undefined;
   if (filePath === undefined) {
     diagnostics.forEach((diagnostic: ts.Diagnostic) => {
+      const originalCategory = diagnostic.category;
       diagnostic.category = ts.DiagnosticCategory.Warning;
       printDiagnostic(diagnostic);
-      diagnostic.category = ts.DiagnosticCategory.Error;
+      diagnostic.category = originalCategory;
     });
     return;
   }
