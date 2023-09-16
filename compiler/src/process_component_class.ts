@@ -84,7 +84,7 @@ import {
   NEW_ELMT_ID,
   UPDATE_RECYCLE_ELMT_ID,
   DECORATOR_TYPE_ANY,
-  COMPONENT_CONSTRUCTOR_PARAMS,
+  GET_ENTRYNAME,
   COMPONENT_PARAMS_FUNCTION,
   FUNCTION,
   COMPONENT_PARAMS_LAMBDA_FUNCTION
@@ -131,7 +131,8 @@ import {
 } from './utils';
 import {
   partialUpdateConfig,
-  globalProgram 
+  globalProgram, 
+  projectConfig
 } from '../main';
 import { builderTypeParameter } from './process_ui_syntax';
 import { isRecycle } from './process_custom_component';
@@ -237,8 +238,28 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()), true);
   }
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
+  if (componentCollection.entryComponent === parentComponentName.escapedText.toString() &&
+    partialUpdateConfig.partialUpdateMode && projectConfig.minAPIVersion > 9) {
+    newMembers.push(getEntryNameFunction(componentCollection.entryComponent));
+  }
   curPropMap.clear();
   return newMembers;
+}
+
+function getEntryNameFunction(entryName: string): ts.MethodDeclaration {
+  return ts.factory.createMethodDeclaration(undefined,
+    [ts.factory.createToken(ts.SyntaxKind.StaticKeyword)],
+    undefined,
+    ts.factory.createIdentifier(GET_ENTRYNAME),
+    undefined,
+    undefined,
+    [],
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+    ts.factory.createBlock(
+      [ts.factory.createReturnStatement(ts.factory.createStringLiteral(entryName))],
+      true
+    )
+  );
 }
 
 function assignParams(parentComponentName: string): ts.Statement[] {
