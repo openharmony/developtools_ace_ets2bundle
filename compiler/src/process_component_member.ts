@@ -790,7 +790,10 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), ts.factory.createIdentifier(ELMTID),
+        argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
+          isCutomDialog ? ts.factory.createPrefixUnaryExpression(
+            ts.SyntaxKind.MinusToken,
+            ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
           ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION));
       }
       node =
