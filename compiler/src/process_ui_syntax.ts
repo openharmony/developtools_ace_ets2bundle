@@ -931,11 +931,26 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   let routeNameNode: ts.Expression;
   let storageNode: ts.Expression;
   if (!entryOptionNode) {
-    const originArray: ts.ExpressionStatement[] = [
-      createStartGetAccessRecording(context),
-      createLoadDocument(context, name, cardRelativePath, localStorageName, entryOptionNode),
-      createStopGetAccessRecording(context)
-    ];
+    let originArray: ts.ExpressionStatement[];
+    if (projectConfig.minAPIVersion > 9) {
+      const newArray: ts.Expression[] = [
+        context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+        context.factory.createObjectLiteralExpression([], false)
+      ];
+      const newExpressionParams: any[] = [
+        context.factory.createNewExpression(
+          context.factory.createIdentifier(name),
+          undefined, newArray)];
+      originArray = [
+        createRegisterNamedRoute(context, newExpressionParams, false, undefined, false)
+      ];
+    } else {
+      originArray = [
+        createStartGetAccessRecording(context),
+        createLoadDocument(context, name, cardRelativePath, localStorageName, entryOptionNode),
+        createStopGetAccessRecording(context)
+      ];
+    }
     return originArray;
   }
   if (ts.isObjectLiteralExpression(entryOptionNode)) {
@@ -1164,54 +1179,65 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
   if (hasRouteName) {
     return [
       shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
-      context.factory.createExpressionStatement(context.factory.createCallExpression(
-        context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
-        undefined,
-        [
-          context.factory.createArrowFunction(
-            undefined,
-            undefined,
-            [],
-            undefined,
-            context.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            newExpressionParams[0]
-          ),
-          isObject ? ts.factory.createIdentifier(ROUTENAME_NODE) : context.factory.createPropertyAccessExpression(
-            entryOptionNode,
-            context.factory.createIdentifier(ROUTE_NAME)
-          ),
-          context.factory.createObjectLiteralExpression(
-            [
-              context.factory.createPropertyAssignment(
-                context.factory.createIdentifier(RESOURCE_NAME_BUNDLE),
-                context.factory.createStringLiteral(projectConfig.bundleName || '')
-              ),
-              context.factory.createPropertyAssignment(
-                context.factory.createIdentifier(RESOURCE_NAME_MODULE),
-                context.factory.createStringLiteral(projectConfig.moduleName || '')
-              ),
-              context.factory.createPropertyAssignment(
-                context.factory.createIdentifier(PAGE_PATH),
-                context.factory.createStringLiteral(
-                  projectConfig.compileHar ? '' :
-                    path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
-                )
-              )
-            ],
-            false
-          )
-        ]
-      )),
+      createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName),
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
-    return [
-      shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
-      context.factory.createExpressionStatement(
-        context.factory.createCallExpression(
-          context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-            PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)),
-      shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
+    if (projectConfig.minAPIVersion > 9) {
+      return [
+        createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)
+      ];
+    } else {
+      return [
+        shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
+        context.factory.createExpressionStatement(
+          context.factory.createCallExpression(
+            context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
+              PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)),
+        shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
+    }
   }
+}
+
+function createRegisterNamedRoute(context: ts.TransformationContext, newExpressionParams: ts.NewExpression[],
+  isObject: boolean, entryOptionNode: ts.Expression, hasRouteName: boolean): ts.ExpressionStatement {
+  return context.factory.createExpressionStatement(context.factory.createCallExpression(
+    context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
+    undefined,
+    [
+      context.factory.createArrowFunction(
+        undefined,
+        undefined,
+        [],
+        undefined,
+        context.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        newExpressionParams[0]
+      ),
+      hasRouteName ? isObject ? ts.factory.createIdentifier(ROUTENAME_NODE) : context.factory.createPropertyAccessExpression(
+        entryOptionNode,
+        context.factory.createIdentifier(ROUTE_NAME)
+      ) : ts.factory.createStringLiteral(''),
+      context.factory.createObjectLiteralExpression(
+        [
+          context.factory.createPropertyAssignment(
+            context.factory.createIdentifier(RESOURCE_NAME_BUNDLE),
+            context.factory.createStringLiteral(projectConfig.bundleName || '')
+          ),
+          context.factory.createPropertyAssignment(
+            context.factory.createIdentifier(RESOURCE_NAME_MODULE),
+            context.factory.createStringLiteral(projectConfig.moduleName || '')
+          ),
+          context.factory.createPropertyAssignment(
+            context.factory.createIdentifier(PAGE_PATH),
+            context.factory.createStringLiteral(
+              projectConfig.compileHar ? '' :
+                path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+            )
+          )
+        ],
+        false
+      )
+    ]
+  ));
 }
 
 function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
