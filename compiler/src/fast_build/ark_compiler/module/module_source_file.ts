@@ -14,6 +14,7 @@
  */
 
 import * as ts from 'typescript';
+import fs from 'fs';
 import path from 'path';
 import MagicString from 'magic-string';
 import {
@@ -23,7 +24,7 @@ import {
 import {
   getOhmUrlByFilepath,
   getOhmUrlByHarName,
-  getOhmUrlBySystemApiOrLibRequest
+  getOhmUrlBySystemApiOrLibRequest,
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -35,8 +36,9 @@ import {
 } from '../utils';
 import { toUnixPath } from '../../../utils';
 import { newSourceMaps } from '../transform';
-
 import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
+import { ORIGIN_EXTENTION } from '../process_mock';
+import { MOCK_CONFIG_JSON } from '../../../pre_define';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -50,12 +52,98 @@ export class ModuleSourceFile {
   private isSourceNode: boolean = false;
   private static projectConfig: any;
   private static logger: any;
+  private static mockConfigInfo: Object = {};
+  private static mockFiles: string[] = [];
+  private static newMockConfigInfo: Object = {};
+  private static needProcessMock: boolean = false;
 
   constructor(moduleId: string, source: string | ts.SourceFile) {
     this.moduleId = moduleId;
     this.source = source;
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
+    }
+  }
+
+  static setProcessMock(rollupObject: any) {
+    // only processing mock-config.json5 in preview or OhosTest mode
+    if (!(rollupObject.share.projectConfig.isPreview || rollupObject.share.projectConfig.isOhosTest)) {
+      ModuleSourceFile.needProcessMock = false;
+      return;
+    }
+
+    // mockParams is essential, and etsSourceRootPath && mockConfigPath need to be defined in mockParams
+    // mockParams = {
+    //   "decorator": "name of mock decorator",
+    //   "packageName": "name of mock package",
+    //   "etsSourceRootPath": "path of ets source root",
+    //   "mockConfigPath": "path of mock configuration file"
+    // }
+    ModuleSourceFile.needProcessMock = (rollupObject.share.projectConfig.mockParams &&
+                                        rollupObject.share.projectConfig.mockParams.etsSourceRootPath &&
+                                        rollupObject.share.projectConfig.mockParams.mockConfigPath) ? true : false;
+  }
+
+  static collectMockConfigInfo(rollupObject: any) {
+    ModuleSourceFile.mockConfigInfo = require("json5").parse(
+      fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
+    for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
+      ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
+    }
+  }
+
+  static addNewMockConfig(key: string, src: string) {
+    if (ModuleSourceFile.newMockConfigInfo.hasOwnProperty(key)) {
+      return;
+    }
+
+    ModuleSourceFile.newMockConfigInfo[key] = {"source": src};
+  }
+
+  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: any) {
+    if (!ModuleSourceFile.mockConfigInfo.hasOwnProperty(originKey)) {
+      return;
+    }
+
+    let mockFile: string = ModuleSourceFile.mockConfigInfo[originKey].source;
+    let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
+    let mockFileOhmUrl: string = getOhmUrlByFilepath(mockFilePath,
+                                                     ModuleSourceFile.projectConfig,
+                                                     ModuleSourceFile.logger,
+                                                     rollupObject.share.projectConfig.entryModuleName);
+    mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
+    ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
+  }
+
+  static isMockFile(file: string, rollupObject: any): boolean {
+    if (!ModuleSourceFile.needProcessMock) {
+      return false;
+    }
+
+    for (let mockFile of ModuleSourceFile.mockFiles) {
+      let absoluteMockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
+      if (toUnixPath(absoluteMockFilePath) == toUnixPath(file)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static generateMockConfigFile(rollupObject: any) {
+    let mockCacheJsonPath: string = path.resolve(rollupObject.share.projectConfig.cachePath, `./${MOCK_CONFIG_JSON}`);
+    let mockConfigJsonPath: string = path.resolve(rollupObject.share.projectConfig.aceModuleJsonPath,
+                                                  `../${MOCK_CONFIG_JSON}`);
+    if (!fs.existsSync(mockCacheJsonPath)) {
+      fs.writeFileSync(mockConfigJsonPath, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
+      fs.copyFileSync(mockConfigJsonPath, mockCacheJsonPath);
+    } else {
+      let cachedMockConfigInfo = require("json5").parse(fs.readFileSync(mockCacheJsonPath, 'utf-8'));
+      for (let newMockTarget in ModuleSourceFile.newMockConfigInfo) {
+        cachedMockConfigInfo[newMockTarget] = ModuleSourceFile.newMockConfigInfo[newMockTarget];
+      }
+      fs.writeFileSync(mockConfigJsonPath, JSON.stringify(cachedMockConfigInfo));
+      fs.copyFileSync(mockConfigJsonPath, mockCacheJsonPath);
     }
   }
 
@@ -69,6 +157,13 @@ export class ModuleSourceFile {
 
   static async processModuleSourceFiles(rollupObject: any) {
     this.initPluginEnv(rollupObject);
+
+    // collect mockConfigInfo
+    ModuleSourceFile.setProcessMock(rollupObject);
+    if (ModuleSourceFile.needProcessMock) {
+      ModuleSourceFile.collectMockConfigInfo(rollupObject);
+    }
+
     for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
@@ -81,6 +176,10 @@ export class ModuleSourceFile {
       ModuleSourceFile.projectConfig.obfuscationOptions) {
       writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
         ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
+    }
+
+    if (ModuleSourceFile.needProcessMock) {
+      ModuleSourceFile.generateMockConfigFile(rollupObject);
     }
 
     ModuleSourceFile.sourceFiles = [];
@@ -101,6 +200,9 @@ export class ModuleSourceFile {
   private getOhmUrl(rollupObject: any, moduleRequest: string, filePath: string | undefined): string | undefined {
     let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
     if (systemOrLibOhmUrl != undefined) {
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject);
+      }
       return systemOrLibOhmUrl;
     }
     const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, ModuleSourceFile.projectConfig);
@@ -112,7 +214,17 @@ export class ModuleSourceFile {
       const namespace: string = targetModuleInfo['meta']['moduleName'];
       const ohmUrl: string =
         getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace);
-      return ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
+      let res: string = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
+      if (ModuleSourceFile.needProcessMock) {
+        // processing cases of har or lib mock targets
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, res, rollupObject);
+        // processing cases of user-defined mock targets
+        let mockedTarget: string = toUnixPath(filePath).
+            replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
+            replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, "");
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(mockedTarget, res, rollupObject);
+      }
+      return res;
     }
     return undefined;
   }
@@ -182,6 +294,7 @@ export class ModuleSourceFile {
   private processTransformedTsModuleRequest(rollupObject: any) {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
+    let isMockFile: boolean = ModuleSourceFile.isMockFile(this.moduleId, rollupObject);
 
     const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
       const visitor: ts.Visitor = node => {
@@ -191,14 +304,20 @@ export class ModuleSourceFile {
           // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
           // so we need to remove the quotation marks from moduleRequest.
           const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
-          const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+          let ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
           if (ohmUrl !== undefined) {
+            // the import module are added with ".origin" at the end of the ohm url in every mock file.
+            const realOhmUrl: string = isMockFile ? `${ohmUrl}${ORIGIN_EXTENTION}` : ohmUrl;
+            if (isMockFile) {
+              ModuleSourceFile.addNewMockConfig(realOhmUrl, ohmUrl);
+            }
+
             if (ts.isImportDeclaration(node)) {
               return ts.factory.createImportDeclaration(node.decorators, node.modifiers,
-                node.importClause, ts.factory.createStringLiteral(ohmUrl));
+                node.importClause, ts.factory.createStringLiteral(realOhmUrl));
             } else {
               return ts.factory.createExportDeclaration(node.decorators, node.modifiers,
-                node.isTypeOnly, node.exportClause, ts.factory.createStringLiteral(ohmUrl));
+                node.isTypeOnly, node.exportClause, ts.factory.createStringLiteral(realOhmUrl));
             }
           }
         }
