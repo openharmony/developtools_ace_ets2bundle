@@ -1775,6 +1775,9 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
       } else if (isGlobalBuilderCallExpressionNode(property.initializer) ||
         isInnerBuilderCallExpressionNode(property.initializer)) {
         newProperties.push(transformBuilderCallExpression(property));
+      } else if (ts.isObjectLiteralExpression(property.initializer)) {
+        newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
+          processObjectPropertyBuilder(property.initializer)));
       } else {
         newProperties.push(property);
       }
