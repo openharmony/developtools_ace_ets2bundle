@@ -587,6 +587,9 @@ export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isB
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
   const LINK_REG: RegExp = /^\$/g;
+  if (isRecycleComponent && ts.isShorthandPropertyAssignment(node)) {
+    return node;
+  }
   const initExpression: ts.Expression = node.initializer;
   let is$$: boolean = false;
   if (ts.isIdentifier(initExpression) &&
