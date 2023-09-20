@@ -910,18 +910,11 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
     if (type.types && type.types.length) {
       // @ts-ignore
       const types = type.types;
-      let basicType: boolean = false;
       let referenceType: boolean = false;
       for (let i = 0; i < types.length; i++) {
-        if (isBasicType(types[i].flags)) {
-          basicType = true;
-        } else {
+        if (!isBasicType(types[i].flags)) {
           referenceType = true;
         }
-      }
-      if (basicType && referenceType && log) {
-        validateVariableType(typeNode, log);
-        return false;
       }
       if (!referenceType) {
         return true;
@@ -1096,16 +1089,6 @@ function validateWatchParam(type: LogType, pos: number, log: LogInfo[]): void {
     type: type,
     message: 'The parameter should be a string.',
     pos: pos
-  });
-}
-
-function validateVariableType(typeNode: ts.TypeNode, log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: `The state variable type here is '${typeNode.getText()}', ` +
-      `it contains both a simple type and an object type,\n ` +
-      `which are not allowed to be defined for state variable of a struct.`,
-    pos: typeNode.getStart()
   });
 }
 
