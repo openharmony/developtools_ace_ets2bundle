@@ -1,0 +1,268 @@
+{
+    "@linkInitialize": {
+        "message": "The @Link property 'link' cannot be specified a default value.",
+        "type": "ERROR"
+    },
+    "@objectLinkInitialize": {
+        "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.",
+        "type": "ERROR"
+    },
+    "rootContainerCheck": {
+        "message": "There should have a root container component.",
+        "type": "ERROR"
+    },
+    "arkUIComponent": {
+        "message": "Only UI component syntax can be written in build method.",
+        "type": "ERROR"
+    },
+    "@BuilderParam": {
+        "message": "In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
+        "type": "ERROR"
+    },
+    "forEachParamCheck": {
+        "message": "There should be wrapped in curly braces in ForEach.",
+        "type": "ERROR"
+    },
+    "ifComponent": [
+        {
+            "message": "Condition expression cannot be null in if statement.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Then statement cannot be null in if statement.",
+            "type": "ERROR"
+        }
+    ],
+    "idCheck": {
+        "message": "The current component id \"1\" is duplicate with ${path.resolve(__dirname, '../idCheck.ets')}:7:21.",
+        "type": "WARN"
+    },
+    "arkUIStandard": {
+        "message": "'Text('Hello').onCilck' does not meet UI component syntax.",
+        "type": "ERROR"
+    },
+    "stateStyles": {
+        "message": ".stateStyles doesn't conform standard.",
+        "type": "ERROR"
+    },
+    "buttonCheck": {
+        "message": "The Button component with a label parameter can not have any child.",
+        "type": "ERROR"
+    },
+    "attributeCheck": {
+        "message": "'ForEach(this.arr, () =>{}, this.arr[0]).h' does not meet UI component syntax.",
+        "type": "ERROR"
+    },
+    "validateDecorators": {
+        "message": "The static variable of struct cannot be used together with built-in decorators.",
+        "type": "ERROR"
+    },
+    "processComponentMethod": {
+        "message": "The 'build' method can not have arguments.",
+        "type": "ERROR"
+    },
+    "@StylesParamChack": {
+        "message": "@Styles can't have parameters.",
+        "type": "ERROR"
+    },
+    "updateHeritageClauses": {
+        "message": "The struct component is not allowed to extends other class or implements other interface.",
+        "type": "ERROR"
+    },
+    "validateBuildMethodCount": {
+        "message": "struct 'Index' must be at least or at most one 'build' method.",
+        "type": "ERROR"
+    },
+    "validateHasController": {
+        "message": "@CustomDialog component should have a property of the CustomDialogController type.",
+        "type": "ERROR"
+    },
+    "checkAny": {
+        "message": "Please define an explicit type, not any.",
+        "type": "ERROR"
+    },
+    "processWatch": {
+        "message": "Cannot find name 'onWatch' in struct 'Index'.",
+        "type": "ERROR"
+    },
+    "updateBuilderParamProperty": {
+        "message": "BuilderParam property can only initialized by Builder function.",
+        "type": "ERROR"
+    },
+    "validateMultiDecorators": {
+        "message": "The property 'lang' cannot have mutilate state management decorators.",
+        "type": "ERROR"
+    },
+    "validateDecoratorNonSingleKey": {
+        "message": "The decorator StorageLink should have a single key.",
+        "type": "ERROR"
+    },
+    "validatePropertyNonDefaultValue": {
+        "message": "The @State property 'message' must be specified a default value.",
+        "type": "ERROR"
+    },
+    "validatePropertyDefaultValue": {
+        "message": "The @Link property 'message' cannot be specified a default value.",
+        "type": "ERROR"
+    },
+    "validatePropertyNonType": {
+        "message": "The property 'message' must specify a type.",
+        "type": "ERROR"
+    },
+    "validateNonObservedClassType": {
+        "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
+        "type": "ERROR"
+    },
+    "validateHasIllegalDecoratorInEntry": {
+        "message": "The @Entry component 'Index' cannot have the @Prop property 'message'.",
+        "type": "WARN"
+    },
+    "validateHasIllegalQuestionToken": {
+        "message": "The @ObjectLink property 'message' cannot be an optional parameter.",
+        "type": "WARN"
+    },
+    "validateForbiddenUseStateType": {
+        "message": "The @State property 'message' cannot be a 'CustomDialogController' object.",
+        "type": "ERROR"
+    },
+    "validateDuplicateDecorator": {
+        "message": "The inner decorator @State cannot be used together with custom decorator.",
+        "type": "ERROR"
+    },
+    "validateWatchDecorator": {
+        "message": "Regular variable 'message' can not be decorated with @Watch.",
+        "type": "ERROR"
+    },
+    "validateWatchParam": {
+        "message": "The parameter should be a string.",
+        "type": "ERROR"
+    },
+    "validateCustomDecorator": {
+        "message": "The inner decorator @State cannot be used together with custom decorator.",
+        "type": "ERROR"
+    },
+    "checkBuilder$$": {
+        "message": "Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.",
+        "type": "WARN"
+    },
+    "validateForbiddenToInitViaParam": {
+        "message": "Property 'message' in the custom component 'Child' cannot initialize here (forbidden to specify).",
+        "type": "ERROR"
+    },
+    "validateMandatoryToInitViaParam": {
+        "message": "Property 'message' in the custom component 'Child' is missing (mandatory to specify).",
+        "type": "WARN"
+    },
+    "validateInitDecorator": {
+        "message": "Property 'message' in the custom component 'Child' is missing assignment or initialization.",
+        "type": "ERROR"
+    },
+    "validateIllegalInitFromParent": {
+        "message": "The regular property 'message' cannot be assigned to the @Link property 'message'.",
+        "type": "ERROR"
+    },
+    "validateNonLinkWithDollar": {
+        "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
+        "type": "ERROR"
+    },
+    "validateModuleName": {
+        "message": "The module name 'Button' can not be the same as the inner component name.",
+        "type": "ERROR"
+    },
+    "notComponent": {
+        "message": "A struct should use decorator '@Component'.",
+        "type": "WARN"
+    },
+    "notConcurrent": {
+        "message": "The struct 'IndexDecorator' use invalid decorator.",
+        "type": "WARN"
+    },
+    "notConcurrentFun": {
+        "message": "@Concurrent can not be used on method. please use it on function declaration.",
+        "type": "ERROR"
+    },
+    "notDecorator": {
+        "message": "The struct 'IndexDecorator' use invalid decorator.",
+        "type": "WARN"
+    },
+    "StylesDuplicate": {
+        "message": "The struct 'StylesDuplicate' use invalid decorator.",
+        "type": "WARN"
+    },
+    "vaildateDecorator": {
+        "message": "The struct 'Index' use invalid decorator.",
+        "type": "WARN"
+    },
+    "state": {
+        "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
+        "type": "ERROR"
+    },
+    "NoStructName": {
+        "message": "A struct must have a name.",
+        "type": "ERROR"
+    },
+    "StructNameInvalid": {
+        "message": "The struct 'gesture' cannot have the same name as the built-in attribute 'gesture'.",
+        "type": "ERROR"
+    },
+    "notConcurrentFunAster": {
+        "message": "@Concurrent can not be used on Generator function declaration.",
+        "type": "ERROR"
+    },
+    "NoStructDeco": {
+        "message": "The '@Component' decorator can only be used with 'struct'.",
+        "type": "ERROR"
+    },
+    "MethodNoExtend": {
+        "message": "The '@Extend' decorator can not be a member property method of a 'class' or 'struct'.",
+        "type": "ERROR"
+    },
+    "OnlyStructDeco": {
+        "message": "The '@Builder' decorator can only be used in 'struct'.",
+        "type": "ERROR"
+    },
+    "NoChild": {
+        "message": "The component 'Image' can't have any child.",
+        "type": "ERROR"
+    },
+    "OneChild": {
+        "message": "The component 'Button' can only have a single child component.",
+        "type": "ERROR"
+    },
+    "NotSupportResrcParam": {
+        "message": "The input parameter is not supported.",
+        "type": "ERROR"
+    },
+    "ExtendOneChild": {
+        "message": "@Extend should have one and only one parameter",
+        "type": "ERROR"
+    },
+    "UnknownSrc": {
+        "message": "Unknown resource source 'hap'.",
+        "type": "ERROR"
+    },
+    "UnknownSrcType": {
+        "message": "Unknown resource type 'iroha'.",
+        "type": "ERROR"
+    },
+    "UnknownSrcName": {
+        "message": "Unknown resource name 'tari'.",
+        "type": "ERROR"
+    },
+    "NotSupportResrcType": {
+        "message": "The resource type font is not supported.",
+        "type": "ERROR"
+    },
+    "NoSrc": {
+        "message": "No such 'test.png' resource in current module.",
+        "type": "WARN"
+    },
+    "EntryDecoParam": {
+        "message": "@Entry should have a parameter, like '@Entry (storage)'.",
+        "type": "WARN"
+    },
+    "StylesNoParam": {
+        "message": "@Styles can't have parameters.",
+        "type": "ERROR"
+    }
+}
