@@ -108,6 +108,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
   projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
+  projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
 }
 
 function loadEntryObj(projectConfig) {
