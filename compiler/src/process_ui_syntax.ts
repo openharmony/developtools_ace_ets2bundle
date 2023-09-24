@@ -441,7 +441,7 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
               ts.factory.createIdentifier(SET_CONTROLLER_METHOD)
             ),
             undefined,
-            [mountNodde]
+            mountNodde ? [mountNodde] : undefined
           )
         ),
         ts.factory.createExpressionStatement(createViewCreate(jsDialog))
