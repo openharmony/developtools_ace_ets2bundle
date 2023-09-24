@@ -695,7 +695,8 @@ export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression):
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
   getNode: boolean = false): ts.ExpressionStatement {
-  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
+  if ((projectConfig.isPreview || projectConfig.enableDebugLine) && nameResult.name &&
+    !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
     let posOfNode: ts.LineAndCharacter;
     let curFileName: string;
     let line: number = 1;
@@ -712,12 +713,17 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
       curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     }
     let debugInfo: string;
-    if (projectConfig.minAPIVersion >= 11) {
-      debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
+    if (projectConfig.isPreview) {
+      if (projectConfig.minAPIVersion >= 11) {
+        debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
+          `(${posOfNode.line + line}:${posOfNode.character + col})`;
+      } else {
+        debugInfo = `${path.relative(projectConfig.projectPath, curFileName).replace(/\\+/g, '/')}` +
+          `(${posOfNode.line + line}:${posOfNode.character + col})`;
+      }
+    } else if (projectConfig.enableDebugLine) {
+      debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName)}` +
         `(${posOfNode.line + line}:${posOfNode.character + col})`;
-    } else {
-      debugInfo = `${path.relative(projectConfig.projectPath, curFileName).replace(/\\+/g, '/')}` +
-      `(${posOfNode.line + line}:${posOfNode.character + col})`;
     }
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(nameResult.name),
