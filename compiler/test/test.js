@@ -52,13 +52,14 @@ function expectActual(name, filePath, checkError = false) {
   resources.app["media"] = {icon:16777222};
   resources.app["font"] = {song:16777223};
   process.env.rawFileResource = './';
+  process.env.compileMode = 'moduleJson';
   const content = require(filePath);
   const source = content.source;
   process.env.compiler = BUILD_ON;
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
   if (checkError) {
-    transformLog.errors.push(...validateUISyntax(source, afterProcess.content, `${name}.ets`));
+    transformLog.errors.push(...validateUISyntax(source, afterProcess.content, `${name}.ets`, "?entry"));
   } else {
     validateUISyntax(source, afterProcess.content, `${name}.ets`);
   }

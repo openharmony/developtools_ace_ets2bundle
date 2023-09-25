@@ -14,6 +14,7 @@
  */
 
 exports.source = `
+@Entry
 @Component
 struct summerpockets {
   @Extend

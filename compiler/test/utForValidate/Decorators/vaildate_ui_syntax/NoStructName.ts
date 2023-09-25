@@ -14,6 +14,8 @@
  */
 
 exports.source = `
+@Entry
+@Component
 struct 12{
     build(){
     }
