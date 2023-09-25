@@ -18,4 +18,11 @@ exports.source = `
 function nekopara () {
 
 }
+
+@Entry
+@Component
+struct summerpockets {
+  build(){
+  }
+}
 `

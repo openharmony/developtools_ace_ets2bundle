@@ -264,5 +264,25 @@
     "StylesNoParam": {
         "message": "@Styles can't have parameters.",
         "type": "ERROR"
+    },
+    "ExceededPreview": {
+        "message": "A page can contain at most 10 '@Preview' decorators.",
+        "type": "ERROR"
+    },
+    "ExceededEntry": {
+        "message": "A page can't contain more than one '@Entry' decorator",
+        "type": "ERROR"
+    },
+    "OneEntry": {
+        "message": "A page configured in 'undefined' must have one and only one '@Entry' decorator.",
+        "type": "ERROR"
+    },
+    "notMethodDeco": {
+        "message": "'@State' can not decorate the method.",
+        "type": "ERROR"
+    },
+    "BuilderParamNoInit": {
+        "message": "'closer' should be initialized in @Entry Component",
+        "type": "WARN"
     }
 }
