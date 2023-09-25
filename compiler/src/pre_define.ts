@@ -520,3 +520,5 @@ export const ROUTE_NAME: string = 'routeName';
 export const PAGE_PATH: string = 'pagePath';
 
 export const CAN_RETAKE: string = 'canRetake';
+export const DECORATOR_SUFFIX: string = '@';
+export const MOCK_CONFIG_JSON: string = 'mock-config.json';
