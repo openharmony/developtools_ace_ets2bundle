@@ -609,13 +609,16 @@ function filterWorker(workerPath) {
 
 function readAppResource(filePath) {
   if (fs.existsSync(filePath)) {
-    const appResource = fs.readFileSync(filePath, "utf-8");
+    const appResource = fs.readFileSync(filePath, 'utf-8');
     const resourceArr = appResource.split(/\n/);
-    let resourceMap = new Map();
+    const resourceMap = new Map();
     processResourceArr(resourceArr, resourceMap, filePath);
     for (let [key, value] of resourceMap) {
       resources.app[key] = value;
     }
+  }
+  if (process.env.rawFileResource && process.env.compileMode === 'moduleJson') {
+    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
   }
 }
 
@@ -717,9 +720,6 @@ function checkAppResourcePath(appResourcePath, config) {
         config.cache.buildDependencies.config.push(appResourcePathSavePath);
       }
     }
-  }
-  if (process.env.rawFileResource) {
-    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
   }
 }
 
