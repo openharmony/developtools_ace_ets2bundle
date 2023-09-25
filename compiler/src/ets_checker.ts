@@ -978,6 +978,10 @@ export function getArkTSLinterMode(): ArkTSLinterMode {
     return ArkTSLinterMode.NOT_USE;
   }
 
+  if (!partialUpdateConfig.standardArkTSLinter) {
+    return ArkTSLinterMode.COMPATIBLE_MODE;
+  }
+
   if (isStandardMode()) {
     return ArkTSLinterMode.STANDARD_MODE;
   }
