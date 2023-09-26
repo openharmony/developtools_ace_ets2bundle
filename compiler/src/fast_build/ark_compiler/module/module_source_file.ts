@@ -65,7 +65,7 @@ export class ModuleSourceFile {
     }
   }
 
-  static setProcessMock(rollupObject: any) {
+  static setProcessMock(rollupObject: any): void {
     // only processing mock-config.json5 in preview or OhosTest mode
     if (!(rollupObject.share.projectConfig.isPreview || rollupObject.share.projectConfig.isOhosTest)) {
       ModuleSourceFile.needProcessMock = false;
@@ -84,23 +84,23 @@ export class ModuleSourceFile {
                                         rollupObject.share.projectConfig.mockParams.mockConfigPath) ? true : false;
   }
 
-  static collectMockConfigInfo(rollupObject: any) {
-    ModuleSourceFile.mockConfigInfo = require("json5").parse(
+  static collectMockConfigInfo(rollupObject: any): void {
+    ModuleSourceFile.mockConfigInfo = require('json5').parse(
       fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
     for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
       ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
     }
   }
 
-  static addNewMockConfig(key: string, src: string) {
+  static addNewMockConfig(key: string, src: string): void {
     if (ModuleSourceFile.newMockConfigInfo.hasOwnProperty(key)) {
       return;
     }
 
-    ModuleSourceFile.newMockConfigInfo[key] = {"source": src};
+    ModuleSourceFile.newMockConfigInfo[key] = {'source': src};
   }
 
-  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: any) {
+  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: any): void {
     if (!ModuleSourceFile.mockConfigInfo.hasOwnProperty(originKey)) {
       return;
     }
@@ -122,7 +122,7 @@ export class ModuleSourceFile {
 
     for (let mockFile of ModuleSourceFile.mockFiles) {
       let absoluteMockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
-      if (toUnixPath(absoluteMockFilePath) == toUnixPath(file)) {
+      if (toUnixPath(absoluteMockFilePath) === toUnixPath(file)) {
         return true;
       }
     }
@@ -130,7 +130,7 @@ export class ModuleSourceFile {
     return false;
   }
 
-  static generateMockConfigFile(rollupObject: any) {
+  static generateMockConfigFile(rollupObject: any): void {
     let mockCacheJsonPath: string = path.resolve(rollupObject.share.projectConfig.cachePath, `./${MOCK_CONFIG_JSON}`);
     let mockConfigJsonPath: string = path.resolve(rollupObject.share.projectConfig.aceModuleJsonPath,
                                                   `../${MOCK_CONFIG_JSON}`);
@@ -138,7 +138,7 @@ export class ModuleSourceFile {
       fs.writeFileSync(mockConfigJsonPath, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
       fs.copyFileSync(mockConfigJsonPath, mockCacheJsonPath);
     } else {
-      let cachedMockConfigInfo = require("json5").parse(fs.readFileSync(mockCacheJsonPath, 'utf-8'));
+      let cachedMockConfigInfo = require('json5').parse(fs.readFileSync(mockCacheJsonPath, 'utf-8'));
       for (let newMockTarget in ModuleSourceFile.newMockConfigInfo) {
         cachedMockConfigInfo[newMockTarget] = ModuleSourceFile.newMockConfigInfo[newMockTarget];
       }
@@ -221,7 +221,7 @@ export class ModuleSourceFile {
         // processing cases of user-defined mock targets
         let mockedTarget: string = toUnixPath(filePath).
             replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
-            replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, "");
+            replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(mockedTarget, res, rollupObject);
       }
       return res;

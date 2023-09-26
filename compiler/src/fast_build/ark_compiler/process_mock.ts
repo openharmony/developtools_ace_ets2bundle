@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import ts, { NodeArray } from "typescript";
+import ts, { NodeArray } from 'typescript';
 import { projectConfig } from '../../../main';
-import { DECORATOR_SUFFIX } from "../../pre_define";
+import { DECORATOR_SUFFIX } from '../../pre_define';
 
 export function disableMockDecorator(node: ts.Decorator): boolean {
   if (!shouldDisableMockDecorator()) {
-    return false;;
+    return false;
   }
 
   let parent: ts.Node = node.parent;
@@ -149,7 +149,7 @@ export function isMockDecorator(dec: ts.Decorator): boolean {
 function shouldDisableMockDecorator(): boolean {
   // mock decorator only takes effect under preview mode, should be removed otherswise
   if (projectConfig.isPreview) {
-    return false;;
+    return false;
   }
 
   // mockParams = {
@@ -162,4 +162,4 @@ function shouldDisableMockDecorator(): boolean {
     true : false;
 }
 
-export const ORIGIN_EXTENTION: string = ".origin";
+export const ORIGIN_EXTENTION: string = '.origin';
