@@ -778,10 +778,6 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'ArkTSAnyAllow' &&
-        item.value && item.value === 'true') {
-        partialUpdateConfig.allowAny = true;
-      }
       if (item.name && item.name === 'ExecuteArkTSLinter' &&
         item.value && item.value === 'false') {
         partialUpdateConfig.executeArkTSLinter = false;
@@ -791,8 +787,7 @@ function isPartialUpdate(metadata) {
         partialUpdateConfig.standardArkTSLinter = false;
       }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
-        partialUpdateConfig.allowAny && !partialUpdateConfig.executeArkTSLinter &&
-        !partialUpdateConfig.standardArkTSLinter;
+        !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter;
     });
   }
 }
@@ -838,7 +833,6 @@ const globalProgram = {
 const partialUpdateConfig = {
   partialUpdateMode: false,
   builderCheck: true,
-  allowAny: false,
   executeArkTSLinter: true,
   standardArkTSLinter: true,
   optimizeComponent: true,

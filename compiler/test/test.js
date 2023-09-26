@@ -235,11 +235,6 @@ function assertError(fileName) {
       expect(transformLog.errors[0].type).to.be.equal('ERROR');
       break;
     }
-    case 'checkAny': {
-      expect(transformLog.errors[0].message).to.be.equal(`Please define an explicit type, not any.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
     // process_component_member
     case 'processWatch': {
       expect(transformLog.errors[0].message).to.be.equal(`Cannot find name 'onWatch' in struct 'Index'.`);
