@@ -1,7 +1,7 @@
 {
   "name": "Gauge",
-  "atomic": true,
+  "single": true,
   "attrs": [
-    "value", "startAngle", "endAngle", "colors", "strokeWidth", "labelConfig"
+    "value", "startAngle", "endAngle", "colors", "strokeWidth", "labelConfig", "description", "trackShadow", "indicator"
   ]
 }

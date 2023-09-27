@@ -125,6 +125,7 @@ import {
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 import { assignComponentParams } from './process_custom_component';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
+import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -278,9 +279,13 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         node = createCustomDialogController(node.parent, node, transformLog.errors);
       } else if (isESObjectNode(node)) {
         node = ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
+      } else if (ts.isDecorator(node)) {
+        // This processing is for mock instead of ui transformation
+        node = processDecorator(node);
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
+
     function processResourceNode(node: ts.Node): ts.Node {
       if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -441,7 +446,7 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
               ts.factory.createIdentifier(SET_CONTROLLER_METHOD)
             ),
             undefined,
-            [mountNodde]
+            mountNodde ? [mountNodde] : undefined
           )
         ),
         ts.factory.createExpressionStatement(createViewCreate(jsDialog))
@@ -497,7 +502,7 @@ function getResourceDataNode(node: ts.CallExpression,
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): void {
   if (process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
-    !previewLog.isAcceleratePreview) {
+    !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     transformLog.errors.push({
       type: LogType.WARN,
       message: `No such '${node.arguments[0].text}' resource in current module.`,

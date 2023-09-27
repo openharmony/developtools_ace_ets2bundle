@@ -695,7 +695,8 @@ export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression):
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
   getNode: boolean = false): ts.ExpressionStatement {
-  if (projectConfig.isPreview && nameResult.name && !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
+  if ((projectConfig.isPreview || projectConfig.enableDebugLine) && nameResult.name &&
+    !NO_DEBUG_LINE_COMPONENT.has(nameResult.name)) {
     let posOfNode: ts.LineAndCharacter;
     let curFileName: string;
     let line: number = 1;
@@ -711,9 +712,19 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
       posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
       curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     }
-    const projectPath: string = projectConfig.projectPath;
-    const debugInfo: string = `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
-      `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    let debugInfo: string;
+    if (projectConfig.isPreview) {
+      if (projectConfig.minAPIVersion >= 11) {
+        debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
+          `(${posOfNode.line + line}:${posOfNode.character + col})`;
+      } else {
+        debugInfo = `${path.relative(projectConfig.projectPath, curFileName).replace(/\\+/g, '/')}` +
+          `(${posOfNode.line + line}:${posOfNode.character + col})`;
+      }
+    } else if (projectConfig.enableDebugLine) {
+      debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName)}` +
+        `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    }
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(nameResult.name),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
@@ -1775,6 +1786,9 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
       } else if (isGlobalBuilderCallExpressionNode(property.initializer) ||
         isInnerBuilderCallExpressionNode(property.initializer)) {
         newProperties.push(transformBuilderCallExpression(property));
+      } else if (ts.isObjectLiteralExpression(property.initializer)) {
+        newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
+          processObjectPropertyBuilder(property.initializer)));
       } else {
         newProperties.push(property);
       }

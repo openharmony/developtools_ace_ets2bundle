@@ -56,8 +56,8 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import config from '../rollup.config';
 import { MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
+
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
 
@@ -74,7 +74,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   }
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
-  const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js)\/(\S+)/;
+  const REG_PROJECT_SRC: RegExp = /(\S+)\/src\/(?:main|ohosTest)\/(ets|js|mock)\/(\S+)/;
 
   const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
   const bundleName: string = packageInfo[0];

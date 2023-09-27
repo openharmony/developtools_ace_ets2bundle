@@ -108,6 +108,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
   projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
+  projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -608,13 +609,16 @@ function filterWorker(workerPath) {
 
 function readAppResource(filePath) {
   if (fs.existsSync(filePath)) {
-    const appResource = fs.readFileSync(filePath, "utf-8");
+    const appResource = fs.readFileSync(filePath, 'utf-8');
     const resourceArr = appResource.split(/\n/);
-    let resourceMap = new Map();
+    const resourceMap = new Map();
     processResourceArr(resourceArr, resourceMap, filePath);
     for (let [key, value] of resourceMap) {
       resources.app[key] = value;
     }
+  }
+  if (process.env.rawFileResource && process.env.compileMode === 'moduleJson') {
+    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
   }
 }
 
@@ -717,9 +721,6 @@ function checkAppResourcePath(appResourcePath, config) {
       }
     }
   }
-  if (process.env.rawFileResource) {
-    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
-  }
 }
 
 function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
@@ -778,16 +779,16 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'ArkTSAnyAllow' &&
-        item.value && item.value === 'true') {
-        partialUpdateConfig.allowAny = true;
-      }
       if (item.name && item.name === 'ExecuteArkTSLinter' &&
         item.value && item.value === 'false') {
         partialUpdateConfig.executeArkTSLinter = false;
       }
+      if (item.name && item.name === 'StandardArkTSLinter' &&
+        item.value && item.value === 'false') {
+        partialUpdateConfig.standardArkTSLinter = false;
+      }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
-        partialUpdateConfig.allowAny && !partialUpdateConfig.executeArkTSLinter;
+        !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter;
     });
   }
 }
@@ -835,8 +836,8 @@ const globalProgram = {
 const partialUpdateConfig = {
   partialUpdateMode: false,
   builderCheck: true,
-  allowAny: false,
   executeArkTSLinter: true,
+  standardArkTSLinter: true,
   optimizeComponent: true,
 };
 
