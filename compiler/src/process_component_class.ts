@@ -239,7 +239,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   }
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   if (componentCollection.entryComponent === parentComponentName.escapedText.toString() &&
-    partialUpdateConfig.partialUpdateMode && projectConfig.minAPIVersion > 9) {
+    partialUpdateConfig.partialUpdateMode && projectConfig.minAPIVersion > 10) {
     newMembers.push(getEntryNameFunction(componentCollection.entryComponent));
   }
   curPropMap.clear();

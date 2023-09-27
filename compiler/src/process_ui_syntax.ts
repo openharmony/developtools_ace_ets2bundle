@@ -937,7 +937,7 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   let storageNode: ts.Expression;
   if (!entryOptionNode) {
     let originArray: ts.ExpressionStatement[];
-    if (projectConfig.minAPIVersion > 9) {
+    if (projectConfig.minAPIVersion > 10) {
       const newArray: ts.Expression[] = [
         context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
         context.factory.createObjectLiteralExpression([], false)
@@ -1187,7 +1187,7 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
       createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName),
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
-    if (projectConfig.minAPIVersion > 9) {
+    if (projectConfig.minAPIVersion > 10) {
       return [
         createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)
       ];
