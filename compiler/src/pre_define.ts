@@ -487,6 +487,7 @@ export const CREATE_STORAGE_LINK = 'createStorageLink';
 export const CREATE_STORAGE_PROP = 'createStorageProp';
 export const CREATE_LOCAL_STORAGE_LINK = 'createLocalStorageLink';
 export const CREATE_LOCAL_STORAGE_PROP = 'createLocalStorageProp';
+export const GET_ENTRYNAME: string = 'getEntryName';
 
 export const CARD_ENTRY_FUNCTION_NAME: string = 'loadEtsCard';
 export const CARD_ENABLE_DECORATORS: Set<string> = new Set([
