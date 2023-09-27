@@ -14,13 +14,11 @@
  */
 
 exports.source = `
-@Entry
 @Component
-struct CustomDialogUser {
-  @State message: any = 'Hello world';
-  build() {
-    Row() {
-    }
+@Entry
+struct gesture {
+  build(){
+    Text('sora');
   }
 }
 `

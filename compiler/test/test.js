@@ -41,12 +41,17 @@ const {
 } = require('../lib/pre_define');
 const {
   partialUpdateConfig,
-  projectConfig
+  projectConfig,
+  resources
 } = require('../main');
 
 projectConfig.projectPath = path.resolve(process.cwd());
 
 function expectActual(name, filePath, checkError = false) {
+  transformLog.errors = [];
+  resources.app["media"] = {icon:16777222};
+  resources.app["font"] = {song:16777223};
+  process.env.rawFileResource = './';
   const content = require(filePath);
   const source = content.source;
   process.env.compiler = BUILD_ON;
@@ -72,7 +77,6 @@ function expectActual(name, filePath, checkError = false) {
   resetComponentCollection();
   if (checkError) {
     assertError(name);
-    transformLog.errors = [];
   } else {
     expect(result.outputText).eql(content.expectResult);
   }
@@ -141,258 +145,28 @@ function processSystemApi(content) {
   return newContent;
 }
 
+function replaceFunctions(message) {
+  const regex = /\${(.*?)}/g;
+  return message.replace(regex, (match, p1) => {
+    return eval(p1);
+  });
+}
+
+function validateError(logmsg, logtype, message, type) {
+  expect(logmsg).to.be.equal(message);
+  expect(logtype).to.be.equal(type);
+}
+
 function assertError(fileName) {
-  switch (fileName) {
-    case '@linkInitialize': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @Link property 'link' cannot be specified a default value.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case '@objectLinkInitialize': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @ObjectLink property 'objectLink' cannot be specified a default value.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    // process_component_build.ts
-    case 'rootContainerCheck': {
-      expect(transformLog.errors[0].message).to.be.equal(`There should have a root container component.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'arkUIComponent': {
-      expect(transformLog.errors[0].message).to.be.equal(`Only UI component syntax can be written in build method.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case '@BuilderParam': {
-      expect(transformLog.errors[0].message).to.be.equal(
-        `In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'forEachParamCheck': {
-      expect(transformLog.errors[0].message).to.be.equal(`There should be wrapped in curly braces in ForEach.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'ifComponent': {
-      expect(transformLog.errors[0].message).to.be.equal(`Condition expression cannot be null in if statement.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      expect(transformLog.errors[1].message).to.be.equal(`Then statement cannot be null in if statement.`);
-      expect(transformLog.errors[1].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'idCheck': {
-      expect(transformLog.errors[0].message).to.be.equal(
-        `The current component id "1" is duplicate with ${path.resolve(__dirname, '../idCheck.ets')}:7:21.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'arkUIStandard': {
-      expect(transformLog.errors[0].message).to.be.equal(`'Text('Hello').onCilck' does not meet UI component syntax.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'stateStyles': {
-      expect(transformLog.errors[0].message).to.be.equal(`.stateStyles doesn't conform standard.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'buttonCheck': {
-      expect(transformLog.errors[0].message).to.be.equal(`The Button component with a label parameter can not have any child.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'attributeCheck': {
-      expect(transformLog.errors[0].message).to.be.equal(`'ForEach(this.arr, () =>{}, this.arr[0]).h' does not meet UI component syntax.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    // process_component_class
-    case 'validateDecorators': {
-      expect(transformLog.errors[0].message).to.be.equal(`The static variable of struct cannot be used together with built-in decorators.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'processComponentMethod': {
-      expect(transformLog.errors[0].message).to.be.equal(`The 'build' method can not have arguments.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case '@StylesParamChack': {
-      expect(transformLog.errors[0].message).to.be.equal(`@Styles can't have parameters.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'updateHeritageClauses': {
-      expect(transformLog.errors[0].message).to.be.equal(`The struct component is not allowed to extends other class or implements other interface.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateBuildMethodCount': {
-      expect(transformLog.errors[0].message).to.be.equal(`struct 'Index' must be at least or at most one 'build' method.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateHasController': {
-      expect(transformLog.errors[0].message).to.be.equal(`@CustomDialog component should have a property of the CustomDialogController type.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'checkAny': {
-      expect(transformLog.errors[0].message).to.be.equal(`Please define an explicit type, not any.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    // process_component_member
-    case 'processWatch': {
-      expect(transformLog.errors[0].message).to.be.equal(`Cannot find name 'onWatch' in struct 'Index'.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'updateBuilderParamProperty': {
-      expect(transformLog.errors[0].message).to.be.equal(`BuilderParam property can only initialized by Builder function.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateMultiDecorators': {
-      expect(transformLog.errors[0].message).to.be.equal(`The property 'lang' cannot have mutilate state management decorators.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateDecoratorNonSingleKey': {
-      expect(transformLog.errors[0].message).to.be.equal(`The decorator StorageLink should have a single key.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validatePropertyNonDefaultValue': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @State property 'message' must be specified a default value.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validatePropertyDefaultValue': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @Link property 'message' cannot be specified a default value.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validatePropertyNonType': {
-      expect(transformLog.errors[0].message).to.be.equal(`The property 'message' must specify a type.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateNonObservedClassType': {
-      expect(transformLog.errors[0].message).to.be.equal(
-        `The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateHasIllegalDecoratorInEntry': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @Entry component 'Index' cannot have the @Prop property 'message'.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'validateHasIllegalQuestionToken': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @ObjectLink property 'message' cannot be an optional parameter.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'validateForbiddenUseStateType': {
-      expect(transformLog.errors[0].message).to.be.equal(`The @State property 'message' cannot be a 'CustomDialogController' object.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateDuplicateDecorator': {
-      expect(transformLog.errors[1].message).to.be.equal(
-        `The decorator '@opacity' cannot have the same name as the built-in style attribute 'opacity'.`);
-      expect(transformLog.errors[1].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateWatchDecorator': {
-      expect(transformLog.errors[0].message).to.be.equal(`Regular variable 'message' can not be decorated with @Watch.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateWatchParam': {
-      expect(transformLog.errors[0].message).to.be.equal(`The parameter should be a string.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateCustomDecorator': {
-      expect(transformLog.errors[0].message).to.be.equal(`The inner decorator @State cannot be used together with custom decorator.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    // process_custom_component
-    case 'checkBuilder$$': {
-      expect(transformLog.errors[0].message).to.be.equal(`Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'validateForbiddenToInitViaParam': {
-      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' cannot initialize here (forbidden to specify).`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateMandatoryToInitViaParam': {
-      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' is missing (mandatory to specify).`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'validateInitDecorator': {
-      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' in the custom component 'Child' is missing assignment or initialization.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateIllegalInitFromParent': {
-      expect(transformLog.errors[0].message).to.be.equal(`The regular property 'message' cannot be assigned to the @Link property 'message'.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'validateNonLinkWithDollar': {
-      expect(transformLog.errors[0].message).to.be.equal(`Property 'message' cannot initialize using '$' to create a reference to a variable.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    // process_import
-    case 'validateModuleName': {
-      expect(transformLog.errors[0].message).to.be.equal(`The module name 'Button' can not be the same as the inner component name.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'notComponent':{
-      expect(transformLog.errors[0].message).to.be.equal(`A struct should use decorator '@Component'.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'notConcurrent':{
-      expect(transformLog.errors[0].message).to.be.equal(`The struct 'IndexDecorator' use invalid decorator.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'notConcurrentFun':{
-      expect(transformLog.errors[0].message).to.be.equal(`@Concurrent can not be used on method. please use it on function declaration.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
-    }
-    case 'notDecorator':{
-      expect(transformLog.errors[0].message).to.be.equal(`The struct 'IndexDecorator' use invalid decorator.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'StylesDuplicate':{
-      expect(transformLog.errors[0].message).to.be.equal(`The struct 'StylesDuplicate' use invalid decorator.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'vaildateDecorator':{
-      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Index' use invalid decorator.`);
-      expect(transformLog.errors[0].type).to.be.equal('WARN');
-      break;
-    }
-    case 'state':{
-      expect(transformLog.errors[0].message).to.be.equal(`The struct 'Button' cannot have the same name as the built-in component 'Button'.`);
-      expect(transformLog.errors[0].type).to.be.equal('ERROR');
-      break;
+  const errorJson = require('./error.json');
+  const errorInfo = errorJson[fileName];
+  if (errorInfo) {
+    if (Array.isArray(errorInfo)) {
+      errorInfo.forEach((item, index) => {
+        validateError(transformLog.errors[index].message, transformLog.errors[index].type, replaceFunctions(item.message), item.type);
+      });
+    } else {
+      validateError(transformLog.errors[0].message, transformLog.errors[0].type, replaceFunctions(errorInfo.message), errorInfo.type);
     }
   }
 }
