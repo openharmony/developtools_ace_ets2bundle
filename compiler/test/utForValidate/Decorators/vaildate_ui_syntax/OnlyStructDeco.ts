@@ -20,4 +20,11 @@ class bsd {
 
     }
 }
+
+@Entry
+@Component
+struct summerpockets {
+  build(){
+  }
+}
 `

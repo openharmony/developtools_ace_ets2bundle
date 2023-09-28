@@ -14,6 +14,7 @@
  */
 
 exports.source = `
+@Entry
 @Component
 struct StylesDuplicate{
   @State @opacity: string = 'Hello Word'
