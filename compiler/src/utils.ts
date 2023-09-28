@@ -592,7 +592,8 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
 
 
 export function writeCollectionFile(cachePath: string, appCollection: Map<string, Set<string>>,
-  allComponentsOrModules: Map<string, Array<string>>, fileName: string, allFiles: Set<string> = null) {
+  allComponentsOrModules: Map<string, Array<string>>, fileName: string, allFiles: Set<string> = null,
+  widgetPath: string = undefined) {
   for (let key of appCollection.keys()) {
     if (appCollection.get(key).size === 0) {
       allComponentsOrModules.delete(key);
@@ -605,6 +606,9 @@ export function writeCollectionFile(cachePath: string, appCollection: Map<string
   }
   const content: string = JSON.stringify(Object.fromEntries(allComponentsOrModules), null, 2);
   writeFileSync(path.resolve(cachePath, fileName), content);
+  if (widgetPath) {
+    writeFileSync(path.resolve(widgetPath, fileName), content);
+  }
 }
 
 export function getAllComponentsOrModules(allFiles: Set<string>,
