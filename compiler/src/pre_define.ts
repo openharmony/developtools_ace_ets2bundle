@@ -530,4 +530,3 @@ export const CROSSPLATFORM_TAG_CHECK_NAME: string = 'crossplatform';
 export const CROSSPLATFORM_TAG_CHECK_ERROER: string = "'{0}' can't support crossplatform application.";
 export const DEPRECATED_TAG_CHECK_NAME: string = 'deprecated';
 export const DEPRECATED_TAG_CHECK_WARNING: string = "'{0}' has been deprecated, please use it with caution.";
-

@@ -172,7 +172,7 @@ function getInitCheckConfig(tagName: string, message: string, type: ts.Diagnosti
 function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): CheckJSDocTagNameConfig {
   let needCheckResult: boolean = false;
   const checkConfigArray: InitCheckConfig[] = [];
-  if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) ||  isArkuiDependence(sourceFileName)) {
+  if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
     checkConfigArray.push(getInitCheckConfig(DEPRECATED_TAG_CHECK_NAME, DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;
