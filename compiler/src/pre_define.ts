@@ -523,3 +523,11 @@ export const PAGE_PATH: string = 'pagePath';
 export const CAN_RETAKE: string = 'canRetake';
 export const DECORATOR_SUFFIX: string = '@';
 export const MOCK_CONFIG_JSON: string = 'mock-config.json';
+
+export const FORM_TAG_CHECK_NAME: string = 'form';
+export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
+export const CROSSPLATFORM_TAG_CHECK_NAME: string = 'crossplatform';
+export const CROSSPLATFORM_TAG_CHECK_ERROER: string = "'{0}' can't support crossplatform application.";
+export const DEPRECATED_TAG_CHECK_NAME: string = 'deprecated';
+export const DEPRECATED_TAG_CHECK_WARNING: string = "'{0}' has been deprecated, please use it with caution.";
+
