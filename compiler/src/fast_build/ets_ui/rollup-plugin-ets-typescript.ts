@@ -148,8 +148,12 @@ export function etsTransform() {
         });
       }
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+        let widgetPath: string;
+        if (projectConfig.widgetCompile) {
+          widgetPath = path.resolve(projectConfig.aceModuleBuild, 'widget');
+        }
         writeCollectionFile(projectConfig.cachePath, appComponentCollection,
-          this.share.allComponents, 'component_collection.json', this.share.allFiles);
+          this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
