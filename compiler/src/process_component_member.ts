@@ -75,7 +75,9 @@ import {
   COMPONENT_CONSTRUCTOR_PARAMS,
   RESERT,
   COMPONENT_IF_UNDEFINED,
-  COMPONENT_PARAMS_LAMBDA_FUNCTION
+  COMPONENT_PARAMS_LAMBDA_FUNCTION,
+  NULL,
+  OBSERVED
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -1125,7 +1127,10 @@ function updateSynchedPropertyOneWayPU(nameIdentifier: ts.Identifier, type: ts.T
 
 function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
   type: ts.TypeNode, decoractor: string, log: LogInfo[]): ts.ExpressionStatement {
-  if (isObservedClassType(type)) {
+  if (partialUpdateConfig.partialUpdateMode && projectConfig.compileMode === 'esmodule' && checkObjectLinkType(type)) {
+    return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
+      createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
+  } else if ((projectConfig.compileMode !== 'esmodule' || !partialUpdateConfig.partialUpdateMode) && isObservedClassType(type)) {
     return createInitExpressionStatementForDecorator(nameIdentifier.getText(), SYNCHED_PROPERTY_NESED_OBJECT_PU,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else {
@@ -1170,3 +1175,40 @@ function validatePropDecorator(decorators: ts.NodeArray<ts.Decorator>): boolean 
   return false;
 }
 
+function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
+  if (globalProgram.checker) {
+    const type: ts.Type = globalProgram.checker.getTypeFromTypeNode(typeNode);
+    if (typeNode.parent && ts.isPropertyDeclaration(typeNode.parent) && isObserved(type)) {
+      return true;
+    }
+    // @ts-ignore
+    if (type.types && type.types.length) {
+      let observedNumber: number = 0;
+      for (let i = 0; i < type.types.length; i++) {
+        if (type.types[i].intrinsicName) {
+          return false;
+        }
+        if (isObserved(type.types[i])) {
+          observedNumber += 1;
+        }
+      }
+      if (observedNumber === type.types.length) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+}
+
+function isObserved(type: ts.Type): boolean {
+  if (type && type.getSymbol() && type.getSymbol().declarations) {
+    return type.getSymbol().declarations.some((classDeclaration: ts.ClassDeclaration) => {
+      if (ts.isClassDeclaration(classDeclaration) && classDeclaration.decorators) {
+        return classDeclaration.decorators.some((decorator: ts.Decorator) => {
+          return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
+        });
+      }
+    });
+  }
+}
