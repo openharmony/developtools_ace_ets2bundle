@@ -127,6 +127,7 @@ import {
   GLOBAL_STYLE_FUNCTION,
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
+  CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY,
   INNER_CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   ID_ATTRS
@@ -1732,7 +1733,7 @@ function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: t
     if (ts.isConditionalExpression(argument)) {
       newArguments.push(processConditionalBuilder(argument, identifierNode, propertyName));
     } else if (isBuilderChangeNode(argument, identifierNode, propertyName)) {
-      newArguments.push(parseBuilderNode(argument));
+      newArguments.push(parseBuilderNode(argument, propertyName));
     } else {
       newArguments.push(argument);
     }
@@ -1754,13 +1755,26 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
     CUSTOM_BUILDER_METHOD.has(argument.expression.escapedText.toString());
 }
 
-function parseBuilderNode(node: ts.Node): ts.ObjectLiteralExpression {
+function parseBuilderNode(node: ts.Node, propertyName: string):
+  ts.ObjectLiteralExpression | ts.CallExpression | ts.ArrowFunction {
   if (isPropertyAccessExpressionNode(node)) {
-    return processPropertyBuilder(node as ts.PropertyAccessExpression);
+    if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
+      return processPropertyBuilderWithoutKey(node as ts.PropertyAccessExpression);
+    } else {
+      return processPropertyBuilder(node as ts.PropertyAccessExpression);
+    }
   } else if (ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) {
-    return processIdentifierBuilder(node);
+    if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
+      return processIdentifierBuilderWithoutKey(node);
+    } else {
+      return processIdentifierBuilder(node);
+    }
   } else if (ts.isCallExpression(node)) {
-    return getParsedBuilderAttrArgumentWithParams(node);
+    if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
+      return getParsedBuilderAttrArgumentWithParamsWithoutKey(node);
+    } else {
+      return getParsedBuilderAttrArgumentWithParams(node);
+    }
   } else if (ts.isObjectLiteralExpression(node)) {
     return processObjectPropertyBuilder(node);
   }
@@ -1898,7 +1912,7 @@ function processInitializer(initializer: ts.Expression, propertyName: string): t
       propertyName);
   } else if (isBuilderChangeNode(initializer, ts.factory.createIdentifier(CUSTOM_COMPONENT_DEFAULT),
     propertyName)) {
-    return parseBuilderNode(initializer);
+    return parseBuilderNode(initializer, propertyName);
   }
   return initializer;
 }
@@ -1928,10 +1942,10 @@ function processConditionalBuilder(initializer: ts.ConditionalExpression, identi
   let whenTrue: ts.Expression = initializer.whenTrue;
   let whenFalse: ts.Expression = initializer.whenFalse;
   if (isBuilderChangeNode(initializer.whenTrue, identifierNode, propertyName)) {
-    whenTrue = parseBuilderNode(initializer.whenTrue);
+    whenTrue = parseBuilderNode(initializer.whenTrue, propertyName);
   }
   if (isBuilderChangeNode(initializer.whenFalse, identifierNode, propertyName)) {
-    whenFalse = parseBuilderNode(initializer.whenFalse);
+    whenFalse = parseBuilderNode(initializer.whenFalse, propertyName);
   }
   return ts.factory.createConditionalExpression(
     initializer.condition,
@@ -1958,6 +1972,17 @@ function processPropertyBuilder(node: ts.PropertyAccessExpression): ts.ObjectLit
   ]);
 }
 
+function processPropertyBuilderWithoutKey(node: ts.PropertyAccessExpression): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      node,
+      ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+    ),
+    undefined,
+    [ts.factory.createThis()]
+  );
+}
+
 function processIdentifierBuilder(node: ts.Identifier): ts.ObjectLiteralExpression {
   return ts.factory.createObjectLiteralExpression([
     ts.factory.createPropertyAssignment(
@@ -1968,6 +1993,13 @@ function processIdentifierBuilder(node: ts.Identifier): ts.ObjectLiteralExpressi
       )
     )
   ]);
+}
+
+function processIdentifierBuilderWithoutKey(node: ts.Identifier): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(node, ts.factory.createIdentifier(BUILDER_ATTR_BIND)),
+    undefined, [ts.factory.createThis()]
+  );
 }
 
 function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
@@ -1984,12 +2016,29 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
         ts.factory.createBlock(
           [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
-          ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+            ), undefined, [ts.factory.createThis(), ...node.arguments]))],
           true
         )
       )
     )
   ]);
+}
+
+function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpression):
+  ts.ArrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
+        ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+      true
+    )
+  );
 }
 
 function validatePropertyAccessExpressionWithCustomBuilder(node: ts.Node): boolean {
