@@ -81,6 +81,7 @@ export const BUILDIN_STYLE_NAMES: Set<string> = new Set([
 export const AUTOMIC_COMPONENT: Set<string> = new Set();
 export const SINGLE_CHILD_COMPONENT: Set<string> = new Set();
 export const SPECIFIC_CHILD_COMPONENT: Map<string, Set<string>> = new Map();
+export const SPECIFIC_PARENT_COMPONENT: Map<string, Set<string>> = new Map();
 export const GESTURE_TYPE_NAMES: Set<string> = new Set([
   'TapGesture', 'LongPressGesture', 'PanGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup',
   'SwipeGesture'
@@ -142,6 +143,10 @@ export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showU
     }
     if (COMPONENT_MAP[componentName].noDebugLine) {
       NO_DEBUG_LINE_COMPONENT.add(componentName);
+    }
+    if (COMPONENT_MAP[componentName].parents) {
+      SPECIFIC_PARENT_COMPONENT.set(componentName,
+        new Set([...COMPONENT_MAP[componentName].parents]));
     }
   });
 })();
