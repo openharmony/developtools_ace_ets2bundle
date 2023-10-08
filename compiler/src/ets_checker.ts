@@ -46,7 +46,13 @@ import {
   EXTNAME_JS,
   FOREACH_LAZYFOREACH,
   COMPONENT_IF,
-  TS_WATCH_END_MSG
+  TS_WATCH_END_MSG,
+  FORM_TAG_CHECK_NAME,
+  FORM_TAG_CHECK_ERROR,
+  CROSSPLATFORM_TAG_CHECK_NAME,
+  CROSSPLATFORM_TAG_CHECK_ERROER,
+  DEPRECATED_TAG_CHECK_NAME,
+  DEPRECATED_TAG_CHECK_WARNING
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -152,14 +158,14 @@ interface CheckJSDocTagNameConfig {
   checkConfig: InitCheckConfig[];
 }
 
-function getInitCheckConfig(tagName: string, message: string): InitCheckConfig {
+function getInitCheckConfig(tagName: string, message: string, type: ts.DiagnosticCategory, tagNameShouldExisted: boolean): InitCheckConfig {
   return {
     tagName: tagName,
     message: message,
     needConditionCheck: false,
-    type: ts.DiagnosticCategory.Error,
+    type: type,
     specifyCheckConditionFuncName: '',
-    tagNameShouldExisted: true
+    tagNameShouldExisted: tagNameShouldExisted
   };
 }
 
@@ -167,13 +173,14 @@ function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): C
   let needCheckResult: boolean = false;
   const checkConfigArray: InitCheckConfig[] = [];
   if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
+    checkConfigArray.push(getInitCheckConfig(DEPRECATED_TAG_CHECK_NAME, DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig('form', "'{0}' can't support form application."));
+      checkConfigArray.push(getInitCheckConfig(FORM_TAG_CHECK_NAME, FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig('crossplatform', "'{0}' can't support crossplatform application."));
+      checkConfigArray.push(getInitCheckConfig(CROSSPLATFORM_TAG_CHECK_NAME, CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
     }
   }
 
