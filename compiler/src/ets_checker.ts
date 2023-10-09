@@ -52,7 +52,13 @@ import {
   CROSSPLATFORM_TAG_CHECK_NAME,
   CROSSPLATFORM_TAG_CHECK_ERROER,
   DEPRECATED_TAG_CHECK_NAME,
-  DEPRECATED_TAG_CHECK_WARNING
+  DEPRECATED_TAG_CHECK_WARNING,
+  FA_TAG_CHECK_NAME,
+  FA_TAG_HUMP_CHECK_NAME,
+  FA_TAG_CHECK_ERROR,
+  STAGE_TAG_CHECK_NAME,
+  STAGE_TAG_HUMP_CHECK_NAME,
+  STAGE_TAG_CHECK_ERROR
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -181,6 +187,15 @@ function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): C
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       checkConfigArray.push(getInitCheckConfig(CROSSPLATFORM_TAG_CHECK_NAME, CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
+    }
+    if (process.env.compileMode === 'moduleJson') {
+      needCheckResult = true;
+      checkConfigArray.push(getInitCheckConfig(FA_TAG_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getInitCheckConfig(FA_TAG_HUMP_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+    } else if (process.env.compileMode !== '') {
+      needCheckResult = true;
+      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_HUMP_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     }
   }
 
