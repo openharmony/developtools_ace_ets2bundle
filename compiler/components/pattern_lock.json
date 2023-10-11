@@ -11,6 +11,7 @@
     "pathColor",
     "pathStrokeWidth",
     "onPatternComplete",
-    "autoReset"
+    "autoReset",
+    "onDotConnect"
   ]
 }
