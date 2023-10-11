@@ -116,8 +116,9 @@ export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['background', 'bindPopup', 'bindMenu', 'bindContextMenu', 'title',
   'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction', 'bindContentCover', 'bindSheet',
   'navDestination', 'overlay', 'toolbarConfiguration', 'customKeyboard', 'bindSelectionMenu', 'description',
-  'showUnit', 'customKeyboard']);
-export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'customKeyboard']);
+  'showUnit', 'customKeyboard', 'create']);
+export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create']);
+export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {
