@@ -276,7 +276,11 @@ export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragSta
 export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
-  ['ListItem', new Set(['swipeAction'])]
+  ['ListItem', new Set(['swipeAction'])],
+  ['MenuItem', new Set([COMPONENT_CREATE_FUNCTION])],
+  ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
+  ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
+  ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])]
 ]);
 
 export const CHECKED: string = 'checked';
