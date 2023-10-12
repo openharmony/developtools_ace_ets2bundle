@@ -202,8 +202,9 @@ function checkComponentDecorator(source: string, filePath: string,
       }
       if (ts.isStructDeclaration(item)) {
         if (item.name && ts.isIdentifier(item.name)) {
-          if (item.decorators && item.decorators.length) {
-            checkDecorators(item.decorators, result, item.name, log, sourceFile, item);
+          let decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+          if (decorators && decorators.length) {
+            checkDecorators(decorators, result, item.name, log, sourceFile, item);
           } else {
             const message: string = `A struct should use decorator '@Component'.`;
             addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
@@ -214,7 +215,7 @@ function checkComponentDecorator(source: string, filePath: string,
         }
       }
       if (ts.isMissingDeclaration(item)) {
-        const decorators: ts.NodeArray<ts.Decorator> = item.decorators;
+        const decorators = ts.getAllDecorators(item);
         for (let i = 0; i < decorators.length; i++) {
           if (decorators[i] && /struct/.test(decorators[i].getText())) {
             const message: string = `Please use a valid decorator.`;
@@ -292,7 +293,7 @@ interface DecoratorResult {
   previewCount: number;
 }
 
-function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: DecoratorResult,
+function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorResult,
   component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile, node: ts.StructDeclaration): void {
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
@@ -351,21 +352,23 @@ function checkDecorators(decorators: ts.NodeArray<ts.Decorator>, result: Decorat
 
 function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclaration, log: LogInfo[],
   sourceFile: ts.SourceFile): void {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (projectConfig.compileMode === JSBUNDLE) {
     const message: string = `@Concurrent can only be used in ESMODULE compile mode.`;
-    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
   }
   if (ts.isMethodDeclaration(node)) {
     const message: string = `@Concurrent can not be used on method. please use it on function declaration.`;
-    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
   }
   if (node.asteriskToken) {
     let hasAsync: boolean = false;
+    const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
     const checkAsyncModifier = (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword;
-    node.modifiers && (hasAsync = node.modifiers.some(checkAsyncModifier));
+    modifiers && (hasAsync = modifiers.some(checkAsyncModifier));
     const funcKind: string = hasAsync ? 'Async generator' : 'Generator';
     const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
-    addLog(LogType.ERROR, message, node.decorators!.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
   }
 }
 
@@ -853,15 +856,16 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
         const propertyName: string = item.name.getText();
         properties.add(propertyName);
-        if (!item.decorators || !item.decorators.length) {
+        const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+        if (!decorators || !decorators.length) {
           regulars.add(propertyName);
         } else {
           isStatic = false;
-          for (let i = 0; i < item.decorators.length; i++) {
-            const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+          for (let i = 0; i < decorators.length; i++) {
+            const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
-              collectionStates(item.decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
+              collectionStates(decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
                 states, links, props, storageProps, storageLinks, provides, consumes, objectLinks,
                 localStorageLink, localStorageProp, builderParams, item.initializer, builderParamData,
                 propData);
@@ -1224,9 +1228,10 @@ export function resetComponentCollection() {
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
-  if (node.modifiers) {
-    for (let i = 0; i < node.modifiers.length; i++) {
-      if (node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
+  const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined
+  if (modifiers) {
+    for (let i = 0; i < modifiers.length; i++) {
+      if (modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
         const message: string = `It's not a recommended way to export struct with @Entry decorator, ` +
           `which may cause ACE Engine error in component preview mode.`;
         addLog(LogType.WARN, message, node.getStart(), log, sourceFile);
@@ -1237,18 +1242,19 @@ function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceF
 }
 
 function validateStateVariable(node: ts.MethodDeclaration): void {
-  if (node.decorators && node.decorators.length) {
-    for (let i = 0; i < node.decorators.length; i++) {
-      const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/,'').trim();
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/,'').trim();
       if (CARD_ENABLE_DECORATORS[decoratorName]) {
         validatorCard(transformLog.errors, CARD_LOG_TYPE_DECORATORS,
-          node.decorators[i].getStart(), decoratorName);
+          decorators[i].getStart(), decoratorName);
       }
       if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
         transformLog.errors.push({
           type: LogType.ERROR,
-          message: `'${node.decorators[i].getText()}' can not decorate the method.`,
-          pos: node.decorators[i].getStart()
+          message: `'${decorators[i].getText()}' can not decorate the method.`,
+          pos: decorators[i].getStart()
         });
       }
     }

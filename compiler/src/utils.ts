@@ -179,13 +179,14 @@ export const componentInfo: ComponentInfo = new ComponentInfo();
 export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
   ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,
   customBuilder: ts.Decorator[] = null, log: LogInfo[] = null): boolean {
-  if (node.decorators && node.decorators.length) {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
     const extendResult = {
       Extend: false,
       AnimatableExtend: false
     }
-    for (let i = 0; i < node.decorators.length; i++) {
-      const originalDecortor: string = node.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
       if (log && EXTEND_DECORATORS.includes(decortorName)) {
         if (originalDecortor === COMPONENT_EXTEND_DECORATOR) {
           extendResult.Extend = true;
@@ -196,7 +197,7 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
       } else {
         if (originalDecortor === decortorName) {
           if (customBuilder) {
-            customBuilder.push(...node.decorators.slice(i + 1), ...node.decorators.slice(0, i));
+            customBuilder.push(...decorators.slice(i + 1), ...decorators.slice(0, i));
           }
           return true;
         }

@@ -141,15 +141,16 @@ export function processComponentClass(node: ts.StructDeclaration, context: ts.Tr
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, log, program, checkPreview(node));
-  return ts.factory.createClassDeclaration(undefined, node.modifiers, node.name,
+  return ts.factory.createClassDeclaration(ts.getModifiers(node), node.name,
     node.typeParameters, updateHeritageClauses(node, log), memberNode);
 }
 
-function checkPreview(node: ts.ClassDeclaration) {
+function checkPreview(node: ts.StructDeclaration) {
   let hasPreview: boolean = false;
-  if (node && node.decorators) {
-    for (let i = 0; i < node.decorators.length; i++) {
-      const name: string = node.decorators[i].getText().replace(/\([^\(\)]*\)/, '').trim();
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (node && decorators) {
+    for (let i = 0; i < decorators.length; i++) {
+      const name: string = decorators[i].getText().replace(/\([^\(\)]*\)/, '').trim();
       if (name === COMPONENT_DECORATOR_PREVIEW) {
         hasPreview = true;
         break;
@@ -176,7 +177,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
   const checkController: ControllerType =
     { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
-  const interfaceNode = ts.factory.createInterfaceDeclaration(undefined, undefined,
+  const interfaceNode = ts.factory.createInterfaceDeclaration(undefined,
     parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, []);
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
@@ -284,14 +285,17 @@ function assignParams(parentComponentName: string): ts.Statement[] {
 }
 
 function isStaticProperty(property: ts.PropertyDeclaration): boolean {
-  return property.modifiers && property.modifiers.length && property.modifiers.some(modifier => {
+  const modifiers: readonly ts.Modifier[] =
+    ts.canHaveModifiers(property) ? ts.getModifiers(property) : undefined;
+  return modifiers && modifiers.length && modifiers.some(modifier => {
     return modifier.kind === ts.SyntaxKind.StaticKeyword;
   });
 }
 
 function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
-  if (item.decorators && item.decorators.length) {
-    item.decorators.map((decorator: ts.Decorator) => {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+  if (decorators && decorators.length) {
+    decorators.map((decorator: ts.Decorator) => {
       const decoratorName: string = decorator.getText();
       if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
         log.push({
@@ -341,13 +345,14 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
   let decoratorName: string;
   let updatePropertyItem: ts.PropertyDeclaration;
   const type: ts.TypeNode = propertyItem.type;
-  if (!propertyItem.decorators || propertyItem.decorators.length === 0) {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyItem);
+  if (!decorators || decorators.length === 0) {
     updatePropertyItem = createPropertyDeclaration(propertyItem, type, true);
     newMembers.push(updatePropertyItem);
-  } else if (propertyItem.decorators) {
-    for (let i = 0; i < propertyItem.decorators.length; i++) {
+  } else {
+    for (let i = 0; i < decorators.length; i++) {
       let newType: ts.TypeNode;
-      decoratorName = propertyItem.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      decoratorName = decorators[i].getText().replace(/\(.*\)$/, '').trim();
       let isLocalStorage: boolean = false;
       if (!partialUpdateConfig.partialUpdateMode) {
         newType = createTypeReference(decoratorName, type, log, program);
@@ -386,8 +391,10 @@ function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType
   }
   const privateM: ts.ModifierToken<ts.SyntaxKind.PrivateKeyword> =
     ts.factory.createModifier(ts.SyntaxKind.PrivateKeyword);
-  return ts.factory.updatePropertyDeclaration(propertyItem, undefined,
-    propertyItem.modifiers || [privateM], prefix + propertyItem.name.getText(),
+  const modifiers: readonly ts.Modifier[] =
+    ts.canHaveModifiers(propertyItem) ? ts.getModifiers(propertyItem) : undefined;
+  return ts.factory.updatePropertyDeclaration(propertyItem,
+    ts.concatenateDecoratorsAndModifiers(undefined, modifiers || [privateM]), prefix + propertyItem.name.getText(),
     propertyItem.questionToken, newType, isLocalStorage ?
       createLocalStroageCallExpression(propertyItem, propertyItem.name.getText(),
         parentComponentName) : undefined);
@@ -445,7 +452,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
     updateItem = processBuildMember(buildNode, context, log);
   } else if (node.body && ts.isBlock(node.body)) {
     if (name === COMPONENT_TRANSITION_FUNCTION) {
-      updateItem = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
+      updateItem = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
@@ -454,8 +461,9 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       let parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
       parameters.push(createParentParameter());
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node, customBuilder,
-        node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters,
+      const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
+        ts.concatenateDecoratorsAndModifiers(customBuilder, modifiers), node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
@@ -481,7 +489,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
 }
 
 export function createParentParameter(): ts.ParameterDeclaration {
-  return ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+  return ts.factory.createParameterDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT), undefined, undefined,
     ts.factory.createIdentifier(NULL));
 }
@@ -686,9 +694,9 @@ function addUpdateStateVarsFunc(statements: ts.Statement[], parentComponentName:
 
 function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclaration {
   return ts.factory.createMethodDeclaration(
-    undefined, undefined, undefined,
+    undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP),
-    undefined, undefined, [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    undefined, undefined, [ts.factory.createParameterDeclaration(undefined, undefined,
       ts.factory.createIdentifier(RMELMTID), undefined, undefined, undefined)], undefined,
       ts.factory.createBlock(statements, true));
 }
@@ -700,10 +708,11 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
   statements.forEach((statement: ts.PropertyDeclaration) => {
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
-    if (!partialUpdateConfig.partialUpdateMode || statement.decorators) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(statement);
+    if (!partialUpdateConfig.partialUpdateMode || decorators && decorators.length !== 0) {
       paramsStatement = createParamsWithUnderlineStatement(name);
     }
-    if (partialUpdateConfig.partialUpdateMode && statement.decorators) {
+    if (partialUpdateConfig.partialUpdateMode && decorators && decorators.length !== 0) {
       updateStatements.push(createElmtIdWithUnderlineStatement(name));
     }
     deleteStatements.push(paramsStatement);
@@ -734,11 +743,11 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
 }
 
 function createRecycleElmt(statements: ts.Statement[]): ts.MethodDeclaration {
-  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+  return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(UPDATE_RECYCLE_ELMT_ID), undefined, undefined, [
-      ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      ts.factory.createParameterDeclaration(undefined, undefined,
         ts.factory.createIdentifier(OLD_ELMT_ID)),
-      ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      ts.factory.createParameterDeclaration(undefined, undefined,
         ts.factory.createIdentifier(NEW_ELMT_ID))
     ], undefined, ts.factory.createBlock(statements, true));
 }
@@ -772,16 +781,16 @@ function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
-  return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+  return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
     ts.factory.createBlock(statements, true));
 }
 
 function createParamsInitBlock(express: string, statements: ts.Statement[],
   parentComponentName?: ts.Identifier): ts.MethodDeclaration {
-  const methodDeclaration: ts.MethodDeclaration = ts.factory.createMethodDeclaration(undefined,
+  const methodDeclaration: ts.MethodDeclaration = ts.factory.createMethodDeclaration(
     undefined, undefined, ts.factory.createIdentifier(express), undefined, undefined,
-    [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    [ts.factory.createParameterDeclaration(undefined, undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_PARAMS), undefined,
       express === COMPONENT_CONSTRUCTOR_DELETE_PARAMS ? undefined :

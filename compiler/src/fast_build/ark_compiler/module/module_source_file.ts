@@ -330,12 +330,13 @@ export class ModuleSourceFile {
             if (isMockFile) {
               ModuleSourceFile.addNewMockConfig(realOhmUrl, ohmUrl);
             }
-
+            const decorators = ts.getAllDecorators(node);
+            const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
             if (ts.isImportDeclaration(node)) {
-              return ts.factory.createImportDeclaration(node.decorators, node.modifiers,
+              return ts.factory.createImportDeclaration(modifiers,
                 node.importClause, ts.factory.createStringLiteral(realOhmUrl));
             } else {
-              return ts.factory.createExportDeclaration(node.decorators, node.modifiers,
+              return ts.factory.createExportDeclaration(modifiers,
                 node.isTypeOnly, node.exportClause, ts.factory.createStringLiteral(realOhmUrl));
             }
           }

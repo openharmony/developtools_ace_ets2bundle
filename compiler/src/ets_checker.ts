@@ -770,14 +770,15 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       node.members.forEach(item => {
         if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
           const propertyName: string = item.name.getText();
-          if (item.decorators && item.decorators.length) {
-            for (let i = 0; i < item.decorators.length; i++) {
-              const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+          const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+          if (decorators && decorators.length) {
+            for (let i = 0; i < decorators.length; i++) {
+              const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
               if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
                 dollarCollection.add('$' + propertyName);
               }
-              if (isDecoratorCollection(item.decorators[i], decoratorName)) {
-                decoratorParamsCollection.add(item.decorators[i].expression.arguments[0].getText());
+              if (isDecoratorCollection(decorators[i], decoratorName)) {
+                decoratorParamsCollection.add(decorators[i].expression.arguments[0].getText());
               }
             }
           }
