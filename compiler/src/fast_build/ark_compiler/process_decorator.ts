@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import ts from "typescript";
+import ts from 'typescript';
 import {
   isMockDecorator,
   disableMockDecorator
-} from "./process_mock"
+} from './process_mock';
 
 export function processDecorator(node: ts.Decorator): ts.Node {
   if (isMockDecorator(node)) {
