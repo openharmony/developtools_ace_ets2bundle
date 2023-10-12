@@ -128,6 +128,7 @@ import {
   COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
   CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY,
+  CUSTOM_BUILDER_CONSTRUCTORS,
   INNER_CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   ID_ATTRS
@@ -1573,7 +1574,20 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
   return res;
 }
 
-function checkArguments(temp: ts.Identifier, type: string): ts.NodeArray<ts.Expression> {
+function checkArguments(temp: ts.Identifier, type: string): ts.Expression[] {
+  const newArguments: ts.Expression[] = [];
+  if (CUSTOM_BUILDER_CONSTRUCTORS.has(temp.escapedText.toString())) {
+    temp.parent.arguments.forEach(argument => {
+      if (ts.isConditionalExpression(argument)) {
+        newArguments.push(processConditionalBuilder(argument, temp, type));
+      } else if (isBuilderChangeNode(argument, temp, type)) {
+        newArguments.push(parseBuilderNode(argument, type));
+      } else {
+        newArguments.push(argument);
+      }
+    });
+    return newArguments;
+  }
   return temp.getText() === 'XComponent' && type === COMPONENT_CREATE_FUNCTION &&
     projectConfig.moduleName && projectConfig.bundleName ?
     // @ts-ignore
