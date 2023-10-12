@@ -23,12 +23,13 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
   }
 
   let parent: ts.Node = node.parent;
-  let updatedDecs: ts.Decorator[] = removeMockDecorator(parent.decorators);
+  const decorators = ts.getAllDecorators(parent);
+  let updatedDecs: ts.Decorator[] = removeMockDecorator(decorators);
   switch (parent.kind) {
     case ts.SyntaxKind.Parameter: {
       ts.factory.updateParameterDeclaration(<ts.ParameterDeclaration>parent,
                                             updatedDecs,
-                                            (<ts.ParameterDeclaration>parent).modifiers,
+                                            ts.getModifiers((<ts.ParameterDeclaration>parent)),
                                             (<ts.ParameterDeclaration>parent).dotDotDotToken,
                                             (<ts.ParameterDeclaration>parent).name,
                                             (<ts.ParameterDeclaration>parent).questionToken,
@@ -39,7 +40,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
     case ts.SyntaxKind.MethodDeclaration: {
       ts.factory.updateMethodDeclaration(<ts.MethodDeclaration>parent,
                                          updatedDecs,
-                                         (<ts.MethodDeclaration>parent).modifiers,
+                                         ts.getModifiers((<ts.MethodDeclaration>parent)),
                                          (<ts.MethodDeclaration>parent).asteriskToken,
                                          (<ts.MethodDeclaration>parent).name,
                                          (<ts.MethodDeclaration>parent).questionToken,
@@ -52,7 +53,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
     case ts.SyntaxKind.Constructor: {
       ts.factory.updateConstructorDeclaration(<ts.ConstructorDeclaration>parent,
                                               updatedDecs,
-                                              (<ts.ConstructorDeclaration>parent).modifiers,
+                                              ts.getModifiers((<ts.ConstructorDeclaration>parent)),
                                               (<ts.ConstructorDeclaration>parent).parameters,
                                               (<ts.ConstructorDeclaration>parent).body);
       break;
@@ -60,7 +61,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
     case ts.SyntaxKind.GetAccessor: {
       ts.factory.updateGetAccessorDeclaration(<ts.GetAccessorDeclaration>parent,
                                               updatedDecs,
-                                              (<ts.GetAccessorDeclaration>parent).modifiers,
+                                              ts.getModifiers((<ts.GetAccessorDeclaration>parent)),
                                               (<ts.GetAccessorDeclaration>parent).name,
                                               (<ts.GetAccessorDeclaration>parent).parameters,
                                               (<ts.GetAccessorDeclaration>parent).type,
@@ -70,7 +71,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
     case ts.SyntaxKind.SetAccessor: {
       ts.factory.updateSetAccessorDeclaration(<ts.SetAccessorDeclaration>parent,
                                               updatedDecs,
-                                              (<ts.SetAccessorDeclaration>parent).modifiers,
+                                              ts.getModifiers((<ts.SetAccessorDeclaration>parent)),
                                               (<ts.SetAccessorDeclaration>parent).name,
                                               (<ts.SetAccessorDeclaration>parent).parameters,
                                               (<ts.SetAccessorDeclaration>parent).body);
@@ -80,7 +81,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
       if ((<ts.PropertyDeclaration>parent).questionToken) {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
                                              updatedDecs,
-                                             (<ts.PropertyDeclaration>parent).modifiers,
+                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
                                              (<ts.PropertyDeclaration>parent).name,
                                              (<ts.PropertyDeclaration>parent).questionToken,
                                              (<ts.PropertyDeclaration>parent).type,
@@ -88,7 +89,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
       } else if ((<ts.PropertyDeclaration>parent).exclamationToken) {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
                                              updatedDecs,
-                                             (<ts.PropertyDeclaration>parent).modifiers,
+                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
                                              (<ts.PropertyDeclaration>parent).name,
                                              (<ts.PropertyDeclaration>parent).exclamationToken,
                                              (<ts.PropertyDeclaration>parent).type,
@@ -96,7 +97,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
       } else {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
                                              updatedDecs,
-                                             (<ts.PropertyDeclaration>parent).modifiers,
+                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
                                              (<ts.PropertyDeclaration>parent).name,
                                              undefined,
                                              (<ts.PropertyDeclaration>parent).type,
@@ -107,7 +108,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
     case ts.SyntaxKind.ClassDeclaration: {
       ts.factory.updateClassDeclaration(<ts.ClassDeclaration>parent,
                                         updatedDecs,
-                                        (<ts.ClassDeclaration>parent).modifiers,
+                                        ts.getModifiers((<ts.ClassDeclaration>parent)),
                                         (<ts.ClassDeclaration>parent).name,
                                         (<ts.ClassDeclaration>parent).typeParameters,
                                         (<ts.ClassDeclaration>parent).heritageClauses,

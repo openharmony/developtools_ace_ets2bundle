@@ -183,9 +183,11 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         storedFileInfo.getCurrentArkTsFile().recycleComponents.add(asExportCollection.get(node.name.getText()));
       }
     }
-    if (node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
-      node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword && node.modifiers[1] &&
-      node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
+    const modifiers: readonly ts.Modifier[] = 
+      ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+    if (modifiers && modifiers.length >= 2 && modifiers[0] &&
+      modifiers[0].kind === ts.SyntaxKind.ExportKeyword && modifiers[1] &&
+      modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
       if (!defaultNameFromParent && hasCollection(node.name)) {
         addDefaultExport(node, isDETS, structDecorator);
       } else if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
@@ -321,13 +323,14 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDecla
   asExportCollection: Map<string, string>, collection: Set<string>): void {
   const name: string = node.name.getText();
   let componentName: string;
+  const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   if (asNameFromParent.has(name)) {
     collection.add(asNameFromParent.get(name));
-  } else if (node.modifiers && node.modifiers.length >= 1 && node.modifiers[0] &&
-    node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
-    if (node.modifiers.length == 1) {
+  } else if (modifiers && modifiers.length >= 1 && modifiers[0] &&
+    modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
+    if (modifiers.length == 1) {
       collection.add(name);
-    } else if (node.modifiers.length >= 2 && node.modifiers[1] && node.modifiers[1].kind ===
+    } else if (modifiers.length >= 2 && modifiers[1] && modifiers[1].kind ===
       ts.SyntaxKind.DefaultKeyword) {
       collection.add(CUSTOM_COMPONENT_DEFAULT);
       if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {
@@ -344,19 +347,21 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDecla
 function isExportEntry(node: ts.StructDeclaration, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, fileResolvePath: string,
   sourceFile: ts.SourceFile): void {
-  if (process.env.watchMode === 'true' && node && node.decorators) {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (process.env.watchMode === 'true' && node && decorators) {
     let existExport: boolean = false;
     let existEntry: boolean = false;
-    if (node.modifiers) {
-      for (let i = 0; i < node.modifiers.length; i++) {
-        if (node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
+    const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+    if (modifiers) {
+      for (let i = 0; i < modifiers.length; i++) {
+        if (modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
           existExport = true;
           break;
         }
       }
     }
-    for (let i = 0; i < node.decorators.length; i++) {
-      if (node.decorators[i].getText() === COMPONENT_DECORATOR_ENTRY) {
+    for (let i = 0; i < decorators.length; i++) {
+      if (decorators[i].getText() === COMPONENT_DECORATOR_ENTRY) {
         entryCollection.add(node.name.escapedText.toString());
         existEntry = true;
         break;
@@ -389,9 +394,10 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
   asNameFromParent: Map<string, string>, isDETS: boolean, structDecorator: structDecoratorResult): void {
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node, false);
-  if (defaultNameFromParent && node.modifiers && node.modifiers.length >= 2 && node.modifiers[0] &&
-    node.modifiers[1] && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
-    node.modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
+  const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  if (defaultNameFromParent && modifiers && modifiers.length >= 2 && modifiers[0] &&
+    modifiers[1] && modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
+    modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
     setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
@@ -553,9 +559,10 @@ function isModule(filePath: string): boolean {
 
 function isCustomComponent(node: ts.StructDeclaration, structDecorator: structDecoratorResult): boolean {
   let isComponent: boolean = false;
-  if (node.decorators && node.decorators.length) {
-    for (let i = 0; i < node.decorators.length; ++i) {
-      const decoratorName: ts.Identifier = node.decorators[i].expression as ts.Identifier;
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; ++i) {
+      const decoratorName: ts.Identifier = decorators[i].expression as ts.Identifier;
       if (ts.isIdentifier(decoratorName)) {
         const name: string = decoratorName.escapedText.toString();
         if (CUSTOM_DECORATOR_NAME.has(name)) {

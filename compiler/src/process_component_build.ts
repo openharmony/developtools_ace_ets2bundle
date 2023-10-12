@@ -182,11 +182,11 @@ export function processComponentBuild(node: ts.MethodDeclaration,
   }
   if (node.body && node.body.statements && node.body.statements.length &&
     validateRootNode(node, log)) {
-    newNode = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
+    newNode = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
       node.asteriskToken, renderNode, node.questionToken, node.typeParameters, node.parameters,
       node.type, processComponentBlock(node.body, false, log));
   } else {
-    newNode = ts.factory.updateMethodDeclaration(node, node.decorators, node.modifiers,
+    newNode = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
       node.asteriskToken, renderNode, node.questionToken, node.typeParameters, node.parameters,
       node.type, node.body);
   }
@@ -772,9 +772,9 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
   const creationArgs: ts.Expression[] = [
     ts.factory.createArrowFunction(undefined, undefined,
       [
-        ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createParameterDeclaration(undefined, undefined,
           ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
-        ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+        ts.factory.createParameterDeclaration(undefined, undefined,
           ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
       ], undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -945,9 +945,9 @@ function createItemCreation(
         ts.factory.createIdentifier(ITEMCREATION), undefined, undefined,
         ts.factory.createArrowFunction(undefined, undefined,
           [
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createParameterDeclaration(undefined, undefined,
               ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createParameterDeclaration(undefined, undefined,
               ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
           ], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -990,9 +990,9 @@ function createDeepRenderFunction(
         ts.factory.createIdentifier(DEEPRENDERFUNCTION), undefined, undefined,
         ts.factory.createArrowFunction(undefined, undefined,
           [
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createParameterDeclaration(undefined, undefined,
               ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
-            ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+            ts.factory.createParameterDeclaration(undefined, undefined,
               ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
           ], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -1239,7 +1239,7 @@ function isForEachItemGeneratorParam(argumentsArray: ts.Expression[], newArrowNo
 function getParameters(node: ts.ArrowFunction): ts.ParameterDeclaration[] {
   const parameterArr: ts.ParameterDeclaration[] = [
     ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(_ITEM))
+      undefined, undefined, ts.factory.createIdentifier(_ITEM))
   ];
   if (node.parameters && node.parameters.length > 1) {
     parameterArr.push(node.parameters[1]);
@@ -1372,7 +1372,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
       statement.parent = blockNode;
       if (!partialUpdateConfig.partialUpdateMode) {
         return ts.factory.updateArrowFunction(
-          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode, ts.getModifiers(arrowNode), arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
           processComponentBlock(blockNode, isLazy, log, false, false, undefined,
             arrowNode.parameters, isGlobalBuilder));
@@ -1382,7 +1382,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
     } else {
       if (!partialUpdateConfig.partialUpdateMode) {
         return ts.factory.updateArrowFunction(
-          arrowNode, arrowNode.modifiers, arrowNode.typeParameters, arrowNode.parameters,
+          arrowNode, ts.getModifiers(arrowNode), arrowNode.typeParameters, arrowNode.parameters,
           arrowNode.type, arrowNode.equalsGreaterThanToken,
           processComponentBlock(body, isLazy, log, false, isBuilder, undefined, arrowNode.parameters));
       } else {
@@ -2076,7 +2076,7 @@ function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined, undefined,
     [ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined,
+      undefined, undefined,
       ts.factory.createIdentifier($$_NEW_VALUE),
       undefined, undefined, undefined
     )],

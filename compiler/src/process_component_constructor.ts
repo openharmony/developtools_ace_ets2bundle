@@ -73,8 +73,8 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.
     if (isAdd) {
       ctorPara = addParamsType(ctorNode, modifyPara, parentComponentName);
     }
-    ctorNode = ts.factory.updateConstructorDeclaration(ctorNode, ctorNode.decorators,
-      ctorNode.modifiers, modifyPara || ctorNode.parameters,
+    ctorNode = ts.factory.updateConstructorDeclaration(ctorNode,
+      ts.getModifiers(ctorNode), modifyPara || ctorNode.parameters,
       ts.factory.createBlock(modifyBody || ctorNode.body.statements, true));
   }
   return ctorNode;
@@ -103,15 +103,14 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
     newParameters.splice(0, newParameters.length);
   }
   paramNames.forEach((paramName: string) => {
-    newParameters.push(ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    newParameters.push(ts.factory.createParameterDeclaration(undefined, undefined,
       ts.factory.createIdentifier(paramName), undefined, undefined,
       paramName === ELMTID || paramName === COMPONENT_PARAMS_LAMBDA_FUNCTION ? paramName === ELMTID ?
         ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.MinusToken, ts.factory.createNumericLiteral('1')) :
         ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED) : undefined));
   });
 
-  return ts.factory.updateConstructorDeclaration(node, undefined, node.modifiers, newParameters,
-    node.body);
+  return ts.factory.updateConstructorDeclaration(node, ts.getModifiers(node), newParameters, node.body);
 }
 
 function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.ParameterDeclaration[],
@@ -123,25 +122,25 @@ function addParamsType(ctorNode: ts.ConstructorDeclaration, modifyPara: ts.Param
     let parameter: ts.ParameterDeclaration = item;
     switch (item.name.escapedText) {
       case COMPONENT_CONSTRUCTOR_ID:
-        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+        parameter = ts.factory.updateParameterDeclaration(item, ts.getModifiers(item),
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_PARENT:
-        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers,
+        parameter = ts.factory.createParameterDeclaration(ts.getModifiers(item),
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
             !partialUpdateConfig.partialUpdateMode ? BASE_COMPONENT_NAME : BASE_COMPONENT_NAME_PU), undefined),
           item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_PARAMS:
-        parameter = ts.factory.updateParameterDeclaration(item, item.decorators, item.modifiers,
+        parameter = ts.factory.updateParameterDeclaration(item, ts.getModifiers(item),
           item.dotDotDotToken, item.name, item.questionToken,
           ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(
             parentComponentName.getText() + INTERFACE_NAME_SUFFIX), undefined), item.initializer);
         break;
       case COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU:
-        parameter = ts.factory.createParameterDeclaration(item.decorators, item.modifiers, item.dotDotDotToken,
+        parameter = ts.factory.createParameterDeclaration(ts.getModifiers(item), item.dotDotDotToken,
           item.name, ts.factory.createToken(ts.SyntaxKind.QuestionToken), ts.factory.createTypeReferenceNode(
             ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU), undefined), item.initializer);
         break;
