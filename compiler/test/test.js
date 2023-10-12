@@ -56,6 +56,9 @@ function expectActual(name, filePath, checkError = false) {
   const content = require(filePath);
   const source = content.source;
   process.env.compiler = BUILD_ON;
+  componentInfo.id = 0;
+  componentCollection.customComponents.clear();
+  resetComponentCollection();
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
   if (checkError) {
@@ -73,9 +76,6 @@ function expectActual(name, filePath, checkError = false) {
     fileName: `${name}.ets`,
     transformers: { before: [processUISyntax(null, true)] }
   });
-  componentInfo.id = 0;
-  componentCollection.customComponents.clear();
-  resetComponentCollection();
   if (checkError) {
     assertError(name);
   } else {
