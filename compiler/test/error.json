@@ -193,10 +193,6 @@
         "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
         "type": "ERROR"
     },
-    "NoStructName": {
-        "message": "A struct must have a name.",
-        "type": "ERROR"
-    },
     "StructNameInvalid": {
         "message": "The struct 'gesture' cannot have the same name as the built-in attribute 'gesture'.",
         "type": "ERROR"
