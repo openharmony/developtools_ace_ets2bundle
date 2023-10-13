@@ -945,7 +945,8 @@ function runArkTSLinter(): void {
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
-  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic) || isInApplicationsStandard(diagnostic))) {
+  // print all error as warning
+  if (diagnostic.category === ts.DiagnosticCategory.Error) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
     printDiagnostic(diagnostic);
