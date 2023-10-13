@@ -37,7 +37,7 @@ export function checkIfJsImportingArkts(rollupObject: any): void {
             `ArkTS:ERROR ArkTS:ERROR File: ${id}\n` +
             `Importing ArkTS files in JS and TS files is forbidden.\n`;
           const logger: any = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
-          compilerOptions.isCompatibleVersion ? logger.warn(yellow + errorMsg) : logger.error(red + errorMsg);
+          logger.warn(yellow + errorMsg);
         }
       }
       );
