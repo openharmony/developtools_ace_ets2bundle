@@ -31,15 +31,15 @@ export class ModuleHotfixMode extends ModuleMode {
     this.enableMap = false;
   }
 
-  generateAbc(rollupObject: any) {
+  generateAbc(rollupObject: any, parentEvent: any) {
     this.patch = this.projectConfig.patch || false;
     this.inOldSymbolTablePath = this.projectConfig.inOldSymbolTablePath || this.projectConfig.projectRootPath;
     this.enableMap = this.projectConfig.enableMap || false;
-    this.prepareForCompilation(rollupObject);
-    this.buildModuleSourceMapInfo();
+    this.prepareForCompilation(rollupObject, parentEvent);
+    this.buildModuleSourceMapInfo(parentEvent);
 
     this.generateEs2AbcCmdForHotfix();
-    this.generateMergedAbcOfEs2Abc();
+    this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 
   private generateEs2AbcCmdForHotfix() {

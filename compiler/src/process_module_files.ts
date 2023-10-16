@@ -26,6 +26,8 @@ import {
   genTemporaryPath,
   mkdirsSync,
   toUnixPath,
+  createAndStartEvent,
+  stopEvent
 } from './utils';
 import {
   genSourceMapFileName,
@@ -38,8 +40,11 @@ import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any, logger?: any): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any, parentEvent: any, logger?: any): Promise<void> {
+  const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
+  const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
   const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, projectConfig);
+  stopEvent(eventGenContentAndSourceMapInfo);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig);
   if (temporaryFile.length === 0) {
@@ -61,10 +66,13 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: an
     sourceMaps = webpackNewSourceMaps;
   }
   if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
+    const eventWriteObfuscatedSourceCode = createAndStartEvent(eventWriteFileSyncByNode, 'write obfuscated source code');
     await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps);
+    stopEvent(eventWriteObfuscatedSourceCode);
     return;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
+  stopEvent(eventWriteFileSyncByNode);
 }
 
 function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: any): any {

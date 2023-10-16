@@ -28,7 +28,12 @@ import {
   fastBuildLogger
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
-import { setChecker } from '../../utils';
+import { 
+  setChecker,
+  getHookEventFactory,
+  createAndStartEvent,
+  stopEvent
+} from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -38,6 +43,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -64,8 +70,9 @@ export function etsChecker() {
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
       }
+      const eventServiceChecker = createAndStartEvent(hookEventFactory, 'check Ets code syntax');
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths);
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker);
         executedOnce = true;
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
@@ -78,8 +85,9 @@ export function etsChecker() {
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
-        serviceChecker(rootFileNames, logger, resolveModulePaths);
+        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker);
       }
+      stopEvent(eventServiceChecker);
       setChecker();
     }
   };

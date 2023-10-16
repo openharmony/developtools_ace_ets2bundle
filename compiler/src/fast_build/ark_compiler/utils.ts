@@ -35,7 +35,9 @@ import {
   genTemporaryPath,
   mkdirsSync,
   validateFilePathLength,
-  toUnixPath
+  toUnixPath,
+  createAndStartEvent,
+  stopEvent
 } from '../../utils';
 import {
   writeObfuscatedSourceCode
@@ -96,7 +98,7 @@ export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: 
   return fs.existsSync(cacheFilePath);
 }
 
-export async function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any) {
+export async function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any, parentEvent: any) {
   if (isCommonJsPluginVirtualFile(id)) {
     return;
   }
@@ -116,6 +118,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig);
   }
 
+  const eventWriteFileContent = createAndStartEvent(parentEvent, 'write file content');
   switch (path.extname(id)) {
     case EXTNAME_ETS:
     case EXTNAME_TS:
@@ -131,6 +134,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     default:
       break;
   }
+  stopEvent(eventWriteFileContent);
 }
 
 async function writeFileContent(sourceFilePath: string, filePath: string, content: string, projectConfig: any, logger: any) {

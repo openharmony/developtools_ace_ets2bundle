@@ -69,7 +69,9 @@ import {
   mkdirsSync,
   toUnixPath,
   toHashData,
-  validateFilePathLength
+  validateFilePathLength,
+  createAndStartEvent,
+  stopEvent
 } from '../../../utils';
 import {
   getPackageInfo,
@@ -151,9 +153,11 @@ export class ModuleMode extends CommonMode {
     this.symlinkMap = rollupObject.share.symlinkMap;
   }
 
-  prepareForCompilation(rollupObject: any): void {
+  prepareForCompilation(rollupObject: any, parentEvent: any): void {
+    const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.removeCacheInfo(rollupObject);
+    stopEvent(eventPrepareForCompilation);
   }
 
   collectModuleFileList(module: any, fileList: IterableIterator<string>) {
@@ -307,18 +311,22 @@ export class ModuleMode extends CommonMode {
     });
   }
 
-  buildModuleSourceMapInfo() {
+  buildModuleSourceMapInfo(parentEvent: any) {
     if (this.projectConfig.widgetCompile) {
       return;
     }
 
+    const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
     this.updateCachedSourceMaps();
+    stopEvent(eventUpdateCachedSourceMaps);
     this.triggerAsync(() => {
+      const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
       fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
         if (err) {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to write sourceMaps');
         }
         fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
+        stopEvent(eventWriteFile, true);
         this.triggerEndSignal();
       });
     });
@@ -383,24 +391,30 @@ export class ModuleMode extends CommonMode {
     this.generateAbcCacheFilesInfo();
   }
 
-  generateMergedAbcOfEs2Abc() {
+  generateMergedAbcOfEs2Abc(parentEvent: any) {
     // collect data error from subprocess
     let errMsg: string = '';
+    const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
     this.genDescriptionsForMergedEs2abc();
+    stopEvent(eventGenDescriptionsForMergedEs2abc);
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
+      let eventGenAbc: any;
       const child = this.triggerAsync(() => {
+        eventGenAbc = createAndStartEvent(parentEvent, 'generate merged abc by es2abc (async)', true);
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('exit', (code: any) => {
         if (code === FAIL) {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
+        stopEvent(eventGenAbc, true);
         this.triggerEndSignal();
         this.processAotIfNeeded();
       });
 
       child.on('error', (err: any) => {
+        stopEvent(eventGenAbc,true);
         this.throwArkTsCompilerError(err.toString());
       });
 
