@@ -19,35 +19,43 @@ import { ModuleHotfixMode } from './module/module_hotfix_mode';
 import { ModuleHotreloadMode } from './module/module_hotreload_mode';
 import { ModulePreviewMode } from './module/module_preview_mode';
 import { ModuleSourceFile } from './module/module_source_file';
+import {
+  getHookEventFactory,
+  createAndStartEvent,
+  stopEvent
+} from '../../utils';
 
 export async function generateModuleAbc(error) {
+  const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'buildEnd');
   if (error) {
     // When error thrown in previous plugins, rollup will catch and call buildEnd plugin.
     // Stop generate abc if error exists
     return;
   }
   if (this.share.projectConfig.compileMode === ESMODULE) {
-    await ModuleSourceFile.processModuleSourceFiles(this);
+    await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
     if (this.share.projectConfig.compileHar) {
       // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
       return;
     }
-    generateAbc(this);
+    generateAbc(this, hookEventFactory);
   }
 }
 
-function generateAbc(rollupObject: any) {
+function generateAbc(rollupObject: any, parentEvent: any) {
+  const eventGenerateAbc = createAndStartEvent(parentEvent, 'generate abc');
   if (rollupObject.share.projectConfig.watchMode !== 'true') {
     const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);
-    moduleBuildMode.generateAbc(rollupObject);
+    moduleBuildMode.generateAbc(rollupObject, eventGenerateAbc);
   } else if (rollupObject.share.arkProjectConfig.hotReload) {
     const moduleHotreloadMode: ModuleHotreloadMode = new ModuleHotreloadMode(rollupObject);
-    moduleHotreloadMode.generateAbc(rollupObject);
+    moduleHotreloadMode.generateAbc(rollupObject, eventGenerateAbc);
   } else if (rollupObject.share.arkProjectConfig.hotFix) {
     const moduleHotfixMode: ModuleHotfixMode = new ModuleHotfixMode(rollupObject);
-    moduleHotfixMode.generateAbc(rollupObject);
+    moduleHotfixMode.generateAbc(rollupObject, eventGenerateAbc);
   } else {
     const modulePreviewMode: ModulePreviewMode = new ModulePreviewMode(rollupObject);
-    modulePreviewMode.generateAbc(rollupObject);
+    modulePreviewMode.generateAbc(rollupObject, eventGenerateAbc);
   }
+  stopEvent(eventGenerateAbc);
 }

@@ -135,7 +135,7 @@ export const builderTypeParameter: {params: string[]} = {params: []};
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
 
-export function processUISyntax(program: ts.Program, ut = false): Function {
+export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -163,7 +163,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
                 hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
                   ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
               } else {
-                writeFileSyncByNode(processedNode, projectConfig);
+                writeFileSyncByNode(processedNode, projectConfig, parentEvent);
               }
             }
           }
@@ -191,7 +191,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
             hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
               ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
           } else {
-            writeFileSyncByNode(processedNode, projectConfig);
+            writeFileSyncByNode(processedNode, projectConfig, parentEvent);
           }
         }
         return node;

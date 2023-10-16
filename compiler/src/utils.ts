@@ -913,3 +913,31 @@ export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: 
 export function isString(text: unknown): text is string {
   return typeof text === 'string';
 }
+
+export function getHookEventFactory(share: any, pluginName: string, hookName: string): any {
+  if (typeof share.getHookEventFactory === 'function') {
+    return share.getHookEventFactory(pluginName, hookName);
+  } else {
+    return undefined;
+  }
+}
+
+export function createAndStartEvent(eventOrEventFactory: any, eventName: string, syncFlag = false): any {
+  if (eventOrEventFactory === undefined) {
+    return undefined;
+  }
+  let event: any;
+  if (typeof eventOrEventFactory.createSubEvent === 'function') {
+    event = eventOrEventFactory.createSubEvent(eventName);
+  } else {
+    event = eventOrEventFactory.createEvent(eventName);
+  }
+  syncFlag ? event.startAsyncEvent() : event.start();
+  return event;
+}
+
+export function stopEvent(event:any, syncFlag = false): void {
+  if (event !== undefined) {
+    syncFlag ? event.stopAsyncEvent() : event.stop();
+  }
+}

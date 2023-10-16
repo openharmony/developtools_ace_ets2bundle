@@ -69,7 +69,12 @@ import {
   props,
   logger
 } from './compile_info';
-import { hasDecorator, isString } from './utils';
+import {
+  hasDecorator,
+  isString,
+  createAndStartEvent,
+  stopEvent
+} from './utils';
 import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -283,7 +288,7 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent: any): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
@@ -307,7 +312,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     languageService = createLanguageService(filterFiles, resolveModulePaths);
   }
   globalProgram.program = languageService.getProgram();
-  runArkTSLinter();
+  runArkTSLinter(parentEvent);
   collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames);
@@ -957,7 +962,8 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-function runArkTSLinter(): void {
+function runArkTSLinter(parentEvent?: any): void {
+  const eventRunArkTsLinter = createAndStartEvent(parentEvent, 'run Arkts linter');
   const arkTSLinterDiagnostics =
     doArkTSLinter(globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic, !projectConfig.xtsMode);
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
@@ -965,6 +971,7 @@ function runArkTSLinter(): void {
       updateErrorFileCache(diagnostic);
     });
   }
+  stopEvent(eventRunArkTsLinter);
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
