@@ -490,9 +490,9 @@ function loadWorker(projectConfig, workerFileEntry) {
       const workerFiles = [];
       readFile(workerPath, workerFiles);
       workerFiles.forEach((item) => {
-        if (/\.(ts|js)$/.test(item)) {
+        if (/\.(ts|js|ets)$/.test(item)) {
           const relativePath = path.relative(workerPath, item)
-            .replace(/\.(ts|js)$/, '').replace(/\\/g, '/');
+            .replace(/\.(ts|js|ets)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
         }
       });
@@ -524,8 +524,11 @@ function readWorkerFile() {
   const workerFileEntry = {};
   if (aceBuildJson.workers) {
     aceBuildJson.workers.forEach(worker => {
-      if (!/\.(ts|js)$/.test(worker)) {
-        worker += '.ts';
+      if (!/\.(ts|js|ets)$/.test(worker)) {
+        throw Error(
+          '\u001b[31mArkTS:ERROR: File: ' + worker + '.' + '\n' +
+          "  The worker file can only be an '.ets', '.ts', or '.js' file.\u001b[39m"
+        ).message;
       }
       const relativePath = path.relative(projectConfig.projectPath, worker);
       if (filterWorker(relativePath)) {
@@ -537,6 +540,7 @@ function readWorkerFile() {
           ).message;
         } else {
           workerFileEntry[workerKey] = worker;
+          abilityPagesFullPath.push(path.resolve(workerFileEntry[workerKey]).toLowerCase());
         }
       }
     });
@@ -561,7 +565,7 @@ function readPatchConfig() {
 }
 
 function filterWorker(workerPath) {
-  return /\.(ts|js)$/.test(workerPath);
+  return /\.(ts|js|ets)$/.test(workerPath);
 }
 
 ;(function initSystemResource() {
