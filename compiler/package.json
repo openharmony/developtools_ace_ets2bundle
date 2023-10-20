@@ -48,7 +48,7 @@
     "log4js": "6.7.1",
     "source-map": "0.7.4",
     "ts-loader": "9.4.2",
-    "typescript": "npm:ohos-typescript@4.2.3-r6",
+    "typescript": "npm:ohos-typescript@4.2.3-r7",
     "arkguard": "1.0.0",
     "webpack": "5.72.1",
     "webpack-cli": "5.0.2",
