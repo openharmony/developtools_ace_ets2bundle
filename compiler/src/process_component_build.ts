@@ -131,7 +131,8 @@ import {
   CUSTOM_BUILDER_CONSTRUCTORS,
   INNER_CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
-  ID_ATTRS
+  ID_ATTRS,
+  SPECIFIC_PARENT_COMPONENT
 } from './component_map';
 import {
   componentCollection,
@@ -334,7 +335,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (ts.isIdentifier(etsExpression.expression)) {
               parent = etsExpression.expression.escapedText.toString();
             }
-            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition, idName);
+            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition, idName, savedParent);
             break;
           }
           case ComponentType.customComponent: {
@@ -609,16 +610,19 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
 
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
-  isTransition: boolean = false, idName: ts.Expression = undefined): void {
+  isTransition: boolean = false, idName: ts.Expression = undefined, savedParent: string = undefined): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
   const nameResult: NameResult = { name: null, arguments: [] };
   validateEtsComponentNode(node.expression as ts.EtsComponentExpression, nameResult);
+  if (savedParent && nameResult.name) {
+    checkNonspecificParents(node, nameResult.name, savedParent, log);
+  }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
-    processItemComponent(node, nameResult, innerCompStatements, log, isGlobalBuilder, idName);
+    processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName);
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
-    processTabAndNav(node, innerCompStatements, nameResult, log, isGlobalBuilder, idName);
+    processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder,
       isTransition, idName);
@@ -830,7 +834,7 @@ function createInitRenderStatement(node: ts.Statement,
 }
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
-  log: LogInfo[], isGlobalBuilder: boolean = false, idName: ts.Expression = undefined): void {
+  log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false, idName: ts.Expression = undefined): void {
   const itemRenderInnerStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
@@ -844,7 +848,7 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
       bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
     }
     processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, undefined, undefined, isGlobalBuilder, false);
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false);
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
   }
@@ -1061,7 +1065,8 @@ function createObservedDeepRender(
 }
 
 function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  nameResult: NameResult, log: LogInfo[], isGlobalBuilder: boolean = false, idName: ts.Expression = undefined): void {
+  nameResult: NameResult, log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
+  idName: ts.Expression = undefined): void {
   const name: string = nameResult.name;
   const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const TabContentBody: ts.Block = TabContentComp.body;
@@ -1077,7 +1082,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   }
   if (TabContentBody && TabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
-    processComponentChild(TabContentBody, newTabContentChildren, log);
+    processComponentChild(TabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent);
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(name), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
@@ -2820,5 +2825,20 @@ function parseCreateParameterBuilder(argument: ts.Expression):ts.Expression {
     return processObjectPropertyBuilder(argument);
   } else {
     return argument;
+  }
+}
+
+function checkNonspecificParents(node: ts.ExpressionStatement, name: string, savedParent: string, log: LogInfo[]): void {
+  if (SPECIFIC_PARENT_COMPONENT.has(name)) {
+    const specificParemtsSet: Set<string> = SPECIFIC_PARENT_COMPONENT.get(name);
+    if (!specificParemtsSet.has(savedParent) && INNER_COMPONENT_NAMES.has(savedParent)) {
+      const specificParentArray: string =
+        Array.from(SPECIFIC_PARENT_COMPONENT.get(name)).join(',');
+      log.push({
+        type: LogType.ERROR,
+        message: `The '${name}' component can only be nested in the '${specificParentArray}' parent component.`,
+        pos: node.expression.getStart()
+      });
+    }
   }
 }
