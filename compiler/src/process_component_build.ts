@@ -111,7 +111,9 @@ import {
   RECYCLE_REUSE_ID,
   UPDATE_FUNC_BY_ELMT_ID,
   CREATE_SET_METHOD,
-  CAN_RETAKE
+  CAN_RETAKE,
+  PREVIEW,
+  ALL_COMPONENTS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1768,8 +1770,9 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
     ts.isIdentifier(argument.expression.name) &&
     CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
     argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()) ||
-    ts.isObjectLiteralExpression(argument) && BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
+    ts.isObjectLiteralExpression(argument) && (BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
     BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
+    BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
     ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
     CUSTOM_BUILDER_METHOD.has(argument.expression.escapedText.toString());
 }
@@ -1803,7 +1806,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END].includes(
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
         CUSTOM_BUILDER_METHOD.has(property.initializer.escapedText.toString())) {
