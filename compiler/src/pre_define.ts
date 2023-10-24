@@ -274,6 +274,7 @@ export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 export const BIND_POPUP: string = 'bindPopup';
 export const BIND_POPUP_SET: Set<string> = new Set(['bindPopup']);
 export const BIND_DRAG_SET: Set<string> = new Set(['onDragStart', 'onItemDragStart']);
+export const ALL_COMPONENTS: string = 'AllComponents';
 export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
@@ -281,7 +282,8 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['MenuItem', new Set([COMPONENT_CREATE_FUNCTION])],
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
-  ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])]
+  ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
+  [ALL_COMPONENTS, new Set(['bindContextMenu'])]
 ]);
 
 export const CHECKED: string = 'checked';
@@ -541,3 +543,5 @@ export const FA_TAG_CHECK_ERROR: string = 'This API is used only in FA Mode, but
 export const STAGE_TAG_CHECK_NAME: string = 'stagemodelonly';
 export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
 export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
+
+export const PREVIEW: string = 'preview';
