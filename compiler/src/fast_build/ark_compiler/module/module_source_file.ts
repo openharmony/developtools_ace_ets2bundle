@@ -207,6 +207,9 @@ export class ModuleSourceFile {
     }
     const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, ModuleSourceFile.projectConfig);
     if (harOhmUrl !== undefined) {
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, harOhmUrl, rollupObject);
+      }
       return harOhmUrl;
     }
     if (filePath) {
