@@ -231,7 +231,7 @@ async function transform(code: string, id: string) {
     });
 
     resetCollection();
-    if (transformLog && transformLog.errors.length) {
+    if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, getTransformLog(transformLog), true, id);
       resetLog();
     }
@@ -286,7 +286,7 @@ async function transform(code: string, id: string) {
   }
 
   resetCollection();
-  if (transformLog && transformLog.errors.length) {
+  if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
     emitLogInfo(logger, getTransformLog(transformLog), true, id);
     resetLog();
   }
@@ -303,7 +303,7 @@ function validateEts(code: string, id: string, isEntry: boolean, logger: any, so
     clearCollection();
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
-    if (log.length) {
+    if (log.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, log, true, id);
     }
   }
@@ -316,7 +316,7 @@ function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: 
     content = preprocessNewExtend(content);
     const fileQuery: string = isEntry && !abilityPagesFullPath.includes(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, content, id, fileQuery);
-    if (log.length) {
+    if (log.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, log, true, id);
     }
     return content;
