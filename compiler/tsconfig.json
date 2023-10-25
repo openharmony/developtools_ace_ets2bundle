@@ -763,7 +763,7 @@
       "concurrent": {
         "decorator": "Concurrent"
       },
-      "customComponent": "CustomComponent",
+      "customComponent": "CustomComponent"
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
