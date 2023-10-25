@@ -120,6 +120,7 @@ function loadEntryObj(projectConfig) {
     setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
+    setIntentEntryPages(projectConfig);
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
   }
@@ -324,6 +325,16 @@ function setEntryFile(projectConfig) {
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
 }
 
+function setIntentEntryPages(projectConfig) {
+  projectConfig.intentEntry.forEach(pages => {
+    const entryKey = path.relative(projectConfig.projectPath, pages).replace(/\.(ets|ts|js)$/, '');
+    projectConfig.entryObj[entryKey] = pages;
+    if (/\.ets$/.test(pages)) {
+      abilityPagesFullPath.push(path.resolve(pages).toLowerCase());
+    }
+  });
+}
+
 function setAbilityPages(projectConfig) {
   let abilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
@@ -510,6 +521,8 @@ function loadBuildJson() {
     projectConfig.packageDir = 'oh_modules';
     projectConfig.packageJson = 'oh-package.json5';
   }
+  // add intent framework entry file
+  projectConfig.intentEntry = aceBuildJson.compileEntry || [];
 }
 
 function initBuildInfo() {
