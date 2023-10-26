@@ -146,6 +146,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
+        storedFileInfo.transformCacheFiles[node.fileName] = {
+          mtimeMs: fs.statSync(node.fileName).mtimeMs,
+          children: []
+        }
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
         if (!ut && (process.env.compileMode !== 'moduleJson' &&
