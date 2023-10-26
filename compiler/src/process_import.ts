@@ -796,6 +796,9 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else {
     name = usedNode.escapedText.toString();
   }
+  let needCollection: boolean = true;
+  const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
+  const ownFile: string = usedNode.getSourceFile() ? usedNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
     if (isCustomDialogClass(originNode)) {
       componentCollection.customDialogs.add(name);
@@ -830,5 +833,13 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
     GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
   } else if (ts.isEnumDeclaration(originNode) && originNode.name) {
     enumCollection.add(name);
+  } else {
+    needCollection = false;
+  }
+  if (needCollection && ownFile && originFile) {
+    storedFileInfo.transformCacheFiles[ownFile].children.push({
+      fileName: originFile,
+      mtimeMs: fs.statSync(originFile).mtimeMs
+    });
   }
 }
