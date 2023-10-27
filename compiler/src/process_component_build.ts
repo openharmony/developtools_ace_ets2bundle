@@ -713,9 +713,14 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
       posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
       curFileName = transformLog.sourceFile.fileName.replace(/\.ts$/, '');
     }
-    const projectPath: string = projectConfig.projectPath;
-    const debugInfo: string = `${path.relative(projectPath, curFileName).replace(/\\+/g, '/')}` +
+    let debugInfo: string;
+    if (projectConfig.minAPIVersion >= 10) {
+      debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
+        `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    } else {
+      debugInfo = `${path.relative(projectConfig.projectPath, curFileName).replace(/\\+/g, '/')}` +
       `(${posOfNode.line + line}:${posOfNode.character + col})`;
+    }
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(nameResult.name),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),

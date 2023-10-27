@@ -810,6 +810,7 @@ function applicationConfig() {
 }
 
 function partialUpdateController(minAPIVersion, metadata = null) {
+  projectConfig.minAPIVersion = minAPIVersion;
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
   }
