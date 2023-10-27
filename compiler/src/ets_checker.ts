@@ -813,6 +813,12 @@ function traverseBuild(node: ts.Node, index: number): void {
       });
     } else {
       loopNodeFindDoubleDollar(node, parentComponentName);
+      if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
+      ts.isIdentifier(node.expression)) {
+        node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
+          traverseBuild(item, indexBlock);
+        });
+      }
     }
   } else if (ts.isIfStatement(node)) {
     if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
