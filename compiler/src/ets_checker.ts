@@ -150,21 +150,7 @@ function setCompilerOptions(resolveModulePaths: string[]) {
   }
 }
 
-interface InitCheckConfig {
-  tagName: string;
-  message: string;
-  needConditionCheck: boolean;
-  type: ts.DiagnosticCategory;
-  specifyCheckConditionFuncName: string;
-  tagNameShouldExisted: boolean;
-}
-
-interface CheckJSDocTagNameConfig {
-  needCheck: boolean;
-  checkConfig: InitCheckConfig[];
-}
-
-function getInitCheckConfig(tagName: string, message: string, type: ts.DiagnosticCategory, tagNameShouldExisted: boolean): InitCheckConfig {
+function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory, tagNameShouldExisted: boolean): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
@@ -175,32 +161,30 @@ function getInitCheckConfig(tagName: string, message: string, type: ts.Diagnosti
   };
 }
 
-function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): CheckJSDocTagNameConfig {
+function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
   let needCheckResult: boolean = false;
-  const checkConfigArray: InitCheckConfig[] = [];
+  const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
-    checkConfigArray.push(getInitCheckConfig(DEPRECATED_TAG_CHECK_NAME, DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(FORM_TAG_CHECK_NAME, FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(CROSSPLATFORM_TAG_CHECK_NAME, CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
     }
     if (process.env.compileMode === 'moduleJson') {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(FA_TAG_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-      checkConfigArray.push(getInitCheckConfig(FA_TAG_HUMP_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_HUMP_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     }
   }
 
   return {
-    needCheck: needCheckResult,
+    nodeNeedCheck: needCheckResult,
     checkConfig: checkConfigArray
   };
 }
@@ -249,8 +233,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
-    getTagNameNeededCheckByFile: (fileName: string, sourceFileName: string) => {
-      return getCheckJSDocTagNameConfig(fileName, sourceFileName);
+    getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
+      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
+    },
+    getFileCheckedModuleInfo:(containFilePath: string)=>{
+      return {
+        fileNeedCheck: true,
+        checkPayload: undefined,
+        currentFileName: containFilePath,
+      };
     }
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
