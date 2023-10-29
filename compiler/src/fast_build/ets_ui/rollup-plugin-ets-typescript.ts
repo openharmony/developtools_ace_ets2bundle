@@ -31,7 +31,8 @@ import {
   storedFileInfo,
   fileInfo,
   resourcesRawfile,
-  differenceResourcesRawfile
+  differenceResourcesRawfile,
+  CacheFile
 } from '../../utils';
 import {
   preprocessExtend,
@@ -78,12 +79,14 @@ const disableCacheOptions = {
 
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
+  let cacheFile: CacheFile;
   return {
     name: 'etsTransform',
     transform: transform,
     buildStart() {
       judgeCacheShouldDisabled.call(this);
       if (process.env.compileMode === 'moduleJson') {
+        cacheFile = this.cache.get('transformCacheFiles');
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
           this.cache.get('resourceToFileCacheInfo'));
         if (this.cache.get('lastResourcesArr')) {
@@ -116,6 +119,15 @@ export function etsTransform() {
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || shouldEnableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
+        if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
+          for (let child of cacheFile[fileName].children) {
+            const newTimeMs: number = fs.statSync(child.fileName).mtimeMs;
+            if (newTimeMs !== child.mtimeMs) {
+              shouldDisable = true;
+              break;
+            }
+          }
+        }
       }
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
@@ -168,6 +180,7 @@ export function etsTransform() {
         this.cache.set('enableDebugLine', false);
       }
       storedFileInfo.clearCollectedInfo(this.cache);
+      this.cache.set('transformCacheFiles', storedFileInfo.transformCacheFiles);
     }
   };
 }
