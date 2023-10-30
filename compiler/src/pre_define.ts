@@ -529,7 +529,8 @@ export const PAGE_PATH: string = 'pagePath';
 
 export const CAN_RETAKE: string = 'canRetake';
 export const DECORATOR_SUFFIX: string = '@';
-export const MOCK_CONFIG_JSON: string = 'mock-config.json';
+export const TRANSFORMED_MOCK_CONFIG: string = 'mock-config.json';
+export const USER_DEFINE_MOCK_CONFIG: string = 'mock-config.json5';
 
 export const FORM_TAG_CHECK_NAME: string = 'form';
 export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
