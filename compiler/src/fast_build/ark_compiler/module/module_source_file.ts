@@ -38,7 +38,10 @@ import { toUnixPath } from '../../../utils';
 import { newSourceMaps } from '../transform';
 import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
-import { MOCK_CONFIG_JSON } from '../../../pre_define';
+import {
+  TRANSFORMED_MOCK_CONFIG,
+  USER_DEFINE_MOCK_CONFIG
+} from '../../../pre_define';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -112,6 +115,7 @@ export class ModuleSourceFile {
                                                      ModuleSourceFile.logger,
                                                      rollupObject.share.projectConfig.entryModuleName);
     mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
+    // record mock target mapping for incremental compilation
     ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
   }
 
@@ -131,20 +135,32 @@ export class ModuleSourceFile {
   }
 
   static generateMockConfigFile(rollupObject: any): void {
-    let mockCacheJsonPath: string = path.resolve(rollupObject.share.projectConfig.cachePath, `./${MOCK_CONFIG_JSON}`);
-    let mockConfigJsonPath: string = path.resolve(rollupObject.share.projectConfig.aceModuleJsonPath,
-                                                  `../${MOCK_CONFIG_JSON}`);
-    if (!fs.existsSync(mockCacheJsonPath)) {
-      fs.writeFileSync(mockConfigJsonPath, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
-      fs.copyFileSync(mockConfigJsonPath, mockCacheJsonPath);
-    } else {
-      let cachedMockConfigInfo = require('json5').parse(fs.readFileSync(mockCacheJsonPath, 'utf-8'));
-      for (let newMockTarget in ModuleSourceFile.newMockConfigInfo) {
-        cachedMockConfigInfo[newMockTarget] = ModuleSourceFile.newMockConfigInfo[newMockTarget];
-      }
-      fs.writeFileSync(mockConfigJsonPath, JSON.stringify(cachedMockConfigInfo));
-      fs.copyFileSync(mockConfigJsonPath, mockCacheJsonPath);
+    let transformedMockConfigCache: string =
+      path.resolve(rollupObject.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
+    let transformedMockConfig: string =
+      path.resolve(rollupObject.share.projectConfig.aceModuleJsonPath, `../${TRANSFORMED_MOCK_CONFIG}`);
+    let userDefinedMockConfigCache: string =
+      path.resolve(rollupObject.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
+    // full compilation
+    if (!fs.existsSync(transformedMockConfigCache) || !fs.existsSync(userDefinedMockConfigCache)) {
+      fs.writeFileSync(transformedMockConfig, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
+      fs.copyFileSync(transformedMockConfig, transformedMockConfigCache);
+      fs.copyFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, userDefinedMockConfigCache);
+      return;
     }
+
+    // incremental compilation
+    const cachedMockConfigInfo: Object =
+      require('json5').parse(fs.readFileSync(userDefinedMockConfigCache, 'utf-8'));
+    // If mock-config.json5 is modified, incremental compilation will be disabled
+    if (JSON.stringify(ModuleSourceFile.mockConfigInfo) !== JSON.stringify(cachedMockConfigInfo)) {
+      fs.writeFileSync(transformedMockConfig, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
+      fs.copyFileSync(transformedMockConfig, transformedMockConfigCache);
+      fs.copyFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, userDefinedMockConfigCache);
+      return;
+    }
+    // if mock-config.json5 is not modified, use the cached mock config mapping file
+    fs.copyFileSync(transformedMockConfigCache, transformedMockConfig);
   }
 
   static newSourceFile(moduleId: string, source: string | ts.SourceFile) {

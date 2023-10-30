@@ -13,18 +13,24 @@
  * limitations under the License.
  */
 
+import fs from 'fs';
+import path from 'path';
 import {
   ARK_COMPILER_META_INFO,
   ESMODULE,
   IS_CACHE_INVALID
 } from './common/ark_define';
+import {
+  TRANSFORMED_MOCK_CONFIG,
+  USER_DEFINE_MOCK_CONFIG
+} from '../../pre_define';
 
 let disableCache: boolean = false;
 export function checkArkCompilerCacheInfo(rollupObject: any): void {
   disableCache = false;
   const metaInfo: string = getMetaInfo(rollupObject.share.projectConfig);
   const lastMetaInfo: string = rollupObject.cache.get(ARK_COMPILER_META_INFO);
-  if (!lastMetaInfo || metaInfo !== lastMetaInfo) {
+  if (!lastMetaInfo || metaInfo !== lastMetaInfo || isMockConfigModified(rollupObject)) {
     rollupObject.cache.set(IS_CACHE_INVALID, true);
     disableCache = true;
   }
@@ -59,6 +65,31 @@ function getMetaInfo(projectConfig: any): string {
   }
 
   return metaInfoArr.join(':');
+}
+
+function isMockConfigModified(rollupObject): boolean {
+  // mock is only enabled in the following two modes
+  if (!rollupObject.share.projectConfig.isPreview && !rollupObject.share.projectConfig.isOhosTest) {
+    return false;
+  }
+
+  if (!rollupObject.share.projectConfig.mockParams || !rollupObject.share.projectConfig.mockParams.mockConfigPath) {
+    return false;
+  }
+
+  const userDefinedMockConfigCache: string =
+    path.resolve(rollupObject.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
+  const transformedMockConfigCache: string =
+    path.resolve(rollupObject.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
+  if (!fs.existsSync(userDefinedMockConfigCache) || !fs.existsSync(transformedMockConfigCache)) {
+    return true;
+  }
+
+  const mockConfigInfo: Object =
+    require('json5').parse(fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
+  const cachedMockConfigInfo: Object =
+    require('json5').parse(fs.readFileSync(userDefinedMockConfigCache, 'utf-8'));
+  return JSON.stringify(mockConfigInfo) !== JSON.stringify(cachedMockConfigInfo);
 }
 
 /**
