@@ -147,7 +147,7 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       resourceFileName = path.resolve(node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         storedFileInfo.transformCacheFiles[node.fileName] = {
-          mtimeMs: fs.statSync(node.fileName).mtimeMs,
+          mtimeMs: fs.existsSync(node.fileName) ? fs.statSync(node.fileName).mtimeMs : 0,
           children: []
         }
         transformLog.sourceFile = node;
