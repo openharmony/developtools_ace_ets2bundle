@@ -984,6 +984,16 @@ export function getArkTSLinterMode(): ArkTSLinterMode {
     return ArkTSLinterMode.COMPATIBLE_MODE;
   }
 
+  const ignoreList = [
+    '/applications/standard/photos/'
+  ];
+  const projectPath = path.resolve(projectConfig.projectPath);
+  for (let appPath of ignoreList) {
+    if (projectPath.indexOf(path.normalize(appPath)) !== -1) {
+      return ArkTSLinterMode.COMPATIBLE_MODE;
+    }
+  }
+
   if (isStandardMode()) {
     return ArkTSLinterMode.STANDARD_MODE;
   }
