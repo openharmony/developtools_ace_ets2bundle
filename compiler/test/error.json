@@ -276,5 +276,9 @@
     "BuilderParamNoInit": {
         "message": "'closer' should be initialized in @Entry Component",
         "type": "WARN"
+    },
+    "checkNonspecificParents": {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "type": "ERROR"
     }
 }
