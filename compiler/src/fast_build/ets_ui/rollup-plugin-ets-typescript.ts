@@ -121,7 +121,7 @@ export function etsTransform() {
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
-            const newTimeMs: number = fs.statSync(child.fileName).mtimeMs;
+            const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
             if (newTimeMs !== child.mtimeMs) {
               shouldDisable = true;
               break;

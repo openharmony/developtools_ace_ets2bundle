@@ -839,7 +839,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   if (needCollection && ownFile && originFile) {
     storedFileInfo.transformCacheFiles[ownFile].children.push({
       fileName: originFile,
-      mtimeMs: fs.statSync(originFile).mtimeMs
+      mtimeMs: fs.existsSync(originFile) ? fs.statSync(originFile).mtimeMs: 0
     });
   }
 }
