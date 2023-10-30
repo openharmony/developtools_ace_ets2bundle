@@ -649,6 +649,16 @@ function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
     parameters[0].type.members && parameters[0].type.members.length > 0;
 }
 
+interface ChildrenCacheFile {
+  fileName: string,
+  mtimeMs: number,
+}
+
+export interface CacheFile {
+  mtimeMs: number,
+  children: Array<ChildrenCacheFile>,
+}
+
 // Global Information & Method
 class ProcessFileInfo {
   buildStart: boolean = true;
@@ -665,6 +675,7 @@ class ProcessFileInfo {
   reUseProgram: boolean = false;
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
+  transformCacheFiles: {[fileName: string]: CacheFile} = {};
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
