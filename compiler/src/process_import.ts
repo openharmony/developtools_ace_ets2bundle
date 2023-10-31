@@ -151,6 +151,8 @@ type structDecoratorResult = {
   hasRecycle: boolean
 }
 
+const MODIFIER_LENGTH: number = 2;
+
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>, pagesDir: string, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
@@ -185,7 +187,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
     }
     const modifiers: readonly ts.Modifier[] = 
       ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-    if (modifiers && modifiers.length >= 2 && modifiers[0] &&
+    if (modifiers && modifiers.length >= MODIFIER_LENGTH && modifiers[0] &&
       modifiers[0].kind === ts.SyntaxKind.ExportKeyword && modifiers[1] &&
       modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
       if (!defaultNameFromParent && hasCollection(node.name)) {
@@ -328,7 +330,7 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDecla
     collection.add(asNameFromParent.get(name));
   } else if (modifiers && modifiers.length >= 1 && modifiers[0] &&
     modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
-    if (modifiers.length == 1) {
+    if (modifiers.length === 1) {
       collection.add(name);
     } else if (modifiers.length >= 2 && modifiers[1] && modifiers[1].kind ===
       ts.SyntaxKind.DefaultKeyword) {
@@ -395,7 +397,7 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
   const componentName: string = node.name.getText();
   const ComponentSet: IComponentSet = getComponentSet(node, false);
   const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-  if (defaultNameFromParent && modifiers && modifiers.length >= 2 && modifiers[0] &&
+  if (defaultNameFromParent && modifiers && modifiers.length >= MODIFIER_LENGTH && modifiers[0] &&
     modifiers[1] && modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
     setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
