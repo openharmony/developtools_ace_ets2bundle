@@ -145,7 +145,7 @@ export function processComponentClass(node: ts.StructDeclaration, context: ts.Tr
     node.typeParameters, updateHeritageClauses(node, log), memberNode);
 }
 
-function checkPreview(node: ts.StructDeclaration) {
+function checkPreview(node: ts.StructDeclaration): boolean {
   let hasPreview: boolean = false;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (node && decorators) {

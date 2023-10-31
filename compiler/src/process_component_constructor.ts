@@ -83,7 +83,7 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.
 function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentName: ts.Identifier):
   ts.ConstructorDeclaration {
   if (!ts.isIdentifier(parentComponentName)) {
-    return;
+    return node;
   }
   const paramNames: Set<string> = !partialUpdateConfig.partialUpdateMode ? new Set([
     COMPONENT_CONSTRUCTOR_ID,

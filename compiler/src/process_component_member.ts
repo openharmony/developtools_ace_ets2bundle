@@ -960,7 +960,7 @@ function judgmentTypedeclaration(type: ts.TypeNode): boolean {
 
 function validateAppStorageDecoractorsNonSingleKey(node: ts.PropertyDeclaration,
   log: LogInfo[]): void {
-    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (ts.isIdentifier(decorators[0].expression)) {
     validateDecoratorNonSingleKey(decorators[0].expression, log);
   } else if (ts.isCallExpression(decorators[0].expression) &&

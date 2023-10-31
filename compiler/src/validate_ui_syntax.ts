@@ -1228,7 +1228,7 @@ export function resetComponentCollection() {
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
-  const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined
+  const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   if (modifiers) {
     for (let i = 0; i < modifiers.length; i++) {
       if (modifiers[i].kind === ts.SyntaxKind.ExportKeyword) {
@@ -1245,7 +1245,7 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
     for (let i = 0; i < decorators.length; i++) {
-      const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/,'').trim();
+      const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
       if (CARD_ENABLE_DECORATORS[decoratorName]) {
         validatorCard(transformLog.errors, CARD_LOG_TYPE_DECORATORS,
           decorators[i].getStart(), decoratorName);

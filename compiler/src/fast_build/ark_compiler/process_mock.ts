@@ -23,96 +23,96 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
   }
 
   let parent: ts.Node = node.parent;
-  const decorators = ts.getAllDecorators(parent);
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(parent);
   let updatedDecs: ts.Decorator[] = removeMockDecorator(decorators);
   switch (parent.kind) {
     case ts.SyntaxKind.Parameter: {
       ts.factory.updateParameterDeclaration(<ts.ParameterDeclaration>parent,
-                                            updatedDecs,
-                                            ts.getModifiers((<ts.ParameterDeclaration>parent)),
-                                            (<ts.ParameterDeclaration>parent).dotDotDotToken,
-                                            (<ts.ParameterDeclaration>parent).name,
-                                            (<ts.ParameterDeclaration>parent).questionToken,
-                                            (<ts.ParameterDeclaration>parent).type,
-                                            (<ts.ParameterDeclaration>parent).initializer);
+        updatedDecs,
+        ts.getModifiers((<ts.ParameterDeclaration>parent)),
+        (<ts.ParameterDeclaration>parent).dotDotDotToken,
+        (<ts.ParameterDeclaration>parent).name,
+        (<ts.ParameterDeclaration>parent).questionToken,
+        (<ts.ParameterDeclaration>parent).type,
+        (<ts.ParameterDeclaration>parent).initializer);
       break;
     }
     case ts.SyntaxKind.MethodDeclaration: {
       ts.factory.updateMethodDeclaration(<ts.MethodDeclaration>parent,
-                                         updatedDecs,
-                                         ts.getModifiers((<ts.MethodDeclaration>parent)),
-                                         (<ts.MethodDeclaration>parent).asteriskToken,
-                                         (<ts.MethodDeclaration>parent).name,
-                                         (<ts.MethodDeclaration>parent).questionToken,
-                                         (<ts.MethodDeclaration>parent).typeParameters,
-                                         (<ts.MethodDeclaration>parent).parameters,
-                                         (<ts.MethodDeclaration>parent).type,
-                                         (<ts.MethodDeclaration>parent).body);
+        updatedDecs,
+        ts.getModifiers((<ts.MethodDeclaration>parent)),
+        (<ts.MethodDeclaration>parent).asteriskToken,
+        (<ts.MethodDeclaration>parent).name,
+        (<ts.MethodDeclaration>parent).questionToken,
+        (<ts.MethodDeclaration>parent).typeParameters,
+        (<ts.MethodDeclaration>parent).parameters,
+        (<ts.MethodDeclaration>parent).type,
+        (<ts.MethodDeclaration>parent).body);
       break;
     }
     case ts.SyntaxKind.Constructor: {
       ts.factory.updateConstructorDeclaration(<ts.ConstructorDeclaration>parent,
-                                              updatedDecs,
-                                              ts.getModifiers((<ts.ConstructorDeclaration>parent)),
-                                              (<ts.ConstructorDeclaration>parent).parameters,
-                                              (<ts.ConstructorDeclaration>parent).body);
+        updatedDecs,
+        ts.getModifiers((<ts.ConstructorDeclaration>parent)),
+        (<ts.ConstructorDeclaration>parent).parameters,
+        (<ts.ConstructorDeclaration>parent).body);
       break;
     }
     case ts.SyntaxKind.GetAccessor: {
       ts.factory.updateGetAccessorDeclaration(<ts.GetAccessorDeclaration>parent,
-                                              updatedDecs,
-                                              ts.getModifiers((<ts.GetAccessorDeclaration>parent)),
-                                              (<ts.GetAccessorDeclaration>parent).name,
-                                              (<ts.GetAccessorDeclaration>parent).parameters,
-                                              (<ts.GetAccessorDeclaration>parent).type,
-                                              (<ts.GetAccessorDeclaration>parent).body);
+        updatedDecs,
+        ts.getModifiers((<ts.GetAccessorDeclaration>parent)),
+        (<ts.GetAccessorDeclaration>parent).name,
+        (<ts.GetAccessorDeclaration>parent).parameters,
+        (<ts.GetAccessorDeclaration>parent).type,
+        (<ts.GetAccessorDeclaration>parent).body);
       break;
     }
     case ts.SyntaxKind.SetAccessor: {
       ts.factory.updateSetAccessorDeclaration(<ts.SetAccessorDeclaration>parent,
-                                              updatedDecs,
-                                              ts.getModifiers((<ts.SetAccessorDeclaration>parent)),
-                                              (<ts.SetAccessorDeclaration>parent).name,
-                                              (<ts.SetAccessorDeclaration>parent).parameters,
-                                              (<ts.SetAccessorDeclaration>parent).body);
+        updatedDecs,
+        ts.getModifiers((<ts.SetAccessorDeclaration>parent)),
+        (<ts.SetAccessorDeclaration>parent).name,
+        (<ts.SetAccessorDeclaration>parent).parameters,
+        (<ts.SetAccessorDeclaration>parent).body);
       break;
     }
     case ts.SyntaxKind.PropertyDeclaration: {
       if ((<ts.PropertyDeclaration>parent).questionToken) {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
-                                             updatedDecs,
-                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
-                                             (<ts.PropertyDeclaration>parent).name,
-                                             (<ts.PropertyDeclaration>parent).questionToken,
-                                             (<ts.PropertyDeclaration>parent).type,
-                                             (<ts.PropertyDeclaration>parent).initializer);
+          updatedDecs,
+          ts.getModifiers((<ts.PropertyDeclaration>parent)),
+          (<ts.PropertyDeclaration>parent).name,
+          (<ts.PropertyDeclaration>parent).questionToken,
+          (<ts.PropertyDeclaration>parent).type,
+          (<ts.PropertyDeclaration>parent).initializer);
       } else if ((<ts.PropertyDeclaration>parent).exclamationToken) {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
-                                             updatedDecs,
-                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
-                                             (<ts.PropertyDeclaration>parent).name,
-                                             (<ts.PropertyDeclaration>parent).exclamationToken,
-                                             (<ts.PropertyDeclaration>parent).type,
-                                             (<ts.PropertyDeclaration>parent).initializer);
+          updatedDecs,
+          ts.getModifiers((<ts.PropertyDeclaration>parent)),
+          (<ts.PropertyDeclaration>parent).name,
+          (<ts.PropertyDeclaration>parent).exclamationToken,
+          (<ts.PropertyDeclaration>parent).type,
+          (<ts.PropertyDeclaration>parent).initializer);
       } else {
         ts.factory.updatePropertyDeclaration(<ts.PropertyDeclaration>parent,
-                                             updatedDecs,
-                                             ts.getModifiers((<ts.PropertyDeclaration>parent)),
-                                             (<ts.PropertyDeclaration>parent).name,
-                                             undefined,
-                                             (<ts.PropertyDeclaration>parent).type,
-                                             (<ts.PropertyDeclaration>parent).initializer);
+          updatedDecs,
+          ts.getModifiers((<ts.PropertyDeclaration>parent)),
+          (<ts.PropertyDeclaration>parent).name,
+          undefined,
+          (<ts.PropertyDeclaration>parent).type,
+          (<ts.PropertyDeclaration>parent).initializer);
       }
       break;
     }
     case ts.SyntaxKind.ClassDeclaration: {
       ts.factory.updateClassDeclaration(<ts.ClassDeclaration>parent,
-                                        updatedDecs,
-                                        ts.getModifiers((<ts.ClassDeclaration>parent)),
-                                        (<ts.ClassDeclaration>parent).name,
-                                        (<ts.ClassDeclaration>parent).typeParameters,
-                                        (<ts.ClassDeclaration>parent).heritageClauses,
-                                        (<ts.ClassDeclaration>parent).members);
+        updatedDecs,
+        ts.getModifiers((<ts.ClassDeclaration>parent)),
+        (<ts.ClassDeclaration>parent).name,
+        (<ts.ClassDeclaration>parent).typeParameters,
+        (<ts.ClassDeclaration>parent).heritageClauses,
+        (<ts.ClassDeclaration>parent).members);
       break;
     }
     default: {
@@ -122,7 +122,7 @@ export function disableMockDecorator(node: ts.Decorator): boolean {
   return true;
 }
 
-function removeMockDecorator(decs: NodeArray<ts.Decorator>): ts.Decorator[] {
+function removeMockDecorator(decs: readonly ts.Decorator[]): ts.Decorator[] {
   let res: ts.Decorator[];
   for (let dec of decs) {
     if (!isMockDecorator(dec)) {

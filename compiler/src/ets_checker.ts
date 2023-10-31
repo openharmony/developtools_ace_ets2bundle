@@ -150,7 +150,8 @@ function setCompilerOptions(resolveModulePaths: string[]) {
   }
 }
 
-function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory, tagNameShouldExisted: boolean): ts.JsDocNodeCheckConfigItem {
+function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
+  tagNameShouldExisted: boolean): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
