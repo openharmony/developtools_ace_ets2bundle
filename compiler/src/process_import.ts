@@ -332,7 +332,7 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDecla
     modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
     if (modifiers.length === 1) {
       collection.add(name);
-    } else if (modifiers.length >= 2 && modifiers[1] && modifiers[1].kind ===
+    } else if (modifiers.length >= MODIFIER_LENGTH && modifiers[1] && modifiers[1].kind ===
       ts.SyntaxKind.DefaultKeyword) {
       collection.add(CUSTOM_COMPONENT_DEFAULT);
       if (defaultNameFromParent && asNameFromParent.has(defaultNameFromParent)) {

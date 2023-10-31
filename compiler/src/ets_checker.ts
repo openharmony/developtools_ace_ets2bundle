@@ -180,7 +180,8 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
+        ts.DiagnosticCategory.Warning, false));
     }
   }
 
