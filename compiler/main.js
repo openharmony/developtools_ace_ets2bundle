@@ -792,12 +792,12 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'ExecuteArkTSLinter' &&
-        item.value && item.value === 'false') {
+      if (item.name && item.name === 'ArkTSCheck' &&
+        item.value && item.value === 'SkipArkTSCheck') {
         partialUpdateConfig.executeArkTSLinter = false;
       }
-      if (item.name && item.name === 'StandardArkTSLinter' &&
-        item.value && item.value === 'false') {
+      if (item.name && item.name === 'ArkTSCheckMode' &&
+        item.value && item.value === 'DoArkTSCheckInCompatibleMode') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
