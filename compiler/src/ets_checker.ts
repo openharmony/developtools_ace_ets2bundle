@@ -69,7 +69,7 @@ import {
   props,
   logger
 } from './compile_info';
-import { hasDecorator } from './utils';
+import { hasDecorator, isString } from './utils';
 import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -488,7 +488,7 @@ const moduleResolutionHost: ts.ModuleResolutionHost = {
   }
 }
 
-export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts.ResolvedTypeReferenceDirective[] {
+export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts.FileReference[]): ts.ResolvedTypeReferenceDirective[] {
   if (typeDirectiveNames.length === 0) {
     return [];
   }
@@ -497,7 +497,8 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts
   const cache: Map<string, ts.ResolvedTypeReferenceDirective> = new Map<string, ts.ResolvedTypeReferenceDirective>();
   const containingFile: string = path.join(projectConfig.modulePath, "build-profile.json5");
 
-  for (const typeName of typeDirectiveNames) {
+  for (let entry of typeDirectiveNames) {
+    const typeName = isString(entry) ? entry : entry.fileName.toLowerCase();
     if (!cache.has(typeName)) {
       const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
       if (!resolvedFile || !resolvedFile.resolvedTypeReferenceDirective) {
