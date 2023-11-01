@@ -248,7 +248,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
 }
 
 function getEntryNameFunction(entryName: string): ts.MethodDeclaration {
-  return ts.factory.createMethodDeclaration(undefined,
+  return ts.factory.createMethodDeclaration(
     [ts.factory.createToken(ts.SyntaxKind.StaticKeyword)],
     undefined,
     ts.factory.createIdentifier(GET_ENTRYNAME),
