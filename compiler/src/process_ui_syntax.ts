@@ -281,6 +281,10 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
           // ark compiler's feature
           node = processConcurrent(node);
+          if (node && node.illegalDecorators) {
+            // @ts-ignore
+            node.illegalDecorators = undefined;
+          }
         } else if (hasDecorator(node, COMPONENT_ANIMATABLE_EXTEND_DECORATOR, null, transformLog.errors)) {
           node = processExtend(node, transformLog.errors, COMPONENT_ANIMATABLE_EXTEND_DECORATOR);
           // @ts-ignore
