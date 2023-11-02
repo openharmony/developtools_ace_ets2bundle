@@ -911,5 +911,5 @@ export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: 
 }
 
 export function isString(text: unknown): text is string {
-  return typeof text === "string";
+  return typeof text === 'string';
 }
