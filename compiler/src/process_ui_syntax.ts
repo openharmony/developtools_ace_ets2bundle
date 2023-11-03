@@ -201,8 +201,9 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
     };
 
     function entryKeyNode(node: ts.Node): ts.Expression {
-      if (node && node.decorators && node.decorators.length) {
-        node.decorators.forEach(item => {
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+      if (node && decorators && decorators.length) {
+        decorators.forEach(item => {
           if (item.expression && ts.isCallExpression(item.expression) && ts.isIdentifier(item.expression.expression) &&
             item.expression.expression.escapedText.toString() === 'Entry' && item.expression.arguments &&
             item.expression.arguments.length && ts.isIdentifier(item.expression.arguments[0])) {
@@ -244,6 +245,11 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
       } else if (ts.isFunctionDeclaration(node)) {
         if (hasDecorator(node, COMPONENT_EXTEND_DECORATOR, null, transformLog.errors)) {
           node = processExtend(node, transformLog.errors, COMPONENT_EXTEND_DECORATOR);
+          // @ts-ignore
+          if (node && node.illegalDecorators) {
+            // @ts-ignore
+            node.illegalDecorators = undefined;
+          }
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
@@ -251,10 +257,15 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
           let parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
-          node = ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers,
+          node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
               node.name.getText(), undefined, true));
+          // @ts-ignore
+          if (node && node.illegalDecorators) {
+            // @ts-ignore
+            node.illegalDecorators = undefined;
+          }
           builderTypeParameter.params = [];
           node = processBuildMember(node, context, transformLog.errors, true);
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
@@ -270,8 +281,17 @@ export function processUISyntax(program: ts.Program, ut = false): Function {
         } else if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
           // ark compiler's feature
           node = processConcurrent(node);
+          if (node && node.illegalDecorators) {
+            // @ts-ignore
+            node.illegalDecorators = undefined;
+          }
         } else if (hasDecorator(node, COMPONENT_ANIMATABLE_EXTEND_DECORATOR, null, transformLog.errors)) {
           node = processExtend(node, transformLog.errors, COMPONENT_ANIMATABLE_EXTEND_DECORATOR);
+          // @ts-ignore
+          if (node && node.illegalDecorators) {
+            // @ts-ignore
+            node.illegalDecorators = undefined;
+          }
         }
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
@@ -314,7 +334,6 @@ function generateId(statements: ts.Statement[], node: ts.SourceFile): void {
       )
     ),
     ts.factory.createFunctionDeclaration(
-      undefined,
       undefined,
       undefined,
       ts.factory.createIdentifier(GENERATE_ID),
@@ -649,7 +668,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
         extendFunctionName = '__' + componentName + '__' + node.name.getText();
         collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
       }
-      return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
+      return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
         ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
         node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword), isOriginalExtend(node.body) ?
           ts.factory.updateBlock(node.body, statementArray) : bodynode);
@@ -657,7 +676,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
     if (decoratorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR) {
       bindComponentAttr(node.body.statements[0],
         ts.factory.createIdentifier(componentName), statementArray, log);
-      return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken,
+      return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
         node.name, node.typeParameters,
         [...node.parameters, ...createAnimatableParameterNode()], ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
         ts.factory.updateBlock(node.body, createAnimatableBody(componentName, node.name,
@@ -679,11 +698,11 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
 function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
   return [
     ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(ELMTID)),
+      undefined, undefined, ts.factory.createIdentifier(ELMTID)),
     ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(ISINITIALRENDER)),
+      undefined, undefined, ts.factory.createIdentifier(ISINITIALRENDER)),
     ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT))
+      undefined, undefined, ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT))
   ];
 }
 
@@ -767,7 +786,7 @@ function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration
     const statementArray: ts.Statement[]
       = [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent')),
         ...node.body.statements];
-    return ts.factory.updateFunctionDeclaration(node, undefined, node.modifiers, node.asteriskToken, node.name,
+    return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken, node.name,
       node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
   }
   return node;
@@ -830,10 +849,11 @@ export function collectExtend(collectionSet: Map<string, Set<string>>, component
 
 export function isExtendFunction(node: ts.FunctionDeclaration, extendResult: ExtendResult,
   checkArguments: boolean = false): string {
-  if (node.decorators && node.decorators.length) {
-    for (let i = 0, len = node.decorators.length; i < len; i++) {
-      if (ts.isCallExpression(node.decorators[i].expression)) {
-        parseExtendNode(node.decorators[i].expression as ts.CallExpression, extendResult, checkArguments);
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0, len = decorators.length; i < len; i++) {
+      if (ts.isCallExpression(decorators[i].expression)) {
+        parseExtendNode(decorators[i].expression as ts.CallExpression, extendResult, checkArguments);
         if (CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) && extendResult.componentName) {
           return extendResult.componentName;
         }

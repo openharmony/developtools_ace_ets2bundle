@@ -296,10 +296,10 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
   }
   const arrowArgArr: ts.ParameterDeclaration[] = [
-    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    ts.factory.createParameterDeclaration(undefined, undefined,
       ts.factory.createIdentifier(ELMTID)
     ),
-    ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    ts.factory.createParameterDeclaration(undefined, undefined,
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
@@ -309,7 +309,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
-      undefined, undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
+      undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
       undefined, undefined, ts.factory.createNull()
     ));
   }
