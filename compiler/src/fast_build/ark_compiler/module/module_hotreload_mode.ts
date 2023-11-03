@@ -28,6 +28,8 @@ import { isJsonSourceFile } from '../utils';
 import { newSourceMaps } from '../transform';
 import {
   mkdirsSync,
+  createAndStartEvent,
+  stopEvent,
   toUnixPath,
   validateFilePathLength
 } from '../../../utils';
@@ -46,12 +48,12 @@ export class ModuleHotreloadMode extends ModuleMode {
     }
   }
 
-  generateAbc(rollupObject: any) {
+  generateAbc(rollupObject: any, parentEvent: any) {
     if (isFirstBuild) {
-      this.compileAllFiles(rollupObject);
+      this.compileAllFiles(rollupObject, parentEvent);
       isFirstBuild = false;
     } else {
-      this.compileChangeListFiles(rollupObject);
+      this.compileChangeListFiles(rollupObject, parentEvent);
     }
   }
 
@@ -67,13 +69,13 @@ export class ModuleHotreloadMode extends ModuleMode {
     this.cmdArgs.push('--hot-reload');
   }
 
-  private compileAllFiles(rollupObject: any) {
-    this.prepareForCompilation(rollupObject);
-    this.buildModuleSourceMapInfo();
-    this.generateAbcByEs2abc();
+  private compileAllFiles(rollupObject: any, parentEvent: any) {
+    this.prepareForCompilation(rollupObject, parentEvent);
+    this.buildModuleSourceMapInfo(parentEvent);
+    this.generateAbcByEs2abc(parentEvent);
   }
 
-  private compileChangeListFiles(rollupObject: any) {
+  private compileChangeListFiles(rollupObject: any, parentEvent: any) {
     if (!fs.existsSync(this.projectConfig.changedFileList)) {
       this.logger.debug(blue, `ArkTS: Cannot find file: ${
         this.projectConfig.changedFileList}, skip hot reload build`, reset);
@@ -100,20 +102,24 @@ export class ModuleHotreloadMode extends ModuleMode {
       return;
     }
 
+    const eventCollectModuleFileList = createAndStartEvent(parentEvent, 'collect module file list');
     this.collectModuleFileList(rollupObject, changedFileListInAbsolutePath[Symbol.iterator]());
+    stopEvent(eventCollectModuleFileList);
 
     if (!fs.existsSync(this.projectConfig.patchAbcPath)) {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
-    this.updateSourceMapFromFileList(changedFileList);
+    
+    this.updateSourceMapFromFileList(changedFileList, parentEvent);
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
-    this.generateAbcByEs2abc();
+    this.generateAbcByEs2abc(parentEvent);
   }
 
-  private updateSourceMapFromFileList(fileList: Array<string>) {
+  private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: any) {
+    const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
     const relativeProjectPath: string = this.projectConfig.projectPath.slice(
       this.projectConfig.projectRootPath.length + path.sep.length);
     for (const file of fileList) {
@@ -126,11 +132,12 @@ export class ModuleHotreloadMode extends ModuleMode {
     validateFilePathLength(sourceMapFilePath, this.logger);
     fs.writeFileSync(sourceMapFilePath,
       JSON.stringify(hotReloadSourceMap, null, 2), 'utf-8');
+    stopEvent(eventUpdateSourceMapFromFileList);
   }
 
-  private generateAbcByEs2abc() {
+  private generateAbcByEs2abc(parentEvent: any) {
     this.generateEs2AbcCmd();
     this.addHotReloadArgs();
-    this.generateMergedAbcOfEs2Abc();
+    this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 }

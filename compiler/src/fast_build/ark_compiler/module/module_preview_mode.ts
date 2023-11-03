@@ -22,17 +22,17 @@ export class ModulePreviewMode extends ModuleMode {
     super(rollupObject);
   }
 
-  generateAbc(rollupObject: any) {
-    this.prepareForCompilation(rollupObject);
-    this.buildModuleSourceMapInfo();
-    this.executeArkCompiler();
+  generateAbc(rollupObject: any, parentEvent: any) {
+    this.prepareForCompilation(rollupObject, parentEvent);
+    this.buildModuleSourceMapInfo(parentEvent);
+    this.executeArkCompiler(parentEvent);
   }
 
-  executeArkCompiler() {
+  executeArkCompiler(parentEvent: any) {
     if (isEs2Abc(this.projectConfig)) {
       this.generateEs2AbcCmd();
       this.addCacheFileArgs();
-      this.generateMergedAbcOfEs2Abc();
+      this.generateMergedAbcOfEs2Abc(parentEvent);
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();
       const splittedModules: any[] = this.getSplittedModulesByNumber();
