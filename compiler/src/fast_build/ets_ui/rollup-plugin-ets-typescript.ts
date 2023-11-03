@@ -32,6 +32,9 @@ import {
   fileInfo,
   resourcesRawfile,
   differenceResourcesRawfile,
+  getHookEventFactory,
+  createAndStartEvent,
+  stopEvent,
   CacheFile
 } from '../../utils';
 import {
@@ -227,6 +230,7 @@ async function transform(code: string, id: string) {
     return null;
   }
 
+  const hookEventFactory = getHookEventFactory(this.share, 'etsTransform', 'transform');
   storedFileInfo.collectTransformedFiles(path.resolve(id));
 
   const logger = this.share.getLogger('etsTransform');
@@ -279,6 +283,7 @@ async function transform(code: string, id: string) {
 
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
 
+  const eventSetEmit = createAndStartEvent(hookEventFactory, 'emit UI transformed file');
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
     if (/.map$/.test(fileName)) {
@@ -292,7 +297,7 @@ async function transform(code: string, id: string) {
   tsProgram.getCompilerOptions().noEmit = false;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   try {
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null) ] });
+    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null, false, eventSetEmit) ] });
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
@@ -303,6 +308,7 @@ async function transform(code: string, id: string) {
     emitLogInfo(logger, getTransformLog(transformLog), true, id);
     resetLog();
   }
+  stopEvent(eventSetEmit);
 
   return {
     code: emitResult.outputText,

@@ -34,7 +34,11 @@ import {
   updateSourceMap,
   writeFileContentToTempDir
 } from '../utils';
-import { toUnixPath } from '../../../utils';
+import { 
+  toUnixPath,
+  createAndStartEvent,
+  stopEvent
+} from '../../../utils';
 import { newSourceMaps } from '../transform';
 import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
@@ -171,7 +175,7 @@ export class ModuleSourceFile {
     return ModuleSourceFile.sourceFiles;
   }
 
-  static async processModuleSourceFiles(rollupObject: any) {
+  static async processModuleSourceFiles(rollupObject: any, parentEvent: any) {
     this.initPluginEnv(rollupObject);
 
     // collect mockConfigInfo
@@ -183,20 +187,29 @@ export class ModuleSourceFile {
     for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
-        await source.processModuleRequest(rollupObject);
+        const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
+        await source.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
+        stopEvent(eventBuildModuleSourceFile);
       }
-      await source.writeSourceFile();
+      const eventWriteSourceFile = createAndStartEvent(parentEvent, 'write source file');
+      await source.writeSourceFile(eventWriteSourceFile);
+      stopEvent(eventWriteSourceFile);
     }
+    
 
+    const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&
       ModuleSourceFile.projectConfig.obfuscationOptions) {
       writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
         ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
     }
+    stopEvent(eventObfuscatedCode);
 
+    const eventGenerateMockConfigFile = createAndStartEvent(parentEvent, 'generate mock config file');
     if (ModuleSourceFile.needProcessMock) {
       ModuleSourceFile.generateMockConfigFile(rollupObject);
     }
+    stopEvent(eventGenerateMockConfigFile);
 
     ModuleSourceFile.sourceFiles = [];
   }
@@ -205,11 +218,11 @@ export class ModuleSourceFile {
     return this.moduleId;
   }
 
-  private async writeSourceFile() {
+  private async writeSourceFile(parentEvent: any) {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
+      await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, parentEvent, ModuleSourceFile.logger);
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger);
+      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent);
     }
   }
 
@@ -372,19 +385,29 @@ export class ModuleSourceFile {
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
   // This 'ohmUrl' will be the same as the record name for each file, to make sure runtime can find the corresponding
   // record based on each module request.
-  async processModuleRequest(rollupObject: any) {
+  async processModuleRequest(rollupObject: any, parentEvent: any) {
     if (isJsonSourceFile(this.moduleId)) {
       return;
     }
     if (isJsSourceFile(this.moduleId)) {
+      const eventProcessJsModuleRequest = createAndStartEvent(parentEvent, 'process Js module request');
       this.processJsModuleRequest(rollupObject);
+      stopEvent(eventProcessJsModuleRequest);
       return;
     }
 
+
     // Only when files were transformed to ts, the corresponding ModuleSourceFile were initialized with sourceFile node,
     // if files were transformed to js, ModuleSourceFile were initialized with srouce string.
-    this.isSourceNode ? this.processTransformedTsModuleRequest(rollupObject) :
+    if (this.isSourceNode) {
+      const eventProcessTransformedTsModuleRequest = createAndStartEvent(parentEvent, 'process transformed Ts module request');
+      this.processTransformedTsModuleRequest(rollupObject);
+      stopEvent(eventProcessTransformedTsModuleRequest);
+    } else {
+      const eventProcessTransformedJsModuleRequest = createAndStartEvent(parentEvent, 'process transformed Js module request');
       await this.processTransformedJsModuleRequest(rollupObject);
+      stopEvent(eventProcessTransformedJsModuleRequest);
+    }
   }
 
   private static initPluginEnv(rollupObject: any) {
