@@ -69,7 +69,7 @@ import {
   props,
   logger
 } from './compile_info';
-import { hasDecorator } from './utils';
+import { hasDecorator, isString } from './utils';
 import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -150,21 +150,8 @@ function setCompilerOptions(resolveModulePaths: string[]) {
   }
 }
 
-interface InitCheckConfig {
-  tagName: string;
-  message: string;
-  needConditionCheck: boolean;
-  type: ts.DiagnosticCategory;
-  specifyCheckConditionFuncName: string;
-  tagNameShouldExisted: boolean;
-}
-
-interface CheckJSDocTagNameConfig {
-  needCheck: boolean;
-  checkConfig: InitCheckConfig[];
-}
-
-function getInitCheckConfig(tagName: string, message: string, type: ts.DiagnosticCategory, tagNameShouldExisted: boolean): InitCheckConfig {
+function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
+  tagNameShouldExisted: boolean): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
@@ -175,32 +162,31 @@ function getInitCheckConfig(tagName: string, message: string, type: ts.Diagnosti
   };
 }
 
-function getCheckJSDocTagNameConfig(fileName: string, sourceFileName: string): CheckJSDocTagNameConfig {
+function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
   let needCheckResult: boolean = false;
-  const checkConfigArray: InitCheckConfig[] = [];
+  const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
-    checkConfigArray.push(getInitCheckConfig(DEPRECATED_TAG_CHECK_NAME, DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(FORM_TAG_CHECK_NAME, FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(CROSSPLATFORM_TAG_CHECK_NAME, CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
     }
     if (process.env.compileMode === 'moduleJson') {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(FA_TAG_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-      checkConfigArray.push(getInitCheckConfig(FA_TAG_HUMP_CHECK_NAME, FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
-      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-      checkConfigArray.push(getInitCheckConfig(STAGE_TAG_HUMP_CHECK_NAME, STAGE_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
+        ts.DiagnosticCategory.Warning, false));
     }
   }
 
   return {
-    needCheck: needCheckResult,
+    nodeNeedCheck: needCheckResult,
     checkConfig: checkConfigArray
   };
 }
@@ -249,8 +235,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
-    getTagNameNeededCheckByFile: (fileName: string, sourceFileName: string) => {
-      return getCheckJSDocTagNameConfig(fileName, sourceFileName);
+    getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
+      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
+    },
+    getFileCheckedModuleInfo:(containFilePath: string)=>{
+      return {
+        fileNeedCheck: true,
+        checkPayload: undefined,
+        currentFileName: containFilePath,
+      };
     }
   };
   return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
@@ -495,7 +488,7 @@ const moduleResolutionHost: ts.ModuleResolutionHost = {
   }
 }
 
-export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts.ResolvedTypeReferenceDirective[] {
+export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts.FileReference[]): ts.ResolvedTypeReferenceDirective[] {
   if (typeDirectiveNames.length === 0) {
     return [];
   }
@@ -504,7 +497,8 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[]): ts
   const cache: Map<string, ts.ResolvedTypeReferenceDirective> = new Map<string, ts.ResolvedTypeReferenceDirective>();
   const containingFile: string = path.join(projectConfig.modulePath, "build-profile.json5");
 
-  for (const typeName of typeDirectiveNames) {
+  for (let entry of typeDirectiveNames) {
+    const typeName = isString(entry) ? entry : entry.fileName.toLowerCase();
     if (!cache.has(typeName)) {
       const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
       if (!resolvedFile || !resolvedFile.resolvedTypeReferenceDirective) {
@@ -770,14 +764,15 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       node.members.forEach(item => {
         if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
           const propertyName: string = item.name.getText();
-          if (item.decorators && item.decorators.length) {
-            for (let i = 0; i < item.decorators.length; i++) {
-              const decoratorName: string = item.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+          const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+          if (decorators && decorators.length) {
+            for (let i = 0; i < decorators.length; i++) {
+              const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
               if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
                 dollarCollection.add('$' + propertyName);
               }
-              if (isDecoratorCollection(item.decorators[i], decoratorName)) {
-                decoratorParamsCollection.add(item.decorators[i].expression.arguments[0].getText());
+              if (isDecoratorCollection(decorators[i], decoratorName)) {
+                decoratorParamsCollection.add(decorators[i].expression.arguments[0].getText());
               }
             }
           }

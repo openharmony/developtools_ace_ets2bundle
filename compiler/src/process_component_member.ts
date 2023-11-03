@@ -265,7 +265,8 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
   hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration): UpdateResult {
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
-  if (!item.decorators || !item.decorators.length) {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+  if (!decorators || !decorators.length) {
     curPropMap.set(name.escapedText.toString(), COMPONENT_NON_DECORATOR);
     updateResult.setProperity(undefined);
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
@@ -279,13 +280,13 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
   } else if (!item.type) {
     validatePropertyNonType(name, log);
     return updateResult;
-  } else if (validateCustomDecorator(item.decorators, log)) {
+  } else if (validateCustomDecorator(decorators, log)) {
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_CUSTOM_DECORATOR));
   } else {
     processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
       log, program, context, hasPreview, interfaceNode);
   }
-  if (item.decorators && item.decorators.length && validatePropDecorator(item.decorators)) {
+  if (decorators && decorators.length && validatePropDecorator(decorators)) {
     updateResult.setStateVarsParams(createStateVarsBody(name));
   }
   return updateResult;
@@ -313,9 +314,9 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
   if (componentCollection.customDialogs.has(componentName.getText()) && node.type &&
     node.type.getText() === SET_CONTROLLER_CTR_TYPE) {
     checkController.hasController = true;
-    return ts.factory.createMethodDeclaration(undefined, undefined, undefined,
+    return ts.factory.createMethodDeclaration(undefined, undefined,
       ts.factory.createIdentifier(SET_CONTROLLER_METHOD), undefined, undefined,
-      [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+      [ts.factory.createParameterDeclaration(undefined, undefined,
         ts.factory.createIdentifier(SET_CONTROLLER_CTR), undefined,
         ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(SET_CONTROLLER_CTR_TYPE),
           undefined), undefined)], undefined, ts.factory.createBlock(
@@ -332,13 +333,14 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
   context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration):
   void {
   let stateManagementDecoratorCount: number = 0;
-  for (let i = 0; i < node.decorators.length; i++) {
-    const decoratorName: string = node.decorators[i].getText().replace(/\(.*\)$/, '').trim();
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  for (let i = 0; i < decorators.length; i++) {
+    const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
     if (decoratorName !== COMPONENT_WATCH_DECORATOR) {
       curPropMap.set(name.escapedText.toString(), decoratorName);
     }
     if (BUILDIN_STYLE_NAMES.has(decoratorName.replace('@', ''))) {
-      validateDuplicateDecorator(node.decorators[i], log);
+      validateDuplicateDecorator(decorators[i], log);
     }
     if (decoratorName !== COMPONENT_WATCH_DECORATOR && isForbiddenUseStateType(node.type)) {
       // @ts-ignore
@@ -364,8 +366,8 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       stateObjectCollection.add(name.escapedText.toString());
     }
     if (decoratorName === COMPONENT_WATCH_DECORATOR &&
-      validateWatchDecorator(name, node.decorators.length, log)) {
-      processWatch(node, node.decorators[i], watchMap, log);
+      validateWatchDecorator(name, decorators.length, log)) {
+      processWatch(node, decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       stateManagementDecoratorCount += 1;
       processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
@@ -510,8 +512,8 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
   const members = interfaceNode.members;
   members.push(ts.factory.createPropertySignature(undefined, name,
     ts.factory.createToken(ts.SyntaxKind.QuestionToken), type));
-  interfaceNode = ts.factory.updateInterfaceDeclaration(interfaceNode, undefined,
-    interfaceNode.modifiers, interfaceNode.name, interfaceNode.typeParameters,
+  interfaceNode = ts.factory.updateInterfaceDeclaration(interfaceNode,
+    ts.getModifiers(interfaceNode), interfaceNode.name, interfaceNode.typeParameters,
     interfaceNode.heritageClauses, members);
   return updateState;
 }
@@ -645,11 +647,12 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
 
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
   decorator: string, log: LogInfo[]): ts.ExpressionStatement {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (isSingleKey(node)) {
     let setFuncName: string;
     let storageFuncName: string;
     const storageValue: ts.Expression[] = [
-      node.decorators[0].expression.arguments[0],
+      decorators[0].expression.arguments[0],
       node.initializer,
       ts.factory.createThis(),
       ts.factory.createStringLiteral(name.getText())
@@ -676,8 +679,9 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
 
 function getDecoratorKey(node: ts.PropertyDeclaration): string {
   let key: string;
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   // @ts-ignore
-  const keyNameNode: ts.Node = node.decorators[0].expression.arguments[0];
+  const keyNameNode: ts.Node = decorators[0].expression.arguments[0];
   if (ts.isIdentifier(keyNameNode)) {
     key = keyNameNode.getText();
     decoratorParamSet.add(key);
@@ -851,7 +855,7 @@ function createAddProvidedVar(propertyOrAliasName: string,
 
 function createGetAccessor(item: ts.Identifier, express: string): ts.GetAccessorDeclaration {
   const getAccessorStatement: ts.GetAccessorDeclaration =
-    ts.factory.createGetAccessorDeclaration(undefined, undefined, item, [], undefined,
+    ts.factory.createGetAccessorDeclaration(undefined, item, [], undefined,
       ts.factory.createBlock([ts.factory.createReturnStatement(
         ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
           createPropertyAccessExpressionWithThis(`__${item.getText()}`),
@@ -862,8 +866,8 @@ function createGetAccessor(item: ts.Identifier, express: string): ts.GetAccessor
 function createSetAccessor(item: ts.Identifier, express: string, type: ts.TypeNode):
   ts.SetAccessorDeclaration {
   const setAccessorStatement: ts.SetAccessorDeclaration =
-    ts.factory.createSetAccessorDeclaration(undefined, undefined, item,
-      [ts.factory.createParameterDeclaration(undefined, undefined, undefined,
+    ts.factory.createSetAccessorDeclaration(undefined, item,
+      [ts.factory.createParameterDeclaration(undefined, undefined,
         ts.factory.createIdentifier(CREATE_NEWVALUE_IDENTIFIER), undefined, type,
         undefined)], ts.factory.createBlock([ts.factory.createExpressionStatement(
         ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
@@ -956,20 +960,22 @@ function judgmentTypedeclaration(type: ts.TypeNode): boolean {
 
 function validateAppStorageDecoractorsNonSingleKey(node: ts.PropertyDeclaration,
   log: LogInfo[]): void {
-  if (ts.isIdentifier(node.decorators[0].expression)) {
-    validateDecoratorNonSingleKey(node.decorators[0].expression, log);
-  } else if (ts.isCallExpression(node.decorators[0].expression) &&
-    ts.isIdentifier(node.decorators[0].expression.expression)) {
-    validateDecoratorNonSingleKey(node.decorators[0].expression.expression, log);
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (ts.isIdentifier(decorators[0].expression)) {
+    validateDecoratorNonSingleKey(decorators[0].expression, log);
+  } else if (ts.isCallExpression(decorators[0].expression) &&
+    ts.isIdentifier(decorators[0].expression.expression)) {
+    validateDecoratorNonSingleKey(decorators[0].expression.expression, log);
   }
 }
 
 function isSingleKey(node: ts.PropertyDeclaration): boolean {
-  if (ts.isCallExpression(node.decorators[0].expression) &&
-  node.decorators[0].expression.arguments &&
-  node.decorators[0].expression.arguments.length === 1 &&
-  (ts.isIdentifier(node.decorators[0].expression.arguments[0]) ||
-  ts.isStringLiteral(node.decorators[0].expression.arguments[0]))) {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (ts.isCallExpression(decorators[0].expression) &&
+  decorators[0].expression.arguments &&
+  decorators[0].expression.arguments.length === 1 &&
+  (ts.isIdentifier(decorators[0].expression.arguments[0]) ||
+  ts.isStringLiteral(decorators[0].expression.arguments[0]))) {
     return true;
   }
 }
@@ -1138,7 +1144,7 @@ function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
   }
 }
 
-function validateCustomDecorator(decorators: ts.NodeArray<ts.Decorator>, log: LogInfo[]): boolean {
+function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogInfo[]): boolean {
   let hasInnerDecorator: boolean = false;
   let hasCustomDecorator: boolean = false;
   let innerDecorator: ts.Decorator;
@@ -1164,7 +1170,7 @@ function validateCustomDecorator(decorators: ts.NodeArray<ts.Decorator>, log: Lo
   return false;
 }
 
-function validatePropDecorator(decorators: ts.NodeArray<ts.Decorator>): boolean {
+function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
   for(let i = 0; i < decorators.length; i++) {
     let decorator: ts.Decorator = decorators[i];
     const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
@@ -1204,8 +1210,9 @@ function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
 function isObserved(type: ts.Type): boolean {
   if (type && type.getSymbol() && type.getSymbol().declarations) {
     return type.getSymbol().declarations.some((classDeclaration: ts.ClassDeclaration) => {
-      if (ts.isClassDeclaration(classDeclaration) && classDeclaration.decorators) {
-        return classDeclaration.decorators.some((decorator: ts.Decorator) => {
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(classDeclaration);
+      if (ts.isClassDeclaration(classDeclaration) && decorators) {
+        return decorators.some((decorator: ts.Decorator) => {
           return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
         });
       }

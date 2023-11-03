@@ -177,10 +177,10 @@ class ImportTest extends View {
         Text.create(this.testText1);
         Text.fontSize(50);
         Text.pop();
-        ImportNestAll_1.tExtend(20, this);
+        (0, ImportNestAll_1.tExtend)(20, this);
         Text.create(this.testText2);
         Text.pop();
-        ImportNestAll_1.tStyles(this);
+        (0, ImportNestAll_1.tStyles)(this);
         Button.createWithLabel(this.testText3);
         Button.pop();
         Text.create(this.testText4);
