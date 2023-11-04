@@ -932,12 +932,20 @@ export function createAndStartEvent(eventOrEventFactory: any, eventName: string,
   } else {
     event = eventOrEventFactory.createEvent(eventName);
   }
-  syncFlag ? event.startAsyncEvent() : event.start();
+  if (typeof event.startAsyncEvent === 'function' && syncFlag) {
+    event.startAsyncEvent();
+  } else {
+    event.start();
+  }
   return event;
 }
 
 export function stopEvent(event:any, syncFlag = false): void {
   if (event !== undefined) {
-    syncFlag ? event.stopAsyncEvent() : event.stop();
+    if (typeof event.stopAsyncEvent === 'function' && syncFlag) {
+      event.stopAsyncEvent();
+    } else {
+      event.stop();
+    }
   }
 }
