@@ -414,7 +414,7 @@ export class ModuleMode extends CommonMode {
       });
 
       child.on('error', (err: any) => {
-        stopEvent(eventGenAbc,true);
+        stopEvent(eventGenAbc, true);
         this.throwArkTsCompilerError(err.toString());
       });
 
