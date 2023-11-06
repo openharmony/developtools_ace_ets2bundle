@@ -681,6 +681,7 @@ class ProcessFileInfo {
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
   transformCacheFiles: {[fileName: string]: CacheFile} = {};
+  resolveModuleNamesTime: any;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
@@ -811,6 +812,7 @@ class ProcessFileInfo {
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
     this.resourcesArr.clear();
+    this.transformCacheFiles = undefined;
   }
   setCurrentArkTsFile(): void {
     this.currentArkTsFile = new SpecialArkTSFileInfo();

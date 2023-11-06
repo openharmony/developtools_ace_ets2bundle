@@ -73,9 +73,10 @@ import {
   hasDecorator,
   isString,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  generateSourceFilesInHar,
+  storedFileInfo
 } from './utils';
-import { generateSourceFilesInHar } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
@@ -204,7 +205,8 @@ interface extendInfo {
 
 export const files: ts.MapLike<{ version: number }> = {};
 
-export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[]): ts.LanguageService {
+export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
+  scriptSnapshotTime: any = undefined): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
   rootFileNames.forEach((fileName: string) => {
     files[fileName] = {version: 0};
@@ -221,12 +223,21 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
+      if (scriptSnapshotTime) {
+        scriptSnapshotTime.start();
+      }
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
+        if (scriptSnapshotTime) {
+          scriptSnapshotTime.stop();
+        }
         return ts.ScriptSnapshot.fromString(content);
+      }
+      if (scriptSnapshotTime) {
+        scriptSnapshotTime.stop();
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
@@ -288,7 +299,9 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent: any): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent: any,
+  createProgramTime: any = undefined, runArkTSLinterTime: any = undefined, diagnosticTime: any = undefined,
+  scriptSnapshotTime: any = undefined): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
@@ -297,7 +310,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
         hotReloadSupportFiles.add(fileName);
       });
     }
-    languageService = createLanguageService(rootFileNames, resolveModulePaths);
+    languageService = createLanguageService(rootFileNames, resolveModulePaths, scriptSnapshotTime);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -309,21 +322,39 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    languageService = createLanguageService(filterFiles, resolveModulePaths);
+    languageService = createLanguageService(filterFiles, resolveModulePaths, scriptSnapshotTime);
+  }
+  if (createProgramTime) {
+    createProgramTime.start();
   }
   globalProgram.program = languageService.getProgram();
+  if (createProgramTime) {
+    createProgramTime.stop();
+  }
+  if (runArkTSLinterTime) {
+    runArkTSLinterTime.start();
+  }
   runArkTSLinter(parentEvent);
+  if (runArkTSLinterTime) {
+    runArkTSLinterTime.stop();
+  }
   collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
-    processBuildHap(cacheFile, rootFileNames);
+    processBuildHap(cacheFile, rootFileNames, diagnosticTime);
   }
 }
 
-function processBuildHap(cacheFile: string, rootFileNames: string[]): void {
+function processBuildHap(cacheFile: string, rootFileNames: string[], diagnosticTime: any): void {
+  if (diagnosticTime) {
+    diagnosticTime.start();
+  }
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
     .getSyntacticDiagnostics()
     .concat(globalProgram.program.getSemanticDiagnostics())
     .concat(globalProgram.program.getDeclarationDiagnostics());
+  if (diagnosticTime) {
+    diagnosticTime.stop();
+  }
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
@@ -520,6 +551,9 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+  if (storedFileInfo.resolveModuleNamesTime) {
+    storedFileInfo.resolveModuleNamesTime.start();
+  }
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
@@ -619,7 +653,13 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
+    if (storedFileInfo.resolveModuleNamesTime) {
+      storedFileInfo.resolveModuleNamesTime.stop();
+    }
     return resolvedModules;
+  }
+  if (storedFileInfo.resolveModuleNamesTime) {
+    storedFileInfo.resolveModuleNamesTime.stop();
   }
   return resolvedModulesCache[path.resolve(containingFile)];
 }
