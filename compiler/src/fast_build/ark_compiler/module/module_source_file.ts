@@ -25,6 +25,7 @@ import {
   getOhmUrlByFilepath,
   getOhmUrlByHarName,
   getOhmUrlBySystemApiOrLibRequest,
+  mangleDeclarationFileName,
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -36,9 +37,9 @@ import {
 } from '../utils';
 import { toUnixPath } from '../../../utils';
 import { newSourceMaps } from '../transform';
-import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
+import { writeObfuscationNameCache } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
-import { MOCK_CONFIG_JSON } from '../../../pre_define';
+import { MOCK_CONFIG_JSON, ESMODULE } from '../../../pre_define';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -170,6 +171,10 @@ export class ModuleSourceFile {
         await source.processModuleRequest(rollupObject);
       }
       await source.writeSourceFile();
+    }
+
+    if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE && rollupObject.share.arkProjectConfig.compileHar) {
+      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
     }
 
     if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&
