@@ -135,7 +135,8 @@ export const builderTypeParameter: {params: string[]} = {params: []};
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
 
-export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any): Function {
+export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any,
+  processImportTime: any = undefined, processComponentClassTime: any = undefined): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -227,7 +228,13 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
+        if (processImportTime) {
+          processImportTime.start();
+        }
         processImportModule(node);
+        if (processImportTime) {
+          processImportTime.stop();
+        }
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
@@ -236,7 +243,13 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
+        if (processComponentClassTime) {
+          processComponentClassTime.start();
+        }
         node = processComponentClass(node, context, transformLog.errors, program);
+        if (processComponentClassTime) {
+          processComponentClassTime.stop();
+        }
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
