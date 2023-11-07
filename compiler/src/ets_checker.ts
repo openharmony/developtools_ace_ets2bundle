@@ -75,7 +75,9 @@ import {
   createAndStartEvent,
   stopEvent,
   generateSourceFilesInHar,
-  storedFileInfo
+  storedFileInfo,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -223,22 +225,16 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
-      if (scriptSnapshotTime) {
-        scriptSnapshotTime.start();
-      }
+      startTimeStatisticsLocation(scriptSnapshotTime);
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
-        if (scriptSnapshotTime) {
-          scriptSnapshotTime.stop();
-        }
+        stopTimeStatisticsLocation(scriptSnapshotTime);
         return ts.ScriptSnapshot.fromString(content);
       }
-      if (scriptSnapshotTime) {
-        scriptSnapshotTime.stop();
-      }
+      stopTimeStatisticsLocation(scriptSnapshotTime);
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
     getCurrentDirectory: () => process.cwd(),
@@ -324,20 +320,12 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     const filterFiles: string[] = filterInput(rootFileNames);
     languageService = createLanguageService(filterFiles, resolveModulePaths, scriptSnapshotTime);
   }
-  if (createProgramTime) {
-    createProgramTime.start();
-  }
+  startTimeStatisticsLocation(createProgramTime);
   globalProgram.program = languageService.getProgram();
-  if (createProgramTime) {
-    createProgramTime.stop();
-  }
-  if (runArkTSLinterTime) {
-    runArkTSLinterTime.start();
-  }
+  stopTimeStatisticsLocation(createProgramTime);
+  startTimeStatisticsLocation(runArkTSLinterTime);
   runArkTSLinter(parentEvent);
-  if (runArkTSLinterTime) {
-    runArkTSLinterTime.stop();
-  }
+  stopTimeStatisticsLocation(runArkTSLinterTime);
   collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, diagnosticTime);
@@ -345,16 +333,12 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
 }
 
 function processBuildHap(cacheFile: string, rootFileNames: string[], diagnosticTime: any): void {
-  if (diagnosticTime) {
-    diagnosticTime.start();
-  }
+  startTimeStatisticsLocation(diagnosticTime);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
     .getSyntacticDiagnostics()
     .concat(globalProgram.program.getSemanticDiagnostics())
     .concat(globalProgram.program.getDeclarationDiagnostics());
-  if (diagnosticTime) {
-    diagnosticTime.stop();
-  }
+  stopTimeStatisticsLocation(diagnosticTime);
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
@@ -551,9 +535,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-  if (storedFileInfo.resolveModuleNamesTime) {
-    storedFileInfo.resolveModuleNamesTime.start();
-  }
+  startTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime);
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
@@ -653,14 +635,10 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
-    if (storedFileInfo.resolveModuleNamesTime) {
-      storedFileInfo.resolveModuleNamesTime.stop();
-    }
+    stopTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime);
     return resolvedModules;
   }
-  if (storedFileInfo.resolveModuleNamesTime) {
-    storedFileInfo.resolveModuleNamesTime.stop();
-  }
+  stopTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime)
   return resolvedModulesCache[path.resolve(containingFile)];
 }
 

@@ -951,3 +951,15 @@ export function stopEvent(event:any, syncFlag = false): void {
     }
   }
 }
+
+export function startTimeStatisticsLocation(startTimeEvent: any): void {
+  if (startTimeEvent) {
+    startTimeEvent.start();
+  }
+}
+
+export function stopTimeStatisticsLocation(stopTimeEvent: any): void {
+  if (stopTimeEvent) {
+    stopTimeEvent.stop();
+  }
+}
