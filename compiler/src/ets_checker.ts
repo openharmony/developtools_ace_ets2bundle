@@ -288,7 +288,7 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent: any): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent?: any): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
