@@ -30,10 +30,11 @@ import {
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
   setChecker,
-  getHookEventFactory,
   createAndStartEvent,
   stopEvent,
-  storedFileInfo
+  storedFileInfo,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation
 } from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
@@ -49,13 +50,13 @@ export function etsChecker() {
       let runArkTSLinterTime: any;
       let diagnosticTime: any;
       let scriptSnapshotTime: any;
-      if (this.share.getHookEventFactory('etsChecker', 'buildStart')) {
+      if (this.share && this.share.getHookEventFactory && this.share.getHookEventFactory('etsChecker', 'buildStart')) {
         hookEventFactory = this.share.getHookEventFactory('etsChecker', 'buildStart');
-        createProgramTime = hookEventFactory.createEvent('createProgramTime');
-        runArkTSLinterTime = hookEventFactory.createEvent('runArkTSLinterTime');
-        diagnosticTime = hookEventFactory.createEvent('diagnosticTime');
-        scriptSnapshotTime = hookEventFactory.createEvent('scriptSnapshotTime');
-        storedFileInfo.resolveModuleNamesTime = hookEventFactory.createEvent('storedFileInfo.resolveModuleNamesTime');
+        createProgramTime = hookEventFactory.createEvent('createProgram time');
+        runArkTSLinterTime = hookEventFactory.createEvent('ArkTSLinter time');
+        diagnosticTime = hookEventFactory.createEvent('get diagnostic error time');
+        scriptSnapshotTime = hookEventFactory.createEvent('read file or traverse grammar tree time');
+        storedFileInfo.resolveModuleNamesTime = hookEventFactory.createEvent('resolve module name time');
       }
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
@@ -88,17 +89,13 @@ export function etsChecker() {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
           createProgramTime, runArkTSLinterTime, diagnosticTime, scriptSnapshotTime);
         executedOnce = true;
-        if (diagnosticTime) {
-          diagnosticTime.start();
-        }
+        startTimeStatisticsLocation(diagnosticTime);
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
           .getSyntacticDiagnostics()
           .concat(globalProgram.program.getSemanticDiagnostics())
           .concat(globalProgram.program.getDeclarationDiagnostics());
-        if (diagnosticTime) {
-          diagnosticTime.stop();
-        }
+        stopTimeStatisticsLocation(diagnosticTime);
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           printDiagnostic(diagnostic);
         });
