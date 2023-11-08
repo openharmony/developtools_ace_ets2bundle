@@ -68,6 +68,7 @@ import {
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
 let shouldDisableCache: boolean = false;
+let shouldEnableDebugLine: boolean = false;
 const disableCacheOptions = {
   bundleName: 'default',
   entryModuleName: 'default',
@@ -96,6 +97,9 @@ export function etsTransform() {
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
         }
       }
+      if (this.cache.get('enableDebugLine') !== process.env.enableDebugLine) {
+        shouldEnableDebugLine = true;
+      }
     },
     load(id: string) {
       let fileCacheInfo: fileInfo;
@@ -112,7 +116,7 @@ export function etsTransform() {
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
-      let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName);
+      let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || shouldEnableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
@@ -170,6 +174,11 @@ export function etsTransform() {
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
       this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
+      if (process.env.enableDebugLine) {
+        this.cache.set('enableDebugLine', true);
+      } else {
+        this.cache.set('enableDebugLine', false);
+      }
       storedFileInfo.clearCollectedInfo(this.cache);
       this.cache.set('transformCacheFiles', storedFileInfo.transformCacheFiles);
     }
