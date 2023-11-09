@@ -151,6 +151,7 @@ export const ATTRIBUTE_ANIMATION: string = 'animation';
 export const ATTRIBUTE_ANIMATETO: string = 'animateTo';
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 export const ATTRIBUTE_ID: string = 'id';
+export const ATTRIBUTE_ATTRIBUTE_MODIFIER: string = 'attributeModifier';
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
 export const NULL: string = 'null';

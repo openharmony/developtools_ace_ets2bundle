@@ -113,7 +113,8 @@ import {
   CREATE_SET_METHOD,
   CAN_RETAKE,
   PREVIEW,
-  ALL_COMPONENTS
+  ALL_COMPONENTS,
+  ATTRIBUTE_ATTRIBUTE_MODIFIER
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -2237,8 +2238,12 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     }
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
+      let isAttributeModifier: boolean = false;
+      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER) {
+        isAttributeModifier = true;
+      }
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
-        createFunction(identifierNode, node, temp.arguments));
+        createFunction(identifierNode, node, temp.arguments, isAttributeModifier));
       statements.push(attrStatement);
       if (isRecycleComponent && (!isStylesAttr || isStyleFunction) &&
         !isGestureType(identifierNode) && filterRegularAttrNode(temp.arguments)) {
@@ -2787,7 +2792,7 @@ function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
 }
 
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
-  argumentsArr: ts.NodeArray<ts.Expression>): ts.CallExpression {
+  argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
   if (argumentsArr && argumentsArr.length) {
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);
@@ -2797,7 +2802,17 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     argumentsArr = [];
   }
   return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
+    isAttributeModifier ? ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          node,
+          attrNode
+        ),
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+      ),
+      undefined,
+      [ts.factory.createThis()]
+    ) : ts.factory.createPropertyAccessExpression(
       node,
       attrNode
     ),
