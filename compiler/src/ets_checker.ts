@@ -75,9 +75,10 @@ import {
   createAndStartEvent,
   stopEvent,
   generateSourceFilesInHar,
-  storedFileInfo,
   startTimeStatisticsLocation,
-  stopTimeStatisticsLocation
+  stopTimeStatisticsLocation,
+  resolveModuleNamesTime,
+  CompilationTimeStatistics
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -208,7 +209,7 @@ interface extendInfo {
 export const files: ts.MapLike<{ version: number }> = {};
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
-  scriptSnapshotTime: any = undefined): ts.LanguageService {
+  compilationTime: CompilationTimeStatistics = null): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
   rootFileNames.forEach((fileName: string) => {
     files[fileName] = {version: 0};
@@ -225,16 +226,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
-      startTimeStatisticsLocation(scriptSnapshotTime);
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.scriptSnapshotTime : undefined);
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo);
-        stopTimeStatisticsLocation(scriptSnapshotTime);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.scriptSnapshotTime : undefined);
         return ts.ScriptSnapshot.fromString(content);
       }
-      stopTimeStatisticsLocation(scriptSnapshotTime);
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
     },
     getCurrentDirectory: () => process.cwd(),
@@ -295,9 +295,8 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent: any,
-  createProgramTime: any = undefined, runArkTSLinterTime: any = undefined, diagnosticTime: any = undefined,
-  scriptSnapshotTime: any = undefined): void {
+export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent?: any,
+  compilationTime: CompilationTimeStatistics = null): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
@@ -306,7 +305,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
         hotReloadSupportFiles.add(fileName);
       });
     }
-    languageService = createLanguageService(rootFileNames, resolveModulePaths, scriptSnapshotTime);
+    languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -318,27 +317,27 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    languageService = createLanguageService(filterFiles, resolveModulePaths, scriptSnapshotTime);
+    languageService = createLanguageService(filterFiles, resolveModulePaths, compilationTime);
   }
-  startTimeStatisticsLocation(createProgramTime);
+  startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
   globalProgram.program = languageService.getProgram();
-  stopTimeStatisticsLocation(createProgramTime);
-  startTimeStatisticsLocation(runArkTSLinterTime);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+  startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   runArkTSLinter(parentEvent);
-  stopTimeStatisticsLocation(runArkTSLinterTime);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
-    processBuildHap(cacheFile, rootFileNames, diagnosticTime);
+    processBuildHap(cacheFile, rootFileNames, compilationTime);
   }
 }
 
-function processBuildHap(cacheFile: string, rootFileNames: string[], diagnosticTime: any): void {
-  startTimeStatisticsLocation(diagnosticTime);
+function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics): void {
+  startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.program
     .getSyntacticDiagnostics()
     .concat(globalProgram.program.getSemanticDiagnostics())
     .concat(globalProgram.program.getDeclarationDiagnostics());
-  stopTimeStatisticsLocation(diagnosticTime);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
@@ -535,7 +534,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-  startTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime);
+  startTimeStatisticsLocation(resolveModuleNamesTime);
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
     || !(resolvedModulesCache[path.resolve(containingFile)] &&
@@ -635,10 +634,10 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
-    stopTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime);
+    stopTimeStatisticsLocation(resolveModuleNamesTime);
     return resolvedModules;
   }
-  stopTimeStatisticsLocation(storedFileInfo.resolveModuleNamesTime)
+  stopTimeStatisticsLocation(resolveModuleNamesTime);
   return resolvedModulesCache[path.resolve(containingFile)];
 }
 

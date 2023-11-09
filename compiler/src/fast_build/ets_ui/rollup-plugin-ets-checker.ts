@@ -32,9 +32,10 @@ import {
   setChecker,
   createAndStartEvent,
   stopEvent,
-  storedFileInfo,
   startTimeStatisticsLocation,
-  stopTimeStatisticsLocation
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics,
+  getHookEventFactory
 } from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
@@ -45,19 +46,8 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-      let hookEventFactory: any;
-      let createProgramTime: any;
-      let runArkTSLinterTime: any;
-      let diagnosticTime: any;
-      let scriptSnapshotTime: any;
-      if (this.share && this.share.getHookEventFactory && this.share.getHookEventFactory('etsChecker', 'buildStart')) {
-        hookEventFactory = this.share.getHookEventFactory('etsChecker', 'buildStart');
-        createProgramTime = hookEventFactory.createEvent('createProgram time');
-        runArkTSLinterTime = hookEventFactory.createEvent('ArkTSLinter time');
-        diagnosticTime = hookEventFactory.createEvent('get diagnostic error time');
-        scriptSnapshotTime = hookEventFactory.createEvent('read file or traverse grammar tree time');
-        storedFileInfo.resolveModuleNamesTime = hookEventFactory.createEvent('resolve module name time');
-      }
+      const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
+      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -87,15 +77,15 @@ export function etsChecker() {
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'check Ets code syntax');
       if (process.env.watchMode === 'true') {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
-          createProgramTime, runArkTSLinterTime, diagnosticTime, scriptSnapshotTime);
+          compilationTime);
         executedOnce = true;
-        startTimeStatisticsLocation(diagnosticTime);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
           .getSyntacticDiagnostics()
           .concat(globalProgram.program.getSemanticDiagnostics())
           .concat(globalProgram.program.getDeclarationDiagnostics());
-        stopTimeStatisticsLocation(diagnosticTime);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           printDiagnostic(diagnostic);
         });
@@ -103,7 +93,7 @@ export function etsChecker() {
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
         serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
-          createProgramTime, runArkTSLinterTime, diagnosticTime, scriptSnapshotTime);
+          compilationTime);
       }
       stopEvent(eventServiceChecker);
       setChecker();
