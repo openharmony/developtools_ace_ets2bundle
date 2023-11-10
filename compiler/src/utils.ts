@@ -949,3 +949,68 @@ export function stopEvent(event:any, syncFlag = false): void {
     }
   }
 }
+
+export function startTimeStatisticsLocation(startTimeEvent: CompileEvent): void {
+  if (startTimeEvent) {
+    startTimeEvent.start();
+  }
+}
+
+export function stopTimeStatisticsLocation(stopTimeEvent: CompileEvent): void {
+  if (stopTimeEvent) {
+    stopTimeEvent.stop();
+  }
+}
+export let resolveModuleNamesTime: CompileEvent;
+export class CompilationTimeStatistics {
+  hookEventFactory: HookEventFactoryType;
+  createProgramTime: CompileEvent;
+  runArkTSLinterTime: CompileEvent;
+  diagnosticTime: CompileEvent;
+  scriptSnapshotTime: CompileEvent;
+  processImportTime: CompileEvent;
+  processComponentClassTime: CompileEvent;
+  validateEtsTime: CompileEvent;
+  tsProgramEmitTime: CompileEvent;
+  noSourceFileRebuildProgramTime: CompileEvent;
+  etsTransformBuildStartTime: CompileEvent;
+  etsTransformLoadTime: CompileEvent;
+  constructor(share: Record<string, any>, pluginName: string, hookName: string) {
+    if (share && share.getHookEventFactory) {
+      if (pluginName === 'etsChecker' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.createProgramTime = this.hookEventFactory.createEvent('createProgram');
+        this.runArkTSLinterTime = this.hookEventFactory.createEvent('arkTSLinter');
+        this.diagnosticTime = this.hookEventFactory.createEvent('diagnostic');
+        this.scriptSnapshotTime = this.hookEventFactory.createEvent('scriptSnapshot');
+        resolveModuleNamesTime = this.hookEventFactory.createEvent('resolveModuleNames');
+      } else if (pluginName === 'etsTransform' && hookName === 'transform' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.processImportTime = this.hookEventFactory.createEvent('processImport');
+        this.processComponentClassTime = this.hookEventFactory.createEvent('processComponentClass');
+        this.validateEtsTime = this.hookEventFactory.createEvent('validateEts');
+        this.tsProgramEmitTime = this.hookEventFactory.createEvent('tsProgramEmit');
+        this.noSourceFileRebuildProgramTime = this.hookEventFactory.createEvent('noSourceFileRebuildProgram');
+      } else if (pluginName === 'etsTransform' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.etsTransformBuildStartTime = this.hookEventFactory.createEvent('etsTransformBuildStart');
+      } else if (pluginName === 'etsTransform' && hookName === 'load' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.etsTransformLoadTime = this.hookEventFactory.createEvent('etsTransformLoad');
+      }
+    }
+  }
+}
+
+interface HookEventFactoryType {
+  createEvent(name: string): CompileEvent | undefined;
+}
+
+type CompileEventState = 'created' | 'beginning' | 'running' | 'failed' | 'success' | 'warn';
+interface CompileEvent {
+  start(time?: number): CompileEvent;
+  stop(state?: CompileEventState, time?: number): void;
+  startAsyncEvent(time: number): CompileEvent;
+  stopAsyncEvent(state?: CompileEventState, TIME?: number): void;
+  createSubEvent(name: string): CompileEvent;
+}

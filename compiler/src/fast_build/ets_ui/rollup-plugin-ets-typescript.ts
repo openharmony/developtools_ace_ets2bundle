@@ -32,10 +32,13 @@ import {
   fileInfo,
   resourcesRawfile,
   differenceResourcesRawfile,
-  getHookEventFactory,
   createAndStartEvent,
   stopEvent,
-  CacheFile
+  CacheFile,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics,
+  getHookEventFactory
 } from '../../utils';
 import {
   preprocessExtend,
@@ -87,6 +90,8 @@ export function etsTransform() {
     name: 'etsTransform',
     transform: transform,
     buildStart() {
+      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'buildStart');
+      startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
       judgeCacheShouldDisabled.call(this);
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
@@ -103,9 +108,12 @@ export function etsTransform() {
       if (this.cache.get('enableDebugLine') !== process.env.enableDebugLine) {
         shouldEnableDebugLine = true;
       }
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
     },
     load(id: string) {
       let fileCacheInfo: fileInfo;
+      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'load');
+      startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformLoadTime : undefined);
       if (this.cache.get('fileCacheInfo')) {
         fileCacheInfo = this.cache.get('fileCacheInfo')[path.resolve(id)];
       }
@@ -116,6 +124,7 @@ export function etsTransform() {
       }
       storedFileInfo.addFileCacheInfo(path.resolve(id), fileCacheInfo);
       storedFileInfo.setCurrentArkTsFile();
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformLoadTime : undefined);
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
@@ -226,6 +235,7 @@ compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options
 compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
 
 async function transform(code: string, id: string) {
+  const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'transform');
   if (!filter(id)) {
     return null;
   }
@@ -267,7 +277,9 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
+    startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
@@ -280,9 +292,9 @@ async function transform(code: string, id: string) {
   }
 
   targetSourceFile.fileName = id;
-
+  startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
-
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   const eventSetEmit = createAndStartEvent(hookEventFactory, 'emit UI transformed file');
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
@@ -297,7 +309,10 @@ async function transform(code: string, id: string) {
   tsProgram.getCompilerOptions().noEmit = false;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   try {
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [ processUISyntax(null, false, eventSetEmit) ] });
+    startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
+    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [
+      processUISyntax(null, false, eventSetEmit, compilationTime) ] });
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
