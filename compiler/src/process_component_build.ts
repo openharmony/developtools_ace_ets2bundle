@@ -2231,11 +2231,6 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     updateStatements.push(doubleDollarNode);
     lastStatement.kind = true;
   } else {
-    if (isStylesAttr) {
-      if (!COMMON_ATTRS.has(propName)) {
-        validateStateStyleSyntax(temp, log);
-      }
-    }
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
       let isAttributeModifier: boolean = false;
