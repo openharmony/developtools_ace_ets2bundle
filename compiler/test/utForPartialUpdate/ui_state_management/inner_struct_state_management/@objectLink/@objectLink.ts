@@ -168,7 +168,7 @@ class Parent extends ViewPU {
                                 model: item
                             });
                         }
-                    }, null);
+                    }, { name: "CustomText" });
                 }
             };
             this.forEachUpdateFunction(elmtId, this.models, forEachItemGenFunction, (item) => item.text, false, false);

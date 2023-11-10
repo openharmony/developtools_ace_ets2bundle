@@ -162,7 +162,7 @@ class Index extends ViewPU {
                         fruit: this.arrA[0]
                     });
                 }
-            }, null);
+            }, { name: "CustomX" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -175,7 +175,7 @@ class Index extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CustomX" });
         }
         Row.pop();
     }

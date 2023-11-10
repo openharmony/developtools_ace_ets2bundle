@@ -192,7 +192,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "NamespaceComponent1" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
@@ -223,7 +223,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "NamespaceComponent1" });
         }
         __Common__.pop();
         {
@@ -251,7 +251,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "default" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
@@ -282,7 +282,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "default" });
         }
         __Common__.pop();
         Column.pop();

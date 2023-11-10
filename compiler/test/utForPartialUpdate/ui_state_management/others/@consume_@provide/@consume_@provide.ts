@@ -107,7 +107,7 @@ class CompA extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CompB" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithChild();
@@ -160,7 +160,7 @@ class CompB extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CompC" });
         }
         Column.pop();
     }

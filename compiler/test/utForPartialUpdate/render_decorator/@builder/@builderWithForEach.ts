@@ -65,7 +65,7 @@ function ComB(param, parent = null) {
                     else {
                         (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
                     }
-                }, null);
+                }, { name: "ComA" });
             }
             __Common__.pop();
         };

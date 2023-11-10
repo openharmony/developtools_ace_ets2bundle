@@ -170,7 +170,7 @@ class ViewB extends ViewPU {
                                 a: item
                             });
                         }
-                    }, null);
+                    }, { name: "ViewA" });
                 }
             };
             this.forEachUpdateFunction(elmtId, this.arrA, forEachItemGenFunction, (item) => item.id.toString(), false, false);
@@ -192,7 +192,7 @@ class ViewB extends ViewPU {
                         a: this.arrA[0]
                     });
                 }
-            }, null);
+            }, { name: "ViewA" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -210,7 +210,7 @@ class ViewB extends ViewPU {
                         a: this.arrA[this.arrA.length - 1]
                     });
                 }
-            }, null);
+            }, { name: "ViewA" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel('ViewB: reset array');

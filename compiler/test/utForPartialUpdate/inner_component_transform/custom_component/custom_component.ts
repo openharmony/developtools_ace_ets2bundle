@@ -80,7 +80,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
@@ -97,7 +97,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         __Common__.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -116,7 +116,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         __Common__.pop();
         {
@@ -132,7 +132,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
@@ -151,7 +151,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         __Common__.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -172,7 +172,7 @@ class MyComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Banner" });
         }
         __Common__.pop();
         Column.pop();

@@ -228,7 +228,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "Base" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -247,7 +247,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "DivideTest" });
         }
         Column.pop();
     }

@@ -520,6 +520,7 @@ export const BUILDER_PARAM_PROXY: string = 'makeBuilderParameterProxy';
 export const BUILDER_TYPE: string = 'BuilderType';
 
 export const FUNCTION: string = 'function';
+export const NAME: string = 'name';
 
 export const ROUTENAME_NODE: string = 'routeNameNode';
 export const STORAGE_NODE: string = 'storageNode';

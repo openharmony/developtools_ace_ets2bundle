@@ -159,7 +159,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "ExportComponent" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -190,7 +190,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "default" });
         }
         Column.pop();
     }
