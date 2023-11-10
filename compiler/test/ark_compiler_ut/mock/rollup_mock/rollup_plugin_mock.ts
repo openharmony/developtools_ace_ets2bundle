@@ -49,13 +49,20 @@ class RollUpPluginMock {
     this.share = new Share(buildMode);
   }
 
-  public build(testcase: string = DEFAULT_PROJECT, buildMode: string = DEBUG) {
+  public build(buildMode: string = DEBUG) {
     this.isPreview = false;
     this.share = new Share(buildMode);
 
     this.share.projectConfig.setPreview(this.isPreview);
     this.meta.watchMode = this.isPreview;
 
+    this.doBuild(DEFAULT_PROJECT);
+  }
+
+  public chooseTestData(testcase: string) {
+    if (!this.share) {
+      throw new Error('Call build API first.');
+    }
     this.doBuild(testcase);
   }
 
@@ -175,6 +182,15 @@ class RollUpPluginMock {
   public signal() { }
 
   public warn() { }
+
+  public clearCache() {
+    this.cache.set(IS_CACHE_INVALID, false);
+    this.cache.set(ARK_COMPILER_META_INFO, undefined);
+  }
+
+  public mockProjectConfigMockParams() {
+    this.share.setMockParams();
+  }
 }
 
 export default RollUpPluginMock;
