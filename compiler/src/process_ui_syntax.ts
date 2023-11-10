@@ -535,7 +535,7 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
   if (process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     transformLog.errors.push({
-      type: LogType.WARN,
+      type: LogType.ERROR,
       message: `No such '${node.arguments[0].text}' resource in current module.`,
       pos: node.getStart()
     });
