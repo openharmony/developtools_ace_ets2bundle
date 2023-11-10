@@ -58,7 +58,8 @@ import {
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   COMPONENT_PARAMS_FUNCTION,
-  COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION
+  COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
+  NAME
 } from './pre_define';
 import {
   propertyCollection,
@@ -326,7 +327,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
   } else if (partialUpdateConfig.optimizeComponent) {
-    observeArgArr.push(ts.factory.createNull());
+    observeArgArr.push(componentPop(name));
   }
   return ts.factory.createBlock(
     [
@@ -340,6 +341,16 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
         ),
         undefined, observeArgArr as ts.Expression[]))
     ], true);
+}
+
+function componentPop(name: string): ts.ObjectLiteralExpression {
+  return ts.factory.createObjectLiteralExpression(
+    [ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(NAME),
+      ts.factory.createStringLiteral(name)
+    )],
+    false
+  )
 }
 
 function assignRecycleParams(): ts.IfStatement {

@@ -104,7 +104,7 @@ class HomePreviewComponent_Preview extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "HomePreviewComponent" });
         }
         Column.pop();
     }

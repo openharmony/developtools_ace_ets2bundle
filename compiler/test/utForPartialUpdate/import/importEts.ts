@@ -230,7 +230,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "LinkComponent2Ref" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('space');
@@ -267,7 +267,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "LinkComponent1Ref" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -294,7 +294,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "DefaultComponent" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -325,7 +325,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "LinkComponentDefault" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -352,7 +352,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "AMDComponentDefault" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -383,7 +383,7 @@ class ImportTest extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "LinkComponent3" });
         }
         Column.pop();
     }
