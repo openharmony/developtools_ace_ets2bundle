@@ -85,7 +85,10 @@ import {
   FileLog,
   getPossibleBuilderTypeParameter,
   storedFileInfo,
-  ExtendResult
+  ExtendResult,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -135,7 +138,8 @@ export const builderTypeParameter: {params: string[]} = {params: []};
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
 
-export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any): Function {
+export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any,
+  compilationTime: CompilationTimeStatistics = null): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -227,7 +231,9 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
         processImportModule(node);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
@@ -236,7 +242,9 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         node = processComponentClass(node, context, transformLog.errors, program);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
