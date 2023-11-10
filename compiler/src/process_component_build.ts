@@ -338,7 +338,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (ts.isIdentifier(etsExpression.expression)) {
               parent = etsExpression.expression.escapedText.toString();
             }
-            processInnerComponent(item, newStatements, log, parent, isGlobalBuilder, isTransition, idName, savedParent);
+            processInnerComponent(item, newStatements, log, parent, isBuilder, isGlobalBuilder, isTransition, idName, savedParent);
             break;
           }
           case ComponentType.customComponent: {
@@ -612,7 +612,7 @@ function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponent
 }
 
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
-  log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
+  log: LogInfo[], parent: string = undefined, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isTransition: boolean = false, idName: ts.Expression = undefined, savedParent: string = undefined): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
@@ -627,13 +627,13 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
     processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName);
   } else {
-    processNormalComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder,
+    processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
       isTransition, idName);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
-  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined,
+  innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined, isBuilder: boolean = false,
   isGlobalBuilder: boolean = false, isTransition: boolean = false, idName: ts.Expression = undefined): void {
   const newStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
@@ -666,7 +666,7 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
       isTransition, undefined, immutableStatements, componentName);
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false);
+      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isBuilder, parent, undefined, isGlobalBuilder, false);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
     processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
