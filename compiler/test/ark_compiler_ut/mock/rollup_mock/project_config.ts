@@ -80,6 +80,7 @@ class ProjectConfig {
   aceBuildJson: string;
   cachePath: string;
   aceModuleBuild: string;
+  patchAbcPath: string;
   supportChunks: boolean;
   projectPath: string;
   resolveModulePaths: Array<string>;
@@ -99,6 +100,7 @@ class ProjectConfig {
   stageRouterConfig?: Array<any>;
   port?: string;
   aceSoPath?: string;
+  mockParams?: object;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -124,16 +126,20 @@ class ProjectConfig {
     this.compatibleSdkVersion = version;
   }
 
+  public setMockParams(params: object) {
+    this.mockParams = params;
+  }
+
   private initPath(proPath: string) {
     // build and preview
     let mode = this.isPreview ? '.preview' : 'build';
     this.localPropertiesPath = `${proPath}/local.properties`;
     this.aceProfilePath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/res/default/resources/base/profile`;
-    this.etsLoaderPath = `/${this.runtimeOS}/Sdk/${this.compileSdkVersion}/ets/build-tools/ets-loader`;
+    this.etsLoaderPath = `/${this.runtimeOS}/Sdk/${this.compileSdkVersion}/ets/build-tools/app`;
     this.modulePath = `${proPath}/${this.entryModuleName}`;
     this.projectTopDir = `${proPath}`;
     this.apPath = '';
-    this.aceModuleJsonPath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/res/default/module.json`;
+    this.aceModuleJsonPath = `${proPath}/${this.entryModuleName}/${mode}/module.json`;
     this.appResource = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/res/default/ResourceTable.txt`;
     this.aceModuleRoot = `${proPath}/${this.entryModuleName}/src/main/ets`;
     this.aceSuperVisualPath = `${proPath}/${this.entryModuleName}/src/main/supervisual`;
@@ -143,6 +149,7 @@ class ProjectConfig {
     this.projectPath = `${proPath}/${this.entryModuleName}/src/main/ets`;
     this.moduleRootPath = undefined;
     this.buildPath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/loader_out/default/ets`;
+    this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/hotReload/patchAbcPath/ets`;
 
     if (this.isPreview) {
       this.previewUniqueConfig();

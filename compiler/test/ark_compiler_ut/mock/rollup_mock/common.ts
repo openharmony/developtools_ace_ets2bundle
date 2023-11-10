@@ -14,6 +14,7 @@
  */
 
 export const SDK_VERSION: number = 10;
+export const SDK_VERSION_MOCK: number = 1;
 export const ETS_LOADER_VERSION: string = '4.1.2.3';
 
 export const BUNDLE_NAME_DEFAULT: string = 'com.example.app';
@@ -26,3 +27,7 @@ export const DEVICE_TYPE: string = 'default,tablet';
 
 export const NODE_JS_PATH: string = '/usr/local/nodejs';
 export const PORT_DEFAULT: string = '29900';
+
+export const CMD_DEBUG_INFO: string = '--debug-info';
+export const NODE: string = 'node';
+
