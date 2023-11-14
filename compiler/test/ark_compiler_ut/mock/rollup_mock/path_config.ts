@@ -28,3 +28,12 @@ export const MODULE_ID_ROLLUP_PLACEHOLDER = "\x00rollup_plugin_ignore_empty_modu
 
 // project build node_modules
 export const NODE_MODULES_PATH = "default/intermediates/loader_out/default/node_modules";
+
+export const ES2ABC_PATH: string = 'bin/ark/build/bin/es2abc';
+export const TS2ABC_PATH: string = 'bin/ark/build/src/index.js';
+export const MERGERABC_PATH: string = 'bin/ark/build/bin/merge_abc';
+export const JS2ABC_PATH: string = 'bin/ark/build/bin/js2abc';
+export const AOTCOMPILER_PATH: string = 'bin/ark/build/bin/ark_aot_compiler';
+export const ARKROOT_PATH: string = 'bin/ark';
+
+export const MOCK_CONFIG_PATH: string = "openharmony/mockconfig";
