@@ -373,7 +373,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
 }
 
 function isArkuiDependence(file: string): boolean {
-  return /compiler\/declarations/.test(file) || /ets-loader\/declarations/.test(file);
+  return /compiler\/declarations/.test(file) || /ets-loader\/declarations/.test(file) || /ets\/component/.test(file);
 }
 
 function isCardFile(file: string): boolean {
