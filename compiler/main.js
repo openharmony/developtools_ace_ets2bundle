@@ -783,12 +783,12 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'ArkTSCheck' &&
-        item.value && item.value === 'SkipArkTSCheck') {
+      if (item.name && item.name === 'Api11ArkTSCheck' &&
+        item.value && item.value === 'SkipArkTSCheckInApi11') {
         partialUpdateConfig.executeArkTSLinter = false;
       }
-      if (item.name && item.name === 'ArkTSCheckMode' &&
-        item.value && item.value === 'DoArkTSCheckInCompatibleMode') {
+      if (item.name && item.name === 'Api11ArkTSCheckMode' &&
+        item.value && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
