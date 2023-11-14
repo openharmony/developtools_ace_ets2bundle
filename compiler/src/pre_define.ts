@@ -214,6 +214,7 @@ export const CUSTOM_COMPONENT_EARLIER_CREATE_CHILD: string = 'earlierCreatedChil
 export const CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID: string = 'findChildById';
 export const CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION: string = 'needsUpdate';
 export const CUSTOM_COMPONENT_MARK_STATIC_FUNCTION: string = 'markStatic';
+export const CUSTOM_COMPONENT_EXTRAINFO:string = 'extraInfo';
 
 export const COMPONENT_GESTURE: string = 'Gesture';
 export const COMPONENT_GESTURE_GROUP: string = 'GestureGroup';

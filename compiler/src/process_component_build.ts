@@ -1112,7 +1112,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   }
 }
 
-function getRealNodePos(node: ts.Node): number {
+export function getRealNodePos(node: ts.Node): number {
   // @ts-ignore
   if (node.pos === -1 && node.expression) {
     // @ts-ignore
