@@ -272,7 +272,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
-        interfaceNode)]));
+        interfaceNode)], []));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
     if (partialUpdateConfig.partialUpdateMode) {
       updateResult.setDeleteParams(true);
@@ -393,7 +393,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     updateState.push(variableInitStatement);
   }
   addAddProvidedVar(node, name, decorator, updateState);
-  updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], false));
+  updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
   if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
