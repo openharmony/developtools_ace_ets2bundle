@@ -32,6 +32,7 @@ class Meta {
 class ModuleInfo {
   meta: Meta;
   id: string;
+  importedIdMaps: object = {};
 
   constructor(id: string, entryModuleName: string, modulePath: string) {
     this.meta = new Meta(entryModuleName, modulePath);

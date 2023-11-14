@@ -14,7 +14,7 @@
  */
 
 import { ProjectConfig, IArkProjectConfig } from "./project_config";
-import { OH_MODULES_OHPM_HYPIUM, OH_MODULES_OHOS_HYPIUM } from "./path_config";
+import { OH_MODULES_OHPM_HYPIUM, OH_MODULES_OHOS_HYPIUM, MOCK_CONFIG_PATH } from "./path_config";
 
 class Logger {
   private prefix: string;
@@ -62,6 +62,10 @@ class Share {
     this.symlinkMap[`${this.projectConfig.projectTopDir}/${OH_MODULES_OHPM_HYPIUM}`] = [
       `${this.projectConfig.projectTopDir}/${OH_MODULES_OHOS_HYPIUM}`
     ];
+  }
+
+  public setMockParams() {
+    this.projectConfig.setMockParams({ mockConfigPath: MOCK_CONFIG_PATH });
   }
 }
 
