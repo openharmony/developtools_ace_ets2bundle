@@ -555,13 +555,13 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 function preCheckResourceData(resourceData: string[], resources: object, pos: number,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}): boolean {
   if (previewLog.isAcceleratePreview) {
-    return validateResourceData(resourceData, resources, pos, previewLog.log);
+    return validateResourceData(resourceData, resources, pos, previewLog.log, true);
   } else {
-    return validateResourceData(resourceData, resources, pos, transformLog.errors);
+    return validateResourceData(resourceData, resources, pos, transformLog.errors, false);
   }
 }
 
-function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[]): boolean {
+function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[], isAcceleratePreview: boolean): boolean {
   if (resourceData.length !== 3) {
     log.push({
       type: LogType.ERROR,
@@ -569,7 +569,7 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
       pos: pos
     });
   } else {
-    if (process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
+    if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
       storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
     }
     if (!resources[resourceData[0]]) {
