@@ -38,6 +38,12 @@ class ModuleInfo {
     this.meta = new Meta(entryModuleName, modulePath);
     this.id = id;
   }
+  setIsLocalDependency(value: boolean) {
+    this.meta.isLocalDependency = value
+  }
+  setIsNodeEntryFile(value: boolean) {
+    this.meta.isNodeEntryFile = value
+  }
 }
 
 export default ModuleInfo

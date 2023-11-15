@@ -30,4 +30,23 @@ export const PORT_DEFAULT: string = '29900';
 
 export const CMD_DEBUG_INFO: string = '--debug-info';
 export const NODE: string = 'node';
+export const EXTNAME_MAP: string = '.map';
+export const META: string = 'meta';
+export const PKG_MODULES: string = 'pkg_modules';
+
+export const ENTRYABILITY_TS_PATH_DEFAULT: string = '/src/main/ets/entryability/EntryAbility.ts';
+export const ENTRYABILITY_JS_PATH_DEFAULT: string = '/src/main/ets/entryability/EntryAbility.js';
+export const INDEX_ETS_PATH_DEFAULT: string = '/src/main/ets/pages/Index.ets';
+
+export const ENTRYABILITY_TS_RECORDNAME: string = '/entry/ets/entryability/EntryAbility';
+export const ENTRYABILITY_JS_RECORDNAME: string = '/entry/ets/entryability/EntryAbility';
+export const INDEX_ETS_RECORDNAME: string = '/entry/ets/pages/Index';
+
+export const ENTRYABILITY_TS_DEBUG_ENTRY: string = '/entry/src/main/ets/entryability/EntryAbility.ts';
+export const ENTRYABILITY_JS_DEBUG_ENTRY: string = '/entry/src/main/ets/entryability/EntryAbility.js';
+export const INDEX_ETS_DEBUG_ENTRY: string = '/entry/src/main/ets/pages/Index.ets';
+
+export const ENTRYABILITY_TS_RELEASE_ENTRY: string = '/entry/src/main/ets/entryability/EntryAbility.ts';
+export const ENTRYABILITY_JS_RELEASE_ENTRY: string = '/entry/src/main/ets/entryability/EntryAbility.js';
+export const INDEX_ETS_RELEASE_ENTRY: string = '/entry/src/main/ets/pages/Index.ets';
 
