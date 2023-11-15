@@ -16,10 +16,24 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 
-import { getBuildModeInLowerCase, getPackageInfo } from '../../../lib/ark_utils';
-import { DEBUG, RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
+import {
+  getBuildModeInLowerCase,
+  getPackageInfo,
+  genSourceMapFileName
+} from '../../../lib/ark_utils';
+import {
+  DEBUG,
+  RELEASE,
+  EXTNAME_JS,
+  EXTNAME_TS,
+  EXTNAME_ETS
+} from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { BUNDLE_NAME_DEFAULT, ENTRY_MODULE_NAME_DEFAULT } from '../mock/rollup_mock/common';
+import {
+  BUNDLE_NAME_DEFAULT,
+  ENTRY_MODULE_NAME_DEFAULT,
+  EXTNAME_MAP
+} from '../mock/rollup_mock/common';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -80,6 +94,53 @@ mocha.describe('test ark_utils file api', function () {
     const returnInfo = getPackageInfo(this.rollup.share.projectConfig.aceModuleJsonPath);
     expect(returnInfo[0] === BUNDLE_NAME_DEFAULT).to.be.true;
     expect(returnInfo[1] === ENTRY_MODULE_NAME_DEFAULT).to.be.true;
-  });  
+  });
+
+  mocha.it('3-1: test genSourceMapFileName under build debug', function () {
+    this.rollup.build();
+    for (let filePath of this.rollup.share.allFiles) {
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
+        const originPath = genSourceMapFileName(filePath);
+        const expectedPath = `${filePath}${EXTNAME_MAP}`;
+        expect(originPath === expectedPath).to.be.true;
+      } else if (filePath.endsWith(EXTNAME_ETS)) {
+        const originPath = genSourceMapFileName(filePath);
+        expect(originPath === filePath).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('3-2: test genSourceMapFileName under build release', function () {
+    this.rollup.build(RELEASE);
+    for (let filePath of this.rollup.share.allFiles) {
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
+        const originPath = genSourceMapFileName(filePath);
+        const expectedPath = `${filePath}${EXTNAME_MAP}`;
+        expect(originPath === expectedPath).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('3-3: test genSourceMapFileName under preview debug', function () {
+    this.rollup.preview();
+    for (let filePath of this.rollup.share.allFiles) {
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
+        const originPath = genSourceMapFileName(filePath);
+        const expectedPath = `${filePath}${EXTNAME_MAP}`;
+        expect(originPath === expectedPath).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('3-4: test genSourceMapFileName under hot reload debug', function () {
+    this.rollup.hotReload();
+    for (let filePath of this.rollup.share.allFiles) {
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
+        const originPath = genSourceMapFileName(filePath);
+        const expectedPath = `${filePath}${EXTNAME_MAP}`;
+        expect(originPath === expectedPath).to.be.true;
+      }
+    }
+  });
 });
 

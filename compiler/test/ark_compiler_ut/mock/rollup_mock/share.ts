@@ -13,8 +13,15 @@
  * limitations under the License.
  */
 
-import { ProjectConfig, IArkProjectConfig } from "./project_config";
-import { OH_MODULES_OHPM_HYPIUM, OH_MODULES_OHOS_HYPIUM, MOCK_CONFIG_PATH } from "./path_config";
+import {
+  ProjectConfig,
+  IArkProjectConfig
+} from "./project_config";
+import {
+  OH_MODULES_OHPM_HYPIUM,
+  OH_MODULES_OHOS_HYPIUM,
+  MOCK_CONFIG_PATH
+} from "./path_config";
 
 class Logger {
   private prefix: string;
