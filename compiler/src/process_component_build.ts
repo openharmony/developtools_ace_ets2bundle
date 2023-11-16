@@ -114,7 +114,8 @@ import {
   CAN_RETAKE,
   PREVIEW,
   ALL_COMPONENTS,
-  ATTRIBUTE_ATTRIBUTE_MODIFIER
+  ATTRIBUTE_ATTRIBUTE_MODIFIER,
+  TITLE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1807,7 +1808,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW].includes(
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW,TITLE].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
         CUSTOM_BUILDER_METHOD.has(property.initializer.escapedText.toString())) {
