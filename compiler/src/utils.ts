@@ -883,7 +883,7 @@ export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>,
     const files: string[] = fs.readdirSync(rawfilePath);
     files.forEach((file: string) => {
       if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
-        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, file);
+        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, resourceName ? resourceName + '/' + file : file);
       } else {
         if (resourceName) {
           resourcesArr.add(resourceName + '/' + file);
