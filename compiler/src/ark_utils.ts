@@ -49,14 +49,16 @@ import {
   getExtensionIfUnfullySpecifiedFilepath,
   mkdirsSync,
   toUnixPath,
-  validateFilePathLength
+  validateFilePathLength,
+  harFilesRecord,
 } from './utils';
+import type { generatedFileInHar } from './utils';
 import {
   extendSdkConfigs,
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { mangleFilePath, MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -325,12 +327,12 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 }
 
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, sourcePath?: string): Promise<void> {
   if (projectConfig.arkObfuscator) {
-    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig.arkObfuscator, relativeSourceFilePath, rollupNewSourceMaps,
-      projectConfig.obfuscationMergedObConfig);
+    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
     return;
   }
+  mkdirsSync(path.dirname(filePath));
   if (projectConfig.terserConfig) {
     await writeTerserObfuscatedSourceCode(content, filePath, logger, projectConfig.terserConfig, relativeSourceFilePath, rollupNewSourceMaps);
     return;
@@ -339,11 +341,32 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
     await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
     return;
   }
+
+  sourcePath = toUnixPath(sourcePath);
+  let genFileInHar: generatedFileInHar = harFilesRecord.get(sourcePath);
+
+  if (!genFileInHar) {
+    genFileInHar = {sourcePath: sourcePath}; 
+  }
+  if (!genFileInHar.sourceCachePath) {
+    genFileInHar.sourceCachePath = toUnixPath(filePath);
+  }
+  harFilesRecord.set(sourcePath, genFileInHar);
+
   fs.writeFileSync(filePath, content);
 }
 
-export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, arkObfuscator: ArkObfuscator,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, obfuscationMergedObConfig: MergedConfig): Promise<void> {
+
+export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, originalFilePath: string): Promise<void> {
+  const arkObfuscator = projectConfig.arkObfuscator;
+  const isHarCompiled = projectConfig.compileHar;
+
+  if ((/\.d\.e?ts$/).test(filePath) && !projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation) {
+    tryMangleFileNameAndWriteFile(filePath, content, projectConfig, originalFilePath);
+    return;
+  }
+
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
@@ -356,13 +379,13 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
   let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
   try {
-    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache);
+    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache, originalFilePath);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
     process.exit(FAIL);
   }
 
-  if (mixedInfo.sourceMap) {
+  if (mixedInfo.sourceMap && !isHarCompiled) {
     mixedInfo.sourceMap.sources = [relativeSourceFilePath];
     rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMap;
   }
@@ -371,7 +394,41 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     identifierCaches[relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
-  fs.writeFileSync(filePath, mixedInfo.content ?? '');
+  tryMangleFileNameAndWriteFile(filePath, mixedInfo.content, projectConfig, originalFilePath);
+}
+
+export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: any, originalFilePath: string): void {
+  originalFilePath = toUnixPath(originalFilePath);
+  let genFileInHar: generatedFileInHar = harFilesRecord.get(originalFilePath);
+  if (!genFileInHar) {
+    genFileInHar = {sourcePath: originalFilePath};
+    harFilesRecord.set(originalFilePath, genFileInHar);
+  }
+
+  if (projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation) {
+    const mangledFilePath: string = mangleFilePath(filePath);
+    if ((/\.d\.e?ts$/).test(filePath)) {
+      genFileInHar.obfuscatedDeclarationCachePath = mangledFilePath;
+    } else {
+      genFileInHar.obfuscatedSourceCachePath = mangledFilePath;
+    }
+    filePath = mangledFilePath;
+  } else if (!(/\.d\.e?ts$/).test(filePath)) {
+    genFileInHar.sourceCachePath = filePath;
+  }
+
+  mkdirsSync(path.dirname(filePath));
+  fs.writeFileSync(filePath, content ?? '');
+}
+
+export async function mangleDeclarationFileName(logger: any, projectConfig: any): Promise<void> {
+  for (const [sourcePath, genFilesInHar] of harFilesRecord) {
+    if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
+      let relativeSourceFilePath = toUnixPath(genFilesInHar.originalDeclarationCachePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+      await writeObfuscatedSourceCode(genFilesInHar.originalDeclarationContent, genFilesInHar.originalDeclarationCachePath, logger, projectConfig,
+        relativeSourceFilePath, {}, sourcePath);
+    }
+  }
 }
 
 export async function writeTerserObfuscatedSourceCode(content: string, filePath: string, logger: any,

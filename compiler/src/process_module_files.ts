@@ -27,7 +27,9 @@ import {
   mkdirsSync,
   toUnixPath,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  harFilesRecord,
+  generatedFileInHar
 } from './utils';
 import {
   genSourceMapFileName,
@@ -67,7 +69,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: an
   }
   if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
     const eventWriteObfuscatedSourceCode = createAndStartEvent(eventWriteFileSyncByNode, 'write obfuscated source code');
-    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps);
+    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps, node.fileName);
     stopEvent(eventWriteObfuscatedSourceCode);
     return;
   }
