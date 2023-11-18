@@ -13,14 +13,16 @@
  * limitations under the License.
  */
 
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
+import JSON5 from 'json5';
 import {
   ApiExtractor,
   renamePropertyModule,
-  getMapFromJson
-} from "arkguard";
-import { identifierCaches } from "../../../ark_utils";
+  getMapFromJson,
+  renameFileNameModule
+} from 'arkguard';
+import { identifierCaches } from '../../../ark_utils';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -42,10 +44,12 @@ enum OptionType {
   KEEP_DTS,
   KEEP_GLOBAL_NAME,
   KEEP_PROPERTY_NAME,
+  KEEP_FILE_NAME,
   DISABLE_OBFUSCATION,
   ENABLE_PROPERTY_OBFUSCATION,
   ENABLE_STRING_PROPERTY_OBFUSCATION,
   ENABLE_TOPLEVEL_OBFUSCATION,
+  ENABLE_FILENAME_OBFUSCATION,
   COMPACT,
   REMOVE_LOG,
   PRINT_NAMECACHE,
@@ -85,6 +89,7 @@ class ObOptions {
   enablePropertyObfuscation: boolean = false;
   enableStringPropertyObfuscation: boolean = false;
   enableToplevelObfuscation: boolean = false;
+  enableFileNameObfuscation: boolean = false;
   compact: boolean = false;
   removeLog: boolean = false;
   printNameCache: string = '';
@@ -97,6 +102,7 @@ class ObOptions {
     this.enableStringPropertyObfuscation = this.enableStringPropertyObfuscation || other.enableStringPropertyObfuscation;
     this.compact = this.compact || other.compact;
     this.removeLog = this.removeLog || other.removeLog;
+    this.enableFileNameObfuscation = this.enableFileNameObfuscation || other.enableFileNameObfuscation;
     if (other.printNameCache.length > 0) {
       this.printNameCache = other.printNameCache;
     }
@@ -110,11 +116,13 @@ export class MergedConfig {
   options: ObOptions = new ObOptions();
   reservedPropertyNames: string[] = [];
   reservedNames: string[] = [];
+  reservedFileNames: string[] = [];
 
   merge(other: MergedConfig) {
     this.options.merge(other.options);
     this.reservedPropertyNames.push(...other.reservedPropertyNames);
     this.reservedNames.push(...other.reservedNames);
+    this.reservedFileNames.push(...other.reservedFileNames);
   }
 
   sortAndDeduplicate() {
@@ -122,28 +130,29 @@ export class MergedConfig {
       this.reservedPropertyNames
     );
     this.reservedNames = sortAndDeduplicateStringArr(this.reservedNames);
+    this.reservedFileNames = sortAndDeduplicateStringArr(this.reservedFileNames);
   }
 
   serializeMergedConfig(): string {
-    let resultStr: string = "";
+    let resultStr: string = '';
     const keys = Object.keys(this.options);
     for (const key of keys) {
-      // skip printNameCache and applyNameCache
-      if (this.options[key] === true && ObConfigResolver.optionsMap.has(String(key))) {
-        resultStr += ObConfigResolver.optionsMap.get(String(key)) + "\n";
+      // skip the export of some switches.
+      if (this.options[key] === true && ObConfigResolver.exportedSwitchMap.has(String(key))) {
+        resultStr += ObConfigResolver.exportedSwitchMap.get(String(key)) + '\n';
       }
     }
 
     if (this.reservedNames.length > 0) {
-      resultStr += ObConfigResolver.KEEP_GLOBAL_NAME + "\n";
+      resultStr += ObConfigResolver.KEEP_GLOBAL_NAME + '\n';
       this.reservedNames.forEach((item) => {
-      resultStr += item + "\n";
+        resultStr += item + '\n';
       });
     }
     if (this.reservedPropertyNames.length > 0) {
-      resultStr += ObConfigResolver.KEEP_PROPERTY_NAME + "\n";
+      resultStr += ObConfigResolver.KEEP_PROPERTY_NAME + '\n';
       this.reservedPropertyNames.forEach((item) => {
-      resultStr += item + "\n";
+        resultStr += item + '\n';
       });
     }
     return resultStr;
@@ -193,7 +202,7 @@ export class ObConfigResolver {
     const mergedConfigs: MergedConfig = this.getMergedConfigs(selfConfig, dependencyConfigs);
 
     if (enableObfuscation && mergedConfigs.options.enablePropertyObfuscation) {
-      const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, "systemApiCache.json");
+      const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, 'systemApiCache.json');
       if (isFileExist(systemApiCachePath)) {
         this.getSystemApiConfigsByCache(selfConfig, systemApiCachePath);
       } else {
@@ -234,16 +243,19 @@ export class ObConfigResolver {
   static readonly KEEP_DTS = '-keep-dts';
   static readonly KEEP_GLOBAL_NAME = '-keep-global-name';
   static readonly KEEP_PROPERTY_NAME = '-keep-property-name';
+  static readonly KEPP_FILE_NAME = '-keep-file-name';
   static readonly DISABLE_OBFUSCATION = '-disable-obfuscation';
   static readonly ENABLE_PROPERTY_OBFUSCATION = '-enable-property-obfuscation';
   static readonly ENABLE_STRING_PROPERTY_OBFUSCATION = '-enable-string-property-obfuscation';
   static readonly ENABLE_TOPLEVEL_OBFUSCATION = '-enable-toplevel-obfuscation';
+  static readonly ENABLE_FILENAME_OBFUSCATION = '-enable-filename-obfuscation';
   static readonly COMPACT = '-compact';
   static readonly REMOVE_LOG = '-remove-log';
   static readonly PRINT_NAMECACHE = '-print-namecache';
   static readonly APPLY_NAMECACHE = '-apply-namecache';
 
-  static optionsMap: Map<string, string> = new Map([
+  // renameFileName、printNameCache、 applyNameCache won't be reserved in obfuscation.txt file.
+  static exportedSwitchMap: Map<string, string> = new Map([
     ['disableObfuscation', ObConfigResolver.KEEP_DTS],
     ['enablePropertyObfuscation', ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION],
     ['enableStringPropertyObfuscation', ObConfigResolver.ENABLE_STRING_PROPERTY_OBFUSCATION],
@@ -260,6 +272,8 @@ export class ObConfigResolver {
         return OptionType.KEEP_GLOBAL_NAME;
       case ObConfigResolver.KEEP_PROPERTY_NAME:
         return OptionType.KEEP_PROPERTY_NAME;
+      case ObConfigResolver.KEPP_FILE_NAME:
+        return OptionType.KEEP_FILE_NAME;
       case ObConfigResolver.DISABLE_OBFUSCATION:
         return OptionType.DISABLE_OBFUSCATION;
       case ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION:
@@ -268,6 +282,8 @@ export class ObConfigResolver {
         return OptionType.ENABLE_STRING_PROPERTY_OBFUSCATION;
       case ObConfigResolver.ENABLE_TOPLEVEL_OBFUSCATION:
         return OptionType.ENABLE_TOPLEVEL_OBFUSCATION;
+      case ObConfigResolver.ENABLE_FILENAME_OBFUSCATION:
+        return OptionType.ENABLE_FILENAME_OBFUSCATION;
       case ObConfigResolver.COMPACT:
         return OptionType.COMPACT;
       case ObConfigResolver.REMOVE_LOG:
@@ -284,7 +300,7 @@ export class ObConfigResolver {
   private handleConfigContent(data: string, configs: MergedConfig, configPath: string) {
     data = this.removeComments(data);
     const tokens = data.split(/[',', '\t', ' ', '\n', '\r\n']/).filter((item) => {
-      if (item != "") {
+      if (item !== '') {
         return item;
       }
     });
@@ -312,6 +328,10 @@ export class ObConfigResolver {
           configs.options.enableToplevelObfuscation = true;
           continue;
         }
+        case OptionType.ENABLE_FILENAME_OBFUSCATION: {
+          configs.options.enableFileNameObfuscation = true;
+          continue;
+        }
         case OptionType.COMPACT: {
           configs.options.compact = true;
           continue;
@@ -323,6 +343,7 @@ export class ObConfigResolver {
         case OptionType.KEEP_DTS:
         case OptionType.KEEP_GLOBAL_NAME:
         case OptionType.KEEP_PROPERTY_NAME:
+        case OptionType.KEEP_FILE_NAME:
         case OptionType.PRINT_NAMECACHE:
         case OptionType.APPLY_NAMECACHE:
           type = tokenType;
@@ -343,6 +364,10 @@ export class ObConfigResolver {
         }
         case OptionType.KEEP_PROPERTY_NAME: {
           configs.reservedPropertyNames.push(token);
+          continue;
+        }
+        case OptionType.KEEP_FILE_NAME: {
+          configs.reservedFileNames.push(token);
           continue;
         }
         case OptionType.PRINT_NAMECACHE: {
@@ -381,9 +406,9 @@ export class ObConfigResolver {
 
   // the content from '#' to '\n' are comments
   private removeComments(data: string) {
-    const commentStart = "#";
-    const commentEnd = "\n";
-    var tmpStr = "";
+    const commentStart = '#';
+    const commentEnd = '\n';
+    let tmpStr = '';
     var isInComments = false;
     for (let i = 0; i < data.length; i++) {
       if (isInComments) {
@@ -459,12 +484,12 @@ export class ObConfigResolver {
   }
 
   private getSystemApiConfigsByCache(systemConfigs: MergedConfig, systemApiCachePath: string) {
-    let systemApiContent = JSON.parse(fs.readFileSync(systemApiCachePath, "utf-8"));
-    if (systemApiContent["ReservedPropertyNames"]) {
-      systemConfigs.reservedPropertyNames = systemApiContent["ReservedPropertyNames"];
+    let systemApiContent: { ReservedPropertyNames?: string[], ReservedNames?: string[] } = JSON.parse(fs.readFileSync(systemApiCachePath, 'utf-8'));
+    if (systemApiContent.ReservedPropertyNames) {
+      systemConfigs.reservedPropertyNames = systemApiContent.ReservedPropertyNames;
     }
-    if (systemApiContent["ReservedNames"]) {
-      systemConfigs.reservedNames = systemApiContent["ReservedNames"];
+    if (systemApiContent.ReservedNames) {
+      systemConfigs.reservedNames = systemApiContent.ReservedNames;
     }
   }
 
@@ -503,51 +528,64 @@ export class ObConfigResolver {
 export function readNameCache(nameCachePath: string, logger: any): void {
   try {
     const fileContent = fs.readFileSync(nameCachePath, 'utf-8');
-    const nameCache: { IdentifierCache?, PropertyCache? } = JSON.parse(fileContent);
+    const nameCache: { IdentifierCache?: Object, PropertyCache?: Object, FileNameCache?: Object } = JSON.parse(fileContent);
     if (nameCache.PropertyCache) {
       renamePropertyModule.historyMangledTable = getMapFromJson(nameCache.PropertyCache);
     }
+    if (nameCache.FileNameCache) {
+      renameFileNameModule.historyFileNameMangledTable = getMapFromJson(nameCache.FileNameCache);
+    }
+
     Object.assign(identifierCaches, nameCache.IdentifierCache);
   } catch (err) {
     logger.error(`Failed to open ${nameCachePath}. Error message: ${err}`);
   }
 }
 
-export function getArkguardNameCache(enablePropertyObfuscation: any) {
-  let writeContent: string = "";
-  const nameCacheCollection: Object = {};
-  nameCacheCollection['IdentifierCache'] = identifierCaches;
-  const mergedNameCache: Map<string, string> = new Map();
+export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean): string {
+  let writeContent: string = '';
+  const nameCacheCollection: { IdentifierCache?: Object, PropertyCache?: Object, FileNameCache?: Object } = {};
+  nameCacheCollection.IdentifierCache = identifierCaches;
+
   if (enablePropertyObfuscation) {
-    if (renamePropertyModule.historyMangledTable) {
-      for (const [key, value] of renamePropertyModule.historyMangledTable.entries()) {
-        mergedNameCache.set(key, value);
-      }
-    }
-  
-    if (renamePropertyModule.globalMangledTable) {
-      for (const [key, value] of renamePropertyModule.globalMangledTable.entries()) {
-        mergedNameCache.set(key, value);
-      }
-    }
-    nameCacheCollection['PropertyCache'] = Object.fromEntries(mergedNameCache);
+    const mergedPropertyNameCache: Map<string, string> = new Map();
+    fillNameCache(renamePropertyModule.historyMangledTable, mergedPropertyNameCache);
+    fillNameCache(renamePropertyModule.globalMangledTable, mergedPropertyNameCache);
+    nameCacheCollection.PropertyCache = Object.fromEntries(mergedPropertyNameCache);
+  }
+
+  if (enableFileNameObfuscation) {
+    const mergedFileNameCache: Map<string, string> = new Map();
+    fillNameCache(renameFileNameModule.historyFileNameMangledTable, mergedFileNameCache);
+    fillNameCache(renameFileNameModule.globalFileNameMangledTable, mergedFileNameCache);
+    nameCacheCollection.FileNameCache = Object.fromEntries(mergedFileNameCache);
   }
 
   writeContent += JSON.stringify(nameCacheCollection, null, 2);
   return writeContent;
 }
 
+function fillNameCache(table: Map<string, string>, nameCache: Map<string, string>): void {
+  if (table) {
+    for (const [key, value] of table.entries()) {
+      nameCache.set(key, value);
+    }
+  }
+  return;
+}
+
 export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir?: string, printNameCache?: string): void {
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
-    writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation)
+    writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
+      projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation);
   } else if (projectConfig.terserConfig) {
     writeContent = JSON.stringify(projectConfig.terserConfig.nameCache, null, 2);
   } else {
     return;
   }
   if (obfuscationCacheDir && obfuscationCacheDir.length > 0) {
-    const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
+    const defaultNameCachePath: string = path.join(obfuscationCacheDir, 'nameCache.json');
     if (!fs.existsSync(path.dirname(defaultNameCachePath))) {
       fs.mkdirSync(path.dirname(defaultNameCachePath), {recursive: true});
     }
@@ -562,4 +600,38 @@ export function generateConsumerObConfigFile(obfuscationOptions: any, logger: an
   const projectConfig = { obfuscationOptions, compileHar: true };
   const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, logger);
   obConfig.resolveObfuscationConfigs();
+}
+
+/**
+ * Collect reserved file name configured in oh-package.json5 and module.json5.
+ * @param ohPackagePath The 'main' and 'types' fileds in oh-package.json5 need to be reserved.
+ * @param moduleJsonPath The 'srcEntry' filed in module.json5 needs to be reserved.
+ * @returns reservedFileNames
+ */
+export function collectResevedFileNameInIDEConfig(ohPackagePath: string, moduleJsonPath: string, projectPath: string, cachePath: string): string[] {
+  const reservedFileNames: string[] = [];
+  if (fs.existsSync(ohPackagePath)) {
+    const ohPackageContent = JSON5.parse(fs.readFileSync(ohPackagePath, 'utf-8'));
+    ohPackageContent.main && reservedFileNames.push(ohPackageContent.main);
+    ohPackageContent.types && reservedFileNames.push(ohPackageContent.types);
+  }
+
+  if (fs.existsSync(moduleJsonPath)) {
+    const moduleJsonContent = JSON5.parse(fs.readFileSync(moduleJsonPath, 'utf-8'));
+    moduleJsonContent.module?.srcEntry && reservedFileNames.push(moduleJsonContent.module?.srcEntry);
+  }
+
+  /* Get the reserved file name
+   * projectPath: /library/src/main/ets 
+   * cachePath: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release
+   * target reserved path: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release/src/main/ets
+   */
+  reservedFileNames.push(projectPath);
+  reservedFileNames.push(cachePath);
+  return reservedFileNames;
+}
+
+export function mangleFilePath(originalPath: string): string {
+  const mangledFilePath = renameFileNameModule.getMangleCompletePath(originalPath);
+  return mangledFilePath;
 }

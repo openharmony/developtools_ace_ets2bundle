@@ -38,7 +38,9 @@ import {
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
   CompilationTimeStatistics,
-  getHookEventFactory
+  getHookEventFactory,
+  genLoaderOutPathOfHar,
+  harFilesRecord
 } from '../../utils';
 import {
   preprocessExtend,
@@ -146,28 +148,34 @@ export function etsTransform() {
       }
       return shouldDisable;
     },
-    moduleParsed(moduleInfo) {
-      if (projectConfig.compileHar) {
-        if (moduleInfo.id && !moduleInfo.id.match(new RegExp(projectConfig.packageDir)) &&
-          !moduleInfo.id.startsWith('\x00') &&
-          path.resolve(moduleInfo.id).startsWith(projectConfig.moduleRootPath + path.sep)) {
-          const filePath: string = moduleInfo.id;
-          const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-            process.env.cachePath, projectConfig);
-          const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-            projectConfig.buildPath, projectConfig, true);
-          if (filePath.match(/\.e?ts$/)) {
-            incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
-              jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
-            incrementalFileInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
-          } else {
-            incrementalFileInHar.set(jsCacheFilePath, jsBuildFilePath);
-          }
-        }
-      }
-    },
     afterBuildEnd() {
       if (projectConfig.compileHar) {
+        for (let [sourcePath, genFileInHar] of harFilesRecord) {
+          if (sourcePath && !sourcePath.match(new RegExp(projectConfig.packageDir)) &&
+            !sourcePath.startsWith('\x00') &&
+            path.resolve(sourcePath).startsWith(projectConfig.moduleRootPath + path.sep)) {
+            let buildFilePath: string = '';
+            let cachePath: string = '';
+
+            cachePath = genFileInHar.obfuscatedSourceCachePath ? genFileInHar.obfuscatedSourceCachePath : genFileInHar.sourceCachePath;
+            if (cachePath && cachePath.length > 0) {
+              buildFilePath = genLoaderOutPathOfHar(cachePath, projectConfig.cachePath,
+                projectConfig.buildPath, projectConfig.moduleRootPath, projectConfig.projectRootPath);
+              incrementalFileInHar.set(cachePath, buildFilePath);
+            }
+
+            if (sourcePath.match(/\.e?ts$/)) {
+              cachePath = genFileInHar.obfuscatedDeclarationCachePath ? genFileInHar.obfuscatedDeclarationCachePath :
+                genFileInHar.originalDeclarationCachePath;
+              if (cachePath && cachePath.length > 0) {
+                buildFilePath = genLoaderOutPathOfHar(cachePath, projectConfig.cachePath,
+                  projectConfig.buildPath, projectConfig.moduleRootPath, projectConfig.projectRootPath);
+                incrementalFileInHar.set(cachePath, buildFilePath);
+              }
+            }
+          }
+        }
+
         incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
           if (fs.existsSync(jsCacheFilePath)) {
             const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
