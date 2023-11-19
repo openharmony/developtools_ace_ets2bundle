@@ -40,7 +40,7 @@ import {
   stopEvent,
   harFilesRecord
 } from '../../utils';
-import type { generatedFileInHar } from '../../utils';
+import type { GeneratedFileInHar } from '../../utils';
 import {
   tryMangleFileNameAndWriteFile,
   writeObfuscatedSourceCode
