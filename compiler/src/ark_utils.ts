@@ -52,7 +52,7 @@ import {
   validateFilePathLength,
   harFilesRecord,
 } from './utils';
-import type { generatedFileInHar } from './utils';
+import type { GeneratedFileInHar } from './utils';
 import {
   extendSdkConfigs,
   projectConfig,
@@ -327,7 +327,7 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 }
 
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, sourcePath?: string): Promise<void> {
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
   if (projectConfig.arkObfuscator) {
     await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
     return;
@@ -343,7 +343,7 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
   }
 
   sourcePath = toUnixPath(sourcePath);
-  let genFileInHar: generatedFileInHar = harFilesRecord.get(sourcePath);
+  let genFileInHar: GeneratedFileInHar = harFilesRecord.get(sourcePath);
 
   if (!genFileInHar) {
     genFileInHar = {sourcePath: sourcePath}; 
@@ -358,7 +358,7 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
 
 
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}, originalFilePath: string): Promise<void> {
+  relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isHarCompiled = projectConfig.compileHar;
 
@@ -399,7 +399,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
 export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: any, originalFilePath: string): void {
   originalFilePath = toUnixPath(originalFilePath);
-  let genFileInHar: generatedFileInHar = harFilesRecord.get(originalFilePath);
+  let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
   if (!genFileInHar) {
     genFileInHar = {sourcePath: originalFilePath};
     harFilesRecord.set(originalFilePath, genFileInHar);
