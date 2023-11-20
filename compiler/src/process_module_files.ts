@@ -29,7 +29,7 @@ import {
   createAndStartEvent,
   stopEvent,
   harFilesRecord,
-  generatedFileInHar
+  GeneratedFileInHar
 } from './utils';
 import {
   genSourceMapFileName,
