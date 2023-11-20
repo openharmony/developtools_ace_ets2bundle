@@ -383,7 +383,7 @@ export function isPackageModulesFile(filePath: string, projectConfig: any): bool
   return false;
 }
 
-export interface generatedFileInHar {
+export interface GeneratedFileInHar {
   sourcePath: string;
   sourceCachePath?: string;
   obfuscatedSourceCachePath?: string;
@@ -392,7 +392,7 @@ export interface generatedFileInHar {
   obfuscatedDeclarationCachePath?: string;
 }
 
-export const harFilesRecord: Map<string, generatedFileInHar> = new Map();
+export const harFilesRecord: Map<string, GeneratedFileInHar> = new Map();
 
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
   // compileShared: compile shared har of project
@@ -407,7 +407,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     }
     if (projectConfig.compileMode === ESMODULE && projectConfig.compileHar && (/\.d\.e?ts$/).test(jsFilePath)) {
       sourcePath = toUnixPath(sourcePath);
-      const genFilesInHar: generatedFileInHar = {sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent};
+      const genFilesInHar: GeneratedFileInHar = {sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent};
       harFilesRecord.set(sourcePath, genFilesInHar);
       return;
     } else {
