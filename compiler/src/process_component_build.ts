@@ -113,6 +113,8 @@ import {
   CREATE_SET_METHOD,
   CAN_RETAKE,
   PREVIEW,
+  WRAPBUILDER_BUILDERPROP,
+  WRAPPEDBUILDER_CLASS,
   ALL_COMPONENTS,
   ATTRIBUTE_ATTRIBUTE_MODIFIER
 } from './pre_define';
@@ -2658,7 +2660,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
-  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName) {
+  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName || isWrappedBuilder(node)) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
@@ -2677,6 +2679,17 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     });
   }
   return null;
+}
+
+function isWrappedBuilder(node: ts.ExpressionStatement): boolean {
+  if (projectConfig.minAPIVersion >= 11 && node.expression && ts.isCallExpression(node.expression) &&
+    node.expression.expression && ts.isPropertyAccessExpression(node.expression.expression) &&
+    node.expression.expression.name && ts.isIdentifier(node.expression.expression.name) &&
+    node.expression.expression.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP &&
+    globalProgram.checker.getTypeAtLocation(node.expression.expression.expression).symbol.escapedName === WRAPPEDBUILDER_CLASS) {
+    return true;
+  }
+  return false;
 }
 
 function judgeBuilderType(node: ts.ExpressionStatement): boolean {
