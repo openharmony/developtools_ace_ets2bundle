@@ -942,9 +942,9 @@ function collectionlocalStorageParam(node: ts.Decorator, name: string,
   localStorage: Map<string, Set<string>>): void {
   const localStorageParam: Set<string> = new Set();
   if (node && ts.isCallExpression(node.expression) && node.expression.arguments &&
-    node.expression.arguments.length && ts.isStringLiteral(node.expression.arguments[0])) {
+    node.expression.arguments.length) {
     localStorage.set(name, localStorageParam.add(
-      node.expression.arguments[0].getText().replace(/\"|'/g, '')));
+      node.expression.arguments[0].getText()));
   }
 }
 
