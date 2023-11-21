@@ -284,7 +284,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
   ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
-  [ALL_COMPONENTS, new Set(['bindContextMenu'])]
+  [ALL_COMPONENTS, new Set(['bindContextMenu','bindSheet'])]  
 ]);
 
 export const CHECKED: string = 'checked';
@@ -547,3 +547,4 @@ export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
 export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
 
 export const PREVIEW: string = 'preview';
+export const TITLE: string = 'title';
