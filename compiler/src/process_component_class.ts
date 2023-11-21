@@ -440,6 +440,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
   if (name === COMPONENT_BUILD_FUNCTION) {
+    storedFileInfo.processBuilder = false;
+    storedFileInfo.processGlobalBuilder = false;
     buildCount.count = buildCount.count + 1;
     if (node.parameters.length) {
       log.push({
@@ -456,6 +458,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
+      storedFileInfo.processBuilder = true;
+      storedFileInfo.processGlobalBuilder = false;
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
@@ -467,6 +471,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
+      storedFileInfo.processBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
