@@ -546,4 +546,8 @@ export const STAGE_TAG_CHECK_NAME: string = 'stagemodelonly';
 export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
 export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
 
+export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
+export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
+export const WRAPBUILDER_BUILDERPROP: string = 'builder';
+
 export const PREVIEW: string = 'preview';
