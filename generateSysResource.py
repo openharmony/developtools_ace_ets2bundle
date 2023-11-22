@@ -37,6 +37,7 @@ class SysResource:
                 and item_type != "float" \
                 and item_type != "media" \
                 and item_type != "string" \
+                and item_type != "symbol" \
                 and item_type != "plural":
                 continue
 
