@@ -284,7 +284,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
   ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
-  [ALL_COMPONENTS, new Set(['bindContextMenu'])]
+  [ALL_COMPONENTS, new Set(['bindContextMenu', 'dragPreview'])]
 ]);
 
 export const CHECKED: string = 'checked';
