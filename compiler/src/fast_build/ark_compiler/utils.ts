@@ -35,9 +35,12 @@ import {
   genTemporaryPath,
   mkdirsSync,
   validateFilePathLength,
-  toUnixPath
+  toUnixPath,
+  harFilesRecord
 } from '../../utils';
+import type { generatedFileInHar } from '../../utils';
 import {
+  tryMangleFileNameAndWriteFile,
   writeObfuscatedSourceCode
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
@@ -125,8 +128,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
       await writeFileContent(id, filePath, content, projectConfig, logger);
       break;
     case EXTNAME_JSON:
-      mkdirsSync(path.dirname(filePath));
-      fs.writeFileSync(filePath, content, 'utf-8');
+      tryMangleFileNameAndWriteFile(filePath, content, projectConfig, id);
       break;
     default:
       break;
@@ -138,15 +140,14 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
 
-  mkdirsSync(path.dirname(filePath));
   // In compile har mode, the code needs to be obfuscated and compressed.
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, newSourceMaps);
+    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, newSourceMaps, sourceFilePath);
     return;
   }
-
+  mkdirsSync(path.dirname(filePath));
   fs.writeFileSync(filePath, content, 'utf-8');
 }
 
