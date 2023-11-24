@@ -311,6 +311,15 @@ export function writeFileSync(filePath: string, content: string): void {
   }
   fs.writeFileSync(filePath, content);
 }
+export function genLoaderOutPathOfHar(filePath: string, cachePath: string, buildPath: string, moduleRootPath: string, projectRootPath): string {
+  filePath = toUnixPath(filePath);
+  buildPath = toUnixPath(buildPath);
+  const cacheRootPath: string = toUnixPath(cachePath);
+  const moduleName = toUnixPath(moduleRootPath).replace(toUnixPath(projectRootPath), '');
+  const relativeFilePath: string = filePath.replace(cacheRootPath, '').replace(moduleName, '');
+  const output: string = path.join(buildPath, relativeFilePath);
+  return output;
+}
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
   projectConfig: any, buildInHar: boolean = false): string {
@@ -373,6 +382,17 @@ export function isPackageModulesFile(filePath: string, projectConfig: any): bool
   return false;
 }
 
+export interface generatedFileInHar {
+  sourcePath: string;
+  sourceCachePath?: string;
+  obfuscatedSourceCachePath?: string;
+  originalDeclarationCachePath?: string;
+  originalDeclarationContent?: string;
+  obfuscatedDeclarationCachePath?: string;
+}
+
+export const harFilesRecord: Map<string, generatedFileInHar> = new Map();
+
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
@@ -381,9 +401,16 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     projectConfig, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
-    mkdirsSync(path.dirname(jsFilePath));
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
       sourceContent = uglifyJS.minify(sourceContent).code;
+    }
+    if (projectConfig.compileMode === ESMODULE && projectConfig.compileHar && (/\.d\.e?ts$/).test(jsFilePath)) {
+      sourcePath = toUnixPath(sourcePath);
+      const genFilesInHar: generatedFileInHar = {sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent};
+      harFilesRecord.set(sourcePath, genFilesInHar);
+      return;
+    } else {
+      mkdirsSync(path.dirname(jsFilePath));
     }
     fs.writeFileSync(jsFilePath, sourceContent);
   }

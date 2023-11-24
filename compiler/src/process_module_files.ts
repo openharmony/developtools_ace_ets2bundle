@@ -26,6 +26,8 @@ import {
   genTemporaryPath,
   mkdirsSync,
   toUnixPath,
+  harFilesRecord,
+  generatedFileInHar
 } from './utils';
 import {
   genSourceMapFileName,
@@ -61,7 +63,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: an
     sourceMaps = webpackNewSourceMaps;
   }
   if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
-    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps);
+    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps, node.fileName);
     return;
   }
   fs.writeFileSync(temporaryFile, mixedInfo.content);
