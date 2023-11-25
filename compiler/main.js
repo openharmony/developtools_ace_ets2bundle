@@ -505,6 +505,7 @@ function loadWorker(projectConfig, workerFileEntry) {
           const relativePath = path.relative(workerPath, item)
             .replace(/\.(ts|js|ets)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
+          abilityPagesFullPath.push(path.resolve(item).toLowerCase());
         }
       });
     }
