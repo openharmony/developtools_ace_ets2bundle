@@ -30,7 +30,8 @@ import {
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU,
   ELMTID,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
-  COMPONENT_IF_UNDEFINED
+  COMPONENT_IF_UNDEFINED,
+  CUSTOM_COMPONENT_EXTRAINFO
 } from './pre_define';
 
 import { partialUpdateConfig } from '../main';
@@ -95,7 +96,8 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
     COMPONENT_CONSTRUCTOR_PARAMS,
     COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
     ELMTID,
-    COMPONENT_PARAMS_LAMBDA_FUNCTION
+    COMPONENT_PARAMS_LAMBDA_FUNCTION,
+    CUSTOM_COMPONENT_EXTRAINFO
   ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
@@ -188,7 +190,8 @@ function createCallSuperStatement(): ts.Statement {
       ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
         [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU),
-          ts.factory.createIdentifier(ELMTID)]));
+          ts.factory.createIdentifier(ELMTID),
+          ts.factory.createIdentifier(CUSTOM_COMPONENT_EXTRAINFO)]));
   }
 }
 

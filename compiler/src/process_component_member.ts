@@ -100,7 +100,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
-import { transformLog } from './process_ui_syntax';
+import { transformLog, resourceFileName } from './process_ui_syntax';
 import {
   globalProgram,
   projectConfig,
@@ -108,7 +108,8 @@ import {
 } from '../main';
 import {
   parentConditionalExpression,
-  createFunction
+  createFunction,
+  getRealNodePos
 } from './process_component_build'
 import { CUSTOM_BUILDER_METHOD } from './component_map';
 
@@ -775,6 +776,8 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
+  let posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+  let line = posOfNode.line + 1;
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -800,7 +803,19 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           isCutomDialog ? ts.factory.createPrefixUnaryExpression(
             ts.SyntaxKind.MinusToken,
             ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
-          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION));
+          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION), ts.factory.createObjectLiteralExpression(
+            [
+              ts.factory.createPropertyAssignment(
+                ts.factory.createIdentifier("page"),
+                ts.factory.createStringLiteral(path.relative(process.cwd(), resourceFileName).replace(/\\/g, '/'))
+              ),
+              ts.factory.createPropertyAssignment(
+                ts.factory.createIdentifier("line"),
+                ts.factory.createNumericLiteral(line)
+              )
+            ],
+            false
+          ));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
