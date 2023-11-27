@@ -1837,7 +1837,30 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   return ts.factory.updateObjectLiteralExpression(node, newProperties);
 }
 
+function trans$$inCustomBuilder(node: ts.CallExpression): ts.Expression[] {
+  let name: string = '';
+  if (node.expression && ts.isIdentifier(node.expression)) {
+    name = node.expression.escapedText.toString();
+  } else if (node.expression && ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.name && ts.isIdentifier(node.expression.name)) {
+    name = node.expression.name.escapedText.toString();
+  }
+  if (node.arguments.length === 1 && ts.isObjectLiteralExpression(node.arguments[0])) {
+    return [ts.factory.createCallExpression(
+      ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+      undefined,
+      [
+        ts.factory.createStringLiteral(name),
+        traverseBuilderParams(node.arguments[0], storedFileInfo.processBuilder)
+      ]
+    )];
+  } else {
+    return node.arguments;
+  }
+}
+
 function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.PropertyAssignment {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(property.initializer as ts.CallExpression);
   return ts.factory.updatePropertyAssignment(property, property.name,
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1845,7 +1868,7 @@ function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.Pro
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
-      [ts.factory.createThis(), ...(property.initializer.arguments || [])]
+      [ts.factory.createThis(), ...(newArguments || [])]
     ));
 }
 
@@ -2028,6 +2051,7 @@ function processIdentifierBuilderWithoutKey(node: ts.Identifier): ts.CallExpress
 
 function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
   ts.ObjectLiteralExpression {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
   return ts.factory.createObjectLiteralExpression([
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(BUILDER_ATTR_NAME),
@@ -2040,7 +2064,7 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
         ts.factory.createBlock(
           [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
-            ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+            ), undefined, [ts.factory.createThis(), ...newArguments]))],
           true
         )
       )
@@ -2050,6 +2074,7 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
 
 function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpression):
   ts.ArrowFunction {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
   return ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -2059,7 +2084,7 @@ function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpressio
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
-        ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+        ), undefined, [ts.factory.createThis(), ...newArguments]))],
       true
     )
   );
