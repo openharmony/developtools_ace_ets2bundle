@@ -724,7 +724,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
   if (judgeBuilderParamAssignedByBuilder(node)) {
     log.push({
       type: LogType.ERROR,
-      message: `BuilderParam property can only initialized by Builder function.`,
+      message: 'BuilderParam property can only initialized by Builder function.',
       pos: node.getStart()
     });
   }
@@ -1186,7 +1186,7 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
 }
 
 function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
-  for(let i = 0; i < decorators.length; i++) {
+  for (let i = 0; i < decorators.length; i++) {
     let decorator: ts.Decorator = decorators[i];
     const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
     if (COMPONENT_PROP_DECORATOR === decoratorName) {
