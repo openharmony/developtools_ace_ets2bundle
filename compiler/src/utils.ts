@@ -708,6 +708,8 @@ class ProcessFileInfo {
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
   transformCacheFiles: {[fileName: string]: CacheFile} = {};
+  processBuilder: boolean = false;
+  processGlobalBuilder: boolean = false;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
