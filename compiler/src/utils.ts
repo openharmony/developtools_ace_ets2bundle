@@ -221,7 +221,7 @@ const SEMICOLON_EXPECT: number = 1005;
 const STATESTYLES_EXPECT: number = 1003;
 export const IGNORE_ERROR_CODE: number[] = [STATEMENT_EXPECT, SEMICOLON_EXPECT, STATESTYLES_EXPECT];
 
-export function readFile(dir: string, utFiles: string[]) {
+export function readFile(dir: string, utFiles: string[]): void {
   try {
     const files: string[] = fs.readdirSync(dir);
     files.forEach((element) => {

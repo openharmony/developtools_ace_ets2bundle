@@ -791,7 +791,7 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
         ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
-          OBSERVECOMPONENTCREATION2: OBSERVECOMPONENTCREATION)
+          OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
       ), undefined, creationArgs)
   );
 }
