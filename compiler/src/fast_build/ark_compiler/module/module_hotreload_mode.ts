@@ -127,7 +127,7 @@ export class ModuleHotreloadMode extends ModuleMode {
       validateFilePathLength(sourceMapPath, this.logger);
       hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
     }
-
+    this.modifySourceMapKeyToCachePath(hotReloadSourceMap);
     const sourceMapFilePath: string = path.join(this.projectConfig.patchAbcPath, SOURCEMAPS);
     validateFilePathLength(sourceMapFilePath, this.logger);
     fs.writeFileSync(sourceMapFilePath,
