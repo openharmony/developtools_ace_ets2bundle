@@ -53,7 +53,8 @@ import {
 import {
   needAotCompiler,
   isMasterOrPrimary,
-  isAotMode
+  isAotMode,
+  isDebug
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
 import { newSourceMaps } from '../transform';
@@ -274,13 +275,15 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = toUnixPath(sourceFile);
+    sourceFile = isDebug(this.projectConfig) ? toUnixPath(sourceFile) :
+      cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
   }
 
   updateCachedSourceMaps(): void {
+    this.modifySourceMapKeyToCachePath(newSourceMaps);
     if (!fs.existsSync(this.cacheSourceMapPath)) {
       this.cacheSourceMapObject = newSourceMaps;
       return;
@@ -292,6 +295,12 @@ export class ModuleMode extends CommonMode {
     let unusedFiles = [];
     let compileFileList: Set<string> = new Set();
     this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
+      if (!isDebug(this.projectConfig)) {
+        moduleId = moduleId.replace(this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+        if (moduleId.endsWith(EXTNAME_ETS)) {
+          moduleId = changeFileExtension(moduleId, EXTNAME_TS);
+        }
+      }
       compileFileList.add(toUnixPath(moduleId));
     })
 
@@ -694,5 +703,23 @@ export class ModuleMode extends CommonMode {
       });
       fs.unlinkSync(this.protoFilePath);
     }
+  }
+
+  private modifySourceMapKeyToCachePath(sourceMap: object): void {
+    const projectConfig: object = this.projectConfig;
+    if (isDebug(projectConfig)) {
+      return;
+    }
+    // modify source map keys to keep IDE tools right
+    const relativeCachePath: string = toUnixPath(projectConfig.cachePath.replace(
+      projectConfig.projectRootPath + path.sep, ''));
+    Object.keys(sourceMap).forEach(key => {
+      let newKey: string = relativeCachePath + '/' + key;
+      if (newKey.endsWith(EXTNAME_ETS)) {
+        newKey = changeFileExtension(newKey, EXTNAME_TS);
+      }
+      sourceMap[newKey] = sourceMap[key];
+      delete sourceMap[key];
+    });
   }
 }
