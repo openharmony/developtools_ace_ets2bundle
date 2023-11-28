@@ -99,6 +99,10 @@ let disableCacheOptions = {
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
   let cacheFile: CacheFile;
+  if (projectConfig.useArkoala) {
+    // Dynamic loading to avoid resolving arkoala-only dependencies
+    return require('./rollup-plugin-ets-arkoala').makeArkoalaPlugin()
+  }
   return {
     name: 'etsTransform',
     transform: transform,
