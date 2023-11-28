@@ -52,6 +52,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      if (projectConfig.useArkoala) return;
       const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       resetDidArkTSLinter();

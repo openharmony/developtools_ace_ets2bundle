@@ -112,6 +112,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
   projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
   projectConfig.optLazyForEach = false;
+  projectConfig.useArkoala = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -839,6 +840,9 @@ function isPartialUpdate(metadata) {
       }
       if (item.name === 'OPTLazyForEach' && item.value === 'true') {
         projectConfig.optLazyForEach = true;
+      }
+      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
+        projectConfig.useArkoala = true;
       }
     }
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
