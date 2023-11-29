@@ -710,6 +710,7 @@ class ProcessFileInfo {
   transformCacheFiles: {[fileName: string]: CacheFile} = {};
   processBuilder: boolean = false;
   processGlobalBuilder: boolean = false;
+  builderLikeCollection: Set<string> = new Set();
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {

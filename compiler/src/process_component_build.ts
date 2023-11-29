@@ -1766,17 +1766,17 @@ function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: t
 }
 
 function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, propertyName: string): boolean {
-  return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
-    && CUSTOM_BUILDER_METHOD.has(argument.name.getText()) ||
+  return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name) &&
+    storedFileInfo.builderLikeCollection.has(argument.name.getText()) ||
     ts.isCallExpression(argument) && argument.expression && argument.expression.name &&
     ts.isIdentifier(argument.expression.name) &&
-    CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
-    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()) ||
+    storedFileInfo.builderLikeCollection.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
+    argument.escapedText && storedFileInfo.builderLikeCollection.has(argument.escapedText.toString()) ||
     ts.isObjectLiteralExpression(argument) && (BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
     BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
     BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
     ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
-    CUSTOM_BUILDER_METHOD.has(argument.expression.escapedText.toString());
+    storedFileInfo.builderLikeCollection.has(argument.expression.escapedText.toString());
 }
 
 function parseBuilderNode(node: ts.Node, propertyName: string):
@@ -1787,7 +1787,7 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
     } else {
       return processPropertyBuilder(node as ts.PropertyAccessExpression);
     }
-  } else if (ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) {
+  } else if (ts.isIdentifier(node) && storedFileInfo.builderLikeCollection.has(node.escapedText.toString())) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return processIdentifierBuilderWithoutKey(node);
     } else {
@@ -1811,7 +1811,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
       [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW,TITLE].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
-        CUSTOM_BUILDER_METHOD.has(property.initializer.escapedText.toString())) {
+        storedFileInfo.builderLikeCollection.has(property.initializer.escapedText.toString())) {
         newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
           ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(
@@ -1884,7 +1884,7 @@ function isGlobalBuilderCallExpressionNode(node: ts.Node): boolean {
 function isPropertyAccessExpressionNode(node: ts.Node): boolean {
   return ts.isPropertyAccessExpression(node) && node.expression &&
     node.expression.kind === ts.SyntaxKind.ThisKeyword && node.name && ts.isIdentifier(node.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString());
+    storedFileInfo.builderLikeCollection.has(node.name.escapedText.toString());
 }
 
 function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {

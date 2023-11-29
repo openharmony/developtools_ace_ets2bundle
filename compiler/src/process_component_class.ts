@@ -102,7 +102,8 @@ import {
   linkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  propCollection
+  propCollection,
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -439,6 +440,12 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
+  if (builderParamObjectCollection.get(componentCollection.currentClassName)) {
+    storedFileInfo.builderLikeCollection =
+      new Set([...builderParamObjectCollection.get(componentCollection.currentClassName), ...CUSTOM_BUILDER_METHOD]);
+  } else {
+    storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
+  }
   if (name === COMPONENT_BUILD_FUNCTION) {
     storedFileInfo.processBuilder = false;
     storedFileInfo.processGlobalBuilder = false;
