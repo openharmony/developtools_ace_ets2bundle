@@ -101,8 +101,8 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 class DialogExample extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -209,8 +209,8 @@ class DialogExample extends ViewPU {
     }
 }
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -233,7 +233,7 @@ class CustomDialogUser extends ViewPU {
                     action2: this.existApp,
                     count: this.countInitValue,
                     isPlaying: this.__playingInitValue
-                }, undefined, -1, paramsLambda);
+                }, undefined, -1, paramsLambda, { page: "@customDialog.ets", line: 47 });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },

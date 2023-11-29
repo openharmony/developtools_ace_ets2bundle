@@ -60,7 +60,7 @@ function ComB(param, parent = null) {
                         let paramsLambda = () => {
                             return {};
                         };
-                        ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId, paramsLambda));
+                        ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithForEach.ets", line: 5 }));
                     }
                     else {
                         (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -74,8 +74,8 @@ function ComB(param, parent = null) {
     ForEach.pop();
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -115,8 +115,8 @@ class Index extends ViewPU {
     }
 }
 class ComA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
