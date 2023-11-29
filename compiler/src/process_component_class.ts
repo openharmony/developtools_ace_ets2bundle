@@ -89,7 +89,7 @@ import {
   FUNCTION,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   DECORATOR_COMPONENT_FREEZEWHENINACTIVE,
-  SET_COMPONENT_STATE
+  INIT_ALLOW_COMPONENT_FREEZE
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -331,13 +331,13 @@ function decoratorComponentParam(freezeParam: FreezeParamType): ts.IfStatement[]
     ts.factory.createBinaryExpression(
       ts.factory.createElementAccessExpression(
         ts.factory.createSuper(),
-        ts.factory.createStringLiteral(SET_COMPONENT_STATE)
+        ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
       ),
       ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
       ts.factory.createBinaryExpression(
         ts.factory.createTypeOfExpression(ts.factory.createElementAccessExpression(
           ts.factory.createSuper(),
-          ts.factory.createStringLiteral(SET_COMPONENT_STATE)
+          ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
         )),
         ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
         ts.factory.createStringLiteral(FUNCTION)
@@ -347,7 +347,7 @@ function decoratorComponentParam(freezeParam: FreezeParamType): ts.IfStatement[]
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createElementAccessExpression(
           ts.factory.createSuper(),
-          ts.factory.createStringLiteral(SET_COMPONENT_STATE)
+          ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
         ),
         undefined,
         [freezeParam.componentFreezeParam]
