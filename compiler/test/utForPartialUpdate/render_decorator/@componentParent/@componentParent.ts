@@ -51,8 +51,8 @@ class Index extends ViewPU {
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        if (super["setComponentState"] && typeof super["setComponentState"] === "function") {
-            super["setComponentState"](true);
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](true);
         }
         this.setInitiallyProvidedValue(params);
     }
@@ -108,8 +108,8 @@ class ComA extends ViewPU {
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        if (super["setComponentState"] && typeof super["setComponentState"] === "function") {
-            super["setComponentState"](import_ComponentConst_1.componentParent);
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](import_ComponentConst_1.componentParent);
         }
         this.setInitiallyProvidedValue(params);
     }
@@ -135,8 +135,8 @@ class ComB extends ViewPU {
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        if (super["setComponentState"] && typeof super["setComponentState"] === "function") {
-            super["setComponentState"](import_ComponentConst_1.componentParentObj.componentParent);
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](import_ComponentConst_1.componentParentObj.componentParent);
         }
         this.setInitiallyProvidedValue(params);
     }
