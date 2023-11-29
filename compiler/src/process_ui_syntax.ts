@@ -267,6 +267,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           let parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
+          storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
