@@ -69,8 +69,8 @@ ClassA = __decorate([
     Observed
 ], ClassA);
 class CustomX extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -114,8 +114,8 @@ class CustomX extends ViewPU {
     }
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -155,7 +155,7 @@ class Index extends ViewPU {
                             fruit: this.arrA[0]
                         };
                     };
-                    ViewPU.create(new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId, paramsLambda, { page: "@propComplexType.ets", line: 31 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -170,7 +170,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda, { page: "@propComplexType.ets", line: 32 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

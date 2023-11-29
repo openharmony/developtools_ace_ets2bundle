@@ -72,8 +72,8 @@ Model = __decorate([
     Observed
 ], Model);
 class CustomText extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -112,8 +112,8 @@ class CustomText extends ViewPU {
     }
 }
 class Parent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -161,7 +161,7 @@ class Parent extends ViewPU {
                                     model: item
                                 };
                             };
-                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId, paramsLambda));
+                            ViewPU.create(new CustomText(this, { model: item }, undefined, elmtId, paramsLambda, { page: "@objectLink.ets", line: 31 }));
                         }
                         else {
                             this.updateStateVarsOfChildByElmtId(elmtId, {

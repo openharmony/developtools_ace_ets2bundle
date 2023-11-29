@@ -40,8 +40,8 @@ struct TestPage{
 exports.expectResult =
 `"use strict";
 class TitleComp extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -77,8 +77,8 @@ class TitleComp extends ViewPU {
     }
 }
 class TestPage extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -115,7 +115,7 @@ class TestPage extends ViewPU {
                             title: this.value
                         };
                     };
-                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId, paramsLambda, { page: "@builderWithLinkData.ets", line: 16 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

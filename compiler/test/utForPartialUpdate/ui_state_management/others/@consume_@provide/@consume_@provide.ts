@@ -61,8 +61,8 @@ struct CompC {
 exports.expectResult =
 `"use strict";
 class CompA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -102,7 +102,7 @@ class CompA extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CompB(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CompB(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 9 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -128,8 +128,8 @@ class CompA extends ViewPU {
     }
 }
 class CompB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -155,7 +155,7 @@ class CompB extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CompC(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CompC(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 25 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -169,8 +169,8 @@ class CompB extends ViewPU {
     }
 }
 class CompC extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
