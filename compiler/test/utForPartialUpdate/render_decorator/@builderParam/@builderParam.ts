@@ -105,8 +105,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -159,8 +159,8 @@ class CustomContainer extends ViewPU {
     }
 }
 class CustomContainer2 extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -216,8 +216,8 @@ function specificWithParam(label1, label2, parent = null) {
     Column.pop();
 }
 class CustomContainerUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -306,7 +306,7 @@ class CustomContainerUser extends ViewPU {
                             specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 56 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
