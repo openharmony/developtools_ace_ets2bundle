@@ -51,7 +51,7 @@ function myBuilder(parent = null) {
                 let paramsLambda = () => {
                     return {};
                 };
-                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId, paramsLambda));
+                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 4 }));
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -60,8 +60,8 @@ function myBuilder(parent = null) {
     }
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -84,7 +84,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 11 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -104,7 +104,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 17 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -118,8 +118,8 @@ class Index extends ViewPU {
     }
 }
 class child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

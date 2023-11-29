@@ -60,8 +60,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -223,7 +223,7 @@ class ImportTest extends ViewPU {
                         testStr: this.__testState1,
                         testNum: this.__testState2,
                         testObj: this.__testState3
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importExportNest.ets", line: 29 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -242,7 +242,7 @@ class ImportTest extends ViewPU {
                     ViewPU.create(new ImportNestAll_1.DivideTest(this, {
                         testNum1: this.__testState4,
                         testNum2: this.__testState5
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importExportNest.ets", line: 34 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
