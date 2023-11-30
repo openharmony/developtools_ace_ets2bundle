@@ -1142,8 +1142,9 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
+    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
     const newArrowNode: ts.ArrowFunction =
-      processForEachBlock(node.expression, log, isBuilder) as ts.ArrowFunction;
+      processForEachBlock(node.expression, log, newForEachArrowFunc, isBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -1165,12 +1166,12 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         node.expression.expression as ts.Identifier,
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
     const newArrowNode: ts.NodeArray<ts.Statement> =
-      processForEachBlock(node.expression, log, false, isGlobalBuilder) as ts.NodeArray<ts.Statement>;
-    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
-      argumentsArray, newArrowNode);
+      processForEachBlock(node.expression, log, newForEachArrowFunc, false, isGlobalBuilder) as ts.NodeArray<ts.Statement>;
+    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression, newArrowNode, newForEachArrowFunc);
     const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
-    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, isGlobalBuilder);
+    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, newForEachArrowFunc, isGlobalBuilder);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
       newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
@@ -1188,10 +1189,10 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
 
 function createItemGenFunctionStatement(
   node: ts.CallExpression,
-  argumentsArray: ts.Expression[],
-  newArrowNode: ts.NodeArray<ts.Statement>
+  newArrowNode: ts.NodeArray<ts.Statement>,
+  newForEachArrowFunc: ts.ArrowFunction
 ): ts.VariableStatement {
-  if (argumentsArray[1] && ts.isArrowFunction(argumentsArray[1])) {
+  if (newForEachArrowFunc && ts.isArrowFunction(newForEachArrowFunc)) {
     return ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
@@ -1201,12 +1202,12 @@ function createItemGenFunctionStatement(
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
-            argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
-              getParameters(argumentsArray[1]) : [],
+            newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length >= 1 ?
+              getParameters(newForEachArrowFunc) : [],
             undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             ts.factory.createBlock(
-              argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
-                isForEachItemGeneratorParam(argumentsArray, newArrowNode) :
+              newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length >= 1 ?
+                isForEachItemGeneratorParam(newForEachArrowFunc, newArrowNode) :
                 newArrowNode ? [...newArrowNode] : undefined,
               true
             )
@@ -1219,14 +1220,14 @@ function createItemGenFunctionStatement(
   }
 }
 
-function isForEachItemGeneratorParam(argumentsArray: ts.Expression[], newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
+function isForEachItemGeneratorParam(argumentsArray: ts.Expression, newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
   return [
     ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
         [ts.factory.createVariableDeclaration(
           ts.factory.createIdentifier(
-            argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+            argumentsArray.parameters[0] && argumentsArray.parameters[0].name.getText()),
           undefined,
           undefined,
           ts.factory.createIdentifier(_ITEM)
@@ -1269,7 +1270,7 @@ function createItemIdFuncStatement(
 }
 
 function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
-  isGlobalBuilder: boolean = false): ts.ExpressionStatement {
+  newForEachArrowFunc: ts.ArrowFunction, isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1277,12 +1278,12 @@ function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
         ts.factory.createIdentifier(FOREACHUPDATEFUNCTION)
       ),
       undefined,
-      addForEachIdFuncParameter(argumentsArray)
+      addForEachIdFuncParameter(argumentsArray, newForEachArrowFunc)
     )
   );
 }
 
-function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expression[] {
+function addForEachIdFuncParameter(argumentsArray: ts.Expression[], newForEachArrowFunc: ts.ArrowFunction): ts.Expression[] {
   const addForEachIdFuncParameterArr: ts.Expression[] = [];
   addForEachIdFuncParameterArr.push(
     ts.factory.createIdentifier(ELMTID),
@@ -1290,7 +1291,7 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
   // @ts-ignore
-  if (argumentsArray[1] && argumentsArray[1].parameters && argumentsArray[1].parameters[1]) {
+  if (newForEachArrowFunc && newForEachArrowFunc.parameters && newForEachArrowFunc.parameters[1]) {
     if (!argumentsArray[2]) {
       addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
     } else {
@@ -1301,7 +1302,8 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     }
   }
   // @ts-ignore
-  if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
+  if (newForEachArrowFunc && newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length < 2 && newForEachArrowFunc.parameters[0] &&
+    argumentsArray && argumentsArray.length > 2 && argumentsArray[2]) {
     // @ts-ignore
     argumentsArray[2].parameters && argumentsArray[2].parameters[1] ?
       addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
@@ -1354,12 +1356,19 @@ export function parentConditionalExpression(): ts.ConditionalExpression {
     ts.factory.createToken(ts.SyntaxKind.ColonToken),
     ts.factory.createThis());
 }
-
+function processForEachFunctionBlock(node: ts.CallExpression): ts.ArrowFunction {
+  if (ts.isArrowFunction(node.arguments[1])) {
+    return node.arguments[1];
+  } else if (ts.isParenthesizedExpression(node.arguments[1]) && ts.isArrowFunction(node.arguments[1].expression)) {
+    return node.arguments[1].expression;
+  } else {
+    return null;
+  }
+}
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
-  if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
+  arrowNode: ts.ArrowFunction, isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
+  if (node.arguments.length > 1 && ts.isArrowFunction(arrowNode)) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
-    const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
     const body: ts.ConciseBody = arrowNode.body;
     if (node.arguments.length > 2 && !ts.isArrowFunction(node.arguments[2])) {
       log.push({
