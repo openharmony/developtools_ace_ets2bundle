@@ -94,7 +94,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
   projectConfig.isPreview = projectConfig.isPreview || process.env.isPreview === 'true';
-  projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
+  projectConfig.compileMode = projectConfig.compileMode || process.env.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
   projectConfig.compileHar = false;
@@ -109,6 +109,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.compilerTypes = [];
   projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
+  projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
 }
 
 function loadEntryObj(projectConfig) {
