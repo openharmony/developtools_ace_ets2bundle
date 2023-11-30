@@ -630,7 +630,7 @@ export function writeCollectionFile(cachePath: string, appCollection: Map<string
     if (allFiles && !allFiles.has(key)) {
       continue;
     }
-    allComponentsOrModules.set(key, Array.from(appCollection.get(key)));
+    allComponentsOrModules.set(path.relative(projectConfig.projectRootPath, key), Array.from(appCollection.get(key)));
   }
   const content: string = JSON.stringify(Object.fromEntries(allComponentsOrModules), null, 2);
   writeFileSync(path.resolve(cachePath, fileName), content);
