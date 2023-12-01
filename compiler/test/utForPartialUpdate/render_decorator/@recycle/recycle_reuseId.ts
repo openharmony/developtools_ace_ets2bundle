@@ -248,7 +248,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "child", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 19 }), recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -289,7 +289,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, a, () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 22 }), recycleNode !== null, a, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
