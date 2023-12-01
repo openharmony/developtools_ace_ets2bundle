@@ -208,15 +208,15 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
     }
-    if (projectConfig.compileMode === STAGE_COMPILE_MODE) {
+    if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-    } else if (projectConfig.compileMode !== '') {
+    } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
         ts.DiagnosticCategory.Warning, false));
     }
-    if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) {
+    if (process.env.bundleType === ATOMICSERVICE_BUNDLE_TYPE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
         ts.DiagnosticCategory.Error, true, undefined, checkAtomicserviceAPIVersion));
