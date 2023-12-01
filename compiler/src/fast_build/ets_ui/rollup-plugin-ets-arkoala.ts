@@ -170,103 +170,102 @@ export function makeArkoalaPlugin() {
         return { code: 'export async function startArkoala() {}' };
       }
 
-      if (true) {
-        console.log('LOADING ARKOALA BUNDLE', id);
+      console.log('LOADING ARKOALA BUNDLE', id);
+      let generatedPath = id
+        .replace(etsRoot, arkoalaGeneratedMemoPath)
+        .replace(/\.ets$/, '.js');
 
-        let generatedPath = id
-          .replace(etsRoot, arkoalaGeneratedMemoPath)
-          .replace(/\.ets$/, '.js');
-        let generatedMapPath = generatedPath + '.map';
+      // TODO try to pick only a bindle wich imports entry point stub, other files are unnecessary
+      // let loaded = await this.load(generatedPath);
+      // console.log("LOADED JS", loaded)
 
-        // TODO try to pick only a bindle wich imports entry point stub, other files are unnecessary
-        // let loaded = await this.load(generatedPath);
-        // console.log("LOADED JS", loaded)
-
-        let bundle = await rollup.rollup({
-          input: generatedPath,
-          plugins: [
-            nodeResolve({
-              modulePaths: [
-                path.resolve(projectConfig.projectPath),
-                path.resolve('node_modules'),
-                path.resolve(__dirname, 'node_modules'),
-                ...globalModulePaths,
-                ...(projectConfig.aceModuleJsonPath
-                  ? getResolveModules(
-                      path.resolve(projectConfig.projectPath),
-                      false
-                    )
-                  : getResolveModules(
-                      path.resolve(projectConfig.projectPath),
-                      true
-                    )),
-              ],
-              exportConditions: ['ark', 'node', 'main'],
-            }),
-            commonjs(),
-            {
-              name: 'arkoala-stub-plugin',
-              resolveId(source, importer, options) {
-                if (source === ARKOALA_ENTRY_STUB) {
-                  return '\0' + ARKOALA_ENTRY_STUB;
-                }
-                if (source === ARKOALA_RESOURCES_MODULE) {
-                  return { id: '\0' + ARKOALA_RESOURCES_MODULE, moduleSideEffects: true };
-                }
-              },
-              load(id) {
-                if (id === '\0' + ARKOALA_RESOURCES_MODULE) {
-                  return { code: genResourceMapModule() }
-                }
-
-                if (id === '\0' + ARKOALA_ENTRY_STUB) {
-                  return {
-                    code: `
-  import ${JSON.stringify(ARKOALA_RESOURCES_MODULE)}
-  import { startApplication } from "@koalaui/arkoala"
-  import { ArkRooted } from "@koalaui/arkoala-arkui"
-  import { __Entry } from ${JSON.stringify(
-    path.join(arkoalaGeneratedMemoPath, 'pages/Index')
-  )}
-  export { startApplication } from "@koalaui/arkoala"
-  
-  export function startArkoala() {
-      return startApplication({
-          waitForVSync: () => new Promise((resolve) => setTimeout(resolve, 1000))
-      }, ArkRooted(__Entry))
-  }`,
-                  };
-                }
-              },
+      let bundle = await rollup.rollup({
+        input: generatedPath,
+        plugins: [
+          nodeResolve({
+            modulePaths: [
+              path.resolve(projectConfig.projectPath),
+              path.resolve('node_modules'),
+              path.resolve(__dirname, 'node_modules'),
+              ...globalModulePaths,
+              ...(projectConfig.aceModuleJsonPath
+                ? getResolveModules(
+                    path.resolve(projectConfig.projectPath),
+                    false
+                  )
+                : getResolveModules(
+                    path.resolve(projectConfig.projectPath),
+                    true
+                  )),
+            ],
+            exportConditions: ['ark', 'node', 'main'],
+          }),
+          commonjs(),
+          {
+            name: 'arkoala-stub-plugin',
+            resolveId(source, importer, options) {
+              if (source === ARKOALA_ENTRY_STUB) {
+                return '\0' + ARKOALA_ENTRY_STUB;
+              }
+              if (source === ARKOALA_RESOURCES_MODULE) {
+                return { id: '\0' + ARKOALA_RESOURCES_MODULE, moduleSideEffects: true };
+              }
             },
-          ],
-        });
+            load(id) {
+              if (id === '\0' + ARKOALA_RESOURCES_MODULE) {
+                return { code: genResourceMapModule() }
+              }
 
-        // TODO check errors
-        let { output } = await bundle.generate({
-          format: 'esm',
-          sourcemap: true,
-        });
+              if (id === '\0' + ARKOALA_ENTRY_STUB) {
+                return {
+                  code: `
+import ${JSON.stringify(ARKOALA_RESOURCES_MODULE)}
+import { startApplication } from "@koalaui/arkoala"
+import { ArkRooted } from "@koalaui/arkoala-arkui"
+import { __Entry } from ${JSON.stringify(
+  path.join(arkoalaGeneratedMemoPath, 'pages/Index')
+)}
+import { registerRoutes } from ${JSON.stringify(
+  path.join(arkoalaGeneratedMemoPath, '__router_initialization')
+)}
 
-        for (const chunk of output) {
-          if (chunk.type == 'chunk') {
-            let code = chunk.code.replace(
-              /\bLOAD_NATIVE\b/g,
-              `globalThis.requireNapi("ArkoalaNative", true)`
-            ); // TODO @rollup/plugin-inject
-            let cachedPath = id
-              .replace(projectRoot, cacheRoot)
-              .replace(/\.ets$/, '.ts');
-            console.log('CACHE', id, '->', cachedPath);
-            fs.mkdirSync(path.dirname(cachedPath), { recursive: true });
-            fs.writeFileSync(cachedPath, code, 'utf-8'); // TODO emit unmemoized ts?
-            return chunk;
-          }
+export function startArkoala() {
+    registerRoutes();
+    return startApplication({
+        waitForVSync: undefined
+    }, ArkRooted(__Entry))
+}`,
+                };
+              }
+            },
+          },
+        ],
+      });
+
+      // TODO check errors
+      let { output } = await bundle.generate({
+        format: 'esm',
+        sourcemap: true,
+      });
+
+      for (const chunk of output) {
+        if (chunk.type == 'chunk') {
+          let code = chunk.code.replace(
+            /\bLOAD_NATIVE\b/g,
+            `globalThis.requireNapi("ArkoalaNative", true)`
+          ); // TODO @rollup/plugin-inject
+          let cachedPath = id
+            .replace(projectRoot, cacheRoot)
+            .replace(/\.ets$/, '.ts');
+          console.log('CACHE', id, '->', cachedPath);
+          fs.mkdirSync(path.dirname(cachedPath), { recursive: true });
+          fs.writeFileSync(cachedPath, code, 'utf-8'); // TODO emit unmemoized ts?
+          return chunk;
         }
-
-        console.log('NOT LOADED!');
-        return { code: '' };
       }
+
+      console.log('NOT LOADED!');
+      return { code: '' };
     },
 
     shouldInvalidCache(options) {
