@@ -546,6 +546,12 @@ export const FA_TAG_CHECK_ERROR: string = 'This API is used only in FA Mode, but
 export const STAGE_TAG_CHECK_NAME: string = 'stagemodelonly';
 export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
 export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
+export const STAGE_COMPILE_MODE: string = 'moduleJson';
+export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
+export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
+export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
+export const SINCE_TAG_NAME: string = 'since';
+export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';
