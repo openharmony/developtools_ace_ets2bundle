@@ -58,7 +58,13 @@ import {
   FA_TAG_CHECK_ERROR,
   STAGE_TAG_CHECK_NAME,
   STAGE_TAG_HUMP_CHECK_NAME,
-  STAGE_TAG_CHECK_ERROR
+  STAGE_TAG_CHECK_ERROR,
+  STAGE_COMPILE_MODE,
+  ATOMICSERVICE_BUNDLE_TYPE,
+  ATOMICSERVICE_TAG_CHECK_NAME,
+  ATOMICSERVICE_TAG_CHECK_ERROER,
+  SINCE_TAG_NAME,
+  ATOMICSERVICE_TAG_CHECK_VERSION
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -144,7 +150,7 @@ function setCompilerOptions(resolveModulePaths: string[]) {
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
-    'isCompatibleVersion':  getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE
+    'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -160,15 +166,33 @@ function setCompilerOptions(resolveModulePaths: string[]) {
 }
 
 function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
-  tagNameShouldExisted: boolean): ts.JsDocNodeCheckConfigItem {
+  tagNameShouldExisted: boolean, checkValidCallback?: (jsDocTag: ts.JSDocTag, config: ts.JsDocNodeCheckConfigItem) => boolean,
+  checkJsDocSpecialValidCallback?: (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) => boolean): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
     needConditionCheck: false,
     type: type,
     specifyCheckConditionFuncName: '',
-    tagNameShouldExisted: tagNameShouldExisted
+    tagNameShouldExisted: tagNameShouldExisted,
+    checkValidCallback: checkValidCallback,
+    checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback
   };
+}
+
+function checkAtomicserviceAPIVersion(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  let currentAPIVersion: number = 0;
+  for (let i = 0; i < jsDocTags.length; i++) {
+    const jsDocTag: ts.JSDocTag = jsDocTags[i];
+    if (jsDocTag.tagName.escapedText === SINCE_TAG_NAME) {
+      currentAPIVersion = jsDocTag.comment ? parseInt(jsDocTag.comment) : 0;
+      break;
+    }
+  }
+  if (currentAPIVersion < ATOMICSERVICE_TAG_CHECK_VERSION) {
+    return false;
+  }
+  return true;
 }
 
 function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
@@ -184,13 +208,18 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
     }
-    if (process.env.compileMode === 'moduleJson') {
+    if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
         ts.DiagnosticCategory.Warning, false));
+    }
+    if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) {
+      needCheckResult = true;
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
+        ts.DiagnosticCategory.Error, true, undefined, checkAtomicserviceAPIVersion));
     }
   }
 
