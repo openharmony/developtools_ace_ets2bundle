@@ -54,7 +54,7 @@ export function transformForModule(code: string, id: string) {
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
-      if (isJsSourceFile(id)) {
+      if (isJsSourceFile(id) && projectConfig.compatibleSdkVersion <= 10) {
         const transformedResult: any = transformJsByBabelPlugin(code, eventTransformForModule);
         code = transformedResult.code;
         preserveSourceMap(id, transformedResult.map, projectConfig, eventTransformForModule);
