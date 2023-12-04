@@ -48,8 +48,8 @@ struct Banner {
 exports.expectResult =
 `"use strict";
 class MyComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -75,7 +75,7 @@ class MyComponent extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 7 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -92,7 +92,7 @@ class MyComponent extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 8 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -111,7 +111,7 @@ class MyComponent extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, {}, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 10 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -127,7 +127,7 @@ class MyComponent extends ViewPU {
                             value: "Hello"
                         };
                     };
-                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 13 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -146,7 +146,7 @@ class MyComponent extends ViewPU {
                             value: "Hello"
                         };
                     };
-                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 14 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -167,7 +167,7 @@ class MyComponent extends ViewPU {
                             value: "Hello"
                         };
                     };
-                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Banner(this, { value: "Hello" }, undefined, elmtId, paramsLambda, { page: "custom_component.ets", line: 16 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -182,8 +182,8 @@ class MyComponent extends ViewPU {
     }
 }
 class Banner extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

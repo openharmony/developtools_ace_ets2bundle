@@ -100,7 +100,7 @@ import {
   createReference,
   isProperty
 } from './process_component_class';
-import { transformLog } from './process_ui_syntax';
+import { transformLog, resourceFileName } from './process_ui_syntax';
 import {
   globalProgram,
   projectConfig,
@@ -108,7 +108,8 @@ import {
 } from '../main';
 import {
   parentConditionalExpression,
-  createFunction
+  createFunction,
+  getRealNodePos
 } from './process_component_build'
 import { CUSTOM_BUILDER_METHOD } from './component_map';
 
@@ -272,7 +273,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
       createVariableInitStatement(item, COMPONENT_NON_DECORATOR, log, program, context, hasPreview,
-        interfaceNode)]));
+        interfaceNode)], []));
     updateResult.setControllerSet(createControllerSet(item, parentName, name, checkController));
     if (partialUpdateConfig.partialUpdateMode) {
       updateResult.setDeleteParams(true);
@@ -393,7 +394,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
     updateState.push(variableInitStatement);
   }
   addAddProvidedVar(node, name, decorator, updateState);
-  updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], false));
+  updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
   if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
@@ -723,7 +724,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
   if (judgeBuilderParamAssignedByBuilder(node)) {
     log.push({
       type: LogType.ERROR,
-      message: `BuilderParam property can only initialized by Builder function.`,
+      message: 'BuilderParam property can only initialized by Builder function.',
       pos: node.getStart()
     });
   }
@@ -775,6 +776,8 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
+  let posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+  let line = posOfNode.line + 1;
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -800,7 +803,19 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           isCutomDialog ? ts.factory.createPrefixUnaryExpression(
             ts.SyntaxKind.MinusToken,
             ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
-          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION));
+          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION), ts.factory.createObjectLiteralExpression(
+            [
+              ts.factory.createPropertyAssignment(
+                ts.factory.createIdentifier("page"),
+                ts.factory.createStringLiteral(path.relative(process.cwd(), resourceFileName).replace(/\\/g, '/'))
+              ),
+              ts.factory.createPropertyAssignment(
+                ts.factory.createIdentifier("line"),
+                ts.factory.createNumericLiteral(line)
+              )
+            ],
+            false
+          ));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
@@ -1171,7 +1186,7 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
 }
 
 function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
-  for(let i = 0; i < decorators.length; i++) {
+  for (let i = 0; i < decorators.length; i++) {
     let decorator: ts.Decorator = decorators[i];
     const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
     if (COMPONENT_PROP_DECORATOR === decoratorName) {

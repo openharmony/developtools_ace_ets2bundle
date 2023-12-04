@@ -64,8 +64,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const import_CustomDialog_1 = require("./test/pages/import@CustomDialog");
 class CustomDialogUser extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -86,7 +86,7 @@ class CustomDialogUser extends ViewPU {
                     confirm: this.onAccept,
                     textValue: this.__textValue,
                     inputValue: this.__inputValue
-                }, undefined, -1, paramsLambda);
+                }, undefined, -1, paramsLambda, { page: "import@CustomDialog.ets", line: 10 });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
             },

@@ -114,8 +114,9 @@ function processsFile(content, fileName, isGlobal) {
     if (isGlobal) {
       sourceFile.statements.forEach((node) => {
         if (!ts.isImportDeclaration(node)) {
-          if (node.modifiers && node.modifiers.length && node.modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
-            node.modifiers.splice(0, 1);
+          let modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+          if (modifiers && modifiers.length && modifiers[0].kind === ts.SyntaxKind.ExportKeyword) {
+            modifiers.splice(0, 1);
           }
           if (isVariable(node)) {
             const name = node.declarationList.declarations[0].name.getText();
@@ -147,22 +148,24 @@ function processComponent(node, newStatements) {
   if (isInterface(node)) {
     const componentName = node.name.getText().replace(/Interface$/, '');
     const result = validateComponentMembers(node, componentName);
+    const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
     if (result.isComponentName) {
       const heritageClause = ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
         [ts.factory.createExpressionWithTypeArguments(result.extendNode, undefined)]);
       extendNode = null;
-      node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers,
+      node = ts.factory.updateInterfaceDeclaration(node, modifiers,
         node.name, node.typeParameters, [heritageClause], node.members);
     }
     if (addTSInterfaceSet.includes(componentName)) {
-      node = ts.factory.updateInterfaceDeclaration(node, node.decorators, node.modifiers, node.name,
+      node = ts.factory.updateInterfaceDeclaration(node, modifiers, node.name,
         node.typeParameters, [ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
           [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier('TS' + componentName + 'Interface'),
           undefined)])], node.members);
     }
   }
   if (isClass(node) && addTSAttributeSet.includes(node.name.getText().replace(/Attribute$/, ''))) {
-    node = ts.factory.updateClassDeclaration(node, node.decorators, node.modifiers, node.name,
+    const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+    node = ts.factory.updateClassDeclaration(node, modifiers, node.name,
       node.typeParameters, [ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
         [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier('TS' + node.name.getText()),
         undefined)])], node.members);

@@ -87,7 +87,9 @@ import {
   GET_ENTRYNAME,
   COMPONENT_PARAMS_FUNCTION,
   FUNCTION,
-  COMPONENT_PARAMS_LAMBDA_FUNCTION
+  COMPONENT_PARAMS_LAMBDA_FUNCTION,
+  DECORATOR_COMPONENT_FREEZEWHENINACTIVE,
+  INIT_ALLOW_COMPONENT_FREEZE
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -102,7 +104,8 @@ import {
   linkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  propCollection
+  propCollection,
+  builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -139,8 +142,9 @@ import { isRecycle } from './process_custom_component';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
+  const decoratorNode: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const memberNode: ts.ClassElement[] =
-    processMembers(node.members, node.name, context, log, program, checkPreview(node));
+    processMembers(node.members, node.name, context, decoratorNode, log, program, checkPreview(node));
   return ts.factory.createClassDeclaration(ts.getModifiers(node), node.name,
     node.typeParameters, updateHeritageClauses(node, log), memberNode);
 }
@@ -163,9 +167,12 @@ function checkPreview(node: ts.StructDeclaration): boolean {
 type BuildCount = {
   count: number;
 }
-
+type FreezeParamType = {
+  componentFreezeParam: ts.Expression;
+}
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
-  context: ts.TransformationContext, log: LogInfo[], program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
+  context: ts.TransformationContext, decoratorNode: readonly ts.Decorator[], log: LogInfo[],
+  program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
   const buildCount: BuildCount = { count: 0 };
   let ctorNode: any = getInitConstructor(members, parentComponentName);
   const newMembers: ts.ClassElement[] = [];
@@ -236,7 +243,12 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
   if (partialUpdateConfig.partialUpdateMode) {
-    ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()), true);
+    const creezeParam: FreezeParamType = {
+      componentFreezeParam: undefined
+    };
+    const isFreezeComponent: boolean = decoratorAssignParams(decoratorNode, context, creezeParam);
+    ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()),
+      isFreezeComponent ? decoratorComponentParam(creezeParam) : [], true);
   }
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
   if (componentCollection.entryComponent === parentComponentName.escapedText.toString() &&
@@ -245,6 +257,37 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   }
   curPropMap.clear();
   return newMembers;
+}
+
+function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
+  creezeParam: FreezeParamType): boolean {
+  if (decoratorNode && Array.isArray(decoratorNode) && decoratorNode.length) {
+    return decoratorNode.some((item: ts.Decorator) => {
+      if (isFreezeComponents(item, context, creezeParam)) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+  } else {
+    return false;
+  }
+}
+
+function isFreezeComponents(decorator: ts.Decorator, context: ts.TransformationContext,
+  creezeParam: FreezeParamType): boolean {
+  let isComponentAssignParent: boolean = false;
+  ts.visitNode(decorator, visitComponentParament);
+  function visitComponentParament(decorator: ts.Node): ts.Node {
+    if (ts.isPropertyAssignment(decorator) && decorator.name && decorator.name.text &&
+      decorator.name.text.toString() === DECORATOR_COMPONENT_FREEZEWHENINACTIVE) {
+      isComponentAssignParent = true;
+      creezeParam.componentFreezeParam = decorator.initializer;
+      return decorator;
+    }
+    return ts.visitEachChild(decorator, visitComponentParament, context);
+  }
+  return isComponentAssignParent;
 }
 
 function getEntryNameFunction(entryName: string): ts.MethodDeclaration {
@@ -281,6 +324,38 @@ function assignParams(parentComponentName: string): ts.Statement[] {
       ))],
       true
     )
+  )];
+}
+
+function decoratorComponentParam(freezeParam: FreezeParamType): ts.IfStatement[] {
+  return [ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createElementAccessExpression(
+        ts.factory.createSuper(),
+        ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(ts.factory.createElementAccessExpression(
+          ts.factory.createSuper(),
+          ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
+        )),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      )
+    ),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createElementAccessExpression(
+          ts.factory.createSuper(),
+          ts.factory.createStringLiteral(INIT_ALLOW_COMPONENT_FREEZE)
+        ),
+        undefined,
+        [freezeParam.componentFreezeParam]
+      ))],
+      true
+    ),
+    undefined
   )];
 }
 
@@ -439,7 +514,15 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
+  if (builderParamObjectCollection.get(componentCollection.currentClassName)) {
+    storedFileInfo.builderLikeCollection =
+      new Set([...builderParamObjectCollection.get(componentCollection.currentClassName), ...CUSTOM_BUILDER_METHOD]);
+  } else {
+    storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
+  }
   if (name === COMPONENT_BUILD_FUNCTION) {
+    storedFileInfo.processBuilder = false;
+    storedFileInfo.processGlobalBuilder = false;
     buildCount.count = buildCount.count + 1;
     if (node.parameters.length) {
       log.push({
@@ -456,6 +539,8 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
     } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
+      storedFileInfo.processBuilder = true;
+      storedFileInfo.processGlobalBuilder = false;
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
@@ -467,6 +552,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
         parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
+      storedFileInfo.processBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {

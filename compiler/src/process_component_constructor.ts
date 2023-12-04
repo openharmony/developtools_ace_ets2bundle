@@ -30,7 +30,8 @@ import {
   COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU,
   ELMTID,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
-  COMPONENT_IF_UNDEFINED
+  COMPONENT_IF_UNDEFINED,
+  CUSTOM_COMPONENT_EXTRAINFO
 } from './pre_define';
 
 import { partialUpdateConfig } from '../main';
@@ -41,14 +42,14 @@ export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentCompone
     return ts.isConstructorDeclaration(item);
   });
   if (ctorNode) {
-    ctorNode = updateConstructor(ctorNode, [], [], true);
+    ctorNode = updateConstructor(ctorNode, [], [], [], true);
   }
   return initConstructorParams(ctorNode, parentComponentName);
 }
 
 export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.ParameterDeclaration[],
-  addStatements: ts.Statement[], isSuper: boolean = false, isAdd: boolean = false,
-  parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
+  addStatements: ts.Statement[], decoratorComponentParent: ts.IfStatement[], isSuper: boolean = false,
+  isAdd: boolean = false, parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
   if (para && para.length) {
     modifyPara = Array.from(ctorNode.parameters);
@@ -62,6 +63,9 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.
     if (modifyBody) {
       if (isSuper) {
         modifyBody.unshift(...addStatements);
+        if (decoratorComponentParent && decoratorComponentParent.length) {
+          modifyBody.push(...decoratorComponentParent);
+        }
       } else {
         modifyBody.push(...addStatements);
       }
@@ -95,7 +99,8 @@ function initConstructorParams(node: ts.ConstructorDeclaration, parentComponentN
     COMPONENT_CONSTRUCTOR_PARAMS,
     COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU,
     ELMTID,
-    COMPONENT_PARAMS_LAMBDA_FUNCTION
+    COMPONENT_PARAMS_LAMBDA_FUNCTION,
+    CUSTOM_COMPONENT_EXTRAINFO
   ]);
   const newParameters: ts.ParameterDeclaration[] = Array.from(node.parameters);
   if (newParameters.length !== 0) {
@@ -172,8 +177,8 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   });
   const callSuperStatement: ts.Statement = createCallSuperStatement();
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
-  return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
+  return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], [], true), [],
+    [updateWithValueParamsStatement, ...watchStatements], [], false, true, parentComponentName);
 }
 
 function createCallSuperStatement(): ts.Statement {
@@ -188,7 +193,8 @@ function createCallSuperStatement(): ts.Statement {
       ts.factory.createCallExpression(ts.factory.createSuper(), undefined,
         [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
           ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU),
-          ts.factory.createIdentifier(ELMTID)]));
+          ts.factory.createIdentifier(ELMTID),
+          ts.factory.createIdentifier(CUSTOM_COMPONENT_EXTRAINFO)]));
   }
 }
 

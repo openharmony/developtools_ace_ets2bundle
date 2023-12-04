@@ -56,8 +56,8 @@ struct child {
 exports.expectResult = `"use strict";
 let a = "aaaaaaaaaa";
 class HomeComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -122,7 +122,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "reuse_key", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 10 }), recycleNode !== null, "reuse_key", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -164,7 +164,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, this.state_value, () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 14 }), recycleNode !== null, this.state_value, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -205,7 +205,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "reuse_key11111111111", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 17 }), recycleNode !== null, "reuse_key11111111111", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -248,7 +248,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, "child", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 19 }), recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -289,7 +289,7 @@ class HomeComponent extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda), recycleNode !== null, a, () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle_reuseId.ets", line: 22 }), recycleNode !== null, a, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -318,8 +318,8 @@ class HomeComponent extends ViewPU {
     }
 }
 class child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
