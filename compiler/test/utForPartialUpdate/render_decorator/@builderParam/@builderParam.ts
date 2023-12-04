@@ -332,7 +332,7 @@ class CustomContainerUser extends ViewPU {
                         content: this.specificParam,
                         callContent: this.callSpecificParam("callContent1", 'callContent2'),
                         footer: "Footer",
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 66 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -373,7 +373,7 @@ class CustomContainerUser extends ViewPU {
                             this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 74 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
