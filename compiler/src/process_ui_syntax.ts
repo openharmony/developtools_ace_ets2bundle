@@ -85,7 +85,10 @@ import {
   FileLog,
   getPossibleBuilderTypeParameter,
   storedFileInfo,
-  ExtendResult
+  ExtendResult,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -135,7 +138,8 @@ export const builderTypeParameter: {params: string[]} = {params: []};
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
 
-export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any): Function {
+export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any,
+  compilationTime: CompilationTimeStatistics = null): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
@@ -227,7 +231,9 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     function processAllNodes(node: ts.Node): ts.Node {
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
         processImportModule(node);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
         ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
@@ -236,7 +242,9 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         node = processComponentClass(node, context, transformLog.errors, program);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
@@ -252,11 +260,14 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           }
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
+          storedFileInfo.processBuilder = true;
+          storedFileInfo.processGlobalBuilder = true;
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
           builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
           let parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
+          storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
@@ -268,6 +279,8 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           }
           builderTypeParameter.params = [];
           node = processBuildMember(node, context, transformLog.errors, true);
+          storedFileInfo.processBuilder = false;
+          storedFileInfo.processGlobalBuilder = false;
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;
@@ -527,7 +540,7 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
   if (process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     transformLog.errors.push({
-      type: LogType.WARN,
+      type: LogType.ERROR,
       message: `No such '${node.arguments[0].text}' resource in current module.`,
       pos: node.getStart()
     });

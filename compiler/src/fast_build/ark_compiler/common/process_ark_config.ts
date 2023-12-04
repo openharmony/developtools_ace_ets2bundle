@@ -41,7 +41,12 @@ import {
 import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
-import { MergedConfig, ObConfigResolver, readNameCache} from './ob_config_resolver'
+import {
+  ObConfigResolver,
+  collectResevedFileNameInIDEConfig,
+  readNameCache,
+} from './ob_config_resolver';
+import type { MergedConfig } from './ob_config_resolver';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -152,10 +157,22 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
       { mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation } }, true);
     mergedObConfig.reservedPropertyNames.push(...projectAndLibsReservedProperties);
   }
+
+  if (!isHarCompiled) {
+    mergedObConfig.options.enableFileNameObfuscation = false;
+    mergedObConfig.reservedFileNames = [];
+  }
+
+  if (mergedObConfig.options.enableFileNameObfuscation) {
+    const ohPackagePath = path.join(projectConfig.modulePath, 'oh-package.json5');
+    const reservedFileNamesInIDEconfig = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig.aceModuleJsonPath,
+      projectConfig.projectPath, projectConfig.cachePath);
+    mergedObConfig.reservedFileNames.push(...reservedFileNamesInIDEconfig);
+  }
   arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;
 
-  if (isAotMode(arkProjectConfig)) {
-    arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig);
+  if (isAotMode(arkProjectConfig) || isHarCompiled) {
+    arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig, isHarCompiled);
     return;
   }
   arkProjectConfig.terserConfig = initTerserConfig(projectConfig, logger, mergedObConfig, isHarCompiled);
@@ -206,12 +223,13 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
   return minifyOptions;
 }
 
-function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any, mergedObConfig: any) {
+function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): ArkObfuscator {
   const arkguardConfig = {
     mCompact: mergedObConfig.options.compact,
     mDisableHilog: false,
     mDisableConsole: mergedObConfig.options.removeLog,
     mSimplify: false,
+    mRemoveComments: true,
     mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
     mNameObfuscation: {
       mEnable: true,
@@ -222,7 +240,16 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
     },
     mEnableSourceMap: true,
-    mEnableNameCache: true
+    mEnableNameCache: true,
+    mRenameFileName: undefined
+  }
+
+  if (isHarCompiled) {
+    arkguardConfig.mRenameFileName = {
+      mEnable: mergedObConfig.options.enableFileNameObfuscation,
+      mNameGeneratorType: 1,
+      mReservedFileNames: mergedObConfig.reservedFileNames,
+    }
   }
 
   const arkObfuscator: ArkObfuscator = new ArkObfuscator();

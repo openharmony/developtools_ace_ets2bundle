@@ -25,6 +25,7 @@ import {
   getOhmUrlByFilepath,
   getOhmUrlByHarName,
   getOhmUrlBySystemApiOrLibRequest,
+  mangleDeclarationFileName,
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -40,9 +41,10 @@ import {
   stopEvent
 } from '../../../utils';
 import { newSourceMaps } from '../transform';
-import { getArkguardNameCache, writeObfuscationNameCache } from '../common/ob_config_resolver';
+import { writeObfuscationNameCache } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
+  ESMODULE,
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
@@ -195,7 +197,10 @@ export class ModuleSourceFile {
       await source.writeSourceFile(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
     }
-    
+
+    if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE && rollupObject.share.arkProjectConfig.compileHar) {
+      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
+    }
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&

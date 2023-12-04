@@ -36,8 +36,8 @@ struct CustomY {
 exports.expectResult =
 `"use strict";
 class CustomX extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -73,8 +73,8 @@ class CustomX extends ViewPU {
     }
 }
 class CustomY extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -114,7 +114,7 @@ class CustomY extends ViewPU {
                             fruit: this.parentFruit
                         };
                     };
-                    ViewPU.create(new CustomX(this, { fruit: this.parentFruit }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CustomX(this, { fruit: this.parentFruit }, undefined, elmtId, paramsLambda, { page: "@prop.ets", line: 15 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -129,7 +129,7 @@ class CustomY extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda, { page: "@prop.ets", line: 16 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

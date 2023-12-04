@@ -94,7 +94,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
   projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
   projectConfig.isPreview = projectConfig.isPreview || process.env.isPreview === 'true';
-  projectConfig.compileMode = projectConfig.compileMode || 'jsbundle';
+  projectConfig.compileMode = projectConfig.compileMode || process.env.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
   projectConfig.sdkInfo = projectConfig.sdkInfo || process.env.sdkInfo || 'default';
   projectConfig.compileHar = false;
@@ -109,6 +109,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.compilerTypes = [];
   projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
+  projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
 }
 
 function loadEntryObj(projectConfig) {
@@ -505,6 +506,7 @@ function loadWorker(projectConfig, workerFileEntry) {
           const relativePath = path.relative(workerPath, item)
             .replace(/\.(ts|js|ets)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
+          abilityPagesFullPath.push(path.resolve(item).toLowerCase());
         }
       });
     }
@@ -796,12 +798,12 @@ function isPartialUpdate(metadata) {
         item.value && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'ArkTSCheck' &&
-        item.value && item.value === 'SkipArkTSCheck') {
+      if (item.name && item.name === 'Api11ArkTSCheck' &&
+        item.value && item.value === 'SkipArkTSCheckInApi11') {
         partialUpdateConfig.executeArkTSLinter = false;
       }
-      if (item.name && item.name === 'ArkTSCheckMode' &&
-        item.value && item.value === 'DoArkTSCheckInCompatibleMode') {
+      if (item.name && item.name === 'Api11ArkTSCheckMode' &&
+        item.value && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
       return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&

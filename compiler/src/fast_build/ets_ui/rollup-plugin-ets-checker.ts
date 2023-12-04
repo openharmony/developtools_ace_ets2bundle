@@ -28,11 +28,14 @@ import {
   fastBuildLogger
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
-import { 
+import {
   setChecker,
-  getHookEventFactory,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics,
+  getHookEventFactory
 } from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
@@ -44,6 +47,7 @@ export function etsChecker() {
     name: 'etsChecker',
     buildStart() {
       const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
+      const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -72,20 +76,24 @@ export function etsChecker() {
       }
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'check Ets code syntax');
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker);
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
+          compilationTime);
         executedOnce = true;
+        startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         globalProgram.program = languageService.getProgram();
         const allDiagnostics: ts.Diagnostic[] = globalProgram.program
           .getSyntacticDiagnostics()
           .concat(globalProgram.program.getSemanticDiagnostics())
           .concat(globalProgram.program.getDeclarationDiagnostics());
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           printDiagnostic(diagnostic);
         });
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
-        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker);
+        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
+          compilationTime);
       }
       stopEvent(eventServiceChecker);
       setChecker();

@@ -58,8 +58,8 @@ exports.expectResult =
 `"use strict";
 let options = { message: 'Hi' };
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -105,7 +105,7 @@ class Index extends ViewPU {
                             message2: this.message2
                         };
                     };
-                    ViewPU.create(new Child(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Child(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, paramsLambda, { page: "component_object.ets", line: 13 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -120,7 +120,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return options;
                     };
-                    ViewPU.create(new Child2(this, options, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new Child2(this, options, undefined, elmtId, paramsLambda, { page: "component_object.ets", line: 14 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -134,8 +134,8 @@ class Index extends ViewPU {
     }
 }
 class Child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -189,8 +189,8 @@ class Child extends ViewPU {
     }
 }
 class Child2 extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

@@ -221,7 +221,7 @@ const SEMICOLON_EXPECT: number = 1005;
 const STATESTYLES_EXPECT: number = 1003;
 export const IGNORE_ERROR_CODE: number[] = [STATEMENT_EXPECT, SEMICOLON_EXPECT, STATESTYLES_EXPECT];
 
-export function readFile(dir: string, utFiles: string[]) {
+export function readFile(dir: string, utFiles: string[]): void {
   try {
     const files: string[] = fs.readdirSync(dir);
     files.forEach((element) => {
@@ -312,6 +312,15 @@ export function writeFileSync(filePath: string, content: string): void {
   }
   fs.writeFileSync(filePath, content);
 }
+export function genLoaderOutPathOfHar(filePath: string, cachePath: string, buildPath: string, moduleRootPath: string, projectRootPath): string {
+  filePath = toUnixPath(filePath);
+  buildPath = toUnixPath(buildPath);
+  const cacheRootPath: string = toUnixPath(cachePath);
+  const moduleName = toUnixPath(moduleRootPath).replace(toUnixPath(projectRootPath), '');
+  const relativeFilePath: string = filePath.replace(cacheRootPath, '').replace(moduleName, '');
+  const output: string = path.join(buildPath, relativeFilePath);
+  return output;
+}
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
   projectConfig: any, buildInHar: boolean = false): string {
@@ -374,6 +383,17 @@ export function isPackageModulesFile(filePath: string, projectConfig: any): bool
   return false;
 }
 
+export interface GeneratedFileInHar {
+  sourcePath: string;
+  sourceCachePath?: string;
+  obfuscatedSourceCachePath?: string;
+  originalDeclarationCachePath?: string;
+  originalDeclarationContent?: string;
+  obfuscatedDeclarationCachePath?: string;
+}
+
+export const harFilesRecord: Map<string, GeneratedFileInHar> = new Map();
+
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
@@ -382,9 +402,16 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     projectConfig, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
-    mkdirsSync(path.dirname(jsFilePath));
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
       sourceContent = uglifyJS.minify(sourceContent).code;
+    }
+    if (projectConfig.compileMode === ESMODULE && projectConfig.compileHar && (/\.d\.e?ts$/).test(jsFilePath)) {
+      sourcePath = toUnixPath(sourcePath);
+      const genFilesInHar: GeneratedFileInHar = {sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent};
+      harFilesRecord.set(sourcePath, genFilesInHar);
+      return;
+    } else {
+      mkdirsSync(path.dirname(jsFilePath));
     }
     fs.writeFileSync(jsFilePath, sourceContent);
   }
@@ -681,6 +708,9 @@ class ProcessFileInfo {
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
   transformCacheFiles: {[fileName: string]: CacheFile} = {};
+  processBuilder: boolean = false;
+  processGlobalBuilder: boolean = false;
+  builderLikeCollection: Set<string> = new Set();
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
@@ -883,7 +913,7 @@ export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>,
     const files: string[] = fs.readdirSync(rawfilePath);
     files.forEach((file: string) => {
       if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
-        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, file);
+        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, resourceName ? resourceName + '/' + file : file);
       } else {
         if (resourceName) {
           resourcesArr.add(resourceName + '/' + file);
@@ -948,4 +978,69 @@ export function stopEvent(event:any, syncFlag = false): void {
       event.stop();
     }
   }
+}
+
+export function startTimeStatisticsLocation(startTimeEvent: CompileEvent): void {
+  if (startTimeEvent) {
+    startTimeEvent.start();
+  }
+}
+
+export function stopTimeStatisticsLocation(stopTimeEvent: CompileEvent): void {
+  if (stopTimeEvent) {
+    stopTimeEvent.stop();
+  }
+}
+export let resolveModuleNamesTime: CompileEvent;
+export class CompilationTimeStatistics {
+  hookEventFactory: HookEventFactoryType;
+  createProgramTime: CompileEvent;
+  runArkTSLinterTime: CompileEvent;
+  diagnosticTime: CompileEvent;
+  scriptSnapshotTime: CompileEvent;
+  processImportTime: CompileEvent;
+  processComponentClassTime: CompileEvent;
+  validateEtsTime: CompileEvent;
+  tsProgramEmitTime: CompileEvent;
+  noSourceFileRebuildProgramTime: CompileEvent;
+  etsTransformBuildStartTime: CompileEvent;
+  etsTransformLoadTime: CompileEvent;
+  constructor(share: Record<string, any>, pluginName: string, hookName: string) {
+    if (share && share.getHookEventFactory) {
+      if (pluginName === 'etsChecker' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.createProgramTime = this.hookEventFactory.createEvent('createProgram');
+        this.runArkTSLinterTime = this.hookEventFactory.createEvent('arkTSLinter');
+        this.diagnosticTime = this.hookEventFactory.createEvent('diagnostic');
+        this.scriptSnapshotTime = this.hookEventFactory.createEvent('scriptSnapshot');
+        resolveModuleNamesTime = this.hookEventFactory.createEvent('resolveModuleNames');
+      } else if (pluginName === 'etsTransform' && hookName === 'transform' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.processImportTime = this.hookEventFactory.createEvent('processImport');
+        this.processComponentClassTime = this.hookEventFactory.createEvent('processComponentClass');
+        this.validateEtsTime = this.hookEventFactory.createEvent('validateEts');
+        this.tsProgramEmitTime = this.hookEventFactory.createEvent('tsProgramEmit');
+        this.noSourceFileRebuildProgramTime = this.hookEventFactory.createEvent('noSourceFileRebuildProgram');
+      } else if (pluginName === 'etsTransform' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.etsTransformBuildStartTime = this.hookEventFactory.createEvent('etsTransformBuildStart');
+      } else if (pluginName === 'etsTransform' && hookName === 'load' && share.getHookEventFactory(pluginName, hookName)) {
+        this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
+        this.etsTransformLoadTime = this.hookEventFactory.createEvent('etsTransformLoad');
+      }
+    }
+  }
+}
+
+interface HookEventFactoryType {
+  createEvent(name: string): CompileEvent | undefined;
+}
+
+type CompileEventState = 'created' | 'beginning' | 'running' | 'failed' | 'success' | 'warn';
+interface CompileEvent {
+  start(time?: number): CompileEvent;
+  stop(state?: CompileEventState, time?: number): void;
+  startAsyncEvent(time: number): CompileEvent;
+  stopAsyncEvent(state?: CompileEventState, TIME?: number): void;
+  createSubEvent(name: string): CompileEvent;
 }

@@ -36,8 +36,8 @@ struct ParentComponent {
 exports.expectResult =
 `"use strict";
 class LinkComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -73,8 +73,8 @@ class LinkComponent extends ViewPU {
     }
 }
 class ParentComponent extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -114,7 +114,7 @@ class ParentComponent extends ViewPU {
                             counter: this.value
                         };
                     };
-                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId, paramsLambda, { page: "@link.ets", line: 16 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
