@@ -289,7 +289,7 @@ class ImportTest extends ViewPU {
                         DefaultComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importEts.ets", line: 45 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -320,7 +320,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent3'
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importEts.ets", line: 53 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -347,7 +347,7 @@ class ImportTest extends ViewPU {
                         AMDComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importEts.ets", line: 63 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -378,7 +378,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importEts.ets", line: 71 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

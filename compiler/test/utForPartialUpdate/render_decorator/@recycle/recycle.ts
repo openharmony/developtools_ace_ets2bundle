@@ -350,7 +350,7 @@ class child extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda), recycleNode !== null, "AnimationTest", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda, { page: "recycle.ets", line: 33 }), recycleNode !== null, "AnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
