@@ -250,7 +250,15 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
-    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles) {
+      storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+      storedFileInfo.isFirstBuild = false;
+    }
+    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
+      tsProgram = storedFileInfo.newTsProgram;
+    } else {
+      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    }
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
