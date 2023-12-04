@@ -21,7 +21,8 @@
     "run:arkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\"",
     "run:cleanArkTest": "rm -rf arkTest_build",
     "arkTest": "./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest",
-    "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage"
+    "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage",
+    "duplicate": "jscpd"
   },
   "devDependencies": {
     "@babel/cli": "7.20.7",
