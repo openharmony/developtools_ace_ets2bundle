@@ -38,7 +38,6 @@ action("build_ets_loader_library") {
   deps = [
     ":components",
     ":form_components",
-    ":install_arkguard_tsc",
     ":server",
   ]
   script = "build_ets_loader_library.py"
@@ -137,10 +136,7 @@ ets_loader_sources = [
 ]
 
 ohos_copy("ets_loader") {
-  deps = [
-    ":build_ets_loader_library",
-    ":install_arkguard_tsc",
-  ]
+  deps = [ ":build_ets_loader_library" ]
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
   sources += [ ets_sysResource ]
@@ -213,10 +209,7 @@ ohos_copy("ets_loader_declaration") {
 }
 
 ohos_copy("ets_loader_ark") {
-  deps = [
-    ":build_ets_loader_library",
-    ":install_arkguard_tsc",
-  ]
+  deps = [ ":build_ets_loader_library" ]
   sources = ets_loader_sources
   deps += [ ":build_ets_sysResource" ]
   sources += [ ets_sysResource ]
@@ -304,20 +297,4 @@ ohos_copy("ets_loader_ark_hap") {
   ]
   outputs = [ target_out_dir + "/../../developtools/api/{{source_file_part}}" ]
   module_install_name = ""
-}
-
-action("install_arkguard_tsc") {
-  deps = [
-    "//arkcompiler/ets_frontend/arkguard:build_arkguard",
-    "//third_party/typescript:build_typescript",
-  ]
-  script = "install_arkguard_tsc.py"
-  args = [
-    rebase_path(
-        "${root_out_dir}/obj/third_party/typescript/ohos-typescript-4.9.5-r4.tgz"),
-    rebase_path(
-        "${root_out_dir}/obj/arkcompiler/ets_frontend/arkguard/arkguard-1.1.3.tgz"),
-    rebase_path("//developtools/ace_ets2bundle/compiler"),
-  ]
-  outputs = [ "${target_out_dir}/${target_name}.stamp" ]
 }
