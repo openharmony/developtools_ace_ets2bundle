@@ -362,11 +362,6 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const arkObfuscator = projectConfig.arkObfuscator;
   const isHarCompiled = projectConfig.compileHar;
 
-  if ((/\.d\.e?ts$/).test(filePath) && !projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation) {
-    tryMangleFileNameAndWriteFile(filePath, content, projectConfig, originalFilePath);
-    return;
-  }
-
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
