@@ -78,8 +78,7 @@ import {
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
   resolveModuleNamesTime,
-  CompilationTimeStatistics,
-  storedFileInfo
+  CompilationTimeStatistics
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -458,9 +457,6 @@ function filterInput(rootFileNames: string[]): string[] {
     const needUpdate: NeedUpdateFlag = { flag: false };
     const alreadyCheckedFiles: Set<string> = new Set();
     checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
-    if (!needUpdate.flag) {
-      storedFileInfo.changeFiles.push(path.resolve(file));
-    }
     return needUpdate.flag;
   });
 }

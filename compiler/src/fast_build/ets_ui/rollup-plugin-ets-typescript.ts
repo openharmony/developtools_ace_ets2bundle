@@ -88,7 +88,6 @@ const disableCacheOptions = {
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
   let cacheFile: CacheFile;
-  let isFirstBuild: boolean = true;
   return {
     name: 'etsTransform',
     transform: transform,
@@ -130,10 +129,6 @@ export function etsTransform() {
       stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformLoadTime : undefined);
     },
     shouldInvalidCache(options) {
-      if (isFirstBuild && this.share.rawfilechanged) {
-        storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
-        isFirstBuild = false;
-      }
       const fileName: string = path.resolve(options.id);
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || shouldEnableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
@@ -291,11 +286,7 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
-      tsProgram = storedFileInfo.newTsProgram;
-    } else {
-      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
-    }
+    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
     stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
