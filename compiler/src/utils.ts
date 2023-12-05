@@ -711,6 +711,9 @@ class ProcessFileInfo {
   processBuilder: boolean = false;
   processGlobalBuilder: boolean = false;
   builderLikeCollection: Set<string> = new Set();
+  newTsProgram: ts.Program;
+  changeFiles: string[] = [];
+  isFirstBuild: boolean = true;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {

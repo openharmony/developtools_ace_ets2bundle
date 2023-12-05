@@ -286,7 +286,15 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles) {
+      storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+      storedFileInfo.isFirstBuild = false;
+    }
+    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
+      tsProgram = storedFileInfo.newTsProgram;
+    } else {
+      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    }
     stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
