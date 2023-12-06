@@ -107,7 +107,7 @@ export function etsTransform() {
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
         }
       }
-      if (this.cache.get('enableDebugLine') !== process.env.enableDebugLine) {
+      if (this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
         shouldEnableDebugLine = true;
       }
       stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
@@ -194,7 +194,7 @@ export function etsTransform() {
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
       this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
-      if (process.env.enableDebugLine) {
+      if (projectConfig.enableDebugLine) {
         this.cache.set('enableDebugLine', true);
       } else {
         this.cache.set('enableDebugLine', false);
