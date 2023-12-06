@@ -11,6 +11,7 @@
     "userAgent", "onConfirm", "onConsole", "onErrorReceive", "onHttpErrorReceive", "onDownloadStart",
     "webDebuggingAccess", "onShowFileSelector", "initialScale", "onResourceLoad", "onScaleChange", "onHttpAuthRequest",
     "onPermissionRequest", "onContextMenuShow", "textZoomRatio", "onScroll", "mediaPlayGestureAccess", "onSslErrorEventReceive",
-    "onClientAuthenticationRequest", "horizontalScrollBarAccess", "verticalScrollBarAccess", "javaScriptOnDocumentStart"
+    "onClientAuthenticationRequest", "horizontalScrollBarAccess", "verticalScrollBarAccess",
+    "javaScriptOnDocumentStart", "javaScriptOnDocumentEnd"
   ]
 }
