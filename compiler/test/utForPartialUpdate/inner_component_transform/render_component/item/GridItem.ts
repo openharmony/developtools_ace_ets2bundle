@@ -51,18 +51,13 @@ class ParentView extends ViewPU {
             Grid.create();
         }, Grid);
         {
-            const itemCreation = (elmtId, isInitialRender) => {
-                ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+            const itemCreation2 = (elmtId, isInitialRender) => {
                 GridItem.create(() => { }, false, 'true');
                 GridItem.width(200);
                 GridItem.height(100);
-                if (!isInitialRender) {
-                    GridItem.pop();
-                }
-                ViewStackProcessor.StopGetAccessRecording();
             };
             const observedDeepRender = () => {
-                this.observeComponentCreation(itemCreation);
+                this.observeComponentCreation2(itemCreation2, GridItem);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
                     Text.width(100);
