@@ -203,16 +203,11 @@ class Test extends ViewPU {
             const __lazyForEachItemGenFunction = _item => {
                 const row = _item;
                 {
-                    const itemCreation = (elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
+                    const itemCreation2 = (elmtId, isInitialRender) => {
                         GridItem.create(() => { }, false);
-                        if (!isInitialRender) {
-                            GridItem.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
                     };
                     const observedDeepRender = () => {
-                        this.observeComponentCreation(itemCreation);
+                        this.observeComponentCreation2(itemCreation2, GridItem);
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create(row);
                         }, Text);
