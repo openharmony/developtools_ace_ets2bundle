@@ -50,6 +50,7 @@ enum OptionType {
   ENABLE_STRING_PROPERTY_OBFUSCATION,
   ENABLE_TOPLEVEL_OBFUSCATION,
   ENABLE_FILENAME_OBFUSCATION,
+  ENABLE_EXPORT_OBFUSCATION,
   COMPACT,
   REMOVE_LOG,
   PRINT_NAMECACHE,
@@ -90,6 +91,7 @@ class ObOptions {
   enableStringPropertyObfuscation: boolean = false;
   enableToplevelObfuscation: boolean = false;
   enableFileNameObfuscation: boolean = false;
+  enableExportObfuscation: boolean = false;
   compact: boolean = false;
   removeLog: boolean = false;
   printNameCache: string = '';
@@ -103,6 +105,7 @@ class ObOptions {
     this.compact = this.compact || other.compact;
     this.removeLog = this.removeLog || other.removeLog;
     this.enableFileNameObfuscation = this.enableFileNameObfuscation || other.enableFileNameObfuscation;
+    this.enableExportObfuscation = this.enableExportObfuscation || other.enableExportObfuscation;
     if (other.printNameCache.length > 0) {
       this.printNameCache = other.printNameCache;
     }
@@ -249,6 +252,7 @@ export class ObConfigResolver {
   static readonly ENABLE_STRING_PROPERTY_OBFUSCATION = '-enable-string-property-obfuscation';
   static readonly ENABLE_TOPLEVEL_OBFUSCATION = '-enable-toplevel-obfuscation';
   static readonly ENABLE_FILENAME_OBFUSCATION = '-enable-filename-obfuscation';
+  static readonly ENABLE_EXPORT_OBFUSCATION = '-enable-export-obfuscation';
   static readonly COMPACT = '-compact';
   static readonly REMOVE_LOG = '-remove-log';
   static readonly PRINT_NAMECACHE = '-print-namecache';
@@ -284,6 +288,8 @@ export class ObConfigResolver {
         return OptionType.ENABLE_TOPLEVEL_OBFUSCATION;
       case ObConfigResolver.ENABLE_FILENAME_OBFUSCATION:
         return OptionType.ENABLE_FILENAME_OBFUSCATION;
+      case ObConfigResolver.ENABLE_EXPORT_OBFUSCATION:
+        return OptionType.ENABLE_EXPORT_OBFUSCATION;
       case ObConfigResolver.COMPACT:
         return OptionType.COMPACT;
       case ObConfigResolver.REMOVE_LOG:
@@ -330,6 +336,10 @@ export class ObConfigResolver {
         }
         case OptionType.ENABLE_FILENAME_OBFUSCATION: {
           configs.options.enableFileNameObfuscation = true;
+          continue;
+        }
+        case OptionType.ENABLE_EXPORT_OBFUSCATION: {
+          configs.options.enableExportObfuscation = true;
           continue;
         }
         case OptionType.COMPACT: {
