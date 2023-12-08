@@ -342,6 +342,7 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
+    this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
     if (isAotMode(this.projectConfig) && isEs2Abc(this.projectConfig)) {
       this.cmdArgs.push("--type-extractor");
     }

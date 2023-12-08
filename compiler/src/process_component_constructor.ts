@@ -42,14 +42,14 @@ export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentCompone
     return ts.isConstructorDeclaration(item);
   });
   if (ctorNode) {
-    ctorNode = updateConstructor(ctorNode, [], [], true);
+    ctorNode = updateConstructor(ctorNode, [], [], [], true);
   }
   return initConstructorParams(ctorNode, parentComponentName);
 }
 
 export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.ParameterDeclaration[],
-  addStatements: ts.Statement[], isSuper: boolean = false, isAdd: boolean = false,
-  parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
+  addStatements: ts.Statement[], decoratorComponentParent: ts.IfStatement[], isSuper: boolean = false,
+  isAdd: boolean = false, parentComponentName?: ts.Identifier): ts.ConstructorDeclaration {
   let modifyPara: ts.ParameterDeclaration[];
   if (para && para.length) {
     modifyPara = Array.from(ctorNode.parameters);
@@ -63,6 +63,9 @@ export function updateConstructor(ctorNode: ts.ConstructorDeclaration, para: ts.
     if (modifyBody) {
       if (isSuper) {
         modifyBody.unshift(...addStatements);
+        if (decoratorComponentParent && decoratorComponentParent.length) {
+          modifyBody.push(...decoratorComponentParent);
+        }
       } else {
         modifyBody.push(...addStatements);
       }
@@ -174,8 +177,8 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   });
   const callSuperStatement: ts.Statement = createCallSuperStatement();
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
-  return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], true), [],
-    [updateWithValueParamsStatement, ...watchStatements], false, true, parentComponentName);
+  return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], [], true), [],
+    [updateWithValueParamsStatement, ...watchStatements], [], false, true, parentComponentName);
 }
 
 function createCallSuperStatement(): ts.Statement {

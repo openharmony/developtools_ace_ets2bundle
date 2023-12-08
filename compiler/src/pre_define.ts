@@ -285,7 +285,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
   ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
-  [ALL_COMPONENTS, new Set(['bindContextMenu','bindSheet'])]  
+  [ALL_COMPONENTS, new Set(['bindContextMenu', 'bindSheet', 'dragPreview'])]
 ]);
 
 export const CHECKED: string = 'checked';
@@ -476,6 +476,8 @@ export const FOREACHUPDATEFUNCTION: string = 'forEachUpdateFunction';
 export const ALLOCATENEWELMETIDFORNEXTCOMPONENT: string = 'AllocateNewElmetIdForNextComponent';
 export const STATE_OBJECTLINK_DECORATORS: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
 export const COMPONENT_INITIAl_RENDER_FUNCTION: string = 'initialRender';
+export const DECORATOR_COMPONENT_FREEZEWHENINACTIVE: string = 'freezeWhenInactive';
+export const INIT_ALLOW_COMPONENT_FREEZE: string = 'initAllowComponentFreeze';
 export const GRID_COMPONENT: string = 'Grid';
 export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
@@ -546,6 +548,12 @@ export const FA_TAG_CHECK_ERROR: string = 'This API is used only in FA Mode, but
 export const STAGE_TAG_CHECK_NAME: string = 'stagemodelonly';
 export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
 export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
+export const STAGE_COMPILE_MODE: string = 'moduleJson';
+export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
+export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
+export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
+export const SINCE_TAG_NAME: string = 'since';
+export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';

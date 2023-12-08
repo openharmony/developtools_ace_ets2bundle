@@ -107,7 +107,7 @@ export function etsTransform() {
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
         }
       }
-      if (this.cache.get('enableDebugLine') !== process.env.enableDebugLine) {
+      if (this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
         shouldEnableDebugLine = true;
       }
       stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
@@ -194,7 +194,7 @@ export function etsTransform() {
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
       this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
-      if (process.env.enableDebugLine) {
+      if (projectConfig.enableDebugLine) {
         this.cache.set('enableDebugLine', true);
       } else {
         this.cache.set('enableDebugLine', false);
@@ -286,7 +286,15 @@ async function transform(code: string, id: string) {
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
     startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
-    tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles) {
+      storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+      storedFileInfo.isFirstBuild = false;
+    }
+    if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
+      tsProgram = storedFileInfo.newTsProgram;
+    } else {
+      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+    }
     stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();

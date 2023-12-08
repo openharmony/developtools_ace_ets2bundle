@@ -51,6 +51,7 @@ export class ModuleHotfixMode extends ModuleMode {
     this.cmdArgs.push(`"${this.moduleAbcPath}"`);
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
+    this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
 
     if (this.projectConfig.patch) {
       const oldHapSymbolTable: string = path.join(this.projectConfig.inOldSymbolTablePath, PATCH_SYMBOL_TABLE);
