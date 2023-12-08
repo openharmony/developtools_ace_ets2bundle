@@ -359,7 +359,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       validatePropertyNonDefaultValue(name, decoratorName, log);
       return;
     }
-    if (node.questionToken && mandatoryToInitViaParamDecorators.has(decoratorName)) {
+    if (node.questionToken && mandatoryToInitViaParamDecorators.has(decoratorName) && !(decoratorName === COMPONENT_PROP_DECORATOR && node.initializer)) {
       validateHasIllegalQuestionToken(name, decoratorName, log);
     }
     if (!isSimpleType(node.type, program) &&
