@@ -676,6 +676,9 @@ class ProcessFileInfo {
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
   transformCacheFiles: {[fileName: string]: CacheFile} = {};
+  newTsProgram: ts.Program;
+  changeFiles: string[] = [];
+  isFirstBuild: boolean = true;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
