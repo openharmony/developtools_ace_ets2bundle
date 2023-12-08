@@ -41,10 +41,15 @@ export enum ArkTSLinterMode {
   STANDARD_MODE = 2
 }
 
+export enum ArkTSVersion {
+  ArkTS_1_0,
+  ArkTS_1_1,
+}
+
 export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
 
-export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc,
-  shouldWriteFile: boolean = true): ts.Diagnostic[] {
+export function doArkTSLinter(arkTSVersion: ArkTSVersion, program: ts.Program, arkTSMode: ArkTSLinterMode,
+  printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
   }
@@ -55,7 +60,13 @@ export function doArkTSLinter(program: ts.Program, arkTSMode: ArkTSLinterMode, p
   compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
   compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
 
-  let diagnostics: ts.Diagnostic[] = ts.runArkTSLinter(program, compilerHost);
+  let diagnostics: ts.Diagnostic[] = [];
+
+  if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
+    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(program, compilerHost);
+  } else {
+    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(program, compilerHost);
+  }
 
   removeOutputFile();
   if (diagnostics.length === 0) {
