@@ -1,0 +1,16 @@
+{
+  "symbol": {
+    "DriverExtensionAbility": {
+      "source": "@ohos.app.ability.DriverExtensionAbility",
+      "bindings": "default"
+    },
+    "DriverExtensionContext": {
+      "source": "@ohos.app.ability.DriverExtensionAbility",
+      "bindings": "DriverExtensionContext"
+    },
+    "deviceManager": {
+      "source": "@ohos.driver.deviceManager",
+      "bindings": "default"
+    }
+  }
+}

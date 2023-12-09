@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "eslint --fix ./src --ext .ts",
-    "build": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
+    "build": "npm run generateKitConfigs && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
     "create": "node ./lib/create.js --env projectName",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
     "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError && npm run arkTest",
@@ -21,7 +21,8 @@
     "run:arkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\"",
     "run:cleanArkTest": "rm -rf arkTest_build",
     "arkTest": "./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest",
-    "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage"
+    "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage",
+    "generateKitConfigs": "node ./build_kitConfigs_file.js ../../../interface/sdk-js/api/kit ./kit_configs"
   },
   "devDependencies": {
     "@babel/cli": "7.20.7",

@@ -1,0 +1,24 @@
+{
+  "symbol": {
+    "inputMethod": {
+      "source": "@ohos.inputMethod",
+      "bindings": "default"
+    },
+    "inputMethodEngine": {
+      "source": "@ohos.inputMethodEngine",
+      "bindings": "default"
+    },
+    "InputMethodExtensionAbility": {
+      "source": "@ohos.InputMethodExtensionAbility",
+      "bindings": "default"
+    },
+    "InputMethodExtensionContext": {
+      "source": "@ohos.InputMethodExtensionContext",
+      "bindings": "default"
+    },
+    "InputMethodSubtype": {
+      "source": "@ohos.InputMethodSubtype",
+      "bindings": "default"
+    }
+  }
+}
