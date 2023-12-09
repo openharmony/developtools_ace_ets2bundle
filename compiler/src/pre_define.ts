@@ -566,3 +566,5 @@ export const WRAPBUILDER_BUILDERPROP: string = 'builder';
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';
+
+export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
