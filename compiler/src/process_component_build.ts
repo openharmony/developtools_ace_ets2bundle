@@ -116,7 +116,8 @@ import {
   WRAPBUILDER_BUILDERPROP,
   WRAPPEDBUILDER_CLASS,
   ALL_COMPONENTS,
-  ATTRIBUTE_ATTRIBUTE_MODIFIER
+  ATTRIBUTE_ATTRIBUTE_MODIFIER,
+  TITLE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -792,7 +793,7 @@ export function createComponentCreationStatement(node: ts.Statement, innerStatem
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(createConditionParent(isGlobalBuilder),
         ts.factory.createIdentifier(partialUpdateConfig.optimizeComponent ?
-          OBSERVECOMPONENTCREATION2: OBSERVECOMPONENTCREATION)
+          OBSERVECOMPONENTCREATION2 : OBSERVECOMPONENTCREATION)
       ), undefined, creationArgs)
   );
 }
@@ -1114,7 +1115,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   }
 }
 
-function getRealNodePos(node: ts.Node): number {
+export function getRealNodePos(node: ts.Node): number {
   // @ts-ignore
   if (node.pos === -1 && node.expression) {
     // @ts-ignore
@@ -1143,8 +1144,9 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
           ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [argumentsArray[0]]);
     }
     argumentsArray.splice(0, 1, arrayObserveredObject);
+    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
     const newArrowNode: ts.ArrowFunction =
-      processForEachBlock(node.expression, log, isBuilder) as ts.ArrowFunction;
+      processForEachBlock(node.expression, log, newForEachArrowFunc, isBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -1166,12 +1168,12 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         node.expression.expression as ts.Identifier,
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
     const newArrowNode: ts.NodeArray<ts.Statement> =
-      processForEachBlock(node.expression, log, false, isGlobalBuilder) as ts.NodeArray<ts.Statement>;
-    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression,
-      argumentsArray, newArrowNode);
+      processForEachBlock(node.expression, log, newForEachArrowFunc, false, isGlobalBuilder) as ts.NodeArray<ts.Statement>;
+    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression, newArrowNode, newForEachArrowFunc);
     const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
-    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, isGlobalBuilder);
+    const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, newForEachArrowFunc, isGlobalBuilder);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
     if (node.expression.expression.getText() === COMPONENT_FOREACH) {
       newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
@@ -1189,10 +1191,10 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
 
 function createItemGenFunctionStatement(
   node: ts.CallExpression,
-  argumentsArray: ts.Expression[],
-  newArrowNode: ts.NodeArray<ts.Statement>
+  newArrowNode: ts.NodeArray<ts.Statement>,
+  newForEachArrowFunc: ts.ArrowFunction
 ): ts.VariableStatement {
-  if (argumentsArray[1] && ts.isArrowFunction(argumentsArray[1])) {
+  if (newForEachArrowFunc && ts.isArrowFunction(newForEachArrowFunc)) {
     return ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
@@ -1202,12 +1204,12 @@ function createItemGenFunctionStatement(
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
-            argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
-              getParameters(argumentsArray[1]) : [],
+            newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length >= 1 ?
+              getParameters(newForEachArrowFunc) : [],
             undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             ts.factory.createBlock(
-              argumentsArray[1].parameters && argumentsArray[1].parameters.length >= 1 ?
-                isForEachItemGeneratorParam(argumentsArray, newArrowNode) :
+              newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length >= 1 ?
+                isForEachItemGeneratorParam(newForEachArrowFunc, newArrowNode) :
                 newArrowNode ? [...newArrowNode] : undefined,
               true
             )
@@ -1220,14 +1222,14 @@ function createItemGenFunctionStatement(
   }
 }
 
-function isForEachItemGeneratorParam(argumentsArray: ts.Expression[], newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
+function isForEachItemGeneratorParam(argumentsArray: ts.Expression, newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
   return [
     ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
         [ts.factory.createVariableDeclaration(
           ts.factory.createIdentifier(
-            argumentsArray[1].parameters[0] && argumentsArray[1].parameters[0].name.getText()),
+            argumentsArray.parameters[0] && argumentsArray.parameters[0].name.getText()),
           undefined,
           undefined,
           ts.factory.createIdentifier(_ITEM)
@@ -1270,7 +1272,7 @@ function createItemIdFuncStatement(
 }
 
 function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
-  isGlobalBuilder: boolean = false): ts.ExpressionStatement {
+  newForEachArrowFunc: ts.ArrowFunction, isGlobalBuilder: boolean = false): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1278,12 +1280,12 @@ function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
         ts.factory.createIdentifier(FOREACHUPDATEFUNCTION)
       ),
       undefined,
-      addForEachIdFuncParameter(argumentsArray)
+      addForEachIdFuncParameter(argumentsArray, newForEachArrowFunc)
     )
   );
 }
 
-function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expression[] {
+function addForEachIdFuncParameter(argumentsArray: ts.Expression[], newForEachArrowFunc: ts.ArrowFunction): ts.Expression[] {
   const addForEachIdFuncParameterArr: ts.Expression[] = [];
   addForEachIdFuncParameterArr.push(
     ts.factory.createIdentifier(ELMTID),
@@ -1291,7 +1293,7 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     ts.factory.createIdentifier(FOREACHITEMGENFUNCTION)
   );
   // @ts-ignore
-  if (argumentsArray[1] && argumentsArray[1].parameters && argumentsArray[1].parameters[1]) {
+  if (newForEachArrowFunc && newForEachArrowFunc.parameters && newForEachArrowFunc.parameters[1]) {
     if (!argumentsArray[2]) {
       addForEachIdFuncParameterArr.push(...addForEachParameter(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), TRUE, FALSE));
     } else {
@@ -1302,7 +1304,8 @@ function addForEachIdFuncParameter(argumentsArray: ts.Expression[]): ts.Expressi
     }
   }
   // @ts-ignore
-  if (argumentsArray[1] && !argumentsArray[1].parameters[1] && argumentsArray[2]) {
+  if (newForEachArrowFunc && newForEachArrowFunc.parameters && newForEachArrowFunc.parameters.length < 2 && newForEachArrowFunc.parameters[0] &&
+    argumentsArray && argumentsArray.length > 2 && argumentsArray[2]) {
     // @ts-ignore
     argumentsArray[2].parameters && argumentsArray[2].parameters[1] ?
       addForEachIdFuncParameterArr.push(...addForEachParameter(argumentsArray[2], FALSE, TRUE)) :
@@ -1355,12 +1358,19 @@ export function parentConditionalExpression(): ts.ConditionalExpression {
     ts.factory.createToken(ts.SyntaxKind.ColonToken),
     ts.factory.createThis());
 }
-
+function processForEachFunctionBlock(node: ts.CallExpression): ts.ArrowFunction {
+  if (ts.isArrowFunction(node.arguments[1])) {
+    return node.arguments[1];
+  } else if (ts.isParenthesizedExpression(node.arguments[1]) && ts.isArrowFunction(node.arguments[1].expression)) {
+    return node.arguments[1].expression;
+  } else {
+    return null;
+  }
+}
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
-  isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
-  if (node.arguments.length > 1 && ts.isArrowFunction(node.arguments[1])) {
+  arrowNode: ts.ArrowFunction, isBuilder: boolean = false, isGlobalBuilder: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
+  if (node.arguments.length > 1 && ts.isArrowFunction(arrowNode)) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
-    const arrowNode: ts.ArrowFunction = node.arguments[1] as ts.ArrowFunction;
     const body: ts.ConciseBody = arrowNode.body;
     if (node.arguments.length > 2 && !ts.isArrowFunction(node.arguments[2])) {
       log.push({
@@ -1767,17 +1777,17 @@ function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: t
 }
 
 function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, propertyName: string): boolean {
-  return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name)
-    && CUSTOM_BUILDER_METHOD.has(argument.name.getText()) ||
+  return ts.isPropertyAccessExpression(argument) && argument.name && ts.isIdentifier(argument.name) &&
+    storedFileInfo.builderLikeCollection.has(argument.name.getText()) ||
     ts.isCallExpression(argument) && argument.expression && argument.expression.name &&
     ts.isIdentifier(argument.expression.name) &&
-    CUSTOM_BUILDER_METHOD.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
-    argument.escapedText && CUSTOM_BUILDER_METHOD.has(argument.escapedText.toString()) ||
+    storedFileInfo.builderLikeCollection.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
+    argument.escapedText && storedFileInfo.builderLikeCollection.has(argument.escapedText.toString()) ||
     ts.isObjectLiteralExpression(argument) && (BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
     BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
     BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
     ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
-    CUSTOM_BUILDER_METHOD.has(argument.expression.escapedText.toString());
+    storedFileInfo.builderLikeCollection.has(argument.expression.escapedText.toString());
 }
 
 function parseBuilderNode(node: ts.Node, propertyName: string):
@@ -1788,7 +1798,7 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
     } else {
       return processPropertyBuilder(node as ts.PropertyAccessExpression);
     }
-  } else if (ts.isIdentifier(node) && CUSTOM_BUILDER_METHOD.has(node.escapedText.toString())) {
+  } else if (ts.isIdentifier(node) && storedFileInfo.builderLikeCollection.has(node.escapedText.toString())) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return processIdentifierBuilderWithoutKey(node);
     } else {
@@ -1809,10 +1819,10 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW].includes(
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW,TITLE].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
-        CUSTOM_BUILDER_METHOD.has(property.initializer.escapedText.toString())) {
+        storedFileInfo.builderLikeCollection.has(property.initializer.escapedText.toString())) {
         newProperties.push(ts.factory.updatePropertyAssignment(property, property.name,
           ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(
@@ -1838,7 +1848,30 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   return ts.factory.updateObjectLiteralExpression(node, newProperties);
 }
 
+function trans$$inCustomBuilder(node: ts.CallExpression): ts.Expression[] {
+  let name: string = '';
+  if (node.expression && ts.isIdentifier(node.expression)) {
+    name = node.expression.escapedText.toString();
+  } else if (node.expression && ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.name && ts.isIdentifier(node.expression.name)) {
+    name = node.expression.name.escapedText.toString();
+  }
+  if (node.arguments.length === 1 && ts.isObjectLiteralExpression(node.arguments[0])) {
+    return [ts.factory.createCallExpression(
+      ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+      undefined,
+      [
+        ts.factory.createStringLiteral(name),
+        traverseBuilderParams(node.arguments[0], storedFileInfo.processBuilder)
+      ]
+    )];
+  } else {
+    return node.arguments;
+  }
+}
+
 function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.PropertyAssignment {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(property.initializer as ts.CallExpression);
   return ts.factory.updatePropertyAssignment(property, property.name,
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -1846,7 +1879,7 @@ function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.Pro
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
-      [ts.factory.createThis(), ...(property.initializer.arguments || [])]
+      [ts.factory.createThis(), ...(newArguments || [])]
     ));
 }
 
@@ -1862,7 +1895,7 @@ function isGlobalBuilderCallExpressionNode(node: ts.Node): boolean {
 function isPropertyAccessExpressionNode(node: ts.Node): boolean {
   return ts.isPropertyAccessExpression(node) && node.expression &&
     node.expression.kind === ts.SyntaxKind.ThisKeyword && node.name && ts.isIdentifier(node.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.name.escapedText.toString());
+    storedFileInfo.builderLikeCollection.has(node.name.escapedText.toString());
 }
 
 function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
@@ -2029,6 +2062,7 @@ function processIdentifierBuilderWithoutKey(node: ts.Identifier): ts.CallExpress
 
 function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
   ts.ObjectLiteralExpression {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
   return ts.factory.createObjectLiteralExpression([
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(BUILDER_ATTR_NAME),
@@ -2041,7 +2075,7 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
         ts.factory.createBlock(
           [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
             ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
-            ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+            ), undefined, [ts.factory.createThis(), ...newArguments]))],
           true
         )
       )
@@ -2051,6 +2085,7 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
 
 function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpression):
   ts.ArrowFunction {
+  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
   return ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -2060,7 +2095,7 @@ function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpressio
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(node.expression, ts.factory.createIdentifier(CALL)
-        ), undefined, [ts.factory.createThis(), ...node.arguments]))],
+        ), undefined, [ts.factory.createThis(), ...newArguments]))],
       true
     )
   );

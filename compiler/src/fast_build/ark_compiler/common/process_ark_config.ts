@@ -157,6 +157,12 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
       { mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation } }, true);
     mergedObConfig.reservedPropertyNames.push(...projectAndLibsReservedProperties);
   }
+
+  if (!isHarCompiled) {
+    mergedObConfig.options.enableFileNameObfuscation = false;
+    mergedObConfig.reservedFileNames = [];
+  }
+
   if (mergedObConfig.options.enableFileNameObfuscation) {
     const ohPackagePath = path.join(projectConfig.modulePath, 'oh-package.json5');
     const reservedFileNamesInIDEconfig = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig.aceModuleJsonPath,

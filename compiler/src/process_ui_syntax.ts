@@ -261,11 +261,14 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           }
         } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR) && node.name && node.body &&
           ts.isBlock(node.body)) {
+          storedFileInfo.processBuilder = true;
+          storedFileInfo.processGlobalBuilder = true;
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
           builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
           let parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
+          storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
@@ -277,6 +280,8 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           }
           builderTypeParameter.params = [];
           node = processBuildMember(node, context, transformLog.errors, true);
+          storedFileInfo.processBuilder = false;
+          storedFileInfo.processGlobalBuilder = false;
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
           if (node.parameters.length === 0) {
             node = undefined;

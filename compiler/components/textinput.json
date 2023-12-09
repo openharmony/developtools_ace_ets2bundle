@@ -31,6 +31,9 @@
     "onTextSelectionChange",
     "onContentScroll",
     "selectionMenuHidden",
-    "selectedBackgroundColor"
+    "selectedBackgroundColor",
+    "selectAll",
+    "showCounter",
+    "cancelButton"
   ]
 }

@@ -73,8 +73,8 @@ function global(parent = null) {
     Text.pop();
 }
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

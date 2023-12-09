@@ -98,8 +98,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -187,7 +187,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 15 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -218,7 +218,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 23 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -246,7 +246,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 32 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -277,7 +277,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 40 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
