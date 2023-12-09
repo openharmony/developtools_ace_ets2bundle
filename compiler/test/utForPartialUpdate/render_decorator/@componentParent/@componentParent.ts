@@ -14,56 +14,45 @@
  */
 
 exports.source = `
-@Builder
-function myBuilder() {
-  child();
-}
-
+import {componentParent, componentParentObj} from './test/pages/import@ComponentConst'
 @Entry
-@Component
+@Component({freezeWhenInactive: true})
 struct Index {
-  @Builder Builder1() {
-    child()
-  }
   build() {
-    Row() {
-      myBuilder();
-      this.Builder1();
-      child();
+    Row(){
+      ComA()
+      ComB()
     }
   }
 }
 
-@Component
-struct child{
+@Component({freezeWhenInactive: componentParent})
+struct ComA {
   build() {
-    Text('Hello')
+
+  }
+}
+
+@Component({freezeWhenInactive: componentParentObj.componentParent})
+struct ComB {
+  build() {
+
   }
 }
 `
 
 exports.expectResult =
 `"use strict";
-function myBuilder(parent = null) {
-    {
-        (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
-            if (isInitialRender) {
-                let paramsLambda = () => {
-                    return {};
-                };
-                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 4 }));
-            }
-            else {
-                (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
-            }
-        }, null);
-    }
-}
+Object.defineProperty(exports, "__esModule", { value: true });
+const import_ComponentConst_1 = require("./test/pages/import@ComponentConst");
 class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
+        }
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](true);
         }
         this.setInitiallyProvidedValue(params);
     }
@@ -77,34 +66,30 @@ class Index extends ViewPU {
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    Builder1(parent = null) {
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Row.create();
+        }, Row);
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 11 }));
+                    ViewPU.create(new ComA(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 8 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
             }, null);
         }
-    }
-    initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-        }, Row);
-        myBuilder.bind(this)();
-        this.Builder1.bind(this)();
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 17 }));
+                    ViewPU.create(new ComB(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 9 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -117,11 +102,14 @@ class Index extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class child extends ViewPU {
+class ComA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
+        }
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](import_ComponentConst_1.componentParent);
         }
         this.setInitiallyProvidedValue(params);
     }
@@ -136,10 +124,33 @@ class child extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('Hello');
-        }, Text);
-        Text.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class ComB extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        if (super["initAllowComponentFreeze"] && typeof super["initAllowComponentFreeze"] === "function") {
+            super["initAllowComponentFreeze"](import_ComponentConst_1.componentParentObj.componentParent);
+        }
+        this.setInitiallyProvidedValue(params);
+    }
+    setInitiallyProvidedValue(params) {
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    initialRender() {
     }
     rerender() {
         this.updateDirtyElements();

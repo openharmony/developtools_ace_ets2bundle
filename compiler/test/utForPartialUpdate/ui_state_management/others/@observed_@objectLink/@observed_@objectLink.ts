@@ -83,8 +83,8 @@ ClassB = __decorate([
     Observed
 ], ClassB);
 class ViewA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -123,8 +123,8 @@ class ViewA extends ViewPU {
     }
 }
 class ViewB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -167,7 +167,7 @@ class ViewB extends ViewPU {
                             varA: this.varB.a
                         };
                     };
-                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId, paramsLambda, { page: "@observed_@objectLink.ets", line: 37 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {

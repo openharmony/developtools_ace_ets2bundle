@@ -405,7 +405,7 @@ export function tryMangleFileNameAndWriteFile(filePath: string, content: string,
     harFilesRecord.set(originalFilePath, genFileInHar);
   }
 
-  if (projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation) {
+  if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
     const mangledFilePath: string = mangleFilePath(filePath);
     if ((/\.d\.e?ts$/).test(filePath)) {
       genFileInHar.obfuscatedDeclarationCachePath = mangledFilePath;

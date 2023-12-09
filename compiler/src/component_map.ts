@@ -69,7 +69,7 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
   'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D',
   'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController',
-  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController'
+  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', "RichEditorController"
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
@@ -117,7 +117,7 @@ export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
 export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['background', 'bindPopup', 'bindMenu', 'bindContextMenu', 'title',
   'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction', 'bindContentCover', 'bindSheet',
   'navDestination', 'overlay', 'toolbarConfiguration', 'customKeyboard', 'bindSelectionMenu', 'description',
-  'showUnit', 'customKeyboard', 'create']);
+  'showUnit', 'customKeyboard', 'create', 'addBuilderSpan', 'dragPreview']);
 export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create']);
 export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow']);
 

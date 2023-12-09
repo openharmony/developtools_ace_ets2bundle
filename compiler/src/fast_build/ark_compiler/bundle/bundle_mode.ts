@@ -168,7 +168,8 @@ export class BundleMode extends CommonMode {
     this.cmdArgs.push(
       `"@${filesInfoPath}"`,
       '--file-threads',
-      `"${fileThreads}"`
+      `"${fileThreads}"`,
+      `"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`
     );
   }
 

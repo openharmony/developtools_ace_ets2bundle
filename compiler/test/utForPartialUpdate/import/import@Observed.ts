@@ -68,8 +68,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const import_Observed_1 = require("./test/pages/import@Observed");
 class ViewA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -116,8 +116,8 @@ class ViewA extends ViewPU {
     }
 }
 class ViewB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -163,7 +163,7 @@ class ViewB extends ViewPU {
                                     a: item
                                 };
                             };
-                            ViewPU.create(new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId, paramsLambda));
+                            ViewPU.create(new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId, paramsLambda, { page: "import@Observed.ets", line: 26 }));
                         }
                         else {
                             this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -185,7 +185,7 @@ class ViewB extends ViewPU {
                             a: this.arrA[0]
                         };
                     };
-                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId, paramsLambda, { page: "import@Observed.ets", line: 28 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -203,7 +203,7 @@ class ViewB extends ViewPU {
                             a: this.arrA[this.arrA.length - 1]
                         };
                     };
-                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId, paramsLambda, { page: "import@Observed.ets", line: 29 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
