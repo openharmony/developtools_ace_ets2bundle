@@ -1787,12 +1787,32 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
     BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
     BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
     ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
-    storedFileInfo.builderLikeCollection.has(argument.expression.escapedText.toString());
+    storedFileInfo.builderLikeCollection.has(argument.expression.escapedText.toString()) ||
+    isWrappedBuilder(argument as ts.PropertyAccessExpression) || isWrappedBuilderCallExpression(argument as ts.CallExpression);
+}
+
+export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
+  if (projectConfig.minAPIVersion >= 11 && ts.isPropertyAccessExpression(node) &&
+    node.name && ts.isIdentifier(node.name) && node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP &&
+    globalProgram.checker.getTypeAtLocation(node.expression) &&
+    globalProgram.checker.getTypeAtLocation(node.expression).symbol &&
+    globalProgram.checker.getTypeAtLocation(node.expression).symbol.escapedName === WRAPPEDBUILDER_CLASS) {
+    return true;
+  }
+  return false;
+}
+
+function isWrappedBuilderCallExpression(node: ts.CallExpression): boolean {
+  if (projectConfig.minAPIVersion >= 11 && ts.isCallExpression(node) && node.expression &&
+    isWrappedBuilder(node.expression as ts.PropertyAccessExpression)) {
+    return true;
+  }
+  return false;
 }
 
 function parseBuilderNode(node: ts.Node, propertyName: string):
   ts.ObjectLiteralExpression | ts.CallExpression | ts.ArrowFunction {
-  if (isPropertyAccessExpressionNode(node)) {
+  if (isWrappedBuilder(node as ts.PropertyAccessExpression) || isPropertyAccessExpressionNode(node)) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return processPropertyBuilderWithoutKey(node as ts.PropertyAccessExpression);
     } else {
@@ -1804,7 +1824,7 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
     } else {
       return processIdentifierBuilder(node);
     }
-  } else if (ts.isCallExpression(node)) {
+  } else if (isWrappedBuilderCallExpression(node as ts.CallExpression) || ts.isCallExpression(node)) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return getParsedBuilderAttrArgumentWithParamsWithoutKey(node);
     } else {
@@ -2695,7 +2715,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
-  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName || isWrappedBuilder(node)) {
+  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName || isWrappedBuilderExpression(node)) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
@@ -2716,12 +2736,9 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   return null;
 }
 
-function isWrappedBuilder(node: ts.ExpressionStatement): boolean {
-  if (projectConfig.minAPIVersion >= 11 && node.expression && ts.isCallExpression(node.expression) &&
-    node.expression.expression && ts.isPropertyAccessExpression(node.expression.expression) &&
-    node.expression.expression.name && ts.isIdentifier(node.expression.expression.name) &&
-    node.expression.expression.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP &&
-    globalProgram.checker.getTypeAtLocation(node.expression.expression.expression).symbol.escapedName === WRAPPEDBUILDER_CLASS) {
+function isWrappedBuilderExpression(node: ts.ExpressionStatement): boolean {
+  if (projectConfig.minAPIVersion >= 11 && node.expression &&
+    isWrappedBuilderCallExpression(node.expression as ts.CallExpression)) {
     return true;
   }
   return false;
