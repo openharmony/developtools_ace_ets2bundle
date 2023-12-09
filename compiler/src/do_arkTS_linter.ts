@@ -48,13 +48,14 @@ export enum ArkTSVersion {
 
 export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
 
-export function doArkTSLinter(arkTSVersion: ArkTSVersion, program: ts.Program, arkTSMode: ArkTSLinterMode,
-  printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true): ts.Diagnostic[] {
+export function doArkTSLinter(arkTSVersion: ArkTSVersion, builderProgram: ts.BuilderProgram,
+  arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc,
+  shouldWriteFile: boolean = true, buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
   }
 
-  const compilerHost: ts.CompilerHost = ts.createCompilerHost(program.getCompilerOptions());
+  const compilerHost: ts.CompilerHost = ts.createIncrementalCompilerHost(builderProgram.getProgram().getCompilerOptions());
   compilerHost.resolveModuleNames = resolveModuleNames;
   compilerHost.getCurrentDirectory = () => process.cwd();
   compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
@@ -63,9 +64,9 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, program: ts.Program, a
   let diagnostics: ts.Diagnostic[] = [];
 
   if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
-    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(program, compilerHost);
+    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, compilerHost, /*srcFile*/ undefined, buildInfoWriteFile);
   } else {
-    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(program, compilerHost);
+    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, compilerHost, /*srcFile*/ undefined, buildInfoWriteFile);
   }
 
   removeOutputFile();
