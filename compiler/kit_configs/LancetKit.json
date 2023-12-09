@@ -1,0 +1,44 @@
+{
+  "symbol": {
+    "bytrace": {
+      "source": "@ohos.bytrace",
+      "bindings": "default"
+    },
+    "FaultLogger": {
+      "source": "@ohos.faultLogger",
+      "bindings": "default"
+    },
+    "hiAppEvent": {
+      "source": "@ohos.hiviewdfx.hiAppEvent",
+      "bindings": "default"
+    },
+    "hichecker": {
+      "source": "@ohos.hichecker",
+      "bindings": "default"
+    },
+    "hidebug": {
+      "source": "@ohos.hidebug",
+      "bindings": "default"
+    },
+    "hilog": {
+      "source": "@ohos.hilog",
+      "bindings": "default"
+    },
+    "hiSysEvent": {
+      "source": "@ohos.hiSysEvent",
+      "bindings": "default"
+    },
+    "hiTraceChain": {
+      "source": "@ohos.hiTraceChain",
+      "bindings": "default"
+    },
+    "hiTraceMeter": {
+      "source": "@ohos.hiTraceMeter",
+      "bindings": "default"
+    },
+    "logLibrary": {
+      "source": "@ohos.logLibrary",
+      "bindings": "default"
+    }
+  }
+}

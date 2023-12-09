@@ -1,0 +1,36 @@
+{
+  "symbol": {
+    "geolocation": {
+      "source": "@ohos.geolocation",
+      "bindings": "default"
+    },
+    "geoLocationManager": {
+      "source": "@ohos.geoLocationManager",
+      "bindings": "default"
+    },
+    "Geolocation": {
+      "source": "@system.geolocation",
+      "bindings": "default"
+    },
+    "GeolocationResponse": {
+      "source": "@system.geolocation",
+      "bindings": "GeolocationResponse"
+    },
+    "GetLocationOption": {
+      "source": "@system.geolocation",
+      "bindings": "GetLocationOption"
+    },
+    "GetLocationTypeOption": {
+      "source": "@system.geolocation",
+      "bindings": "GetLocationTypeOption"
+    },
+    "GetLocationTypeResponse": {
+      "source": "@system.geolocation",
+      "bindings": "GetLocationTypeResponse"
+    },
+    "SubscribeLocationOption": {
+      "source": "@system.geolocation",
+      "bindings": "SubscribeLocationOption"
+    }
+  }
+}

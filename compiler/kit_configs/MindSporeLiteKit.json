@@ -1,0 +1,12 @@
+{
+  "symbol": {
+    "intelligentVoice": {
+      "source": "@ohos.ai.intelligentVoice",
+      "bindings": "default"
+    },
+    "mindSporeLite": {
+      "source": "@ohos.ai.mindSporeLite",
+      "bindings": "default"
+    }
+  }
+}

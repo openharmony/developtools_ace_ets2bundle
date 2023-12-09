@@ -1,0 +1,16 @@
+{
+  "symbol": {
+    "audio": {
+      "source": "@ohos.multimedia.audio",
+      "bindings": "default"
+    },
+    "audioHaptic": {
+      "source": "@ohos.multimedia.audioHaptic",
+      "bindings": "default"
+    },
+    "systemSoundManager": {
+      "source": "@ohos.multimedia.systemSoundManager",
+      "bindings": "default"
+    }
+  }
+}

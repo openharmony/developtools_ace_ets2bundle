@@ -1,0 +1,12 @@
+{
+  "symbol": {
+    "faceAuth": {
+      "source": "@ohos.userIAM.faceAuth",
+      "bindings": "default"
+    },
+    "userAuth": {
+      "source": "@ohos.userIAM.userAuth",
+      "bindings": "default"
+    }
+  }
+}

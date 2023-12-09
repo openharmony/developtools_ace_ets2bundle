@@ -1,0 +1,28 @@
+{
+  "symbol": {
+    "AdComponent": {
+      "source": "@ohos.advertising.AdComponent",
+      "bindings": "AdComponent"
+    },
+    "AdsServiceExtensionAbility": {
+      "source": "@ohos.advertising.AdsServiceExtensionAbility",
+      "bindings": "default"
+    },
+    "RespCallback": {
+      "source": "@ohos.advertising.AdsServiceExtensionAbility",
+      "bindings": "RespCallback"
+    },
+    "AutoAdComponent": {
+      "source": "@ohos.advertising.AutoAdComponent",
+      "bindings": "AutoAdComponent"
+    },
+    "advertising": {
+      "source": "@ohos.advertising",
+      "bindings": "default"
+    },
+    "identifier": {
+      "source": "@ohos.identifier.oaid",
+      "bindings": "default"
+    }
+  }
+}

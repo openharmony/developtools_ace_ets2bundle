@@ -1,0 +1,16 @@
+{
+  "symbol": {
+    "i18n": {
+      "source": "@ohos.i18n",
+      "bindings": "default"
+    },
+    "intl": {
+      "source": "@ohos.intl",
+      "bindings": "default"
+    },
+    "resourceManager": {
+      "source": "@ohos.resourceManager",
+      "bindings": "default"
+    }
+  }
+}
