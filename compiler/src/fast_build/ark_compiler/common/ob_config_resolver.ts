@@ -45,6 +45,7 @@ enum OptionType {
   KEEP_GLOBAL_NAME,
   KEEP_PROPERTY_NAME,
   KEEP_FILE_NAME,
+  KEEP_COMMENTS,
   DISABLE_OBFUSCATION,
   ENABLE_PROPERTY_OBFUSCATION,
   ENABLE_STRING_PROPERTY_OBFUSCATION,
@@ -53,6 +54,7 @@ enum OptionType {
   ENABLE_EXPORT_OBFUSCATION,
   COMPACT,
   REMOVE_LOG,
+  REMOVE_COMMENTS,
   PRINT_NAMECACHE,
   APPLY_NAMECACHE,
 }
@@ -92,6 +94,7 @@ class ObOptions {
   enableToplevelObfuscation: boolean = false;
   enableFileNameObfuscation: boolean = false;
   enableExportObfuscation: boolean = false;
+  removeComments: boolean = false;
   compact: boolean = false;
   removeLog: boolean = false;
   printNameCache: string = '';
@@ -102,6 +105,7 @@ class ObOptions {
     this.enablePropertyObfuscation = this.enablePropertyObfuscation || other.enablePropertyObfuscation;
     this.enableToplevelObfuscation = this.enableToplevelObfuscation || other.enableToplevelObfuscation;
     this.enableStringPropertyObfuscation = this.enableStringPropertyObfuscation || other.enableStringPropertyObfuscation;
+    this.removeComments = this.removeComments || other.removeComments;
     this.compact = this.compact || other.compact;
     this.removeLog = this.removeLog || other.removeLog;
     this.enableFileNameObfuscation = this.enableFileNameObfuscation || other.enableFileNameObfuscation;
@@ -120,12 +124,14 @@ export class MergedConfig {
   reservedPropertyNames: string[] = [];
   reservedNames: string[] = [];
   reservedFileNames: string[] = [];
+  keepComments: string[] = [];
 
   merge(other: MergedConfig) {
     this.options.merge(other.options);
     this.reservedPropertyNames.push(...other.reservedPropertyNames);
     this.reservedNames.push(...other.reservedNames);
     this.reservedFileNames.push(...other.reservedFileNames);
+    this.keepComments.push(...other.keepComments);
   }
 
   sortAndDeduplicate() {
@@ -134,6 +140,7 @@ export class MergedConfig {
     );
     this.reservedNames = sortAndDeduplicateStringArr(this.reservedNames);
     this.reservedFileNames = sortAndDeduplicateStringArr(this.reservedFileNames);
+    this.keepComments = sortAndDeduplicateStringArr(this.keepComments);
   }
 
   serializeMergedConfig(): string {
@@ -247,18 +254,20 @@ export class ObConfigResolver {
   static readonly KEEP_GLOBAL_NAME = '-keep-global-name';
   static readonly KEEP_PROPERTY_NAME = '-keep-property-name';
   static readonly KEPP_FILE_NAME = '-keep-file-name';
+  static readonly KEEP_COMMENTS = '-keep-comments';
   static readonly DISABLE_OBFUSCATION = '-disable-obfuscation';
   static readonly ENABLE_PROPERTY_OBFUSCATION = '-enable-property-obfuscation';
   static readonly ENABLE_STRING_PROPERTY_OBFUSCATION = '-enable-string-property-obfuscation';
   static readonly ENABLE_TOPLEVEL_OBFUSCATION = '-enable-toplevel-obfuscation';
   static readonly ENABLE_FILENAME_OBFUSCATION = '-enable-filename-obfuscation';
   static readonly ENABLE_EXPORT_OBFUSCATION = '-enable-export-obfuscation';
+  static readonly REMOVE_COMMENTS = '-remove-comments';
   static readonly COMPACT = '-compact';
   static readonly REMOVE_LOG = '-remove-log';
   static readonly PRINT_NAMECACHE = '-print-namecache';
   static readonly APPLY_NAMECACHE = '-apply-namecache';
 
-  // renameFileName、printNameCache、 applyNameCache won't be reserved in obfuscation.txt file.
+  // renameFileName, printNameCache, applyNameCache, removeComments and keepComments won't be reserved in obfuscation.txt file.
   static exportedSwitchMap: Map<string, string> = new Map([
     ['disableObfuscation', ObConfigResolver.KEEP_DTS],
     ['enablePropertyObfuscation', ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION],
@@ -278,6 +287,8 @@ export class ObConfigResolver {
         return OptionType.KEEP_PROPERTY_NAME;
       case ObConfigResolver.KEPP_FILE_NAME:
         return OptionType.KEEP_FILE_NAME;
+      case ObConfigResolver.KEEP_COMMENTS:
+        return OptionType.KEEP_COMMENTS;
       case ObConfigResolver.DISABLE_OBFUSCATION:
         return OptionType.DISABLE_OBFUSCATION;
       case ObConfigResolver.ENABLE_PROPERTY_OBFUSCATION:
@@ -290,6 +301,8 @@ export class ObConfigResolver {
         return OptionType.ENABLE_FILENAME_OBFUSCATION;
       case ObConfigResolver.ENABLE_EXPORT_OBFUSCATION:
         return OptionType.ENABLE_EXPORT_OBFUSCATION;
+      case ObConfigResolver.REMOVE_COMMENTS:
+        return OptionType.REMOVE_COMMENTS;
       case ObConfigResolver.COMPACT:
         return OptionType.COMPACT;
       case ObConfigResolver.REMOVE_LOG:
@@ -334,6 +347,10 @@ export class ObConfigResolver {
           configs.options.enableToplevelObfuscation = true;
           continue;
         }
+        case OptionType.REMOVE_COMMENTS: {
+          configs.options.removeComments = true;
+          continue;
+        }
         case OptionType.ENABLE_FILENAME_OBFUSCATION: {
           configs.options.enableFileNameObfuscation = true;
           continue;
@@ -354,6 +371,7 @@ export class ObConfigResolver {
         case OptionType.KEEP_GLOBAL_NAME:
         case OptionType.KEEP_PROPERTY_NAME:
         case OptionType.KEEP_FILE_NAME:
+        case OptionType.KEEP_COMMENTS:
         case OptionType.PRINT_NAMECACHE:
         case OptionType.APPLY_NAMECACHE:
           type = tokenType;
@@ -378,6 +396,10 @@ export class ObConfigResolver {
         }
         case OptionType.KEEP_FILE_NAME: {
           configs.reservedFileNames.push(token);
+          continue;
+        }
+        case OptionType.KEEP_COMMENTS: {
+          configs.keepComments.push(token);
           continue;
         }
         case OptionType.PRINT_NAMECACHE: {

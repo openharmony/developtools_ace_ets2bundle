@@ -157,10 +157,10 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
         mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation},
         mExportObfuscation: mergedObConfig.options.enableExportObfuscation
       }, true);
-    if (mergedObConfig.options.enablePropertyObfuscation) {
+    if (mergedObConfig.options.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
       mergedObConfig.reservedPropertyNames.push(...(projectAndLibs.projectAndLibsReservedProperties));
     }
-    if (mergedObConfig.options.enableExportObfuscation) {
+    if (mergedObConfig.options.enableExportObfuscation && projectAndLibs.libExportNames) {
       mergedObConfig.reservedNames.push(...(projectAndLibs.libExportNames));
     }
   }
@@ -245,6 +245,10 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
       mReservedProperties: mergedObConfig.reservedPropertyNames,
       mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
+    },
+    mRemoveDeclarationComments: {
+      mEnable: true,
+      mReservedComments: mergedObConfig.keepComments
     },
     mEnableSourceMap: true,
     mEnableNameCache: true,

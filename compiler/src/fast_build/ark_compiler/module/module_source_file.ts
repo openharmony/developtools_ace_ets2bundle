@@ -198,7 +198,7 @@ export class ModuleSourceFile {
       stopEvent(eventWriteSourceFile);
     }
 
-    if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE && rollupObject.share.arkProjectConfig.compileHar) {
+    if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
       await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
     }
 
