@@ -18,7 +18,10 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
-import { EXPECT_SOURCEMAP_JSON } from "../mock/rollup_mock/path_config";
+import {
+  EXPECT_SOURCEMAP_JSON,
+  PKG_MODULES_OHPM_HYPIUM
+} from "../mock/rollup_mock/path_config";
 import {
   RELEASE,
   EXTNAME_TS,
@@ -35,15 +38,10 @@ import {
   ENTRYABILITY_TS_RECORDNAME,
   ENTRYABILITY_JS_RECORDNAME,
   INDEX_ETS_RECORDNAME,
-  ENTRYABILITY_TS_DEBUG_ENTRY,
-  ENTRYABILITY_JS_DEBUG_ENTRY,
-  INDEX_ETS_DEBUG_ENTRY,
-  ENTRYABILITY_TS_RELEASE_ENTRY,
-  ENTRYABILITY_JS_RELEASE_ENTRY,
-  INDEX_ETS_RELEASE_ENTRY,
   PKG_MODULES,
   ENTRY_MODULE_NAME_DEFAULT
 } from '../mock/rollup_mock/common';
+import sleep from '../utils/sleep';
 
 mocha.describe('test module_mode file api', function () {
   mocha.before(function () {
@@ -79,8 +77,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
-
+    });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
 
@@ -109,8 +106,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
-
+    });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
 
@@ -139,8 +135,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
-
+    });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
 
@@ -169,7 +164,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
+    });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
 
@@ -182,7 +177,8 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.moduleInfos.forEach(value => {
       expect(value.packageName === PKG_MODULES).to.be.true;
     });
-  })
+  });
+
   mocha.it('2-1-2: test addModuleInfoItem under build debug: isPackageModulesFile`s return is false', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
@@ -192,9 +188,9 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
-      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_DEBUG_ENTRY) > 0).to.be.true;
+      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
       expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
@@ -203,8 +199,9 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
+    });
   });
+
   mocha.it('2-1-3: test addModuleInfoItem under build debug: extName is not null ', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
@@ -212,7 +209,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.moduleInfos.forEach(value => {
       expect(value.cacheFilePath.endsWith(EXTNAME_TS)).to.be.true
     });
-  })
+  });
 
   mocha.it('2-2: test addModuleInfoItem under build release', function () {
     this.rollup.build(RELEASE);
@@ -223,9 +220,9 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
-      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_RELEASE_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_RELEASE_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_RELEASE_ENTRY) > 0).to.be.true;
+      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
       expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
@@ -234,7 +231,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
+    });
   });
 
   mocha.it('2-3: test addModuleInfoItem under preview debug', function () {
@@ -246,9 +243,9 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
-      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_DEBUG_ENTRY) > 0).to.be.true;
+      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
       expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
@@ -257,7 +254,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
+    });
   });
 
   mocha.it('2-4: test addModuleInfoItem under hot reload debug', function () {
@@ -269,9 +266,9 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
-      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_DEBUG_ENTRY) > 0 ||
-        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_DEBUG_ENTRY) > 0).to.be.true;
+      expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
 
       expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
@@ -280,7 +277,7 @@ mocha.describe('test module_mode file api', function () {
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
-    })
+    });
   });
 
   mocha.it('3-1-1: test updateCachedSourceMaps under build debug: cacheSourceMapPath not exist', function () {
@@ -465,5 +462,113 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
+  });
+
+  mocha.it('7-1: test getPackageEntryInfo under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.checkGetPackageEntryInfo(this.rollup);
+    expect(moduleMode.pkgEntryInfos.size !== 0).to.be.true;
+  });
+
+  mocha.it('7-2: test getPackageEntryInfo under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.checkGetPackageEntryInfo(this.rollup);
+    expect(moduleMode.pkgEntryInfos.size !== 0).to.be.true;
+  });
+
+  mocha.it('7-3: test getPackageEntryInfo under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.checkGetPackageEntryInfo(this.rollup);
+    expect(moduleMode.pkgEntryInfos.size !== 0).to.be.true;
+  });
+
+  mocha.it('7-4: test getPackageEntryInfo under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.checkGetPackageEntryInfo(this.rollup);
+    expect(moduleMode.pkgEntryInfos.size !== 0).to.be.true
+  });
+
+  mocha.it('8-1: test buildModuleSourceMapInfo under build debug', async function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(1000);
+    expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+  });
+
+  mocha.it('8-2: test buildModuleSourceMapInfo under build release', async function () {
+    this.rollup.build(RELEASE);
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(1000);
+    expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+  });
+
+  mocha.it('8-3: test buildModuleSourceMapInfo under preview debug', async function () {
+    this.rollup.preview();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(1000);
+    expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+  });
+
+  mocha.it('8-4: test buildModuleSourceMapInfo under hot reload debug', async function () {
+    this.rollup.hotReload();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(1000);
+    expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+  });
+
+  mocha.it('9-1: test getPkgModulesFilePkgName under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const keys = Object.keys(moduleMode.symlinkMap);
+    for (const key of keys) {
+      const pkgname = moduleMode.getPkgModulesFilePkgName(key).toString();
+      expect(pkgname === PKG_MODULES_OHPM_HYPIUM).to.be.true;
+    }
+  });
+
+  mocha.it('9-2: test getPkgModulesFilePkgName under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const keys = Object.keys(moduleMode.symlinkMap);
+    for (const key of keys) {
+      const pkgname = moduleMode.getPkgModulesFilePkgName(key).toString();
+      expect(pkgname === PKG_MODULES_OHPM_HYPIUM).to.be.true;
+    }
+  });
+
+  mocha.it('9-3: test getPkgModulesFilePkgName under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const keys = Object.keys(moduleMode.symlinkMap);
+    for (const key of keys) {
+      const pkgname = moduleMode.getPkgModulesFilePkgName(key).toString();
+      expect(pkgname === PKG_MODULES_OHPM_HYPIUM).to.be.true;
+    }
+  });
+
+  mocha.it('9-4: test getPkgModulesFilePkgName under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const keys = Object.keys(moduleMode.symlinkMap);
+    for (const key of keys) {
+      const pkgname = moduleMode.getPkgModulesFilePkgName(key).toString();
+      expect(pkgname === PKG_MODULES_OHPM_HYPIUM).to.be.true;
+    }
   });
 });

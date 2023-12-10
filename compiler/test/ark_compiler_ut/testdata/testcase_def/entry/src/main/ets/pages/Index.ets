@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@Entry
+@Component
+struct Index {
+  @State message: string = 'Hello World'
 
-import path from 'path';
-
-process.env.compileTool = 'rollup';
-
-const projectConfig: any = {};
-
-projectConfig.aceModuleJsonPath = path.resolve(__dirname, '../../../test/ark_compiler_ut/config/module.json');
-projectConfig.modulePathMap = {
-  "entry": "/testProjectRootPath/entry",
-  "library": "/testProjectRootPath/library"
-};
-projectConfig.projectRootPath = "/testProjectRootPath";
-projectConfig.packageDir = 'oh_modules';
-projectConfig.harNameOhmMap = {
-  "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
-};
-
-export default projectConfig;
+  build() {
+    Row() {
+      Column() {
+        Text(this.message)
+          .fontSize(50)
+          .fontWeight(FontWeight.Bold)
+      }
+      .width('100%')
+    }
+    .height('100%')
+  }
+}
