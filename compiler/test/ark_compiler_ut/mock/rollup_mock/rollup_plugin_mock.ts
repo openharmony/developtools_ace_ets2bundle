@@ -15,6 +15,8 @@
 
 import Cache from "./cache";
 import Share from "./share";
+import path from "path";
+import fs from "fs";
 import ModuleInfo from "./module_info";
 import {
   SDK_VERSION,
@@ -23,15 +25,19 @@ import {
   RUNTIME_OS_OPENHARMONY,
   MODULE_NAME_HASH_DEFAULT
 } from "./common";
-import { DEFAULT_PROJECT, MODULE_ID_ROLLUP_PLACEHOLDER, NODE_MODULES_PATH } from "./path_config";
+import {
+  DEFAULT_PROJECT,
+  MODULE_ID_ROLLUP_PLACEHOLDER,
+  NODE_MODULES_PATH
+} from "./path_config";
 import { scanFiles } from "../../utils/path_utils";
 import { IArkProjectConfig } from "./project_config";
-import { ESMODULE, RELEASE, DEBUG } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
 import {
+  ESMODULE,
+  RELEASE, DEBUG,
   ARK_COMPILER_META_INFO,
   IS_CACHE_INVALID
-} from '../../../../lib/fast_build/ark_compiler/common/ark_define';
-
+} from "../../../../lib/fast_build/ark_compiler/common/ark_define";
 class RollUpPluginMock {
   cache: Cache;
   meta: any = { rollupVersion: '3.10.0', watchMode: false };
@@ -96,7 +102,7 @@ class RollUpPluginMock {
   }
 
   private mockArkProjectConfig(): IArkProjectConfig {
-    const mode = this.isPreview ? '.preview' : 'build';
+    const mode = this.isPreview ? 'preview' : 'build';
     const projectRootDir = this.share.projectConfig.projectTopDir;
     const entryName = this.share.projectConfig.entryModuleName;
 
@@ -160,7 +166,16 @@ class RollUpPluginMock {
   public load() {
     // load project files list
     this.share.allFiles = new Set<string>();
-    scanFiles(this.share.projectConfig.projectPath, this.share.allFiles);
+    if (fs.existsSync(this.share.projectConfig.projectPath)) {
+      scanFiles(this.share.projectConfig.projectPath, this.share.allFiles);
+    } else {
+      const tsFilePath = path.join(this.share.projectConfig.projectPath, '/entryability/EntryAbility.ts');
+      const jsFilePath = path.join(this.share.projectConfig.projectPath, '/entryability/EntryAbility.js');
+      const etsFilePath = path.join(this.share.projectConfig.projectPath, '/pages/Index.ets');
+      this.share.allFiles.add(tsFilePath);
+      this.share.allFiles.add(jsFilePath);
+      this.share.allFiles.add(etsFilePath);
+    }
     this.share.allFiles.add(MODULE_ID_ROLLUP_PLACEHOLDER);
 
     // load all files module info

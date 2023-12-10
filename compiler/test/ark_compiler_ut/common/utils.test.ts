@@ -18,8 +18,16 @@ import mocha from 'mocha';
 
 import { needAotCompiler } from '../../../lib/fast_build/ark_compiler/utils';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../../lib/pre_define';
-import { ESMODULE, JSBUNDLE, RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
+import {
+  AOT_FULL,
+  AOT_PARTIAL,
+  AOT_TYPE
+} from '../../../lib/pre_define';
+import {
+  ESMODULE,
+  JSBUNDLE,
+  RELEASE
+} from '../../../lib/fast_build/ark_compiler/common/ark_define';
 
 mocha.describe('test utils file api', function () {
   mocha.before(function () {
