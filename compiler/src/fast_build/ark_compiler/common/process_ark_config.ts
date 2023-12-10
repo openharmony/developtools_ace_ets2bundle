@@ -295,6 +295,7 @@ function processCompatibleVersion(projectConfig: any, arkRootPath: string) {
     projectConfig.pandaMode = TS2ABC;
   }
 }
+
 export const utProcessArkConfig = {
   processCompatibleVersion,
   initTerserConfig

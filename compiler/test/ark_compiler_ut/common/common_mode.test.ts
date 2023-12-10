@@ -16,11 +16,24 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 
-import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
+import {
+  RELEASE,
+  OH_MODULES
+} from '../../../lib/fast_build/ark_compiler/common/ark_define';
+import { TS2ABC } from '../../../lib/pre_define';
 import CommonModeMock from '../mock/class_mock/common_mode_mock';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ES2ABC_PATH } from '../mock/rollup_mock/path_config';
-import { CMD_DEBUG_INFO } from '../mock/rollup_mock/common';
+import {
+  ES2ABC_PATH,
+  TS2ABC_PATH
+} from '../mock/rollup_mock/path_config';
+import {
+  CMD_DEBUG_INFO,
+  NODE,
+  EXPOSE_GC,
+  DEBUG,
+  MODULES
+} from '../mock/rollup_mock/common';
 
 mocha.describe('test common_mode file api', function () {
   mocha.before(function () {
@@ -31,10 +44,24 @@ mocha.describe('test common_mode file api', function () {
     delete this.rollup;
   });
 
-  mocha.it('1-1: test initCmdEnv under build debug', function () {
+  mocha.it('1-1-1: test initCmdEnv under build debug: projectConfig.pandaMode is Ts2Abc', function () {
     this.rollup.build();
-    const ModeMock = new CommonModeMock(this.rollup);
-    const args: string[] = ModeMock.checkInitCmdEnv();
+    const modeMock = new CommonModeMock(this.rollup);
+    modeMock.projectConfig.pandaMode = TS2ABC;
+    modeMock.projectConfig.packageDir = OH_MODULES;
+    const args: string[] = modeMock.checkInitCmdEnv();
+    expect(args.length === 5).to.be.true;
+    expect(args[0] === NODE).to.be.true;
+    expect(args[1].indexOf(EXPOSE_GC) > 0).to.be.true;
+    expect(args[2].indexOf(TS2ABC_PATH) > 0).to.be.true;
+    expect(args[3].indexOf(DEBUG) > 0).to.be.true;
+    expect(args[4].indexOf(MODULES) > 0).to.be.true;
+  });
+
+  mocha.it('1-1-2: test initCmdEnv under build debug: projectConfig.pandaMode is Es2Abc', function () {
+    this.rollup.build();
+    const modeMock = new CommonModeMock(this.rollup);
+    const args: string[] = modeMock.checkInitCmdEnv();
     expect(args.length === 2).to.be.true;
     expect(args[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(args[1] === CMD_DEBUG_INFO).to.be.true;
@@ -42,8 +69,8 @@ mocha.describe('test common_mode file api', function () {
 
   mocha.it('1-2: test initCmdEnv under build release', function () {
     this.rollup.build(RELEASE);
-    const ModeMock = new CommonModeMock(this.rollup);
-    const args: string[] = ModeMock.checkInitCmdEnv();
+    const modeMock = new CommonModeMock(this.rollup);
+    const args: string[] = modeMock.checkInitCmdEnv();
     expect(args.length === 1).to.be.true;
     expect(args[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(args[0] === CMD_DEBUG_INFO).to.be.false;
@@ -51,8 +78,8 @@ mocha.describe('test common_mode file api', function () {
 
   mocha.it('1-3: test initCmdEnv under preview debug', function () {
     this.rollup.preview();
-    const ModeMock = new CommonModeMock(this.rollup);
-    const args: string[] = ModeMock.checkInitCmdEnv();
+    const modeMock = new CommonModeMock(this.rollup);
+    const args: string[] = modeMock.checkInitCmdEnv();
     expect(args.length === 2).to.be.true;
     expect(args[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(args[1] === CMD_DEBUG_INFO).to.be.true;
@@ -60,8 +87,8 @@ mocha.describe('test common_mode file api', function () {
 
   mocha.it('1-4: test initCmdEnv under hot reload debug', function () {
     this.rollup.hotReload();
-    const ModeMock = new CommonModeMock(this.rollup);
-    const args: string[] = ModeMock.checkInitCmdEnv();
+    const modeMock = new CommonModeMock(this.rollup);
+    const args: string[] = modeMock.checkInitCmdEnv();
     expect(args.length === 2).to.be.true;
     expect(args[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(args[1] === CMD_DEBUG_INFO).to.be.true;

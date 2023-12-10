@@ -22,22 +22,25 @@ import {
   EXTNAME_TS,
   EXTNAME_ETS
 } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
-import { ModuleMode } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
+import {
+  ModuleMode,
+  PackageEntryInfo
+} from '../../../../lib/fast_build/ark_compiler/module/module_mode';
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
 import { META } from '../rollup_mock/common';
 
 class ModuleModeMock extends ModuleMode {
   collectModuleFileListMock(rollupObject: any) {
-    const fileList = Array.from(rollupObject.getModuleIds())
+    const fileList = Array.from(rollupObject.getModuleIds());
     this.collectModuleFileList(rollupObject, fileList);
   }
 
   addModuleInfoItemMock(rollupObject: any, isCommonJs: boolean, extName: string) {
-    const mockfileList = rollupObject.getModuleIds();
-    for (const filePath of mockfileList) {
+    const mockFileList = rollupObject.getModuleIds();
+    for (const filePath of mockFileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
-        const moduleInfo: any = rollupObject.getModuleInfo(filePath);
-        const metaInfo: any = moduleInfo[META];
+        const moduleInfo: object = rollupObject.getModuleInfo(filePath);
+        const metaInfo: object = moduleInfo[META];
         this.addModuleInfoItem(filePath, isCommonJs, extName, metaInfo, this.moduleInfos);
       }
     }
@@ -98,8 +101,38 @@ class ModuleModeMock extends ModuleMode {
     return false;
   }
 
+  checkGetPackageEntryInfo(rollup: any) {
+    this.pkgEntryInfos = new Map<String, PackageEntryInfo>()
+    const mockfileList = rollup.getModuleIds()
+    for (const filePath of mockfileList) {
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
+        const moduleInfos = rollup.getModuleInfo(filePath);
+        moduleInfos.setIsLocalDependency(false);
+        moduleInfos.setIsNodeEntryFile(true);
+        const metaInfo: object = moduleInfos[META];
+        this.getPackageEntryInfo(filePath, metaInfo, this.pkgEntryInfos);
+      }
+    }
+  }
+
   updateCachedSourceMapsMock() {
     this.updateCachedSourceMaps();
+  }
+
+  buildModuleSourceMapInfoMock() {
+    this.buildModuleSourceMapInfo();
+  }
+
+  checkModuleSourceMapInfoMock(): boolean {
+    const readSourceMap = fs.readFileSync(this.sourceMapPath, 'utf-8');
+    const readCacheSourceMap = fs.readFileSync(this.cacheSourceMapPath, 'utf-8');
+    if (readSourceMap.length == 0 && readCacheSourceMap.length == 0) {
+      return true;
+    } else if (readSourceMap === readCacheSourceMap) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 

@@ -99,3 +99,6 @@ function isMockConfigModified(rollupObject): boolean {
 export function shouldInvalidCache(): boolean {
   return disableCache;
 }
+export const utCache = {
+  getMetaInfo
+};
