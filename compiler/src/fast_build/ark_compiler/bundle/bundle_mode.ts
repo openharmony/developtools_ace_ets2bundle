@@ -25,7 +25,8 @@ import {
   getEs2abcFileThreadNumber,
   genTemporaryModuleCacheDirectoryForBundle,
   isMasterOrPrimary,
-  isSpecifiedExt
+  isSpecifiedExt,
+  isDebug
 } from '../utils';
 import {
   ES2ABC,
@@ -39,7 +40,9 @@ import {
   red,
   blue,
   FAIL,
-  reset
+  reset,
+  TEMPORARY,
+  RELEASEASSETS
 } from '../common/ark_define';
 import {
   mkDir,
@@ -180,7 +183,8 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = info.cacheFilePath;
       const recordName: string = 'null_recordName';
       const moduleType: string = 'script';
-      const sourceFile: string = info.sourceFile;
+      const sourceFile: string = isDebug(this.projectConfig) ? info.sourceFile :
+        this.generateReleaseSourceFileName(cacheFilePath);
       const abcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       filesInfo += `${cacheFilePath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
     });
@@ -392,5 +396,13 @@ export class BundleMode extends CommonMode {
     if (fs.existsSync(this.hashJsonFilePath)) {
       fs.unlinkSync(this.hashJsonFilePath);
     }
+  }
+  private generateReleaseSourceFileName(fileName: string): string {
+    let relativeFileName: string = fileName.replace(toUnixPath(this.projectConfig.cachePath) + '/', '');
+    relativeFileName = relativeFileName.replace(TEMPORARY, RELEASEASSETS);
+    relativeFileName = changeFileExtension(relativeFileName, EXTNAME_JS, TEMP_JS);
+    const relativeCachePath: string = toUnixPath(this.projectConfig.cachePath.replace(
+      this.projectConfig.projectRootPath + path.sep, ''));
+    return relativeCachePath + '/' + relativeFileName;
   }
 }
