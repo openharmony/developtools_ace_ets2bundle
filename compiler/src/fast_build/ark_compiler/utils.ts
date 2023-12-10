@@ -232,3 +232,6 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
   updatedGenerator['_mappings']['_array'] = newMappingList;
   return JSON.parse(updatedGenerator.toString());
 }
+export const utUtils = {
+  writeFileContent
+}

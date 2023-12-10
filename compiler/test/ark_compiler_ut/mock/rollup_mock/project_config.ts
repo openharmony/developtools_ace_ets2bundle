@@ -85,6 +85,7 @@ class ProjectConfig {
   cachePath: string;
   aceModuleBuild: string;
   patchAbcPath: string;
+  DynamicImportpath: string;
   supportChunks: boolean;
   projectPath: string;
   resolveModulePaths: Array<string>;
@@ -152,8 +153,9 @@ class ProjectConfig {
     this.aceModuleBuild = `${proPath}/${this.entryModuleName}/${mode}`;
     this.projectPath = `${proPath}/${this.entryModuleName}/src/main/ets`;
     this.moduleRootPath = undefined;
-    this.buildPath = `${proPath}/${this.entryModuleName}/${mode}/loader_out/default/ets`;
-    this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/hotReload/patchAbcPath/ets`;
+    this.buildPath = `${proPath}/${this.entryModuleName}/${mode}`;
+    this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/hotReload`;
+    this.DynamicImportpath = `${this.modulePath}/DynamicImport.ets`
 
     if (this.isPreview) {
       this.previewUniqueConfig();

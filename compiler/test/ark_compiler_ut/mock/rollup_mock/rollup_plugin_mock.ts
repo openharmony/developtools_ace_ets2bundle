@@ -34,13 +34,14 @@ import { scanFiles } from "../../utils/path_utils";
 import { IArkProjectConfig } from "./project_config";
 import {
   ESMODULE,
-  RELEASE, DEBUG,
+  RELEASE,
+  DEBUG,
   ARK_COMPILER_META_INFO,
   IS_CACHE_INVALID
 } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
 class RollUpPluginMock {
   cache: Cache;
-  meta: any = { rollupVersion: '3.10.0', watchMode: false };
+  meta: object = { rollupVersion: '3.10.0', watchMode: false };
   moduleIds: any;
   share: Share;
   moduleInfos: Array<ModuleInfo>;

@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import { MODULE_ID_ROLLUP_PLACEHOLDER } from '../rollup_mock/path_config';
+
 class Meta {
   hostModulesInfo: Array<any>;
   moduleName: string;
@@ -29,21 +31,142 @@ class Meta {
   }
 };
 
-class ModuleInfo {
+export class ModuleInfo {
   meta: Meta;
   id: string;
   importedIdMaps: object = {};
+  importCache = [];
 
   constructor(id: string, entryModuleName: string, modulePath: string) {
     this.meta = new Meta(entryModuleName, modulePath);
     this.id = id;
   }
+
   setIsLocalDependency(value: boolean) {
     this.meta.isLocalDependency = value
   }
   setIsNodeEntryFile(value: boolean) {
     this.meta.isNodeEntryFile = value
   }
+
+  setImportedIdMaps(path?: string) {
+    if (path) {
+      this.importedIdMaps = {
+        'requestFile': path
+      };
+    } else {
+      this.importedIdMaps = {
+        '@ohos.app.ability.UIAbility': MODULE_ID_ROLLUP_PLACEHOLDER,
+        '@ohos.hilog': MODULE_ID_ROLLUP_PLACEHOLDER
+      };
+    };
+
+  }
+
+  setNodeImportDeclaration() {
+    this.importCache.push(
+      {
+        "type": "ImportDeclaration",
+        "start": 0,
+        "end": 52,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 7,
+            "end": 16,
+            "local": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 16,
+              "name": "UIAbility"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 22,
+          "end": 51,
+          "value": "@ohos.app.ability.UIAbility",
+          "raw": "'@ohos.app.ability.UIAbility'"
+        }
+      },
+      {
+        "type": "ImportDeclaration",
+        "start": 54,
+        "end": 86,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 61,
+            "end": 66,
+            "local": {
+              "type": "Identifier",
+              "start": 61,
+              "end": 66,
+              "name": "hilog"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 72,
+          "end": 85,
+          "value": "@ohos.hilog",
+          "raw": "'@ohos.hilog'"
+        }
+      }
+    );
+  }
+
+  setNodeImportExpression() {
+    this.importCache.push(
+      {
+        "type": "ImportExpression",
+        "start": 0,
+        "end": 52,
+        "specifiers": [
+          {
+            "type": "ImportDefaultSpecifier",
+            "start": 7,
+            "end": 16,
+            "local": {
+              "type": "Identifier",
+              "start": 7,
+              "end": 16,
+              "name": "UIAbility"
+            }
+          }
+        ],
+        "source": {
+          "type": "Literal",
+          "start": 22,
+          "end": 51,
+          "value": "@ohos/sharedLibrary",
+          "raw": "@ohos/sharedLibrary"
+        }
+      }
+    )
+  }
+
+  getNodeByType(IMPORT_NODE: string, EXPORTNAME_NODE: string, EXPORTALL_NODE: string, DYNAMICIMPORT_NODE: string) {
+    const nodeByType = new Map();
+    this.importCache.forEach(node => {
+      if (node.type === IMPORT_NODE) {
+        if (!nodeByType.has(node.type)) {
+          nodeByType.set(node.type, []);
+        }
+        nodeByType.get(node.type).push(node);
+      }
+
+      if (node.type === DYNAMICIMPORT_NODE) {
+        if (!nodeByType.has(node.type)) {
+          nodeByType.set(node.type, []);
+        }
+        nodeByType.get(node.type).push(node);
+      }
+    });
+    return nodeByType;
+  }
 }
 
-export default ModuleInfo
+export default ModuleInfo;

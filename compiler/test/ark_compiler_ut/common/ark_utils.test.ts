@@ -15,11 +15,14 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
+import fs from "fs";
+import { ArkObfuscator } from "arkguard";
 
 import {
   getBuildModeInLowerCase,
   getPackageInfo,
-  genSourceMapFileName
+  genSourceMapFileName,
+  writeArkguardObfuscatedSourceCode
 } from '../../../lib/ark_utils';
 import {
   DEBUG,
@@ -32,8 +35,15 @@ import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
   BUNDLE_NAME_DEFAULT,
   ENTRY_MODULE_NAME_DEFAULT,
-  EXTNAME_MAP
+  EXTNAME_MAP,
+  JSONSTRING
 } from '../mock/rollup_mock/common';
+import { changeFileExtension } from '../../../lib/fast_build/ark_compiler/utils';
+import ModuleSourceFileMock from '../mock/class_mock/module_source_files_mock';
+import {
+  genTemporaryPath,
+  toUnixPath
+} from '../../../lib/utils';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -98,7 +108,7 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('3-1: test genSourceMapFileName under build debug', function () {
     this.rollup.build();
-    for (let filePath of this.rollup.share.allFiles) {
+    for (const filePath of this.rollup.share.allFiles) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
         const originPath = genSourceMapFileName(filePath);
         const expectedPath = `${filePath}${EXTNAME_MAP}`;
@@ -112,7 +122,7 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('3-2: test genSourceMapFileName under build release', function () {
     this.rollup.build(RELEASE);
-    for (let filePath of this.rollup.share.allFiles) {
+    for (const filePath of this.rollup.share.allFiles) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
         const originPath = genSourceMapFileName(filePath);
         const expectedPath = `${filePath}${EXTNAME_MAP}`;
@@ -123,7 +133,7 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('3-3: test genSourceMapFileName under preview debug', function () {
     this.rollup.preview();
-    for (let filePath of this.rollup.share.allFiles) {
+    for (const filePath of this.rollup.share.allFiles) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
         const originPath = genSourceMapFileName(filePath);
         const expectedPath = `${filePath}${EXTNAME_MAP}`;
@@ -134,7 +144,7 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('3-4: test genSourceMapFileName under hot reload debug', function () {
     this.rollup.hotReload();
-    for (let filePath of this.rollup.share.allFiles) {
+    for (const filePath of this.rollup.share.allFiles) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_JS)) {
         const originPath = genSourceMapFileName(filePath);
         const expectedPath = `${filePath}${EXTNAME_MAP}`;
@@ -142,5 +152,38 @@ mocha.describe('test ark_utils file api', function () {
       }
     }
   });
-});
 
+  mocha.it('4-1: test writeArkguardObfuscatedSourceCode under build release', async function () {
+    this.rollup.build(RELEASE);
+    const mockFileList: object = this.rollup.getModuleIds();
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_TS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleSource = new ModuleSourceFileMock(moduleId, code);
+        moduleSource.initPluginEnvMock(this.rollup);
+        const filePath =
+          genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
+            moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
+        const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
+        const relativeSourceFilePath: string =
+          toUnixPath(moduleSource.moduleId).replace(toUnixPath(moduleSource.projectConfig.projectRootPath) + '/', '');
+        moduleSource.projectConfig.arkObfuscator = new ArkObfuscator();
+        const jsonString: string = JSONSTRING;
+        const arkguardConfig = JSON.parse(jsonString);
+        moduleSource.projectConfig.arkObfuscator.init(arkguardConfig);
+        await writeArkguardObfuscatedSourceCode(moduleSource.source, newFilePath, moduleSource.logger,
+          moduleSource.projectConfig, relativeSourceFilePath);
+        const readfilecontent = fs.readFileSync(newFilePath, 'utf-8');
+        let mixedInfo: { content: string, sourceMap?: any, nameCache?: any };
+        try {
+          mixedInfo =
+            await moduleSource.projectConfig.arkObfuscator.obfuscate(moduleSource.source, filePath, undefined, undefined);
+        } catch {
+          const red: string = '\u001b[31m';
+          moduleSource.logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
+        }
+        expect(readfilecontent === mixedInfo.content).to.be.true;
+      }
+    }
+  });
+});
