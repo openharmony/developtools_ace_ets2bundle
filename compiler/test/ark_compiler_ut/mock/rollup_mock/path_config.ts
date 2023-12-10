@@ -35,6 +35,12 @@ export const MERGERABC_PATH: string = '/build/bin/merge_abc';
 export const JS2ABC_PATH: string = '/build/bin/js2abc';
 export const AOTCOMPILER_PATH: string = '/build/bin/ark_aot_compiler';
 export const ARKROOT_PATH: string = 'bin/ark';
+export const ARKCONFIG_TS2ABC_PATH: string = 'bin/ark/build/legacy_api8/src/index.js';
 
 export const EXPECT_SOURCEMAP_JSON: string = `${PROJECT_ROOT}/expect/sourceMaps.json`;
 export const MOCK_CONFIG_PATH: string = "openharmony/mockconfig";
+export const PKG_MODULES_OHPM_HYPIUM: string = 'pkg_modules/.ohpm/@ohos+hypium@1.0.6/pkg_modules/@ohos/hypium';
+
+export const EXPECT_ENTRY_TS: string = `${PROJECT_ROOT}/expect/expect_EntryAbility.ts`;
+export const EXPECT_INDEX_ETS: string = `${PROJECT_ROOT}/expect/expect_Index.ets`;
+export const MODULE_TEST_PATH: string = `${PROJECT_ROOT}/testTsModuleRequest/src/main/ets/`;

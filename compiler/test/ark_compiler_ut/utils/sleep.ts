@@ -13,21 +13,9 @@
  * limitations under the License.
  */
 
-import path from 'path';
 
-process.env.compileTool = 'rollup';
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-const projectConfig: any = {};
-
-projectConfig.aceModuleJsonPath = path.resolve(__dirname, '../../../test/ark_compiler_ut/config/module.json');
-projectConfig.modulePathMap = {
-  "entry": "/testProjectRootPath/entry",
-  "library": "/testProjectRootPath/library"
-};
-projectConfig.projectRootPath = "/testProjectRootPath";
-projectConfig.packageDir = 'oh_modules';
-projectConfig.harNameOhmMap = {
-  "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
-};
-
-export default projectConfig;
+export default sleep

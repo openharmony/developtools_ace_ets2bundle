@@ -28,14 +28,16 @@ import {
   NODE,
   BUNDLE_NAME_DEFAULT,
   ENTRY_MODULE_NAME_DEFAULT,
-  NODE_JS_PATH
+  NODE_JS_PATH,
+  LOADER_AOTMODE
 } from '../mock/rollup_mock/common';
 import {
   ES2ABC_PATH,
   TS2ABC_PATH,
   MERGERABC_PATH,
   JS2ABC_PATH,
-  AOTCOMPILER_PATH
+  AOTCOMPILER_PATH,
+  ARKCONFIG_TS2ABC_PATH
 } from '../mock/rollup_mock/path_config';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
@@ -138,7 +140,7 @@ mocha.describe('test process_ark_config file api', function () {
   mocha.it('2-1-2: test initArkProjectConfig under build debug: buildJsonInfo.patchConfig is true', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.aceBuildJson =
-      `${this.rollup.share.projectConfig.aceModuleBuild}/loader_aotMode.json`;
+      `${this.rollup.share.projectConfig.aceModuleBuild}/${LOADER_AOTMODE}`;
     const arkConfig = initArkProjectConfig(this.rollup.share);
     const buildJsonInfo =
       JSON.parse(fs.readFileSync(this.rollup.share.projectConfig.aceBuildJson).toString());
@@ -204,7 +206,7 @@ mocha.describe('test process_ark_config file api', function () {
 
   mocha.it('3-1: test initTerserConfig under build debug', function () {
     this.rollup.build();
-    const logger: any = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
     const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
     const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
@@ -222,7 +224,7 @@ mocha.describe('test process_ark_config file api', function () {
 
   mocha.it('3-2: test initTerserConfig under build release', function () {
     this.rollup.build(RELEASE);
-    const logger: any = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
     const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
     const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
@@ -240,7 +242,7 @@ mocha.describe('test process_ark_config file api', function () {
 
   mocha.it('3-3: test initTerserConfig under preview debug', function () {
     this.rollup.preview();
-    const logger: any = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
     const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
     const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
@@ -258,7 +260,7 @@ mocha.describe('test process_ark_config file api', function () {
 
   mocha.it('3-4: test initTerserConfig under hot reload debug', function () {
     this.rollup.hotReload();
-    const logger: any = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
     const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
     const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
@@ -273,4 +275,56 @@ mocha.describe('test process_ark_config file api', function () {
     expect(minifyOptions.compress.drop_console === false).to.be.true;
     expect(minifyOptions.mangle.toplevel === false).to.be.true;
   });
-})
+
+  mocha.it('4-1: test processCompatibleVersion under build debug', function () {
+    this.rollup.build();
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
+
+    this.rollup.share.projectConfig.minPlatformVersion = 8;
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
+  });
+
+  mocha.it('4-2: test processCompatibleVersion under build release', function () {
+    this.rollup.build(RELEASE);
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
+
+    this.rollup.share.projectConfig.minPlatformVersion = 8;
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
+  });
+
+  mocha.it('4-3: test processCompatibleVersion under preview debug', function () {
+    this.rollup.preview();
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
+
+    this.rollup.share.projectConfig.minPlatformVersion = 8;
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
+  });
+
+  mocha.it('4-4: test processCompatibleVersion under hot reload debug', function () {
+    this.rollup.hotReload();
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
+
+    this.rollup.share.projectConfig.minPlatformVersion = 8;
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
+    expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
+  });
+});
