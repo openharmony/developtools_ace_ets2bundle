@@ -34,6 +34,13 @@ import {
   EXTNAME_ETS
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import {
+  ES2ABC_PATH,
+  SYMBOLMAP_MAP,
+  DEFAULT_ETS,
+  DEBUG_INFO,
+  SIMBOL_TABLE
+} from '../mock/rollup_mock/path_config';
+import {
   ENTRYABILITY_TS_PATH,
   INDEX_ETS_PATH,
   FILE,
@@ -51,6 +58,7 @@ mocha.describe('test module_hotreload_mode file api', function () {
 
   mocha.it('1-1: test updateSourceMapFromFileList under hot reload debug', function () {
     this.rollup.hotReload();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
     const moduleMode = new ModuleHotreloadMode(this.rollup);
     const fileList = this.rollup.getModuleIds();
     for (const filePath of fileList) {
@@ -76,5 +84,16 @@ mocha.describe('test module_hotreload_mode file api', function () {
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+  });
+
+  mocha.it('2-1: test addHotReloadArgs under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    moduleMode.addHotReloadArgs();
+    expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
+    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
+    expect(moduleMode.cmdArgs[2] === SIMBOL_TABLE).to.be.true;
+    expect(moduleMode.cmdArgs[3].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
   });
 });

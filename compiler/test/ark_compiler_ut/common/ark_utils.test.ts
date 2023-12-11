@@ -16,34 +16,54 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 import fs from "fs";
-import { ArkObfuscator } from "arkguard";
+import path from "path";
+import MagicString from 'magic-string';
 
 import {
   getBuildModeInLowerCase,
   getPackageInfo,
   genSourceMapFileName,
-  writeArkguardObfuscatedSourceCode
+  isOhModules,
+  isEs2Abc,
+  writeTerserObfuscatedSourceCode
 } from '../../../lib/ark_utils';
 import {
   DEBUG,
   RELEASE,
-  EXTNAME_JS,
+  OH_MODULES,
   EXTNAME_TS,
-  EXTNAME_ETS
+  EXTNAME_JS,
+  EXTNAME_ETS,
+  OBFUSCATION_TOOL
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
   BUNDLE_NAME_DEFAULT,
   ENTRY_MODULE_NAME_DEFAULT,
   EXTNAME_MAP,
-  JSONSTRING
+  ENTRYABILITY_JS
 } from '../mock/rollup_mock/common';
+import projectConfig from '../utils/processProjectConfig';
+import {
+  ES2ABC,
+  TS2ABC
+} from '../../../lib/pre_define';
 import { changeFileExtension } from '../../../lib/fast_build/ark_compiler/utils';
 import ModuleSourceFileMock from '../mock/class_mock/module_source_files_mock';
 import {
   genTemporaryPath,
   toUnixPath
 } from '../../../lib/utils';
+import {
+  ObConfigResolver,
+  MergedConfig
+} from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
+import {
+  utProcessArkConfig
+} from '../../../lib/fast_build/ark_compiler/common/process_ark_config';
+import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
+import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
+import { TERSER_PROCESSED_EXPECTED_CODE } from '../mock/rollup_mock/path_config';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -153,12 +173,135 @@ mocha.describe('test ark_utils file api', function () {
     }
   });
 
-  mocha.it('4-1: test writeArkguardObfuscatedSourceCode under build release', async function () {
+  mocha.it('4-1: test isOhModules under build debug', function () {
+    this.rollup.build();
+    const returnInfo = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfo === false).to.be.true;
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const returnInfoOh = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfoOh).to.be.true;
+  });
+
+  mocha.it('4-2: test isOhModules under build release', function () {
+    this.rollup.build(RELEASE);
+    const returnInfo = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfo === false).to.be.true;
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const returnInfoOh = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfoOh).to.be.true;
+  });
+
+  mocha.it('4-3: test isOhModules under preview debug', function () {
+    this.rollup.preview();
+    const returnInfo = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfo === false).to.be.true;
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const returnInfoOh = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfoOh).to.be.true;
+  });
+
+  mocha.it('4-4: test isOhModules under hot reload debug', function () {
+    this.rollup.hotReload();
+    const returnInfo = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfo === false).to.be.true;
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const returnInfoOh = isOhModules(this.rollup.share.projectConfig);
+    expect(returnInfoOh).to.be.true;
+  });
+
+  mocha.it('4-5: test isOhModules under hot fix debug', function () {
+    projectConfig.buildMode = DEBUG;
+    const returnInfo = isOhModules(projectConfig);
+    expect(returnInfo).to.be.true;
+  });
+
+  mocha.it('4-6: test isOhModules under hot fix release', function () {
+    projectConfig.buildMode = RELEASE;
+    const returnInfo = isOhModules(projectConfig);
+    expect(returnInfo).to.be.true;
+  });
+
+  mocha.it('5-1: test isEs2Abc under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfo).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoTS2ABC === false).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = "undefined";
+    const returnInfoUndef = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoUndef).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = undefined;
+    const returnInfoUndefined = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoUndefined).to.be.true;
+  });
+
+  mocha.it('5-2: test isEs2Abc under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfo).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoTS2ABC).to.be.false;
+  });
+
+  mocha.it('5-3: test isEs2Abc under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfo).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoTS2ABC).to.be.false;
+  });
+
+  mocha.it('5-4: test isEs2Abc under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfo).to.be.true;
+
+    this.rollup.share.projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(this.rollup.share.projectConfig);
+    expect(returnInfoTS2ABC).to.be.false;
+  });
+
+  mocha.it('5-5: test isEs2Abc under hot fix debug', function () {
+    projectConfig.buildMode = DEBUG;
+    projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(projectConfig);
+    expect(returnInfo).to.be.true;
+
+    projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(projectConfig);
+    expect(returnInfoTS2ABC).to.be.false;
+  });
+
+  mocha.it('5-6: test isEs2Abc under hot fix release', function () {
+    projectConfig.buildMode = RELEASE;
+    projectConfig.pandaMode = ES2ABC;
+    const returnInfo = isEs2Abc(projectConfig);
+    expect(returnInfo).to.be.true;
+
+    projectConfig.pandaMode = TS2ABC;
+    const returnInfoTS2ABC = isEs2Abc(projectConfig);
+    expect(returnInfoTS2ABC).to.be.false;
+  });
+
+  mocha.it('6-1: test writeTerserObfuscatedSourceCode under build release', async function () {
     this.rollup.build(RELEASE);
     const mockFileList: object = this.rollup.getModuleIds();
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS)) {
-        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const code: string =
+          fs.readFileSync(`${this.rollup.share.projectConfig.projectTopDir}/${ENTRYABILITY_JS}`, 'utf-8');
         const moduleSource = new ModuleSourceFileMock(moduleId, code);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath =
@@ -167,23 +310,34 @@ mocha.describe('test ark_utils file api', function () {
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
         const relativeSourceFilePath: string =
           toUnixPath(moduleSource.moduleId).replace(toUnixPath(moduleSource.projectConfig.projectRootPath) + '/', '');
-        moduleSource.projectConfig.arkObfuscator = new ArkObfuscator();
-        const jsonString: string = JSONSTRING;
-        const arkguardConfig = JSON.parse(jsonString);
-        moduleSource.projectConfig.arkObfuscator.init(arkguardConfig);
-        await writeArkguardObfuscatedSourceCode(moduleSource.source, newFilePath, moduleSource.logger,
-          moduleSource.projectConfig, relativeSourceFilePath);
-        const readfilecontent = fs.readFileSync(newFilePath, 'utf-8');
-        let mixedInfo: { content: string, sourceMap?: any, nameCache?: any };
-        try {
-          mixedInfo =
-            await moduleSource.projectConfig.arkObfuscator.obfuscate(moduleSource.source, filePath, undefined, undefined);
-        } catch {
-          const red: string = '\u001b[31m';
-          moduleSource.logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
-        }
-        expect(readfilecontent === mixedInfo.content).to.be.true;
+        const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+        const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+        const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
+        const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
+        moduleSource.projectConfig.terserConfig =
+          utProcessArkConfig.initTerserConfig(this.rollup.share.projectConfig, logger, mergedObConfig, isHarCompiled);
+        const Code: string = fs.readFileSync(moduleId, 'utf-8');
+        const ModuleSource = new ModuleSourceFile(relativeSourceFilePath, Code);
+        const codeString: MagicString = new MagicString(<string>ModuleSource.source);
+        const sourceMap: object = codeString.generateMap({
+          source: relativeSourceFilePath,
+          file: `${path.basename(ModuleSource.moduleId)}`,
+          includeContent: false,
+          hires: true
+        });
+        newSourceMaps[relativeSourceFilePath] = sourceMap;
+        delete newSourceMaps[relativeSourceFilePath].sourcesContent;
+
+        await writeTerserObfuscatedSourceCode(moduleSource.source, newFilePath, moduleSource.logger,
+          moduleSource.projectConfig.terserConfig, relativeSourceFilePath, newSourceMaps);
+        const readFilecontent = fs.readFileSync(newFilePath, 'utf-8');
+        const expectResult = fs.readFileSync(TERSER_PROCESSED_EXPECTED_CODE, 'utf-8');
+        expect(readFilecontent === expectResult).to.be.true;
       }
+    }
+
+    for (const key of Object.keys(newSourceMaps)) {
+      delete newSourceMaps[key];
     }
   });
 });

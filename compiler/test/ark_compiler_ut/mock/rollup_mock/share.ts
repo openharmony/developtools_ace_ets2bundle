@@ -37,7 +37,6 @@ class Logger {
   }
 
   public error(color: string, errormsg: string, reset: string) {
-    console.error(`${color}${this.prefix}: ${JSON.stringify(errormsg)}${reset}`);
     this.messsage = color.toString();
   }
 
@@ -46,7 +45,7 @@ class Logger {
   }
 
 
-  public static getLogger(prefix): any {
+  public static getLogger(prefix): object {
     for (const instance of Logger.instances) {
       if (instance.getPrefix() == prefix) {
         return instance;
@@ -55,7 +54,7 @@ class Logger {
   }
   public static createLogger(prefix) {
     const logger = new Logger(prefix);
-    Logger.instances.push(logger)
+    Logger.instances.push(logger);
     return logger;
   }
 }
@@ -73,7 +72,7 @@ class Share {
     this.projectConfig = new ProjectConfig(buildMode);
   }
 
-  public throwArkTsCompilerError(error: any) {
+  public throwArkTsCompilerError(error: object) {
     console.error(JSON.stringify(error));
   }
 
@@ -87,7 +86,7 @@ class Share {
 
   public scan(testcase: string) {
     if (!testcase) {
-      return
+      return;
     }
     this.projectConfig.scan(testcase);
     this.symlinkMap[`${this.projectConfig.projectTopDir}/${OH_MODULES_OHPM_HYPIUM}`] = [
