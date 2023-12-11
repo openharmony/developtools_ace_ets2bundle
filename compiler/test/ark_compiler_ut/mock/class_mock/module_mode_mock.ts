@@ -28,14 +28,13 @@ import {
 } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
 import { META } from '../rollup_mock/common';
-
 class ModuleModeMock extends ModuleMode {
-  collectModuleFileListMock(rollupObject: any) {
+  collectModuleFileListMock(rollupObject: object) {
     const fileList = Array.from(rollupObject.getModuleIds());
     this.collectModuleFileList(rollupObject, fileList);
   }
 
-  addModuleInfoItemMock(rollupObject: any, isCommonJs: boolean, extName: string) {
+  addModuleInfoItemMock(rollupObject: object, isCommonJs: boolean, extName: string) {
     const mockFileList = rollupObject.getModuleIds();
     for (const filePath of mockFileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
@@ -101,10 +100,10 @@ class ModuleModeMock extends ModuleMode {
     return false;
   }
 
-  checkGetPackageEntryInfo(rollup: any) {
-    this.pkgEntryInfos = new Map<String, PackageEntryInfo>()
-    const mockfileList = rollup.getModuleIds()
-    for (const filePath of mockfileList) {
+  checkGetPackageEntryInfo(rollup: object) {
+    this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
+    const mockFileList = rollup.getModuleIds();
+    for (const filePath of mockFileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
         const moduleInfos = rollup.getModuleInfo(filePath);
         moduleInfos.setIsLocalDependency(false);

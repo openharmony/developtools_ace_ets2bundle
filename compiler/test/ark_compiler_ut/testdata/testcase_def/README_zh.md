@@ -16,3 +16,4 @@
 | entry/build/loader_aotMode.json               | initArkProjectConfig   | 应用于build模式(debug)，给参数aceBuildJson赋值      |
 | entry/preview/loader.json                     | initArkProjectConfig   | 应用于preview模式，给参数buildJsonInfo赋值          |
 | entry/build/hotReload/sourceMaps.map          | updateSourceMapFromFileList | 应用于hotReload模式，读取SourceMap信息         |
+| updateSourceMap.json                          | updateSourceMap        | 应用于build模式，读取SourceMap信息                  |

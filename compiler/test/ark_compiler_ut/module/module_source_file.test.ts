@@ -26,7 +26,8 @@ import ModuleModeMock from '../mock/class_mock/module_mode_mock';
 import {
   EXPECT_ENTRY_TS,
   EXPECT_INDEX_ETS,
-  MODULE_TEST_PATH
+  MODULE_TEST_PATH,
+  EXPECT_TO_JS
 } from '../mock/rollup_mock/path_config';
 import {
   RELEASE,
@@ -43,13 +44,11 @@ import {
   INDEX_ETS,
   OHURL_SHAREDLIBRARY,
   OH_UIABILITY,
-  OH_HILOG,
-  ETS,
-  TS
+  OH_HILOG
 } from '../mock/rollup_mock/common';
 import projectConfig from '../utils/processProjectConfig';
 import { ModuleInfo as ModuleInfoMock } from '../mock/rollup_mock/module_info';
-import { scanFiles } from "../utils/path_utils";
+import { scanFiles } from "../utils/utils";
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
@@ -418,7 +417,10 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         moduleInfo.setNodeImportDeclaration();
         moduleSource.processTransformedJsModuleRequest(this.rollup);
-        expect(moduleSource.source === ETS || moduleSource.source === TS).to.be.true;
+        const json = fs.readFileSync(EXPECT_TO_JS, 'utf-8');
+        const etsToJs = JSON.parse(json).expect_index_ets_to_js;
+        const tsToJs = JSON.parse(json).expect_entryability_ts_to_js;
+        expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
   });
@@ -469,7 +471,10 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         moduleInfo.setNodeImportDeclaration();
         moduleSource.processTransformedJsModuleRequest(this.rollup);
-        expect(moduleSource.source === ETS || moduleSource.source === TS).to.be.true;
+        const json = fs.readFileSync(EXPECT_TO_JS, 'utf-8');
+        const etsToJs = JSON.parse(json).expect_index_ets_to_js;
+        const tsToJs = JSON.parse(json).expect_entryability_ts_to_js;
+        expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
   });
@@ -489,7 +494,10 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         moduleInfo.setNodeImportDeclaration();
         moduleSource.processTransformedJsModuleRequest(this.rollup);
-        expect(moduleSource.source === ETS || moduleSource.source === TS).to.be.true;
+        const json = fs.readFileSync(EXPECT_TO_JS, 'utf-8');
+        const etsToJs = JSON.parse(json).expect_index_ets_to_js;
+        const tsToJs = JSON.parse(json).expect_entryability_ts_to_js;
+        expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
   });
@@ -509,7 +517,10 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         moduleInfo.setNodeImportDeclaration();
         moduleSource.processTransformedJsModuleRequest(this.rollup);
-        expect(moduleSource.source === ETS || moduleSource.source === TS).to.be.true;
+        const json = fs.readFileSync(EXPECT_TO_JS, 'utf-8');
+        const etsToJs = JSON.parse(json).expect_index_ets_to_js;
+        const tsToJs = JSON.parse(json).expect_entryability_ts_to_js;
+        expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
   });
