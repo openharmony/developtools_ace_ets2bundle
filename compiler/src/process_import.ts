@@ -564,9 +564,14 @@ function isCustomComponent(node: ts.StructDeclaration, structDecorator: structDe
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
     for (let i = 0; i < decorators.length; ++i) {
-      const decoratorName: ts.Identifier = decorators[i].expression as ts.Identifier;
-      if (ts.isIdentifier(decoratorName)) {
-        const name: string = decoratorName.escapedText.toString();
+      const decoratorName: ts.Expression = decorators[i].expression;
+      if (ts.isIdentifier(decoratorName) || ts.isCallExpression(decoratorName)) {
+        let name: string = '';
+        if (ts.isCallExpression(decoratorName) && ts.isIdentifier(decoratorName.expression)) {
+          name = decoratorName.expression.escapedText.toString();
+        } else if (ts.isIdentifier(decoratorName)) {
+          name = decoratorName.escapedText.toString();
+        }
         if (CUSTOM_DECORATOR_NAME.has(name)) {
           isComponent = true;
         }
