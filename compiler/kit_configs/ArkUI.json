@@ -496,6 +496,10 @@
       "source": "@system.configuration",
       "bindings": "LocaleResponse"
     },
+    "SystemMediaQuery": {
+      "source": "@system.mediaquery",
+      "bindings": "default"
+    },
     "MediaQueryEvent": {
       "source": "@system.mediaquery",
       "bindings": "MediaQueryEvent"
@@ -527,6 +531,10 @@
     "ShowToastOptions": {
       "source": "@system.prompt",
       "bindings": "ShowToastOptions"
+    },
+    "SystemRouter": {
+      "source": "@system.router",
+      "bindings": "default"
     },
     "BackRouterOptions": {
       "source": "@system.router",
