@@ -414,7 +414,7 @@ export class ModuleMode extends CommonMode {
         eventGenAbc = createAndStartEvent(parentEvent, 'generate merged abc by es2abc (async)', true);
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
-      child.on('exit', (code: any) => {
+      child.on('close', (code: any) => {
         if (code === FAIL) {
           this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
         }
