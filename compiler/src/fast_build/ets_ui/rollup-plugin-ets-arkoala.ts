@@ -64,7 +64,7 @@ export function makeArkoalaPlugin() {
         arkoalaTscPluginPath,
         '../../../../node_modules/typescript/lib/tsc.js'
       ); // TODO we need a single compatible tsc, currently we use arkoala bundled one
-      ohosTscPath = require.resolve('@ohos/typescript');
+      ohosTscPath = require.resolve('ohos-typescript');
       if (ohosTscPath)
         ohosTscPath = path.join(path.dirname(ohosTscPath), 'tsc.js');
 
@@ -245,7 +245,9 @@ import { registerRoutes } from ${JSON.stringify(
 )}
 
 export function startArkoala() {
+    console.log("XXXX startArkoala");
     registerRoutes();
+    console.log("XXXX registerRoutes::End");
     return startApplication({
         waitForVSync: undefined
     }, ArkRooted(__Entry))
@@ -303,6 +305,7 @@ function genResourceMapModule(options: CodegenOptions = {}) {
     `const bundleName = ${JSON.stringify(module.bundleName || "")};\n`,
     `const moduleName = ${JSON.stringify(module.moduleName || "")};\n`,
     `const resources = ${JSON.stringify(resourceMap || {}, null, 4)};\n\n`,
+    `console.log("XXXXX registerResources")\n`,
     `__registerResources(bundleName, moduleName, resources);\n`,
     `export function $r(name, ...args) { return _r(name, ...args) };\n`,
     `export function $rawfile(name) { return _rawfile(name) };\n`,
