@@ -28,7 +28,11 @@ import { projectConfig, globalModulePaths } from '../../../main';
 // TODO replace console.log logging
 // TODO better plugin integration
 
-export function makeArkoalaPlugin() {
+interface RollupPluginWithCache extends rollup.Plugin {
+  shouldInvalidCache(): boolean;
+}
+
+export function makeArkoalaPlugin(): RollupPluginWithCache {
   const ARKOALA_ENTRY_STUB = '@koalaui/arkoala-app';
   const ARKOALA_RESOURCES_MODULE = '@koalaui/arkoala-app-resources';
 
@@ -46,119 +50,15 @@ export function makeArkoalaPlugin() {
 
   return {
     name: 'arkoalaEtsTransform',
-    buildStart(options) {
+
+    buildStart(options): void {
       console.log('PC', projectConfig);
-      arkoalaBuildPath = path.join(
-        projectConfig.buildPath,
-        '../../../arkoala_out'
-      );
-      arkoalaGeneratedPath = path.join(arkoalaBuildPath, 'generated');
-      arkoalaGeneratedJSPath = path.join(arkoalaBuildPath, 'js_output');
-      arkoalaGeneratedMemoPath = path.join(arkoalaBuildPath, 'generated_memo');
-      arkoalaEtsPluginPath = require.resolve('@koalaui/ets-plugin');
-      arkoalaTscPluginPath = require.resolve('@koalaui/compiler-plugin');
-      tscPath = path.join(
-        arkoalaTscPluginPath,
-        '../../../../node_modules/typescript/lib/tsc.js'
-      ); // TODO we need a single compatible tsc, currently we use arkoala bundled one
-      ohosTscPath = require.resolve('ohos-typescript');
-      if (ohosTscPath)
-        ohosTscPath = path.join(path.dirname(ohosTscPath), 'tsc.js');
-
-      etsRoot = projectConfig.projectPath;
-      console.log('ARKOALA: ', {
-        arkoalaEtsPluginPath,
-        arkoalaTscPluginPath,
-        arkoalaGeneratedPath,
-        ohosTscPath,
-        tscPath,
-        etsRoot,
-      });
-
-      const ohosTsConfig = {
-        extends: require.resolve(
-          '@koalaui/arkui-common/config/tsconfig.base.json'
-        ),
-        exclude: ['node_modules', 'js_output', 'dependencies'],
-        include: ['**/*.ets'],
-        compilerOptions: {
-          outDir: arkoalaGeneratedJSPath,
-          plugins: [
-            {
-              transform: arkoalaEtsPluginPath,
-              destination: arkoalaGeneratedPath,
-              arkui: '@koalaui/arkoala-arkui',
-            },
-          ],
-        },
-      };
-      const ohosTsConfigPath = path.join(etsRoot, 'arkoala.tsconfig.json'); // TODO generate in a build dir or do not generate at all
-      fs.writeFileSync(ohosTsConfigPath, JSON.stringify(ohosTsConfig), 'utf-8');
-      try {
-        const nodeExe = process.argv0; // TODO get from config?
-        console.log('ETS PREPROCESS');
-        let ohosTscProc = cp.spawnSync(
-          nodeExe,
-          [ohosTscPath, '-p', ohosTsConfigPath],
-          { stdio: 'inherit', cwd: etsRoot }
-        );
-        console.log('ETS PREPROCESS DONE');
-      } finally {
-        //TODO check status
-        fs.rmSync(ohosTsConfigPath);
-      }
-
-      const sdkStubs = path.join(
-        require.resolve('@koalaui/arkui-common'),
-        '../../../../ohos-sdk-ets/openharmony/10/ets/'
-      );
-      const tsConfig = {
-        compilerOptions: {
-          target: 'es2017',
-          module: 'ESNext',
-          lib: ['ESNext', 'DOM', 'ESNext.WeakRef'],
-          moduleResolution: 'node',
-          composite: true,
-          incremental: true,
-          declarationMap: true,
-          sourceMap: true,
-          declaration: true,
-          strict: true,
-          skipLibCheck: true,
-          removeComments: false,
-          importsNotUsedAsValues: 'remove',
-          plugins: [{ transform: arkoalaTscPluginPath, trace: false }],
-          outDir: arkoalaGeneratedMemoPath,
-        },
-        files: [
-          path.join(sdkStubs, 'component/index-full.d.ts'),
-          path.join(sdkStubs, 'component/koala-extensions.d.ts'),
-          path.join(sdkStubs, 'api/@internal/full/global.d.ts'),
-        ],
-        include: ['**/*'],
-      };
-
-      const tsConfigPath = path.join(
-        arkoalaGeneratedPath,
-        'memo.tsconfig.json'
-      ); // TODO generate in a build dir or do not generate at all
-      fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf-8');
-      try {
-        const nodeExe = process.argv0; // TODO get from config?
-        console.log('MEMO PREPROCESS');
-        let tscProc = cp.spawnSync(nodeExe, [tscPath, '-p', tsConfigPath], {
-          stdio: 'inherit',
-          cwd: arkoalaGeneratedPath,
-        });
-        console.log('TSC', tscProc.status, tscProc.error);
-        console.log('MEMO PREPROCESS DONE');
-      } finally {
-        //TODO check status
-        fs.rmSync(tsConfigPath);
-      }
+      configureArkoala();
+      preprocessEts();
+      processMemo();
     },
 
-    resolveId(source, importer, options) {
+    resolveId(source, importer, options): rollup.ResolveIdResult {
       if (source === ARKOALA_ENTRY_STUB) {
         return { id: ARKOALA_ENTRY_STUB, external: true };
       }
@@ -169,12 +69,12 @@ export function makeArkoalaPlugin() {
 
       if (options.isEntry && source.endsWith('.ets')) {
         // TODO resolve with node-loader?
-        console.log('RESOLVE' + source);
+        console.log('RESOLVE ENTRY ' + source);
         return `${source}`;
       }
     },
 
-    async load(id) {
+    async load(id): Promise<rollup.LoadResult> {
       let cacheRoot = projectConfig.cachePath;
       let projectRoot = projectConfig.projectRootPath;
 
@@ -198,69 +98,15 @@ export function makeArkoalaPlugin() {
               path.resolve('node_modules'),
               path.resolve(__dirname, 'node_modules'),
               ...globalModulePaths,
-              ...(projectConfig.aceModuleJsonPath
-                ? getResolveModules(path.resolve(projectConfig.projectPath), false)
-                : getResolveModules(
-                path.resolve(projectConfig.projectPath),
-                true
-              )),
+              ...(projectConfig.aceModuleJsonPath ?
+                getResolveModules(path.resolve(projectConfig.projectPath), false) :
+                getResolveModules(path.resolve(projectConfig.projectPath), true)
+              ),
             ],
             exportConditions: ['ark', 'node', 'main'],
           }),
           commonjs(),
-          {
-            name: 'arkoala-stub-plugin',
-            async resolveId(source, importer, options) {
-              if (source === ARKOALA_ENTRY_STUB) {
-                return '\0' + ARKOALA_ENTRY_STUB;
-              }
-              if (source === ARKOALA_RESOURCES_MODULE) {
-                return { id: '\0' + ARKOALA_RESOURCES_MODULE, moduleSideEffects: true };
-              }
-              if (!arkoalaNativeEmitted && source === '@koalaui/arkoala') {
-                let resolved = await this.resolve(source, importer, options);
-                if (resolved) {
-                  let libPath = path.join(path.dirname(resolved.id), '../libArkoalaNative.so');
-                  let buildPath = path.dirname(projectConfig.buildPath);
-                  let libDir = path.join(buildPath, '../../libs', path.basename(buildPath), 'arm64-v8a');
-                  try {
-                    fs.mkdirSync(libDir, { recursive: true });
-                    fs.copyFileSync(libPath, path.join(libDir, path.basename(libPath)));
-                  } catch (e) {
-                    console.warn('Failed to load native library: ' + e)
-                  }
-                }
-                arkoalaNativeEmitted = true;
-              }
-            },
-            load(id) {
-              if (id === '\0' + ARKOALA_RESOURCES_MODULE) {
-                return { code: genResourceMapModule() }
-              }
-
-              if (id === '\0' + ARKOALA_ENTRY_STUB) {
-                return {
-                  code: `
-import ${JSON.stringify(ARKOALA_RESOURCES_MODULE)}
-import { startApplication } from '@koalaui/arkoala'
-import { ArkRooted } from '@koalaui/arkoala-arkui'
-import { __Entry } from ${JSON.stringify(
-                    path.join(arkoalaGeneratedMemoPath, 'pages/Index')
-                  )}
-import { registerRoutes } from ${JSON.stringify(
-                    path.join(arkoalaGeneratedMemoPath, '__router_initialization')
-                  )}
-
-export function startArkoala() {
-    registerRoutes();
-    return startApplication({
-        waitForVSync: undefined
-    }, ArkRooted(__Entry))
-}`,
-                };
-              }
-            },
-          },
+          makeArkoalaEntryPoint(),
         ],
       });
 
@@ -271,32 +117,206 @@ export function startArkoala() {
       });
 
       for (const chunk of output) {
-        if (chunk.type == 'chunk') {
-          let code = chunk.code.replace(
-            /\bLOAD_NATIVE\b/g,
-            `globalThis.requireNapi('ArkoalaNative', true)`
-          ); // TODO @rollup/plugin-inject
-          let cachedPath = id
-            .replace(projectRoot, cacheRoot)
-            .replace(/\.ets$/, '.ts');
-          console.log('CACHE', id, '->', cachedPath);
-          fs.mkdirSync(path.dirname(cachedPath), { recursive: true });
-          fs.writeFileSync(cachedPath, code, 'utf-8'); // TODO emit unmemoized ts?
+        if (chunk.type === 'chunk') {
+          writeBundleToCache(chunk.code, id, projectRoot, cacheRoot);
           return chunk;
         }
       }
-
       console.log('NOT LOADED!');
       return { code: '' };
     },
 
-    shouldInvalidCache(options) {
+    shouldInvalidCache(): boolean {
       return true;
     },
   };
+
+  function writeBundleToCache(bundleCode: string, id: string, projectRoot: string, cacheRoot: string): void {
+     // TODO emit unmemoized ts?
+    let code = bundleCode.replace(
+      /\bLOAD_NATIVE\b/g,
+      'globalThis.requireNapi("ArkoalaNative", true)'
+    ); // TODO @rollup/plugin-inject
+    let cachedPath = id
+      .replace(projectRoot, cacheRoot)
+      .replace(/\.ets$/, '.ts');
+    console.log('CACHE', id, '->', cachedPath);
+    fs.mkdirSync(path.dirname(cachedPath), { recursive: true });
+    fs.writeFileSync(cachedPath, code, 'utf-8');
+  }
+
+  function configureArkoala(): void {
+    arkoalaBuildPath = path.join(
+      projectConfig.buildPath,
+      '../../../arkoala_out'
+    );
+    arkoalaGeneratedPath = path.join(arkoalaBuildPath, 'generated');
+    arkoalaGeneratedJSPath = path.join(arkoalaBuildPath, 'js_output');
+    arkoalaGeneratedMemoPath = path.join(arkoalaBuildPath, 'generated_memo');
+    arkoalaEtsPluginPath = require.resolve('@koalaui/ets-plugin');
+    arkoalaTscPluginPath = require.resolve('@koalaui/compiler-plugin');
+    tscPath = path.join(
+      arkoalaTscPluginPath,
+      '../../../../node_modules/typescript/lib/tsc.js'
+    ); // TODO we need a single compatible tsc, currently we use arkoala bundled one
+    ohosTscPath = require.resolve('ohos-typescript');
+    if (ohosTscPath) {
+      ohosTscPath = path.join(path.dirname(ohosTscPath), 'tsc.js');
+    }
+
+    etsRoot = projectConfig.projectPath;
+    console.log('ARKOALA: ', {
+      arkoalaEtsPluginPath,
+      arkoalaTscPluginPath,
+      arkoalaGeneratedPath,
+      ohosTscPath,
+      tscPath,
+      etsRoot,
+    });
+  }
+
+  function processMemo(): void {
+    const sdkStubs = path.join(
+      require.resolve('@koalaui/arkui-common'),
+      '../../../../ohos-sdk-ets/openharmony/10/ets/'
+    );
+    const tsConfig = {
+      compilerOptions: {
+        target: 'es2017',
+        module: 'ESNext',
+        lib: ['ESNext', 'DOM', 'ESNext.WeakRef'],
+        moduleResolution: 'node',
+        composite: true,
+        incremental: true,
+        declarationMap: true,
+        sourceMap: true,
+        declaration: true,
+        strict: true,
+        skipLibCheck: true,
+        removeComments: false,
+        importsNotUsedAsValues: 'remove',
+        plugins: [{ transform: arkoalaTscPluginPath, trace: false }],
+        outDir: arkoalaGeneratedMemoPath,
+      },
+      files: [
+        path.join(sdkStubs, 'component/index-full.d.ts'),
+        path.join(sdkStubs, 'component/koala-extensions.d.ts'),
+        path.join(sdkStubs, 'api/@internal/full/global.d.ts'),
+      ],
+      include: ['**/*'],
+    };
+
+    const tsConfigPath = path.join(
+      arkoalaGeneratedPath,
+      'memo.tsconfig.json'
+    ); // TODO generate in a build dir or do not generate at all
+    fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf-8');
+    try {
+      const nodeExe = process.argv0; // TODO get from config?
+      console.log('MEMO PREPROCESS');
+      let tscProc = cp.spawnSync(nodeExe, [tscPath, '-p', tsConfigPath], {
+        stdio: 'inherit',
+        cwd: arkoalaGeneratedPath,
+      });
+      console.log('TSC', tscProc.status, tscProc.error);
+      console.log('MEMO PREPROCESS DONE');
+    } finally {
+      //TODO check status
+      fs.rmSync(tsConfigPath);
+    }
+  }
+
+  function preprocessEts(): void {
+    const ohosTsConfig = {
+      extends: require.resolve(
+        '@koalaui/arkui-common/config/tsconfig.base.json'
+      ),
+      exclude: ['node_modules', 'js_output', 'dependencies'],
+      include: ['**/*.ets'],
+      compilerOptions: {
+        outDir: arkoalaGeneratedJSPath,
+        plugins: [
+          {
+            transform: arkoalaEtsPluginPath,
+            destination: arkoalaGeneratedPath,
+            arkui: '@koalaui/arkoala-arkui',
+          },
+        ],
+      },
+    };
+    const ohosTsConfigPath = path.join(etsRoot, 'arkoala.tsconfig.json'); // TODO generate in a build dir or do not generate at all
+    fs.writeFileSync(ohosTsConfigPath, JSON.stringify(ohosTsConfig), 'utf-8');
+    try {
+      const nodeExe = process.argv0; // TODO get from config?
+      console.log('ETS PREPROCESS');
+      let ohosTscProc = cp.spawnSync(
+        nodeExe,
+        [ohosTscPath, '-p', ohosTsConfigPath],
+        { stdio: 'inherit', cwd: etsRoot }
+      );
+      console.log('ETS PREPROCESS DONE');
+    } finally {
+      //TODO check status
+      fs.rmSync(ohosTsConfigPath);
+    }
+  }
+  
+  function makeArkoalaEntryPoint(): rollup.Plugin {
+    return {
+      name: 'arkoala-entry-plugin',
+      async resolveId(source, importer, options) {
+        if (source === ARKOALA_ENTRY_STUB) {
+          return '\0' + ARKOALA_ENTRY_STUB;
+        }
+        if (source === ARKOALA_RESOURCES_MODULE) {
+          return { id: '\0' + ARKOALA_RESOURCES_MODULE, moduleSideEffects: true };
+        }
+        if (!arkoalaNativeEmitted && source === '@koalaui/arkoala') {
+          let resolved = await this.resolve(source, importer, options);
+          if (resolved) {
+            let libPath = path.join(path.dirname(resolved.id), '../libArkoalaNative.so');
+            let buildPath = path.dirname(projectConfig.buildPath);
+            let libDir = path.join(buildPath, '../../libs', path.basename(buildPath), 'arm64-v8a');
+            try {
+              fs.mkdirSync(libDir, { recursive: true });
+              fs.copyFileSync(libPath, path.join(libDir, path.basename(libPath)));
+            } catch (e) {
+              console.warn('Failed to load native library: ' + e);
+            }
+          }
+          arkoalaNativeEmitted = true;
+        }
+      },
+      load(id) {
+        if (id === '\0' + ARKOALA_RESOURCES_MODULE) {
+          return { code: genResourceMapModule() };
+        }
+
+        if (id === '\0' + ARKOALA_ENTRY_STUB) {
+          const indexPagePath = path.join(arkoalaGeneratedMemoPath, 'pages/Index');
+          const routerInitPath = path.join(arkoalaGeneratedMemoPath, '__router_initialization');
+          return {
+            code: `
+import ${JSON.stringify(ARKOALA_RESOURCES_MODULE)}
+import { startApplication } from '@koalaui/arkoala'
+import { ArkRooted } from '@koalaui/arkoala-arkui'
+import { __Entry } from ${JSON.stringify(indexPagePath)}
+import { registerRoutes } from ${JSON.stringify(routerInitPath)}
+
+export function startArkoala() {
+registerRoutes();
+return startApplication({
+    waitForVSync: undefined
+}, ArkRooted(__Entry))
+}`,
+          };
+        }
+      },
+    };
+  }
 }
 
-function genResourceMapModule(options: CodegenOptions = {}) {
+function genResourceMapModule(options: CodegenOptions = {}): string {
   const moduleJsonPath = projectConfig.aceModuleJsonPath;
   const resourceTablePath = path.join(path.dirname(moduleJsonPath), 'ResourceTable.txt');
   const importString = options.arkoalaImport ?? '@koalaui/arkoala-arkui'
@@ -310,10 +330,11 @@ function genResourceMapModule(options: CodegenOptions = {}) {
     `const bundleName = ${JSON.stringify(module.bundleName || '')};\n`,
     `const moduleName = ${JSON.stringify(module.moduleName || '')};\n`,
     `const resources = ${JSON.stringify(resourceMap || {}, null, 4)};\n\n`,
-    `__registerResources(bundleName, moduleName, resources);\n`,
-    `export function $r(name, ...args) { return _r(name, ...args) };\n`,
-    `export function $rawfile(name) { return _rawfile(name) };\n`,
-    `Object.assign(globalThis, { $r: $r, $rawfile: $rawfile });\n`, // TODO: replace with plugin-inject
+    '__registerResources(bundleName, moduleName, resources);\n',
+    'export function $r(name, ...args) { return _r(name, ...args) };\n',
+    'export function $rawfile(name) { return _rawfile(name) };\n',
+    'Object.assign(globalThis, { $r: $r, $rawfile: $rawfile });\n',
+    // TODO: replace with plugin-inject
   ].join('');
 }
 
@@ -336,7 +357,9 @@ function readResourceTable(filepath: string): ResourceTableEntry[] {
   let entries: ResourceTableEntry[] = []
   for (const line of lines) {
     let items = line.trim().split(/\s+/g);
-    if (items.length === 0 || items[0] === '') continue;
+    if (items.length === 0 || items[0] === '') {
+      continue;
+    }
 
     if (items.length !== 3) {
       throw new Error(`Illegal resource table format (at line '${items}')`)
