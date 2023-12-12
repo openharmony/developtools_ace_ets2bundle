@@ -46,6 +46,8 @@ export function makeArkoalaPlugin() {
   let arkoalaEtsPluginPath = '';
   let arkoalaTscPluginPath = '';
   let etsRoot = '';
+  
+  let arkoalaNativeEmitted = false;
 
   return {
     name: 'arkoalaEtsTransform',
@@ -218,12 +220,27 @@ export function makeArkoalaPlugin() {
           commonjs(),
           {
             name: 'arkoala-stub-plugin',
-            resolveId(source, importer, options) {
+            async resolveId(source, importer, options) {
               if (source === ARKOALA_ENTRY_STUB) {
                 return '\0' + ARKOALA_ENTRY_STUB;
               }
               if (source === ARKOALA_RESOURCES_MODULE) {
                 return { id: '\0' + ARKOALA_RESOURCES_MODULE, moduleSideEffects: true };
+              }
+              if (!arkoalaNativeEmitted && source === '@koalaui/arkoala') {
+                let resolved = await this.resolve(source, importer, options);
+                if (resolved) {
+                  let libPath = path.join(path.dirname(resolved.id), '../libArkoalaNative.so');
+                  let buildPath = path.dirname(projectConfig.buildPath);
+                  let libDir = path.join(buildPath, '../../libs', path.basename(buildPath), 'arm64-v8a');
+                  try {
+                    fs.mkdirSync(libDir, { recursive: true });
+                    fs.copyFileSync(libPath, path.join(libDir, path.basename(libPath)));
+                  } catch (e) {
+                    console.warn("Failed to load native library: " + e)
+                  }
+                }
+                arkoalaNativeEmitted = true;
               }
             },
             load(id) {
