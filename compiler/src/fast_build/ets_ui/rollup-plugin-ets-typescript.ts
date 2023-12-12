@@ -102,7 +102,7 @@ export function etsTransform() {
   let cacheFile: CacheFile;
   if (projectConfig.useArkoala) {
     // Dynamic loading to avoid resolving arkoala-only dependencies
-    return require('./rollup-plugin-ets-arkoala').makeArkoalaPlugin()
+    return require('./rollup-plugin-ets-arkoala').makeArkoalaPlugin();
   }
   return {
     name: 'etsTransform',
