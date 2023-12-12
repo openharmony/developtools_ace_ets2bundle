@@ -72,6 +72,8 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
         console.log('RESOLVE ENTRY ' + source);
         return `${source}`;
       }
+
+      return null;
     },
 
     async load(id): Promise<rollup.LoadResult> {
@@ -264,7 +266,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
   function makeArkoalaEntryPoint(): rollup.Plugin {
     return {
       name: 'arkoala-entry-plugin',
-      async resolveId(source, importer, options) {
+      async resolveId(source, importer, options): Promise<rollup.ResolveIdResult> {
         if (source === ARKOALA_ENTRY_STUB) {
           return '\0' + ARKOALA_ENTRY_STUB;
         }
@@ -286,8 +288,10 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
           }
           arkoalaNativeEmitted = true;
         }
+
+        return null;
       },
-      load(id) {
+      load(id): rollup.LoadResult {
         if (id === '\0' + ARKOALA_RESOURCES_MODULE) {
           return { code: genResourceMapModule() };
         }
@@ -311,6 +315,8 @@ return startApplication({
 }`,
           };
         }
+
+        return null;
       },
     };
   }
