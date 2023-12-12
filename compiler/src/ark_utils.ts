@@ -163,17 +163,14 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
 
   if (REG_SYSTEM_MODULE.test(moduleRequest.trim())) {
     return moduleRequest.replace(REG_SYSTEM_MODULE, (_, moduleType, systemKey) => {
-      const systemModule: string = `${moduleType}.${systemKey}`;
+      let moduleRequestStr = '';
       if (extendSdkConfigs) {
-        for (let config of extendSdkConfigs.values()) {
-          if (config.prefix == '@arkui-x') {
-            continue;
-          }
-          if (moduleRequest.startsWith(config.prefix + '.')) {
-            return `${config.prefix}:${systemKey}`;
-          }
-        }
+        moduleRequestStr = moduleRequestCallback(moduleRequest, _, moduleType, systemKey);
       }
+      if (moduleRequestStr !== '') {
+        return moduleRequestStr;
+      }
+      const systemModule: string = `${moduleType}.${systemKey}`;
       if (NATIVE_MODULE.has(systemModule)) {
         return `@native:${systemModule}`;
       } else {
@@ -186,8 +183,29 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
       return `@app:${projectConfig.bundleName}/${projectConfig.moduleName}/${libsoKey}`;
     });
   }
-
   return undefined;
+}
+
+function moduleRequestCallback(moduleRequest, _, moduleType, systemKey): string {
+  for (let config of extendSdkConfigs.values()) {
+    if (config.prefix === '@arkui-x') {
+      continue;
+    }
+    if (moduleRequest.startsWith(config.prefix + '.')) {
+      let modulePath: string = path.resolve(config.apiPath, moduleRequest + '.d.ts');
+      if (!fs.existsSync(modulePath)) {
+        modulePath = path.resolve(config.apiPath, moduleRequest + '.d.ets');
+      }
+      if (!fs.existsSync(modulePath)) {
+        return `${config.prefix}:${systemKey}`;
+      }
+      const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
+      if (checkBundleVersion(bundleInfo.bundleVersion)) {
+        return `@bundle:${bundleInfo.bundlePath}`;
+      }
+    }
+  }
+  return '';
 }
 
 export function genSourceMapFileName(temporaryFile: string): string {
@@ -626,3 +644,51 @@ export function getArkBuildDir(arkDir: string): string {
 export function getBuildBinDir(arkDir: string): string {
   return path.join(getArkBuildDir(arkDir), 'bin');
 }
+
+interface BundleInfo {
+  bundlePath: string;
+  bundleVersion: string;
+}
+
+function parseOhmBundle(modulePath: string): BundleInfo {
+  const apiCode: string = fs.readFileSync(modulePath, {encoding: 'utf-8'});
+  const bundleTags: string[] = apiCode.match(/@bundle.+/g);
+  const bundleInfo: BundleInfo = {
+    bundlePath: '',
+    bundleVersion: ''
+  };
+  if (bundleTags && bundleTags.length > CONSTANT_STEP_0) {
+    const bundleTag: string = bundleTags[CONSTANT_STEP_0];
+    const bundleInfos: string[] = bundleTag.split(' ');
+    if (bundleInfos.length === CONSTANT_STEP_3) {
+      bundleInfo.bundlePath = bundleInfos[CONSTANT_STEP_1];
+      bundleInfo.bundleVersion = bundleInfos[CONSTANT_STEP_2];
+    }
+  }
+  return bundleInfo;
+}
+
+function checkBundleVersion(bundleVersion: string): boolean {
+  const versionSteps: string[] = bundleVersion.split(/[\.\(\)]/g);
+  // eg: since xx
+  if (versionSteps.length === CONSTANT_STEP_1 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
+    Number(versionSteps[CONSTANT_STEP_0]) > CONSTANT_VERSION_10) {
+    return true;
+  // eg: since x.x.x(xx)
+  } else if (versionSteps.length >= CONSTANT_STEP_3 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
+    !isNaN(Number(versionSteps[CONSTANT_STEP_1]))) {
+    const firstStep: number = Number(versionSteps[CONSTANT_STEP_0]);
+    const secondStep: number = Number(versionSteps[CONSTANT_STEP_1]);
+    if (firstStep > CONSTANT_STEP_4 || firstStep === CONSTANT_STEP_4 && secondStep > CONSTANT_STEP_1) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const CONSTANT_STEP_0: number = 0;
+const CONSTANT_STEP_1: number = 1;
+const CONSTANT_STEP_2: number = 2;
+const CONSTANT_STEP_3: number = 3;
+const CONSTANT_STEP_4: number = 4;
+const CONSTANT_VERSION_10: number = 10;
