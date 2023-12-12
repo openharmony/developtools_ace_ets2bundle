@@ -139,6 +139,7 @@
         "NavRouter",
         "Navigation",
         "Navigator",
+        "NodeContainer",
         "Option",
         "PageTransitionEnter",
         "PageTransitionExit",
@@ -444,6 +445,11 @@
             "name": "Navigator",
             "type": "NavigatorAttribute",
             "instance": "NavigatorInstance"
+          },
+          {
+            "name": "NodeContainer",
+            "type": "NodeContainerAttribute",
+            "instance": "NodeContainerInstance"
           },
           {
             "name": "Option",
