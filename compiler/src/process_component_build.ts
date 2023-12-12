@@ -74,6 +74,7 @@ import {
   ISLAZYCREATE,
   DEEPRENDERFUNCTION,
   ITEMCREATION,
+  ITEMCREATION2,
   OBSERVEDSHALLOWRENDER,
   OBSERVEDDEEPRENDER,
   ItemComponents,
@@ -889,6 +890,25 @@ function createItemCreate(nameResult: NameResult, isLazyCreate: boolean): ts.Sta
       ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, itemCreateArgs));
 }
 
+type ItemCreation = {
+  creationArgs: ts.Expression[],
+  creationName: string,
+};
+
+function getItemCreation(nameResult: NameResult): ItemCreation {
+  const creationArgs: ts.Expression[] = [];
+  let creationName: string = OBSERVECOMPONENTCREATION;
+  if (partialUpdateConfig.optimizeComponent) {
+    creationArgs.push(
+      ts.factory.createIdentifier(ITEMCREATION2),
+      ts.factory.createIdentifier(nameResult.name));
+    creationName = OBSERVECOMPONENTCREATION2;
+  } else {
+    creationArgs.push(ts.factory.createIdentifier(ITEMCREATION));
+  }
+  return { creationArgs, creationName };
+}
+
 function createItemBlock(
   node: ts.ExpressionStatement,
   itemRenderInnerStatements: ts.Statement[],
@@ -897,24 +917,24 @@ function createItemBlock(
   immutableStatements: ts.Statement[]
 ): ts.Block {
   const blockNode: ts.Statement[] = [
-    createItemCreation(node, itemRenderInnerStatements, nameResult, immutableStatements)
+    createItemCreation2(node, itemRenderInnerStatements, nameResult, immutableStatements)
   ];
+  const itemCreation: ItemCreation = getItemCreation(nameResult);
   if (isLazyCreate) {
+    blockNode.unshift(createItemCreation(node));
     blockNode.push(
       createDeepRenderFunction(node, deepItemRenderInnerStatements),
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(
           ts.factory.createThis(),
-          ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-        ),
-        undefined,
-        [ts.factory.createIdentifier(ITEMCREATION)]
+          ts.factory.createIdentifier(itemCreation.creationName)
+        ), undefined, itemCreation.creationArgs
       )),
       createComponent(node, COMPONENT_POP_FUNCTION).newNode
     );
   } else {
     blockNode.push(
-      createObservedDeepRender(node, deepItemRenderInnerStatements),
+      createObservedDeepRender(node, deepItemRenderInnerStatements, itemCreation),
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createIdentifier(OBSERVEDDEEPRENDER), undefined, []))
     );
@@ -936,12 +956,7 @@ function checkLazyCreate(node: ts.ExpressionStatement, nameResult: NameResult): 
   return false;
 }
 
-function createItemCreation(
-  node: ts.ExpressionStatement,
-  itemRenderInnerStatements: ts.Statement[],
-  nameResult: NameResult,
-  immutableStatements: ts.Statement[]
-): ts.VariableStatement {
+function createItemCreation(node: ts.ExpressionStatement): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
@@ -958,8 +973,14 @@ function createItemCreation(
           ts.factory.createBlock(
             [
               createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID),
-              ...itemRenderInnerStatements,
-              processDebug(node, nameResult, itemRenderInnerStatements, true),
+              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+                ts.factory.createIdentifier(ITEMCREATION2),
+                undefined,
+                [
+                  ts.factory.createIdentifier(ELMTID),
+                  ts.factory.createIdentifier(ISINITIALRENDER)
+                ]
+              )),
               ts.factory.createIfStatement(
                 ts.factory.createPrefixUnaryExpression(
                   ts.SyntaxKind.ExclamationToken,
@@ -969,13 +990,48 @@ function createItemCreation(
                   [createComponent(node, COMPONENT_POP_FUNCTION).newNode],
                   true
                 ),
-                immutableStatements && immutableStatements.length ?
-                  ts.factory.createBlock(immutableStatements, true) : undefined
               ),
               createViewStackProcessorStatement(STOPGETACCESSRECORDING)
             ],
             true
           )
+        )
+      )],
+      ts.NodeFlags.Const
+    )
+  );
+}
+
+function createItemCreation2(
+  node: ts.ExpressionStatement,
+  itemRenderInnerStatements: ts.Statement[],
+  nameResult: NameResult,
+  immutableStatements: ts.Statement[]
+): ts.VariableStatement {
+  const itemBlock: ts.Statement[] = [
+    ...itemRenderInnerStatements,
+    processDebug(node, nameResult, itemRenderInnerStatements, true)
+  ];
+  if (immutableStatements && immutableStatements.length) {
+    itemBlock.push(ts.factory.createIfStatement(
+      ts.factory.createIdentifier(ISINITIALRENDER),
+      ts.factory.createBlock(immutableStatements, true)
+    ));
+  }
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(ITEMCREATION2), undefined, undefined,
+        ts.factory.createArrowFunction(undefined, undefined,
+          [
+            ts.factory.createParameterDeclaration(undefined, undefined,
+              ts.factory.createIdentifier(ELMTID), undefined, undefined, undefined),
+            ts.factory.createParameterDeclaration(undefined, undefined,
+              ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
+          ], undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(itemBlock, true)
         )
       )],
       ts.NodeFlags.Const
@@ -1033,7 +1089,8 @@ function createDeepRenderFunction(
 
 function createObservedDeepRender(
   node: ts.ExpressionStatement,
-  deepItemRenderInnerStatements: ts.Statement[]
+  deepItemRenderInnerStatements: ts.Statement[],
+  itemCreation: ItemCreation
 ): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
@@ -1053,10 +1110,8 @@ function createObservedDeepRender(
               ts.factory.createExpressionStatement(ts.factory.createCallExpression(
                 ts.factory.createPropertyAccessExpression(
                   ts.factory.createThis(),
-                  ts.factory.createIdentifier(OBSERVECOMPONENTCREATION)
-                ),
-                undefined,
-                [ts.factory.createIdentifier(ITEMCREATION)]
+                  ts.factory.createIdentifier(itemCreation.creationName)
+                ), undefined, itemCreation.creationArgs
               )),
               ...deepItemRenderInnerStatements,
               createComponent(node, COMPONENT_POP_FUNCTION).newNode

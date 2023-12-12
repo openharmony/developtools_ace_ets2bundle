@@ -53,13 +53,16 @@ class ParentView extends ViewPU {
         {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, true, 'true');
-                ListItem.width(200);
-                ListItem.height(100);
+                itemCreation2(elmtId, isInitialRender);
                 if (!isInitialRender) {
                     ListItem.pop();
                 }
                 ViewStackProcessor.StopGetAccessRecording();
+            };
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                ListItem.create(deepRenderFunction, true, 'true');
+                ListItem.width(200);
+                ListItem.height(100);
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
@@ -71,7 +74,7 @@ class ParentView extends ViewPU {
                 Text.pop();
                 ListItem.pop();
             };
-            this.observeComponentCreation(itemCreation);
+            this.observeComponentCreation2(itemCreation2, ListItem);
             ListItem.pop();
         }
         List.pop();

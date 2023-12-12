@@ -464,6 +464,7 @@ export const OBSERVECOMPONENTCREATION2: string = 'observeComponentCreation2';
 export const ISLAZYCREATE: string = 'isLazyCreate';
 export const DEEPRENDERFUNCTION: string = 'deepRenderFunction';
 export const ITEMCREATION: string = 'itemCreation';
+export const ITEMCREATION2: string = 'itemCreation2';
 export const OBSERVEDSHALLOWRENDER: string = 'observedShallowRender';
 export const OBSERVEDDEEPRENDER:string = 'observedDeepRender';
 export const ItemComponents: string[] = ['ListItem', 'GridItem'];
