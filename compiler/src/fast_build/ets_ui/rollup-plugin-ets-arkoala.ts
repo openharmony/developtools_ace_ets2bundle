@@ -21,14 +21,9 @@ import rollup from 'rollup';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
-import {
-  getResolveModules
-} from '../../utils';
+import { getResolveModules } from '../../utils';
 
-import {
-  projectConfig,
-  globalModulePaths
-} from '../../../main';
+import { projectConfig, globalModulePaths } from '../../../main';
 
 // TODO replace console.log logging
 // TODO better plugin integration
@@ -46,7 +41,7 @@ export function makeArkoalaPlugin() {
   let arkoalaEtsPluginPath = '';
   let arkoalaTscPluginPath = '';
   let etsRoot = '';
-  
+
   let arkoalaNativeEmitted = false;
 
   return {
@@ -167,7 +162,7 @@ export function makeArkoalaPlugin() {
       if (source === ARKOALA_ENTRY_STUB) {
         return { id: ARKOALA_ENTRY_STUB, external: true };
       }
-      
+
       if (source === ARKOALA_RESOURCES_MODULE) {
         return { id: ARKOALA_RESOURCES_MODULE, external: true };
       }
@@ -193,8 +188,6 @@ export function makeArkoalaPlugin() {
         .replace(/\.ets$/, '.js');
 
       // TODO try to pick only a bindle wich imports entry point stub, other files are unnecessary
-      // let loaded = await this.load(generatedPath);
-      // console.log("LOADED JS", loaded)
 
       let bundle = await rollup.rollup({
         input: generatedPath,
@@ -206,14 +199,11 @@ export function makeArkoalaPlugin() {
               path.resolve(__dirname, 'node_modules'),
               ...globalModulePaths,
               ...(projectConfig.aceModuleJsonPath
-                ? getResolveModules(
-                    path.resolve(projectConfig.projectPath),
-                    false
-                  )
+                ? getResolveModules(path.resolve(projectConfig.projectPath), false)
                 : getResolveModules(
-                    path.resolve(projectConfig.projectPath),
-                    true
-                  )),
+                path.resolve(projectConfig.projectPath),
+                true
+              )),
             ],
             exportConditions: ['ark', 'node', 'main'],
           }),
@@ -237,7 +227,7 @@ export function makeArkoalaPlugin() {
                     fs.mkdirSync(libDir, { recursive: true });
                     fs.copyFileSync(libPath, path.join(libDir, path.basename(libPath)));
                   } catch (e) {
-                    console.warn("Failed to load native library: " + e)
+                    console.warn('Failed to load native library: ' + e)
                   }
                 }
                 arkoalaNativeEmitted = true;
@@ -252,19 +242,17 @@ export function makeArkoalaPlugin() {
                 return {
                   code: `
 import ${JSON.stringify(ARKOALA_RESOURCES_MODULE)}
-import { startApplication } from "@koalaui/arkoala"
-import { ArkRooted } from "@koalaui/arkoala-arkui"
+import { startApplication } from '@koalaui/arkoala'
+import { ArkRooted } from '@koalaui/arkoala-arkui'
 import { __Entry } from ${JSON.stringify(
-  path.join(arkoalaGeneratedMemoPath, 'pages/Index')
-)}
+                    path.join(arkoalaGeneratedMemoPath, 'pages/Index')
+                  )}
 import { registerRoutes } from ${JSON.stringify(
-  path.join(arkoalaGeneratedMemoPath, '__router_initialization')
-)}
+                    path.join(arkoalaGeneratedMemoPath, '__router_initialization')
+                  )}
 
 export function startArkoala() {
-    console.log("XXXX startArkoala");
     registerRoutes();
-    console.log("XXXX registerRoutes::End");
     return startApplication({
         waitForVSync: undefined
     }, ArkRooted(__Entry))
@@ -286,7 +274,7 @@ export function startArkoala() {
         if (chunk.type == 'chunk') {
           let code = chunk.code.replace(
             /\bLOAD_NATIVE\b/g,
-            `globalThis.requireNapi("ArkoalaNative", true)`
+            `globalThis.requireNapi('ArkoalaNative', true)`
           ); // TODO @rollup/plugin-inject
           let cachedPath = id
             .replace(projectRoot, cacheRoot)
@@ -311,18 +299,17 @@ export function startArkoala() {
 function genResourceMapModule(options: CodegenOptions = {}) {
   const moduleJsonPath = projectConfig.aceModuleJsonPath;
   const resourceTablePath = path.join(path.dirname(moduleJsonPath), 'ResourceTable.txt');
-  const importString = options.arkoalaImport ?? "@koalaui/arkoala-arkui"
-  
+  const importString = options.arkoalaImport ?? '@koalaui/arkoala-arkui'
+
   const module = readModuleManifest(moduleJsonPath);
   const resourceTable = readResourceTable(resourceTablePath);
   const resourceMap = makeResourceMap(resourceTable)
 
   return [
     `import { __registerResources, _r, _rawfile } from ${JSON.stringify(importString)};\n\n`,
-    `const bundleName = ${JSON.stringify(module.bundleName || "")};\n`,
-    `const moduleName = ${JSON.stringify(module.moduleName || "")};\n`,
+    `const bundleName = ${JSON.stringify(module.bundleName || '')};\n`,
+    `const moduleName = ${JSON.stringify(module.moduleName || '')};\n`,
     `const resources = ${JSON.stringify(resourceMap || {}, null, 4)};\n\n`,
-    `console.log("XXXXX registerResources")\n`,
     `__registerResources(bundleName, moduleName, resources);\n`,
     `export function $r(name, ...args) { return _r(name, ...args) };\n`,
     `export function $rawfile(name) { return _rawfile(name) };\n`,
@@ -332,64 +319,64 @@ function genResourceMapModule(options: CodegenOptions = {}) {
 
 
 interface ResourceTableEntry {
-    type: string
-    name: string
-    id: number
+  type: string
+  name: string
+  id: number
 }
 
 interface ModuleInfo {
-    bundleName: string
-    moduleName: string
+  bundleName: string
+  moduleName: string
 }
 
 function readResourceTable(filepath: string): ResourceTableEntry[] {
-    let content = fs.readFileSync(filepath, "utf-8").trim()
-    let lines = content.split(/(\r?\n)+/gm)
+  let content = fs.readFileSync(filepath, 'utf-8').trim()
+  let lines = content.split(/(\r?\n)+/gm)
 
-    let entries: ResourceTableEntry[] = []
-    for (const line of lines) {
-        let items = line.trim().split(/\s+/g);
-        if (items.length === 0 || items[0] === "") continue;
+  let entries: ResourceTableEntry[] = []
+  for (const line of lines) {
+    let items = line.trim().split(/\s+/g);
+    if (items.length === 0 || items[0] === '') continue;
 
-        if (items.length !== 3) {
-            throw new Error(`Illegal resource table format (at line '${items}')`)
-        }
-
-        const [type, name, idStr] = items
-        if (!/^0x[0-9A-Fa-f]{8}$/i.test(idStr)) { // int32 in hex, 0xFFFFFFFF
-            throw new Error(`Illegal resource id: ${idStr}`)
-        }
-
-        const id = parseInt(idStr, 16)
-
-        entries.push({ type, name, id })
+    if (items.length !== 3) {
+      throw new Error(`Illegal resource table format (at line '${items}')`)
     }
 
-    return entries
+    const [type, name, idStr] = items
+    if (!/^0x[0-9A-Fa-f]{8}$/i.test(idStr)) { // int32 in hex, 0xFFFFFFFF
+      throw new Error(`Illegal resource id: ${idStr}`)
+    }
+
+    const id = parseInt(idStr, 16)
+
+    entries.push({ type, name, id })
+  }
+
+  return entries
 }
 
 function readModuleManifest(filepath: string): ModuleInfo {
-    let json = fs.readFileSync(filepath, "utf-8").trim()
-    let manifest = JSON.parse(json)
-    let moduleName = manifest.module.name
-    let bundleName = manifest.app?.bundleName ?? "com.huawei.arkoala" // TODO remove hardcoded constant
+  let json = fs.readFileSync(filepath, 'utf-8').trim()
+  let manifest = JSON.parse(json)
+  let moduleName = manifest.module.name
+  let bundleName = manifest.app?.bundleName ?? 'com.huawei.arkoala' // TODO remove hardcoded constant
 
-    return { moduleName, bundleName }
+  return { moduleName, bundleName }
 }
 
 function makeResourceMap(resources: ResourceTableEntry[]): Record<string, number> {
-    let output = {};
-    for (const {type, name, id} of resources) {
-        let key = type + "." + name
-        if (key in output) {
-            throw new Error(`Duplicated resource key: ${key}`)
-        }
-        output[key] = id
+  let output = {};
+  for (const {type, name, id} of resources) {
+    let key = type + '.' + name
+    if (key in output) {
+      throw new Error(`Duplicated resource key: ${key}`)
     }
+    output[key] = id
+  }
 
-    return output
+  return output
 }
 
 interface CodegenOptions {
-    arkoalaImport?: string
+  arkoalaImport?: string
 }
