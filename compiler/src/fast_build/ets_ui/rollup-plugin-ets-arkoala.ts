@@ -132,7 +132,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
   };
 
   function writeBundleToCache(bundleCode: string, id: string, projectRoot: string, cacheRoot: string): void {
-     // TODO emit unmemoized ts?
+    // TODO emit unmemoized ts?
     let code = bundleCode.replace(
       /\bLOAD_NATIVE\b/g,
       'globalThis.requireNapi("ArkoalaNative", true)'
@@ -319,17 +319,17 @@ return startApplication({
 function genResourceMapModule(options: CodegenOptions = {}): string {
   const moduleJsonPath = projectConfig.aceModuleJsonPath;
   const resourceTablePath = path.join(path.dirname(moduleJsonPath), 'ResourceTable.txt');
-  const importString = options.arkoalaImport ?? '@koalaui/arkoala-arkui'
+  const importString = options.arkoalaImport ?? '@koalaui/arkoala-arkui';
 
   const module = readModuleManifest(moduleJsonPath);
   const resourceTable = readResourceTable(resourceTablePath);
-  const resourceMap = makeResourceMap(resourceTable)
+  const resourceMap = makeResourceMap(resourceTable);
 
   return [
     `import { __registerResources, _r, _rawfile } from ${JSON.stringify(importString)};\n\n`,
     `const bundleName = ${JSON.stringify(module.bundleName || '')};\n`,
     `const moduleName = ${JSON.stringify(module.moduleName || '')};\n`,
-    `const resources = ${JSON.stringify(resourceMap || {}, null, 4)};\n\n`,
+    `const resources = ${JSON.stringify(resourceMap || {})};\n\n`,
     '__registerResources(bundleName, moduleName, resources);\n',
     'export function $r(name, ...args) { return _r(name, ...args) };\n',
     'export function $rawfile(name) { return _rawfile(name) };\n',
@@ -351,53 +351,54 @@ interface ModuleInfo {
 }
 
 function readResourceTable(filepath: string): ResourceTableEntry[] {
-  let content = fs.readFileSync(filepath, 'utf-8').trim()
-  let lines = content.split(/(\r?\n)+/gm)
+  let content = fs.readFileSync(filepath, 'utf-8').trim();
+  let lines = content.split(/(\r?\n)+/gm);
 
-  let entries: ResourceTableEntry[] = []
+  let entries: ResourceTableEntry[] = [];
   for (const line of lines) {
     let items = line.trim().split(/\s+/g);
     if (items.length === 0 || items[0] === '') {
       continue;
     }
 
-    if (items.length !== 3) {
-      throw new Error(`Illegal resource table format (at line '${items}')`)
+    const itemsInRow = 3;
+    if (items.length !== itemsInRow) {
+      throw new Error(`Illegal resource table format (at line '${items}')`);
     }
 
-    const [type, name, idStr] = items
+    const [type, name, idStr] = items;
     if (!/^0x[0-9A-Fa-f]{8}$/i.test(idStr)) { // int32 in hex, 0xFFFFFFFF
-      throw new Error(`Illegal resource id: ${idStr}`)
+      throw new Error(`Illegal resource id: ${idStr}`);
     }
 
-    const id = parseInt(idStr, 16)
+    const id = parseInt(idStr, 16);
 
-    entries.push({ type, name, id })
+    entries.push({ type, name, id });
   }
 
-  return entries
+  return entries;
 }
 
 function readModuleManifest(filepath: string): ModuleInfo {
-  let json = fs.readFileSync(filepath, 'utf-8').trim()
-  let manifest = JSON.parse(json)
-  let moduleName = manifest.module.name
-  let bundleName = manifest.app?.bundleName ?? 'com.huawei.arkoala' // TODO remove hardcoded constant
+  let json = fs.readFileSync(filepath, 'utf-8').trim();
+  let manifest = JSON.parse(json);
+  let moduleName = manifest.module.name;
+  let bundleName = manifest.app?.bundleName ?? 'com.huawei.arkoala'; // TODO remove hardcoded constant
 
-  return { moduleName, bundleName }
+  return { moduleName, bundleName };
 }
 
 function makeResourceMap(resources: ResourceTableEntry[]): Record<string, number> {
   let output = {};
   for (const {type, name, id} of resources) {
-    let key = type + '.' + name
+    let key = type + '.' + name;
     if (key in output) {
-      throw new Error(`Duplicated resource key: ${key}`)
+      throw new Error(`Duplicated resource key: ${key}`);
     }
-    output[key] = id
+    output[key] = id;
   }
 
-  return output
+  return output;
 }
 
 interface CodegenOptions {
