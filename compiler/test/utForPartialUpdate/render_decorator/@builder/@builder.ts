@@ -327,12 +327,15 @@ class MyComponent extends ViewPU {
                 {
                     const itemCreation = (elmtId, isInitialRender) => {
                         ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        ListItem.create(deepRenderFunction, true);
-                        ListItem.editable(true);
+                        itemCreation2(elmtId, isInitialRender);
                         if (!isInitialRender) {
                             ListItem.pop();
                         }
                         ViewStackProcessor.StopGetAccessRecording();
+                    };
+                    const itemCreation2 = (elmtId, isInitialRender) => {
+                        ListItem.create(deepRenderFunction, true);
+                        ListItem.editable(true);
                     };
                     const deepRenderFunction = (elmtId, isInitialRender) => {
                         itemCreation(elmtId, isInitialRender);
@@ -349,7 +352,7 @@ class MyComponent extends ViewPU {
                         Text.pop();
                         ListItem.pop();
                     };
-                    this.observeComponentCreation(itemCreation);
+                    this.observeComponentCreation2(itemCreation2, ListItem);
                     ListItem.pop();
                 }
             };
