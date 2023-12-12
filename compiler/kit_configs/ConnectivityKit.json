@@ -1,0 +1,120 @@
+{
+  "symbol": {
+    "a2dp": {
+      "source": "@ohos.bluetooth.a2dp",
+      "bindings": "default"
+    },
+    "access": {
+      "source": "@ohos.bluetooth.access",
+      "bindings": "default"
+    },
+    "baseProfile": {
+      "source": "@ohos.bluetooth.baseProfile",
+      "bindings": "default"
+    },
+    "ble": {
+      "source": "@ohos.bluetooth.ble",
+      "bindings": "default"
+    },
+    "connection": {
+      "source": "@ohos.bluetooth.connection",
+      "bindings": "default"
+    },
+    "constant": {
+      "source": "@ohos.bluetooth.constant",
+      "bindings": "default"
+    },
+    "bluetooth": {
+      "source": "@ohos.bluetooth",
+      "bindings": "default"
+    },
+    "hfp": {
+      "source": "@ohos.bluetooth.hfp",
+      "bindings": "default"
+    },
+    "hid": {
+      "source": "@ohos.bluetooth.hid",
+      "bindings": "default"
+    },
+    "pan": {
+      "source": "@ohos.bluetooth.pan",
+      "bindings": "default"
+    },
+    "pbap": {
+      "source": "@ohos.bluetooth.pbap",
+      "bindings": "default"
+    },
+    "socket": {
+      "source": "@ohos.bluetooth.socket",
+      "bindings": "default"
+    },
+    "wearDetection": {
+      "source": "@ohos.bluetooth.wearDetection",
+      "bindings": "default"
+    },
+    "bluetoothManager": {
+      "source": "@ohos.bluetoothManager",
+      "bindings": "default"
+    },
+    "connectedTag": {
+      "source": "@ohos.connectedTag",
+      "bindings": "default"
+    },
+    "cardEmulation": {
+      "source": "@ohos.nfc.cardEmulation",
+      "bindings": "default"
+    },
+    "nfcController": {
+      "source": "@ohos.nfc.controller",
+      "bindings": "default"
+    },
+    "tag": {
+      "source": "@ohos.nfc.tag",
+      "bindings": "default"
+    },
+    "omapi": {
+      "source": "@ohos.secureElement",
+      "bindings": "default"
+    },
+    "wifi": {
+      "source": "@ohos.wifi",
+      "bindings": "default"
+    },
+    "wifiext": {
+      "source": "@ohos.wifiext",
+      "bindings": "default"
+    },
+    "wifiManager": {
+      "source": "@ohos.wifiManager",
+      "bindings": "default"
+    },
+    "wifiManagerExt": {
+      "source": "@ohos.wifiManagerExt",
+      "bindings": "default"
+    },
+    "Bluetooth": {
+      "source": "@system.bluetooth",
+      "bindings": "default"
+    },
+    "BLEFoundResponse": {
+      "source": "@system.bluetooth",
+      "bindings": "BLEFoundResponse"
+    },
+    "BluetoothDevice": {
+      "source": "@system.bluetooth",
+      "bindings": "BluetoothDevice"
+    },
+    "StartBLEScanOptions": {
+      "source": "@system.bluetooth",
+      "bindings": "StartBLEScanOptions"
+    },
+    "StopBLEScanOptions": {
+      "source": "@system.bluetooth",
+      "bindings": "StopBLEScanOptions"
+    },
+    "SubscribeBLEFoundOptions": {
+      "source": "@system.bluetooth",
+      "bindings": "SubscribeBLEFoundOptions"
+    }
+  }
+}

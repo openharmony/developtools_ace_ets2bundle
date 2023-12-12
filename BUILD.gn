@@ -176,6 +176,13 @@ ohos_copy("ets_loader_library") {
   module_install_name = ""
 }
 
+ohos_copy("ets_loader_kit_configs") {
+  sources = [ "compiler/kit_configs" ]
+  outputs = [ target_out_dir + "/$target_name" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
 ohos_copy("components") {
   sources = [ "compiler/components" ]
   outputs = [ target_out_dir + "/$target_name" ]

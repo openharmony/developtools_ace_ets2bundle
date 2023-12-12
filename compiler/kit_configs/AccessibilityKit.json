@@ -1,0 +1,56 @@
+{
+  "symbol": {
+    "config": {
+      "source": "@ohos.accessibility.config",
+      "bindings": "default"
+    },
+    "accessibility": {
+      "source": "@ohos.accessibility",
+      "bindings": "default"
+    },
+    "GesturePath": {
+      "source": "@ohos.accessibility.GesturePath",
+      "bindings": "GesturePath"
+    },
+    "GesturePoint": {
+      "source": "@ohos.accessibility.GesturePoint",
+      "bindings": "GesturePoint"
+    },
+    "AccessibilityExtensionAbility": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "default"
+    },
+    "AccessibilityElement": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "AccessibilityElement"
+    },
+    "AccessibilityExtensionContext": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "AccessibilityExtensionContext"
+    },
+    "ElementAttributeKeys": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "ElementAttributeKeys"
+    },
+    "ElementAttributeValues": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "ElementAttributeValues"
+    },
+    "FocusDirection": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "FocusDirection"
+    },
+    "FocusType": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "FocusType"
+    },
+    "Rect": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "Rect"
+    },
+    "WindowType": {
+      "source": "@ohos.application.AccessibilityExtensionAbility",
+      "bindings": "WindowType"
+    }
+  }
+}

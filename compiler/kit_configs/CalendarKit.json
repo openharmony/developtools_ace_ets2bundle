@@ -1,0 +1,8 @@
+{
+  "symbol": {
+    "calendarManager": {
+      "source": "@ohos.calendarManager",
+      "bindings": "default"
+    }
+  }
+}
