@@ -75,6 +75,7 @@ import {
   VIEW_STACK_PROCESSOR,
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
+  WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
 } from './pre_define';
 import {
@@ -319,6 +320,16 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       } else if (ts.isDecorator(node)) {
         // This processing is for mock instead of ui transformation
         node = processDecorator(node);
+      } else if (isWrapBuilderFunction(node)) {
+        if (node.arguments && node.arguments[0] && (!ts.isIdentifier(node.arguments[0]) ||
+          ts.isIdentifier(node.arguments[0]) &&
+          !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
+          transformLog.errors.push({
+            type: LogType.ERROR,
+            message: `wrapBuilder's parameter should be @Builder function.`,
+            pos: node.getStart()
+          });
+        }
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
@@ -328,6 +339,14 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         node = processResourceData(node as ts.CallExpression);
       }
       return ts.visitEachChild(node, processResourceNode, context);
+    }
+
+    function isWrapBuilderFunction(node: ts.Node): boolean {
+      if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+        node.expression.escapedText.toString() === WRAPBUILDER_FUNCTION) {
+        return true;
+      }
+      return false;
     }
   };
 }
