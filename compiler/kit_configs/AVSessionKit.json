@@ -1,0 +1,16 @@
+{
+  "symbol": {
+    "AVCastPicker": {
+      "source": "@ohos.multimedia.avCastPicker",
+      "bindings": "default"
+    },
+    "AVCastPickerState": {
+      "source": "@ohos.multimedia.avCastPicker",
+      "bindings": "AVCastPickerState"
+    },
+    "avSession": {
+      "source": "@ohos.multimedia.avsession",
+      "bindings": "default"
+    }
+  }
+}
