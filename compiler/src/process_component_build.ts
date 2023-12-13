@@ -1043,6 +1043,30 @@ function createDeepRenderFunction(
   node: ts.ExpressionStatement,
   deepItemRenderInnerStatements: ts.Statement[]
 ): ts.VariableStatement {
+  const blockNode: ts.Statement[] = [
+    ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createIdentifier(ITEMCREATION), undefined,
+      [
+        ts.factory.createIdentifier(ELMTID),
+        ts.factory.createIdentifier(ISINITIALRENDER)
+      ]
+    )),
+    ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(UPDATE_FUNC_BY_ELMT_ID)
+        ),
+        ts.factory.createIdentifier(CREATE_SET_METHOD)
+      ), undefined,
+      [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
+    )),
+    ...deepItemRenderInnerStatements,
+    createComponent(node, COMPONENT_POP_FUNCTION).newNode
+  ];
+  if (partialUpdateConfig.optimizeComponent) {
+    blockNode.splice(1, 1);
+  }
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
@@ -1056,30 +1080,7 @@ function createDeepRenderFunction(
               ts.factory.createIdentifier(ISINITIALRENDER), undefined, undefined, undefined)
           ], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-          ts.factory.createBlock(
-            [
-              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                ts.factory.createIdentifier(ITEMCREATION), undefined,
-                [
-                  ts.factory.createIdentifier(ELMTID),
-                  ts.factory.createIdentifier(ISINITIALRENDER)
-                ]
-              )),
-              ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-                ts.factory.createPropertyAccessExpression(
-                  ts.factory.createPropertyAccessExpression(
-                    ts.factory.createThis(),
-                    ts.factory.createIdentifier(UPDATE_FUNC_BY_ELMT_ID)
-                  ),
-                  ts.factory.createIdentifier(CREATE_SET_METHOD)
-                ), undefined,
-                [ts.factory.createIdentifier(ELMTID), ts.factory.createIdentifier(ITEMCREATION)]
-              )),
-              ...deepItemRenderInnerStatements,
-              createComponent(node, COMPONENT_POP_FUNCTION).newNode
-            ],
-            true
-          )
+          ts.factory.createBlock(blockNode, true)
         )
       )],
       ts.NodeFlags.Const
