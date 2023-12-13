@@ -36,6 +36,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
   const ARKOALA_ENTRY_STUB = '@koalaui/arkoala-app';
   const ARKOALA_RESOURCES_MODULE = '@koalaui/arkoala-app-resources';
 
+  let arkoalaSdkRoot = '';
   let arkoalaBuildPath = '';
   let arkoalaGeneratedPath = '';
   let arkoalaGeneratedJSPath = '';
@@ -99,6 +100,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
               path.resolve(projectConfig.projectPath),
               path.resolve('node_modules'),
               path.resolve(__dirname, 'node_modules'),
+              arkoalaSdkRoot,
               ...globalModulePaths,
               ...(projectConfig.aceModuleJsonPath ?
                 getResolveModules(path.resolve(projectConfig.projectPath), false) :
@@ -148,29 +150,36 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
   }
 
   function configureArkoala(): void {
-    arkoalaBuildPath = path.join(
-      projectConfig.buildPath,
-      '../../../arkoala_out'
-    );
+    const arkoalaPossiblePaths = globalModulePaths.map(dir => path.join(dir, '../../arkoala'));
+    arkoalaSdkRoot = arkoalaPossiblePaths.find(possibleRootDir => isDir(possibleRootDir)) ?? '';
+    if (!arkoalaSdkRoot) {
+      throw new Error('Arkoala SDK not found in ' + arkoalaPossiblePaths.join(';'));
+    }
+
+    arkoalaBuildPath = path.join(projectConfig.buildPath, '../../../arkoala_out');
     arkoalaGeneratedPath = path.join(arkoalaBuildPath, 'generated');
     arkoalaGeneratedJSPath = path.join(arkoalaBuildPath, 'js_output');
     arkoalaGeneratedMemoPath = path.join(arkoalaBuildPath, 'generated_memo');
-    arkoalaEtsPluginPath = require.resolve('@koalaui/ets-plugin');
-    arkoalaTscPluginPath = require.resolve('@koalaui/compiler-plugin');
+    arkoalaEtsPluginPath = arkoalaResolve('@koalaui/ets-plugin');
+    arkoalaTscPluginPath = arkoalaResolve('@koalaui/compiler-plugin');
     tscPath = path.join(
       arkoalaTscPluginPath,
       '../../../../node_modules/typescript/lib/tsc.js'
     ); // TODO we need a single compatible tsc, currently we use arkoala bundled one
-    ohosTscPath = require.resolve('ohos-typescript');
+    ohosTscPath = arkoalaResolve('ohos-typescript');
     if (ohosTscPath) {
       ohosTscPath = path.join(path.dirname(ohosTscPath), 'tsc.js');
     }
 
     etsRoot = projectConfig.projectPath;
     console.log('ARKOALA: ', {
+      arkoalaSdkRoot,
       arkoalaEtsPluginPath,
       arkoalaTscPluginPath,
+      arkoalaBuildPath,
       arkoalaGeneratedPath,
+      arkoalaGeneratedJSPath,
+      arkoalaGeneratedMemoPath,
       ohosTscPath,
       tscPath,
       etsRoot,
@@ -179,7 +188,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
 
   function processMemo(): void {
     const sdkStubs = path.join(
-      require.resolve('@koalaui/arkui-common'),
+      arkoalaResolve('@koalaui/arkui-common'),
       '../../../../ohos-sdk-ets/openharmony/10/ets/'
     );
     const tsConfig = {
@@ -199,6 +208,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
         importsNotUsedAsValues: 'remove',
         plugins: [{ transform: arkoalaTscPluginPath, trace: false }],
         outDir: arkoalaGeneratedMemoPath,
+        ...tsConfigKoalaUIPaths()
       },
       files: [
         path.join(sdkStubs, 'component/index-full.d.ts'),
@@ -230,9 +240,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
 
   function preprocessEts(): void {
     const ohosTsConfig = {
-      extends: require.resolve(
-        '@koalaui/arkui-common/config/tsconfig.base.json'
-      ),
+      extends: arkoalaResolve('@koalaui/arkui-common/config/tsconfig.base.json'),
       exclude: ['node_modules', 'js_output', 'dependencies'],
       include: ['**/*.ets'],
       compilerOptions: {
@@ -244,6 +252,8 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
             arkui: '@koalaui/arkoala-arkui',
           },
         ],
+        skipLibCheck: true,
+        ...tsConfigKoalaUIPaths(),
       },
     };
     const ohosTsConfigPath = path.join(etsRoot, 'arkoala.tsconfig.json'); // TODO generate in a build dir or do not generate at all
@@ -319,6 +329,38 @@ return startApplication({
         return null;
       },
     };
+  }
+
+  function arkoalaResolve(modulePath: string): string {
+    let modulePathInSdk = modulePath
+    if (!modulePath.startsWith("@koalaui/")) {
+      modulePathInSdk = 'node_modules/' + modulePath
+    }
+    return require.resolve(path.join(arkoalaSdkRoot, modulePathInSdk))
+  }
+
+  function tsConfigKoalaUIPaths(): Record<string, any> {
+    return {
+      baseUrl: '.',
+      paths: {
+        '@koalaui/*': [path.join(arkoalaSdkRoot, '@koalaui/*')],
+        '@koalaui/arkoala/*': [path.join(arkoalaSdkRoot, '@koalaui/arkoala/build/lib/src/*')],
+        '@koalaui/arkoala-arkui/*': [path.join(arkoalaSdkRoot, '@koalaui/arkoala-arkui/build/lib/src/*')],
+        '@koalaui/arkui-common/*': [path.join(arkoalaSdkRoot, '@koalaui/arkui-common/build/lib/src/*')],
+        '@koalaui/common/*': [path.join(arkoalaSdkRoot, '@koalaui/common/build/lib/src/*')],
+        '@koalaui/interop/*': [path.join(arkoalaSdkRoot, '@koalaui/interop/build/lib/src/*')],
+        '@koalaui/runtime/*': [path.join(arkoalaSdkRoot, '@koalaui/runtime/build/lib/src/*')],
+      }
+    }
+  }
+}
+
+function isDir(filePath: string): boolean {
+  try {
+    let stat = fs.statSync(filePath);
+    return stat.isDirectory();
+  } catch (e) {
+    return false;
   }
 }
 
