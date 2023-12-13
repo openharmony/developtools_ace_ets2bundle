@@ -120,6 +120,7 @@ import {
   curPropMap,
   decoratorParamSet,
   isSimpleType,
+  isSingleKey
 } from './process_component_member';
 import {
   processComponentBuild,
@@ -477,36 +478,38 @@ function createPropertyDeclaration(propertyItem: ts.PropertyDeclaration, newType
 
 function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: string,
   parentComponentName: string): ts.CallExpression {
-  const localStorageLink: Set<string> = localStorageLinkCollection.get(parentComponentName).get(name);
-  const localStorageProp: Set<string> = localStoragePropCollection.get(parentComponentName).get(name);
-  let localFuncName: string;
-  const localValue: ts.Expression[] = [
-    ts.factory.createStringLiteral(localStorageLink && !localStorageProp ?
-      Array.from(localStorageLink)[0] : !localStorageLink && localStorageProp ?
-        Array.from(localStorageProp)[0] : COMPONENT_CONSTRUCTOR_UNDEFINED),
-    node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
-    ts.factory.createThis(), ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
-  ];
-  if (!partialUpdateConfig.partialUpdateMode) {
-    localFuncName = localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
-      COMPONENT_SET_AND_PROP;
-  } else {
-    localFuncName = localStorageLink && !localStorageProp ? CREATE_LOCAL_STORAGE_LINK :
-      CREATE_LOCAL_STORAGE_PROP;
-    localValue.splice(-2, 1);
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (isSingleKey(node)) {
+    const localStorageLink: Set<string> = localStorageLinkCollection.get(parentComponentName).get(name);
+    const localStorageProp: Set<string> = localStoragePropCollection.get(parentComponentName).get(name);
+    let localFuncName: string;
+    const localValue: ts.Expression[] = [
+      decorators[0].expression.arguments[0],
+      node.initializer,
+      ts.factory.createThis(),
+      ts.factory.createStringLiteral(name)
+    ];
+    if (!partialUpdateConfig.partialUpdateMode) {
+      localFuncName = localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
+        COMPONENT_SET_AND_PROP;
+    } else {
+      localFuncName = localStorageLink && !localStorageProp ? CREATE_LOCAL_STORAGE_LINK :
+        CREATE_LOCAL_STORAGE_PROP;
+      localValue.splice(-2, 1);
+    }
+    return ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        !partialUpdateConfig.partialUpdateMode ?
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(`${COMPONENT_CONSTRUCTOR_LOCALSTORAGE}_`)
+          ) : ts.factory.createThis(),
+        ts.factory.createIdentifier(localFuncName)
+      ),
+      [node.type],
+      localValue
+    );
   }
-  return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      !partialUpdateConfig.partialUpdateMode ?
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createThis(),
-          ts.factory.createIdentifier(`${COMPONENT_CONSTRUCTOR_LOCALSTORAGE}_`)
-        ) : ts.factory.createThis(),
-      ts.factory.createIdentifier(localFuncName)
-    ),
-    [node.type],
-    localValue
-  );
 }
 
 function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,

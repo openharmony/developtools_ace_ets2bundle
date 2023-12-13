@@ -89,10 +89,6 @@
         "message": "The property 'lang' cannot have mutilate state management decorators.",
         "type": "ERROR"
     },
-    "validateDecoratorNonSingleKey": {
-        "message": "The decorator StorageLink should have a single key.",
-        "type": "ERROR"
-    },
     "validatePropertyNonDefaultValue": {
         "message": "The @State property 'message' must be specified a default value.",
         "type": "ERROR"
