@@ -339,7 +339,6 @@ class MyComponent extends ViewPU {
                     };
                     const deepRenderFunction = (elmtId, isInitialRender) => {
                         itemCreation(elmtId, isInitialRender);
-                        this.updateFuncByElmtId.set(elmtId, itemCreation);
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create('' + item);
                             Text.width('90%');
