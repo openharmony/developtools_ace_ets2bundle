@@ -343,6 +343,7 @@ return startApplication({
     return {
       baseUrl: '.',
       paths: {
+        '*': globalModulePaths.map(dir => path.join(dir, '*')),
         '@koalaui/*': [path.join(arkoalaSdkRoot, '@koalaui/*')],
         '@koalaui/arkoala/*': [path.join(arkoalaSdkRoot, '@koalaui/arkoala/build/lib/src/*')],
         '@koalaui/arkoala-arkui/*': [path.join(arkoalaSdkRoot, '@koalaui/arkoala-arkui/build/lib/src/*')],
