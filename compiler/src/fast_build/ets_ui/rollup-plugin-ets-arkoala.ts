@@ -335,11 +335,11 @@ return startApplication({
   }
 
   function arkoalaResolve(modulePath: string): string {
-    let modulePathInSdk = modulePath
-    if (!modulePath.startsWith("@koalaui/")) {
-      modulePathInSdk = 'node_modules/' + modulePath
+    let modulePathInSdk = modulePath;
+    if (!modulePath.startsWith('@koalaui/')) {
+      modulePathInSdk = 'node_modules/' + modulePath;
     }
-    return require.resolve(path.join(arkoalaSdkRoot, modulePathInSdk))
+    return require.resolve(path.join(arkoalaSdkRoot, modulePathInSdk));
   }
 
   function tsConfigKoalaUIPaths(): Record<string, any> {
@@ -355,7 +355,7 @@ return startApplication({
         '@koalaui/interop/*': [path.join(arkoalaSdkRoot, '@koalaui/interop/build/lib/src/*')],
         '@koalaui/runtime/*': [path.join(arkoalaSdkRoot, '@koalaui/runtime/build/lib/src/*')],
       }
-    }
+    };
   }
 }
 
