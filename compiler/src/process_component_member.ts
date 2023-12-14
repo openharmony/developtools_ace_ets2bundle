@@ -77,7 +77,8 @@ import {
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   NULL,
-  OBSERVED
+  OBSERVED,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -334,8 +335,8 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
   watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
   context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration):
   void {
-  let stateManagementDecoratorCount: number = 0;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const propertyDecorators: string[] = [];
   for (let i = 0; i < decorators.length; i++) {
     const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
     if (decoratorName !== COMPONENT_WATCH_DECORATOR) {
@@ -371,15 +372,38 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       validateWatchDecorator(name, decorators.length, log)) {
       processWatch(node, decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
-      stateManagementDecoratorCount += 1;
-      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
-        hasPreview, interfaceNode);
+      propertyDecorators.push(decoratorName);
+      if (decoratorName !== COMPONENT_REQUIRE_DECORATOR) {
+        processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
+          hasPreview, interfaceNode);
+      }
     }
   }
-  if (stateManagementDecoratorCount > 1) {
-    validateMultiDecorators(name, log);
+  validateropertyDecorator(propertyDecorators, name, log);
+}
+
+function validateropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
+  log: LogInfo[]): void {
+  if (propertyDecorators.length === 1 && propertyDecorators[0] === COMPONENT_REQUIRE_DECORATOR) {
+    log.push({
+      type: LogType.ERROR,
+      message: 'The decorator @Require must be used with either @Prop or @BuilderParam.',
+      pos: name.getStart()
+    });
     return;
   }
+  if (propertyDecorators.length > 1 && !validateRequireDecorator(propertyDecorators)) {
+    validateMultiDecorators(name, log);
+  }
+}
+
+const DECORATOR_LENGTH: number = 2;
+
+function validateRequireDecorator(propertyDecorators: string[]): boolean {
+  return propertyDecorators.length === DECORATOR_LENGTH &&
+    propertyDecorators.includes(COMPONENT_REQUIRE_DECORATOR) &&
+    (propertyDecorators.includes(COMPONENT_PROP_DECORATOR) ||
+      propertyDecorators.includes(COMPONENT_BUILDERPARAM_DECORATOR));
 }
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
