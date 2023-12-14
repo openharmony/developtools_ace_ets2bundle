@@ -201,7 +201,8 @@
         "PasteButton",
         "SaveButton",
         "UIExtensionComponent",
-        "RichEditor"
+        "RichEditor",
+        "Component3D"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -740,6 +741,11 @@
             "name": "RichEditor",
             "type": "RichEditorAttribute",
             "instance": "RichEditorInstance"
+          },
+          {
+            "name": "Component3D",
+            "type": "Component3DAttribute",
+            "instance": "Component3DInstance"
           }
         ]
       },
