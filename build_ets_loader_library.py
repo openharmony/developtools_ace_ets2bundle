@@ -52,13 +52,19 @@ def parse_args():
         help='path component config file to output')
     parser.add_argument('--output-form-config-file',
         help='path form config file to output')
+    parser.add_argument('--kit-configs-file-dir',
+        help='path kit configs file')
+    parser.add_argument('--build-kit-configs-file-js',
+        help='path build_kit_configs_file.js')
+    parser.add_argument('--output-kit-configs-dir',
+        help='path kit configs file to output')
 
     options = parser.parse_args()
     return options
 
 
-def do_build(build_cmd, uglify_cmd, build_declarations_file_cmd):
-    for cmd in [build_cmd, uglify_cmd, build_declarations_file_cmd]:
+def do_build(build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd):
+    for cmd in [build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd]:
         build_utils.check_output(cmd)
 
 
@@ -83,8 +89,15 @@ def main():
         options.output_dir]
     depfile_deps.append(options.build_declarations_file_js)
 
+    build_kit_configs_file_cmd = [options.node,
+        options.build_kit_configs_file_js,
+        options.kit_configs_file_dir,
+        options.output_kit_configs_dir,
+        options.output_dir]
+    depfile_deps.append(options.build_kit_configs_file_js)
+
     build_utils.call_and_write_depfile_if_stale(
-        lambda: do_build(build_cmd, uglify_cmd, build_declarations_file_cmd),
+        lambda: do_build(build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd),
         options,
         depfile_deps=depfile_deps,
         input_paths=depfile_deps,
@@ -92,7 +105,8 @@ def main():
             options.output_dir,
             options.output_declarations_dir,
             options.output_component_config_file,
-            options.output_form_config_file]))
+            options.output_form_config_file,
+            options.output_kit_configs_dir]))
 
 if __name__ == '__main__':
     sys.exit(main())

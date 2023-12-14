@@ -1,0 +1,8 @@
+{
+  "symbols": {
+    "webview": {
+      "source": "@ohos.web.webview.d.ts",
+      "bindings": "default"
+    }
+  }
+}

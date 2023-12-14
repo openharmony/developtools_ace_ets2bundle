@@ -1,8 +1,0 @@
-{
-  "symbol": {
-    "rpc": {
-      "source": "@ohos.rpc",
-      "bindings": "default"
-    }
-  }
-}
