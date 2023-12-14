@@ -145,16 +145,18 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
+    let pageFile: string;
     return (node: ts.SourceFile) => {
       const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
+      pageFile = node.fileName;
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         storedFileInfo.transformCacheFiles[node.fileName] = {
           mtimeMs: fs.existsSync(node.fileName) ? fs.statSync(node.fileName).mtimeMs : 0,
           children: []
-        }
+        };
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
         if (!ut && (process.env.compileMode !== 'moduleJson' &&
@@ -233,7 +235,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-        processImportModule(node);
+        processImportModule(node, pageFile);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
