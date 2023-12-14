@@ -137,10 +137,12 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
 
   function writeBundleToCache(bundleCode: string, id: string, projectRoot: string, cacheRoot: string): void {
     // TODO emit unmemoized ts?
+    // TODO process exports with ark_utils.ts methods
     let code = bundleCode.replace(
       /\bLOAD_NATIVE\b/g,
       'globalThis.requireNapi("ArkoalaNative", true)'
     ); // TODO @rollup/plugin-inject
+    code = code.replace(/@ohos\./g, '@ohos:');
     let cachedPath = id
       .replace(projectRoot, cacheRoot)
       .replace(/\.ets$/, '.ts');
@@ -208,6 +210,7 @@ export function makeArkoalaPlugin(): RollupPluginWithCache {
         importsNotUsedAsValues: 'remove',
         plugins: [{ transform: arkoalaTscPluginPath, trace: false }],
         outDir: arkoalaGeneratedMemoPath,
+        experimentalDecorators: true,
         ...tsConfigKoalaUIPaths()
       },
       files: [
