@@ -1,8 +1,0 @@
-{
-  "symbol": {
-    "call": {
-      "source": "@ohos.telephony.call",
-      "bindings": "default"
-    }
-  }
-}

@@ -18,13 +18,16 @@ const path = require('path');
 const ts = require('typescript');
 const SECOND_PARAM = 2;
 const THIRD_PARAM = 3;
+const systemModules = [];
 
 function generateKitConfig(filePath, output) {
+  readSystemApis(path.dirname(filePath), systemModules);
   const kitFiles = [];
   readFile(filePath, kitFiles);
-  if (!fs.existsSync(output)) {
-    mkDir(output);
+  if (fs.existsSync(output)) {
+    removeDir(output);
   }
+  mkDir(output);
   kitFiles.forEach((item) => {
     let content = fs.readFileSync(item, 'utf8');
     const outputPath = path.resolve(output, path.basename(item).replace('.d.ts', '.json'));
@@ -36,7 +39,7 @@ function generateKitConfig(filePath, output) {
       });
     }
     const result = {
-      'symbol': symbol
+      'symbols': symbol
     };
     const STANDARD_INDENT = 2;
     createKitConfigs(outputPath, JSON.stringify(result, null, STANDARD_INDENT));
@@ -50,6 +53,13 @@ function getImportDeclarationInfo(statement, symbol) {
   let source = '';
   if (statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) {
     source = statement.moduleSpecifier.getText().replace(/(\.\.|'|"|\\|\/)*/g, '');
+    for (let i = 0; i < systemModules.length; i++) {
+      const moduleName = systemModules[i];
+      if (moduleName.replace(/(\.d\.ts|\.d\.ets)$/, '') === source) {
+        source = moduleName;
+        break;
+      }
+    }
   }
   if (statement.importClause) {
     const clause = statement.importClause;
@@ -97,12 +107,29 @@ function readFile(dir, fileDir) {
   });
 }
 
+function readSystemApis(dir, fileDir) {
+  const files = fs.readdirSync(dir);
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    const status = fs.statSync(filePath);
+    if (!status.isDirectory()) {
+      fileDir.push(file);
+    }
+  });
+}
+
 function mkDir(filePath) {
   const parent = path.join(filePath, '..');
   if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
     mkDir(parent);
   }
   fs.mkdirSync(filePath);
+}
+
+function removeDir(path) {
+  if (fs.existsSync(path)) {
+    fs.rmdirSync(path, {recursive: true});
+  }
 }
 
 function createKitConfigs(fileName, content) {

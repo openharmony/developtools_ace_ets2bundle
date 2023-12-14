@@ -1,0 +1,12 @@
+{
+  "symbols": {
+    "effectKit": {
+      "source": "@ohos.effectKit.d.ts",
+      "bindings": "default"
+    },
+    "colorSpaceManager": {
+      "source": "@ohos.graphics.colorSpaceManager.d.ts",
+      "bindings": "default"
+    }
+  }
+}

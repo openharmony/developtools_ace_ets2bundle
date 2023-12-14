@@ -1,0 +1,12 @@
+{
+  "symbols": {
+    "privacyManager": {
+      "source": "@ohos.privacyManager.d.ts",
+      "bindings": "default"
+    },
+    "Permissions": {
+      "source": "@ohos.privacyManager.d.ts",
+      "bindings": "Permissions"
+    }
+  }
+}

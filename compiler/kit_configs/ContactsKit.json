@@ -1,8 +1,0 @@
-{
-  "symbol": {
-    "contact": {
-      "source": "@ohos.contact",
-      "bindings": "default"
-    }
-  }
-}
