@@ -60,7 +60,8 @@ import {
   STRUCT_DECORATORS,
   STRUCT_CONTEXT_METHOD_DECORATORS,
   CHECK_COMPONENT_EXTEND_DECORATOR,
-  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
+  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
+  CLASS_TRACK_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -396,7 +397,7 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, fileQuery);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, fileQuery);
 }
 
 function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
@@ -404,10 +405,13 @@ function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
-  log: LogInfo[], structContext: boolean, fileQuery: string): void {
+  log: LogInfo[], structContext: boolean, classContext: boolean, fileQuery: string): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     collectComponentProps(node, propertyInitializeInEntry(fileQuery, node.name.escapedText.toString()));
+  }
+  if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+    classContext = true;
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
@@ -447,10 +451,20 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     const decoratorName: string = node.escapedText.toString();
     validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
+    validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName);
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext, fileQuery));
+    log, structContext, classContext, fileQuery));
   structContext = false;
+  classContext = false;
+}
+
+function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
+  classContext: boolean, decoratorName: string): void {
+  if (!classContext && decoratorName === CLASS_TRACK_DECORATOR) {
+    const message: string = `The '@Track' decorator can only be used in 'class'.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  }
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
