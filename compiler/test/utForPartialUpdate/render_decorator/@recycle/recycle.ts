@@ -412,7 +412,6 @@ class child extends ViewPU {
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('ListItem');
                     Text.width(this.width_value);
@@ -444,7 +443,6 @@ class child extends ViewPU {
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
                 ListItem.pop();
             };
             this.observeComponentCreation2(itemCreation2, ListItem);

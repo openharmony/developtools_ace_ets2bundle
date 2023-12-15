@@ -265,7 +265,6 @@ class MyComponent extends ViewPU {
                             };
                             const deepRenderFunction = (elmtId, isInitialRender) => {
                                 itemCreation(elmtId, isInitialRender);
-                                this.updateFuncByElmtId.set(elmtId, itemCreation);
                                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                                     Row.create();
                                     Row.margin({ left: 10, right: 10 });
