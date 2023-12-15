@@ -43,6 +43,7 @@ export const appImportModuleCollection: Map<string, Set<string>> = new Map();
 
 export function apiTransform() {
   const useOSFiles: Set<string> = new Set();
+  let hiresStatus: boolean = true;
   return {
     name: 'apiTransform',
     load(id: string) {
@@ -53,14 +54,16 @@ export function apiTransform() {
       if (filter(id)) {
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
+          hiresStatus = false;
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
+          hiresStatus = true;
         }
       }
       return {
         code: code,
-        map: magicString.generateMap({ hires: true })
+        map: magicString.generateMap({ hires: hiresStatus })
       };
     },
     beforeBuildEnd() {
