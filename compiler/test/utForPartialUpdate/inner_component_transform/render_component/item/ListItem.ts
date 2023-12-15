@@ -66,7 +66,6 @@ class ParentView extends ViewPU {
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('xx');
                     Text.width(100);
