@@ -533,6 +533,14 @@ export function processResourceData(node: ts.CallExpression,
     } else {
       return getResourceDataNode(node, previewLog);
     }
+  } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
+    if (previewLog.isAcceleratePreview) {
+      previewLog.log.push({
+        type: LogType.ERROR,
+        message: 'not support AcceleratePreview'
+      });
+    }
+    return createResourceParamWithVariable(node);
   }
   return node;
 }
@@ -568,11 +576,49 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
   }
 }
 
-function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
-  ts.ObjectLiteralExpression {
+function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>): void {
   if (projectConfig.compileHar) {
     projectConfig.bundleName = '';
     projectConfig.moduleName = '';
+  }
+
+  if (projectConfig.bundleName || projectConfig.bundleName === '') {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
+      ts.factory.createStringLiteral(projectConfig.bundleName)
+    ));
+  }
+
+  if (projectConfig.moduleName || projectConfig.moduleName === '') {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
+      ts.factory.createStringLiteral(projectConfig.moduleName)
+    ));
+  }
+}
+
+function createResourceParamWithVariable(node: ts.CallExpression): ts.ObjectLiteralExpression {
+  const propertyArray: Array<ts.PropertyAssignment> = [
+    ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_ID),
+      node.arguments[0]
+    ),
+    ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
+      ts.factory.createArrayLiteralExpression(Array.from(node.arguments).slice(1), false)
+    )
+  ];
+
+  addBundleAndModuleParam(propertyArray);
+
+  const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
+    propertyArray, false);
+  return resourceParams;
+}
+
+function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
+  ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar) {
     resourceValue = -1;
   }
 
@@ -591,19 +637,7 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
     )
   ];
 
-  if (projectConfig.bundleName || projectConfig.bundleName === '') {
-    propertyArray.push(ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      ts.factory.createStringLiteral(projectConfig.bundleName)
-    ));
-  }
-
-  if (projectConfig.moduleName || projectConfig.moduleName === '') {
-    propertyArray.push(ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
-      ts.factory.createStringLiteral(projectConfig.moduleName)
-    ));
-  }
+  addBundleAndModuleParam(propertyArray);
 
   const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
     propertyArray, false);
