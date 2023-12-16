@@ -37,7 +37,7 @@ import {
   RESOURCE_RAWFILE,
   RESOURCE_NAME_BUNDLE,
   RESOURCE_NAME_MODULE,
-  ATTRIBUTE_ANIMATETO,
+  ATTRIBUTE_ANIMATETO_SET,
   GLOBAL_CONTEXT,
   CHECK_COMPONENT_EXTEND_DECORATOR,
   INSTANCE,
@@ -313,8 +313,8 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         node = processResourceData(node as ts.CallExpression);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
-      } else if (isAnimateTo(node)) {
-        node = processAnimateTo(node as ts.CallExpression);
+      } else if (isAnimateToOrImmediately(node)) {
+        node = processAnimateToOrImmediately(node as ts.CallExpression);
       } else if (isCustomDialogController(node)) {
         node = createCustomDialogController(node.parent, node, transformLog.errors);
       } else if (isESObjectNode(node)) {
@@ -519,9 +519,9 @@ export function isResource(node: ts.Node): boolean {
     node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
 }
 
-export function isAnimateTo(node: ts.Node): boolean {
+export function isAnimateToOrImmediately(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-    node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
+    ATTRIBUTE_ANIMATETO_SET.has(node.expression.escapedText.toString());
 }
 
 export function processResourceData(node: ts.CallExpression,
@@ -708,10 +708,11 @@ function processWorker(node: ts.NewExpression): ts.Node {
   return node;
 }
 
-export function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
+export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallExpression {
   return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
-    ts.factory.createIdentifier(GLOBAL_CONTEXT), ts.factory.createIdentifier(ATTRIBUTE_ANIMATETO)),
-  node.typeArguments, node.arguments);
+    ts.factory.createIdentifier(GLOBAL_CONTEXT),
+    ts.factory.createIdentifier(node.expression.escapedText.toString())),
+    node.typeArguments, node.arguments);
 }
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
