@@ -66,6 +66,10 @@
         {
           "name":"Observed",
           "emitParameters" : false
+        },
+        {
+          "name": "Require",
+          "emitParameters" : false
         }
       ],
       "propertyDecorators": [
