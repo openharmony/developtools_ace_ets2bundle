@@ -78,7 +78,9 @@ import {
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   NULL,
   OBSERVED,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  TRUE,
+  FALSE
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -701,22 +703,28 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
   }
 }
 
-function getDecoratorKey(node: ts.PropertyDeclaration): [string, boolean, ts.Node] {
+function getDecoratorKey(node: ts.PropertyDeclaration, isProvided: boolean = false): [string, boolean, ts.Node, boolean] {
   let key: string;
   let isStringKey: boolean = false;
+  let isProvidedParamObj: boolean = false;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   // @ts-ignore
-  const keyNameNode: ts.Node = decorators[0].expression.arguments[0];
+  let keyNameNode: ts.Node = decorators[0].expression.arguments[0];
   if (ts.isIdentifier(keyNameNode)) {
     key = keyNameNode.getText();
     decoratorParamSet.add(key);
   } else if (ts.isStringLiteral(keyNameNode)) {
     key = keyNameNode.text;
     isStringKey = true;
+  } else if (isProvided && ts.isObjectLiteralExpression(keyNameNode) && keyNameNode.properties.length === 1 &&
+    ts.isPropertyAssignment(keyNameNode.properties[0]) && keyNameNode.properties[0].initializer) {
+    key = keyNameNode.properties[0].initializer.text;
+    keyNameNode = keyNameNode.properties[0].initializer;
+    isProvidedParamObj = true;
   } else {
     key = keyNameNode.getText();
   }
-  return [key, isStringKey, keyNameNode];
+  return [key, isStringKey, keyNameNode, isProvidedParamObj];
 }
 
 function updateSynchedPropertyNesedObject(nameIdentifier: ts.Identifier,
@@ -733,7 +741,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
   nameIdentifier: ts.Identifier): ts.ExpressionStatement {
   const name: string = nameIdentifier.getText();
   let propertyOrAliasName: string;
-  const propertyAndStringKey: [string?, boolean?, ts.Node?] = [];
+  const propertyAndStringKey: [string?, boolean?, ts.Node?, boolean?] = [];
   if (isSingleKey(node)) {
     propertyAndStringKey.push(...getDecoratorKey(node));
     propertyOrAliasName = propertyAndStringKey[0];
@@ -745,7 +753,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
       createPropertyAccessExpressionWithThis(INITIALIZE_CONSUME_FUNCTION), undefined, [
         propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
-          propertyAndStringKey.length === 3 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)])));
+          propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)])));
 }
 
 function updateBuilderParamProperty(node: ts.PropertyDeclaration,
@@ -882,9 +890,10 @@ function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
   if (decoratorName === COMPONENT_PROVIDE_DECORATOR) {
     let parameterName: string;
     if (isSingleKey(node)) {
-      const parameterNameAndStringKey: [string, boolean, ts.Node] = getDecoratorKey(node);
+      const parameterNameAndStringKey: [string, boolean, ts.Node, boolean] = getDecoratorKey(node, true);
       parameterName = parameterNameAndStringKey[0];
-      updateState.push(createAddProvidedVar(parameterName, name, parameterNameAndStringKey[1], parameterNameAndStringKey[2]));
+      updateState.push(createAddProvidedVar(parameterName, name, parameterNameAndStringKey[1], parameterNameAndStringKey[2],
+        parameterNameAndStringKey[3]));
     }
     if (parameterName !== name.getText()) {
       updateState.push(createAddProvidedVar(name.getText(), name, true));
@@ -893,11 +902,13 @@ function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
 }
 
 function createAddProvidedVar(propertyOrAliasName: string,
-  name: ts.Identifier, isString: boolean, decoratorKeyNode: ts.Node = undefined): ts.ExpressionStatement {
+  name: ts.Identifier, isString: boolean, decoratorKeyNode: ts.Node = undefined,
+  isProvidedParamObj: boolean = false): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     createPropertyAccessExpressionWithThis(ADD_PROVIDED_VAR), undefined, [
       isString ? ts.factory.createStringLiteral(propertyOrAliasName) : decoratorKeyNode as ts.Expression,
-      createPropertyAccessExpressionWithThis(`__${name.getText()}`)]));
+      createPropertyAccessExpressionWithThis(`__${name.getText()}`),
+      isProvidedParamObj ? ts.factory.createIdentifier(TRUE) : ts.factory.createIdentifier(FALSE)]));
 }
 
 function createGetAccessor(item: ts.Identifier, express: string): ts.GetAccessorDeclaration {

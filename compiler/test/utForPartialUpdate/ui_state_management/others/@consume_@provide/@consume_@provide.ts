@@ -18,6 +18,7 @@ exports.source = `
 @Component
 struct CompA {
   @Provide("reviewVote") reviewVotes : number = 0;
+  @Provide({allowOverride: 'aliasName'}) message: string = '1111'
 
   build() {
     Column() {
@@ -67,22 +68,30 @@ class CompA extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.__reviewVotes = new ObservedPropertySimplePU(0, this, "reviewVotes");
-        this.addProvidedVar("reviewVote", this.__reviewVotes);
-        this.addProvidedVar("reviewVotes", this.__reviewVotes);
+        this.addProvidedVar("reviewVote", this.__reviewVotes, false);
+        this.addProvidedVar("reviewVotes", this.__reviewVotes, false);
+        this.__message = new ObservedPropertySimplePU('1111', this, "message");
+        this.addProvidedVar('aliasName', this.__message, true);
+        this.addProvidedVar("message", this.__message, false);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
         if (params.reviewVotes !== undefined) {
             this.reviewVotes = params.reviewVotes;
         }
+        if (params.message !== undefined) {
+            this.message = params.message;
+        }
     }
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
         this.__reviewVotes.purgeDependencyOnElmtId(rmElmtId);
+        this.__message.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
         this.__reviewVotes.aboutToBeDeleted();
+        this.__message.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
@@ -91,6 +100,12 @@ class CompA extends ViewPU {
     }
     set reviewVotes(newValue) {
         this.__reviewVotes.set(newValue);
+    }
+    get message() {
+        return this.__message.get();
+    }
+    set message(newValue) {
+        this.__message.set(newValue);
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -102,7 +117,7 @@ class CompA extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CompB(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 9 }));
+                    ViewPU.create(new CompB(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 10 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -155,7 +170,7 @@ class CompB extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CompC(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 25 }));
+                    ViewPU.create(new CompC(this, {}, undefined, elmtId, paramsLambda, { page: "@consume_@provide.ets", line: 26 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

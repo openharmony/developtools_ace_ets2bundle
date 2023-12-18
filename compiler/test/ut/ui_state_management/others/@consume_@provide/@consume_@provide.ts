@@ -68,8 +68,8 @@ class CompA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__reviewVotes = new ObservedPropertySimple(0, this, "reviewVotes");
-        this.addProvidedVar("reviewVote", this.__reviewVotes);
-        this.addProvidedVar("reviewVotes", this.__reviewVotes);
+        this.addProvidedVar("reviewVote", this.__reviewVotes, false);
+        this.addProvidedVar("reviewVotes", this.__reviewVotes, false);
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
