@@ -146,7 +146,7 @@
         "type": "WARN"
     },
     "validateInitDecorator": {
-        "message": "Property 'message' in the custom component 'Child' is missing assignment or initialization.",
+        "message": "Property 'message' must be initialized through the component constructor.",
         "type": "ERROR"
     },
     "validateIllegalInitFromParent": {
