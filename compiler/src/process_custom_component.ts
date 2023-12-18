@@ -565,9 +565,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
-  if (!storedFileInfo.getCurrentArkTsFile().compFromDETS.has(name)) {
-    validateInitDecorator(node, name, curChildProps, log);
-  }
+  validateInitDecorator(node, name, curChildProps, log);
   validateMandatoryToInitViaParam(node, name, curChildProps, log);
 }
 
@@ -912,11 +910,10 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
     ...(builderParamInitialization.get(customComponentName) || []),
     ...(propInitialization.get(customComponentName) || [])]);
   mandatoryToInitViaParamSet.forEach((item: string) => {
-    if (item && !curChildProps.has(item) && decoratorVariable && !decoratorVariable.has(item)) {
+    if (item && !curChildProps.has(item) && decoratorVariable && decoratorVariable.has(item)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${item}' in the custom component '${customComponentName}'` +
-        ` is missing assignment or initialization.`,
+        message: `Property '${item}' must be initialized through the component constructor.`,
         pos: node.getStart()
       });
     }

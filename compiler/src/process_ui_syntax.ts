@@ -37,7 +37,7 @@ import {
   RESOURCE_RAWFILE,
   RESOURCE_NAME_BUNDLE,
   RESOURCE_NAME_MODULE,
-  ATTRIBUTE_ANIMATETO,
+  ATTRIBUTE_ANIMATETO_SET,
   GLOBAL_CONTEXT,
   CHECK_COMPONENT_EXTEND_DECORATOR,
   INSTANCE,
@@ -75,6 +75,7 @@ import {
   VIEW_STACK_PROCESSOR,
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
+  WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
 } from './pre_define';
 import {
@@ -144,16 +145,18 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
+    let pageFile: string;
     return (node: ts.SourceFile) => {
       const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
+      pageFile = node.fileName;
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         storedFileInfo.transformCacheFiles[node.fileName] = {
           mtimeMs: fs.existsSync(node.fileName) ? fs.statSync(node.fileName).mtimeMs : 0,
           children: []
-        }
+        };
         transformLog.sourceFile = node;
         preprocessIdAttrs(node.fileName);
         if (!ut && (process.env.compileMode !== 'moduleJson' &&
@@ -232,7 +235,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-        processImportModule(node);
+        processImportModule(node, pageFile);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
@@ -310,8 +313,8 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         node = processResourceData(node as ts.CallExpression);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
-      } else if (isAnimateTo(node)) {
-        node = processAnimateTo(node as ts.CallExpression);
+      } else if (isAnimateToOrImmediately(node)) {
+        node = processAnimateToOrImmediately(node as ts.CallExpression);
       } else if (isCustomDialogController(node)) {
         node = createCustomDialogController(node.parent, node, transformLog.errors);
       } else if (isESObjectNode(node)) {
@@ -319,6 +322,16 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       } else if (ts.isDecorator(node)) {
         // This processing is for mock instead of ui transformation
         node = processDecorator(node);
+      } else if (isWrapBuilderFunction(node)) {
+        if (node.arguments && node.arguments[0] && (!ts.isIdentifier(node.arguments[0]) ||
+          ts.isIdentifier(node.arguments[0]) &&
+          !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
+          transformLog.errors.push({
+            type: LogType.ERROR,
+            message: `wrapBuilder's parameter should be @Builder function.`,
+            pos: node.getStart()
+          });
+        }
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
@@ -328,6 +341,14 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         node = processResourceData(node as ts.CallExpression);
       }
       return ts.visitEachChild(node, processResourceNode, context);
+    }
+
+    function isWrapBuilderFunction(node: ts.Node): boolean {
+      if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+        node.expression.escapedText.toString() === WRAPBUILDER_FUNCTION) {
+        return true;
+      }
+      return false;
     }
   };
 }
@@ -498,9 +519,9 @@ export function isResource(node: ts.Node): boolean {
     node.expression.escapedText.toString() === RESOURCE_RAWFILE) && node.arguments.length > 0;
 }
 
-export function isAnimateTo(node: ts.Node): boolean {
+export function isAnimateToOrImmediately(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-    node.expression.escapedText.toString() === ATTRIBUTE_ANIMATETO;
+    ATTRIBUTE_ANIMATETO_SET.has(node.expression.escapedText.toString());
 }
 
 export function processResourceData(node: ts.CallExpression,
@@ -512,6 +533,14 @@ export function processResourceData(node: ts.CallExpression,
     } else {
       return getResourceDataNode(node, previewLog);
     }
+  } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
+    if (previewLog.isAcceleratePreview) {
+      previewLog.log.push({
+        type: LogType.ERROR,
+        message: 'not support AcceleratePreview'
+      });
+    }
+    return createResourceParamWithVariable(node);
   }
   return node;
 }
@@ -547,11 +576,49 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
   }
 }
 
-function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
-  ts.ObjectLiteralExpression {
+function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>): void {
   if (projectConfig.compileHar) {
     projectConfig.bundleName = '';
     projectConfig.moduleName = '';
+  }
+
+  if (projectConfig.bundleName || projectConfig.bundleName === '') {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
+      ts.factory.createStringLiteral(projectConfig.bundleName)
+    ));
+  }
+
+  if (projectConfig.moduleName || projectConfig.moduleName === '') {
+    propertyArray.push(ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
+      ts.factory.createStringLiteral(projectConfig.moduleName)
+    ));
+  }
+}
+
+function createResourceParamWithVariable(node: ts.CallExpression): ts.ObjectLiteralExpression {
+  const propertyArray: Array<ts.PropertyAssignment> = [
+    ts.factory.createPropertyAssignment(
+      ts.factory.createStringLiteral(RESOURCE_NAME_ID),
+      node.arguments[0]
+    ),
+    ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
+      ts.factory.createArrayLiteralExpression(Array.from(node.arguments).slice(1), false)
+    )
+  ];
+
+  addBundleAndModuleParam(propertyArray);
+
+  const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
+    propertyArray, false);
+  return resourceParams;
+}
+
+function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[]):
+  ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar) {
     resourceValue = -1;
   }
 
@@ -570,19 +637,7 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
     )
   ];
 
-  if (projectConfig.bundleName || projectConfig.bundleName === '') {
-    propertyArray.push(ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      ts.factory.createStringLiteral(projectConfig.bundleName)
-    ));
-  }
-
-  if (projectConfig.moduleName || projectConfig.moduleName === '') {
-    propertyArray.push(ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
-      ts.factory.createStringLiteral(projectConfig.moduleName)
-    ));
-  }
+  addBundleAndModuleParam(propertyArray);
 
   const resourceParams: ts.ObjectLiteralExpression = ts.factory.createObjectLiteralExpression(
     propertyArray, false);
@@ -653,10 +708,11 @@ function processWorker(node: ts.NewExpression): ts.Node {
   return node;
 }
 
-export function processAnimateTo(node: ts.CallExpression): ts.CallExpression {
+export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallExpression {
   return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
-    ts.factory.createIdentifier(GLOBAL_CONTEXT), ts.factory.createIdentifier(ATTRIBUTE_ANIMATETO)),
-  node.typeArguments, node.arguments);
+    ts.factory.createIdentifier(GLOBAL_CONTEXT),
+    ts.factory.createIdentifier(node.expression.escapedText.toString())),
+    node.typeArguments, node.arguments);
 }
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],

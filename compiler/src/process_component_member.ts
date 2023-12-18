@@ -77,7 +77,8 @@ import {
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   NULL,
-  OBSERVED
+  OBSERVED,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -109,7 +110,8 @@ import {
 import {
   parentConditionalExpression,
   createFunction,
-  getRealNodePos
+  getRealNodePos,
+  isWrappedBuilder
 } from './process_component_build'
 import { CUSTOM_BUILDER_METHOD } from './component_map';
 
@@ -333,8 +335,8 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
   watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
   context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration):
   void {
-  let stateManagementDecoratorCount: number = 0;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const propertyDecorators: string[] = [];
   for (let i = 0; i < decorators.length; i++) {
     const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
     if (decoratorName !== COMPONENT_WATCH_DECORATOR) {
@@ -370,15 +372,38 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       validateWatchDecorator(name, decorators.length, log)) {
       processWatch(node, decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
-      stateManagementDecoratorCount += 1;
-      processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
-        hasPreview, interfaceNode);
+      propertyDecorators.push(decoratorName);
+      if (decoratorName !== COMPONENT_REQUIRE_DECORATOR) {
+        processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
+          hasPreview, interfaceNode);
+      }
     }
   }
-  if (stateManagementDecoratorCount > 1) {
-    validateMultiDecorators(name, log);
+  validateropertyDecorator(propertyDecorators, name, log);
+}
+
+function validateropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
+  log: LogInfo[]): void {
+  if (propertyDecorators.length === 1 && propertyDecorators[0] === COMPONENT_REQUIRE_DECORATOR) {
+    log.push({
+      type: LogType.ERROR,
+      message: 'The decorator @Require must be used with either @Prop or @BuilderParam.',
+      pos: name.getStart()
+    });
     return;
   }
+  if (propertyDecorators.length > 1 && !validateRequireDecorator(propertyDecorators)) {
+    validateMultiDecorators(name, log);
+  }
+}
+
+const DECORATOR_LENGTH: number = 2;
+
+function validateRequireDecorator(propertyDecorators: string[]): boolean {
+  return propertyDecorators.length === DECORATOR_LENGTH &&
+    propertyDecorators.includes(COMPONENT_REQUIRE_DECORATOR) &&
+    (propertyDecorators.includes(COMPONENT_PROP_DECORATOR) ||
+      propertyDecorators.includes(COMPONENT_BUILDERPARAM_DECORATOR));
 }
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
@@ -496,7 +521,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
-      updateState = updateStoragePropAndLinkProperty(node, name, decorator, log);
+      updateState = updateStoragePropAndLinkProperty(node, name, decorator);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
       updateState = !partialUpdateConfig.partialUpdateMode
@@ -647,7 +672,7 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
 }
 
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
-  decorator: string, log: LogInfo[]): ts.ExpressionStatement {
+  decorator: string): ts.ExpressionStatement {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (isSingleKey(node)) {
     let setFuncName: string;
@@ -673,13 +698,12 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
       ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(storageFuncName),
           ts.factory.createIdentifier(setFuncName)), undefined, storageValue)));
-  } else {
-    validateAppStorageDecoractorsNonSingleKey(node, log);
   }
 }
 
-function getDecoratorKey(node: ts.PropertyDeclaration): string {
+function getDecoratorKey(node: ts.PropertyDeclaration): [string, boolean, ts.Node] {
   let key: string;
+  let isStringKey: boolean = false;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   // @ts-ignore
   const keyNameNode: ts.Node = decorators[0].expression.arguments[0];
@@ -688,8 +712,11 @@ function getDecoratorKey(node: ts.PropertyDeclaration): string {
     decoratorParamSet.add(key);
   } else if (ts.isStringLiteral(keyNameNode)) {
     key = keyNameNode.text;
+    isStringKey = true;
+  } else {
+    key = keyNameNode.getText();
   }
-  return key;
+  return [key, isStringKey, keyNameNode];
 }
 
 function updateSynchedPropertyNesedObject(nameIdentifier: ts.Identifier,
@@ -706,8 +733,10 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
   nameIdentifier: ts.Identifier): ts.ExpressionStatement {
   const name: string = nameIdentifier.getText();
   let propertyOrAliasName: string;
+  const propertyAndStringKey: [string?, boolean?, ts.Node?] = [];
   if (isSingleKey(node)) {
-    propertyOrAliasName = getDecoratorKey(node);
+    propertyAndStringKey.push(...getDecoratorKey(node));
+    propertyOrAliasName = propertyAndStringKey[0];
   } else {
     propertyOrAliasName = name;
   }
@@ -715,7 +744,8 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
     createPropertyAccessExpressionWithThis(`__${name}`),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
       createPropertyAccessExpressionWithThis(INITIALIZE_CONSUME_FUNCTION), undefined, [
-        ts.factory.createStringLiteral(propertyOrAliasName), ts.factory.createStringLiteral(name)])));
+        propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
+          propertyAndStringKey.length === 3 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)])));
 }
 
 function updateBuilderParamProperty(node: ts.PropertyDeclaration,
@@ -739,7 +769,8 @@ function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boole
     CUSTOM_BUILDER_METHOD.has(node.initializer.escapedText.toString()) ||
     ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
     ts.isIdentifier(node.initializer.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString())));
+    CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString()) ||
+    isWrappedBuilder(node.initializer as ts.PropertyAccessExpression)));
 }
 
 function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,
@@ -851,20 +882,21 @@ function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
   if (decoratorName === COMPONENT_PROVIDE_DECORATOR) {
     let parameterName: string;
     if (isSingleKey(node)) {
-      parameterName = getDecoratorKey(node);
-      updateState.push(createAddProvidedVar(parameterName, name));
+      const parameterNameAndStringKey: [string, boolean, ts.Node] = getDecoratorKey(node);
+      parameterName = parameterNameAndStringKey[0];
+      updateState.push(createAddProvidedVar(parameterName, name, parameterNameAndStringKey[1], parameterNameAndStringKey[2]));
     }
     if (parameterName !== name.getText()) {
-      updateState.push(createAddProvidedVar(name.getText(), name));
+      updateState.push(createAddProvidedVar(name.getText(), name, true));
     }
   }
 }
 
 function createAddProvidedVar(propertyOrAliasName: string,
-  name: ts.Identifier): ts.ExpressionStatement {
+  name: ts.Identifier, isString: boolean, decoratorKeyNode: ts.Node = undefined): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     createPropertyAccessExpressionWithThis(ADD_PROVIDED_VAR), undefined, [
-      ts.factory.createStringLiteral(propertyOrAliasName),
+      isString ? ts.factory.createStringLiteral(propertyOrAliasName) : decoratorKeyNode as ts.Expression,
       createPropertyAccessExpressionWithThis(`__${name.getText()}`)]));
 }
 
@@ -973,25 +1005,14 @@ function judgmentTypedeclaration(type: ts.TypeNode): boolean {
   return ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName);
 }
 
-function validateAppStorageDecoractorsNonSingleKey(node: ts.PropertyDeclaration,
-  log: LogInfo[]): void {
-  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  if (ts.isIdentifier(decorators[0].expression)) {
-    validateDecoratorNonSingleKey(decorators[0].expression, log);
-  } else if (ts.isCallExpression(decorators[0].expression) &&
-    ts.isIdentifier(decorators[0].expression.expression)) {
-    validateDecoratorNonSingleKey(decorators[0].expression.expression, log);
-  }
-}
-
-function isSingleKey(node: ts.PropertyDeclaration): boolean {
+export function isSingleKey(node: ts.PropertyDeclaration): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (ts.isCallExpression(decorators[0].expression) &&
-  decorators[0].expression.arguments &&
-  decorators[0].expression.arguments.length === 1 &&
-  (ts.isIdentifier(decorators[0].expression.arguments[0]) ||
-  ts.isStringLiteral(decorators[0].expression.arguments[0]))) {
+    decorators[0].expression.arguments &&
+    decorators[0].expression.arguments.length === 1) {
     return true;
+  } else {
+    return false;
   }
 }
 
@@ -1000,15 +1021,6 @@ function validateMultiDecorators(name: ts.Identifier, log: LogInfo[]): void {
     type: LogType.ERROR,
     message: `The property '${name.escapedText.toString()}' cannot have mutilate state management decorators.`,
     pos: name.getStart()
-  });
-}
-
-function validateDecoratorNonSingleKey(decoratorsIdentifier: ts.Identifier,
-  log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: `The decorator ${decoratorsIdentifier.escapedText.toString()} should have a single key.`,
-    pos: decoratorsIdentifier.getStart()
   });
 }
 

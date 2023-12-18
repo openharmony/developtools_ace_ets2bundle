@@ -253,16 +253,18 @@ class MyComponent extends ViewPU {
                         {
                             const itemCreation = (elmtId, isInitialRender) => {
                                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                                ListItem.create(deepRenderFunction, true);
-                                ListItem.id('id8');
+                                itemCreation2(elmtId, isInitialRender);
                                 if (!isInitialRender) {
                                     ListItem.pop();
                                 }
                                 ViewStackProcessor.StopGetAccessRecording();
                             };
+                            const itemCreation2 = (elmtId, isInitialRender) => {
+                                ListItem.create(deepRenderFunction, true);
+                                ListItem.id('id8');
+                            };
                             const deepRenderFunction = (elmtId, isInitialRender) => {
                                 itemCreation(elmtId, isInitialRender);
-                                this.updateFuncByElmtId.set(elmtId, itemCreation);
                                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                                     Row.create();
                                     Row.margin({ left: 10, right: 10 });
@@ -277,7 +279,7 @@ class MyComponent extends ViewPU {
                                 Row.pop();
                                 ListItem.pop();
                             };
-                            this.observeComponentCreation(itemCreation);
+                            this.observeComponentCreation2(itemCreation2, ListItem);
                             ListItem.pop();
                         }
                     }
@@ -394,7 +396,7 @@ class MyComponent extends ViewPU {
                                     let paramsLambda = () => {
                                         return {};
                                     };
-                                    ViewPU.create(new Child(this, {}, undefined, elmtId, paramsLambda));
+                                    ViewPU.create(new Child(this, {}, undefined, elmtId, paramsLambda, { page: "id_if.ets", line: 78 }));
                                 }
                                 else {
                                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -422,8 +424,8 @@ class MyComponent extends ViewPU {
     }
 }
 class Child extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

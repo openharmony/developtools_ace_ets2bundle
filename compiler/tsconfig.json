@@ -66,6 +66,10 @@
         {
           "name":"Observed",
           "emitParameters" : false
+        },
+        {
+          "name": "Require",
+          "emitParameters" : false
         }
       ],
       "propertyDecorators": [
@@ -115,6 +119,7 @@
         "EffectComponent",
         "Ellipse",
         "Flex",
+        "FolderStack",
         "FormComponent",
         "FormLink",
         "Gauge",
@@ -138,6 +143,7 @@
         "NavRouter",
         "Navigation",
         "Navigator",
+        "NodeContainer",
         "Option",
         "PageTransitionEnter",
         "PageTransitionExit",
@@ -325,6 +331,11 @@
             "instance": "FlexInstance"
           },
           {
+            "name": "FolderStack",
+            "type": "FolderStackAttribute",
+            "instance": "FolderStackInstance"
+          },
+          {
             "name": "FormComponent",
             "type": "FormComponentAttribute",
             "instance": "FormComponentInstance"
@@ -438,6 +449,11 @@
             "name": "Navigator",
             "type": "NavigatorAttribute",
             "instance": "NavigatorInstance"
+          },
+          {
+            "name": "NodeContainer",
+            "type": "NodeContainerAttribute",
+            "instance": "NodeContainerInstance"
           },
           {
             "name": "Option",

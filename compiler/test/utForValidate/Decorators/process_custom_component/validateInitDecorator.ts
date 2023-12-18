@@ -28,7 +28,7 @@ struct Parent {
 
 @Component
 struct Child {
-  @Prop message: string
+  @Require @Prop message: string
   build() {
     Row() {}
   }

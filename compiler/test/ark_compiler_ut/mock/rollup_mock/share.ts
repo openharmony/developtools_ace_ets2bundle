@@ -13,11 +13,20 @@
  * limitations under the License.
  */
 
-import { ProjectConfig, IArkProjectConfig } from "./project_config";
-import { OH_MODULES_OHPM_HYPIUM, OH_MODULES_OHOS_HYPIUM, MOCK_CONFIG_PATH } from "./path_config";
+import {
+  ProjectConfig,
+  IArkProjectConfig
+} from "./project_config";
+import {
+  OH_MODULES_OHPM_HYPIUM,
+  OH_MODULES_OHOS_HYPIUM,
+  MOCK_CONFIG_PATH
+} from "./path_config";
 
 class Logger {
   private prefix: string;
+  private messsage: string;
+  static instances = [];
 
   constructor(prefix: string) {
     this.prefix = prefix;
@@ -27,10 +36,28 @@ class Logger {
     console.debug(`${color}${this.prefix}: ${JSON.stringify(msg)}${reset}`);
   }
 
-  public error(color: string, error: string, reset: string) {
-    console.error(`${color}${this.prefix}: ${JSON.stringify(error)}${reset}`);
+  public error(color: string, errormsg: string, reset: string) {
+    console.error(`${color}${this.prefix}: ${JSON.stringify(errormsg)}${reset}`);
+    this.messsage = color.toString();
   }
 
+  public getPrefix() {
+    return this.prefix;
+  }
+
+
+  public static getLogger(prefix): any {
+    for (const instance of Logger.instances) {
+      if (instance.getPrefix() == prefix) {
+        return instance;
+      }
+    }
+  }
+  public static createLogger(prefix) {
+    const logger = new Logger(prefix);
+    Logger.instances.push(logger)
+    return logger;
+  }
 }
 
 class Share {
@@ -51,7 +78,11 @@ class Share {
   }
 
   public getLogger(prefix: string): Logger {
-    return new Logger(prefix);
+    const logger = Logger.getLogger(prefix);
+    if (!logger || logger == undefined) {
+      return Logger.createLogger(prefix);
+    }
+    return logger;
   }
 
   public scan(testcase: string) {
@@ -69,4 +100,4 @@ class Share {
   }
 }
 
-export default Share
+export default Share;

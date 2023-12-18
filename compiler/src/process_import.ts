@@ -564,9 +564,14 @@ function isCustomComponent(node: ts.StructDeclaration, structDecorator: structDe
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
     for (let i = 0; i < decorators.length; ++i) {
-      const decoratorName: ts.Identifier = decorators[i].expression as ts.Identifier;
-      if (ts.isIdentifier(decoratorName)) {
-        const name: string = decoratorName.escapedText.toString();
+      const decoratorName: ts.Expression = decorators[i].expression;
+      if (ts.isIdentifier(decoratorName) || ts.isCallExpression(decoratorName)) {
+        let name: string = '';
+        if (ts.isCallExpression(decoratorName) && ts.isIdentifier(decoratorName.expression)) {
+          name = decoratorName.expression.escapedText.toString();
+        } else if (ts.isIdentifier(decoratorName)) {
+          name = decoratorName.escapedText.toString();
+        }
         if (CUSTOM_DECORATOR_NAME.has(name)) {
           isComponent = true;
         }
@@ -729,13 +734,13 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
   }
 }
 
-export function processImportModule(node: ts.ImportDeclaration): void {
+export function processImportModule(node: ts.ImportDeclaration, pageFile: string): void {
   let importSymbol: ts.Symbol;
   let realSymbol: ts.Symbol;
   let originNode: ts.Node;
   // import xxx from 'xxx'
   if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageFile);
   }
 
   // import {xxx} from 'xxx'
@@ -744,7 +749,7 @@ export function processImportModule(node: ts.ImportDeclaration): void {
     node.importClause.namedBindings.elements) {
     node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
       if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
-        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name);
+        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageFile);
       }
     });
   }
@@ -753,12 +758,12 @@ export function processImportModule(node: ts.ImportDeclaration): void {
   if (node.importClause && node.importClause.namedBindings &&
     ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
     ts.isIdentifier(node.importClause.namedBindings.name)) {
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageFile);
   }
 }
 
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
-  usedNode: ts.Identifier): void {
+  usedNode: ts.Identifier, pageFile: string): void {
   importSymbol = globalProgram.checker.getSymbolAtLocation(usedNode);
   if (importSymbol) {
     realSymbol = globalProgram.checker.getAliasedSymbol(importSymbol);
@@ -775,15 +780,16 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
       const escapedName: string = realSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
       if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
         realSymbol.exports && realSymbol.exports instanceof Map) {
-        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports);
+        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports, pageFile);
         return;
       }
     }
-    processImportNode(originNode, usedNode, false, null);
+    processImportNode(originNode, usedNode, false, null, pageFile);
   }
 }
 
-function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, exportsMap: ts.SymbolTable): void {
+function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, exportsMap: ts.SymbolTable,
+  pageFile: string): void {
   for (const usedSymbol of exportsMap) {
     try {
       originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
@@ -792,12 +798,12 @@ function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, ex
         originNode = usedSymbol[1].declarations[0];
       }
     }
-    processImportNode(originNode, usedNode, true, usedSymbol[0]);
+    processImportNode(originNode, usedNode, true, usedSymbol[0], pageFile);
   }
 }
 
 function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
-  usedPropName: string): void {
+  usedPropName: string, pageFile: string): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
   if (importIntegration) {
@@ -807,7 +813,6 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   }
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
-  const ownFile: string = usedNode.getSourceFile() ? usedNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
     if (isCustomDialogClass(originNode)) {
       componentCollection.customDialogs.add(name);
@@ -845,10 +850,10 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else {
     needCollection = false;
   }
-  if (needCollection && ownFile && originFile) {
-    storedFileInfo.transformCacheFiles[ownFile].children.push({
+  if (needCollection && pageFile && originFile) {
+    storedFileInfo.transformCacheFiles[pageFile].children.push({
       fileName: originFile,
-      mtimeMs: fs.existsSync(originFile) ? fs.statSync(originFile).mtimeMs: 0
+      mtimeMs: fs.existsSync(originFile) ? fs.statSync(originFile).mtimeMs : 0
     });
   }
 }

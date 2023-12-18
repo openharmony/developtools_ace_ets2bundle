@@ -47,6 +47,9 @@ export const COMPONENT_BUILDERPARAM_DECORATOR: string = '@BuilderParam';
 export const COMPONENT_LOCAL_STORAGE_LINK_DECORATOR: string = '@LocalStorageLink';
 export const COMPONENT_LOCAL_STORAGE_PROP_DECORATOR: string = '@LocalStorageProp';
 export const COMPONENT_CUSTOM_DECORATOR: string = 'COMPONENT_CUSTOM_DECORATOR';
+export const COMPONENT_REQUIRE_DECORATOR: string = '@Require';
+
+export const CLASS_TRACK_DECORATOR: string = 'Track';
 
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
@@ -58,7 +61,8 @@ export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT
   COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_STORAGE_PROP_DECORATOR,
   COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_WATCH_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR,
-  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR]);
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
+  COMPONENT_REQUIRE_DECORATOR]);
 export const STRUCT_DECORATORS: Set<string> = new Set([...INNER_COMPONENT_DECORATORS,
   ...INNER_COMPONENT_MEMBER_DECORATORS]);
 
@@ -148,7 +152,7 @@ export const COMPONENT_IF_BRANCH_ID_FUNCTION: string = 'branchId';
 export const COMPONENT_IF_UNDEFINED: string = 'undefined';
 export const GLOBAL_CONTEXT: string = 'Context';
 export const ATTRIBUTE_ANIMATION: string = 'animation';
-export const ATTRIBUTE_ANIMATETO: string = 'animateTo';
+export const ATTRIBUTE_ANIMATETO_SET: Set<string> = new Set(['animateTo', 'animateToImmediately']);
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 export const ATTRIBUTE_ID: string = 'id';
 export const ATTRIBUTE_ATTRIBUTE_MODIFIER: string = 'attributeModifier';
@@ -464,6 +468,7 @@ export const OBSERVECOMPONENTCREATION2: string = 'observeComponentCreation2';
 export const ISLAZYCREATE: string = 'isLazyCreate';
 export const DEEPRENDERFUNCTION: string = 'deepRenderFunction';
 export const ITEMCREATION: string = 'itemCreation';
+export const ITEMCREATION2: string = 'itemCreation2';
 export const OBSERVEDSHALLOWRENDER: string = 'observedShallowRender';
 export const OBSERVEDDEEPRENDER:string = 'observedDeepRender';
 export const ItemComponents: string[] = ['ListItem', 'GridItem'];
@@ -554,6 +559,10 @@ export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
 export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
+
+export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
+export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
+export const WRAPBUILDER_BUILDERPROP: string = 'builder';
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';

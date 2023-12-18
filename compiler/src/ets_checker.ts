@@ -84,12 +84,13 @@ import {
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
   resolveModuleNamesTime,
-  CompilationTimeStatistics
+  CompilationTimeStatistics,
+  storedFileInfo
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
-import { doArkTSLinter, ArkTSLinterMode } from './do_arkTS_linter';
+import { doArkTSLinter, ArkTSLinterMode, ArkTSVersion } from './do_arkTS_linter';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
@@ -486,6 +487,9 @@ function filterInput(rootFileNames: string[]): string[] {
     const needUpdate: NeedUpdateFlag = { flag: false };
     const alreadyCheckedFiles: Set<string> = new Set();
     checkNeedUpdateFiles(path.resolve(file), needUpdate, alreadyCheckedFiles);
+    if (!needUpdate.flag) {
+      storedFileInfo.changeFiles.push(path.resolve(file));
+    }
     return needUpdate.flag;
   });
 }
@@ -1011,7 +1015,7 @@ export function incrementWatchFile(watchModifiedFiles: string[],
 function runArkTSLinter(parentEvent?: any): void {
   const eventRunArkTsLinter = createAndStartEvent(parentEvent, 'run Arkts linter');
   const arkTSLinterDiagnostics =
-    doArkTSLinter(globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic, !projectConfig.xtsMode);
+    doArkTSLinter(getArkTSVersion(), globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic, !projectConfig.xtsMode);
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
@@ -1068,6 +1072,28 @@ export function isStandardMode(): boolean {
     return true;
   }
   return false;
+}
+
+function getArkTSVersion(): ArkTSVersion {
+  if (projectConfig.arkTSVersion === '1.0') {
+    return ArkTSVersion.ArkTS_1_0;
+  } else if (projectConfig.arkTSVersion === '1.1') {
+    return ArkTSVersion.ArkTS_1_1;
+  } else if (projectConfig.arkTSVersion !== undefined) {
+    const arkTSVersionLogger = fastBuildLogger ? fastBuildLogger : logger;
+    arkTSVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid ArkTS version\n');
+  }
+
+  if (partialUpdateConfig.arkTSVersion === '1.0') {
+    return ArkTSVersion.ArkTS_1_0;
+  } else if (partialUpdateConfig.arkTSVersion === '1.1') {
+    return ArkTSVersion.ArkTS_1_1;
+  } else if (partialUpdateConfig.arkTSVersion !== undefined) {
+    const arkTSVersionLogger = fastBuildLogger ? fastBuildLogger : logger;
+    arkTSVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid ArkTS version in metadata\n');
+  }
+
+  return ArkTSVersion.ArkTS_1_1;
 }
 
 function initEtsStandaloneCheckerConfig(logger, config): void {

@@ -350,7 +350,7 @@ class child extends ViewPU {
                     if (recycleNode) {
                         recycleNode.paramsGenerator_ = paramsLambda;
                     }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda), recycleNode !== null, "AnimationTest", () => {
+                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda, { page: "recycle.ets", line: 33 }), recycleNode !== null, "AnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -397,19 +397,21 @@ class child extends ViewPU {
         {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, true, 'true');
-                ListItem.width(this.width_value);
+                itemCreation2(elmtId, isInitialRender);
                 if (!isInitialRender) {
                     ListItem.pop();
                 }
-                else {
+                ViewStackProcessor.StopGetAccessRecording();
+            };
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                ListItem.create(deepRenderFunction, true, 'true');
+                ListItem.width(this.width_value);
+                if (isInitialRender) {
                     ListItem.height(100);
                 }
-                ViewStackProcessor.StopGetAccessRecording();
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create('ListItem');
                     Text.width(this.width_value);
@@ -420,28 +422,30 @@ class child extends ViewPU {
                 Text.pop();
                 ListItem.pop();
             };
-            this.observeComponentCreation(itemCreation);
+            this.observeComponentCreation2(itemCreation2, ListItem);
             ListItem.pop();
         }
         {
             const itemCreation = (elmtId, isInitialRender) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                ListItem.create(deepRenderFunction, true, 'true');
-                ListItem.width(this.width_value);
+                itemCreation2(elmtId, isInitialRender);
                 if (!isInitialRender) {
                     ListItem.pop();
                 }
-                else {
+                ViewStackProcessor.StopGetAccessRecording();
+            };
+            const itemCreation2 = (elmtId, isInitialRender) => {
+                ListItem.create(deepRenderFunction, true, 'true');
+                ListItem.width(this.width_value);
+                if (isInitialRender) {
                     ListItem.height(100);
                 }
-                ViewStackProcessor.StopGetAccessRecording();
             };
             const deepRenderFunction = (elmtId, isInitialRender) => {
                 itemCreation(elmtId, isInitialRender);
-                this.updateFuncByElmtId.set(elmtId, itemCreation);
                 ListItem.pop();
             };
-            this.observeComponentCreation(itemCreation);
+            this.observeComponentCreation2(itemCreation2, ListItem);
             ListItem.pop();
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {

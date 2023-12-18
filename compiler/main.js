@@ -784,32 +784,35 @@ function getCleanConfig(workerFile) {
 }
 
 function isPartialUpdate(metadata) {
-  if (Array.isArray(metadata) && metadata.length) {
-    metadata.some(item => {
-      if (item.name && item.name === 'ArkTSPartialUpdate' &&
-        item.value && item.value === 'false') {
+  if (!Array.isArray(metadata) || !metadata.length) {
+    return;
+  }
+  metadata.some(item => {
+    if (item.name && item.value) {
+      if (item.name === 'ArkTSPartialUpdate' && item.value === 'false') {
         partialUpdateConfig.partialUpdateMode = false;
         if (projectConfig.aceModuleJsonPath) {
           logger.warn('\u001b[33m ArkTS:WARN File: ' + projectConfig.aceModuleJsonPath + '.' + '\n' +
           " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
         }
       }
-      if (item.name && item.name === 'ArkTSBuilderCheck' &&
-        item.value && item.value === 'false') {
+      if (item.name === 'ArkTSBuilderCheck' && item.value === 'false') {
         partialUpdateConfig.builderCheck = false;
       }
-      if (item.name && item.name === 'Api11ArkTSCheck' &&
-        item.value && item.value === 'SkipArkTSCheckInApi11') {
+      if (item.name === 'Api11ArkTSCheck' && item.value === 'SkipArkTSCheckInApi11') {
         partialUpdateConfig.executeArkTSLinter = false;
       }
-      if (item.name && item.name === 'Api11ArkTSCheckMode' &&
-        item.value && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
+      if (item.name === 'Api11ArkTSCheckMode' && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
       }
-      return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
-        !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter;
-    });
-  }
+      if (item.name === 'ArkTSVersion') {
+        partialUpdateConfig.arkTSVersion = item.value;
+      }
+    }
+    return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
+      !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter &&
+      partialUpdateConfig.arkTSVersion !== undefined;
+  });
 }
 
 function applicationConfig() {
@@ -858,6 +861,7 @@ const partialUpdateConfig = {
   executeArkTSLinter: true,
   standardArkTSLinter: true,
   optimizeComponent: true,
+  arkTSVersion: undefined,
 };
 
 exports.globalProgram = globalProgram;
