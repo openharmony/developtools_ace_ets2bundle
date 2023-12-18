@@ -28,8 +28,8 @@ const { props } = require('../lib/compile_info');
 const {
   isResource,
   processResourceData,
-  isAnimateTo,
-  processAnimateTo
+  isAnimateToOrImmediately,
+  processAnimateToOrImmediately
 } = require('../lib/process_ui_syntax');
 const { dollarCollection } = require('../lib/ets_checker');
 
@@ -210,8 +210,8 @@ function transformResourceNode(newSource, log) {
 function processResourceNode(node, log) {
   if (isResource(node)) {
     return processResourceData(node, {isAcceleratePreview: true, log: log});
-  } else if (isAnimateTo(node)) {
-    return processAnimateTo(node);
+  } else if (isAnimateToOrImmediately(node)) {
+    return processAnimateToOrImmediately(node);
   } else {
     return node;
   }
