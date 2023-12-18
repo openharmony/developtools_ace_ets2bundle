@@ -403,7 +403,13 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
 }
 
 function isArkuiDependence(file: string): boolean {
-  return /compiler\/declarations/.test(file) || /ets-loader\/declarations/.test(file) || /ets\/component/.test(file);
+  const fileDir: string = path.dirname(file);
+  const declarationsPath: string = path.resolve(__dirname, '../declarations').replace(/\\/g, '/');
+  const componentPath: string = path.resolve(__dirname, '../../../component').replace(/\\/g, '/');
+  if (fileDir === declarationsPath || fileDir === componentPath) {
+    return true;
+  }
+  return false;
 }
 
 function isCardFile(file: string): boolean {
