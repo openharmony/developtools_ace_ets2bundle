@@ -1,0 +1,48 @@
+{
+  "symbols": {
+    "StaticSubscriberExtensionAbility": {
+      "source": "@ohos.application.StaticSubscriberExtensionAbility.d.ts",
+      "bindings": "default"
+    },
+    "StaticSubscriberExtensionContext": {
+      "source": "@ohos.application.StaticSubscriberExtensionContext.d.ts",
+      "bindings": "default"
+    },
+    "commonEvent": {
+      "source": "@ohos.commonEvent.d.ts",
+      "bindings": "default"
+    },
+    "commonEventManager": {
+      "source": "@ohos.commonEventManager.d.ts",
+      "bindings": "default"
+    },
+    "emitter": {
+      "source": "@ohos.events.emitter.d.ts",
+      "bindings": "default"
+    },
+    "notification": {
+      "source": "@ohos.notification.d.ts",
+      "bindings": "default"
+    },
+    "notificationManager": {
+      "source": "@ohos.notificationManager.d.ts",
+      "bindings": "default"
+    },
+    "notificationSubscribe": {
+      "source": "@ohos.notificationSubscribe.d.ts",
+      "bindings": "default"
+    },
+    "Notification": {
+      "source": "@system.notification.d.ts",
+      "bindings": "default"
+    },
+    "ActionResult": {
+      "source": "@system.notification.d.ts",
+      "bindings": "ActionResult"
+    },
+    "ShowNotificationOptions": {
+      "source": "@system.notification.d.ts",
+      "bindings": "ShowNotificationOptions"
+    }
+  }
+}

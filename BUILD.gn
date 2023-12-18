@@ -33,6 +33,8 @@ ets_loader_form_config_file =
     "/form_config.json"
 ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
                   "/sysResource.js"
+ets_loader_kit_configs_dir = get_label_info(":build_ets_loader_library",
+                                            "target_out_dir") + "/kit_configs"
 
 action("build_ets_loader_library") {
   deps = [
@@ -48,6 +50,7 @@ action("build_ets_loader_library") {
     ets_loader_declarations_dir,
     ets_loader_component_config_file,
     ets_loader_form_config_file,
+    ets_loader_kit_configs_dir,
   ]
 
   _ets_loader_dir = "compiler"
@@ -57,21 +60,25 @@ action("build_ets_loader_library") {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
+  _kit_configs_file_dir = "//interface/sdk-js/api/kits"
   if (sdk_build_public) {
     _declarations_file_dir =
         "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
+    _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/api/kits"
   }
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
   _uglify_source_js = _ace_config_dir + "/uglify-source.js"
   _build_declarations_file_js = _ace_config_dir + "/build_declarations_file.js"
+  _build_kit_configs_file_js = _ace_config_dir + "/build_kitConfigs_file.js"
 
   inputs = [
     _babel_config_js,
     _babel_js,
     _uglify_source_js,
     _build_declarations_file_js,
+    _build_kit_configs_file_js,
   ]
 
   nodejs_path = "//prebuilts/build-tools/common/nodejs/current/bin/node"
@@ -101,6 +108,12 @@ action("build_ets_loader_library") {
     rebase_path(ets_loader_component_config_file, root_build_dir),
     "--output-form-config-file",
     rebase_path(ets_loader_form_config_file, root_build_dir),
+    "--kit-configs-file-dir",
+    rebase_path(_kit_configs_file_dir, root_build_dir),
+    "--build-kit-configs-file-js",
+    rebase_path(_build_kit_configs_file_js, root_build_dir),
+    "--output-kit-configs-dir",
+    rebase_path(ets_loader_kit_configs_dir, root_build_dir),
   ]
 }
 
@@ -177,7 +190,8 @@ ohos_copy("ets_loader_library") {
 }
 
 ohos_copy("ets_loader_kit_configs") {
-  sources = [ "compiler/kit_configs" ]
+  deps = [ ":build_ets_loader_library" ]
+  sources = [ ets_loader_kit_configs_dir ]
   outputs = [ target_out_dir + "/$target_name" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""

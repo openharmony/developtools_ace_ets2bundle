@@ -1,8 +1,0 @@
-{
-  "symbol": {
-    "dlpPermission": {
-      "source": "@ohos.dlpPermission",
-      "bindings": "default"
-    }
-  }
-}
