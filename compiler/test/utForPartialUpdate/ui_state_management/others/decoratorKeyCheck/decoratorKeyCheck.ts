@@ -67,8 +67,8 @@ const decoratorKeyCheck_1 = require("./test/pages/decoratorKeyCheck");
 let para = { 'PropA': 47 };
 let storage = new LocalStorage(para);
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         this.__LocalStorageLink = this.createLocalStorageLink(decoratorKeyCheck_1.stringVariable, 'LocalStorageLink', "LocalStorageLink");
         this.__LocalStorageLink1 = this.createLocalStorageLink(decoratorKeyCheck_1.stringObj.stringKey, 'LocalStorageLink1', "LocalStorageLink1");
         this.__LocalStorageLink2 = this.createLocalStorageLink((0, decoratorKeyCheck_1.stringFunction)(), 'LocalStorageLink2', "LocalStorageLink2");
