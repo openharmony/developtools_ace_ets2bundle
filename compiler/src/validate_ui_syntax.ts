@@ -60,7 +60,9 @@ import {
   STRUCT_DECORATORS,
   STRUCT_CONTEXT_METHOD_DECORATORS,
   CHECK_COMPONENT_EXTEND_DECORATOR,
-  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR
+  CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
+  CLASS_TRACK_DECORATOR,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -396,7 +398,7 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, fileQuery);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, fileQuery);
 }
 
 function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
@@ -404,10 +406,13 @@ function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
-  log: LogInfo[], structContext: boolean, fileQuery: string): void {
+  log: LogInfo[], structContext: boolean, classContext: boolean, fileQuery: string): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     collectComponentProps(node, propertyInitializeInEntry(fileQuery, node.name.escapedText.toString()));
+  }
+  if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+    classContext = true;
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
@@ -447,10 +452,20 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     const decoratorName: string = node.escapedText.toString();
     validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
+    validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName);
   }
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext, fileQuery));
+    log, structContext, classContext, fileQuery));
   structContext = false;
+  classContext = false;
+}
+
+function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
+  classContext: boolean, decoratorName: string): void {
+  if (!classContext && decoratorName === CLASS_TRACK_DECORATOR) {
+    const message: string = `The '@Track' decorator can only be used in 'class'.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  }
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
@@ -843,6 +858,12 @@ export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEnt
   };
 }
 
+class RecordRequire {
+  hasRequire: boolean = false;
+  hasProp: boolean = false;
+  hasBuilderParam: boolean = false;
+}
+
 function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
   properties: Set<string>, regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
   storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
@@ -861,16 +882,17 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
           regulars.add(propertyName);
         } else {
           isStatic = false;
+          const recordRequire: RecordRequire = new RecordRequire();
           for (let i = 0; i < decorators.length; i++) {
             const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
               collectionStates(decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
                 states, links, props, storageProps, storageLinks, provides, consumes, objectLinks,
-                localStorageLink, localStorageProp, builderParams, item.initializer, builderParamData,
-                propData);
+                localStorageLink, localStorageProp, builderParams, recordRequire);
             }
           }
+          checkRequire(propertyName, builderParamData, propData, recordRequire);
         }
       }
       if (ts.isMethodDeclaration(item) && item.name && ts.isIdentifier(item.name)) {
@@ -883,12 +905,23 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
   isStaticViewCollection.set(node.name.getText(), isStatic);
 }
 
+function checkRequire(name: string, builderParamData: Set<string>,
+  propData: Set<string>, recordRequire: RecordRequire): void {
+  if (recordRequire.hasRequire) {
+    if (recordRequire.hasProp) {
+      propData.add(name);
+    }
+    if (recordRequire.hasBuilderParam) {
+      builderParamData.add(name);
+    }
+  }
+}
+
 function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, decorator: string, name: string,
   states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
   storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
   localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
-  builderParams: Set<string>, initializationtName: ts.Expression, builderParamData: Set<string>,
-  propData: Set<string>): void {
+  builderParams: Set<string>, recordRequire: RecordRequire): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
       states.add(name);
@@ -897,9 +930,7 @@ function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, d
       links.add(name);
       break;
     case COMPONENT_PROP_DECORATOR:
-      if (initializationtName) {
-        propData.add(name);
-      }
+      recordRequire.hasProp = true;
       props.add(name);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
@@ -918,15 +949,14 @@ function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, d
       objectLinks.add(name);
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
-      if (initializationtName) {
-        builderParamData.add(name);
-      } else if (judgeInitializeInEntry) {
+      if (judgeInitializeInEntry) {
         transformLog.errors.push({
           type: LogType.WARN,
           message: `'${name}' should be initialized in @Entry Component`,
           pos: node.getStart()
         });
       }
+      recordRequire.hasBuilderParam = true;
       builderParams.add(name);
       break;
     case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR :
@@ -935,6 +965,9 @@ function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, d
     case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
       collectionlocalStorageParam(node, name, localStorageProp);
       break;
+    case COMPONENT_REQUIRE_DECORATOR:
+      recordRequire.hasRequire = true;
+      break;
   }
 }
 
@@ -942,9 +975,9 @@ function collectionlocalStorageParam(node: ts.Decorator, name: string,
   localStorage: Map<string, Set<string>>): void {
   const localStorageParam: Set<string> = new Set();
   if (node && ts.isCallExpression(node.expression) && node.expression.arguments &&
-    node.expression.arguments.length && ts.isStringLiteral(node.expression.arguments[0])) {
+    node.expression.arguments.length) {
     localStorage.set(name, localStorageParam.add(
-      node.expression.arguments[0].getText().replace(/\"|'/g, '')));
+      node.expression.arguments[0].getText()));
   }
 }
 

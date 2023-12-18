@@ -46,8 +46,8 @@ exports.expectResult =
 Object.defineProperty(exports, "__esModule", { value: true });
 const import_ComponentConst_1 = require("./test/pages/import@ComponentConst");
 class Index extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -76,7 +76,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new ComA(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new ComA(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 8 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -89,7 +89,7 @@ class Index extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new ComB(this, {}, undefined, elmtId, paramsLambda));
+                    ViewPU.create(new ComB(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 9 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -103,8 +103,8 @@ class Index extends ViewPU {
     }
 }
 class ComA extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
@@ -130,8 +130,8 @@ class ComA extends ViewPU {
     }
 }
 class ComB extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined) {
-        super(parent, __localStorage, elmtId);
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }

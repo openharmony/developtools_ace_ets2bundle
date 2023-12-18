@@ -277,7 +277,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, paramsLambda));
+                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 40 }));
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

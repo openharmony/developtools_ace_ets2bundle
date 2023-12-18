@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "eslint --fix ./src --ext .ts",
-    "build": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
+    "build": "npm run generateKitConfigs && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
     "create": "node ./lib/create.js --env projectName",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
     "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError && npm run arkTest",
@@ -22,7 +22,8 @@
     "run:cleanArkTest": "rm -rf arkTest_build",
     "arkTest": "./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest",
     "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage",
-    "duplicate": "jscpd"
+    "duplicate": "jscpd",
+    "generateKitConfigs": "node ./build_kitConfigs_file.js ../../../interface/sdk-js/api/kits ./kit_configs"
   },
   "devDependencies": {
     "@babel/cli": "7.20.7",
@@ -49,8 +50,6 @@
     "log4js": "6.7.1",
     "source-map": "0.7.4",
     "ts-loader": "9.4.2",
-    "typescript": "npm:ohos-typescript@4.9.5-r6",
-    "arkguard": "1.1.3",
     "webpack": "5.72.1",
     "webpack-cli": "5.0.2",
     "ws": "8.5.0"

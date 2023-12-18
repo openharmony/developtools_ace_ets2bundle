@@ -1,0 +1,20 @@
+{
+  "symbols": {
+    "cooperate": {
+      "source": "@ohos.cooperate.d.ts",
+      "bindings": "default"
+    },
+    "distributedDeviceManager": {
+      "source": "@ohos.distributedDeviceManager.d.ts",
+      "bindings": "default"
+    },
+    "deviceManager": {
+      "source": "@ohos.distributedHardware.deviceManager.d.ts",
+      "bindings": "default"
+    },
+    "hardwareManager": {
+      "source": "@ohos.distributedHardware.hardwareManager.d.ts",
+      "bindings": "default"
+    }
+  }
+}

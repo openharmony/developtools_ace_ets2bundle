@@ -1,0 +1,192 @@
+{
+  "symbols": {
+    "BackupExtensionAbility": {
+      "source": "@ohos.application.BackupExtensionAbility.d.ts",
+      "bindings": "default"
+    },
+    "BundleVersion": {
+      "source": "@ohos.application.BackupExtensionAbility.d.ts",
+      "bindings": "BundleVersion"
+    },
+    "document": {
+      "source": "@ohos.document.d.ts",
+      "bindings": "default"
+    },
+    "backup": {
+      "source": "@ohos.file.backup.d.ts",
+      "bindings": "default"
+    },
+    "cloudSync": {
+      "source": "@ohos.file.cloudSync.d.ts",
+      "bindings": "default"
+    },
+    "cloudSyncManager": {
+      "source": "@ohos.file.cloudSyncManager.d.ts",
+      "bindings": "default"
+    },
+    "Environment": {
+      "source": "@ohos.file.environment.d.ts",
+      "bindings": "default"
+    },
+    "fileAccess": {
+      "source": "@ohos.file.fileAccess.d.ts",
+      "bindings": "default"
+    },
+    "fileExtensionInfo": {
+      "source": "@ohos.file.fileExtensionInfo.d.ts",
+      "bindings": "default"
+    },
+    "fileUri": {
+      "source": "@ohos.file.fileuri.d.ts",
+      "bindings": "default"
+    },
+    "fileIo": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "default"
+    },
+    "ConflictFiles": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "ConflictFiles"
+    },
+    "Filter": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "Filter"
+    },
+    "Options": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "Options"
+    },
+    "ReaderIteratorResult": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "ReaderIteratorResult"
+    },
+    "WatchEvent": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "WatchEvent"
+    },
+    "WatchEventListener": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "WatchEventListener"
+    },
+    "Watcher": {
+      "source": "@ohos.file.fs.d.ts",
+      "bindings": "Watcher"
+    },
+    "hash": {
+      "source": "@ohos.file.hash.d.ts",
+      "bindings": "default"
+    },
+    "picker": {
+      "source": "@ohos.file.picker.d.ts",
+      "bindings": "default"
+    },
+    "recent": {
+      "source": "@ohos.file.recent.d.ts",
+      "bindings": "default"
+    },
+    "securityLabel": {
+      "source": "@ohos.file.securityLabel.d.ts",
+      "bindings": "default"
+    },
+    "statfs": {
+      "source": "@ohos.file.statvfs.d.ts",
+      "bindings": "default"
+    },
+    "storageStatistics": {
+      "source": "@ohos.file.storageStatistics.d.ts",
+      "bindings": "default"
+    },
+    "trash": {
+      "source": "@ohos.file.trash.d.ts",
+      "bindings": "default"
+    },
+    "volumeManager": {
+      "source": "@ohos.file.volumeManager.d.ts",
+      "bindings": "default"
+    },
+    "fileIO": {
+      "source": "@ohos.fileio.d.ts",
+      "bindings": "default"
+    },
+    "userFileManager": {
+      "source": "@ohos.filemanagement.userFileManager.d.ts",
+      "bindings": "default"
+    },
+    "fileShare": {
+      "source": "@ohos.fileshare.d.ts",
+      "bindings": "default"
+    },
+    "Statfs": {
+      "source": "@ohos.statfs.d.ts",
+      "bindings": "default"
+    },
+    "File": {
+      "source": "@system.file.d.ts",
+      "bindings": "default"
+    },
+    "FileAccessOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileAccessOption"
+    },
+    "FileCopyOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileCopyOption"
+    },
+    "FileDeleteOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileDeleteOption"
+    },
+    "FileGetOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileGetOption"
+    },
+    "FileListOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileListOption"
+    },
+    "FileListResponse": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileListResponse"
+    },
+    "FileMkdirOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileMkdirOption"
+    },
+    "FileMoveOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileMoveOption"
+    },
+    "FileReadArrayBufferOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileReadArrayBufferOption"
+    },
+    "FileReadArrayBufferResponse": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileReadArrayBufferResponse"
+    },
+    "FileReadTextOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileReadTextOption"
+    },
+    "FileReadTextResponse": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileReadTextResponse"
+    },
+    "FileResponse": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileResponse"
+    },
+    "FileRmdirOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileRmdirOption"
+    },
+    "FileWriteArrayBufferOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileWriteArrayBufferOption"
+    },
+    "FileWriteTextOption": {
+      "source": "@system.file.d.ts",
+      "bindings": "FileWriteTextOption"
+    }
+  }
+}

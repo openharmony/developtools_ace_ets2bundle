@@ -89,10 +89,6 @@
         "message": "The property 'lang' cannot have mutilate state management decorators.",
         "type": "ERROR"
     },
-    "validateDecoratorNonSingleKey": {
-        "message": "The decorator StorageLink should have a single key.",
-        "type": "ERROR"
-    },
     "validatePropertyNonDefaultValue": {
         "message": "The @State property 'message' must be specified a default value.",
         "type": "ERROR"
@@ -247,7 +243,7 @@
     },
     "NoSrc": {
         "message": "No such 'test.png' resource in current module.",
-        "type": "WARN"
+        "type": "ERROR"
     },
     "EntryDecoParam": {
         "message": "@Entry should have a parameter, like '@Entry (storage)'.",

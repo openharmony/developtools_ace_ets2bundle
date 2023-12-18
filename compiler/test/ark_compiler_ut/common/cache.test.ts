@@ -16,7 +16,10 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 
-import { checkArkCompilerCacheInfo } from '../../../lib/fast_build/ark_compiler/cache';
+import {
+  checkArkCompilerCacheInfo,
+  utCache
+} from '../../../lib/fast_build/ark_compiler/cache';
 import {
   IS_CACHE_INVALID,
   ARK_COMPILER_META_INFO,
@@ -90,5 +93,33 @@ mocha.describe('test cache file api', function () {
     checkArkCompilerCacheInfo(this.rollup);
     expect(this.rollup.cache.get(ARK_COMPILER_META_INFO).length > 0).to.be.true;
     expect(this.rollup.cache.get(IS_CACHE_INVALID) === true).to.be.true;
+  });
+
+  mocha.it('2-1: test getMetaInfo under build debug', function () {
+    this.rollup.build();
+    const metaInfoArr = JSON.stringify(this.rollup.cache.get(ARK_COMPILER_META_INFO));
+    const returnInfo = JSON.stringify(utCache.getMetaInfo(this.rollup.share.projectConfig));
+    expect(metaInfoArr === returnInfo).to.be.true;
+  });
+
+  mocha.it('2-2: test getMetaInfo under build release', function () {
+    this.rollup.build(RELEASE);
+    const metaInfoArr = JSON.stringify(this.rollup.cache.get(ARK_COMPILER_META_INFO));
+    const returnInfo = JSON.stringify(utCache.getMetaInfo(this.rollup.share.projectConfig));
+    expect(metaInfoArr === returnInfo).to.be.true;
+  });
+
+  mocha.it('2-3: test getMetaInfo under preview debug', function () {
+    this.rollup.preview();
+    const metaInfoArr = JSON.stringify(this.rollup.cache.get(ARK_COMPILER_META_INFO));
+    const returnInfo = JSON.stringify(utCache.getMetaInfo(this.rollup.share.projectConfig));
+    expect(metaInfoArr === returnInfo).to.be.true;
+  });
+
+  mocha.it('2-4: test getMetaInfo under hot reload debug', function () {
+    this.rollup.hotReload();
+    const metaInfoArr = JSON.stringify(this.rollup.cache.get(ARK_COMPILER_META_INFO));
+    const returnInfo = JSON.stringify(utCache.getMetaInfo(this.rollup.share.projectConfig));
+    expect(metaInfoArr === returnInfo).to.be.true;
   });
 });

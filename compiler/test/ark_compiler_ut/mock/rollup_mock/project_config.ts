@@ -26,7 +26,11 @@ import {
   NODE_JS_PATH,
   PORT_DEFAULT
 } from "./common";
-import { ESMODULE, OHPM, RELEASE } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
+import {
+  ESMODULE,
+  OHPM,
+  RELEASE
+} from "../../../../lib/fast_build/ark_compiler/common/ark_define";
 
 interface IArkProjectConfig {
   projectRootPath: string,
@@ -81,6 +85,7 @@ class ProjectConfig {
   cachePath: string;
   aceModuleBuild: string;
   patchAbcPath: string;
+  DynamicImportpath: string;
   supportChunks: boolean;
   projectPath: string;
   resolveModulePaths: Array<string>;
@@ -132,24 +137,25 @@ class ProjectConfig {
 
   private initPath(proPath: string) {
     // build and preview
-    let mode = this.isPreview ? '.preview' : 'build';
+    let mode = this.isPreview ? 'preview' : 'build';
     this.localPropertiesPath = `${proPath}/local.properties`;
-    this.aceProfilePath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/res/default/resources/base/profile`;
+    this.aceProfilePath = `${proPath}/${this.entryModuleName}/${mode}/res/default/resources/base/profile`;
     this.etsLoaderPath = `/${this.runtimeOS}/Sdk/${this.compileSdkVersion}/ets/build-tools/app`;
     this.modulePath = `${proPath}/${this.entryModuleName}`;
     this.projectTopDir = `${proPath}`;
     this.apPath = '';
     this.aceModuleJsonPath = `${proPath}/${this.entryModuleName}/${mode}/module.json`;
-    this.appResource = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/res/default/ResourceTable.txt`;
+    this.appResource = `${proPath}/${this.entryModuleName}/${mode}/res/default/ResourceTable.txt`;
     this.aceModuleRoot = `${proPath}/${this.entryModuleName}/src/main/ets`;
     this.aceSuperVisualPath = `${proPath}/${this.entryModuleName}/src/main/supervisual`;
-    this.aceBuildJson = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/loader/default/loader.json`;
-    this.cachePath = `${proPath}/${this.entryModuleName}/${mode}/default/cache/default/default@CompileArkTS/esmodule/${this.buildMode}`;
-    this.aceModuleBuild = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/loader_out/default/ets`;
+    this.aceBuildJson = `${proPath}/${this.entryModuleName}/${mode}/loader.json`;
+    this.cachePath = `${proPath}/${this.entryModuleName}/${mode}`;
+    this.aceModuleBuild = `${proPath}/${this.entryModuleName}/${mode}`;
     this.projectPath = `${proPath}/${this.entryModuleName}/src/main/ets`;
     this.moduleRootPath = undefined;
-    this.buildPath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/loader_out/default/ets`;
-    this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/default/intermediates/hotReload/patchAbcPath/ets`;
+    this.buildPath = `${proPath}/${this.entryModuleName}/${mode}`;
+    this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/hotReload`;
+    this.DynamicImportpath = `${this.modulePath}/DynamicImport.ets`
 
     if (this.isPreview) {
       this.previewUniqueConfig();
@@ -167,7 +173,7 @@ class ProjectConfig {
     this.logLevel = '3';
     this.stageRouterConfig = [];
     this.port = PORT_DEFAULT;
-    this.aceSoPath = `${this.projectTopDir}/entry/.preview/cache/nativeDependencies.txt`;
+    this.aceSoPath = `${this.projectTopDir}/entry/preview/cache/nativeDependencies.txt`;
   }
 }
 
