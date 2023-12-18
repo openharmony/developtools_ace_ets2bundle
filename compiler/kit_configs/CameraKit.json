@@ -1,8 +1,0 @@
-{
-  "symbol": {
-    "camera": {
-      "source": "@ohos.multimedia.camera",
-      "bindings": "default"
-    }
-  }
-}
