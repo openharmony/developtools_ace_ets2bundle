@@ -17,13 +17,14 @@ import * as ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
 
+import { FileLog, LogType } from './utils';
 
 /*
 * basic implementation logic:
 * tsc -> transformer
 *           | -> iterate top-level static import/export declaration
 *                  | -> for each declaration
-*                        | -> collect KitImportInfo
+*                        | -> collect KitInfo
 *                        | -> generate corresponding ohosImports for each ohos-source
 *                  | -> replace each origin declaration with corresponding ohosImports
 */
@@ -31,6 +32,9 @@ import path from 'path';
 const KIT_CONFIGS = 'kit_configs';
 const KIT_PREFIX = '@kit.';
 const JSON_SUFFIX = '.json';
+
+export const kitTransformLog: FileLog = new FileLog();
+
 /*
 * This API is the TSC Transformer for transforming `KitImport` into `OhosImport`
 * e.g. 
@@ -50,32 +54,31 @@ export function processKitImport(program: ts.Program): Function {
         // so we need to remove the quotation marks from moduleRequest.
         const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
         if (moduleRequest.startsWith(KIT_PREFIX)) {
-          const kitDefs = JSON.parse(fs.readFileSync(`../${KIT_CONFIGS}/${moduleRequest}${JSON_SUFFIX}`, 'utf-8'));
+          const kitDefs =
+            JSON.parse(
+              fs.readFileSync(path.join(__dirname, `../${KIT_CONFIGS}/${moduleRequest}${JSON_SUFFIX}`),
+              'utf-8'
+              )
+            );
           if (kitDefs.symbols) {
-            KitImportInfo.processKitImportInfo(kitDefs.symbols as KitSymbols, node);
+            KitInfo.processKitInfo(kitDefs.symbols as KitSymbols, node);
+            return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
           }
-          return [...KitImportInfo.getCurrentKitImportInfo().getOhosImportNodes()];
         }
       }
       return node;
     }
 
     return (node: ts.SourceFile) => {
-      if (/\.ts$/.test(node.fileName)) {
-        KitImportInfo.setFileType(FileType.TS);
-      } else {
-        KitImportInfo.setFileType(FileType.ETS);
-      }
+      KitInfo.init(node);
       ts.visitEachChild(node, visitor, context);
     };
   }
 }
 
-
 /*
-*  Implementation part of Transforming
+*  Main implementation of Transforming
 */
-
 const DEFAULT_BINDINGS = 'default';
 
 enum FileType {
@@ -92,15 +95,21 @@ declare type KitSymbols = Record<string, Symbol>;
 declare type TSspecifier = ts.ImportSpecifier | ts.ExportSpecifier;
 declare type TSModuleDeclaration = ts.ImportDeclaration | ts.ExportDeclaration;
 
+
+/*
+* class SpecificerInfo represents the corresponding info of each imported identifier which coming from Kit
+*/
 class SpecificerInfo {
   private localName: string;
+  private importName: string;
   private symbol: Symbol;
   private renamed: boolean;
   
   private originElement: TSspecifier;
 
-  constructor(localName: string, symbol: Symbol, originElement: TSspecifier) {
+  constructor(localName: string, importName: string, symbol: Symbol, originElement: TSspecifier) {
     this.localName = localName;
+    this.importName = importName;
     this.symbol = symbol;
     this.originElement = originElement;
     this.renamed = (this.localName === this.symbol.bindings);
@@ -129,9 +138,13 @@ class SpecificerInfo {
   }
 
   validateImportingETSDeclarationSymbol() {
-    if (KitImportInfo.isTSFile() && /.d.ets$/.test(this.symbol.source)) {
-      // ts file can not import symbol from .d.ets file
-      // logger.error()
+    if (KitInfo.isTSFile() && /.d.ets$/.test(this.symbol.source)) {
+      kitTransformLog.errors.push({
+        type: LogType.ERROR,
+        message: `Identifier '${this.importName}' comes from '${this.symbol.source}' ` +
+                 `which can not be imported in .ts file.`,
+        pos: this.getOriginElementNode().getStart()
+      });
     }
   }
 
@@ -144,8 +157,8 @@ class SpecificerInfo {
   }
 }
 
-class KitImportInfo {
-  private static currentKitImportInfo: KitImportInfo;
+class KitInfo {
+  private static currentKitInfo: KitInfo = undefined;
   private static currentFileType: FileType = FileType.ETS;
 
   private symbols: KitSymbols;
@@ -159,8 +172,18 @@ class KitImportInfo {
     this.symbols = symbols;
   }
 
-  static getCurrentKitImportInfo(): KitImportInfo {
-    return this.currentKitImportInfo;
+  static init(node: ts.SourceFile): void {
+    if (/\.ts$/.test(node.fileName)) {
+      this.setFileType(FileType.TS);
+    } else {
+      this.setFileType(FileType.ETS);
+    }
+
+    kitTransformLog.sourceFile = node;
+  }
+
+  static getCurrentKitInfo(): KitInfo {
+    return this.currentKitInfo;
   }
 
   static setFileType(fileType: FileType): void {
@@ -182,12 +205,12 @@ class KitImportInfo {
       if (ts.isNamespaceImport(namedBindings)) {
         // import * as ns from "@kit.xxx"
         // todo: logger.warn to reminder developer the side-effect of using namespace import with Kit
-        this.currentKitImportInfo = new NameSpaceKitImportInfo(kitNode, symbols);
+        this.currentKitInfo = new NameSpaceKitInfo(kitNode, symbols);
       }
       if (ts.isNamedImports(namedBindings) && namedBindings.elements.length !== 0) {
         // import { ... } from "@kit.xxx"
-        this.currentKitImportInfo = new ImportSpecifierKitImportInfo(kitNode, symbols);
-        namedBindings.elements.forEach(element => { this.currentKitImportInfo.collectSpecifier(element) });
+        this.currentKitInfo = new ImportSpecifierKitInfo(kitNode, symbols);
+        namedBindings.elements.forEach(element => { this.currentKitInfo.collectSpecifier(element) });
       }
     }
   }
@@ -200,8 +223,8 @@ class KitImportInfo {
         // todo
       } else if (ts.isNamedExports(namedExportBindings) && namedExportBindings.elements.length !== 0) {
         // export { ... } from "@kit.xxx"
-        this.currentKitImportInfo = new ExportSpecifierKitImportInfo(kitNode, symbols);
-        namedExportBindings.elements.forEach(element => { this.currentKitImportInfo.collectSpecifier(element) });
+        this.currentKitInfo = new ExportSpecifierKitInfo(kitNode, symbols);
+        namedExportBindings.elements.forEach(element => { this.currentKitInfo.collectSpecifier(element) });
       }
     } else {
       // export * from "@kit.xxx"
@@ -211,7 +234,7 @@ class KitImportInfo {
     }
   }
 
-  static processKitImportInfo(symbols: Record<string, Symbol>, kitNode: TSModuleDeclaration): void {
+  static processKitInfo(symbols: Record<string, Symbol>, kitNode: TSModuleDeclaration): void {
     // do not handle an empty import
     if (ts.isImportDeclaration(kitNode) && kitNode.importClause) {
       // import { ... } from '@kit.xxx'
@@ -227,7 +250,7 @@ class KitImportInfo {
       this.processExportDecl(kitNode, symbols);
     }
     // transform into ohos imports or exports
-    this.currentKitImportInfo.transform();
+    this.currentKitInfo && this.currentKitInfo.transform();
   }
 
   getSymbols(): KitSymbols {
@@ -248,7 +271,7 @@ class KitImportInfo {
   
   newSpecificerInfo(localName: string, importName: string, originElement: TSspecifier): SpecificerInfo {
     const symbol: Symbol = this.symbols[importName];
-    const specifier: SpecificerInfo = new SpecificerInfo(localName, symbol, originElement);
+    const specifier: SpecificerInfo = new SpecificerInfo(localName, importName, symbol, originElement);
     if (this.specifiers.has(symbol.source)) {
       this.specifiers.get(symbol.source).push(specifier);
     } else {
@@ -267,7 +290,7 @@ class KitImportInfo {
   transform() {} //override api
 }
 
-class NameSpaceKitImportInfo extends KitImportInfo {
+class NameSpaceKitInfo extends KitInfo {
   namespaceName: string;
   localNameTable: string[] = [];
 
@@ -288,7 +311,7 @@ class NameSpaceKitImportInfo extends KitImportInfo {
   }
 }
 
-class ImportSpecifierKitImportInfo extends KitImportInfo {
+class ImportSpecifierKitInfo extends KitInfo {
   private namedBindings: ts.ImportSpecifier[] = [];
   private defaultName: ts.Identifier | undefined = undefined;
 
@@ -328,13 +351,13 @@ class ImportSpecifierKitImportInfo extends KitImportInfo {
   }
 }
 
-class ExportSpecifierKitImportInfo extends KitImportInfo {
+class ExportSpecifierKitInfo extends KitInfo {
   transform() {
 
   }
 }
 
-class ExportStarKitImportInfo extends KitImportInfo {
+class ExportStarKitInfo extends KitInfo {
   transform() {
 
   }
