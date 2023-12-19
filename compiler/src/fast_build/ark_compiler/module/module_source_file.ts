@@ -97,7 +97,9 @@ export class ModuleSourceFile {
     ModuleSourceFile.mockConfigInfo = require('json5').parse(
       fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
     for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
-      ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
+      if (ModuleSourceFile.mockConfigInfo[mockedTarget].source) {
+        ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
+      }
     }
   }
 
@@ -169,6 +171,20 @@ export class ModuleSourceFile {
     fs.copyFileSync(transformedMockConfigCache, transformedMockConfig);
   }
 
+  static removePotentialMockConfigCache(rollupObject: any): void {
+    const transformedMockConfigCache: string =
+      path.resolve(rollupObject.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
+    const userDefinedMockConfigCache: string =
+      path.resolve(rollupObject.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
+    if (fs.existsSync(transformedMockConfigCache)) {
+      fs.rm(transformedMockConfigCache);
+    }
+
+    if (fs.existsSync(userDefinedMockConfigCache)) {
+      fs.rm(userDefinedMockConfigCache);
+    }
+  }
+
   static newSourceFile(moduleId: string, source: string | ts.SourceFile) {
     ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source));
   }
@@ -184,6 +200,8 @@ export class ModuleSourceFile {
     ModuleSourceFile.setProcessMock(rollupObject);
     if (ModuleSourceFile.needProcessMock) {
       ModuleSourceFile.collectMockConfigInfo(rollupObject);
+    } else {
+      ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
     }
 
     for (const source of ModuleSourceFile.sourceFiles) {
