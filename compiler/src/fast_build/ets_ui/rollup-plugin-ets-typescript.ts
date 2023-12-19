@@ -72,6 +72,7 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD
 } from '../../component_map';
+import { kitTransformLog, processKitImport } from '../../process_kit_import';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -326,8 +327,14 @@ async function transform(code: string, id: string) {
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined, { before: [
-      processUISyntax(null, false, eventSetEmit, compilationTime) ] });
+    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
+      {
+        before: [
+          processKitImport(null),
+          processUISyntax(null, false, eventSetEmit, compilationTime)
+        ]
+      }
+    );
     stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
@@ -335,8 +342,9 @@ async function transform(code: string, id: string) {
   }
 
   resetCollection();
-  if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
-    emitLogInfo(logger, getTransformLog(transformLog), true, id);
+  if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
+    !projectConfig.ignoreWarning) {
+    emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);
     resetLog();
   }
   stopEvent(eventSetEmit);
