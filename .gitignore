@@ -1,10 +1,12 @@
 .vscode/
+compiler/arkTest_build/
 compiler/node_modules/
 compiler/lib/
 compiler/declarations/
 compiler/sample/build/
 compiler/component_config.json
 compiler/form_config.json
+compiler/kit_configs/
 compiler/syntax_parser/dist/
 compiler/.nyc_output
 compiler/.test_output
