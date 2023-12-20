@@ -17,6 +17,7 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 const fse = require('fs-extra');
+import * as crypto from 'crypto';
 
 import {
   projectConfig,
@@ -64,7 +65,8 @@ import {
   ATOMICSERVICE_TAG_CHECK_NAME,
   ATOMICSERVICE_TAG_CHECK_ERROER,
   SINCE_TAG_NAME,
-  ATOMICSERVICE_TAG_CHECK_VERSION
+  ATOMICSERVICE_TAG_CHECK_VERSION,
+  TS_BUILD_INFO_SUFFIX
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -111,6 +113,12 @@ export function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
+const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
+  if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
+    fs.writeSync(fs.openSync(fileName, 'w'), data, undefined, 'utf8');
+  };
+}
+
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions(resolveModulePaths: string[]) {
@@ -151,7 +159,10 @@ function setCompilerOptions(resolveModulePaths: string[]) {
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
-    'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE
+    'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE,
+    // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
+    'incremental': true,
+    'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX)
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -238,6 +249,23 @@ interface extendInfo {
 
 export const files: ts.MapLike<{ version: number }> = {};
 
+function createHash(str: string): string {
+  const hash = crypto.createHash('sha256');
+  hash.update(str);
+  return hash.digest('hex');
+}
+
+const fileHashScriptVersion: (fileName: string) => string = (fileName: string) => {
+  return createHash(fs.readFileSync(fileName).toString());
+}
+
+const watchModeScriptVersion: (fileName: string) => string = (fileName: string) => {
+  if (!files[path.resolve(fileName)]) {
+    files[path.resolve(fileName)] = {version: 0};
+  }
+  return files[path.resolve(fileName)].version.toString();
+}
+
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   compilationTime: CompilationTimeStatistics = null): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
@@ -246,12 +274,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   });
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
-    getScriptVersion: fileName => {
-      if (!files[path.resolve(fileName)]) {
-        files[path.resolve(fileName)] = {version: 0};
-      }
-      return files[path.resolve(fileName)].version.toString();
-    },
+    getScriptVersion: process.env.watchMode === 'true' ? watchModeScriptVersion : fileHashScriptVersion,
     getScriptSnapshot: fileName => {
       if (!fs.existsSync(fileName)) {
         return undefined;
@@ -350,7 +373,10 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     languageService = createLanguageService(filterFiles, resolveModulePaths, compilationTime);
   }
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
-  globalProgram.program = languageService.getProgram();
+
+  globalProgram.builderProgram = languageService.getBuilderProgram();
+  globalProgram.program = globalProgram.builderProgram.getProgram();
+
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   runArkTSLinter(parentEvent);
@@ -363,11 +389,13 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
 
 function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
-  const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+  const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
-    .concat(globalProgram.program.getSemanticDiagnostics())
-    .concat(globalProgram.program.getDeclarationDiagnostics());
+    .concat(globalProgram.builderProgram.getSemanticDiagnostics());
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+
+  globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
+
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
@@ -1020,8 +1048,8 @@ export function incrementWatchFile(watchModifiedFiles: string[],
 
 function runArkTSLinter(parentEvent?: any): void {
   const eventRunArkTsLinter = createAndStartEvent(parentEvent, 'run Arkts linter');
-  const arkTSLinterDiagnostics =
-    doArkTSLinter(getArkTSVersion(), globalProgram.program, getArkTSLinterMode(), printArkTSLinterDiagnostic, !projectConfig.xtsMode);
+  const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(), globalProgram.builderProgram, getArkTSLinterMode(),
+    printArkTSLinterDiagnostic, !projectConfig.xtsMode, buildInfoWriteFile);
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
@@ -1129,12 +1157,13 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   }
   const filterFiles: string[] = filterInput(rootFileNames);
   languageService = createLanguageService(filterFiles, resolveModulePaths);
-  globalProgram.program = languageService.getProgram();
+  globalProgram.builderProgram = languageService.getBuilderProgram();
   runArkTSLinter();
-  const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+  const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
-    .concat(globalProgram.program.getSemanticDiagnostics())
-    .concat(globalProgram.program.getDeclarationDiagnostics());
+    .concat(globalProgram.builderProgram.getSemanticDiagnostics());
+  globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
+
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
