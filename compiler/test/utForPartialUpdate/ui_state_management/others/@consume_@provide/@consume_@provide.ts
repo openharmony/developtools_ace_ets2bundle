@@ -72,7 +72,7 @@ class CompA extends ViewPU {
         this.addProvidedVar("reviewVotes", this.__reviewVotes, false);
         this.__message = new ObservedPropertySimplePU('1111', this, "message");
         this.addProvidedVar('aliasName', this.__message, true);
-        this.addProvidedVar("message", this.__message, false);
+        this.addProvidedVar("message", this.__message, true);
         this.setInitiallyProvidedValue(params);
     }
     setInitiallyProvidedValue(params) {
