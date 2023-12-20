@@ -360,7 +360,7 @@ export class ModuleSourceFile {
         if (ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier)) {
           // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
           // so we need to remove the quotation marks from moduleRequest.
-          const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
+          const moduleRequest: string = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
           let ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
           if (ohmUrl !== undefined) {
             // the import module are added with ".origin" at the end of the ohm url in every mock file.

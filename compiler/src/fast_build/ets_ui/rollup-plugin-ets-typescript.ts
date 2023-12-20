@@ -330,7 +330,7 @@ async function transform(code: string, id: string) {
     tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
       {
         before: [
-          processKitImport(null),
+          processKitImport(),
           processUISyntax(null, false, eventSetEmit, compilationTime)
         ]
       }
