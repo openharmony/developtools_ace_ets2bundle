@@ -30,12 +30,9 @@ import {
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
   setChecker,
-  createAndStartEvent,
-  stopEvent,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
-  CompilationTimeStatistics,
-  getHookEventFactory
+  CompilationTimeStatistics
 } from '../../utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
@@ -49,7 +46,6 @@ export function etsChecker() {
       if (projectConfig.useArkoala) {
         return;
       }
-      const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
@@ -77,10 +73,8 @@ export function etsChecker() {
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
       }
-      const eventServiceChecker = createAndStartEvent(hookEventFactory, 'check Ets code syntax');
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
-          compilationTime);
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime);
         executedOnce = true;
         startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         globalProgram.program = languageService.getProgram();
@@ -95,10 +89,8 @@ export function etsChecker() {
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
-        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
-          compilationTime, this.share);
+        serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
       }
-      stopEvent(eventServiceChecker);
       setChecker();
     }
   };

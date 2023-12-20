@@ -26,7 +26,7 @@ import {
 } from '../../pre_define';
 
 let disableCache: boolean = false;
-export function checkArkCompilerCacheInfo(rollupObject: any): void {
+export function checkArkCompilerCacheInfo(rollupObject: Object): void {
   disableCache = false;
   const metaInfo: string = getMetaInfo(rollupObject.share.projectConfig);
   const lastMetaInfo: string = rollupObject.cache.get(ARK_COMPILER_META_INFO);
@@ -37,7 +37,7 @@ export function checkArkCompilerCacheInfo(rollupObject: any): void {
   rollupObject.cache.set(ARK_COMPILER_META_INFO, metaInfo);
 }
 
-function getMetaInfo(projectConfig: any): string {
+function getMetaInfo(projectConfig: Object): string {
   let metaInfoArr: string[] = [];
   // user selects the compiled API version information
   const compileSdkVersion: string = projectConfig.compileSdkVersion ?

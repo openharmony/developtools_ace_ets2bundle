@@ -24,14 +24,14 @@ export class ModuleHotfixMode extends ModuleMode {
   inOldSymbolTablePath: string;
   enableMap: boolean;
 
-  constructor(rollupObject: any) {
+  constructor(rollupObject: Object) {
     super(rollupObject);
     this.patch = false;
     this.inOldSymbolTablePath = '';
     this.enableMap = false;
   }
 
-  generateAbc(rollupObject: any, parentEvent: any) {
+  generateAbc(rollupObject: Object, parentEvent: Object): void {
     this.patch = this.projectConfig.patch || false;
     this.inOldSymbolTablePath = this.projectConfig.inOldSymbolTablePath || this.projectConfig.projectRootPath;
     this.enableMap = this.projectConfig.enableMap || false;

@@ -20,7 +20,7 @@ import {
     OHPM
 } from "./common/ark_define";
 
-export const babelPlugin = (projectConfig: any) => 
+export const babelPlugin = (projectConfig: Object): Object => 
     getBabelInputPlugin({
         extensions: ['.js'],
         exclude: [projectConfig.packageManagerType === OHPM ? OH_MODULES : NODE_MODULES],

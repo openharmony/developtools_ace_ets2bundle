@@ -45,7 +45,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string, workerFileName: string)
     }
   }
   fs.writeFileSync(filePath, content, "utf-8");
-  const singleCmd: any = `${cmd} --input-file "${filePath}" --output-proto --merge-abc`;
+  const singleCmd: string = `${cmd} --input-file "${filePath}" --output-proto --merge-abc`;
   logger.debug('gen abc cmd is: ', singleCmd);
   try {
     childProcess.execSync(singleCmd);

@@ -26,8 +26,6 @@ import {
   genTemporaryPath,
   mkdirsSync,
   toUnixPath,
-  createAndStartEvent,
-  stopEvent,
   harFilesRecord,
   GeneratedFileInHar
 } from './utils';
@@ -35,17 +33,19 @@ import {
   genSourceMapFileName,
   newSourceMaps as webpackNewSourceMaps,
   transformModuleSpecifier,
-  writeObfuscatedSourceCode
+  writeObfuscatedSourceCode,
+  createAndStartEvent,
+  stopEvent
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
 import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: any, parentEvent: any, logger?: any): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
-  const mixedInfo: {content: string, sourceMapJson: any} = genContentAndSourceMapInfo(node, projectConfig);
+  const mixedInfo: {content: string, sourceMapJson: ts.RawSourceMap} = genContentAndSourceMapInfo(node, projectConfig);
   stopEvent(eventGenContentAndSourceMapInfo);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig);
@@ -77,12 +77,12 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: an
   stopEvent(eventWriteFileSyncByNode);
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: any): any {
+function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object): Object {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
   };
-  const mapOpions: any = {
+  const mapOpions: Object = {
     sourceMap: true,
     inlineSourceMap: false,
     inlineSources: false,
@@ -93,7 +93,7 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: any): an
   const host: ts.CompilerHost = ts.createCompilerHost(options);
   const fileName: string = node.fileName;
   // @ts-ignore
-  const sourceMapGenerator: any = ts.createSourceMapGenerator(
+  const sourceMapGenerator: ts.SourceMapGenerator = ts.createSourceMapGenerator(
     host,
     // @ts-ignore
     ts.getBaseFileName(fileName),
@@ -102,11 +102,11 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: any): an
     mapOpions
   );
   // @ts-ignore
-  const writer: any = ts.createTextWriter(
+  const writer: ts.EmitTextWriter = ts.createTextWriter(
     // @ts-ignore
     ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
   printer['writeFile'](node, writer, sourceMapGenerator);
-  const sourceMapJson: any = sourceMapGenerator.toJSON();
+  const sourceMapJson: ts.RawSourceMap = sourceMapGenerator.toJSON();
   sourceMapJson['sources'] = [toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
   let content: string = writer.getText();
   if (process.env.compileTool !== 'rollup') {

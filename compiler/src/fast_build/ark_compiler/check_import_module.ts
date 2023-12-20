@@ -25,7 +25,7 @@ import {
   yellow
 } from './common/ark_define';
 
-export function checkIfJsImportingArkts(rollupObject: any): void {
+export function checkIfJsImportingArkts(rollupObject: Object): void {
   ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
     const id: string = sourceFile.getModuleId();
     const unixId: string = toUnixPath(id);
@@ -38,7 +38,7 @@ export function checkIfJsImportingArkts(rollupObject: any): void {
             `Importing ArkTS files in JS and TS files is about to be forbidden.\n` :
             `ArkTS:ERROR ArkTS:ERROR File: ${id}\n` +
             `Importing ArkTS files in JS and TS files is forbidden.\n`;
-          const logger: any = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+          const logger: Object = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
           compilerOptions.isCompatibleVersion ? logger.warn(yellow + errorMsg) : logger.error(red + errorMsg);
         }
       }

@@ -36,7 +36,7 @@ function genAbcByWorkersOfBundleMode(jsonInput: string, cmd: string): Promise<vo
     const cacheFilePath: string = inputPaths[i].cacheFilePath;
     const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
     const sourceFile: string = inputPaths[i].sourceFile;
-    const singleCmd: any = `${cmd} "${cacheFilePath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
+    const singleCmd: string = `${cmd} "${cacheFilePath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
     try {
       childProcess.execSync(singleCmd, { windowsHide: true });
     } catch (e) {
@@ -62,7 +62,7 @@ function genAbcByWorkersOfModuleMode(jsonInput: string, cmd: string, workerFileN
     }
   }
   fs.writeFileSync(filePath, content, 'utf-8');
-  const singleCmd: any = `${cmd} "${filePath}"`;
+  const singleCmd: string = `${cmd} "${filePath}"`;
   try {
     childProcess.execSync(singleCmd, { windowsHide: true });
   } catch (e) {

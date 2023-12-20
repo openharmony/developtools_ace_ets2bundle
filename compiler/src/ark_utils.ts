@@ -70,7 +70,7 @@ export var newSourceMaps: Object = {};
 export var identifierCaches: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
-export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger: any, namespace?: string): string {
+export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string): string {
   // remove '\x00' from the rollup virtual commonjs file's filePath
   if (filePath.startsWith('\x00')) {
     filePath = filePath.replace('\x00', '');
@@ -94,39 +94,63 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
   const packageDir: string = projectConfig.packageDir;
   const result: RegExpMatchArray | null = projectFilePath.match(REG_PROJECT_SRC);
   if (result && result[1].indexOf(packageDir) === -1) {
-    let langType: string = result[2];
-    let relativePath: string = result[3];
-    // case7: /entry/src/main/ets/xxx/src/main/js/yyy ---> @bundle:<bundleName>/entry/ets/xxx/src/main/js/yyy
-    const REG_SRC_MAIN: RegExp = /src\/(?:main|ohosTest)\/(ets|js)\//;
-    const srcMainIndex: number = result[1].search(REG_SRC_MAIN);
-    if (srcMainIndex !== -1) {
-      relativePath = projectFilePath.substring(srcMainIndex).replace(REG_SRC_MAIN, '');
-      langType = projectFilePath.replace(relativePath, '').match(REG_SRC_MAIN)[1];
-    }
+    const relativePath = processSrcMain(result, projectFilePath);
     if (namespace && moduleName !== namespace) {
-      return `${bundleName}/${moduleName}@${namespace}/${langType}/${relativePath}`;
+      return `${bundleName}/${moduleName}@${namespace}/${relativePath}`;
     }
-    return `${bundleName}/${moduleName}/${langType}/${relativePath}`;
+    return `${bundleName}/${moduleName}/${relativePath}`;
   }
 
+  const processParams: Object = {
+    projectFilePath,
+    unixFilePath,
+    packageDir,
+    projectRootPath,
+    moduleRootPath,
+    projectConfig,
+    namespace,
+    logger,
+    originalFilePath: filePath
+  };
+  return processPackageDir(processParams);
+}
+
+function processSrcMain(result: RegExpMatchArray | null, projectFilePath: string): string {
+  let langType: string = result[2];
+  let relativePath: string = result[3];
+  // case7: /entry/src/main/ets/xxx/src/main/js/yyy ---> @bundle:<bundleName>/entry/ets/xxx/src/main/js/yyy
+  const REG_SRC_MAIN: RegExp = /src\/(?:main|ohosTest)\/(ets|js)\//;
+  const srcMainIndex: number = result[1].search(REG_SRC_MAIN);
+  if (srcMainIndex !== -1) {
+    relativePath = projectFilePath.substring(srcMainIndex).replace(REG_SRC_MAIN, '');
+    langType = projectFilePath.replace(relativePath, '').match(REG_SRC_MAIN)[1];
+  }
+  return `${langType}/${relativePath}`;
+}
+
+function processPackageDir(params: Object): string {
+  const {
+    projectFilePath, unixFilePath, packageDir, projectRootPath, moduleRootPath, 
+    projectConfig, namespace, logger, originalFilePath
+  } = params;
   if (projectFilePath.indexOf(packageDir) !== -1) {
     if (process.env.compileTool === 'rollup') {
       const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
       if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
         return unixFilePath.replace(tryProjectPkg, `${packageDir}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
       }
-      // iterate the modulePathMap to find the moudleName which contains the pkg_module's file
+
+      // iterate the modulePathMap to find the module which contains the pkg_module's file
       for (const moduleName in projectConfig.modulePathMap) {
         const modulePath: string = projectConfig.modulePathMap[moduleName];
         const tryModulePkg: string = toUnixPath(path.resolve(modulePath, packageDir));
         if (unixFilePath.indexOf(tryModulePkg) !== -1) {
-          return unixFilePath.replace(tryModulePkg, `${packageDir}@${moduleName}`).replace(
-            new RegExp(packageDir, 'g'), PACKAGES);
+          return unixFilePath.replace(tryModulePkg, `${packageDir}@${moduleName}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
         }
       }
 
-      logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
-      return filePath;
+      logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${originalFilePath}"`, reset);
+      return originalFilePath;
     }
 
     // webpack with old implematation
@@ -141,6 +165,9 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
     }
   }
 
+  const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
+  const bundleName: string = packageInfo[0];
+  const moduleName: string = packageInfo[1];
   for (const key in projectConfig.modulePathMap) {
     const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[key]);
     if (unixFilePath.indexOf(moduleRootPath + '/') !== -1) {
@@ -152,9 +179,10 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: any, logger
     }
   }
 
-  logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${filePath}"`, reset);
-  return filePath;
+  logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${originalFilePath}"`, reset);
+  return originalFilePath;
 }
+
 
 export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
 {
@@ -219,11 +247,11 @@ export function genSourceMapFileName(temporaryFile: string): string {
   return abcFile;
 }
 
-export function getBuildModeInLowerCase(projectConfig: any): string {
+export function getBuildModeInLowerCase(projectConfig: Object): string {
   return (process.env.compileTool === 'rollup' ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
-export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: any, logger: any): void {
+export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
   const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
   if (filePath.length === 0) {
     return;
@@ -242,7 +270,7 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, pr
   }
 }
 
-export function transformModuleSpecifier(sourcePath: string, sourceCode: string, projectConfig: any): string {
+export function transformModuleSpecifier(sourcePath: string, sourceCode: string, projectConfig: Object): string {
   // replace relative moduleSpecifier with ohmURl
   const REG_RELATIVE_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]((?:\.\/|\.\.\/)[^'"]+|(?:\.\/?|\.\.\/?))['"]/g;
   const REG_HAR_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^\.\/][^'"]+)['"]/g;
@@ -264,7 +292,7 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   });
 }
 
-export function getOhmUrlByHarName(moduleRequest: string, projectConfig: any): string | undefined {
+export function getOhmUrlByHarName(moduleRequest: string, projectConfig: Object): string | undefined {
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
@@ -286,7 +314,7 @@ export function getOhmUrlByHarName(moduleRequest: string, projectConfig: any): s
   return undefined;
 }
 
-function replaceHarDependency(item:string, moduleRequest: string, projectConfig: any): string {
+function replaceHarDependency(item:string, moduleRequest: string, projectConfig: Object): string {
   const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, projectConfig);
   if (harOhmUrl !== undefined) {
     return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
@@ -309,7 +337,7 @@ function locateActualFilePathWithModuleRequest(absolutePath: string): string {
   return path.join(absolutePath, 'index');
 }
 
-function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string, projectConfig: any): string {
+function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string, projectConfig: Object): string {
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     // remove file extension from moduleRequest
     const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
@@ -345,7 +373,7 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
   return item;
 }
 
-export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
+export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
   if (projectConfig.arkObfuscator) {
     await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
@@ -375,7 +403,8 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
   fs.writeFileSync(filePath, content);
 }
 
-export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
+
+export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(filePath);
@@ -396,7 +425,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     }
   }
 
-  let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
+  let mixedInfo: {content: string, sourceMap?: Object, nameCache?: Object};
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache, originalFilePath);
   } catch {
@@ -415,7 +444,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   tryMangleFileNameAndWriteFile(filePath, mixedInfo.content, projectConfig, originalFilePath);
 }
 
-export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: any, originalFilePath: string): void {
+export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: Object, originalFilePath: string): void {
   originalFilePath = toUnixPath(originalFilePath);
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
   if (!genFileInHar) {
@@ -439,7 +468,7 @@ export function tryMangleFileNameAndWriteFile(filePath: string, content: string,
   fs.writeFileSync(filePath, content ?? '');
 }
 
-export async function mangleDeclarationFileName(logger: any, projectConfig: any): Promise<void> {
+export async function mangleDeclarationFileName(logger: Object, projectConfig: Object): Promise<void> {
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
       let relativeSourceFilePath = toUnixPath(genFilesInHar.originalDeclarationCachePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
@@ -449,8 +478,8 @@ export async function mangleDeclarationFileName(logger: any, projectConfig: any)
   }
 }
 
-export async function writeTerserObfuscatedSourceCode(content: string, filePath: string, logger: any,
-  minifyOptions: any, relativeSourceFilePath: string = '', rollupNewSourceMaps: any = {}): Promise<void> {
+export async function writeTerserObfuscatedSourceCode(content: string, filePath: string, logger: Object,
+  minifyOptions: Object, relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}): Promise<void> {
   let result: MinifyOutput;
 
   if (relativeSourceFilePath.length > 0) {
@@ -475,7 +504,7 @@ export async function writeTerserObfuscatedSourceCode(content: string, filePath:
   fs.writeFileSync(filePath, result.code ?? '');
 }
 
-export async function writeMinimizedSourceCode(content: string, filePath: string, logger: any,
+export async function writeMinimizedSourceCode(content: string, filePath: string, logger: Object,
   isHar: boolean = false): Promise<void> {
   let result: MinifyOutput;
   try {
@@ -501,7 +530,7 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
   fs.writeFileSync(filePath, result.code);
 }
 
-export function genBuildPath(filePath: string, projectPath: string, buildPath: string, projectConfig: any): string {
+export function genBuildPath(filePath: string, projectPath: string, buildPath: string, projectConfig: Object): string {
   filePath = toUnixPath(filePath);
   if (filePath.endsWith(EXTNAME_MJS)) {
     filePath = filePath.replace(/\.mjs$/, EXTNAME_JS);
@@ -539,15 +568,15 @@ export function getPackageInfo(configFile: string): Array<string> {
   if (packageCollection.has(configFile)) {
     return packageCollection.get(configFile);
   }
-  const data: any = JSON.parse(fs.readFileSync(configFile).toString());
+  const data: Object = JSON.parse(fs.readFileSync(configFile).toString());
   const bundleName: string = data.app.bundleName;
   const moduleName: string = data.module.name;
   packageCollection.set(configFile, [bundleName, moduleName]);
   return [bundleName, moduleName];
 }
 
-export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: any,
-  projectConfig: any, logger: any): void {
+export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: Object,
+  projectConfig: Object, logger: Object): void {
   let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
   if (jsFilePath.length === 0) {
     return;
@@ -587,16 +616,16 @@ export function genAbcFileName(temporaryFile: string): string {
   return abcFile;
 }
 
-export function isOhModules(projectConfig: any): boolean {
+export function isOhModules(projectConfig: Object): boolean {
   return projectConfig.packageDir === OH_MODULES;
 }
 
-export function isEs2Abc(projectConfig: any): boolean {
+export function isEs2Abc(projectConfig: Object): boolean {
   return projectConfig.pandaMode === ES2ABC || projectConfig.pandaMode === "undefined" ||
     projectConfig.pandaMode === undefined;
 }
 
-export function isTs2Abc(projectConfig: any): boolean {
+export function isTs2Abc(projectConfig: Object): boolean {
   return projectConfig.pandaMode === TS2ABC;
 }
 
@@ -627,7 +656,7 @@ export function removeDuplicateInfo(moduleInfos: Array<any>): Array<any> {
   return moduleInfos;
 }
 
-export function buildCachePath(tailName: string, projectConfig: any, logger: any): string {
+export function buildCachePath(tailName: string, projectConfig: Object, logger: Object): string {
   let pathName: string = process.env.cachePath !== undefined ?
       path.join(projectConfig.cachePath, tailName) : path.join(projectConfig.aceModuleBuild, tailName);
   validateFilePathLength(pathName, logger);
@@ -701,3 +730,39 @@ const CONSTANT_STEP_2: number = 2;
 const CONSTANT_STEP_3: number = 3;
 const CONSTANT_STEP_4: number = 4;
 const CONSTANT_VERSION_10: number = 10;
+
+export function getHookEventFactory(share: Object, pluginName: string, hookName: string): Object {
+  if (typeof share.getHookEventFactory === 'function') {
+    return share.getHookEventFactory(pluginName, hookName);
+  } else {
+    return undefined;
+  }
+}
+
+export function createAndStartEvent(eventOrEventFactory: Object, eventName: string, syncFlag = false): Object {
+  if (eventOrEventFactory === undefined) {
+    return undefined;
+  }
+  let event: Object;
+  if (typeof eventOrEventFactory.createSubEvent === 'function') {
+    event = eventOrEventFactory.createSubEvent(eventName);
+  } else {
+    event = eventOrEventFactory.createEvent(eventName);
+  }
+  if (typeof event.startAsyncEvent === 'function' && syncFlag) {
+    event.startAsyncEvent();
+  } else {
+    event.start();
+  }
+  return event;
+}
+
+export function stopEvent(event: Object, syncFlag = false): void {
+  if (event !== undefined) {
+    if (typeof event.stopAsyncEvent === 'function' && syncFlag) {
+      event.stopAsyncEvent();
+    } else {
+      event.stop();
+    }
+  }
+}

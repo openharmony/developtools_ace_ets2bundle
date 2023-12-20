@@ -139,7 +139,7 @@ export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: {params: string[]} = {params: []};
 
-export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any,
+export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null): Function {
   let entryNodeKey: ts.Expression;
   return (context: ts.TransformationContext) => {
@@ -164,7 +164,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
             if (process.env.compileTool !== 'rollup') {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-              writeFileSyncByNode(processedNode, projectConfig, parentEvent);
+              writeFileSyncByNode(processedNode, projectConfig);
             }
           }
           return node;
@@ -188,7 +188,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
           if (process.env.compileTool !== 'rollup') {
             const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-            writeFileSyncByNode(processedNode, projectConfig, parentEvent);
+            writeFileSyncByNode(processedNode, projectConfig);
           }
         }
         return node;
