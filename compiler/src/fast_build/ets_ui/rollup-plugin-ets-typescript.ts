@@ -32,13 +32,10 @@ import {
   fileInfo,
   resourcesRawfile,
   differenceResourcesRawfile,
-  createAndStartEvent,
-  stopEvent,
   CacheFile,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
   CompilationTimeStatistics,
-  getHookEventFactory,
   genLoaderOutPathOfHar,
   harFilesRecord,
   resetUtils,
@@ -283,7 +280,6 @@ async function transform(code: string, id: string) {
     return null;
   }
 
-  const hookEventFactory = getHookEventFactory(this.share, 'etsTransform', 'transform');
   storedFileInfo.collectTransformedFiles(path.resolve(id));
 
   const logger = this.share.getLogger('etsTransform');
@@ -346,7 +342,6 @@ async function transform(code: string, id: string) {
   startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
-  const eventSetEmit = createAndStartEvent(hookEventFactory, 'emit UI transformed file');
   const emitResult: EmitResult = { outputText: '', sourceMapText: '' };
   const writeFile: ts.WriteFileCallback = (fileName: string, data: string) => {
     if (/.map$/.test(fileName)) {
@@ -364,7 +359,7 @@ async function transform(code: string, id: string) {
     tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
       {
         before: [
-          processUISyntax(null, false, eventSetEmit, compilationTime),
+          processUISyntax(null, false, compilationTime),
           processKitImport()
         ]
       }
@@ -381,7 +376,6 @@ async function transform(code: string, id: string) {
     emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);
     resetLog();
   }
-  stopEvent(eventSetEmit);
 
   return {
     code: emitResult.outputText,

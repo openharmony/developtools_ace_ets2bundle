@@ -18,17 +18,17 @@ import { ES2ABC, TS2ABC } from '../common/ark_define';
 import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
 
 export class ModulePreviewMode extends ModuleMode {
-  constructor(rollupObject: any) {
+  constructor(rollupObject: Object) {
     super(rollupObject);
   }
 
-  generateAbc(rollupObject: any, parentEvent: any) {
+  generateAbc(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
     this.buildModuleSourceMapInfo(parentEvent);
     this.executeArkCompiler(parentEvent);
   }
 
-  executeArkCompiler(parentEvent: any) {
+  executeArkCompiler(parentEvent: Object): void {
     if (isEs2Abc(this.projectConfig)) {
       this.generateEs2AbcCmd();
       this.addCacheFileArgs();

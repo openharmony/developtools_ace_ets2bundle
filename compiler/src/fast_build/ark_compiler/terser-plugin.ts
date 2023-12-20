@@ -14,7 +14,7 @@
  */
 import terser from "@rollup/plugin-terser"
 
-export function terserPlugin(): any {
+export function terserPlugin(): Object {
     return terser({
         compress: {
             defaults: false,
