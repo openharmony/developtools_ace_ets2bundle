@@ -22,6 +22,7 @@
     "run:cleanArkTest": "rm -rf arkTest_build",
     "arkTest": "./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest",
     "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage",
+    "duplicate": "jscpd",
     "generateKitConfigs": "node ./build_kitConfigs_file.js ../../../interface/sdk-js/api/kits ./kit_configs"
   },
   "devDependencies": {
