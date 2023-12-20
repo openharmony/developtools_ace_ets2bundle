@@ -18,6 +18,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { FileLog, LogType } from './utils';
+import { projectConfig } from '../main';
 
 /*
 * basic implementation logic:
@@ -29,9 +30,10 @@ import { FileLog, LogType } from './utils';
 *                  | -> replace each origin declaration with corresponding ohosImports
 */
 
-const KIT_CONFIGS = 'kit_configs';
-const KIT_PREFIX = '@kit.';
 const JSON_SUFFIX = '.json';
+const KIT_PREFIX = '@kit.';
+const KIT_CONFIGS = 'kit_configs';
+const KIT_CONFIG_PATH = './build-tools/ets-loader/kit_configs';
 
 export const kitTransformLog: FileLog = new FileLog();
 
@@ -45,22 +47,18 @@ export const kitTransformLog: FileLog = new FileLog();
 *      import ErrorCode from '@ohos.ability.errorCode'
 *    ```
 */
-export function processKitImport(program: ts.Program): Function {
+export function processKitImport(): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
+      // node = ts.visitEachChild(node, visitor, context);
       // static import/export declaration
       if (ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier)) {
         // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
         // so we need to remove the quotation marks from moduleRequest.
         const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
         if (moduleRequest.startsWith(KIT_PREFIX)) {
-          const kitDefs =
-            JSON.parse(
-              fs.readFileSync(path.join(__dirname, `../${KIT_CONFIGS}/${moduleRequest}${JSON_SUFFIX}`),
-              'utf-8'
-              )
-            );
-          if (kitDefs.symbols) {
+          const kitDefs = getKitDefs(moduleRequest);
+          if (kitDefs && kitDefs.symbols) {
             KitInfo.processKitInfo(kitDefs.symbols as KitSymbols, node);
             return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
           }
@@ -70,8 +68,11 @@ export function processKitImport(program: ts.Program): Function {
     }
 
     return (node: ts.SourceFile) => {
-      KitInfo.init(node);
-      ts.visitEachChild(node, visitor, context);
+      if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup') {
+        KitInfo.init(node);
+        return ts.visitEachChild(node, visitor, context);
+      }
+      return node;
     };
   }
 }
@@ -95,7 +96,6 @@ declare type KitSymbols = Record<string, Symbol>;
 declare type TSspecifier = ts.ImportSpecifier | ts.ExportSpecifier;
 declare type TSModuleDeclaration = ts.ImportDeclaration | ts.ExportDeclaration;
 
-
 /*
 * class SpecificerInfo represents the corresponding info of each imported identifier which coming from Kit
 */
@@ -112,7 +112,7 @@ class SpecificerInfo {
     this.importName = importName;
     this.symbol = symbol;
     this.originElement = originElement;
-    this.renamed = (this.localName === this.symbol.bindings);
+    this.renamed = (this.localName !== this.symbol.bindings);
 
     this.validateImportingETSDeclarationSymbol();
   }
@@ -319,6 +319,14 @@ class ImportSpecifierKitInfo extends KitInfo {
     super(kitNode, symbols);
   }
 
+  hasNamedBindings(): boolean {
+    return this.namedBindings.length !== 0;
+  }
+
+  clearNamedBindings(): void {
+    this.namedBindings = [];
+  }
+
   transform() {
     const node: ts.ImportDeclaration = this.getKitNode() as ts.ImportDeclaration;
     this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
@@ -343,10 +351,12 @@ class ImportSpecifierKitInfo extends KitInfo {
         ts.factory.createImportClause(
           node.importClause!.isTypeOnly,
           this.defaultName,
-          ts.factory.createNamedImports(this.namedBindings)
+          this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
         ),
         ts.factory.createStringLiteral(trimSourceSuffix(source))
       ));
+
+      this.clearNamedBindings();
     });
   }
 }
@@ -366,6 +376,25 @@ class ExportStarKitInfo extends KitInfo {
 /*
 * utils part
 */
+
+function getKitDefs(kitModuleRequest: string) {
+  const kitConfigs: string[] = [path.resolve(__dirname, `../${KIT_CONFIGS}`)];
+  if (process.env.externalApiPaths) {
+    const externalApiPaths = process.env.externalApiPaths.split(path.delimiter);
+    externalApiPaths.forEach(sdkPath => {
+      kitConfigs.push(path.resolve(sdkPath, KIT_CONFIG_PATH));
+    });
+  }
+
+  for (const kitConfig of kitConfigs) {
+    const kitModuleConfigJson = path.resolve(kitConfig, `./${kitModuleRequest}${JSON_SUFFIX}`);
+    if (fs.existsSync(kitModuleConfigJson)) {
+      return JSON.parse(fs.readFileSync(kitModuleConfigJson, 'utf-8'));
+    }
+  }
+  return undefined;
+}
+
 function trimSourceSuffix(source: string): string {
   return source.replace(/\.d.[e]?ts$/, '');
 }
