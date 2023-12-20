@@ -93,7 +93,7 @@ export function etsChecker() {
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
         serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
-          compilationTime);
+          compilationTime, this.share);
       }
       stopEvent(eventServiceChecker);
       setChecker();

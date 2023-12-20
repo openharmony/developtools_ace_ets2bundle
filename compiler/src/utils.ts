@@ -959,6 +959,29 @@ export function isString(text: unknown): text is string {
   return typeof text === 'string';
 }
 
+export function getRollupCacheStoreKey(projectConfig: object): string {
+  let keyInfo: string[] = [projectConfig.compileSdkVersion, projectConfig.compatibleSdkVersion, projectConfig.runtimeOS,
+                           projectConfig.etsLoaderPath];
+  return keyInfo.join('#');
+}
+
+export function getRollupCacheKey(projectConfig: object): string {
+  let keyInfo: string[] = [projectConfig.entryModuleName, !!projectConfig.widgetCompile];
+  return keyInfo.join('#');
+}
+
+export function clearRollupCacheStore(cacheStoreManager: object, currentKey: string): void {
+  if (!cacheStoreManager) {
+    return;
+  }
+
+  for (let key of cacheStoreManager.keys()) {
+    if (key !== currentKey) {
+      cacheStoreManager.unmount(key);
+    }
+  }
+}
+
 export function getHookEventFactory(share: any, pluginName: string, hookName: string): any {
   if (typeof share.getHookEventFactory === 'function') {
     return share.getHookEventFactory(pluginName, hookName);

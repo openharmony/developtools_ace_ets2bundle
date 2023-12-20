@@ -82,7 +82,6 @@ import {
   kitTransformLog,
   processKitImport
 } from '../../process_kit_import';
-import { resetCompileInfo } from '../../compile_info';
 import { resetProcessComponentMember } from '../../process_component_member';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -216,7 +215,6 @@ export function etsTransform() {
     },
     cleanUp(): void {
       resetMain();
-      resetCompileInfo();
       resetComponentMap();
       resetEtsCheck();
       resetEtsTransform();
