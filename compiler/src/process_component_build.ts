@@ -2946,14 +2946,14 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 }
 
 function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
-  return Array.isArray(forEachParameters) && 
+  return Array.isArray(forEachParameters) &&
     forEachParameters.some((item)=>{
       return ts.isIdentifier(item.name) ? item.name.escapedText.toString() === name : false;
     });
 }
 
 function isParamFunction(node: ts.ExpressionStatement): boolean {
-  return node.expression && ts.isCallExpression(node.expression) && 
+  return node.expression && ts.isCallExpression(node.expression) &&
     node.expression.expression && ts.isIdentifier(node.expression.expression);
 }
 
