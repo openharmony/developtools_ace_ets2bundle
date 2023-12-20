@@ -323,10 +323,6 @@ export class ModuleSourceFile {
             if (ohmUrl !== undefined) {
               code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
             }
-          } else {
-            const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}\n`
-              +`DynamicImport only accept stringLiteral as argument currently.\n`;
-            ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
           }
         }
       });
@@ -380,14 +376,6 @@ export class ModuleSourceFile {
         }
         // dynamicImport node
         if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
-          if (!ts.isStringLiteral(node.arguments[0])) {
-            const { line, character }: ts.LineAndCharacter =
-              ts.getLineAndCharacterOfPosition(<ts.SourceFile>this.source!, node.arguments[0].pos);
-            const errorMsg: string = `ArkTS:ERROR ArkTS:ERROR File: ${this.moduleId}:${line + 1}:${character + 1}\n`
-              +`DynamicImport only accept stringLiteral as argument currently.\n`;
-            ModuleSourceFile.logger.error('\u001b[31m' + errorMsg);
-            return node;
-          }
           const moduleRequest: string = node.arguments[0].getText().replace(/'|"/g, '');
           const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
           if (ohmUrl !== undefined) {
