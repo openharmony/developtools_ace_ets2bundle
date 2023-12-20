@@ -889,21 +889,22 @@ function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
   decoratorName: string, updateState: ts.Statement[]): void {
   if (decoratorName === COMPONENT_PROVIDE_DECORATOR) {
     let parameterName: string;
+    const parameterNameAndStringKey: [string?, boolean?, ts.Node?, boolean?] = [];
     if (isSingleKey(node)) {
-      const parameterNameAndStringKey: [string, boolean, ts.Node, boolean] = getDecoratorKey(node, true);
+      parameterNameAndStringKey.push(...getDecoratorKey(node, true));
       parameterName = parameterNameAndStringKey[0];
       updateState.push(createAddProvidedVar(parameterName, name, parameterNameAndStringKey[1], parameterNameAndStringKey[2],
         parameterNameAndStringKey[3]));
     }
     if (parameterName !== name.getText()) {
-      updateState.push(createAddProvidedVar(name.getText(), name, true));
+      updateState.push(createAddProvidedVar(name.getText(), name, true, undefined, parameterNameAndStringKey[3]));
     }
   }
 }
 
 function createAddProvidedVar(propertyOrAliasName: string,
-  name: ts.Identifier, isString: boolean, decoratorKeyNode: ts.Node = undefined,
-  isProvidedParamObj: boolean = false): ts.ExpressionStatement {
+  name: ts.Identifier, isString: boolean, decoratorKeyNode: ts.Node,
+  isProvidedParamObj: boolean): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     createPropertyAccessExpressionWithThis(ADD_PROVIDED_VAR), undefined, [
       isString ? ts.factory.createStringLiteral(propertyOrAliasName) : decoratorKeyNode as ts.Expression,

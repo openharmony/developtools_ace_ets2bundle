@@ -107,13 +107,13 @@ class Index extends ViewPU {
         this.addProvidedVar("Provide4", this.__Provide4, false);
         this.__Provide5 = new ObservedPropertySimplePU('Provide5', this, "Provide5");
         this.addProvidedVar(decoratorKeyCheck_1.stringVariable, this.__Provide5, true);
-        this.addProvidedVar("Provide5", this.__Provide5, false);
+        this.addProvidedVar("Provide5", this.__Provide5, true);
         this.__Provide6 = new ObservedPropertySimplePU('Provide6', this, "Provide6");
         this.addProvidedVar(decoratorKeyCheck_1.stringObj, this.__Provide6, true);
-        this.addProvidedVar("Provide6", this.__Provide6, false);
+        this.addProvidedVar("Provide6", this.__Provide6, true);
         this.__Provide7 = new ObservedPropertySimplePU('Provide7', this, "Provide7");
         this.addProvidedVar(decoratorKeyCheck_1.stringFunction, this.__Provide7, true);
-        this.addProvidedVar("Provide7", this.__Provide7, false);
+        this.addProvidedVar("Provide7", this.__Provide7, true);
         this.__Consume = this.initializeConsume(decoratorKeyCheck_1.stringVariable, "Consume");
         this.__Consume1 = this.initializeConsume(decoratorKeyCheck_1.stringObj.stringKey, "Consume1");
         this.__Consume2 = this.initializeConsume((0, decoratorKeyCheck_1.stringFunction)(), "Consume2");
