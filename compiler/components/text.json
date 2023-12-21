@@ -1,6 +1,6 @@
 {
   "name": "Text",
-  "children": ["Span", "ImageSpan", "SymbolSpan"],
+  "children": ["Span", "ImageSpan", "SymbolSpan", "ContainerSpan"],
   "attrs": [
     "fontColor", "fontSize", "fontStyle", "fontWeight", "textAlign", "lineHeight", "textOverflow",
     "maxLines", "decoration", "letterSpacing", "textCase", "baselineOffset", "minFontSize",

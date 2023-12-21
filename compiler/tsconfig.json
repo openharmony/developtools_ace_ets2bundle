@@ -208,7 +208,8 @@
         "SaveButton",
         "UIExtensionComponent",
         "RichEditor",
-        "Component3D"
+        "Component3D",
+        "ContainerSpan"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -782,7 +783,12 @@
             "name": "Component3D",
             "type": "Component3DAttribute",
             "instance": "Component3DInstance"
-          }
+          },
+          {
+            "name": "ContainerSpan",
+            "type": "ContainerSpanAttribute",
+            "instance": "ContainerSpanInstance"
+          },
         ]
       },
       "styles": {
