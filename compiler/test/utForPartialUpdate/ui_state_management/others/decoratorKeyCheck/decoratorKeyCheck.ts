@@ -46,6 +46,9 @@ struct Index {
   @Provide(stringFunction()) Provide2: string = 'Provide2';
   @Provide('Provide32') Provide3: string = 'Provide3';
   @Provide Provide4: string = 'Provide4';
+  @Provide({allowOverride: stringVariable}) Provide5: string = 'Provide5';
+  @Provide({allowOverride: stringObj}) Provide6: string = 'Provide6';
+  @Provide({allowOverride: stringFunction}) Provide7: string = 'Provide7';
 
   @Consume(stringVariable) Consume: string;
   @Consume(stringObj.stringKey) Consume1: string;
@@ -89,19 +92,28 @@ class Index extends ViewPU {
         this.__StorageLink2 = this.createStorageLink((0, decoratorKeyCheck_1.stringFunction)(), 'StorageLink2', "StorageLink2");
         this.__StorageLink3 = this.createStorageLink('StorageLink3', 'StorageLink3', "StorageLink3");
         this.__Provide = new ObservedPropertySimplePU('Provide', this, "Provide");
-        this.addProvidedVar(decoratorKeyCheck_1.stringVariable, this.__Provide);
-        this.addProvidedVar("Provide", this.__Provide);
+        this.addProvidedVar(decoratorKeyCheck_1.stringVariable, this.__Provide, false);
+        this.addProvidedVar("Provide", this.__Provide, false);
         this.__Provide1 = new ObservedPropertySimplePU('Provide1', this, "Provide1");
-        this.addProvidedVar(decoratorKeyCheck_1.stringObj.stringKey, this.__Provide1);
-        this.addProvidedVar("Provide1", this.__Provide1);
+        this.addProvidedVar(decoratorKeyCheck_1.stringObj.stringKey, this.__Provide1, false);
+        this.addProvidedVar("Provide1", this.__Provide1, false);
         this.__Provide2 = new ObservedPropertySimplePU('Provide2', this, "Provide2");
-        this.addProvidedVar((0, decoratorKeyCheck_1.stringFunction)(), this.__Provide2);
-        this.addProvidedVar("Provide2", this.__Provide2);
+        this.addProvidedVar((0, decoratorKeyCheck_1.stringFunction)(), this.__Provide2, false);
+        this.addProvidedVar("Provide2", this.__Provide2, false);
         this.__Provide3 = new ObservedPropertySimplePU('Provide3', this, "Provide3");
-        this.addProvidedVar("Provide32", this.__Provide3);
-        this.addProvidedVar("Provide3", this.__Provide3);
+        this.addProvidedVar("Provide32", this.__Provide3, false);
+        this.addProvidedVar("Provide3", this.__Provide3, false);
         this.__Provide4 = new ObservedPropertySimplePU('Provide4', this, "Provide4");
-        this.addProvidedVar("Provide4", this.__Provide4);
+        this.addProvidedVar("Provide4", this.__Provide4, false);
+        this.__Provide5 = new ObservedPropertySimplePU('Provide5', this, "Provide5");
+        this.addProvidedVar(decoratorKeyCheck_1.stringVariable, this.__Provide5, true);
+        this.addProvidedVar("Provide5", this.__Provide5, true);
+        this.__Provide6 = new ObservedPropertySimplePU('Provide6', this, "Provide6");
+        this.addProvidedVar(decoratorKeyCheck_1.stringObj, this.__Provide6, true);
+        this.addProvidedVar("Provide6", this.__Provide6, true);
+        this.__Provide7 = new ObservedPropertySimplePU('Provide7', this, "Provide7");
+        this.addProvidedVar(decoratorKeyCheck_1.stringFunction, this.__Provide7, true);
+        this.addProvidedVar("Provide7", this.__Provide7, true);
         this.__Consume = this.initializeConsume(decoratorKeyCheck_1.stringVariable, "Consume");
         this.__Consume1 = this.initializeConsume(decoratorKeyCheck_1.stringObj.stringKey, "Consume1");
         this.__Consume2 = this.initializeConsume((0, decoratorKeyCheck_1.stringFunction)(), "Consume2");
@@ -124,6 +136,15 @@ class Index extends ViewPU {
         }
         if (params.Provide4 !== undefined) {
             this.Provide4 = params.Provide4;
+        }
+        if (params.Provide5 !== undefined) {
+            this.Provide5 = params.Provide5;
+        }
+        if (params.Provide6 !== undefined) {
+            this.Provide6 = params.Provide6;
+        }
+        if (params.Provide7 !== undefined) {
+            this.Provide7 = params.Provide7;
         }
     }
     updateStateVars(params) {
@@ -150,6 +171,9 @@ class Index extends ViewPU {
         this.__Provide2.purgeDependencyOnElmtId(rmElmtId);
         this.__Provide3.purgeDependencyOnElmtId(rmElmtId);
         this.__Provide4.purgeDependencyOnElmtId(rmElmtId);
+        this.__Provide5.purgeDependencyOnElmtId(rmElmtId);
+        this.__Provide6.purgeDependencyOnElmtId(rmElmtId);
+        this.__Provide7.purgeDependencyOnElmtId(rmElmtId);
         this.__Consume.purgeDependencyOnElmtId(rmElmtId);
         this.__Consume1.purgeDependencyOnElmtId(rmElmtId);
         this.__Consume2.purgeDependencyOnElmtId(rmElmtId);
@@ -178,6 +202,9 @@ class Index extends ViewPU {
         this.__Provide2.aboutToBeDeleted();
         this.__Provide3.aboutToBeDeleted();
         this.__Provide4.aboutToBeDeleted();
+        this.__Provide5.aboutToBeDeleted();
+        this.__Provide6.aboutToBeDeleted();
+        this.__Provide7.aboutToBeDeleted();
         this.__Consume.aboutToBeDeleted();
         this.__Consume1.aboutToBeDeleted();
         this.__Consume2.aboutToBeDeleted();
@@ -311,6 +338,24 @@ class Index extends ViewPU {
     }
     set Provide4(newValue) {
         this.__Provide4.set(newValue);
+    }
+    get Provide5() {
+        return this.__Provide5.get();
+    }
+    set Provide5(newValue) {
+        this.__Provide5.set(newValue);
+    }
+    get Provide6() {
+        return this.__Provide6.get();
+    }
+    set Provide6(newValue) {
+        this.__Provide6.set(newValue);
+    }
+    get Provide7() {
+        return this.__Provide7.get();
+    }
+    set Provide7(newValue) {
+        this.__Provide7.set(newValue);
     }
     get Consume() {
         return this.__Consume.get();
