@@ -182,6 +182,8 @@
         "Stepper",
         "StepperItem",
         "Swiper",
+        "SymbolGlyph",
+        "SymbolSpan",
         "TabContent",
         "Tabs",
         "Text",
@@ -645,6 +647,16 @@
             "name": "Swiper",
             "type": "SwiperAttribute",
             "instance": "SwiperInstance"
+          },
+          {
+            "name": "SymbolGlyph",
+            "type": "SymbolGlyphAttribute",
+            "instance": "SymbolGlyphInstance"
+          },
+          {
+            "name": "SymbolSpan",
+            "type": "SymbolSpanAttribute",
+            "instance": "SymbolSpanInstance"
           },
           {
             "name": "TabContent",
