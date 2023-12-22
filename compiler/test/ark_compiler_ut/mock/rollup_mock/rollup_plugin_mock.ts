@@ -30,7 +30,7 @@ import {
   MODULE_ID_ROLLUP_PLACEHOLDER,
   NODE_MODULES_PATH
 } from "./path_config";
-import { scanFiles } from "../../utils/path_utils";
+import { scanFiles } from "../../utils/utils";
 import { IArkProjectConfig } from "./project_config";
 import {
   ESMODULE,
@@ -42,7 +42,7 @@ import {
 class RollUpPluginMock {
   cache: Cache;
   meta: object = { rollupVersion: '3.10.0', watchMode: false };
-  moduleIds: any;
+  moduleIds: object;
   share: Share;
   moduleInfos: Array<ModuleInfo>;
 
@@ -127,9 +127,16 @@ class RollUpPluginMock {
 
   private mockCheckArkCompilerCacheInfo(): void {
     const metaInfos = [
-      SDK_VERSION, SDK_VERSION, RUNTIME_OS_OPENHARMONY, `/OpenHarmony/Sdk/${SDK_VERSION}/ets/build-tools/app`,
-      ETS_LOADER_VERSION, RELEASE, BUNDLE_NAME_DEFAULT,
-      MODULE_NAME_HASH_DEFAULT, 'null_aotCompileMode', 'null_apPath'
+      SDK_VERSION,
+      SDK_VERSION,
+      RUNTIME_OS_OPENHARMONY,
+      `/OpenHarmony/Sdk/${SDK_VERSION}/ets/build-tools/app`,
+      ETS_LOADER_VERSION,
+      RELEASE,
+      BUNDLE_NAME_DEFAULT,
+      MODULE_NAME_HASH_DEFAULT,
+      'null_aotCompileMode',
+      'null_apPath'
     ]
     const metaInfo = metaInfos.join(':');
     this.cache.set(IS_CACHE_INVALID, true);

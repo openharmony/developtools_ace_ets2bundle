@@ -16,7 +16,7 @@
 import { MODULE_ID_ROLLUP_PLACEHOLDER } from '../rollup_mock/path_config';
 
 class Meta {
-  hostModulesInfo: Array<any>;
+  hostModulesInfo: Array<object>;
   moduleName: string;
   isLocalDependency: boolean;
   isNodeEntryFile: boolean;
@@ -43,10 +43,10 @@ export class ModuleInfo {
   }
 
   setIsLocalDependency(value: boolean) {
-    this.meta.isLocalDependency = value
+    this.meta.isLocalDependency = value;
   }
   setIsNodeEntryFile(value: boolean) {
-    this.meta.isNodeEntryFile = value
+    this.meta.isNodeEntryFile = value;
   }
 
   setImportedIdMaps(path?: string) {

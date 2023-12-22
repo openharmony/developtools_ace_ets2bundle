@@ -34,22 +34,22 @@ import {
 
 interface IArkProjectConfig {
   projectRootPath: string,
-  modulePathMap: any,
-  isOhosTest: any,
-  oldMapFilePath?: any,
+  modulePathMap: object,
+  isOhosTest: object,
+  oldMapFilePath?: object,
   processTs: boolean,
   pandaMode: string,
-  anBuildOutPut?: any,
-  anBuildMode?: any,
-  apPath?: any,
-  nodeModulesPath?: any,
-  harNameOhmMap: any,
+  anBuildOutPut?: object,
+  anBuildMode?: object,
+  apPath?: object,
+  nodeModulesPath?: object,
+  harNameOhmMap: object,
   minPlatformVersion: number,
   moduleName: string,
   bundleName: string,
-  hotReload: any,
-  patchAbcPath: any,
-  changedFileList: any,
+  hotReload: object,
+  patchAbcPath: object,
+  changedFileList: object,
   compileMode: string
 }
 
@@ -91,7 +91,7 @@ class ProjectConfig {
   resolveModulePaths: Array<string>;
   compileHar: boolean;
   compileShared: boolean;
-  moduleRootPath: any;
+  moduleRootPath: object;
   buildPath: string;
 
   deviceType?: string;
@@ -102,10 +102,11 @@ class ProjectConfig {
   img2bin?: string;
   projectProfilePath?: string;
   logLevel?: string;
-  stageRouterConfig?: Array<any>;
+  stageRouterConfig?: Array<object>;
   port?: string;
   aceSoPath?: string;
   mockParams?: object;
+  projectRootPath: string;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -146,16 +147,17 @@ class ProjectConfig {
     this.apPath = '';
     this.aceModuleJsonPath = `${proPath}/${this.entryModuleName}/${mode}/module.json`;
     this.appResource = `${proPath}/${this.entryModuleName}/${mode}/res/default/ResourceTable.txt`;
-    this.aceModuleRoot = `${proPath}/${this.entryModuleName}/src/main/ets`;
+    this.aceModuleRoot = `${proPath}/${this.entryModuleName}/src`;
     this.aceSuperVisualPath = `${proPath}/${this.entryModuleName}/src/main/supervisual`;
     this.aceBuildJson = `${proPath}/${this.entryModuleName}/${mode}/loader.json`;
     this.cachePath = `${proPath}/${this.entryModuleName}/${mode}`;
     this.aceModuleBuild = `${proPath}/${this.entryModuleName}/${mode}`;
-    this.projectPath = `${proPath}/${this.entryModuleName}/src/main/ets`;
+    this.projectPath = `${proPath}/${this.entryModuleName}/src`;
     this.moduleRootPath = undefined;
     this.buildPath = `${proPath}/${this.entryModuleName}/${mode}`;
     this.patchAbcPath = `${proPath}/${this.entryModuleName}/${mode}/hotReload`;
-    this.DynamicImportpath = `${this.modulePath}/DynamicImport.ets`
+    this.DynamicImportpath = `${this.modulePath}/DynamicImport.ets`;
+    this.projectRootPath = `${proPath}`;
 
     if (this.isPreview) {
       this.previewUniqueConfig();

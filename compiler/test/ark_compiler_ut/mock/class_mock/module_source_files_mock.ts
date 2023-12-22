@@ -17,19 +17,19 @@ import { ModuleSourceFile } from '../../../../lib/fast_build/ark_compiler/module
 import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 
 class ModuleSourceFileMock extends ModuleSourceFile {
-  projectConfig: any;
-  logger: any;
+  projectConfig: object;
+  logger: object;
 
-  initPluginEnvMock(rollup: any) {
+  initPluginEnvMock(rollup: object) {
     this.projectConfig = Object.assign(rollup.share.arkProjectConfig, rollup.share.projectConfig);
     this.logger = rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
   }
 
-  testProcessJsModuleRequest(rollup: any) {
+  testProcessJsModuleRequest(rollup: object) {
     this.processJsModuleRequest(rollup);
   }
 
-  testProcessTransformedJsModuleRequest(rollup: any) {
+  testProcessTransformedJsModuleRequest(rollup: object) {
     this.processTransformedJsModuleRequest(rollup);
   }
 }
