@@ -110,7 +110,9 @@ import {
   bindComponentAttr,
   getName,
   createViewStackProcessorStatement,
-  createFunction
+  createFunction,
+  parseGlobalBuilderParams,
+  BuilderParamsResult,
 } from './process_component_build';
 import {
   BUILDIN_STYLE_NAMES,
@@ -271,10 +273,13 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
           storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
+          const builderParamsResult: BuilderParamsResult = { firstParam: null };
+          parseGlobalBuilderParams(node.parameters, builderParamsResult);
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             processComponentBlock(node.body, false, transformLog.errors, false, true,
-              node.name.getText(), undefined, true));
+              node.name.getText(), undefined, true, builderParamsResult, true));
+          builderParamsResult.firstParam = null;
           // @ts-ignore
           if (node && node.illegalDecorators) {
             // @ts-ignore
