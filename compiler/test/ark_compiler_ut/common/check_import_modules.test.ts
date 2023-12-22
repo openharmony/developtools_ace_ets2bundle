@@ -27,7 +27,7 @@ import {
   EXTNAME_JS,
   EXTNAME_ETS
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
-import { ENTRYABILITY_JS_PATH_DEFAULT } from '../mock/rollup_mock/common'
+import { ENTRYABILITY_JS_PATH_DEFAULT } from '../mock/rollup_mock/common';
 
 mocha.describe('test check_import_module file api', function () {
   mocha.before(function () {
@@ -44,7 +44,7 @@ mocha.describe('test check_import_module file api', function () {
     const mockFileList: object = this.rollup.getModuleIds();
     this.rollup.moduleInfos.forEach((moduleInfo) => {
       if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
-        path_ets = moduleInfo.id
+        path_ets = moduleInfo.id;
       }
     })
     for (const moduleId of mockFileList) {

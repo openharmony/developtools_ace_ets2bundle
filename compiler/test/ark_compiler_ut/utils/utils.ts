@@ -13,10 +13,15 @@
  * limitations under the License.
  */
 
+import os from 'os';
 import fs from "fs";
 import path from "path";
 import { PROJECT_ROOT } from "../mock/rollup_mock/path_config";
 import { DEFAULT_PROJECT } from "../mock/rollup_mock/path_config";
+
+export function cpus() {
+  return os.cpus().length < 16 ? os.cpus().length : 16;
+}
 
 export function getProjectPath(name?: string) {
   return name ? `${PROJECT_ROOT}/${name}` : `${PROJECT_ROOT}/${DEFAULT_PROJECT}`;
@@ -36,4 +41,7 @@ export function scanFiles(filepath: string, fileList: Set<string>) {
       fileList.add(child);
     }
   });
+}
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
