@@ -204,6 +204,8 @@ export class ModuleSourceFile {
       ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
     }
 
+    // Sort the collection by file name to ensure binary consistency.
+    ModuleSourceFile.sortSourceFilesByModuleId();
     for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
@@ -436,5 +438,9 @@ export class ModuleSourceFile {
   private static initPluginEnv(rollupObject: any) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+  }
+
+  public static sortSourceFilesByModuleId(): void {
+    ModuleSourceFile.sourceFiles.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
   }
 }

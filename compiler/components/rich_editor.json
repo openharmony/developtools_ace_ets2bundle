@@ -1,6 +1,6 @@
 {
   "name": "RichEditor",
-  "atomic": true,
+  "children": ["SymbolSpan"],
   "attrs": [
     "onReady", "onSelect", "aboutToIMEInput",
     "onIMEInputComplete", "aboutToDelete", "onDeleteComplete"
