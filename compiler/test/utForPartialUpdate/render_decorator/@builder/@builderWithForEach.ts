@@ -46,16 +46,17 @@ struct ComA {
 exports.expectResult =
 `"use strict";
 function ComB(param, parent = null) {
-    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
+    const __param__ = param;
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
         ForEach.create();
         const forEachItemGenFunction = _item => {
             const item = _item;
-            (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
+            (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                 __Common__.create();
                 __Common__.backgroundColor('red');
             }, __Common__);
             {
-                (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
+                (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
                         let paramsLambda = () => {
                             return {};
