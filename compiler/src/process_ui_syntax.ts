@@ -26,6 +26,7 @@ import {
   BUILD_ON,
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_CONCURRENT_DECORATOR,
+  COMPONENT_SENDABLE_DECORATOR,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_STYLES_DECORATOR,
   RESOURCE,
@@ -331,6 +332,10 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
             message: `wrapBuilder's parameter should be @Builder function.`,
             pos: node.getStart()
           });
+        }
+      } else if (ts.isClassDeclaration(node)) {
+        if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
+          node = processClassSendable(node);
         }
       }
       return ts.visitEachChild(node, processAllNodes, context);
@@ -858,6 +863,56 @@ function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration
     return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken, node.name,
       node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
   }
+  return node;
+}
+
+function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
+  let hasConstructor = false;
+  let updatedMembers: ts.NodeArray<ts.ClassElement> = node.members;
+  let updatedModifiers: ts.NodeArray<ts.ModifierLike> = node.modifiers;
+
+  updatedModifiers = ts.factory.createNodeArray(
+    updatedModifiers.filter(decorator => {
+      const originalDecortor: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+      return originalDecortor !== COMPONENT_SENDABLE_DECORATOR;
+    })
+  );
+
+  for (const member of node.members) {
+    if (ts.isConstructorDeclaration(member)) {
+      hasConstructor = true;
+      const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
+      
+      const statementArray: ts.Statement[] = [
+        ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
+        ...constructor.body.statements
+      ];
+
+      const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(constructor, constructor.modifiers,
+        constructor.parameters, ts.factory.updateBlock(constructor.body, statementArray));
+
+      updatedMembers = ts.factory.createNodeArray(
+        updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
+      );
+      break;
+    }
+  }
+
+  if (!hasConstructor) {
+    const constructor: ts.ConstructorDeclaration = ts.factory.createConstructorDeclaration(
+      undefined,
+      [],
+      ts.factory.createBlock(
+        [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable'))],
+        true
+      )
+    );
+    updatedMembers = ts.factory.createNodeArray([constructor, ...(updatedMembers || [])]);
+  }
+
+  node = ts.factory.updateClassDeclaration(node, updatedModifiers, node.name, node.typeParameters,
+                                           node.heritageClauses, updatedMembers);
+
   return node;
 }
 

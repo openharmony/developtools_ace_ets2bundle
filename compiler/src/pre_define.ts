@@ -73,6 +73,7 @@ export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
 export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
 export const COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = '@AnimatableExtend';
 export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
+export const COMPONENT_SENDABLE_DECORATOR: string = '@Sendable';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR]);
