@@ -235,17 +235,10 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     }
 
     function processAllNodes(node: ts.Node): ts.Node {
-      if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
-        ts.isImportDeclaration(node)) {
-        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-        processImportModule(node, pageFile);
-        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-      } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
-        (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
-        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
+      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         processImport(node, pagesDir, transformLog.errors);
-      }
-      if (ts.isStructDeclaration(node)) {
+      } else if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
