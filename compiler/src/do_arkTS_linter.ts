@@ -87,6 +87,7 @@ function processArkTSLinterReportAsError(diagnostics: ts.Diagnostic[], printDiag
   diagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+  printArkTSLinterFAQ(diagnostics, printDiagnostic);
 }
 
 function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc,
@@ -99,6 +100,7 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
       printDiagnostic(diagnostic);
       diagnostic.category = originalCategory;
     });
+    printArkTSLinterFAQ(diagnostics, printDiagnostic);
     return;
   }
   const logMessage = `Has ${diagnostics.length} ArkTS Linter Error. You can get the output in ${filePath}`;
@@ -113,6 +115,8 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
     reportsDeprecated: undefined
   };
   printDiagnostic(arkTSDiagnostic);
+
+  printArkTSLinterFAQ(diagnostics, printDiagnostic);
 }
 
 function writeOutputFile(diagnostics: ts.Diagnostic[]): string | undefined {
@@ -159,4 +163,23 @@ function removeOutputFile(): void {
   if (fs.existsSync(filePath)) {
     fs.rmSync(filePath);
   }
+}
+
+function printArkTSLinterFAQ(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc): void {
+  if (diagnostics === undefined || diagnostics.length === undefined || diagnostics.length <= 0) {
+    return;
+  }
+
+  const logMessageFAQ = 'For details about ArkTS syntax errors, see FAQs';
+  const arkTSFAQDiagnostic: ts.Diagnostic = {
+    file: undefined,
+    start: undefined,
+    length: undefined,
+    messageText: logMessageFAQ,
+    category: ts.DiagnosticCategory.Warning,
+    code: -1,
+    reportsUnnecessary: undefined,
+    reportsDeprecated: undefined
+  };
+  printDiagnostic(arkTSFAQDiagnostic);
 }
