@@ -17,8 +17,10 @@ import * as ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
 
-import { FileLog, LogType } from './utils';
-import { projectConfig } from '../main';
+import {
+  FileLog,
+  LogType
+} from './utils';
 
 /*
 * basic implementation logic:
@@ -30,12 +32,9 @@ import { projectConfig } from '../main';
 *                  | -> replace each origin declaration with corresponding ohosImports
 */
 
-const JSON_SUFFIX = '.json';
-const KIT_PREFIX = '@kit.';
-const KIT_CONFIGS = 'kit_configs';
-const KIT_CONFIG_PATH = './build-tools/ets-loader/kit_configs';
-
 export const kitTransformLog: FileLog = new FileLog();
+
+const KIT_PREFIX = '@kit.';
 
 /*
 * This API is the TSC Transformer for transforming `KitImport` into `OhosImport`
@@ -50,16 +49,13 @@ export const kitTransformLog: FileLog = new FileLog();
 export function processKitImport(): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
-      // node = ts.visitEachChild(node, visitor, context);
-      // static import/export declaration
+      // only transform static import/export declaration
       if (ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier)) {
-        // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
-        // so we need to remove the quotation marks from moduleRequest.
-        const moduleRequest: string = node.moduleSpecifier.getText().replace(/'|"/g, '');
+        const moduleRequest: string = (node.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '');
         if (moduleRequest.startsWith(KIT_PREFIX)) {
           const kitDefs = getKitDefs(moduleRequest);
           if (kitDefs && kitDefs.symbols) {
-            KitInfo.processKitInfo(kitDefs.symbols as KitSymbols, node);
+            KitInfo.processKitInfo(moduleRequest, kitDefs.symbols as KitSymbols, node);
             return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
           }
         }
@@ -68,11 +64,8 @@ export function processKitImport(): Function {
     }
 
     return (node: ts.SourceFile) => {
-      if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup') {
         KitInfo.init(node);
         return ts.visitEachChild(node, visitor, context);
-      }
-      return node;
     };
   }
 }
@@ -87,12 +80,12 @@ enum FileType {
   TS
 }
 
-interface Symbol {
+interface KitSymbol {
   source: string
   bindings: string
 }
 
-declare type KitSymbols = Record<string, Symbol>;
+declare type KitSymbols = Record<string, KitSymbol>;
 declare type TSspecifier = ts.ImportSpecifier | ts.ExportSpecifier;
 declare type TSModuleDeclaration = ts.ImportDeclaration | ts.ExportDeclaration;
 
@@ -102,12 +95,12 @@ declare type TSModuleDeclaration = ts.ImportDeclaration | ts.ExportDeclaration;
 class SpecificerInfo {
   private localName: string;
   private importName: string;
-  private symbol: Symbol;
+  private symbol: KitSymbol;
   private renamed: boolean;
   
-  private originElement: TSspecifier;
+  private originElement: TSspecifier | undefined;
 
-  constructor(localName: string, importName: string, symbol: Symbol, originElement: TSspecifier) {
+  constructor(localName: string, importName: string, symbol: KitSymbol, originElement: TSspecifier | undefined) {
     this.localName = localName;
     this.importName = importName;
     this.symbol = symbol;
@@ -160,16 +153,20 @@ class SpecificerInfo {
 class KitInfo {
   private static currentKitInfo: KitInfo = undefined;
   private static currentFileType: FileType = FileType.ETS;
+  private static currentKitName: string = '';
 
   private symbols: KitSymbols;
   private kitNode: TSModuleDeclaration;
+  private kitNodeModifier: readonly ts.Modifier[] | undefined;
   private specifiers: Map<string, SpecificerInfo[]> = new Map<string, SpecificerInfo[]>();
 
-  private ohosImportNodes: ts.ImportDeclaration[] = [];
+  private ohosImportNodes: TSModuleDeclaration[] = [];
 
-  constructor(kitNode: TSModuleDeclaration, symbols: Record<string, Symbol>) {
+  constructor(kitNode: TSModuleDeclaration, symbols: Record<string, KitSymbol>) {
     this.kitNode = kitNode;
     this.symbols = symbols;
+
+    this.kitNodeModifier = ts.canHaveDecorators(this.kitNode) ? ts.getModifiers(this.kitNode) : undefined;
   }
 
   static init(node: ts.SourceFile): void {
@@ -180,6 +177,10 @@ class KitInfo {
     }
 
     kitTransformLog.sourceFile = node;
+  }
+
+  static getCurrentKitName(): string {
+    return this.currentKitName;
   }
 
   static getCurrentKitInfo(): KitInfo {
@@ -194,59 +195,58 @@ class KitInfo {
     return this.currentFileType === FileType.TS;
   }
 
-  static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, Symbol>) {
-    // this.kitNode = this.kitNode as ts.ImportDeclaration;
-    if (kitNode.importClause!.name) {
-      // import default from "@kit.xxx"
-      // todo: throw error msg
-    }
+  static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
     if (kitNode.importClause!.namedBindings) {
       const namedBindings: ts.NamedImportBindings = kitNode.importClause.namedBindings;
       if (ts.isNamespaceImport(namedBindings)) {
-        // import * as ns from "@kit.xxx"
-        // todo: logger.warn to reminder developer the side-effect of using namespace import with Kit
+        // e.g. import * as ns from "@kit.xxx"
         this.currentKitInfo = new NameSpaceKitInfo(kitNode, symbols);
       }
       if (ts.isNamedImports(namedBindings) && namedBindings.elements.length !== 0) {
-        // import { ... } from "@kit.xxx"
+        // e.g. import { ... } from "@kit.xxx"
         this.currentKitInfo = new ImportSpecifierKitInfo(kitNode, symbols);
         namedBindings.elements.forEach(element => { this.currentKitInfo.collectSpecifier(element) });
       }
     }
+
+    if (kitNode.importClause!.name) {
+      // e.g. import default from "@kit.xxx"
+      const defaultName: string = kitNode.importClause.name.text;
+      this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
+    }
   }
 
-  static processExportDecl(kitNode: ts.ExportDeclaration, symbols: Record<string, Symbol>) {
+  static processExportDecl(kitNode: ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
     if (kitNode.exportClause) {
       const namedExportBindings: ts.NamedExportBindings = kitNode.exportClause;
       if (ts.isNamespaceExport(namedExportBindings)) {
-        // export * as ns from "@kit.xxx"
-        // todo
+        // e.g. export * as ns from "@kit.xxx"
+        this.currentKitInfo = new NameSpaceKitInfo(kitNode, symbols);
       } else if (ts.isNamedExports(namedExportBindings) && namedExportBindings.elements.length !== 0) {
-        // export { ... } from "@kit.xxx"
+        // e.g. export { ... } from "@kit.xxx"
         this.currentKitInfo = new ExportSpecifierKitInfo(kitNode, symbols);
         namedExportBindings.elements.forEach(element => { this.currentKitInfo.collectSpecifier(element) });
       }
     } else {
-      // export * from "@kit.xxx"
-      // equals expanding all the ohos with export-star
-      // export * from "@ohos.xxx";export * from "@ohos.yyy";
-      // iterate kit
+      this.currentKitInfo = new ExportStarKitInfo(kitNode, symbols);
     }
   }
 
-  static processKitInfo(symbols: Record<string, Symbol>, kitNode: TSModuleDeclaration): void {
+  static processKitInfo(kitName: string, symbols: Record<string, KitSymbol>, kitNode: TSModuleDeclaration): void {
+    this.currentKitName = kitName;
+
     // do not handle an empty import
     if (ts.isImportDeclaration(kitNode) && kitNode.importClause) {
-      // import { ... } from '@kit.xxx'
-      // import * as ns from '@kit.xxx'
-      // import defalutValue from '@kit.xxx' - forbidden
+      // case 1: import { ... } from '@kit.xxx'
+      // case 2: import * as ns from '@kit.xxx'
+      // case 3: import defalutValue from '@kit.xxx'
       this.processImportDecl(kitNode, symbols);
     }
 
     if (ts.isExportDeclaration(kitNode) && kitNode.moduleSpecifier) {
-      // export { ... } from '@kit.xxx'
-      // export * from '@kit.xxx'
-      // export * as ns from '@kit.xxx' - considering forbidden
+      // case 1: export { ... } from '@kit.xxx'
+      // case 2: export * from '@kit.xxx'
+      // case 3: export * as ns from '@kit.xxx' - considering forbidden
       this.processExportDecl(kitNode, symbols);
     }
     // transform into ohos imports or exports
@@ -261,23 +261,34 @@ class KitInfo {
     return this.kitNode;
   }
 
+  getKitNodeModifier(): readonly ts.Modifier[] | undefined {
+      return this.kitNodeModifier;
+  }
+
   getSpecifiers(): Map<string, SpecificerInfo[]> {
     return this.specifiers;
   }
 
-  getOhosImportNodes(): ts.ImportDeclaration[] {
+  getOhosImportNodes(): TSModuleDeclaration[] {
     return this.ohosImportNodes;
   }
   
-  newSpecificerInfo(localName: string, importName: string, originElement: TSspecifier): SpecificerInfo {
-    const symbol: Symbol = this.symbols[importName];
-    const specifier: SpecificerInfo = new SpecificerInfo(localName, importName, symbol, originElement);
-    if (this.specifiers.has(symbol.source)) {
-      this.specifiers.get(symbol.source).push(specifier);
+  newSpecificerInfo(localName: string, importName: string, originElement: TSspecifier | undefined): void {
+    const symbol: KitSymbol | undefined = this.symbols[importName];
+    if (symbol) {
+      const specifier: SpecificerInfo = new SpecificerInfo(localName, importName, symbol, originElement);
+      if (this.specifiers.has(symbol.source)) {
+        this.specifiers.get(symbol.source).push(specifier);
+      } else {
+        this.specifiers.set(symbol.source, [specifier]);
+      }
     } else {
-      this.specifiers.set(symbol.source, [specifier]);
+      kitTransformLog.errors.push({
+        type: LogType.ERROR,
+        message: `Kit '${KitInfo.getCurrentKitName()} has not exported the Identifier '${importName}'.`,
+        pos: originElement ? originElement.getStart() : this.getKitNode().getStart()
+      });
     }
-    return specifier;
   }
 
   collectSpecifier(element: TSspecifier) {
@@ -287,58 +298,56 @@ class KitInfo {
   }
 
   // @ts-ignore
-  transform() {} //override api
+  transform(): void {} //override api
 }
 
 class NameSpaceKitInfo extends KitInfo {
-  namespaceName: string;
-  localNameTable: string[] = [];
+  private namespaceName: string;
+  private localNameTable: string[] = [];
 
-  constructor(kitNode: ts.ImportDeclaration, symbols: Record<string, Symbol>) {
+  constructor(kitNode: ts.ImportDeclaration | ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
     super(kitNode, symbols);
 
-    this.namespaceName = (kitNode.importClause!.namedBindings as ts.NamespaceImport).name.getText();
+    kitTransformLog.errors.push({
+      type: LogType.ERROR,
+      message: `Namespace import or export of Kit is not supported currently.`,
+      pos: kitNode.getStart()
+    });
   }
 
-
-
-  transform() {
-    for (const symbol in this.getSymbols()) {
-      
-    }
-
-    // issue: how to insert the `const ns = {}`
+  transform(): void {
   }
 }
 
 class ImportSpecifierKitInfo extends KitInfo {
   private namedBindings: ts.ImportSpecifier[] = [];
-  private defaultName: ts.Identifier | undefined = undefined;
+  private specifierDefaultName: ts.Identifier | undefined = undefined;
 
-  constructor(kitNode: ts.ImportDeclaration, symbols: Record<string, Symbol>) {
+  constructor(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
     super(kitNode, symbols);
   }
 
-  hasNamedBindings(): boolean {
+  private hasNamedBindings(): boolean {
     return this.namedBindings.length !== 0;
   }
 
-  clearNamedBindings(): void {
+  private clearSpecifierKitInfo(): void {
     this.namedBindings = [];
+    this.specifierDefaultName = undefined;
   }
 
   transform() {
     const node: ts.ImportDeclaration = this.getKitNode() as ts.ImportDeclaration;
-    this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
-      const modifier: readonly ts.Modifier[] = ts.canHaveDecorators(node) ? ts.getModifiers(node) : undefined;
 
+    this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
       specifiers.forEach((specifier: SpecificerInfo) => {
         if (specifier.isDefaultBinding()) {
-          this.defaultName = ts.factory.createIdentifier(specifier.getLocalName());
+          this.specifierDefaultName = ts.factory.createIdentifier(specifier.getLocalName());
         } else {
           this.namedBindings.push(
             ts.factory.createImportSpecifier(
-              (specifier.getOriginElementNode() as ts.ImportSpecifier).isTypeOnly,
+              specifier.getOriginElementNode() ?
+                (specifier.getOriginElementNode() as ts.ImportSpecifier).isTypeOnly : node.importClause.isTypeOnly,
               specifier.isRenamed() ? ts.factory.createIdentifier(specifier.getBindings()) : undefined,
               ts.factory.createIdentifier(specifier.getLocalName())
             )
@@ -347,35 +356,100 @@ class ImportSpecifierKitInfo extends KitInfo {
       });
 
       this.getOhosImportNodes().push(ts.factory.createImportDeclaration(
-        modifier,
+        this.getKitNodeModifier(),
         ts.factory.createImportClause(
           node.importClause!.isTypeOnly,
-          this.defaultName,
+          this.specifierDefaultName,
           this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
         ),
         ts.factory.createStringLiteral(trimSourceSuffix(source))
       ));
 
-      this.clearNamedBindings();
+      this.clearSpecifierKitInfo();
     });
   }
 }
 
 class ExportSpecifierKitInfo extends KitInfo {
-  transform() {
+  private namedBindings: ts.ExportSpecifier[] = [];
 
+  constructor(kitNode: ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
+    super(kitNode, symbols);
+  }
+
+  private hasNamedBindings(): boolean {
+    return this.namedBindings.length !== 0;
+  }
+
+  private clearSpecifierKitInfo(): void {
+    this.namedBindings = [];
+  }
+
+  transform(): void {
+    const node: ts.ExportDeclaration = this.getKitNode() as ts.ExportDeclaration;
+
+    this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
+      specifiers.forEach((specifier: SpecificerInfo) => {
+        this.namedBindings.push(
+          ts.factory.createExportSpecifier(
+            (specifier.getOriginElementNode() as ts.ExportSpecifier).isTypeOnly,
+            specifier.isRenamed() ? ts.factory.createIdentifier(specifier.getBindings()) : undefined,
+            ts.factory.createIdentifier(specifier.getLocalName())
+          )
+        );
+      });
+
+      this.getOhosImportNodes().push(ts.factory.createExportDeclaration(
+        this.getKitNodeModifier(),
+        node.isTypeOnly,
+        this.hasNamedBindings() ? ts.factory.createNamedExports(this.namedBindings) : undefined,
+        ts.factory.createStringLiteral(trimSourceSuffix(source)),
+        node.assertClause
+      ));
+
+      this.clearSpecifierKitInfo();
+    });
   }
 }
 
 class ExportStarKitInfo extends KitInfo {
-  transform() {
+  private sourceSet: Set<string> = new Set<string>();
 
+  constructor(kitNode: ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
+    super(kitNode, symbols);
+
+    for (const symbol in symbols) {
+      this.sourceSet.add(symbols[symbol].source);
+    }
+
+    kitTransformLog.errors.push({
+      type: LogType.WARN,
+      message: `Using 'export *' will load all the sub-module of Kit in runtime.`,
+      pos: this.getKitNode().getStart()
+    });
+  }
+
+  transform(): void {
+    const node: ts.ExportDeclaration = this.getKitNode() as ts.ExportDeclaration;
+
+    this.sourceSet.forEach((source: string) => {
+      this.getOhosImportNodes().push(ts.factory.createExportDeclaration(
+        this.getKitNodeModifier(),
+        node.isTypeOnly,
+        undefined,
+        ts.factory.createStringLiteral(trimSourceSuffix(source)),
+        node.assertClause
+      ));
+    });
   }
 }
 
 /*
 * utils part
 */
+const JSON_SUFFIX = '.json';
+const KIT_CONFIGS = 'kit_configs';
+const KIT_CONFIG_PATH = './build-tools/ets-loader/kit_configs';
 
 function getKitDefs(kitModuleRequest: string) {
   const kitConfigs: string[] = [path.resolve(__dirname, `../${KIT_CONFIGS}`)];

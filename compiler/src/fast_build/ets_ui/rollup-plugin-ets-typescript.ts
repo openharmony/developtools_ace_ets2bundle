@@ -72,7 +72,10 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD
 } from '../../component_map';
-import { kitTransformLog, processKitImport } from '../../process_kit_import';
+import {
+  kitTransformLog,
+  processKitImport
+} from '../../process_kit_import';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
