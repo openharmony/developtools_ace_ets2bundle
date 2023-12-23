@@ -79,7 +79,8 @@ import {
 import { validatorCard } from './process_ui_syntax';
 import { SOURCE_FILES } from './ets_checker';
 
-const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> = process.env.watchMode === 'true' ? new Map() : SOURCE_FILES;
+const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
+  process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES ? SOURCE_FILES : new Map());
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
@@ -87,7 +88,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
-    filePath = node.moduleSpecifier.getText().replace(/'|"/g, '');
+    filePath = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
     if (ts.isImportDeclaration(node) && node.importClause && node.importClause.name &&
       ts.isIdentifier(node.importClause.name)) {
       defaultName = node.importClause.name.escapedText.toString();
@@ -296,7 +297,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   if (ts.isImportDeclaration(node)) {
     if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
-      asNameFromParent.has(node.importClause.name.getText())) {
+      asNameFromParent.has(node.importClause.name.text)) {
       processImport(node, pagesDir, log, asNameFromParent, false, new Set(pathCollection));
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {
