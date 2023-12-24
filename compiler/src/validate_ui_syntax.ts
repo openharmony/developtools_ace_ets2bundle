@@ -62,7 +62,8 @@ import {
   CHECK_COMPONENT_EXTEND_DECORATOR,
   CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
   CLASS_TRACK_DECORATOR,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  COMPONENT_SENDABLE_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -88,7 +89,7 @@ import {
   ExtendResult
 } from './utils';
 import { getPackageInfo } from './ark_utils'
-import { projectConfig, abilityPagesFullPath } from '../main';
+import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
   collectExtend,
   isExtendFunction,
@@ -413,6 +414,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
+    if (isSendableClassDeclaration(node as ts.ClassDeclaration)) {
+      validateSendableClass(sourceFileNode, node as ts.ClassDeclaration, log);
+    }
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
@@ -465,6 +469,10 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
   if (!classContext && decoratorName === CLASS_TRACK_DECORATOR) {
     const message: string = `The '@Track' decorator can only be used in 'class'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  } else if ('@' + decoratorName === COMPONENT_SENDABLE_DECORATOR &&
+      (!node.parent || !node.parent.parent || !ts.isClassDeclaration(node.parent.parent))) {
+    const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
 }
 
@@ -491,6 +499,100 @@ function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
     }
   }
+}
+
+function isSendableClassDeclaration(classDeclarationNode: ts.ClassDeclaration): boolean {
+  return hasDecorator(classDeclarationNode, COMPONENT_SENDABLE_DECORATOR) ||
+      (classDeclarationNode.members && classDeclarationNode.members.some((member: ts.Node) => {
+        // Check if the constructor has "use sendable" as the first statement
+        // (Sendable classes already transformed by process_ui_syntax.ts)
+        if (ts.isConstructorDeclaration(member)) {
+          if (!(member as ts.ConstructorDeclaration).body ||
+              !(member as ts.ConstructorDeclaration).body.statements) {
+            return false;
+          }
+          const constructorStatements: ts.Statement[] = (member as ts.ConstructorDeclaration).body.statements;
+          if (constructorStatements && constructorStatements[0] &&
+              ts.isExpressionStatement(constructorStatements[0])) {
+            const expression: ts.Node = (constructorStatements[0] as ts.ExpressionStatement).expression;
+            return expression && ts.isStringLiteral(expression) &&
+                (expression as ts.StringLiteral).text === 'use sendable';
+          }
+        }
+        return false;
+      }));
+}
+
+function isSendableTypeReference(type: ts.Type): boolean {
+  if (!type || !type.getSymbol() || !type.getSymbol().valueDeclaration) {
+    return false;
+  }
+  const valueDeclarationNode: ts.Node = type.getSymbol().valueDeclaration;
+  if (valueDeclarationNode && ts.isClassDeclaration(valueDeclarationNode)) {
+    return isSendableClassDeclaration(valueDeclarationNode as ts.ClassDeclaration);
+  }
+  return false;
+}
+
+function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
+  // input typeNode should not be undefined or none, ensured by caller
+  switch (typeNode.kind) {
+    case ts.SyntaxKind.StringKeyword:
+    case ts.SyntaxKind.NumberKeyword:
+    case ts.SyntaxKind.BooleanKeyword:
+      return true;
+    case ts.SyntaxKind.TypeReference: {
+      if (globalProgram.checker) {
+        return isSendableTypeReference(globalProgram.checker.getTypeFromTypeNode(typeNode));
+      }
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+function validateSendableClass(sourceFileNode: ts.SourceFile, node: ts.ClassDeclaration, log: LogInfo[]): void {
+  // process parent classes
+  // extend clause must precede implements clause, so parent can only be heritageClauses[0]
+  if (node.heritageClauses && node.heritageClauses.length >= 1 &&
+      node.heritageClauses[0].token && node.heritageClauses[0].token === ts.SyntaxKind.ExtendsKeyword &&
+      node.heritageClauses[0].types && node.heritageClauses[0].types.length === 1) {
+    const expressionNode: ts.ExpressionWithTypeArguments = node.heritageClauses[0].types[0];
+    if (expressionNode.expression && ts.isIdentifier(expressionNode.expression) && globalProgram.checker) {
+      if (!isSendableTypeReference(globalProgram.checker.getTypeAtLocation(expressionNode.expression))) {
+        addLog(LogType.ERROR, 'The parent class of @Sendable classes must be @Sendable class',
+          expressionNode.expression.getStart(), log, sourceFileNode);
+      }
+    }
+  }
+
+  // process all properties
+  node.members.forEach(item => {
+    if (ts.isPropertyDeclaration(item)) {
+      const propertyItem: ts.PropertyDeclaration = (item as ts.PropertyDeclaration);
+      if (propertyItem.questionToken) {
+        addLog(LogType.ERROR, 'Optional properties are not supported in @Sendable classes',
+          propertyItem.questionToken.getStart(), log, sourceFileNode);
+      } else if (propertyItem.exclamationToken) {
+        addLog(LogType.ERROR, 'Definite assignment assertions are not supported in @Sendable classes.',
+          propertyItem.exclamationToken.getStart(), log, sourceFileNode);
+      } else if (!ts.isIdentifier(propertyItem.name)) {
+        addLog(LogType.ERROR,
+          'Properties with names that are not identifiers are not supported in @Sendable classes.',
+          propertyItem.name.getStart(), log, sourceFileNode);
+      } else if (!propertyItem.type) {
+        addLog(LogType.ERROR,
+          'Property declarations without explicit types are not supported in @Sendable classes.',
+          propertyItem.name.getStart(), log, sourceFileNode);
+      } else if (!isSendableTypeNode(propertyItem.type)) {
+        addLog(LogType.ERROR,
+          'Properties with types that are not basic types (string, number, boolean) or @Sendable classes ' +
+          'are not supported in @Sendable classes.',
+          propertyItem.type.getStart(), log, sourceFileNode);
+      }
+    }
+  });
 }
 
 export function checkAllNode(
