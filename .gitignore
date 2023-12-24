@@ -1,4 +1,5 @@
 .vscode/
+compiler/arkTest_build/
 compiler/node_modules/
 compiler/lib/
 compiler/declarations/

@@ -657,6 +657,8 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       } else {
         const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
         const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
+        const kitModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
+        const kitSystemDETSModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ets');
         const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
         const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
         const fileModulePath: string =
@@ -667,6 +669,10 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
         } else if (ts.sys.fileExists(systemDETSModulePath)) {
           resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
+        } else if (ts.sys.fileExists(kitModulePath)) {
+          resolvedModules.push(getResolveModule(kitModulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
+          resolvedModules.push(getResolveModule(kitSystemDETSModulePath, '.d.ets'));
         } else if (ts.sys.fileExists(jsModulePath)) {
           resolvedModules.push(getResolveModule(jsModulePath, '.js'));
         } else if (ts.sys.fileExists(fileModulePath)) {
