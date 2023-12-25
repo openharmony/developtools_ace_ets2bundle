@@ -47,7 +47,7 @@ import {
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { newSourceMaps } from './transform';
-import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../process_ui_syntax';
+import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../process_kit_import';
 
 export function needAotCompiler(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||

@@ -68,7 +68,7 @@ import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/mo
 import {
   hasTsNoCheckOrTsIgnoreFiles,
   compilingEtsOrTsFiles
-} from '../../../lib/process_ui_syntax';
+} from '../../../lib/process_kit_import';
 import {
   FILE,
   SOURCE,

@@ -88,7 +88,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
-    filePath = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
+    filePath = node.moduleSpecifier.getText().replace(/'|"/g, '');
     if (ts.isImportDeclaration(node) && node.importClause && node.importClause.name &&
       ts.isIdentifier(node.importClause.name)) {
       defaultName = node.importClause.name.escapedText.toString();
@@ -297,7 +297,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
   }
   if (ts.isImportDeclaration(node)) {
     if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name) &&
-      asNameFromParent.has(node.importClause.name.text)) {
+      asNameFromParent.has(node.importClause.name.getText())) {
       processImport(node, pagesDir, log, asNameFromParent, false, new Set(pathCollection));
     } else if (node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) && node.importClause.namedBindings.elements) {

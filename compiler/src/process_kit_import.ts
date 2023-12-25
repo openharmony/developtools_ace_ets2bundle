@@ -21,6 +21,9 @@ import {
   FileLog,
   LogType
 } from './utils';
+import { projectConfig } from '../main';
+import { ESMODULE } from './pre_define';
+import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 
 /*
 * basic implementation logic:
@@ -33,6 +36,8 @@ import {
 */
 
 export const kitTransformLog: FileLog = new FileLog();
+export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
+export let compilingEtsOrTsFiles: string[] = [];
 
 const KIT_PREFIX = '@kit.';
 
@@ -64,8 +69,23 @@ export function processKitImport(): Function {
     }
 
     return (node: ts.SourceFile) => {
-        KitInfo.init(node);
-        return ts.visitEachChild(node, visitor, context);
+      compilingEtsOrTsFiles.push(path.normalize(node.fileName));
+
+      KitInfo.init(node);
+
+      if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
+        // process ConstEnum | TypeExportImport | KitImport transforming
+        const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
+        const processedNode: ts.SourceFile =
+          ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
+
+        hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
+          ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
+
+        return node;
+      }
+
+      return ts.visitEachChild(node, visitor, context);
     };
   }
 }
@@ -292,8 +312,8 @@ class KitInfo {
   }
 
   collectSpecifier(element: TSspecifier) {
-    const localName: string = element.name.getText();
-    const importName: string = element.propertyName ? element.propertyName.getText() : localName;
+    const localName: string = element.name.text;
+    const importName: string = element.propertyName ? element.propertyName.text : localName;
     this.newSpecificerInfo(localName, importName, element);
   }
 
