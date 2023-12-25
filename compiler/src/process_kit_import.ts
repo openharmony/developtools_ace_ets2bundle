@@ -74,17 +74,19 @@ export function processKitImport(): Function {
       KitInfo.init(node);
 
       if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
-        // process ConstEnum | TypeExportImport | KitImport transforming
-        const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
-        const processedNode: ts.SourceFile =
-          ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-
-        hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
+        if (ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
+          hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(node.fileName));
+          // process KitImport transforming
+          return ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
+        } else {
+          // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
+          const processedNode: ts.SourceFile =
+            ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
           ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
-
-        return node;
+          return node; // this node not used for [writeFile]
+        }
       }
-
+      // process KitImport transforming
       return ts.visitEachChild(node, visitor, context);
     };
   }
