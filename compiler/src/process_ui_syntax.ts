@@ -131,16 +131,12 @@ import {
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 import { assignComponentParams } from './process_custom_component';
-import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 
 export const transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: {params: string[]} = {params: []};
-
-export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
-export let compilingEtsOrTsFiles: string[] = [];
 
 export function processUISyntax(program: ts.Program, ut = false, parentEvent?: any,
   compilationTime: CompilationTimeStatistics = null): Function {
@@ -150,8 +146,6 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     let pagesDir: string;
     let pageFile: string;
     return (node: ts.SourceFile) => {
-      const hasTsNoCheckOrTsIgnore = ts.hasTsNoCheckOrTsIgnoreFlag(node);
-      compilingEtsOrTsFiles.push(path.normalize(node.fileName));
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = node.fileName;
@@ -166,15 +160,10 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          if (projectConfig.compileMode === ESMODULE) {
-            if (projectConfig.processTs === true) {
+          if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
+            if (process.env.compileTool !== 'rollup') {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-              if (process.env.compileTool === 'rollup') {
-                hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
-                  ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
-              } else {
-                writeFileSyncByNode(processedNode, projectConfig, parentEvent);
-              }
+              writeFileSyncByNode(processedNode, projectConfig, parentEvent);
             }
           }
           return node;
@@ -196,11 +185,8 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
-          const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
-          if (process.env.compileTool === 'rollup') {
-            hasTsNoCheckOrTsIgnore ? hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(processedNode.fileName)) :
-              ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
-          } else {
+          if (process.env.compileTool !== 'rollup') {
+            const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
             writeFileSyncByNode(processedNode, projectConfig, parentEvent);
           }
         }
@@ -235,10 +221,17 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
     }
 
     function processAllNodes(node: ts.Node): ts.Node {
-      if (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
-        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
+        ts.isImportDeclaration(node)) {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
+        processImportModule(node, pageFile);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
+      } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
+        (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
+        ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))) {
         processImport(node, pagesDir, transformLog.errors);
-      } else if (ts.isStructDeclaration(node)) {
+      }
+      if (ts.isStructDeclaration(node)) {
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
