@@ -62,6 +62,13 @@ export function processKitImport(): Function {
           if (kitDefs && kitDefs.symbols) {
             KitInfo.processKitInfo(moduleRequest, kitDefs.symbols as KitSymbols, node);
             return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
+          } else {
+            kitTransformLog.errors.push({
+              type: LogType.ERROR,
+              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK, `+
+                       `please check the consistency of SDK.`,
+              pos: node.getStart()
+            });
           }
         }
       }
