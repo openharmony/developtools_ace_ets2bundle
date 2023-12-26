@@ -67,7 +67,7 @@ const globalModulePaths = [];
 let sdkConfigs = [];
 let defaultSdkConfigs = [];
 const extendSdkConfigs = [];
-let sdkConfigPrefix = 'ohos|system';
+let sdkConfigPrefix = 'ohos|system|kit';
 let ohosSystemModulePaths = [];
 
 function initProjectConfig(projectConfig) {
@@ -591,34 +591,49 @@ function filterWorker(workerPath) {
 })();
 
 ;(function readSystemModules() {
-  const systemModulesPath = path.resolve(__dirname, '../../api');
-  if (fs.existsSync(systemModulesPath)) {
-    globalModulePaths.push(systemModulesPath);
-    const modulePaths = [];
-    readFile(systemModulesPath, modulePaths);
-    systemModules.push(...fs.readdirSync(systemModulesPath));
-    ohosSystemModulePaths.push(...modulePaths);
-    defaultSdkConfigs = [
-      {
-        'apiPath': systemModulesPath,
-        'prefix': '@ohos'
-      }, {
-        'apiPath': systemModulesPath,
-        'prefix': '@system'
-      }
-    ];
-  }
+  const systemModulePathArray = [path.resolve(__dirname, '../../api'), path.resolve(__dirname, '../../kits')];
+  systemModulePathArray.forEach(systemModulesPath => {
+    if (fs.existsSync(systemModulesPath)) {
+      globalModulePaths.push(systemModulesPath);
+      const modulePaths = [];
+      readFile(systemModulesPath, modulePaths);
+      systemModules.push(...fs.readdirSync(systemModulesPath));
+      ohosSystemModulePaths.push(...modulePaths);
+    }
+  });
+  defaultSdkConfigs = [
+    {
+      'apiPath': systemModulePathArray,
+      'prefix': '@ohos'
+    }, {
+      'apiPath': systemModulePathArray,
+      'prefix': '@system'
+    }
+  ];
   const externalApiPathStr = process.env.externalApiPaths || '';
   const externalApiPaths = externalApiPathStr.split(path.delimiter);
   externalApiPaths.forEach(sdkPath => {
     const sdkConfigPath = path.resolve(sdkPath, 'sdkConfig.json');
     if (fs.existsSync(sdkConfigPath)) {
       const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, "utf-8"));
-      sdkConfig.apiPath = path.resolve(sdkPath, sdkConfig.apiPath);
-      if (fs.existsSync(sdkConfig.apiPath)) {
-        globalModulePaths.push(sdkConfig.apiPath);
-        systemModules.push(...fs.readdirSync(sdkConfig.apiPath));
+      if (sdkConfig.apiPath) {
+        let externalApiPathArray = [];
+        if (Array.isArray(sdkConfig.apiPath)) {
+          externalApiPathArray = sdkConfig.apiPath;
+        } else {
+          externalApiPathArray.push(sdkConfig.apiPath);
+        }
+        const resolveApiPathArray = [];
+        externalApiPathArray.forEach(element => {
+          const resolvePath = path.resolve(sdkPath, element);
+          resolveApiPathArray.push(resolvePath);
+          if (fs.existsSync(resolvePath)) {
+            globalModulePaths.push(resolvePath);
+            systemModules.push(...fs.readdirSync(resolvePath));
+          }
+        });
         sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
+        sdkConfig.apiPath = resolveApiPathArray;
         extendSdkConfigs.push(sdkConfig);
       }
     }
