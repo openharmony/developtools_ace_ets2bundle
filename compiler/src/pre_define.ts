@@ -568,4 +568,10 @@ export const WRAPBUILDER_BUILDERPROP: string = 'builder';
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';
 
+export const IDS: string = 'ids';
+export const PUSH: string = 'push';
+export const UPDATE_LAZY_FOREACH_ELEMENTS = 'UpdateLazyForEachElements';
+export const IS_INITIAL_ITEM = 'isInitialItem';
+export const MY_IDS = 'myIds';
+
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
