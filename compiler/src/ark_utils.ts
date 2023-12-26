@@ -679,7 +679,7 @@ function checkBundleVersion(bundleVersion: string): boolean {
     !isNaN(Number(versionSteps[CONSTANT_STEP_1]))) {
     const firstStep: number = Number(versionSteps[CONSTANT_STEP_0]);
     const secondStep: number = Number(versionSteps[CONSTANT_STEP_1]);
-    if (firstStep > CONSTANT_STEP_4 || firstStep === CONSTANT_STEP_4 && secondStep > CONSTANT_STEP_1) {
+    if (firstStep > CONSTANT_STEP_4 || firstStep === CONSTANT_STEP_4 && secondStep >= CONSTANT_STEP_1) {
       return true;
     }
   }
