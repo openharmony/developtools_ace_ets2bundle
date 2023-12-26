@@ -612,34 +612,41 @@ function filterWorker(workerPath) {
   ];
   const externalApiPathStr = process.env.externalApiPaths || '';
   const externalApiPaths = externalApiPathStr.split(path.delimiter);
-  externalApiPaths.forEach(sdkPath => {
-    const sdkConfigPath = path.resolve(sdkPath, 'sdkConfig.json');
-    if (fs.existsSync(sdkConfigPath)) {
-      const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, "utf-8"));
-      if (sdkConfig.apiPath) {
-        let externalApiPathArray = [];
-        if (Array.isArray(sdkConfig.apiPath)) {
-          externalApiPathArray = sdkConfig.apiPath;
-        } else {
-          externalApiPathArray.push(sdkConfig.apiPath);
-        }
-        const resolveApiPathArray = [];
-        externalApiPathArray.forEach(element => {
-          const resolvePath = path.resolve(sdkPath, element);
-          resolveApiPathArray.push(resolvePath);
-          if (fs.existsSync(resolvePath)) {
-            globalModulePaths.push(resolvePath);
-            systemModules.push(...fs.readdirSync(resolvePath));
-          }
-        });
-        sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
-        sdkConfig.apiPath = resolveApiPathArray;
-        extendSdkConfigs.push(sdkConfig);
-      }
-    }
-  });
+  collectExternalModules(externalApiPaths);
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })()
+
+function collectExternalModules(sdkPaths) {
+  for (let i = 0; i < sdkPaths.length; i++) {
+    const sdkPath = sdkPaths[i];
+    const sdkConfigPath = path.resolve(sdkPath, 'sdkConfig.json');
+    if (!fs.existsSync(sdkConfigPath)) {
+      continue;
+    }
+    const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, 'utf-8'));
+    if (!sdkConfig.apiPath) {
+      continue;
+    }
+    let externalApiPathArray = [];
+    if (Array.isArray(sdkConfig.apiPath)) {
+      externalApiPathArray = sdkConfig.apiPath;
+    } else {
+      externalApiPathArray.push(sdkConfig.apiPath);
+    }
+    const resolveApiPathArray = [];
+    externalApiPathArray.forEach(element => {
+      const resolvePath = path.resolve(sdkPath, element);
+      resolveApiPathArray.push(resolvePath);
+      if (fs.existsSync(resolvePath)) {
+        globalModulePaths.push(resolvePath);
+        systemModules.push(...fs.readdirSync(resolvePath));
+      }
+    });
+    sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
+    sdkConfig.apiPath = resolveApiPathArray;
+    extendSdkConfigs.push(sdkConfig);
+  }
+}
 
 function readAppResource(filePath) {
   if (fs.existsSync(filePath)) {
