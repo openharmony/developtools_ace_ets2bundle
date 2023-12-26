@@ -196,6 +196,9 @@ function moduleRequestCallback(moduleRequest, _, moduleType, systemKey): string 
       let compileRequest: string = `${config.prefix}:${systemKey}`;
       const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest, ['.d.ts', '.d.ets']);
       const modulePath: string = resolveModuleInfo.modulePath;
+      if (!fs.existsSync(modulePath)) {
+        return compileRequest;
+      }
       const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
       if (checkBundleVersion(bundleInfo.bundleVersion)) {
         compileRequest = `@bundle:${bundleInfo.bundlePath}`;
