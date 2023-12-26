@@ -623,7 +623,7 @@ function collectExternalModules(sdkPaths) {
     if (!fs.existsSync(sdkConfigPath)) {
       continue;
     }
-    const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, "utf-8"));
+    const sdkConfig = JSON.parse(fs.readFileSync(sdkConfigPath, 'utf-8'));
     if (!sdkConfig.apiPath) {
       continue;
     }
