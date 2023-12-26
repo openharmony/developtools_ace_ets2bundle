@@ -59,6 +59,7 @@ import {
   sdkConfigPrefix
 } from '../main';
 import { mangleFilePath, MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { getRealModulePath, type ResolveModuleInfo } from './ets_checker';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -192,17 +193,14 @@ function moduleRequestCallback(moduleRequest, _, moduleType, systemKey): string 
       continue;
     }
     if (moduleRequest.startsWith(config.prefix + '.')) {
-      let modulePath: string = path.resolve(config.apiPath, moduleRequest + '.d.ts');
-      if (!fs.existsSync(modulePath)) {
-        modulePath = path.resolve(config.apiPath, moduleRequest + '.d.ets');
-      }
-      if (!fs.existsSync(modulePath)) {
-        return `${config.prefix}:${systemKey}`;
-      }
+      let compileRequest: string = `${config.prefix}:${systemKey}`;
+      const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest, ['.d.ts', '.d.ets']);
+      const modulePath: string = resolveModuleInfo.modulePath;
       const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
       if (checkBundleVersion(bundleInfo.bundleVersion)) {
-        return `@bundle:${bundleInfo.bundlePath}`;
+        compileRequest = `@bundle:${bundleInfo.bundlePath}`;
       }
+      return compileRequest;
     }
   }
   return '';

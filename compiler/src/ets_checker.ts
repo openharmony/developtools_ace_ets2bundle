@@ -625,12 +625,9 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
         let apiFileExist: boolean = false;
         for (let i = 0; i < sdkConfigs.length; i++) {
           const sdkConfig = sdkConfigs[i];
-          let modulePath: string = path.resolve(sdkConfig.apiPath, moduleName + '.d.ts');
-          let isDETS: boolean = false;
-          if (!fs.existsSync(modulePath)) {
-            modulePath = path.resolve(sdkConfig.apiPath, moduleName + '.d.ets');
-            isDETS = true;
-          }
+          const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, moduleName, ['.d.ts', '.d.ets']);
+          const modulePath: string = resolveModuleInfo.modulePath;
+          const isDETS: boolean = resolveModuleInfo.isEts;
           if (systemModules.includes(moduleName + (isDETS ? '.d.ets' : '.d.ts')) && ts.sys.fileExists(modulePath)) {
             resolvedModules.push(getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts'));
             apiFileExist = true;
@@ -712,6 +709,33 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
   }
   stopTimeStatisticsLocation(resolveModuleNamesTime);
   return resolvedModulesCache[path.resolve(containingFile)];
+}
+
+export function getRealModulePath(apiDirs: string[], moduleName: string, exts: string[]): ResolveModuleInfo {
+  const resolveResult: ResolveModuleInfo = {
+    modulePath: '',
+    isEts: true
+  };
+  for (let i = 0; i < apiDirs.length; i++) {
+    const dir = apiDirs[i];
+    for (let i = 0; i < exts.length; i++) {
+      const ext = exts[i];
+      const moduleDir = path.resolve(dir, moduleName + ext);
+      if (!fs.existsSync(moduleDir)) {
+        continue;
+      }
+      resolveResult.modulePath = moduleDir;
+      if (ext === '.d.ts') {
+        resolveResult.isEts = false;
+      }
+    }
+  }
+  return resolveResult;
+}
+
+export interface ResolveModuleInfo {
+  modulePath: string;
+  isEts: boolean;
 }
 
 function collectShouldPackedFiles(resolvedModules: ts.ResolvedModuleFull[]): boolean | RegExpMatchArray {
