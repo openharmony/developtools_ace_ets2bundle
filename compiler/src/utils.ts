@@ -714,6 +714,15 @@ class ProcessFileInfo {
   newTsProgram: ts.Program;
   changeFiles: string[] = [];
   isFirstBuild: boolean = true;
+  processForEach: boolean = false;
+  processLazyForEach: boolean = false;
+  lazyForEachInfo: {
+    forEachParameters: ts.ParameterDeclaration,
+    isDependItem: boolean
+  } = {
+      forEachParameters: null,
+      isDependItem: false
+    };
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
