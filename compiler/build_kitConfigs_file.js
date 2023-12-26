@@ -52,7 +52,7 @@ function getImportDeclarationInfo(statement, symbol) {
   }
   let source = '';
   if (statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) {
-    source = statement.moduleSpecifier.getText().replace(/(\.\.|'|"|\\|\/)*/g, '');
+    source = statement.moduleSpecifier.getText().replace(/('|")*/g, '');
     for (let i = 0; i < systemModules.length; i++) {
       const moduleName = systemModules[i];
       if (moduleName.replace(/(\.d\.ts|\.d\.ets)$/, '') === source) {
