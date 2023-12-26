@@ -77,7 +77,7 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import { validatorCard } from './process_ui_syntax';
-import { SOURCE_FILES } from './ets_checker';
+import { type ResolveModuleInfo, SOURCE_FILES, getRealModulePath } from './ets_checker';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES ? SOURCE_FILES : new Map());
@@ -633,7 +633,8 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   let etsModule: string;
   if (new RegExp(`^@(${sdkConfigPrefix})\\.`).test(filePath.trim())) {
     for (let i = 0; i < sdkConfigs.length; i++) {
-      const systemModule: string = path.resolve(sdkConfigs[i].apiPath, filePath + '.d.ets');
+      const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfigs[i].apiPath, filePath, ['.d.ts', '.d.ets']);
+      const systemModule: string = resolveModuleInfo.modulePath;
       if (fs.existsSync(systemModule)) {
         return systemModule;
       }
