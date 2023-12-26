@@ -249,7 +249,8 @@ export function doArkTSLinterParallel(arkTSVersion: ArkTSVersion, arkTSMode: Ark
       processEnv: JSON.parse(JSON.stringify(process.env)),
       rootFileNames: rootFileNames,
       resolveModulePaths: resolveModulePaths
-    }
+    },
+    env: process.env
   };
   worker = new Worker(path.resolve(__dirname, './do_arkTS_linter_parallel.js'), workerData);
   worker.on('message', (strictDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}>) => {
