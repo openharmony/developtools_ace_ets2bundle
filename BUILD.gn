@@ -60,11 +60,11 @@ action("build_ets_loader_library") {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
-  _kit_configs_file_dir = "//interface/sdk-js/api/kits"
+  _kit_configs_file_dir = "//interface/sdk-js/kits"
   if (sdk_build_public) {
     _declarations_file_dir =
         "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
-    _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/api/kits"
+    _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/kits"
   }
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
