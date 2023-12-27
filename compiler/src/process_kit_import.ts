@@ -241,6 +241,9 @@ class KitInfo {
     if (kitNode.importClause!.name) {
       // e.g. import default from "@kit.xxx"
       const defaultName: string = kitNode.importClause.name.text;
+      if (!this.currentKitInfo) {
+        this.currentKitInfo = new ImportSpecifierKitInfo(kitNode, symbols);
+      }
       this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
     }
   }
