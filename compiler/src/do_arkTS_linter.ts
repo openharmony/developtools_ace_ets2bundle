@@ -36,7 +36,9 @@ const spaceNumBeforeJsonLine = 2;
 const sleepInterval = 100;
 const filteredDiagnosticCode = -2;
 let worker: Worker | undefined = undefined;
-let tsDiagnostics: ArkTSDiagnostic[] = [];
+let tsDiagnostics: ArkTSDiagnostic[] | undefined = undefined;
+let strictArkTSDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}> | undefined = undefined;
+let processArkTSLinterDiagnostic = (): void => {};
 
 interface OutputInfo {
   categoryInfo: string | undefined;
@@ -241,20 +243,8 @@ export function doArkTSLinterParallel(arkTSVersion: ArkTSVersion, arkTSMode: Ark
 
   didArkTSLinter = true;
 
-  const workerData = {
-    workerData: {
-      arkTSVersion: arkTSVersion,
-      projectConfig: JSON.parse(JSON.stringify(projectConfig)),
-      partialUpdateConfig: partialUpdateConfig,
-      processEnv: JSON.parse(JSON.stringify(process.env)),
-      rootFileNames: rootFileNames,
-      resolveModulePaths: resolveModulePaths
-    },
-    env: process.env
-  };
-  worker = new Worker(path.resolve(__dirname, './do_arkTS_linter_parallel.js'), workerData);
-  worker.on('message', (strictDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}>) => {
-    let diagnostics: ArkTSDiagnostic[] = filterStaticDiagnostics(strictDiagnostics);
+  let processArkTSLinterDiagnostic = (): void => {
+    let diagnostics: ArkTSDiagnostic[] = filterStaticDiagnostics();
     removeOutputFile();
     if (diagnostics.length === 0) {
       arkTSLinterDiagnosticProcessed = true;
@@ -268,7 +258,31 @@ export function doArkTSLinterParallel(arkTSVersion: ArkTSVersion, arkTSMode: Ark
     arkTSDiagnostics = diagnostics;
     cacheFilePath = cacheFile;
     arkTSLinterDiagnosticProcessed = true;
+  };
+
+  const workerData = {
+    workerData: {
+      arkTSVersion: arkTSVersion,
+      projectConfig: JSON.parse(JSON.stringify(projectConfig)),
+      partialUpdateConfig: partialUpdateConfig,
+      processEnv: JSON.parse(JSON.stringify(process.env)),
+      rootFileNames: rootFileNames,
+      resolveModulePaths: resolveModulePaths
+    },
+    env: process.env
+  };
+  worker = new Worker(path.resolve(__dirname, './do_arkTS_linter_parallel.js'), workerData);
+  worker.on('message', (strictDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}>) => {
+    strictArkTSDiagnostics = strictDiagnostics;
+    if (tsDiagnostics !== undefined) {
+      processArkTSLinterDiagnostic();
+      cleanProcessArkTSLinterDiagnostic();
+    }
   });
+}
+
+function cleanProcessArkTSLinterDiagnostic(): void {
+  processArkTSLinterDiagnostic = (): void => {};
 }
 
 export function updateFileCache(): void {
@@ -299,6 +313,10 @@ export async function waitArkTSLinterFinished(): Promise<void> {
   if (worker === undefined) {
     return;
   }
+  if ((!arkTSLinterDiagnosticProcessed) && tsDiagnostics && strictArkTSDiagnostics) {
+    processArkTSLinterDiagnostic();
+    cleanProcessArkTSLinterDiagnostic();
+  }
   let sleep = async (time): Promise<unknown> => {
     return new Promise(r => setTimeout(r, time));
   };
@@ -311,6 +329,10 @@ export async function waitArkTSLinterFinished(): Promise<void> {
 
 export function sendtsDiagnostic(allDiagnostics: ts.Diagnostic[]):void {
   tsDiagnostics = processDiagnosticsToArkTSDiagnosticInfo(allDiagnostics.filter(diag=>diag.file.scriptKind === ts.ScriptKind.ETS));
+  if (strictArkTSDiagnostics !== undefined) {
+    processArkTSLinterDiagnostic();
+    cleanProcessArkTSLinterDiagnostic();
+  }
 }
 
 export function processDiagnosticsToArkTSDiagnosticInfo(diagnostics: ts.Diagnostic[]): ArkTSDiagnostic[] {
@@ -335,13 +357,12 @@ export function processDiagnosticsToArkTSDiagnosticInfo(diagnostics: ts.Diagnost
   return diagnosticsInfo;
 }
 
-function filterStaticDiagnostics(
-  strictDiagnostics: Map<string, {strictDiagnostics: ArkTSDiagnostic[], arkTSDiagnostics: ArkTSDiagnostic[]}>): ArkTSDiagnostic[] {
+function filterStaticDiagnostics(): ArkTSDiagnostic[] {
   tsDiagnostics.forEach(diag => {
     if (!diag.fileName) {
       return;
     }
-    strictDiagnostics.get(diag.fileName)?.strictDiagnostics.forEach(
+    strictArkTSDiagnostics.get(diag.fileName)?.strictDiagnostics.forEach(
       strictDiag => {
         if (strictDiag.code === diag.code && strictDiag.start === diag.start && strictDiag.length === diag.length) {
           strictDiag.code = filteredDiagnosticCode;
@@ -352,7 +373,7 @@ function filterStaticDiagnostics(
   });
 
   let resultDiagnostics: ArkTSDiagnostic[] = [];
-  strictDiagnostics.forEach(
+  strictArkTSDiagnostics.forEach(
     (value) => {
       value.strictDiagnostics.forEach(
         diagnostic => {
@@ -366,6 +387,7 @@ function filterStaticDiagnostics(
     }
   );
 
-  tsDiagnostics = [];
+  tsDiagnostics = undefined;
+  strictArkTSDiagnostics = undefined;
   return resultDiagnostics;
 }
