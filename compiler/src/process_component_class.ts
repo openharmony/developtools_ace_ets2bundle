@@ -138,7 +138,10 @@ import {
   globalProgram, 
   projectConfig
 } from '../main';
-import { builderTypeParameter } from './process_ui_syntax';
+import {
+  builderTypeParameter,
+  initializeMYIDS
+} from './process_ui_syntax';
 import { isRecycle } from './process_custom_component';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
@@ -549,6 +552,9 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       let parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
       parameters.push(createParentParameter());
+      if (projectConfig.optLazyForEach) {
+        parameters.push(initializeMYIDS());
+      }
       const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
         ts.concatenateDecoratorsAndModifiers(customBuilder, modifiers), node.asteriskToken, node.name, node.questionToken, node.typeParameters,

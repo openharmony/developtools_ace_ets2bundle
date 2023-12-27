@@ -110,6 +110,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.isCrossplatform = projectConfig.isCrossplatform || false;
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
   projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
+  projectConfig.optLazyForEach = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -830,10 +831,13 @@ function isPartialUpdate(metadata) {
       if (item.name === 'ArkTSVersion') {
         partialUpdateConfig.arkTSVersion = item.value;
       }
+      if (item.name === 'OPTLazyForEach' && item.value === 'true') {
+        projectConfig.optLazyForEach = true;
+      }
     }
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
       !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter &&
-      partialUpdateConfig.arkTSVersion !== undefined;
+      partialUpdateConfig.arkTSVersion !== undefined && projectConfig.optLazyForEach;
   });
 }
 
