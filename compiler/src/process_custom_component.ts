@@ -97,11 +97,13 @@ import {
   ComponentAttrInfo,
   ifRetakeId,
   transferBuilderCall,
+  createCollectElmtIdNode,
   createViewStackProcessorStatement,
   BuilderParamsResult,
 } from './process_component_build';
 import {
-  partialUpdateConfig
+  partialUpdateConfig,
+  projectConfig
 } from '../main';
 import {
   GLOBAL_CUSTOM_BUILDER_METHOD
@@ -279,6 +281,9 @@ function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAs
   if (objectLinkCollection.get(name)) {
     propsAndObjectLinks.push(...objectLinkCollection.get(name));
   }
+  if (projectConfig.optLazyForEach && stateCollection.get(name)) {
+    propsAndObjectLinks.push(...stateCollection.get(name));
+  }
   if (node.arguments[0].properties) {
     node.arguments[0].properties.forEach(item => {
       if (ts.isIdentifier(item.name) && propsAndObjectLinks.includes(item.name.escapedText.toString())) {
@@ -307,6 +312,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     )
   ];
   const arrowBolck: ts.Statement[] = [
+    projectConfig.optLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
       isBuilder, isRecycleComponent, componentAttrInfo)
   ];

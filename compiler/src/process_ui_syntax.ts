@@ -73,6 +73,7 @@ import {
   COMPONENT_CREATE_FUNCTION,
   COMPONENT_POP_FUNCTION,
   UPDATE_ANIMATABLE_PROPERTY,
+  MY_IDS,
   VIEW_STACK_PROCESSOR,
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
@@ -259,6 +260,9 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           let parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
+          if (projectConfig.optLazyForEach) {
+            parameters.push(initializeMYIDS());
+          }
           storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
           const builderParamsResult: BuilderParamsResult = { firstParam: null };
           parseGlobalBuilderParams(node.parameters, builderParamsResult);
@@ -347,6 +351,20 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
       return false;
     }
   };
+}
+
+export function initializeMYIDS(): ts.ParameterDeclaration {
+  return ts.factory.createParameterDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createIdentifier(MY_IDS),
+    undefined,
+    undefined,
+    ts.factory.createArrayLiteralExpression(
+      [],
+      false
+    )
+  );
 }
 
 function generateId(statements: ts.Statement[], node: ts.SourceFile): void {

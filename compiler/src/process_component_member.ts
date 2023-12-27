@@ -432,6 +432,9 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   if (setUpdateParamsDecorators.has(decorator)) {
     updateResult.setUpdateParams(createUpdateParams(name, decorator, node));
   }
+  if (projectConfig.optLazyForEach) {
+    setStateVarsDecorators.add(COMPONENT_STATE_DECORATOR);
+  }
   if (setStateVarsDecorators.has(decorator)) {
     updateResult.setStateVarsParams(createStateVarsParams(name, decorator));
   }
@@ -592,6 +595,7 @@ function createStateVarsParams(name: ts.Identifier, decorator: string): ts.State
   let updateParamsNode: ts.Statement;
   switch (decorator) {
     case COMPONENT_OBJECT_LINK_DECORATOR:
+    case COMPONENT_STATE_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
       break;
   }
@@ -1065,7 +1069,7 @@ function validatePropertyNonType(propertyName: ts.Identifier, log: LogInfo[]): v
 function validateNonSimpleType(propertyName: ts.Identifier, decorator: string,
   log: LogInfo[]): void {
   log.push({
-    type: LogType.ERROR,
+    type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
     message: `The type of the ${decorator} property '${propertyName.getText()}' ` +
       `can only be string, number or boolean.`,
     pos: propertyName.getStart()
@@ -1075,7 +1079,7 @@ function validateNonSimpleType(propertyName: ts.Identifier, decorator: string,
 function validateNonObservedClassType(propertyName: ts.Identifier, decorator: string,
   log: LogInfo[]): void {
   log.push({
-    type: LogType.ERROR,
+    type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
     message: `The type of the ${decorator} property '${propertyName.getText()}' can only be ` +
       `objects of classes decorated with ${COMPONENT_OBSERVED_DECORATOR} class decorator in ets (not ts).`,
     pos: propertyName.getStart()
