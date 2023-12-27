@@ -122,7 +122,9 @@ export function readDeaclareFiles(): string[] {
 
 export const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
   if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
-    fs.writeSync(fs.openSync(fileName, 'w'), data, undefined, 'utf8');
+    let fd: number = fs.openSync(fileName, 'w');
+    fs.writeSync(fd, data, undefined, 'utf8');
+    fs.closeSync(fd);
   };
 }
 
