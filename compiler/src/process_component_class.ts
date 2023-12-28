@@ -120,7 +120,8 @@ import {
   curPropMap,
   decoratorParamSet,
   isSimpleType,
-  isSingleKey
+  isSingleKey,
+  findDecoratorIndex
 } from './process_component_member';
 import {
   processComponentBuild,
@@ -486,8 +487,10 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
     const localStorageLink: Set<string> = localStorageLinkCollection.get(parentComponentName).get(name);
     const localStorageProp: Set<string> = localStoragePropCollection.get(parentComponentName).get(name);
     let localFuncName: string;
+    const index: number = findDecoratorIndex(decorators,
+      [COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR]);
     const localValue: ts.Expression[] = [
-      decorators[0].expression.arguments[0],
+      decorators[index].expression.arguments[0],
       node.initializer,
       ts.factory.createThis(),
       ts.factory.createStringLiteral(name)
