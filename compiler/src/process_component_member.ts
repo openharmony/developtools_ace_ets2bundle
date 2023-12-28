@@ -677,14 +677,21 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
   }
 }
 
+export function findDecoratorIndex(decorators: readonly ts.Decorator[], nameList: string[]): number {
+  return decorators.findIndex((item: ts.Decorator) => {
+    return nameList.includes(item.getText().replace(/\(.*\)$/, '').trim());
+  });
+}
+
 function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts.Identifier,
   decorator: string): ts.ExpressionStatement {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (isSingleKey(node)) {
     let setFuncName: string;
     let storageFuncName: string;
+    const index: number = findDecoratorIndex(decorators, [decorator]);
     const storageValue: ts.Expression[] = [
-      decorators[0].expression.arguments[0],
+      decorators[index].expression.arguments[0],
       node.initializer,
       ts.factory.createThis(),
       ts.factory.createStringLiteral(name.getText())
@@ -712,8 +719,9 @@ function getDecoratorKey(node: ts.PropertyDeclaration, isProvided: boolean = fal
   let isStringKey: boolean = false;
   let isProvidedParamObj: boolean = false;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const index: number = findDecoratorIndex(decorators, [COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR]);
   // @ts-ignore
-  let keyNameNode: ts.Node = decorators[0].expression.arguments[0];
+  let keyNameNode: ts.Node = decorators[index].expression.arguments[0];
   if (ts.isIdentifier(keyNameNode)) {
     key = keyNameNode.getText();
     decoratorParamSet.add(key);
