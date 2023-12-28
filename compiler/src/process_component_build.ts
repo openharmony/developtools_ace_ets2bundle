@@ -1432,7 +1432,8 @@ function createItemGenFunctionStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
         [ts.factory.createVariableDeclaration(
-          ts.factory.createIdentifier(storedFileInfo.processForEach ? FOREACHITEMGENFUNCTION : __LAZYFOREACHITEMGENFUNCTION),
+          ts.factory.createIdentifier(node.expression.getText() === COMPONENT_FOREACH ?
+            FOREACHITEMGENFUNCTION : __LAZYFOREACHITEMGENFUNCTION),
           undefined, undefined,
           ts.factory.createArrowFunction(
             undefined, undefined,
