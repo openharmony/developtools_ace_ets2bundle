@@ -40,7 +40,8 @@ import {
 import {
   waitArkTSLinterFinished,
   updateFileCache,
-  resetDidArkTSLinter
+  resetDidArkTSLinter,
+  sendtsDiagnostic
 } from '../../do_arkTS_linter';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
@@ -118,4 +119,5 @@ function getAllDiagnostics(compilationTime: CompilationTimeStatistics): void {
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+  sendtsDiagnostic(allDiagnostics);
 }
