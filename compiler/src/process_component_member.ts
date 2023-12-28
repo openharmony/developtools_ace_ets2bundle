@@ -595,8 +595,10 @@ function createStateVarsParams(name: ts.Identifier, decorator: string): ts.State
   let updateParamsNode: ts.Statement;
   switch (decorator) {
     case COMPONENT_OBJECT_LINK_DECORATOR:
-    case COMPONENT_STATE_DECORATOR:
       updateParamsNode = createUpdateParamsWithSet(name);
+      break;
+    case COMPONENT_STATE_DECORATOR:
+      updateParamsNode = createUpdateParamsForState(name);
       break;
   }
   return updateParamsNode;
@@ -614,6 +616,11 @@ function createUpdateParamsWithIf(name: ts.Identifier, isProp: boolean = false,
   isProp ? ts.factory.createBlock([createUpdateParamsWithSet(name, true, initializeNode)]) :
     ts.factory.createBlock([
       createUpdateParamsWithoutIf(name)], true), undefined);
+}
+
+function createUpdateParamsForState(name: ts.Identifier): ts.IfStatement {
+  return ts.factory.createIfStatement(createPropertyAccessExpressionWithParams(name.getText()),
+    ts.factory.createBlock([createUpdateParamsWithSet(name)]));
 }
 
 function createUpdateParamsWithoutIf(name: ts.Identifier): ts.ExpressionStatement {
