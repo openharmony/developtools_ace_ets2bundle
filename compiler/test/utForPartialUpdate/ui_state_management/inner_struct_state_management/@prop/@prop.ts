@@ -121,7 +121,7 @@ class CustomY extends ViewPU {
                         fruit: this.parentFruit
                     });
                 }
-            }, null);
+            }, { name: "CustomX" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -134,7 +134,7 @@ class CustomY extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CustomX" });
         }
         Row.pop();
     }

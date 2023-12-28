@@ -401,7 +401,7 @@ class MyComponent extends ViewPU {
                                 else {
                                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                                 }
-                            }, null);
+                            }, { name: "Child" });
                         }
                         __Common__.pop();
                     }

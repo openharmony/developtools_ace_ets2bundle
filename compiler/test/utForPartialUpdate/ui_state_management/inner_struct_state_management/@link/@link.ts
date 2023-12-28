@@ -119,7 +119,7 @@ class ParentComponent extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "LinkComponent" });
         }
         Column.pop();
     }

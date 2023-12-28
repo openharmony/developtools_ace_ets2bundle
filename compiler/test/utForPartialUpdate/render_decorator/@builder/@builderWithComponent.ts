@@ -56,7 +56,7 @@ function myBuilder(parent = null) {
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
             }
-        }, null);
+        }, { name: "child" });
     }
 }
 class Index extends ViewPU {
@@ -89,7 +89,7 @@ class Index extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "child" });
         }
     }
     initialRender() {
@@ -109,7 +109,7 @@ class Index extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "child" });
         }
         Row.pop();
     }

@@ -120,7 +120,7 @@ class TestPage extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "TitleComp" });
         }
     }
     initialRender() {
