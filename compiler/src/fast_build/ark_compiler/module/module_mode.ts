@@ -77,6 +77,7 @@ import {
 import {
   getPackageInfo,
   getOhmUrlByFilepath,
+  getOhmUrlByHarName,
   isTs2Abc,
   isEs2Abc
 } from '../../../ark_utils';
@@ -85,6 +86,9 @@ import {
   generateBuiltinAbc,
   FaultHandler
 } from '../../../gen_aot';
+import {
+  NATIVE_MODULE
+} from '../../../pre_define';
 
 export class ModuleInfo {
   filePath: string;
@@ -175,8 +179,46 @@ export class ModuleMode extends CommonMode {
 
       this.processModuleInfos(moduleId, moduleInfos, moduleInfo['meta']);
     }
+    this.getDynamicImportEntryInfo(pkgEntryInfos);
+    this.getNativeModuleEntryInfo(pkgEntryInfos);
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
+  }
+
+  private updatePkgEntryInfos(pkgEntryInfos: Map<String, PackageEntryInfo>, key: String, value: PackageEntryInfo): void {
+    if (!pkgEntryInfos.has(key)) {
+      pkgEntryInfos.set(key, new PackageEntryInfo(key, value));
+    }
+  }
+
+  private getDynamicImportEntryInfo(pkgEntryInfos: Map<String, PackageEntryInfo>): void {
+    if (this.projectConfig.dynamicImportLibInfo) {
+      const REG_LIB_SO: RegExp = /lib(.+)\.so/;
+      for (const [pkgName, pkgInfo] of Object.entries(this.projectConfig.dynamicImportLibInfo)) {
+        if (REG_LIB_SO.test(pkgName)) {
+          let ohmurl: string = pkgName.replace(REG_LIB_SO, (_, libsoKey) => {
+            return `@app.${this.projectConfig.bundleName}/${this.projectConfig.moduleName}/${libsoKey}`;
+          });
+          this.updatePkgEntryInfos(pkgEntryInfos, pkgName, ohmurl);
+          continue;
+        }
+        let hspOhmurl: string | undefined = getOhmUrlByHarName(pkgName, this.projectConfig);
+        if (hspOhmurl !== undefined) {
+          hspOhmurl = hspOhmurl.replace(/^@(\w+):(.*)/, '@$1.$2');
+          this.updatePkgEntryInfos(pkgEntryInfos, pkgName, hspOhmurl);
+          continue;
+        }
+        const entryFile: string = pkgInfo.entryFilePath;
+        this.getPackageEntryInfo(entryFile, pkgInfo, pkgEntryInfos);
+      }
+    }
+  }
+
+  private getNativeModuleEntryInfo(pkgEntryInfos: Map<String, PackageEntryInfo>): void {
+    for (const item of NATIVE_MODULE) {
+      let key = '@' + item;
+      this.updatePkgEntryInfos(pkgEntryInfos, key, '@native.' + item);
+    }
   }
 
   private getPackageEntryInfo(filePath: string, metaInfo: any, pkgEntryInfos: Map<String, PackageEntryInfo>) {
@@ -190,6 +232,7 @@ export class ModuleMode extends CommonMode {
         if (!pkgEntryInfos.has(pkgEntryPath)) {
           pkgEntryInfos.set(pkgEntryPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
         }
+        this.updatePkgEntryInfos(pkgEntryInfos, hostDependencyName, `@bundle.${pkgBuildPath}`);
       });
       return;
     }
