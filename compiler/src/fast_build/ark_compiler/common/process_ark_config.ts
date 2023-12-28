@@ -105,6 +105,9 @@ export function initArkProjectConfig(share: any) {
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
       projectConfig.packageDir = buildJsonInfo.packageManagerType === 'ohpm' ? OH_MODULES : NODE_MODULES;
     }
+    if (buildJsonInfo.dynamicImportLibInfo) {
+      arkProjectConfig.dynamicImportLibInfo = buildJsonInfo.dynamicImportLibInfo;
+    }
   }
   if (projectConfig.aceManifestPath && fs.existsSync(projectConfig.aceManifestPath)) {
     const manifestJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceManifestPath).toString());
