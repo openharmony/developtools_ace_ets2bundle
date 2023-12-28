@@ -174,7 +174,7 @@ class ViewB extends ViewPU {
                         varA: this.varB.a
                     });
                 }
-            }, null);
+            }, { name: "ViewA" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('ViewB');

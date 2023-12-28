@@ -311,7 +311,7 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CustomContainerExport" });
         }
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
@@ -337,7 +337,7 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CustomContainer" });
         }
         Row.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -378,7 +378,7 @@ class CustomContainerUser extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "CustomContainer2" });
         }
         Row.pop();
         Column.pop();
