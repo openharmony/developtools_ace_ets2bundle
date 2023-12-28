@@ -365,7 +365,7 @@ function componentPop(name: string): ts.ObjectLiteralExpression {
       ts.factory.createStringLiteral(name)
     )],
     false
-  )
+  );
 }
 
 function assignRecycleParams(): ts.IfStatement {
