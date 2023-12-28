@@ -1386,11 +1386,10 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     (node.expression as ts.CallExpression).expression as ts.Identifier,
     ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
   if (ts.isCallExpression(node.expression)) {
-    if (node.expression.expression && ts.isIdentifier(node.expression.expression) &&
-      node.expression.expression.getText() === COMPONENT_FOREACH) {
-      storedFileInfo.processForEach = true;
+    if (checkForEachComponent(node)) {
+      storedFileInfo.processForEach += 1;
     } else {
-      storedFileInfo.processLazyForEach = true;
+      storedFileInfo.processLazyForEach += 1;
     }
     const argumentsArray: ts.Expression[] = Array.from(node.expression.arguments);
     const propertyNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
@@ -1417,9 +1416,17 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
         newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, lazyForEachStatement, popNode], true));
       }
     }
+    if (checkForEachComponent(node)) {
+      storedFileInfo.processForEach -= 1;
+    } else {
+      storedFileInfo.processLazyForEach -= 1;
+    }
   }
-  storedFileInfo.processForEach = false;
-  storedFileInfo.processLazyForEach = false;
+}
+
+function checkForEachComponent(node: ts.ExpressionStatement): boolean {
+  return node.expression.expression && ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.getText() === COMPONENT_FOREACH;
 }
 
 function createItemGenFunctionStatement(

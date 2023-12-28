@@ -714,8 +714,8 @@ class ProcessFileInfo {
   newTsProgram: ts.Program;
   changeFiles: string[] = [];
   isFirstBuild: boolean = true;
-  processForEach: boolean = false;
-  processLazyForEach: boolean = false;
+  processForEach: number = 0;
+  processLazyForEach: number = 0;
   lazyForEachInfo: {
     forEachParameters: ts.ParameterDeclaration,
     isDependItem: boolean

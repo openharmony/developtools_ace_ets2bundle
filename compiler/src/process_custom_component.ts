@@ -281,7 +281,7 @@ function createChildElmtId(node: ts.CallExpression, name: string): ts.PropertyAs
   if (objectLinkCollection.get(name)) {
     propsAndObjectLinks.push(...objectLinkCollection.get(name));
   }
-  if (projectConfig.optLazyForEach && stateCollection.get(name)) {
+  if (projectConfig.optLazyForEach && storedFileInfo.processLazyForEach && stateCollection.get(name)) {
     propsAndObjectLinks.push(...stateCollection.get(name));
   }
   if (node.arguments[0].properties) {
