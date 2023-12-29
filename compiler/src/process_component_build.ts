@@ -272,6 +272,9 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.push(createRenderingInProgress(false));
   }
+  if (rootGlobalBuilder && isGlobalBuilder && builderParamsResult && builderParamsResult.firstParam) {
+    newStatements.unshift(forkBuilderParamNode(builderParamsResult.firstParam));
+  }
   if (isLazy && projectConfig.optLazyForEach && storedFileInfo.processLazyForEach &&
     storedFileInfo.lazyForEachInfo.forEachParameters) {
     return ts.factory.updateBlock(node, [
@@ -279,9 +282,6 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
       createLazyForEachBlockNode(newStatements),
       ts.factory.createReturnStatement(ts.factory.createIdentifier(MY_IDS))
     ]);
-  }
-  if (rootGlobalBuilder && isGlobalBuilder && builderParamsResult && builderParamsResult.firstParam) {
-    newStatements.unshift(forkBuilderParamNode(builderParamsResult.firstParam));
   }
   return ts.factory.updateBlock(node, newStatements);
 }
