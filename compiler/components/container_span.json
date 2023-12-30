@@ -1,0 +1,7 @@
+{
+  "name": "ContainerSpan",
+  "children": ["Span", "ImageSpan"],
+  "attrs": [
+    "textBackgroundStyle"
+  ]
+}
