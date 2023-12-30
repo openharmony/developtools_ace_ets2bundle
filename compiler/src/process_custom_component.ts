@@ -159,6 +159,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
     if (partialUpdateConfig.partialUpdateMode && idName) {
       judgeIdStart = newStatements.length;
     }
+    let needCommon: boolean = false;
     if (hasChainCall) {
       if (partialUpdateConfig.partialUpdateMode) {
         const commomComponentNode: ts.Statement[] = [ts.factory.createExpressionStatement(
@@ -167,9 +168,12 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         const immutableStatements: ts.Statement[] = [];
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode,
           log, true, false, immutableStatements, false, componentAttrInfo);
-        newStatements.push(createComponentCreationStatement(componentAttributes(COMPONENT_COMMON),
-          commomComponentNode, COMPONENT_COMMON, isGlobalBuilder, false, undefined, immutableStatements,
-          builderParamsResult, isRecycleComponent));
+        needCommon = commomComponentNode.length > 1 || immutableStatements.length > 0;
+        if (needCommon) {
+          newStatements.push(createComponentCreationStatement(componentAttributes(COMPONENT_COMMON),
+            commomComponentNode, COMPONENT_COMMON, isGlobalBuilder, false, undefined, immutableStatements,
+            builderParamsResult, isRecycleComponent));
+        }
       } else {
         newStatements.push(ts.factory.createExpressionStatement(
           createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -182,7 +186,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
       isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult);
-    if (hasChainCall) {
+    if (hasChainCall && (!partialUpdateConfig.partialUpdateMode || needCommon)) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
           ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
