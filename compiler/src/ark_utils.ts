@@ -378,16 +378,22 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
-  const isHarCompiled = projectConfig.compileHar;
-
+  const isDeclaration = (/\.d\.e?ts$/).test(filePath);
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
   }
 
   let historyNameCache: Map<string, string> = undefined;
-  if (identifierCaches && identifierCaches[relativeSourceFilePath]) {
-    historyNameCache = getMapFromJson(identifierCaches[relativeSourceFilePath]);
+
+  if (identifierCaches) {
+    let namecachePath = relativeSourceFilePath;
+    if (isDeclaration) {
+      namecachePath = harFilesRecord.get(originalFilePath).sourceCachePath;
+    }
+    if (identifierCaches[namecachePath]) {
+      historyNameCache = getMapFromJson(identifierCaches[namecachePath]);
+    }
   }
 
   let mixedInfo: {content: string, sourceMap?: any, nameCache?: any};
@@ -397,12 +403,12 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
   }
 
-  if (mixedInfo.sourceMap && !isHarCompiled) {
+  if (mixedInfo.sourceMap && !isDeclaration) {
     mixedInfo.sourceMap.sources = [relativeSourceFilePath];
     rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMap;
   }
 
-  if (mixedInfo.nameCache) {
+  if (mixedInfo.nameCache && !isDeclaration) {
     identifierCaches[relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
