@@ -187,9 +187,6 @@ class HomeComponent extends ViewPU {
         __Common__.pop();
         __Recycle__.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            __Common__.create();
-        }, __Common__);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
         }, __Recycle__);
         {
@@ -225,7 +222,6 @@ class HomeComponent extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.pop();
         __Recycle__.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Common__.create();
@@ -271,9 +267,6 @@ class HomeComponent extends ViewPU {
         __Common__.pop();
         __Recycle__.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            __Common__.create();
-        }, __Common__);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
             __Recycle__.create();
         }, __Recycle__);
         {
@@ -309,7 +302,6 @@ class HomeComponent extends ViewPU {
                 ViewStackProcessor.StopGetAccessRecording();
             });
         }
-        __Common__.pop();
         __Recycle__.pop();
         Column.pop();
     }
