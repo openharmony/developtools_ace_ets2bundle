@@ -2,6 +2,6 @@
   "name": "ImageSpan",
   "atomic": true,
   "attrs": [
-    "verticalAlign", "objectFit"
+    "verticalAlign", "objectFit", "textBackgroundStyle"
   ]
 }
