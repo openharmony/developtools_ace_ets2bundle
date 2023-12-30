@@ -81,7 +81,7 @@ class Index extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "ComA" });
         }
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -94,7 +94,7 @@ class Index extends ViewPU {
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
                 }
-            }, null);
+            }, { name: "ComB" });
         }
         Row.pop();
     }
