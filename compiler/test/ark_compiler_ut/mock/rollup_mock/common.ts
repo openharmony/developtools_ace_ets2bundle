@@ -32,23 +32,23 @@ export const CMD_DEBUG_INFO: string = '--debug-info';
 export const NODE: string = 'node';
 export const META: string = 'meta';
 
-export const ENTRYABILITY_TS_PATH_DEFAULT: string = '/src/entryability/EntryAbility.ts';
-export const ENTRYABILITY_JS_PATH_DEFAULT: string = '/src/entryability/EntryAbility.js';
-export const INDEX_ETS_PATH_DEFAULT: string = '/src/pages/Index.ets';
-export const INDEX_JS_PATH_DEFAULT: string = '/src/pages/Index.js';
+export const ENTRYABILITY_TS_PATH_DEFAULT: string = '/src/main/entryability/EntryAbility.ts';
+export const ENTRYABILITY_JS_PATH_DEFAULT: string = '/src/main/entryability/EntryAbility.js';
+export const INDEX_ETS_PATH_DEFAULT: string = '/src/main/pages/Index.ets';
+export const INDEX_JS_PATH_DEFAULT: string = '/src/main/pages/Index.js';
 
-export const ENTRYABILITY_TS_RECORDNAME: string = '/entry/src/entryability/EntryAbility';
-export const ENTRYABILITY_JS_RECORDNAME: string = '/entry/src/entryability/EntryAbility';
-export const INDEX_ETS_RECORDNAME: string = '/entry/src/pages/Index';
+export const ENTRYABILITY_TS_RECORDNAME: string = '/entry/src/main/entryability/EntryAbility';
+export const ENTRYABILITY_JS_RECORDNAME: string = '/entry/src/main/entryability/EntryAbility';
+export const INDEX_ETS_RECORDNAME: string = '/entry/src/main/pages/Index';
 export const EXTNAME_MAP: string = '.map';
 
-export const ENTRYABILITY_TS_PATH: string = '/entryability/EntryAbility.ts';
-export const INDEX_ETS_PATH: string = '/pages/Index.ets';
+export const ENTRYABILITY_TS_PATH: string = '/main/entryability/EntryAbility.ts';
+export const INDEX_ETS_PATH: string = '/main/pages/Index.ets';
 export const ENTRYABILITY_TS: string = 'EntryAbility.ts';
 export const INDEX_ETS: string = 'Index.ets';
 export const OH_UIABILITY: string = '@ohos:app.ability.UIAbility';
 export const OH_HILOG: string = '@ohos:hilog';
-export const OHURL_RES: string = '@bundle:com.example.app/entry/src/pages/Index';
+export const OHURL_RES: string = '@bundle:com.example.app/entry/src/main/pages/Index';
 export const OHURL_SHAREDLIBRARY: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
 
 export const FILE: string = 'file';
@@ -62,6 +62,6 @@ export const JSONSTRING: string = `{"mCompact":false,"mDisableHilog":false,"mDis
 export const MODULES: string = 'oh-modules';
 export const LOADER_AOTMODE: string = 'loader_aotMode.json';
 export const UPDATESOURCEMAP: string = 'updateSourceMap.json';
-export const ENTRYABILITY_JS: string = 'entry/src/entryability/EntryAbility.js';
+export const ENTRYABILITY_JS: string = 'entry/src/main/entryability/EntryAbility.js';
 export const TEST: string = 'test';
 export const NEWFILE: string = 'newFile';

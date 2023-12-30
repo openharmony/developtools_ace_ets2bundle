@@ -122,6 +122,7 @@ class ObOptions {
 export class MergedConfig {
   options: ObOptions = new ObOptions();
   reservedPropertyNames: string[] = [];
+  reservedGlobalNames: string[] = [];
   reservedNames: string[] = [];
   reservedFileNames: string[] = [];
   keepComments: string[] = [];
@@ -129,7 +130,7 @@ export class MergedConfig {
   merge(other: MergedConfig) {
     this.options.merge(other.options);
     this.reservedPropertyNames.push(...other.reservedPropertyNames);
-    this.reservedNames.push(...other.reservedNames);
+    this.reservedGlobalNames.push(...other.reservedGlobalNames);
     this.reservedFileNames.push(...other.reservedFileNames);
     this.keepComments.push(...other.keepComments);
   }
@@ -138,7 +139,7 @@ export class MergedConfig {
     this.reservedPropertyNames = sortAndDeduplicateStringArr(
       this.reservedPropertyNames
     );
-    this.reservedNames = sortAndDeduplicateStringArr(this.reservedNames);
+    this.reservedGlobalNames = sortAndDeduplicateStringArr(this.reservedGlobalNames);
     this.reservedFileNames = sortAndDeduplicateStringArr(this.reservedFileNames);
     this.keepComments = sortAndDeduplicateStringArr(this.keepComments);
   }
@@ -153,9 +154,9 @@ export class MergedConfig {
       }
     }
 
-    if (this.reservedNames.length > 0) {
+    if (this.reservedGlobalNames.length > 0) {
       resultStr += ObConfigResolver.KEEP_GLOBAL_NAME + '\n';
-      this.reservedNames.forEach((item) => {
+      this.reservedGlobalNames.forEach((item) => {
         resultStr += item + '\n';
       });
     }
@@ -387,7 +388,7 @@ export class ObConfigResolver {
           continue;
         }
         case OptionType.KEEP_GLOBAL_NAME: {
-          configs.reservedNames.push(token);
+          configs.reservedToplevelNames.push(token);
           continue;
         }
         case OptionType.KEEP_PROPERTY_NAME: {
