@@ -2863,7 +2863,7 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
       createFunction(temp, ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null)));
     if (temp.escapedText.toString() === COMPONENT_GESTURE_GROUP) {
       const gestureStatements: ts.Statement[] = [];
-      parseGestureInterface(temp.parent, gestureStatements, log, updateStatements, true);
+      parseGestureInterface(temp.parent, gestureStatements, log, [], true);
       newStatements.push(...gestureStatements.reverse());
       bindComponentAttr(newNode, temp, newStatements, log, false);
       let argumentArr: ts.NodeArray<ts.Expression> = null;
