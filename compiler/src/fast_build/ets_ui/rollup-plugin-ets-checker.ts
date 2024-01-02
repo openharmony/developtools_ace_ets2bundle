@@ -37,12 +37,6 @@ import {
   CompilationTimeStatistics,
   getHookEventFactory
 } from '../../utils';
-import {
-  waitArkTSLinterFinished,
-  updateFileCache,
-  resetDidArkTSLinter,
-  sendtsDiagnostic
-} from '../../do_arkTS_linter';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -54,8 +48,14 @@ export function etsChecker() {
     buildStart() {
       const hookEventFactory = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
-      resetDidArkTSLinter();
-      setTsWatch();
+      if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
+        tsWatchEmitter = new EventEmitter();
+        tsWatchEndPromise = new Promise<void>(resolve => {
+          tsWatchEmitter.on(TS_WATCH_END_MSG, () => {
+            resolve();
+          });
+        });
+      }
       Object.assign(projectConfig, this.share.projectConfig);
       Object.assign(this.share.projectConfig, {
         compileHar: projectConfig.compileHar,
@@ -76,48 +76,28 @@ export function etsChecker() {
       }
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'check Ets code syntax');
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, compilationTime);
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
+          compilationTime);
         executedOnce = true;
-        getAllDiagnostics(compilationTime);
+        startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+        globalProgram.program = languageService.getProgram();
+        const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+          .getSyntacticDiagnostics()
+          .concat(globalProgram.program.getSemanticDiagnostics())
+          .concat(globalProgram.program.getDeclarationDiagnostics());
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+        allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
+          printDiagnostic(diagnostic);
+        });
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
       } else {
-        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, compilationTime);
+        serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker,
+          compilationTime);
       }
       stopEvent(eventServiceChecker);
       setChecker();
-    },
-    beforeBuildEnd: {
-      order: 'pre',
-      async handler(): Promise<void> {
-        await waitArkTSLinterFinished();
-        updateFileCache();
-      }
     }
   };
 }
 
-function setTsWatch(): void {
-  if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
-    tsWatchEmitter = new EventEmitter();
-    tsWatchEndPromise = new Promise<void>(resolve => {
-      tsWatchEmitter.on(TS_WATCH_END_MSG, () => {
-        resolve();
-      });
-    });
-  }
-}
-
-function getAllDiagnostics(compilationTime: CompilationTimeStatistics): void {
-  startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
-  globalProgram.program = languageService.getProgram();
-  const allDiagnostics: ts.Diagnostic[] = globalProgram.program
-    .getSyntacticDiagnostics()
-    .concat(globalProgram.program.getSemanticDiagnostics())
-    .concat(globalProgram.program.getDeclarationDiagnostics());
-  stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
-  allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
-  });
-  sendtsDiagnostic(allDiagnostics);
-}
