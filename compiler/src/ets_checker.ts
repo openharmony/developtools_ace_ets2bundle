@@ -92,14 +92,7 @@ import {
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
-import {
-  doArkTSLinter,
-  doArkTSLinterParallel,
-  ArkTSLinterMode,
-  ArkTSDiagnostic,
-  sendtsDiagnostic,
-  ArkTSVersion
-} from './do_arkTS_linter';
+import { doArkTSLinter, ArkTSLinterMode, ArkTSVersion } from './do_arkTS_linter';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
@@ -120,7 +113,7 @@ export function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
-export const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
+const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
   if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
     let fd: number = fs.openSync(fileName, 'w');
     fs.writeSync(fd, data, undefined, 'utf8');
@@ -130,7 +123,7 @@ export const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data:
 
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-export function setCompilerOptions(resolveModulePaths: string[]): void {
+function setCompilerOptions(resolveModulePaths: string[]) {
   const allPath: Array<string> = [
     '*'
   ];
@@ -368,7 +361,6 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
         hotReloadSupportFiles.add(fileName);
       });
     }
-    runArkTSLinterParallel(rootFileNames, resolveModulePaths, cacheFile);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -381,15 +373,18 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
       cache = {};
     }
     const filterFiles: string[] = filterInput(rootFileNames);
-    runArkTSLinterParallel(filterFiles, resolveModulePaths, cacheFile);
     languageService = createLanguageService(filterFiles, resolveModulePaths, compilationTime);
   }
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
-
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
-
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+
+  startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+  runArkTSLinter(parentEvent);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+
+  collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime);
   }
@@ -400,7 +395,6 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
-  sendtsDiagnostic(allDiagnostics);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
 
   globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
@@ -465,14 +459,14 @@ function containFormError(message: string): boolean {
   return false;
 }
 
-export function printDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: boolean = false): void {
+export function printDiagnostic(diagnostic: ts.Diagnostic): void {
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
 
-    if (containFormError(message) && diagnostic.file && !isCardFile(diagnostic.file.fileName)) {
+    if (containFormError(message) && !isCardFile(diagnostic.file.fileName)) {
       return;
     }
 
@@ -489,12 +483,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: bo
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
       logMessage = `ArkTS:${logPrefix} File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`;
     } else {
-      if (!isArkTSDiagnostic) {
-        logMessage = `ArkTS:${logPrefix}: ${message}`;
-      } else {
-        const arkTSDiagnostic = diagnostic as ArkTSDiagnostic;
-        logMessage = `ArkTS:${logPrefix} File: ${arkTSDiagnostic.fileName}:${arkTSDiagnostic.line + 1}:${arkTSDiagnostic.character + 1}\n ${message}\n`;
-      }
+      logMessage = `ArkTS:${logPrefix}: ${message}`;
     }
 
     if (diagnostic.category === ts.DiagnosticCategory.Error) {
@@ -1102,36 +1091,24 @@ function runArkTSLinter(parentEvent?: any): void {
   stopEvent(eventRunArkTsLinter);
 }
 
-function runArkTSLinterParallel(rootFileNames: string[], resolveModulePaths: string[], cacheFile: string): void {
-  doArkTSLinterParallel(
-    getArkTSVersion(),
-    getArkTSLinterMode(),
-    printArkTSLinterDiagnostic,
-    rootFileNames,
-    resolveModulePaths,
-    cacheFile,
-    !projectConfig.xtsMode
-  );
-}
-
-function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: boolean): void {
+function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
   if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
-    printDiagnostic(diagnostic, isArkTSDiagnostic);
+    printDiagnostic(diagnostic);
     diagnostic.category = originalCategory;
     return;
   }
-  printDiagnostic(diagnostic, isArkTSDiagnostic);
+  printDiagnostic(diagnostic);
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file ? diagnostics.file.fileName : (diagnostics as ArkTSDiagnostic).fileName;
-  return ((fileName.indexOf('/oh_modules/') !== -1) || fileName.indexOf('\\oh_modules\\') !== -1);
+  return (diagnostics.file !== undefined) &&
+    ((diagnostics.file.fileName.indexOf('/oh_modules/') !== -1) || diagnostics.file.fileName.indexOf('\\oh_modules\\') !== -1);
 }
 
 function isInSDK(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file ? diagnostics.file.fileName : (diagnostics as ArkTSDiagnostic).fileName;
+  const fileName = diagnostics.file?.fileName;
   if (projectConfig.etsLoaderPath === undefined || fileName === undefined) {
     return false;
   }
