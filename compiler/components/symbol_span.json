@@ -1,6 +1,6 @@
 {
 	"name": "SymbolSpan",
-	"parents": ["Text", "RichEditor"],
+	"parents": ["Text"],
 	"atomic": true,
 	"attrs": ["fontSize", "fontColor", "fontWeight", "effectStrategy", "renderingStrategy"]
 }
