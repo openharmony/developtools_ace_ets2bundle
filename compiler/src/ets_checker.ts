@@ -219,7 +219,8 @@ function checkAtomicserviceAPIVersion(jsDocTags: readonly ts.JSDocTag[], config:
 function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
-  if (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
+  const apiName: string = path.basename(fileName);
+  if (!systemModules.includes(apiName) && (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;

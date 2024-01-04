@@ -40,6 +40,7 @@ const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const allFiles: Set<string> = new Set();
 
 export const appImportModuleCollection: Map<string, Set<string>> = new Map();
+export const kitModules: Map<string, Map<string, Set<string>>> = new Map();
 
 export function apiTransform() {
   const useOSFiles: Set<string> = new Set();
@@ -52,9 +53,10 @@ export function apiTransform() {
     transform(code: string, id: string) {
       const magicString = new MagicString(code);
       if (filter(id)) {
+        const needCoverageInsert: boolean = this.share.projectConfig.needCoverageInsert;
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = false;
+          hiresStatus = needCoverageInsert ? true : false;
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
@@ -76,6 +78,7 @@ export function apiTransform() {
         writeUseOSFiles(useOSFiles);
       }
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+        replaceKitModules();
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }
@@ -186,5 +189,50 @@ function processSystemApiAndLibso(content: string, sourcePath: string, useOSFile
     const libSoValue: string = item1 || item3;
     const libSoKey: string = item2 || item4;
     return `import ${libSoValue} from 'lib${libSoKey}.so'`;
+  });
+}
+
+export function collectKitModules(fileName: string, key: string, value: string): void {
+  key = key.replace('@', '');
+  value = value.replace('@', '');
+  const currentValue: Map<string, Set<string>> = kitModules.get(fileName);
+  if (currentValue) {
+    const currentModuleName: Set<string> = currentValue.get(key);
+    if (currentModuleName && !currentModuleName.has(value)) {
+      currentModuleName.add(value);
+      currentValue.set(key, currentModuleName);
+    } else if (!currentModuleName) {
+      const moduleSet: Set<string> = new Set();
+      currentValue.set(key, moduleSet.add(value));
+    }
+  } else {
+    const moduleMap: Map<string, Set<string>> = new Map();
+    const moduleSet: Set<string> = new Set();
+    moduleMap.set(key, moduleSet.add(value));
+    kitModules.set(fileName, moduleMap);
+  }
+}
+
+function compareKitModules(value: Set<string>, kitKey: string, kitValue: Map<string, Set<string>>): void {
+  const realModules: Set<string> = new Set();
+  value.forEach((element: string) => {
+    if (kitValue.get(element)) {
+      kitValue.get(element).forEach((kitModuleRequest: string) => {
+        realModules.add(kitModuleRequest);
+      });
+    } else {
+      realModules.add(element);
+    }
+  });
+  appImportModuleCollection.set(kitKey, realModules);
+}
+
+function replaceKitModules(): void {
+  appImportModuleCollection.forEach((value: Set<string>, key: string) => {
+    kitModules.forEach((kitValue: Map<string, Set<string>>, kitKey: string) => {
+      if (key === kitKey && value && value.size > 0) {
+        compareKitModules(value, kitKey, kitValue);
+      }
+    });
   });
 }
