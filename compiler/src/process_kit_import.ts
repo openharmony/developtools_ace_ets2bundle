@@ -24,6 +24,7 @@ import {
 import { projectConfig } from '../main';
 import { ESMODULE } from './pre_define';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
+import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 
 /*
 * basic implementation logic:
@@ -183,6 +184,7 @@ class KitInfo {
   private static currentKitInfo: KitInfo = undefined;
   private static currentFileType: FileType = FileType.ETS;
   private static currentKitName: string = '';
+  private static currentSourcefile: string = '';
 
   private symbols: KitSymbols;
   private kitNode: TSModuleDeclaration;
@@ -199,6 +201,7 @@ class KitInfo {
   }
 
   static init(node: ts.SourceFile): void {
+    this.currentSourcefile = node.fileName;
     if (/\.ts$/.test(node.fileName)) {
       this.setFileType(FileType.TS);
     } else {
@@ -222,6 +225,10 @@ class KitInfo {
 
   static isTSFile(): boolean {
     return this.currentFileType === FileType.TS;
+  }
+
+  static getCurrentSourcefile(): string {
+    return this.currentSourcefile;
   }
 
   static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
@@ -372,6 +379,7 @@ class ImportSpecifierKitInfo extends KitInfo {
     const node: ts.ImportDeclaration = this.getKitNode() as ts.ImportDeclaration;
 
     this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
+      collectKitModules(KitInfo.getCurrentSourcefile(), KitInfo.getCurrentKitName(), source);
       specifiers.forEach((specifier: SpecificerInfo) => {
         if (specifier.isDefaultBinding()) {
           this.specifierDefaultName = ts.factory.createIdentifier(specifier.getLocalName());
