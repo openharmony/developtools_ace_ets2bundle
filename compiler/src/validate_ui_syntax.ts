@@ -591,6 +591,12 @@ function validateSendableClass(sourceFileNode: ts.SourceFile, node: ts.ClassDecl
           'are not supported in @Sendable classes.',
           propertyItem.type.getStart(), log, sourceFileNode);
       }
+    } else if (ts.isGetAccessorDeclaration(item) || ts.isSetAccessorDeclaration(item)) {
+      if (!ts.isIdentifier((item as ts.AccessorDeclaration).name)) {
+        addLog(LogType.ERROR,
+          'Accessors with names that are not identifiers are not supported in @Sendable classes.',
+          item.name.getStart(), log, sourceFileNode);
+      }
     }
   });
 }
