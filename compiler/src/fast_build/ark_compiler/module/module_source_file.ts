@@ -306,26 +306,46 @@ export class ModuleSourceFile {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
+    // The data collected by moduleNodeMap represents the node dataset of related types. 
+    // The data is processed based on the AST collected during the transform stage.
     const moduleNodeMap: Map<string, any> =
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
         ROLLUP_DYNAMICIMPORT_NODE);
 
     let hasDynamicImport: boolean = false;
-    for (let nodeSet of moduleNodeMap.values()) {
-      nodeSet.forEach(node => {
+    if (rollupObject.share.projectConfig.needCoverageInsert && moduleInfo.ast.program) {
+      // In coverage instrumentation scenario,
+      // ast from rollup because the data of ast and moduleNodeMap are inconsistent.
+      moduleInfo.ast.program.body.forEach((node) => {
         if (!hasDynamicImport && node.type === ROLLUP_DYNAMICIMPORT_NODE) {
           hasDynamicImport = true;
         }
-        if (node.source) {
-          if (node.source.type === ROLLUP_LITERAL_NODE) {
-            const ohmUrl: string | undefined =
-              this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
-            if (ohmUrl !== undefined) {
-              code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
-            }
+        if ((node.type === ROLLUP_IMPORT_NODE || node.type === ROLLUP_EXPORTNAME_NODE ||
+        node.type === ROLLUP_EXPORTALL_NODE && node.source)) {
+          const ohmUrl: string | undefined = 
+            this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+          if (ohmUrl !== undefined) {
+            code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
           }
         }
       });
+    } else {
+      for (let nodeSet of moduleNodeMap.values()) {
+        nodeSet.forEach(node => {
+          if (!hasDynamicImport && node.type === ROLLUP_DYNAMICIMPORT_NODE) {
+            hasDynamicImport = true;
+          }
+          if (node.source) {
+            if (node.source.type === ROLLUP_LITERAL_NODE) {
+              const ohmUrl: string | undefined =
+                this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+              if (ohmUrl !== undefined) {
+                code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
+              }
+            }
+          }
+        });
+      }
     }
 
     if (hasDynamicImport) {

@@ -20,6 +20,7 @@ import { transformForModule } from './transform';
 import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
 import { checkIfJsImportingArkts } from './check_import_module';
 import { compilerOptions } from '../../ets_checker';
+import { ModuleSourceFile } from './module/module_source_file';
 
 export function genAbc() {
   return {
@@ -36,6 +37,9 @@ export function genAbc() {
       handler() {
         if (compilerOptions.needDoArkTsLinter) {
           checkIfJsImportingArkts(this);
+        }
+        if (this.share.projectConfig.needCoverageInsert) {
+          this.share.ModuleSourceFile = ModuleSourceFile.getSourceFiles();
         }
       }
     },
