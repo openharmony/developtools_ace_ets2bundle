@@ -21,7 +21,7 @@ import {
   FileLog,
   LogType
 } from './utils';
-import { projectConfig, globalProgram } from '../main';
+import { projectConfig } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 
@@ -78,7 +78,7 @@ export function processKitImport(): Function {
     return (node: ts.SourceFile) => {
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
 
-      KitInfo.init(node);
+      KitInfo.init(node, context);
 
       if (projectConfig.processTs === true) {
         if (ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
@@ -183,7 +183,8 @@ class KitInfo {
   private static currentFileType: FileType = FileType.ETS;
   private static currentKitName: string = '';
   private static currentSourcefile: string = '';
-  private static skipType: boolean = true;
+  private static needSkipType: boolean = true;
+  private static tsEmitResolver: any;
 
   private symbols: KitSymbols;
   private kitNode: TSModuleDeclaration;
@@ -199,7 +200,9 @@ class KitInfo {
     this.kitNodeModifier = ts.canHaveDecorators(this.kitNode) ? ts.getModifiers(this.kitNode) : undefined;
   }
 
-  static init(node: ts.SourceFile): void {
+  static init(node: ts.SourceFile, context: ts.TransformationContext): void {
+    // @ts-ignore
+    this.tsEmitResolver = context.getEmitResolver();
     this.currentSourcefile = node.fileName;
     if (/\.ts$/.test(node.fileName)) {
       this.setFileType(FileType.TS);
@@ -208,7 +211,7 @@ class KitInfo {
     }
 
     if (projectConfig.processTs === true && !ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
-      this.skipType = false;
+      this.needSkipType = false;
     }
 
     kitTransformLog.sourceFile = node;
@@ -234,8 +237,47 @@ class KitInfo {
     return this.currentSourcefile;
   }
 
-  static needSkipType(): boolean {
-    return this.skipType;
+  static needSkipTypeSymbolOfNode(node: ts.Node): boolean {
+    if (!this.needSkipType) {
+      return false;
+    }
+
+    // need to skip type symbol
+    const resolver = this.tsEmitResolver;
+    let isTypeSymbol: boolean = false;
+    switch(node.kind) {
+      case ts.SyntaxKind.ImportDeclaration:
+      case ts.SyntaxKind.ImportClause: {
+        const importClause = ts.isImportClause(node) ? node : (node as ts.ImportDeclaration).importClause;
+        if (importClause) {
+          isTypeSymbol = importClause.isTypeOnly;
+          if (importClause.name &&
+            !resolver.isReferencedAliasDeclaration(importClause) && resolver.isReferenced(node)) {
+              isTypeSymbol = true;
+          }
+        }
+        break;
+      }
+      case ts.SyntaxKind.ImportSpecifier: {
+        isTypeSymbol = (node as ts.ImportSpecifier).isTypeOnly;
+        if (!resolver.isReferencedAliasDeclaration(node) && resolver.isReferenced(node)) {
+          isTypeSymbol = true;
+        }
+        break;
+      }
+      case ts.SyntaxKind.ExportDeclaration: {
+        isTypeSymbol = (node as ts.ExportDeclaration).isTypeOnly;
+        break;
+      }
+      case ts.SyntaxKind.ExportSpecifier: {
+        isTypeSymbol = (node as ts.ExportSpecifier).isTypeOnly;
+        if (!resolver.isValueAliasDeclaration(node)) {
+          isTypeSymbol = true;
+        }
+        break;
+      }
+    }
+    return isTypeSymbol;
   }
 
   static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
@@ -252,15 +294,13 @@ class KitInfo {
       }
     }
 
-    if (kitNode.importClause!.name) {
+    if (kitNode.importClause!.name && !this.needSkipTypeSymbolOfNode(kitNode.importClause)) {
       // e.g. import default from "@kit.xxx"
       const defaultName: string = kitNode.importClause.name.text;
       if (!this.currentKitInfo) {
         this.currentKitInfo = new ImportSpecifierKitInfo(kitNode, symbols);
       }
-      if (!needSkipTypeSymbol(kitNode.importClause)) {
-        this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
-      }
+      this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
     }
   }
 
@@ -340,7 +380,7 @@ class KitInfo {
   }
 
   collectSpecifier(element: TSspecifier) {
-    if (needSkipTypeSymbol(this.getKitNode()) || needSkipTypeSymbol(element)) {
+    if (KitInfo.needSkipTypeSymbolOfNode(this.getKitNode()) || KitInfo.needSkipTypeSymbolOfNode(element)) {
       // skip type symbol
       return;
     }
@@ -521,48 +561,6 @@ function getKitDefs(kitModuleRequest: string) {
     }
   }
   return undefined;
-}
-
-function needSkipTypeSymbol(node: ts.Node): boolean {
-  function checkTypeByTSsymbol(): boolean {
-    const originalNode: ts.Node | undefined = ts.getParseTreeNode(node);
-    if (originalNode) {
-      const kitSymbol = (globalProgram.checker as ts.TypeChecker).getSymbolAtLocation(node);
-      // @ts-ignore
-      return !!kitSymbol?.isReferenced;
-    }
-    return false;
-  }
-
-  // function checkValueByTSsymbol(): boolean {
-  //   const originalNode: ts.Node | undefined = ts.getParseTreeNode(node);
-  //   if (originalNode) {
-  //     const kitSymbol = (globalProgram.checker as ts.TypeChecker).getSymbolAtLocation(node);
-  //     return !!kitSymbol && ts.isAliasRe
-  //   }
-  //   return true;
-  // }
-
-  let isTypeSymbol: boolean = false;
-  switch(node.kind) {
-    case ts.SyntaxKind.ImportDeclaration: {
-      isTypeSymbol = needSkipTypeSymbol((node as ts.ImportDeclaration).importClause!);
-    }
-    case ts.SyntaxKind.ExportDeclaration: {
-      isTypeSymbol = (node as ts.ExportDeclaration).isTypeOnly;
-    }
-    case ts.SyntaxKind.ImportClause:
-    case ts.SyntaxKind.ImportSpecifier: {
-      // @ts-ignore
-      isTypeSymbol = node.isTypeOnly! || checkTypeByTSsymbol();
-    }
-    case ts.SyntaxKind.ExportSpecifier: {
-      // @ts-ignore
-      isTypeSymbol = node.isTypeOnly!;
-    }
-  }
-
-  return KitInfo.needSkipType() && isTypeSymbol;
 }
 
 function trimSourceSuffix(source: string): string {
