@@ -21,8 +21,7 @@ import {
   FileLog,
   LogType
 } from './utils';
-import { projectConfig } from '../main';
-import { ESMODULE } from './pre_define';
+import { projectConfig, globalProgram } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 
@@ -81,18 +80,17 @@ export function processKitImport(): Function {
 
       KitInfo.init(node);
 
-      if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
+      if (projectConfig.processTs === true) {
         if (ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
           hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(node.fileName));
           // process KitImport transforming
           return ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
-        } else {
-          // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
-          const processedNode: ts.SourceFile =
-            ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-          ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
-          return node; // this node not used for [writeFile]
         }
+        // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
+        const processedNode: ts.SourceFile =
+          ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
+        ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
+        return node; // this node not used for [writeFile]
       }
       // process KitImport transforming
       return ts.visitEachChild(node, visitor, context);
@@ -185,6 +183,7 @@ class KitInfo {
   private static currentFileType: FileType = FileType.ETS;
   private static currentKitName: string = '';
   private static currentSourcefile: string = '';
+  private static skipType: boolean = true;
 
   private symbols: KitSymbols;
   private kitNode: TSModuleDeclaration;
@@ -206,6 +205,10 @@ class KitInfo {
       this.setFileType(FileType.TS);
     } else {
       this.setFileType(FileType.ETS);
+    }
+
+    if (projectConfig.processTs === true && !ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
+      this.skipType = false;
     }
 
     kitTransformLog.sourceFile = node;
@@ -231,6 +234,10 @@ class KitInfo {
     return this.currentSourcefile;
   }
 
+  static needSkipType(): boolean {
+    return this.skipType;
+  }
+
   static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
     if (kitNode.importClause!.namedBindings) {
       const namedBindings: ts.NamedImportBindings = kitNode.importClause.namedBindings;
@@ -251,7 +258,9 @@ class KitInfo {
       if (!this.currentKitInfo) {
         this.currentKitInfo = new ImportSpecifierKitInfo(kitNode, symbols);
       }
-      this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
+      if (!needSkipTypeSymbol(kitNode.importClause)) {
+        this.currentKitInfo.newSpecificerInfo(defaultName, DEFAULT_BINDINGS, undefined);
+      }
     }
   }
 
@@ -331,6 +340,11 @@ class KitInfo {
   }
 
   collectSpecifier(element: TSspecifier) {
+    if (needSkipTypeSymbol(this.getKitNode()) || needSkipTypeSymbol(element)) {
+      // skip type symbol
+      return;
+    }
+
     const localName: string = element.name.text;
     const importName: string = element.propertyName ? element.propertyName.text : localName;
     this.newSpecificerInfo(localName, importName, element);
@@ -507,6 +521,48 @@ function getKitDefs(kitModuleRequest: string) {
     }
   }
   return undefined;
+}
+
+function needSkipTypeSymbol(node: ts.Node): boolean {
+  function checkTypeByTSsymbol(): boolean {
+    const originalNode: ts.Node | undefined = ts.getParseTreeNode(node);
+    if (originalNode) {
+      const kitSymbol = (globalProgram.checker as ts.TypeChecker).getSymbolAtLocation(node);
+      // @ts-ignore
+      return !!kitSymbol?.isReferenced;
+    }
+    return false;
+  }
+
+  // function checkValueByTSsymbol(): boolean {
+  //   const originalNode: ts.Node | undefined = ts.getParseTreeNode(node);
+  //   if (originalNode) {
+  //     const kitSymbol = (globalProgram.checker as ts.TypeChecker).getSymbolAtLocation(node);
+  //     return !!kitSymbol && ts.isAliasRe
+  //   }
+  //   return true;
+  // }
+
+  let isTypeSymbol: boolean = false;
+  switch(node.kind) {
+    case ts.SyntaxKind.ImportDeclaration: {
+      isTypeSymbol = needSkipTypeSymbol((node as ts.ImportDeclaration).importClause!);
+    }
+    case ts.SyntaxKind.ExportDeclaration: {
+      isTypeSymbol = (node as ts.ExportDeclaration).isTypeOnly;
+    }
+    case ts.SyntaxKind.ImportClause:
+    case ts.SyntaxKind.ImportSpecifier: {
+      // @ts-ignore
+      isTypeSymbol = node.isTypeOnly! || checkTypeByTSsymbol();
+    }
+    case ts.SyntaxKind.ExportSpecifier: {
+      // @ts-ignore
+      isTypeSymbol = node.isTypeOnly!;
+    }
+  }
+
+  return KitInfo.needSkipType() && isTypeSymbol;
 }
 
 function trimSourceSuffix(source: string): string {
