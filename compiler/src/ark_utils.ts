@@ -396,7 +396,6 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache, originalFilePath);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
-    process.exit(FAIL);
   }
 
   if (mixedInfo.sourceMap && !isHarCompiled) {
@@ -460,7 +459,6 @@ export async function writeTerserObfuscatedSourceCode(content: string, filePath:
     result = await minify(content, minifyOptions);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
-    process.exit(FAIL);
   }
 
   if (result.map) {
@@ -493,7 +491,6 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
     result = await minify(content, minifyOptions);
   } catch {
     logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
-    process.exit(FAIL);
   }
 
   fs.writeFileSync(filePath, result.code);
