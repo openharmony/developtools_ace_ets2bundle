@@ -1101,6 +1101,9 @@ function createItemBlock(
       createComponent(node, COMPONENT_POP_FUNCTION).newNode
     );
   } else {
+    if (!partialUpdateConfig.optimizeComponent) {
+      blockNode.unshift(createItemCreation(node, isGlobalBuilder, builderParamsResult));
+    }
     blockNode.push(
       createObservedDeepRender(node, deepItemRenderInnerStatements, itemCreation),
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
