@@ -238,10 +238,10 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
         ts.DiagnosticCategory.Warning, false));
     }
-    if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) {
+    if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE && projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true, undefined, checkAtomicserviceAPIVersion));
+        ts.DiagnosticCategory.Error, true));
     }
   }
 
