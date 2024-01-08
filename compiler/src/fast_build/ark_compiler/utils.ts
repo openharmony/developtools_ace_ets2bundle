@@ -37,17 +37,19 @@ import {
   validateFilePathLength,
   toUnixPath,
   createAndStartEvent,
-  stopEvent,
-  harFilesRecord
+  stopEvent
 } from '../../utils';
-import type { GeneratedFileInHar } from '../../utils';
 import {
   tryMangleFileNameAndWriteFile,
-  writeObfuscatedSourceCode
+  writeObfuscatedSourceCode,
+  cleanUpUtilsObjects
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { newSourceMaps } from './transform';
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../process_kit_import';
+import { cleanSourceMapObject } from './transform';
+import { cleanUpKitImportObjects } from '../../process_kit_import';
+import { cleanModuleMode } from './generate_module_abc';
 
 export function needAotCompiler(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
@@ -232,6 +234,14 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
   updatedGenerator['_mappings']['_array'] = newMappingList;
   return JSON.parse(updatedGenerator.toString());
 }
+
+export function cleanUpObjects(): void {
+  cleanSourceMapObject();
+  cleanUpUtilsObjects();
+  cleanUpKitImportObjects();
+  cleanModuleMode();
+}
+
 export const utUtils = {
   writeFileContent
 }

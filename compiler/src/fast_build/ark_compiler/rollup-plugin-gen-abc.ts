@@ -17,6 +17,7 @@ import { initArkProjectConfig } from './common/process_ark_config';
 import { generateBundleAbc } from './generate_bundle_abc';
 import { generateModuleAbc } from './generate_module_abc';
 import { transformForModule } from './transform';
+import { cleanUpObjects } from './utils';
 import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
 import { checkIfJsImportingArkts } from './check_import_module';
 import { compilerOptions } from '../../ets_checker';
@@ -44,6 +45,7 @@ export function genAbc() {
       }
     },
     buildEnd: generateModuleAbc,
-    generateBundle: generateBundleAbc
+    generateBundle: generateBundleAbc,
+    cleanUp: cleanUpObjects
   };
 }

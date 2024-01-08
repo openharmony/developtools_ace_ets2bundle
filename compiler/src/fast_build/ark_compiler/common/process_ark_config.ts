@@ -23,13 +23,8 @@ import {
 import {
   TS2ABC,
   ESMODULE,
-  AOT_FULL,
-  AOT_PARTIAL,
-  AOT_TYPE,
-  AOT_PROFILE_SUFFIX,
   NODE_MODULES,
   OH_MODULES,
-  FAIL,
   OBFUSCATION_TOOL
 } from './ark_define';
 import { isAotMode, isDebug } from '../utils';
@@ -59,21 +54,29 @@ type ArkConfig = {
   isDebug: boolean;
 };
 
-let arkConfig: ArkConfig = {};
 export function initArkConfig(projectConfig: any) {
   let arkRootPath: string = path.join(__dirname, '..', '..', '..', '..', 'bin', 'ark');
   if (projectConfig.arkFrontendDir) {
     arkRootPath = projectConfig.arkFrontendDir;
   }
+  let arkConfig: ArkConfig = {
+    arkRootPath: '',
+    ts2abcPath: '',
+    js2abcPath: '',
+    mergeAbcPath: '',
+    es2abcPath: '',
+    aotCompilerPath: '',
+    nodePath: '',
+    isDebug: false
+  };
   arkConfig.nodePath = 'node';
   if (projectConfig.nodeJs) {
     arkConfig.nodePath = projectConfig.nodePath;
   }
-  processPlatformInfo(arkRootPath);
-  processCompatibleVersion(projectConfig, arkRootPath);
   arkConfig.isDebug = isDebug(projectConfig);
   arkConfig.arkRootPath = arkRootPath;
-
+  processPlatformInfo(arkConfig);
+  processCompatibleVersion(projectConfig, arkConfig);
   return arkConfig;
 }
 
@@ -155,7 +158,7 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
   }
   let projectAndLibs: {projectAndLibsReservedProperties: string[]; libExportNames: string[]};
   if (mergedObConfig.options.enablePropertyObfuscation || mergedObConfig.options.enableExportObfuscation) {
-    projectAndLibs = readProjectProperties([projectConfig.modulePath], 
+    projectAndLibs = readProjectProperties([projectConfig.modulePath],
       {
         mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation},
         mExportObfuscation: mergedObConfig.options.enableExportObfuscation
@@ -282,8 +285,8 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
   return arkObfuscator;
 }
 
-function processPlatformInfo(arkRootPath: string): void {
-  const arkPlatformPath: string = getArkBuildDir(arkRootPath);
+function processPlatformInfo(arkConfig: ArkConfig): void {
+    const arkPlatformPath: string = getArkBuildDir(arkConfig.arkRootPath);
   if (isWindows()) {
     arkConfig.es2abcPath = path.join(arkPlatformPath, 'bin', 'es2abc.exe');
     arkConfig.ts2abcPath = path.join(arkPlatformPath, 'src', 'index.js');
@@ -302,8 +305,8 @@ function processPlatformInfo(arkRootPath: string): void {
   }
 }
 
-function processCompatibleVersion(projectConfig: any, arkRootPath: string) {
-  const platformPath: string = getArkBuildDir(arkRootPath);
+function processCompatibleVersion(projectConfig: object, arkConfig: ArkConfig): void {
+  const platformPath: string = getArkBuildDir(arkConfig.arkRootPath);
   if (projectConfig.minPlatformVersion && projectConfig.minPlatformVersion.toString() === '8') {
     // use ts2abc to compile apps with 'CompatibleSdkVersion' set to 8
     arkConfig.ts2abcPath = path.join(platformPath, 'legacy_api8', 'src', 'index.js');
