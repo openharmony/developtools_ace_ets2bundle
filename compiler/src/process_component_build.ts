@@ -635,11 +635,6 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   processDebug(node, nameResult, newStatements);
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   const componentName: string = res.identifierNode.getText();
-  if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(componentName) &&
-    etsComponentResult.etsComponentNode.arguments && etsComponentResult.etsComponentNode.arguments.length) {
-    etsComponentResult.etsComponentNode = processDollarEtsComponent(etsComponentResult.etsComponentNode,
-      componentName);
-  }
   let judgeIdStart: number;
   if (partialUpdateConfig.partialUpdateMode && idName) {
     judgeIdStart = innerCompStatements.length;
@@ -2315,21 +2310,6 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
     : false;
 }
 
-function processDollarEtsComponent(node: ts.EtsComponentExpression, name: string
-): ts.EtsComponentExpression {
-  node.arguments.forEach((item: ts.Node, index: number) => {
-    if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
-      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number) => {
-        if (isHaveDoubleDollar(param, name)) {
-          const varExp: ts.Expression = updateArgumentFor$$(param.initializer);
-          node.arguments[index].properties[paramIndex].initializer = generateObjectFor$$(varExp);
-        }
-      });
-    }
-  });
-  return node;
-}
-
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
@@ -2772,9 +2752,36 @@ function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
   return false;
 }
 
+function processDollarEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, name: string): ts.Expression[] {
+  const arr: ts.Expression[] = [];
+  argumentsArr.forEach((item: ts.Expression, index: number) => {
+    if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+      const properties: ts.PropertyAssignment[] = [];
+      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number) => {
+        if (isHaveDoubleDollar(param, name)) {
+          const varExp: ts.Expression = updateArgumentFor$$(param.initializer);
+          properties.push(ts.factory.updatePropertyAssignment(param, param.name, generateObjectFor$$(varExp)));
+        } else {
+          properties.push(param);
+        }
+      });
+      arr.push(ts.factory.updateObjectLiteralExpression(item, properties));
+    } else {
+      arr.push(item);
+    }
+  });
+  return arr;
+}
+
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>): ts.CallExpression {
   if (argumentsArr && argumentsArr.length) {
+    const compName: string = node.escapedText.toString();
+    const type: string = attrNode.escapedText.toString();
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
+      // @ts-ignore
+      argumentsArr = processDollarEtsComponent(argumentsArr, compName);
+    }
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);
     }
