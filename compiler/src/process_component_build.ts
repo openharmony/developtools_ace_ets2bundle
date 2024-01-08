@@ -578,7 +578,8 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
         [ts.factory.createThis()]
       ),
       undefined,
-      !projectConfig.optLazyForEach ? node.expression.arguments :
+      !(projectConfig.optLazyForEach && storedFileInfo.processLazyForEach &&
+        storedFileInfo.lazyForEachInfo.forEachParameters) ? node.expression.arguments :
         [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
     ));
   }
@@ -795,7 +796,7 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
     if (res.isButton) {
       checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
-      if (projectConfig.isPreview) {
+      if (projectConfig.isPreview || projectConfig.enableDebugLine) {
         newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
       } else {
         newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
