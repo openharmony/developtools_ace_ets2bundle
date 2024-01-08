@@ -82,6 +82,12 @@ export function apiTransform() {
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }
+    },
+    cleanUp() {
+      allFiles.clear();
+      appImportModuleCollection.clear();
+      useOSFiles.clear();
+      kitModules.clear();
     }
   };
 }
