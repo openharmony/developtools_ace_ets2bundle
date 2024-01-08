@@ -24,6 +24,9 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../utils';
+import type { ModuleMode } from './module/module_mode';
+
+let moduleMode: ModuleMode = null;
 
 export async function generateModuleAbc(error) {
   const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'buildEnd');
@@ -47,15 +50,27 @@ function generateAbc(rollupObject: any, parentEvent: any) {
   if (rollupObject.share.projectConfig.watchMode !== 'true') {
     const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);
     moduleBuildMode.generateAbc(rollupObject, eventGenerateAbc);
+    moduleMode = moduleBuildMode;
   } else if (rollupObject.share.arkProjectConfig.hotReload) {
     const moduleHotreloadMode: ModuleHotreloadMode = new ModuleHotreloadMode(rollupObject);
     moduleHotreloadMode.generateAbc(rollupObject, eventGenerateAbc);
+    moduleMode = moduleHotreloadMode;
   } else if (rollupObject.share.arkProjectConfig.hotFix) {
     const moduleHotfixMode: ModuleHotfixMode = new ModuleHotfixMode(rollupObject);
     moduleHotfixMode.generateAbc(rollupObject, eventGenerateAbc);
+    moduleMode = moduleHotfixMode;
   } else {
     const modulePreviewMode: ModulePreviewMode = new ModulePreviewMode(rollupObject);
     modulePreviewMode.generateAbc(rollupObject, eventGenerateAbc);
+    moduleMode = modulePreviewMode;
   }
   stopEvent(eventGenerateAbc);
+}
+
+export function cleanModuleMode():void {
+  if (moduleMode) {
+    moduleMode.triggerAsync = null;
+    moduleMode.triggerEndSignal = null;
+    moduleMode = null;
+  }
 }

@@ -43,7 +43,7 @@ const KIT_PREFIX = '@kit.';
 
 /*
 * This API is the TSC Transformer for transforming `KitImport` into `OhosImport`
-* e.g. 
+* e.g.
 *    ```
 *      import { ability, ErrorCode } from '@kit.AbilityKit'
 *      --->
@@ -125,7 +125,7 @@ class SpecificerInfo {
   private importName: string;
   private symbol: KitSymbol;
   private renamed: boolean;
-  
+
   private originElement: TSspecifier | undefined;
 
   constructor(localName: string, importName: string, symbol: KitSymbol, originElement: TSspecifier | undefined) {
@@ -360,7 +360,7 @@ class KitInfo {
   getOhosImportNodes(): TSModuleDeclaration[] {
     return this.ohosImportNodes;
   }
-  
+
   newSpecificerInfo(localName: string, importName: string, originElement: TSspecifier | undefined): void {
     const symbol: KitSymbol | undefined = this.symbols[importName];
     if (symbol) {
@@ -565,4 +565,8 @@ function getKitDefs(kitModuleRequest: string) {
 
 function trimSourceSuffix(source: string): string {
   return source.replace(/\.d.[e]?ts$/, '');
+}
+
+export function cleanUpKitImportObjects(): void {
+  kitTransformLog.cleanUp();
 }

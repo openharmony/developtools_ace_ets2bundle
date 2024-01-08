@@ -28,8 +28,6 @@ import { createHash } from 'crypto';
 import {
   AUXILIARY,
   EXTNAME_ETS,
-  EXTNAME_CJS,
-  EXTNAME_MJS,
   EXTNAME_JS,
   MAIN,
   FAIL,
@@ -69,7 +67,7 @@ export interface LogInfo {
 export const repeatLog: Map<string, LogInfo> = new Map();
 
 export class FileLog {
-  private _sourceFile: ts.SourceFile;
+  private _sourceFile: ts.SourceFile | undefined;
   private _errors: LogInfo[] = [];
 
   public get sourceFile() {
@@ -86,6 +84,11 @@ export class FileLog {
 
   public set errors(newValue: LogInfo[]) {
     this._errors = newValue;
+  }
+
+  public cleanUp(): void {
+    this._sourceFile = undefined;
+    this._errors = [];
   }
 }
 
