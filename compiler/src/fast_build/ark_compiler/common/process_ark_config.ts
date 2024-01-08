@@ -286,7 +286,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
 }
 
 function processPlatformInfo(arkConfig: ArkConfig): void {
-    const arkPlatformPath: string = getArkBuildDir(arkConfig.arkRootPath);
+  const arkPlatformPath: string = getArkBuildDir(arkConfig.arkRootPath);
   if (isWindows()) {
     arkConfig.es2abcPath = path.join(arkPlatformPath, 'bin', 'es2abc.exe');
     arkConfig.ts2abcPath = path.join(arkPlatformPath, 'src', 'index.js');

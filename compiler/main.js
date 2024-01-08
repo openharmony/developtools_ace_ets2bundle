@@ -48,8 +48,8 @@ configure({
 });
 const logger = getLogger('ETS');
 
-const staticPreviewPage = process.env.aceStaticPreview;
-const aceCompileMode = process.env.aceCompileMode || 'page';
+let staticPreviewPage = process.env.aceStaticPreview;
+let aceCompileMode = process.env.aceCompileMode || 'page';
 const abilityConfig = {
   abilityType: process.env.abilityType || 'page',
   abilityEntryFile: null,
@@ -115,6 +115,7 @@ function initProjectConfig(projectConfig) {
 
 function loadEntryObj(projectConfig) {
   let manifest = {};
+  initMain();
   initProjectConfig(projectConfig);
   loadBuildJson();
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
@@ -891,6 +892,60 @@ const partialUpdateConfig = {
   arkTSVersion: undefined,
 };
 
+function resetMain() {
+  staticPreviewPage = undefined;
+  aceCompileMode = 'page';
+  resetAbilityConfig();
+  resetProjectConfig();
+  resources.app = {};
+  abilityPagesFullPath.length = 0;
+  aceBuildJson = {};
+  resetGlobalProgram();
+  partialUpdateConfig.builderCheck = true;
+}
+
+function resetAbilityConfig() {
+  abilityConfig.abilityType = 'page';
+  abilityConfig.abilityEntryFile = null;
+  abilityConfig.projectAbilityPath = [];
+  abilityConfig.testRunnerFile = [];
+}
+
+function resetProjectConfig() {
+  projectConfig.entryObj = {};
+  projectConfig.cardObj = {};
+  projectConfig.compileHar = false;
+  projectConfig.compileShared = false;
+  projectConfig.packageDir = 'node_modules';
+  projectConfig.packageJson = 'package.json';
+  projectConfig.packageManagerType = 'npm';
+  projectConfig.cardEntryObj = {};
+  projectConfig.compilerTypes = [];
+  projectConfig.optLazyForEach = false;
+  const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
+    'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
+    'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
+    'sdkInfo', 'checkEntry', 'obfuscateHarType', 'isCrossplatform', 'enableDebugLine', 'bundleType'
+  ];
+  for (let key in projectConfig) {
+    if (props.includes(key)) {
+      projectConfig[key] = undefined;
+    }
+  }
+}
+
+function resetGlobalProgram() {
+  globalProgram.builderProgram = null;
+  globalProgram.program = null;
+  globalProgram.checker = null;
+}
+
+function initMain() {
+  staticPreviewPage = process.env.aceStaticPreview;
+  aceCompileMode = process.env.aceCompileMode || 'page';
+  abilityConfig.abilityType = process.env.abilityType || 'page';
+}
+
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
@@ -914,3 +969,4 @@ exports.extendSdkConfigs = extendSdkConfigs;
 exports.sdkConfigs = sdkConfigs;
 exports.sdkConfigPrefix = sdkConfigPrefix;
 exports.ohosSystemModulePaths = ohosSystemModulePaths;
+exports.resetMain = resetMain;

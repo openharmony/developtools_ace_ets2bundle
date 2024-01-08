@@ -83,7 +83,7 @@ export function apiTransform() {
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }
     },
-    cleanUp() {
+    cleanUp(): void {
       allFiles.clear();
       appImportModuleCollection.clear();
       useOSFiles.clear();

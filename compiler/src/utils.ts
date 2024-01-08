@@ -177,7 +177,7 @@ class ComponentInfo {
   }
 }
 
-export const componentInfo: ComponentInfo = new ComponentInfo();
+export let componentInfo: ComponentInfo = new ComponentInfo();
 
 export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
   ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,
@@ -865,7 +865,7 @@ class ProcessFileInfo {
   }
 }
 
-export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
+export let storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
 
 export interface fileInfo extends tsFileInfo {
   hasEntry: boolean; // Has @Entry decorator or not
@@ -1058,4 +1058,10 @@ interface CompileEvent {
   startAsyncEvent(time: number): CompileEvent;
   stopAsyncEvent(state?: CompileEventState, TIME?: number): void;
   createSubEvent(name: string): CompileEvent;
+}
+
+export function resetUtils(): void {
+  componentInfo = new ComponentInfo();
+  harFilesRecord.clear();
+  storedFileInfo = new ProcessFileInfo();
 }
