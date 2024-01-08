@@ -317,7 +317,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     )
   ];
   const arrowBolck: ts.Statement[] = [
-    projectConfig.optLazyForEach ? createCollectElmtIdNode() : undefined,
+    projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
       isBuilder, isRecycleComponent, componentAttrInfo)
   ];
