@@ -257,7 +257,7 @@ interface extendInfo {
   compName: string
 }
 
-export const files: ts.MapLike<{ version: number }> = {};
+export let files: ts.MapLike<{ version: number }> = {};
 
 function createHash(str: string): string {
   const hash = crypto.createHash('sha256');
@@ -390,7 +390,6 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
   globalProgram.program = globalProgram.builderProgram.getProgram();
 
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
-  collectSourceFilesMap(globalProgram.program);
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime);
   }
@@ -1224,4 +1223,17 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+}
+
+export function resetEtsCheck(): void {
+  files = {};
+  cache = {};
+  languageService = null;
+  allResolvedModules.clear();
+  checkerResult.count = 0;
+  warnCheckerResult.count = 0;
+  resolvedModulesCache.clear();
+  dollarCollection.clear();
+  decoratorParamsCollection.clear();
+  extendCollection.clear();
 }
