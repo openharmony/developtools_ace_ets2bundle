@@ -15,6 +15,7 @@
 
 import { ModuleSourceFile } from './module/module_source_file';
 import { isJsSourceFile } from './utils';
+import { toUnixPath } from '../../utils';
 import { compilerOptions } from '../../ets_checker';
 import {
   EXTNAME_D_ETS,
@@ -26,7 +27,7 @@ import {
 
 export function checkIfJsImportingArkts(rollupObject: any): void {
   ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
-    const id: string = sourceFile.getModuleId();
+    const id: string = toUnixPath(sourceFile.getModuleId());
     if (isJsSourceFile(id) && id.indexOf('/oh_modules/') === -1) {
       const importMap = rollupObject.getModuleInfo(id).importedIdMaps;
       Object.values(importMap).forEach((requestFile: string) => {
