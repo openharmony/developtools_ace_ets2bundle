@@ -94,3 +94,7 @@ function transformJsByBabelPlugin(code: string, parentEvent: any): any {
   stopEvent(eventTransformByBabel);
   return transformed;
 }
+
+export function cleanSourceMapObject(): void {
+  newSourceMaps = {};
+}

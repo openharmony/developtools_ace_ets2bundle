@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import ts, { NodeArray } from 'typescript';
+import ts from 'typescript';
 import { projectConfig } from '../../../main';
 import { DECORATOR_SUFFIX } from '../../pre_define';
 

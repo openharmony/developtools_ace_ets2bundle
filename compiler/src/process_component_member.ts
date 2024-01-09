@@ -1277,3 +1277,7 @@ function isObserved(type: ts.Type): boolean {
     });
   }
 }
+
+export function resetProcessComponentMember(): void {
+  decoratorParamSet.clear();
+}

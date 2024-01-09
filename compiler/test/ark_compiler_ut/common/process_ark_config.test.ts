@@ -279,12 +279,12 @@ mocha.describe('test process_ark_config file api', function () {
   mocha.it('4-1: test processCompatibleVersion under build debug', function () {
     this.rollup.build();
     const arkConfig = initArkConfig(this.rollup.share.projectConfig);
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
 
     this.rollup.share.projectConfig.minPlatformVersion = 8;
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
   });
@@ -292,12 +292,12 @@ mocha.describe('test process_ark_config file api', function () {
   mocha.it('4-2: test processCompatibleVersion under build release', function () {
     this.rollup.build(RELEASE);
     const arkConfig = initArkConfig(this.rollup.share.projectConfig);
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
 
     this.rollup.share.projectConfig.minPlatformVersion = 8;
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
   });
@@ -305,12 +305,12 @@ mocha.describe('test process_ark_config file api', function () {
   mocha.it('4-3: test processCompatibleVersion under preview debug', function () {
     this.rollup.preview();
     const arkConfig = initArkConfig(this.rollup.share.projectConfig);
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
 
     this.rollup.share.projectConfig.minPlatformVersion = 8;
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
   });
@@ -318,12 +318,12 @@ mocha.describe('test process_ark_config file api', function () {
   mocha.it('4-4: test processCompatibleVersion under hot reload debug', function () {
     this.rollup.hotReload();
     const arkConfig = initArkConfig(this.rollup.share.projectConfig);
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === undefined).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(TS2ABC_PATH) > 0).to.be.true;
 
     this.rollup.share.projectConfig.minPlatformVersion = 8;
-    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig.arkRootPath);
+    utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
   });

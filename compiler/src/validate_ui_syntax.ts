@@ -1429,3 +1429,23 @@ export function getLocalStorageCollection(componentName: string, collection: Set
     }
   }
 }
+
+export function resetValidateUiSyntax(): void {
+  observedClassCollection.clear();
+  enumCollection.clear();
+  classMethodCollection.clear();
+  dollarCollection.clear();
+  stateCollection.clear();
+  regularCollection.clear();
+  storagePropCollection.clear();
+  storageLinkCollection.clear();
+  provideCollection.clear();
+  consumeCollection.clear();
+  builderParamObjectCollection.clear();
+  localStorageLinkCollection.clear();
+  localStoragePropCollection.clear();
+  isStaticViewCollection.clear();
+  useOSFiles.clear();
+  sourcemapNamesCollection.clear();
+  originalImportNamesMap.clear();
+}
