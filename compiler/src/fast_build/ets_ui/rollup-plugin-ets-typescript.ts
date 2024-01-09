@@ -40,7 +40,8 @@ import {
   CompilationTimeStatistics,
   getHookEventFactory,
   genLoaderOutPathOfHar,
-  harFilesRecord
+  harFilesRecord,
+  resetUtils
 } from '../../utils';
 import {
   preprocessExtend,
@@ -49,39 +50,46 @@ import {
   propertyCollection,
   linkCollection,
   resetComponentCollection,
-  componentCollection
+  componentCollection,
+  resetValidateUiSyntax
 } from '../../validate_ui_syntax';
 import {
   processUISyntax,
   resetLog,
-  transformLog
+  transformLog,
+  resetProcessUiSyntax
 } from '../../process_ui_syntax';
 import {
   projectConfig,
   abilityPagesFullPath,
-  globalProgram
+  globalProgram,
+  resetMain
 } from '../../../main';
 import {
   appComponentCollection,
   compilerOptions as etsCheckerCompilerOptions,
   resolveModuleNames,
-  resolveTypeReferenceDirectives
+  resolveTypeReferenceDirectives,
+  resetEtsCheck
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
-  INNER_CUSTOM_BUILDER_METHOD
+  INNER_CUSTOM_BUILDER_METHOD,
+  resetComponentMap
 } from '../../component_map';
 import {
   kitTransformLog,
   processKitImport
 } from '../../process_kit_import';
+import { resetCompileInfo } from '../../compile_info';
+import { resetProcessComponentMember } from '../../process_component_member';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
 let shouldDisableCache: boolean = false;
 let shouldEnableDebugLine: boolean = false;
-const disableCacheOptions = {
+let disableCacheOptions = {
   bundleName: 'default',
   entryModuleName: 'default',
   runtimeOS: 'default',
@@ -205,6 +213,17 @@ export function etsTransform() {
       }
       storedFileInfo.clearCollectedInfo(this.cache);
       this.cache.set('transformCacheFiles', storedFileInfo.transformCacheFiles);
+    },
+    cleanUp(): void {
+      resetMain();
+      resetCompileInfo();
+      resetComponentMap();
+      resetEtsCheck();
+      resetEtsTransform();
+      resetProcessComponentMember();
+      resetProcessUiSyntax();
+      resetUtils();
+      resetValidateUiSyntax();
     }
   };
 }
@@ -398,4 +417,15 @@ function resetCollection() {
   propertyCollection.clear();
   linkCollection.clear();
   resetComponentCollection();
+}
+
+function resetEtsTransform(): void {
+  shouldEnableDebugLine = false;
+  disableCacheOptions = {
+    bundleName: 'default',
+    entryModuleName: 'default',
+    runtimeOS: 'default',
+    resourceTableHash: 'default',
+    etsLoaderVersion: 'default'
+  };
 }

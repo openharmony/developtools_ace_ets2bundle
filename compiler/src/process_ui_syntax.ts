@@ -134,7 +134,7 @@ import { createCustomComponentNewExpression, createViewCreate } from './process_
 import { assignComponentParams } from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 
-export const transformLog: FileLog = new FileLog();
+export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: {params: string[]} = {params: []};
@@ -1748,4 +1748,9 @@ export function validatorCard(log: any[], type: number, pos: number,
     }
     log.push(logInfo);
   }
+}
+
+export function resetProcessUiSyntax(): void {
+  transformLog = new FileLog();
+  contextGlobal = undefined;
 }

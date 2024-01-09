@@ -626,6 +626,11 @@ export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir
   if (printNameCache && printNameCache.length > 0) {
     fs.writeFileSync(printNameCache, writeContent);
   }
+  renamePropertyModule.globalMangledTable?.clear();
+  renamePropertyModule.historyMangledTable?.clear();
+  renameFileNameModule.globalFileNameMangledTable?.clear();
+  renameFileNameModule.globalFileNameMangledTable?.clear();
+  ApiExtractor.mPropertySet?.clear();
 }
 
 export function generateConsumerObConfigFile(obfuscationOptions: any, logger: any) {

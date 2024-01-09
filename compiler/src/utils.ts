@@ -28,8 +28,6 @@ import { createHash } from 'crypto';
 import {
   AUXILIARY,
   EXTNAME_ETS,
-  EXTNAME_CJS,
-  EXTNAME_MJS,
   EXTNAME_JS,
   MAIN,
   FAIL,
@@ -69,7 +67,7 @@ export interface LogInfo {
 export const repeatLog: Map<string, LogInfo> = new Map();
 
 export class FileLog {
-  private _sourceFile: ts.SourceFile;
+  private _sourceFile: ts.SourceFile | undefined;
   private _errors: LogInfo[] = [];
 
   public get sourceFile() {
@@ -86,6 +84,11 @@ export class FileLog {
 
   public set errors(newValue: LogInfo[]) {
     this._errors = newValue;
+  }
+
+  public cleanUp(): void {
+    this._sourceFile = undefined;
+    this._errors = [];
   }
 }
 
@@ -174,7 +177,7 @@ class ComponentInfo {
   }
 }
 
-export const componentInfo: ComponentInfo = new ComponentInfo();
+export let componentInfo: ComponentInfo = new ComponentInfo();
 
 export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
   ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,
@@ -862,7 +865,7 @@ class ProcessFileInfo {
   }
 }
 
-export const storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
+export let storedFileInfo: ProcessFileInfo = new ProcessFileInfo();
 
 export interface fileInfo extends tsFileInfo {
   hasEntry: boolean; // Has @Entry decorator or not
@@ -1055,4 +1058,10 @@ interface CompileEvent {
   startAsyncEvent(time: number): CompileEvent;
   stopAsyncEvent(state?: CompileEventState, TIME?: number): void;
   createSubEvent(name: string): CompileEvent;
+}
+
+export function resetUtils(): void {
+  componentInfo = new ComponentInfo();
+  harFilesRecord.clear();
+  storedFileInfo = new ProcessFileInfo();
 }

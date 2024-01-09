@@ -499,3 +499,6 @@ function handleFinishModules(modules, callback) {
   }
 }
 
+export function resetCompileInfo(): void {
+  props.length = 0;
+}

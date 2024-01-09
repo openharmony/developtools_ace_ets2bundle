@@ -35,7 +35,6 @@ import {
 } from '../../../utils';
 
 let isFirstBuild: boolean = true;
-let hotReloadSourceMap: Object = {};
 
 export class ModuleHotreloadMode extends ModuleMode {
   symbolMapFilePath: string;
@@ -110,7 +109,6 @@ export class ModuleHotreloadMode extends ModuleMode {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
-    
     this.updateSourceMapFromFileList(changedFileList, parentEvent);
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
@@ -122,6 +120,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
     const relativeProjectPath: string = this.projectConfig.projectPath.slice(
       this.projectConfig.projectRootPath.length + path.sep.length);
+    let hotReloadSourceMap: Object = {};
     for (const file of fileList) {
       const sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
       validateFilePathLength(sourceMapPath, this.logger);

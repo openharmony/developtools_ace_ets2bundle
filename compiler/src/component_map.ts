@@ -151,3 +151,9 @@ export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'Me
     }
   });
 })();
+
+export function resetComponentMap(): void {
+  ID_ATTRS.clear();
+  EXTEND_ATTRIBUTE.clear();
+  STYLES_ATTRIBUTE.clear();
+}

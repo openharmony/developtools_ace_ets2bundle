@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { ArkObfuscator, getMapFromJson } from "arkguard"
+import { getMapFromJson } from "arkguard"
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -58,7 +58,7 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { mangleFilePath, MergedConfig } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { getRealModulePath, type ResolveModuleInfo } from './ets_checker';
 
 const red: string = '\u001b[31m';
@@ -365,7 +365,7 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(sourcePath);
 
   if (!genFileInHar) {
-    genFileInHar = {sourcePath: sourcePath}; 
+    genFileInHar = {sourcePath: sourcePath};
   }
   if (!genFileInHar.sourceCachePath) {
     genFileInHar.sourceCachePath = toUnixPath(filePath);
@@ -374,7 +374,6 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
 
   fs.writeFileSync(filePath, content);
 }
-
 
 export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: any, projectConfig: any,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
@@ -682,6 +681,12 @@ function checkBundleVersion(bundleVersion: string): boolean {
     }
   }
   return false;
+}
+
+export function cleanUpUtilsObjects(): void {
+  newSourceMaps = {};
+  identifierCaches = {};
+  packageCollection.clear();
 }
 
 const CONSTANT_STEP_0: number = 0;
