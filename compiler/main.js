@@ -69,6 +69,7 @@ let defaultSdkConfigs = [];
 const extendSdkConfigs = [];
 let sdkConfigPrefix = 'ohos|system|kit';
 let ohosSystemModulePaths = [];
+let allModulesPaths = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
@@ -601,6 +602,7 @@ function filterWorker(workerPath) {
       readFile(systemModulesPath, modulePaths);
       systemModules.push(...fs.readdirSync(systemModulesPath));
       ohosSystemModulePaths.push(...modulePaths);
+      allModulesPaths.push(...modulePaths);
     }
   });
   defaultSdkConfigs = [
@@ -640,8 +642,11 @@ function collectExternalModules(sdkPaths) {
       const resolvePath = path.resolve(sdkPath, element);
       resolveApiPathArray.push(resolvePath);
       if (fs.existsSync(resolvePath)) {
+        const extrenalModulePaths = [];
         globalModulePaths.push(resolvePath);
         systemModules.push(...fs.readdirSync(resolvePath));
+        readFile(resolvePath, extrenalModulePaths);
+        allModulesPaths.push(...extrenalModulePaths);
       }
     });
     sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
@@ -970,3 +975,4 @@ exports.sdkConfigs = sdkConfigs;
 exports.sdkConfigPrefix = sdkConfigPrefix;
 exports.ohosSystemModulePaths = ohosSystemModulePaths;
 exports.resetMain = resetMain;
+exports.allModulesPaths = allModulesPaths;
