@@ -25,7 +25,7 @@ import {
   globalProgram,
   sdkConfigs,
   sdkConfigPrefix,
-  ohosSystemModulePaths,
+  allModulesPaths,
   partialUpdateConfig
 } from '../main';
 import {
@@ -220,7 +220,7 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   const apiName: string = path.basename(fileName);
-  if (!systemModules.includes(apiName) && (ohosSystemModulePaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
+  if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
       needCheckResult = true;
