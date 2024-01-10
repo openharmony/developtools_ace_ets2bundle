@@ -421,6 +421,8 @@ function resetCollection() {
 
 function resetEtsTransform(): void {
   shouldEnableDebugLine = false;
+  projectConfig.ignoreWarning = false;
+  projectConfig.widgetCompile = false;
   disableCacheOptions = {
     bundleName: 'default',
     entryModuleName: 'default',
