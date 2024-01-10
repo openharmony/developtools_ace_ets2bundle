@@ -276,5 +276,9 @@
     "checkNonspecificParents": {
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
         "type": "ERROR"
+    },
+    "@Track": {
+        "message": "The '@Track' decorator can only be used in 'class'.",
+        "type": "ERROR"
     }
 }
