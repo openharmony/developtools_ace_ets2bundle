@@ -47,13 +47,13 @@ module.exports = function resultProcess(source: string, map: any): void {
       resetLog();
     }
   }
-  if (projectConfig.compileMode == JSBUNDLE &&
+  if (projectConfig.compileMode === JSBUNDLE &&
     [abilityConfig.abilityEntryFile].concat(abilityConfig.projectAbilityPath).concat(abilityConfig.testRunnerFile).includes(this.resourcePath)) {
     source = source.replace(/exports\.default/, 'globalThis.exports.default');
   }
 
-  if (projectConfig.compileMode == ESMODULE && projectConfig.processTs === false
-    && process.env.compilerType && process.env.compilerType === 'ark' && !projectConfig.compileHar) {
+  if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === false &&
+    process.env.compilerType && process.env.compilerType === 'ark' && !projectConfig.compileHar) {
     generateSourceFilesToTemporary(this.resourcePath, source, map, projectConfig, logger);
   }
 
