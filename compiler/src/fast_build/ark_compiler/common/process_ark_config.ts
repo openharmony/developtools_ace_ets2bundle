@@ -157,20 +157,22 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
     return;
   }
   let projectAndLibs: {projectAndLibsReservedProperties: string[]; libExportNames: string[]};
-  if (mergedObConfig.options.enablePropertyObfuscation || mergedObConfig.options.enableExportObfuscation) {
-    projectAndLibs = readProjectProperties([projectConfig.modulePath],
-      {
-        mNameObfuscation: {mReservedProperties: [], mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation},
-        mExportObfuscation: mergedObConfig.options.enableExportObfuscation
-      }, true);
-    if (mergedObConfig.options.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
-      mergedObConfig.reservedPropertyNames.push(...(projectAndLibs.projectAndLibsReservedProperties));
-    }
-    if (mergedObConfig.options.enableExportObfuscation && projectAndLibs.libExportNames) {
-      mergedObConfig.reservedNames.push(...(projectAndLibs.libExportNames));
-    }
+  projectAndLibs = readProjectProperties([projectConfig.modulePath],
+    {
+      mNameObfuscation: {
+        mEnable: true,
+        mReservedProperties: [],
+        mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
+        mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
+      },
+      mExportObfuscation: mergedObConfig.options.enableExportObfuscation
+    }, true);
+  if (mergedObConfig.options.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
+    mergedObConfig.reservedPropertyNames.push(...(projectAndLibs.projectAndLibsReservedProperties));
   }
-
+  if (mergedObConfig.options.enableExportObfuscation && projectAndLibs.libExportNames) {
+    mergedObConfig.reservedNames.push(...(projectAndLibs.libExportNames));
+  }
   if (!isHarCompiled) {
     mergedObConfig.options.enableFileNameObfuscation = false;
     mergedObConfig.reservedFileNames = [];
@@ -242,15 +244,16 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     mDisableHilog: false,
     mDisableConsole: mergedObConfig.options.removeLog,
     mSimplify: false,
-    mRemoveComments: true,
-    mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
+    mRemoveComments: true, 
     mNameObfuscation: {
       mEnable: true,
       mNameGeneratorType: 1,
       mReservedNames: mergedObConfig.reservedNames,
       mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
       mReservedProperties: mergedObConfig.reservedPropertyNames,
-      mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
+      mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation,
+      mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
+      mReservedToplevelNames: mergedObConfig.reservedGlobalNames,
     },
     mRemoveDeclarationComments: {
       mEnable: true,
