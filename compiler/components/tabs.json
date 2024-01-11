@@ -4,6 +4,6 @@
   "attrs": [
     "vertical", "scrollable", "barMode", "barWidth", "barHeight", "animationDuration",
     "onChange", "onAnimationStart", "onAnimationEnd", "onGestureSwipe",
-    "barPosition", "barOverlap", "barBackgroundColor", "customContentTransition"
+    "barPosition", "barOverlap", "barBackgroundColor", "customContentTransition", "barBackgroundBlurStyle"
   ]
 }
