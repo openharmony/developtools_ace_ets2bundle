@@ -1131,61 +1131,93 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   } else {
     isObject = false;
   }
+  return generateLoadDocumentEntrance(isObject, routeNameNode, storageNode, isComponentPreview, context,
+    name, cardRelativePath, entryOptionNode, argsArr);
+}
+
+function generateLoadDocumentEntrance(isObject: boolean, routeNameNode: ts.Expression,
+  storageNode: ts.Expression, isComponentPreview: boolean, context: ts.TransformationContext,
+  name: string, cardRelativePath: string, entryOptionNode: ts.Expression,
+  argsArr: ts.Expression[]): (ts.ExpressionStatement | ts.Block | ts.IfStatement)[] {
   if (isObject) {
     if (routeNameNode && !storageNode) {
       return isComponentPreview ? [
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, false),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, true, false, false, argsArr)
       ] : [ts.factory.createBlock([
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, false),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, true, false, false, argsArr)
       ])];
     } else if (!routeNameNode && !storageNode) {
       return isComponentPreview ? [
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, false),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, false, false, true, argsArr)
       ] : [ts.factory.createBlock([
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, false),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, false, false, true, argsArr)
       ])];
     } else if (!routeNameNode && storageNode) {
       return isComponentPreview ? [
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, true),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, false, true, true, argsArr)
       ] : [ts.factory.createBlock([
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, false, true),
+        ...assignRouteNameAndStorage(routeNameNode),
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
           routeNameNode, storageNode, false, true, true, argsArr)
       ])];
     } else {
       return isComponentPreview ? [
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, true),
-        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
-          storageNode, argsArr)
+        ...assignRouteNameAndStorage(routeNameNode),
+        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode, storageNode, argsArr)
       ] : [ts.factory.createBlock([
-        ...assignRouteNameAndStorage(routeNameNode, storageNode, true, true),
-        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
-          storageNode, argsArr)
+        ...assignRouteNameAndStorage(routeNameNode),
+        judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode, storageNode, argsArr)
       ])];
     }
   } else {
     return [
-      judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode,
-        storageNode, argsArr)];
+      judgeRouteNameAndStorage(context, name, cardRelativePath, isObject, entryOptionNode, routeNameNode, storageNode, argsArr)];
   }
 }
 
 function judgeRouteNameAndStorage(context: ts.TransformationContext, name: string,
   cardRelativePath: string, isObject: boolean, entryOptionNode: ts.Expression, routeNameNode: ts.Expression,
   storageNode: ts.Expression, argsArr: ts.Expression[] = undefined): ts.IfStatement {
+  return isObject ? judgeRouteNameAndStorageForObj(context, name, cardRelativePath, isObject, entryOptionNode,
+    routeNameNode, storageNode, argsArr) : judgeRouteNameAndStorageForIdentifier(context, name,
+    cardRelativePath, isObject, entryOptionNode, routeNameNode, storageNode, argsArr);
+}
+
+function judgeRouteNameAndStorageForObj(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, isObject: boolean, entryOptionNode: ts.Expression, routeNameNode: ts.Expression,
+  storageNode: ts.Expression, argsArr: ts.Expression[] = undefined): ts.IfStatement {
   return ts.factory.createIfStatement(
-    isObject ? judgeRouteAndStorageForObject(true, true) :
-      judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, true),
+    judgeRouteAndStorageForObject(true),
+    ts.factory.createBlock(
+      [
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, true, true, false, argsArr)
+      ],
+      true
+    ), ts.factory.createBlock(
+      [
+        ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
+          routeNameNode, storageNode, false, false, true, argsArr)
+      ],
+      true
+    ));
+}
+
+function judgeRouteNameAndStorageForIdentifier(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, isObject: boolean, entryOptionNode: ts.Expression, routeNameNode: ts.Expression,
+  storageNode: ts.Expression, argsArr: ts.Expression[] = undefined): ts.IfStatement {
+  return ts.factory.createIfStatement(
+    judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, true),
     ts.factory.createBlock(
       [
         ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
@@ -1194,8 +1226,7 @@ function judgeRouteNameAndStorage(context: ts.TransformationContext, name: strin
       true
     ),
     ts.factory.createIfStatement(
-      isObject ? judgeRouteAndStorageForObject(true, false) :
-        judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, false),
+      judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, true, false),
       ts.factory.createBlock(
         [
           ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
@@ -1204,8 +1235,7 @@ function judgeRouteNameAndStorage(context: ts.TransformationContext, name: strin
         true
       ),
       ts.factory.createIfStatement(
-        isObject ? judgeRouteAndStorageForObject(false, true) :
-          judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, false, true),
+        judgeRouteAndStorageForIdentifier(entryOptionNode as ts.Identifier, false, true),
         ts.factory.createBlock(
           [
             ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
@@ -1225,19 +1255,11 @@ function judgeRouteNameAndStorage(context: ts.TransformationContext, name: strin
   );
 }
 
-function judgeRouteAndStorageForObject(hasRouteName: boolean, hasStorage: boolean): ts.BinaryExpression {
+function judgeRouteAndStorageForObject(hasRouteName: boolean): ts.BinaryExpression {
   return ts.factory.createBinaryExpression(
-    ts.factory.createBinaryExpression(
-      ts.factory.createIdentifier(ROUTENAME_NODE),
-      ts.factory.createToken(hasRouteName ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
-      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
-    ),
-    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-    ts.factory.createBinaryExpression(
-      ts.factory.createIdentifier(STORAGE_NODE),
-      ts.factory.createToken(hasStorage ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
-      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
-    )
+    ts.factory.createIdentifier(ROUTENAME_NODE),
+    ts.factory.createToken(hasRouteName ? ts.SyntaxKind.ExclamationEqualsToken : ts.SyntaxKind.EqualsEqualsToken),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
   );
 }
 
@@ -1268,9 +1290,9 @@ function judgeRouteAndStorageForIdentifier(entryOptionNode: ts.Identifier, hasRo
   );
 }
 
-function assignRouteNameAndStorage(routeNameNode, storageNode, hasRouteName, hasStorage): ts.ExpressionStatement[] {
+function assignRouteNameAndStorage(routeNameNode): ts.ExpressionStatement[] {
   const assignOperation: ts.VariableStatement[] = [];
-  if (hasRouteName) {
+  if (routeNameNode) {
     assignOperation.push(ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
@@ -1279,20 +1301,6 @@ function assignRouteNameAndStorage(routeNameNode, storageNode, hasRouteName, has
           undefined,
           undefined,
           routeNameNode
-        )],
-        ts.NodeFlags.Let
-      )
-    ));
-  }
-  if (hasStorage) {
-    assignOperation.push(ts.factory.createVariableStatement(
-      undefined,
-      ts.factory.createVariableDeclarationList(
-        [ts.factory.createVariableDeclaration(
-          ts.factory.createIdentifier(STORAGE_NODE),
-          undefined,
-          undefined,
-          storageNode
         )],
         ts.NodeFlags.Let
       )
@@ -1319,8 +1327,8 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
       } else if (!hasRouteName) {
         newArray.push(entryOptionNode);
       }
-    } else if (storageNode && hasStorage) {
-      newArray.push(ts.factory.createIdentifier(STORAGE_NODE));
+    } else if (storageNode) {
+      newArray.push(storageNode);
     }
   }
   const newExpressionParams: any[] = [
