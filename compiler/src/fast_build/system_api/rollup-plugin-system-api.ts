@@ -53,10 +53,9 @@ export function apiTransform() {
     transform(code: string, id: string) {
       const magicString = new MagicString(code);
       if (filter(id)) {
-        const needCoverageInsert: boolean = this.share.projectConfig.needCoverageInsert;
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = needCoverageInsert ? true : false;
+          hiresStatus = this.share.projectConfig.needCompleteSourceMap ? true : false;
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
