@@ -40,14 +40,12 @@ import {
   RESOURCE_NAME_MODULE,
   ATTRIBUTE_ANIMATETO_SET,
   GLOBAL_CONTEXT,
-  CHECK_COMPONENT_EXTEND_DECORATOR,
   INSTANCE,
   SET_CONTROLLER_CTR_TYPE,
   SET_CONTROLLER_METHOD,
   JS_DIALOG,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
   ESMODULE,
-  ARK,
   EXTNAME_ETS,
   GENERATE_ID,
   _GENERATE_ID,
@@ -70,15 +68,13 @@ import {
   PAGE_PATH,
   ISINITIALRENDER,
   CREATE_ANIMATABLE_PROPERTY,
-  COMPONENT_CREATE_FUNCTION,
-  COMPONENT_POP_FUNCTION,
   UPDATE_ANIMATABLE_PROPERTY,
   MY_IDS,
   VIEW_STACK_PROCESSOR,
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
-  FINISH_UPDATE_FUNC,
+  FINISH_UPDATE_FUNC
 } from './pre_define';
 import {
   componentInfo,
@@ -97,7 +93,7 @@ import { writeFileSyncByNode } from './process_module_files';
 import {
   componentCollection,
   localStorageLinkCollection,
-  localStoragePropCollection,
+  localStoragePropCollection
 } from './validate_ui_syntax';
 import {
   processComponentClass,
@@ -112,9 +108,8 @@ import {
   bindComponentAttr,
   getName,
   createViewStackProcessorStatement,
-  createFunction,
   parseGlobalBuilderParams,
-  BuilderParamsResult,
+  BuilderParamsResult
 } from './process_component_build';
 import {
   BUILDIN_STYLE_NAMES,
@@ -257,7 +252,7 @@ export function processUISyntax(program: ts.Program, ut = false, parentEvent?: a
           storedFileInfo.processGlobalBuilder = true;
           CUSTOM_BUILDER_METHOD.add(node.name.getText());
           builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
-          let parameters: ts.NodeArray<ts.ParameterDeclaration> =
+          const parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
           parameters.push(createParentParameter());
           if (projectConfig.optLazyForEach) {
@@ -726,7 +721,7 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
   return ts.factory.updateCallExpression(node, ts.factory.createPropertyAccessExpression(
     ts.factory.createIdentifier(GLOBAL_CONTEXT),
     ts.factory.createIdentifier(node.expression.escapedText.toString())),
-    node.typeArguments, node.arguments);
+  node.typeArguments, node.arguments);
 }
 
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
@@ -810,7 +805,7 @@ function createAnimatableBody(componentName: string, funcName: ts.Identifier,
             ts.factory.createIdentifier(componentName),
             ts.factory.createIdentifier(UPDATE_ANIMATABLE_PROPERTY)
           ), undefined,
-          [ ts.factory.createStringLiteral(funcName.escapedText.toString()), ...paramNode ]
+          [ts.factory.createStringLiteral(funcName.escapedText.toString()), ...paramNode]
         ))
       ])
     )
@@ -846,7 +841,7 @@ function createAnimatableFrameNode(componentName: string): ts.ExpressionStatemen
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
       ts.factory.createIdentifier(VIEW_STACK_PROCESSOR),
-      ts.factory.createIdentifier(GET_AND_PUSH_FRAME_NODE),
+      ts.factory.createIdentifier(GET_AND_PUSH_FRAME_NODE)
     ), undefined,
     [
       ts.factory.createStringLiteral(componentName),
@@ -859,15 +854,15 @@ function createAnimatableUpdateFunc(): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
       ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-      ts.factory.createIdentifier(FINISH_UPDATE_FUNC),
+      ts.factory.createIdentifier(FINISH_UPDATE_FUNC)
     ), undefined, [ts.factory.createIdentifier(ELMTID)]
   ));
 }
 
 function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration {
   if (node.body) {
-    const statementArray: ts.Statement[]
-      = [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent')),
+    const statementArray: ts.Statement[] =
+      [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use concurrent')),
         ...node.body.statements];
     return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken, node.name,
       node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
@@ -891,7 +886,7 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
     if (ts.isConstructorDeclaration(member)) {
       hasConstructor = true;
       const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
-      
+
       const statementArray: ts.Statement[] = [
         ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
         ...constructor.body.statements
@@ -920,7 +915,7 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
   }
 
   node = ts.factory.updateClassDeclaration(node, updatedModifiers, node.name, node.typeParameters,
-                                           node.heritageClauses, updatedMembers);
+    node.heritageClauses, updatedMembers);
 
   return node;
 }
@@ -1736,8 +1731,8 @@ function addCardStringliteral(newExpressionParams: any[], context: ts.Transforma
 
 export function validatorCard(log: any[], type: number, pos: number,
   name: string = ''): void {
-  if (projectConfig && projectConfig.cardObj && resourceFileName
-    && projectConfig.cardObj[resourceFileName]) {
+  if (projectConfig && projectConfig.cardObj && resourceFileName &&
+    projectConfig.cardObj[resourceFileName]) {
     const logInfo: object = {
       type: LogType.ERROR,
       message: '',
