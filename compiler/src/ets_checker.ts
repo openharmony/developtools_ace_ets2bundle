@@ -16,8 +16,8 @@
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
-const fse = require('fs-extra');
 import * as crypto from 'crypto';
+const fse = require('fs-extra');
 
 import {
   projectConfig,
@@ -87,18 +87,21 @@ import {
   stopTimeStatisticsLocation,
   resolveModuleNamesTime,
   CompilationTimeStatistics,
-  storedFileInfo
+  storedFileInfo,
+  getRollupCacheStoreKey,
+  getRollupCacheKey,
+  clearRollupCacheStore
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 import {
   doArkTSLinter,
-  doArkTSLinterParallel,
   ArkTSLinterMode,
-  ArkTSDiagnostic,
-  sendtsDiagnostic,
-  ArkTSVersion
+  ArkTSProgram,
+  ArkTSVersion,
+  getReverseStrictBuilderProgram,
+  wasOptionsStrict
 } from './do_arkTS_linter';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -120,7 +123,7 @@ export function readDeaclareFiles(): string[] {
   return declarationsFileNames;
 }
 
-export const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
+const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
   if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
     let fd: number = fs.openSync(fileName, 'w');
     fs.writeSync(fd, data, undefined, 'utf8');
@@ -130,7 +133,7 @@ export const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data:
 
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-export function setCompilerOptions(resolveModulePaths: string[]): void {
+function setCompilerOptions(resolveModulePaths: string[]): void {
   const allPath: Array<string> = [
     '*'
   ];
@@ -265,7 +268,10 @@ function createHash(str: string): string {
   return hash.digest('hex');
 }
 
-const fileHashScriptVersion: (fileName: string) => string = (fileName: string) => {
+export const fileHashScriptVersion: (fileName: string) => string = (fileName: string) => {
+  if (!fs.existsSync(fileName)) {
+    return '0';
+  }
   return createHash(fs.readFileSync(fileName).toString());
 }
 
@@ -277,7 +283,7 @@ const watchModeScriptVersion: (fileName: string) => string = (fileName: string) 
 }
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
-  compilationTime: CompilationTimeStatistics = null): ts.LanguageService {
+  compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
   rootFileNames.forEach((fileName: string) => {
     files[fileName] = {version: 0};
@@ -319,9 +325,40 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
         checkPayload: undefined,
         currentFileName: containFilePath,
       };
+    },
+    clearProps: () => {
+      dollarCollection.clear();
+      decoratorParamsCollection.clear();
+      extendCollection.clear();
+      props.length = 0;
     }
   };
-  return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+
+  if (process.env.watchMode === 'true') {
+    return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+  }
+
+  return getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+}
+
+function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
+                                    rollupShareObject?: any): ts.LanguageService {
+  let cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
+  let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
+  clearRollupCacheStore(rollupShareObject?.cacheStoreManager, cacheStoreKey);
+
+  let service: ts.LanguageService | undefined =
+    rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).getCache(cacheServiceKey);
+  if (!service) {
+    service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+  } else {
+    // Found language service from cache, update root files
+    let updateRootFileNames = [...rootFileNames, ...readDeaclareFiles()];
+    service.updateRootFiles(updateRootFileNames);
+  }
+
+  rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).setCache(cacheServiceKey, service);
+  return service;
 }
 
 interface CacheFileName {
@@ -359,7 +396,7 @@ export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
 export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent?: any,
-  compilationTime: CompilationTimeStatistics = null): void {
+  compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
@@ -368,7 +405,6 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
         hotReloadSupportFiles.add(fileName);
       });
     }
-    runArkTSLinterParallel(rootFileNames, resolveModulePaths, cacheFile);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -380,16 +416,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
     } else {
       cache = {};
     }
-    const filterFiles: string[] = filterInput(rootFileNames);
-    runArkTSLinterParallel(filterFiles, resolveModulePaths, cacheFile);
-    languageService = createLanguageService(filterFiles, resolveModulePaths, compilationTime);
+    languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
   }
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
-
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
-
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+
+  startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+  runArkTSLinter(parentEvent, rollupShareObject);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime);
   }
@@ -400,7 +437,6 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
-  sendtsDiagnostic(allDiagnostics);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
 
   globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
@@ -465,14 +501,14 @@ function containFormError(message: string): boolean {
   return false;
 }
 
-export function printDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: boolean = false): void {
+export function printDiagnostic(diagnostic: ts.Diagnostic): void {
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
     }
 
-    if (containFormError(message) && diagnostic.file && !isCardFile(diagnostic.file.fileName)) {
+    if (containFormError(message) && !isCardFile(diagnostic.file.fileName)) {
       return;
     }
 
@@ -489,12 +525,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: bo
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
       logMessage = `ArkTS:${logPrefix} File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`;
     } else {
-      if (!isArkTSDiagnostic) {
-        logMessage = `ArkTS:${logPrefix}: ${message}`;
-      } else {
-        const arkTSDiagnostic = diagnostic as ArkTSDiagnostic;
-        logMessage = `ArkTS:${logPrefix} File: ${arkTSDiagnostic.fileName}:${arkTSDiagnostic.line + 1}:${arkTSDiagnostic.character + 1}\n ${message}\n`;
-      }
+      logMessage = `ArkTS:${logPrefix}: ${message}`;
     }
 
     if (diagnostic.category === ts.DiagnosticCategory.Error) {
@@ -1090,10 +1121,26 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-function runArkTSLinter(parentEvent?: any): void {
+function runArkTSLinter(parentEvent?: any, rollupShareObject?: any): void {
   const eventRunArkTsLinter = createAndStartEvent(parentEvent, 'run Arkts linter');
-  const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(), globalProgram.builderProgram, getArkTSLinterMode(),
-    printArkTSLinterDiagnostic, !projectConfig.xtsMode, buildInfoWriteFile);
+
+  let wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
+  let originProgram: ArkTSProgram = {
+    builderProgram: globalProgram.builderProgram,
+    wasStrict: wasStrict
+  };
+  let reverseStrictProgram: ArkTSProgram = {
+    builderProgram: getReverseStrictBuilderProgram(rollupShareObject, globalProgram.program, wasStrict),
+    wasStrict: !wasStrict
+  };
+  const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(),
+                                               getArkTSLinterMode(),
+                                               originProgram,
+                                               reverseStrictProgram,
+                                               printArkTSLinterDiagnostic,
+                                               !projectConfig.xtsMode,
+                                               buildInfoWriteFile);
+
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
@@ -1102,36 +1149,24 @@ function runArkTSLinter(parentEvent?: any): void {
   stopEvent(eventRunArkTsLinter);
 }
 
-function runArkTSLinterParallel(rootFileNames: string[], resolveModulePaths: string[], cacheFile: string): void {
-  doArkTSLinterParallel(
-    getArkTSVersion(),
-    getArkTSLinterMode(),
-    printArkTSLinterDiagnostic,
-    rootFileNames,
-    resolveModulePaths,
-    cacheFile,
-    !projectConfig.xtsMode
-  );
-}
-
-function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic, isArkTSDiagnostic: boolean): void {
+function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
   if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
-    printDiagnostic(diagnostic, isArkTSDiagnostic);
+    printDiagnostic(diagnostic);
     diagnostic.category = originalCategory;
     return;
   }
-  printDiagnostic(diagnostic, isArkTSDiagnostic);
+  printDiagnostic(diagnostic);
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file ? diagnostics.file.fileName : (diagnostics as ArkTSDiagnostic).fileName;
-  return ((fileName.indexOf('/oh_modules/') !== -1) || fileName.indexOf('\\oh_modules\\') !== -1);
+  return (diagnostics.file !== undefined) &&
+    ((diagnostics.file.fileName.indexOf('/oh_modules/') !== -1) || diagnostics.file.fileName.indexOf('\\oh_modules\\') !== -1);
 }
 
 function isInSDK(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file ? diagnostics.file.fileName : (diagnostics as ArkTSDiagnostic).fileName;
+  const fileName = diagnostics.file?.fileName;
   if (projectConfig.etsLoaderPath === undefined || fileName === undefined) {
     return false;
   }
@@ -1214,6 +1249,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   const filterFiles: string[] = filterInput(rootFileNames);
   languageService = createLanguageService(filterFiles, resolveModulePaths);
   globalProgram.builderProgram = languageService.getBuilderProgram();
+  globalProgram.program = globalProgram.builderProgram.getProgram();
   runArkTSLinter();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
