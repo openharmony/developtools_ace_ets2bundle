@@ -145,7 +145,8 @@ import {
   INNER_CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   ID_ATTRS,
-  SPECIFIC_PARENT_COMPONENT
+  SPECIFIC_PARENT_COMPONENT,
+  STYLES_ATTRIBUTE
 } from './component_map';
 import {
   componentCollection,
@@ -1987,7 +1988,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     }
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name) &&
-      !componentCollection.customComponents.has(temp.expression.name.getText())) {
+      (!componentCollection.customComponents.has(temp.expression.name.getText()) || STYLES_ATTRIBUTE.has(temp.expression.name.getText()))) {
       parseRecycleId(temp, temp.expression.name, isRecycleComponent, componentAttrInfo);
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
         isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
@@ -2969,7 +2970,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     } else {
       return ComponentType.innerComponent;
     }
-  } else if (componentCollection.customComponents.has(name)) {
+  } else if (!isPartMethod(node) && componentCollection.customComponents.has(name)) {
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
@@ -2992,6 +2993,16 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     });
   }
   return null;
+}
+
+function isPartMethod(node: ts.ExpressionStatement): boolean {
+  if (ts.isCallExpression(node.expression) && ts.isPropertyAccessExpression(node.expression.expression) &&
+    node.expression.expression.expression && node.expression.expression.expression.kind &&
+    node.expression.expression.expression.kind === ts.SyntaxKind.ThisKeyword) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function isWrappedBuilderExpression(node: ts.ExpressionStatement): boolean {
