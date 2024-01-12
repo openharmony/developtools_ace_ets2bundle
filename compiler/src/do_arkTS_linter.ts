@@ -16,29 +16,22 @@
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
+import { projectConfig } from '../main';
 import {
-  projectConfig,
-  partialUpdateConfig
-} from '../main';
-import { toUnixPath } from './utils';
+  toUnixPath,
+  getRollupCacheStoreKey,
+  getRollupCacheKey
+} from './utils';
 import {
   resolveModuleNames,
   resolveTypeReferenceDirectives,
-  cache
-} from './ets_checker'
-import {Worker} from 'worker_threads';
-import { logger } from './compile_info';
-const fse = require('fs-extra');
+  fileHashScriptVersion,
+} from './ets_checker';
+import { ARKTS_LINTER_BUILD_INFO_SUFFIX } from './pre_define';
 
 const arkTSDir: string = 'ArkTS';
 const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
 const spaceNumBeforeJsonLine = 2;
-const sleepInterval = 100;
-const filteredDiagnosticCode = -2;
-let worker: Worker | undefined = undefined;
-let tsDiagnostics: ArkTSDiagnostic[] | undefined = undefined;
-let strictArkTSDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}> | undefined = undefined;
-let processArkTSLinterDiagnostic = (): void => {};
 
 interface OutputInfo {
   categoryInfo: string | undefined;
@@ -59,33 +52,29 @@ export enum ArkTSVersion {
   ArkTS_1_1,
 }
 
-export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic, isArkTSDiagnostic: boolean) => void;
-
-export function getArkTSDiagnostics(arkTSVersion: ArkTSVersion, builderProgram: ts.BuilderProgram,
-  buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
-  const compilerHost: ts.CompilerHost = ts.createIncrementalCompilerHost(builderProgram.getProgram().getCompilerOptions());
-  compilerHost.resolveModuleNames = resolveModuleNames;
-  compilerHost.getCurrentDirectory = (): string => process.cwd();
-  compilerHost.getDefaultLibFileName = (options): string => ts.getDefaultLibFilePath(options);
-  compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
-  if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
-    return ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, compilerHost, /*srcFile*/ undefined, buildInfoWriteFile);
-  } else {
-    return ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, compilerHost, /*srcFile*/ undefined, buildInfoWriteFile);
-  }
+export interface ArkTSProgram {
+  builderProgram: ts.BuilderProgram,
+  wasStrict: boolean
 }
 
-export function doArkTSLinter(arkTSVersion: ArkTSVersion, builderProgram: ts.BuilderProgram,
-  arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc,
-  shouldWriteFile: boolean = true, buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
+export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
+
+export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinterMode,
+  builderProgram: ArkTSProgram, reverseStrictProgram: ArkTSProgram,
+  printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true,
+  buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
   }
 
-  let diagnostics: ts.Diagnostic[] = getArkTSDiagnostics(arkTSVersion, builderProgram, buildInfoWriteFile);
+  let diagnostics: ts.Diagnostic[] = [];
 
-  if (printDiagnostic === undefined) {
-    return diagnostics;
+  if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
+    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, reverseStrictProgram,
+                                                    /*srcFile*/ undefined, buildInfoWriteFile);
+  } else {
+    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, reverseStrictProgram,
+                                                    /*srcFile*/ undefined, buildInfoWriteFile);
   }
 
   removeOutputFile();
@@ -104,7 +93,7 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, builderProgram: ts.Bui
 
 function processArkTSLinterReportAsError(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc): void {
   diagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic, true);
+    printDiagnostic(diagnostic);
   });
   printArkTSLinterFAQ(diagnostics, printDiagnostic);
 }
@@ -116,7 +105,7 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
     diagnostics.forEach((diagnostic: ts.Diagnostic) => {
       const originalCategory = diagnostic.category;
       diagnostic.category = ts.DiagnosticCategory.Warning;
-      printDiagnostic(diagnostic, true);
+      printDiagnostic(diagnostic);
       diagnostic.category = originalCategory;
     });
     printArkTSLinterFAQ(diagnostics, printDiagnostic);
@@ -133,8 +122,8 @@ function processArkTSLinterReportAsWarning(diagnostics: ts.Diagnostic[], printDi
     reportsUnnecessary: undefined,
     reportsDeprecated: undefined
   };
+  printDiagnostic(arkTSDiagnostic);
 
-  printDiagnostic(arkTSDiagnostic, false);
   printArkTSLinterFAQ(diagnostics, printDiagnostic);
 }
 
@@ -150,27 +139,15 @@ function writeOutputFile(diagnostics: ts.Diagnostic[]): string | undefined {
   filePath = toUnixPath((path.join(filePath, arkTSLinterOutputFileName)));
   const outputInfo: OutputInfo[] = [];
   diagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    if (diagnostic.file) {
-      const { line, character }: ts.LineAndCharacter =
-        diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-      outputInfo.push({
-        categoryInfo: diagnostic.category === ts.DiagnosticCategory.Error ? 'Error' : 'Warning',
-        fileName: diagnostic.file?.fileName,
-        line: line + 1,
-        character: character + 1,
-        messageText: diagnostic.messageText
-      });
-    } else {
-      const arkTSdiagnostic = diagnostic as ArkTSDiagnostic;
-      outputInfo.push({
-        categoryInfo: arkTSdiagnostic.category === ts.DiagnosticCategory.Error ? 'Error' : 'Warning',
-        fileName: arkTSdiagnostic.fileName,
-        line: arkTSdiagnostic.line + 1,
-        character: arkTSdiagnostic.character + 1,
-        messageText: arkTSdiagnostic.messageText
-      });
-
-    }
+    const { line, character }: ts.LineAndCharacter =
+      diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+    outputInfo.push({
+      categoryInfo: diagnostic.category === ts.DiagnosticCategory.Error ? 'Error' : 'Warning',
+      fileName: diagnostic.file?.fileName,
+      line: line + 1,
+      character: character + 1,
+      messageText: diagnostic.messageText
+    });
   });
   let output: string | undefined = filePath;
   try {
@@ -212,182 +189,86 @@ function printArkTSLinterFAQ(diagnostics: ts.Diagnostic[], printDiagnostic: Proc
     reportsUnnecessary: undefined,
     reportsDeprecated: undefined
   };
-  printDiagnostic(arkTSFAQDiagnostic, false);
+  printDiagnostic(arkTSFAQDiagnostic);
 }
 
-export interface ArkTSDiagnostic extends ts.Diagnostic {
-  fileName: string | undefined;
-  line: number;
-  character: number;
+function setCompilerOptions(originProgram: ts.Program, wasStrict: boolean): ts.CompilerOptions {
+  const compilerOptions: ts.CompilerOptions = { ...originProgram.getCompilerOptions() };
+  const inversedOptions = getStrictOptions(wasStrict);
+
+  Object.assign(compilerOptions, inversedOptions);
+  compilerOptions.allowJs = true;
+  compilerOptions.checkJs = true;
+  compilerOptions.tsBuildInfoFile = path.resolve(projectConfig.cachePath, '..', ARKTS_LINTER_BUILD_INFO_SUFFIX);
+
+  return compilerOptions;
 }
 
-let arkTSLinterFinished: boolean = true;
-let arkTSLinterDiagnosticProcessed: boolean = true;
-let didArkTSLinter: boolean = false;
-let arkTSDiagnostics: ArkTSDiagnostic[] = [];
-let cacheFilePath: string | null = null;
-
-export function resetDidArkTSLinter(): void {
-  didArkTSLinter = false;
-}
-
-export function doArkTSLinterParallel(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinterMode, printDiagnostic: ProcessDiagnosticsFunc,
-  rootFileNames: string[], resolveModulePaths: string[], cacheFile: string, shouldWriteFile: boolean = true): void {
-  if (arkTSMode === ArkTSLinterMode.NOT_USE) {
-    arkTSLinterFinished = true;
-    arkTSLinterDiagnosticProcessed = true;
-    return;
-  }
-  arkTSLinterFinished = false;
-  arkTSLinterDiagnosticProcessed = false;
-
-  didArkTSLinter = true;
-
-  let processArkTSLinterDiagnostic = (): void => {
-    let diagnostics: ArkTSDiagnostic[] = filterStaticDiagnostics();
-    removeOutputFile();
-    if (diagnostics.length === 0) {
-      arkTSLinterDiagnosticProcessed = true;
-      return;
-    }
-    if (arkTSMode === ArkTSLinterMode.COMPATIBLE_MODE) {
-      processArkTSLinterReportAsWarning(diagnostics, printDiagnostic, shouldWriteFile);
-    } else {
-      processArkTSLinterReportAsError(diagnostics, printDiagnostic);
-    }
-    arkTSDiagnostics = diagnostics;
-    cacheFilePath = cacheFile;
-    arkTSLinterDiagnosticProcessed = true;
-  };
-
-  const workerData = {
-    workerData: {
-      arkTSVersion: arkTSVersion,
-      projectConfig: JSON.parse(JSON.stringify(projectConfig)),
-      partialUpdateConfig: partialUpdateConfig,
-      processEnv: JSON.parse(JSON.stringify(process.env)),
-      rootFileNames: rootFileNames,
-      resolveModulePaths: resolveModulePaths
-    },
-    env: process.env
-  };
-  worker = new Worker(path.resolve(__dirname, './do_arkTS_linter_parallel.js'), workerData);
-  worker.on('message', (strictDiagnostics: Map<string, {strictDiagnostics:ArkTSDiagnostic[], arkTSDiagnostics:ArkTSDiagnostic[]}>) => {
-    strictArkTSDiagnostics = strictDiagnostics;
-    if (tsDiagnostics !== undefined) {
-      processArkTSLinterDiagnostic();
-      cleanProcessArkTSLinterDiagnostic();
-    }
-  });
-}
-
-function cleanProcessArkTSLinterDiagnostic(): void {
-  processArkTSLinterDiagnostic = (): void => {};
-}
-
-export function updateFileCache(): void {
-  if (!didArkTSLinter) {
-    return;
-  }
-  if (cacheFilePath === null) {
-    return;
-  }
-  if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-    arkTSDiagnostics.forEach((diagnostic: ArkTSDiagnostic) => {
-      const fileName = diagnostic.file ? diagnostic.file.fileName : diagnostic.fileName;
-      if (cache[path.resolve(fileName)]) {
-        cache[path.resolve(fileName)].error = true;
-      }
-    });
-    fse.ensureDirSync(projectConfig.cachePath);
-    fs.writeFileSync(cacheFilePath, JSON.stringify({
-      'runtimeOS': projectConfig.runtimeOS,
-      'sdkInfo': projectConfig.sdkInfo,
-      'fileList': cache
-    }, null, spaceNumBeforeJsonLine));
-  }
-  arkTSDiagnostics = undefined;
-}
-
-export async function waitArkTSLinterFinished(): Promise<void> {
-  if (worker === undefined) {
-    return;
-  }
-  if ((!arkTSLinterDiagnosticProcessed) && tsDiagnostics && strictArkTSDiagnostics) {
-    processArkTSLinterDiagnostic();
-    cleanProcessArkTSLinterDiagnostic();
-  }
-  let sleep = async (time): Promise<unknown> => {
-    return new Promise(r => setTimeout(r, time));
-  };
-  while (!(arkTSLinterDiagnosticProcessed)) {
-    await sleep(sleepInterval);
-  }
-  worker.terminate();
-  worker = undefined;
-}
-
-export function sendtsDiagnostic(allDiagnostics: ts.Diagnostic[]):void {
-  tsDiagnostics = processDiagnosticsToArkTSDiagnosticInfo(allDiagnostics.filter(diag=>diag.file.scriptKind === ts.ScriptKind.ETS));
-  if (strictArkTSDiagnostics !== undefined) {
-    processArkTSLinterDiagnostic();
-    cleanProcessArkTSLinterDiagnostic();
-  }
-}
-
-export function processDiagnosticsToArkTSDiagnosticInfo(diagnostics: ts.Diagnostic[]): ArkTSDiagnostic[] {
-  let diagnosticsInfo: ArkTSDiagnostic[] = [];
-  for (const diagnostic of diagnostics) {
-    const { line, character }: ts.LineAndCharacter =
-      diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-    diagnosticsInfo.push(
-      {
-        fileName: diagnostic.file?.fileName,
-        line: line,
-        character: character,
-        category: diagnostic.category,
-        code: diagnostic.code,
-        file: undefined,
-        start: diagnostic.start,
-        length: diagnostic.length,
-        messageText: diagnostic.messageText,
-      }
-    );
-  };
-  return diagnosticsInfo;
-}
-
-function filterStaticDiagnostics(): ArkTSDiagnostic[] {
-  tsDiagnostics.forEach(diag => {
-    if (!diag.fileName) {
-      return;
-    }
-    strictArkTSDiagnostics.get(diag.fileName)?.strictDiagnostics.forEach(
-      strictDiag => {
-        if (strictDiag.code === diag.code && strictDiag.start === diag.start && strictDiag.length === diag.length) {
-          strictDiag.code = filteredDiagnosticCode;
-          return;
+export function getReverseStrictBuilderProgram(rollupShareObject: any, originProgram: ts.Program,
+  wasStrict: boolean): ts.BuilderProgram {
+  let cacheManagerKey: string = getRollupCacheStoreKey(projectConfig);
+  let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'linter_service';
+  let service: ts.LanguageService | undefined =
+    rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).getCache(cacheServiceKey);
+  if (!service) {
+    // Create language service for linter
+    // Revert strict options for linter program
+    const compilerOptions: ts.CompilerOptions = setCompilerOptions(originProgram, !wasStrict);
+    const servicesHost: ts.LanguageServiceHost = {
+      getScriptFileNames: () => [...originProgram.getRootFileNames()],
+      getScriptVersion: fileHashScriptVersion,
+      getScriptSnapshot: fileName => {
+        if (!fs.existsSync(fileName)) {
+          return undefined;
         }
+        return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
+      },
+      getCurrentDirectory: () => process.cwd(),
+      getCompilationSettings: () => compilerOptions,
+      getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
+      fileExists: ts.sys.fileExists,
+      readFile: ts.sys.readFile,
+      readDirectory: ts.sys.readDirectory,
+      resolveModuleNames: resolveModuleNames,
+      resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
+      directoryExists: ts.sys.directoryExists,
+      getDirectories: ts.sys.getDirectories,
+      getFileCheckedModuleInfo:(containFilePath: string)=>{
+        return {
+          fileNeedCheck: true,
+          checkPayload: undefined,
+          currentFileName: containFilePath,
+        };
       }
-    );
+    };
+
+    service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+  }
+
+  service.updateRootFiles([...originProgram.getRootFileNames()]);
+  rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).setCache(cacheServiceKey, service);
+
+  return service.getBuilderProgram();
+}
+
+function getStrictOptions(strict = true): object {
+  return {
+    strictNullChecks: strict,
+    strictFunctionTypes: strict,
+    strictPropertyInitialization: strict,
+    noImplicitReturns: strict,
+  };
+}
+
+/**
+ * Returns true if options were initially strict
+ */
+export function wasOptionsStrict(compilerOptions: ts.CompilerOptions): boolean {
+  const strictOptions = getStrictOptions();
+  let wasStrict = false;
+  Object.keys(strictOptions).forEach(x => {
+    wasStrict = wasStrict || !!compilerOptions[x];
   });
-
-  let resultDiagnostics: ArkTSDiagnostic[] = [];
-  strictArkTSDiagnostics.forEach(
-    (value) => {
-      value.strictDiagnostics.forEach(
-        diagnostic => {
-          if (diagnostic.code === filteredDiagnosticCode) {
-            return;
-          }
-          resultDiagnostics.push(diagnostic);
-        }
-      );
-      value.arkTSDiagnostics.forEach(diagnostic => { resultDiagnostics.push(diagnostic); });
-    }
-  );
-
-  tsDiagnostics = undefined;
-  strictArkTSDiagnostics = undefined;
-  return resultDiagnostics;
+  // wasStrict evaluates true if any of the strict options was set
+  return wasStrict;
 }
