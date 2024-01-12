@@ -134,9 +134,7 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 function setCompilerOptions(resolveModulePaths: string[]): void {
-  const allPath: Array<string> = [
-    '*'
-  ];
+  const allPath: Array<string> = ['*'];
   const basePath: string = path.resolve(projectConfig.projectPath);
   if (process.env.compileTool === 'rollup' && resolveModulePaths && resolveModulePaths.length) {
     resolveModulePaths.forEach((item: string) => {
@@ -165,13 +163,12 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'paths': {
       '*': allPath
     },
-    'lib': [
-      'lib.es2020.d.ts'
-    ],
+    'lib': ['lib.es2020.d.ts'],
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
     'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE,
+    'skipTscOhModuleCheck': partialUpdateConfig.skipTscOhModuleCheck,
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
     'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX)

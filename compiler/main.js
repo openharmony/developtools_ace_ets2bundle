@@ -840,10 +840,14 @@ function isPartialUpdate(metadata) {
       if (item.name === 'OPTLazyForEach' && item.value === 'true') {
         projectConfig.optLazyForEach = true;
       }
+      if (item.name === 'SkipTscOhModuleCheck' && item.value === 'true') {
+        partialUpdateConfig.skipTscOhModuleCheck = true;
+      }
     }
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
       !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter &&
-      partialUpdateConfig.arkTSVersion !== undefined && projectConfig.optLazyForEach;
+      partialUpdateConfig.arkTSVersion !== undefined && projectConfig.optLazyForEach &&
+      partialUpdateConfig.skipTscOhModuleCheck;
   });
 }
 
@@ -895,6 +899,7 @@ const partialUpdateConfig = {
   standardArkTSLinter: true,
   optimizeComponent: true,
   arkTSVersion: undefined,
+  skipTscOhModuleCheck: false,
 };
 
 function resetMain() {
