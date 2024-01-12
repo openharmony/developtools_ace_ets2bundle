@@ -27,8 +27,9 @@ import {
 
 export function checkIfJsImportingArkts(rollupObject: any): void {
   ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
-    const id: string = toUnixPath(sourceFile.getModuleId());
-    if (isJsSourceFile(id) && id.indexOf('/oh_modules/') === -1) {
+    const id: string = sourceFile.getModuleId();
+    const unixId: string = toUnixPath(id);
+    if (isJsSourceFile(id) && unixId.indexOf('/oh_modules/') === -1) {
       const importMap = rollupObject.getModuleInfo(id).importedIdMaps;
       Object.values(importMap).forEach((requestFile: string) => {
         if (requestFile.endsWith(EXTNAME_ETS) || requestFile.endsWith(EXTNAME_D_ETS)) {
