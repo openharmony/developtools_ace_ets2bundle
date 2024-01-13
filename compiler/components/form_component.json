@@ -4,5 +4,6 @@
   "attrs": [
     "size", "moduleName", "dimension", "allowUpdate", "visibility",
     "onAcquired", "onError", "onRouter", "onUninstall"
-  ]
+  ],
+  "systemApi": true
 }
