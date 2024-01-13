@@ -2,5 +2,6 @@
     "name": "PluginComponent",
     "attrs": [
       "size", "onComplete", "onError"
-    ]
+    ],
+    "systemApi": true
 }

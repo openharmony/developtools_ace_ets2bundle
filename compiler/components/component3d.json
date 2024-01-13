@@ -4,5 +4,6 @@
   "attrs": [
     "environment", "customRender", "shader", "shaderImageTexture",
     "shaderInputBuffer", "renderWidth", "renderHeight"
-  ]
+  ],
+  "systemApi": true
 }

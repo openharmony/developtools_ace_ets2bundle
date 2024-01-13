@@ -217,16 +217,36 @@ function isSignNode(node) {
     /Attribute$/.test(node.type.typeName.getText());
 }
 
-generateComponentConfig(process.argv[4]);
-function generateComponentConfig(dir) {
+generateComponentConfig(process.argv[4], process.argv[5]);
+function generateComponentConfig(dir, buildPublicSDK) {
   const configFile = path.resolve(dir, 'component_map.js');
   if (fs.existsSync(configFile)) {
     const { COMPONENT_MAP, FORM_MAP } = require(configFile);
     try {
+      removeSystemApiComp(buildPublicSDK, COMPONENT_MAP, FORM_MAP);
       fs.writeFileSync(path.resolve(dir, '../component_config.json'), JSON.stringify(COMPONENT_MAP));
       fs.writeFileSync(path.resolve(dir, '../form_config.json'), JSON.stringify(FORM_MAP));
     } catch (error) {
       console.error(error);
     }
   }
+}
+
+function removeSystemApiComp(buildPublicSDK, COMPONENT_MAP, FORM_MAP) {
+  const systemApiComp = [];
+  if (buildPublicSDK === 'true') {
+    for (const comp in COMPONENT_MAP) {
+      if (COMPONENT_MAP[comp] && COMPONENT_MAP[comp].systemApi) {
+        systemApiComp.push(comp);
+      }
+    }
+  }
+  systemApiComp.forEach(comp => {
+    if (COMPONENT_MAP[comp]) {
+      delete COMPONENT_MAP[comp];
+    }
+    if (FORM_MAP[comp]) {
+      delete FORM_MAP[comp];
+    }
+  });
 }
