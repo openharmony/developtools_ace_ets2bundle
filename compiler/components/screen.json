@@ -1,4 +1,5 @@
 {
   "name": "Screen",
-  "attrs": []
+  "attrs": [],
+  "systemApi": true
 }
