@@ -61,10 +61,12 @@ action("build_ets_loader_library") {
   }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
   _kit_configs_file_dir = "//interface/sdk-js/kits"
+  isPublic = "false"
   if (sdk_build_public) {
     _declarations_file_dir =
         "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
     _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/kits"
+    isPublic = "true"
   }
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
@@ -114,6 +116,8 @@ action("build_ets_loader_library") {
     rebase_path(_build_kit_configs_file_js, root_build_dir),
     "--output-kit-configs-dir",
     rebase_path(ets_loader_kit_configs_dir, root_build_dir),
+    "--build-public-sdk",
+    isPublic,
   ]
 }
 

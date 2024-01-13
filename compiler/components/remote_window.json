@@ -3,5 +3,6 @@
   "atomic": true,
   "attrs": [
     "WindowAnimationTarget"
-  ]
+  ],
+  "systemApi": true
 }
