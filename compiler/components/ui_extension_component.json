@@ -7,5 +7,6 @@
         "onReceive",
         "onRemoteReady"
     ],
-    "atomic": true
+    "atomic": true,
+    "systemApi": true
 }

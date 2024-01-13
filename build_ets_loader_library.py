@@ -58,6 +58,8 @@ def parse_args():
         help='path build_kit_configs_file.js')
     parser.add_argument('--output-kit-configs-dir',
         help='path kit configs file to output')
+    parser.add_argument('--build-public-sdk',
+        help='build public sdk or not')
 
     options = parser.parse_args()
     return options
@@ -86,7 +88,8 @@ def main():
         options.build_declarations_file_js,
         options.declarations_file_dir,
         options.output_declarations_dir,
-        options.output_dir]
+        options.output_dir,
+        options.build_public_sdk]
     depfile_deps.append(options.build_declarations_file_js)
 
     build_kit_configs_file_cmd = [options.node,

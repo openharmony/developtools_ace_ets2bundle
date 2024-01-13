@@ -15,7 +15,7 @@
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
     "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError && npm run arkTest",
     "test:coverage": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError",
-    "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib",
+    "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib false",
     "postinstall": "node npm-install.js",
     "fastbuild": "rollup -c rollup.config.js",
     "run:arkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\"",
