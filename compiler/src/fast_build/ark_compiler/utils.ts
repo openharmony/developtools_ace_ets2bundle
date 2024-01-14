@@ -50,6 +50,7 @@ import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../proces
 import { cleanSourceMapObject } from './transform';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanModuleMode } from './generate_module_abc';
+import { ModuleSourceFile } from './module/module_source_file';
 
 export function needAotCompiler(projectConfig: any): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
@@ -240,6 +241,7 @@ export function cleanUpObjects(): void {
   cleanUpUtilsObjects();
   cleanUpKitImportObjects();
   cleanModuleMode();
+  ModuleSourceFile.cleanUpObjects();
 }
 
 export const utUtils = {
