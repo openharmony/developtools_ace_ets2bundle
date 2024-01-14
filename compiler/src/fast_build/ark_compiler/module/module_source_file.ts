@@ -35,7 +35,7 @@ import {
   updateSourceMap,
   writeFileContentToTempDir
 } from '../utils';
-import { 
+import {
   toUnixPath,
   createAndStartEvent,
   stopEvent
@@ -306,7 +306,7 @@ export class ModuleSourceFile {
     const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
     const importMap: any = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
-    // The data collected by moduleNodeMap represents the node dataset of related types. 
+    // The data collected by moduleNodeMap represents the node dataset of related types.
     // The data is processed based on the AST collected during the transform stage.
     const moduleNodeMap: Map<string, any> =
       moduleInfo.getNodeByType(ROLLUP_IMPORT_NODE, ROLLUP_EXPORTNAME_NODE, ROLLUP_EXPORTALL_NODE,
@@ -322,7 +322,7 @@ export class ModuleSourceFile {
         }
         if ((node.type === ROLLUP_IMPORT_NODE || node.type === ROLLUP_EXPORTNAME_NODE ||
         node.type === ROLLUP_EXPORTALL_NODE && node.source)) {
-          const ohmUrl: string | undefined = 
+          const ohmUrl: string | undefined =
             this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
           if (ohmUrl !== undefined) {
             code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
@@ -450,5 +450,15 @@ export class ModuleSourceFile {
 
   public static sortSourceFilesByModuleId(): void {
     ModuleSourceFile.sourceFiles.sort((a, b) => a.moduleId.localeCompare(b.moduleId));
+  }
+
+  public static cleanUpObjects(): void {
+    ModuleSourceFile.sourceFiles = [];
+    ModuleSourceFile.projectConfig = undefined;
+    ModuleSourceFile.logger = undefined;
+    ModuleSourceFile.mockConfigInfo = {};
+    ModuleSourceFile.mockFiles = [];
+    ModuleSourceFile.newMockConfigInfo = {};
+    ModuleSourceFile.needProcessMock = false;
   }
 }
