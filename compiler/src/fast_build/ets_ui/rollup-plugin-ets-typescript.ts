@@ -103,8 +103,8 @@ export function etsTransform() {
   let cacheFile: CacheFile;
   if (projectConfig.useArkoala) {
     // Dynamic loading to avoid resolving arkoala-only dependencies
-    const arkoalaSdkRoot = findArkoalaRoot();
-    const pluginPackagePath = path.join(arkoalaSdkRoot, '@arkoala', 'rollup-plugin-ets-arkoala');
+    const arkoalaSdkRoot: string = findArkoalaRoot();
+    const pluginPackagePath: string = path.join(arkoalaSdkRoot, '@arkoala', 'rollup-plugin-ets-arkoala');
     const pluginOptions: Object = {
       arkoalaSdkRoot,
       projectConfig,
@@ -452,7 +452,7 @@ function findArkoalaRoot(): string {
       throw new Error('Arkoala SDK not found in ' + arkoalaSdkRoot);
     }
   } else {
-    const arkoalaPossiblePaths = globalModulePaths.map(dir => path.join(dir, '../../arkoala'));
+    const arkoalaPossiblePaths: string[] = globalModulePaths.map(dir => path.join(dir, '../../arkoala'));
     arkoalaSdkRoot = arkoalaPossiblePaths.find(possibleRootDir => isDir(possibleRootDir)) ?? '';
     if (!arkoalaSdkRoot) {
       throw new Error('Arkoala SDK not found in ' + arkoalaPossiblePaths.join(';'));
@@ -464,7 +464,7 @@ function findArkoalaRoot(): string {
 
 function isDir(filePath: string): boolean {
   try {
-    let stat = fs.statSync(filePath);
+    let stat: fs.Stats = fs.statSync(filePath);
     return stat.isDirectory();
   } catch (e) {
     return false;
