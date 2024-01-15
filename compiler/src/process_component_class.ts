@@ -136,7 +136,7 @@ import {
 } from './utils';
 import {
   partialUpdateConfig,
-  globalProgram, 
+  globalProgram,
   projectConfig
 } from '../main';
 import {
@@ -666,8 +666,8 @@ function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[])
       pos: node.heritageClauses.pos
     });
   }
-  const result:ts.HeritageClause[] = [];
-  const heritageClause:ts.HeritageClause = createHeritageClause();
+  const result: ts.HeritageClause[] = [];
+  const heritageClause: ts.HeritageClause = createHeritageClause();
   result.push(heritageClause);
   return ts.factory.createNodeArray(result);
 }
@@ -796,7 +796,7 @@ function addPurgeVariableDepFunc(statements: ts.Statement[]): ts.MethodDeclarati
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PURGE_VARIABLE_DEP),
     undefined, undefined, [ts.factory.createParameterDeclaration(undefined, undefined,
       ts.factory.createIdentifier(RMELMTID), undefined, undefined, undefined)], undefined,
-      ts.factory.createBlock(statements, true));
+    ts.factory.createBlock(statements, true));
 }
 
 function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
@@ -827,8 +827,8 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
         ts.factory.createIdentifier(CREATE_CONSTRUCTOR_DELETE_FUNCTION)),
       undefined, [ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(), ts.factory.createIdentifier(
-            !partialUpdateConfig.partialUpdateMode ?
-              ABOUT_TO_BE_DELETE_FUNCTION_ID : ABOUT_TO_BE_DELETE_FUNCTION_ID__)),
+          !partialUpdateConfig.partialUpdateMode ?
+            ABOUT_TO_BE_DELETE_FUNCTION_ID : ABOUT_TO_BE_DELETE_FUNCTION_ID__)),
       undefined, [])]));
   deleteStatements.push(defaultStatement);
   if (partialUpdateConfig.partialUpdateMode) {
@@ -864,8 +864,8 @@ function createElmtIdWithUnderlineStatement(name: ts.Identifier): ts.ExpressionS
       ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
         ts.factory.createIdentifier(`__${name.escapedText.toString()}`)),
       ts.factory.createIdentifier(COMPONENT_UPDATE_ELMT_ID)), undefined, [
-        ts.factory.createIdentifier(OLD_ELMT_ID), ts.factory.createIdentifier(NEW_ELMT_ID)
-      ]));
+      ts.factory.createIdentifier(OLD_ELMT_ID), ts.factory.createIdentifier(NEW_ELMT_ID)
+    ]));
 }
 
 function createDeletedInternalStatement(): ts.ExpressionStatement {
@@ -877,7 +877,7 @@ function createDeletedInternalStatement(): ts.ExpressionStatement {
 function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
   let updateDirtyElementStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-        ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
+      ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
   return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
@@ -940,18 +940,18 @@ function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogI
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(
-        isSimpleType(type, program, log)
-          ? OBSERVED_PROPERTY_SIMPLE
-          : OBSERVED_PROPERTY_OBJECT,
+        isSimpleType(type, program, log) ?
+          OBSERVED_PROPERTY_SIMPLE :
+          OBSERVED_PROPERTY_OBJECT,
         [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
       );
       break;
     case COMPONENT_LINK_DECORATOR:
     case COMPONENT_CONSUME_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(
-        isSimpleType(type, program, log)
-          ? SYNCHED_PROPERTY_SIMPLE_TWO_WAY
-          : SYNCHED_PROPERTY_SIMPLE_ONE_WAY,
+        isSimpleType(type, program, log) ?
+          SYNCHED_PROPERTY_SIMPLE_TWO_WAY :
+          SYNCHED_PROPERTY_SIMPLE_ONE_WAY,
         [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
       );
       break;
@@ -990,17 +990,17 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
     case COMPONENT_STATE_DECORATOR:
     case COMPONENT_PROVIDE_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(
-        isSimpleType(type, program, log)
-          ? OBSERVED_PROPERTY_SIMPLE_PU
-          : OBSERVED_PROPERTY_OBJECT_PU,
+        isSimpleType(type, program, log) ?
+          OBSERVED_PROPERTY_SIMPLE_PU :
+          OBSERVED_PROPERTY_OBJECT_PU,
         [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
       );
       break;
     case COMPONENT_LINK_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(
-        isSimpleType(type, program, log)
-          ? SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU
-          : SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
+        isSimpleType(type, program, log) ?
+          SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU :
+          SYNCHED_PROPERTY_SIMPLE_ONE_WAY_PU,
         [type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)]
       );
       break;
