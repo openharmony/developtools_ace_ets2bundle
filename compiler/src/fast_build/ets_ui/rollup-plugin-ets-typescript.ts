@@ -104,7 +104,7 @@ export function etsTransform() {
   if (projectConfig.useArkoala) {
     // Dynamic loading to avoid resolving arkoala-only dependencies
     const arkoalaSdkRoot = findArkoalaRoot();
-    const pluginPackagePath = path.join(arkoalaSdkRoot, '@koalaui', 'rollup-plugin-ets-arkoala');
+    const pluginPackagePath = path.join(arkoalaSdkRoot, '@arkoala', 'rollup-plugin-ets-arkoala');
     const pluginOptions = {
       arkoalaSdkRoot,
       projectConfig,
