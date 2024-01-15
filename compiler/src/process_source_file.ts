@@ -22,8 +22,8 @@ import {
 import { logger } from './compile_info';
 
 module.exports = function processSourcefile(source: string): string {
-  if (projectConfig.compileMode === ESMODULE && process.env.compilerType
-      && process.env.compilerType === ARK) {
+  if (projectConfig.compileMode === ESMODULE && process.env.compilerType &&
+      process.env.compilerType === ARK) {
     writeFileSyncByString(this.resourcePath, source, projectConfig, logger);
   }
   return source;
