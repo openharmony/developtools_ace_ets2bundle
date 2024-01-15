@@ -55,7 +55,7 @@ export function apiTransform() {
       if (filter(id)) {
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = this.share.projectConfig.needCompleteSourceMap ? true : false;
+          hiresStatus = this.share.projectConfig.needCompleteSourcesMap ? true : false;
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
