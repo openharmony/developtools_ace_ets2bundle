@@ -56,9 +56,11 @@ action("build_ets_loader_library") {
     _ace_config_dir = "//prebuilts/ace-toolkit/ets-loader/compiler"
   }
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
+  isPublic = "false"
   if (sdk_build_public) {
     _declarations_file_dir =
         "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
+    isPublic = "true"
   }
 
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
@@ -100,6 +102,8 @@ action("build_ets_loader_library") {
     rebase_path(ets_loader_component_config_file, root_build_dir),
     "--output-form-config-file",
     rebase_path(ets_loader_form_config_file, root_build_dir),
+    "--build-public-sdk",
+    isPublic,
   ]
 }
 
