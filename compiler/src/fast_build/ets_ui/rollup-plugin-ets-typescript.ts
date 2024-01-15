@@ -110,7 +110,7 @@ export function etsTransform() {
       projectConfig,
       globalModulePaths,
       getResolveModules,
-    }
+    };
     return require(pluginPackagePath).makeArkoalaPlugin(pluginOptions);
   }
   return {
@@ -445,7 +445,7 @@ function resetEtsTransform(): void {
 }
 
 function findArkoalaRoot(): string {
-  let arkoalaSdkRoot
+  let arkoalaSdkRoot;
   if (process.env.ARKOALA_SDK_ROOT) {
     arkoalaSdkRoot = process.env.ARKOALA_SDK_ROOT;
     if (!isDir(arkoalaSdkRoot)) {
@@ -459,7 +459,7 @@ function findArkoalaRoot(): string {
     }
   }
 
-  return arkoalaSdkRoot
+  return arkoalaSdkRoot;
 }
 
 function isDir(filePath: string): boolean {
