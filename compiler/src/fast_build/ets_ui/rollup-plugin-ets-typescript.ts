@@ -41,7 +41,8 @@ import {
   getHookEventFactory,
   genLoaderOutPathOfHar,
   harFilesRecord,
-  resetUtils
+  resetUtils,
+  getResolveModules
 } from '../../utils';
 import {
   preprocessExtend,
@@ -63,7 +64,8 @@ import {
   projectConfig,
   abilityPagesFullPath,
   globalProgram,
-  resetMain
+  resetMain,
+  globalModulePaths
 } from '../../../main';
 import {
   appComponentCollection,
@@ -99,6 +101,18 @@ let disableCacheOptions = {
 export function etsTransform() {
   const incrementalFileInHar: Map<string, string> = new Map();
   let cacheFile: CacheFile;
+  if (projectConfig.useArkoala) {
+    // Dynamic loading to avoid resolving arkoala-only dependencies
+    const arkoalaSdkRoot: string = findArkoalaRoot();
+    const pluginPackagePath: string = path.join(arkoalaSdkRoot, '@arkoala', 'rollup-plugin-ets-arkoala');
+    const pluginOptions: Object = {
+      arkoalaSdkRoot,
+      projectConfig,
+      globalModulePaths,
+      getResolveModules,
+    };
+    return require(pluginPackagePath).makeArkoalaPlugin(pluginOptions);
+  }
   return {
     name: 'etsTransform',
     transform: transform,
@@ -428,4 +442,31 @@ function resetEtsTransform(): void {
     resourceTableHash: 'default',
     etsLoaderVersion: 'default'
   };
+}
+
+function findArkoalaRoot(): string {
+  let arkoalaSdkRoot: string;
+  if (process.env.ARKOALA_SDK_ROOT) {
+    arkoalaSdkRoot = process.env.ARKOALA_SDK_ROOT;
+    if (!isDir(arkoalaSdkRoot)) {
+      throw new Error('Arkoala SDK not found in ' + arkoalaSdkRoot);
+    }
+  } else {
+    const arkoalaPossiblePaths: string[] = globalModulePaths.map(dir => path.join(dir, '../../arkoala'));
+    arkoalaSdkRoot = arkoalaPossiblePaths.find(possibleRootDir => isDir(possibleRootDir)) ?? '';
+    if (!arkoalaSdkRoot) {
+      throw new Error('Arkoala SDK not found in ' + arkoalaPossiblePaths.join(';'));
+    }
+  }
+
+  return arkoalaSdkRoot;
+}
+
+function isDir(filePath: string): boolean {
+  try {
+    let stat: fs.Stats = fs.statSync(filePath);
+    return stat.isDirectory();
+  } catch (e) {
+    return false;
+  }
 }
