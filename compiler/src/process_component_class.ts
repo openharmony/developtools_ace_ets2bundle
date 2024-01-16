@@ -491,9 +491,9 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       [COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR]);
     const localValue: ts.Expression[] = [
       decorators[index].expression.arguments[0],
-      node.initializer,
+      node.initializer ? node.initializer : ts.factory.createNumericLiteral(COMPONENT_CONSTRUCTOR_UNDEFINED),
       ts.factory.createThis(),
-      ts.factory.createStringLiteral(name)
+      ts.factory.createStringLiteral(name || COMPONENT_CONSTRUCTOR_UNDEFINED)
     ];
     if (!partialUpdateConfig.partialUpdateMode) {
       localFuncName = localStorageLink && !localStorageProp ? COMPONENT_SET_AND_LINK :
