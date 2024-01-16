@@ -120,13 +120,12 @@ function setCompilerOptions(resolveModulePaths: string[]) {
     'paths': {
       '*': allPath
     },
-    'lib': [
-      'lib.es2020.d.ts'
-    ],
+    'lib': ['lib.es2020.d.ts'],
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
-    'isCompatibleVersion':  getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE
+    'isCompatibleVersion':  getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE,
+    'skipTscOhModuleCheck': partialUpdateConfig.skipTscOhModuleCheck
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
