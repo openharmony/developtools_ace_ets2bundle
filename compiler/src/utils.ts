@@ -966,7 +966,13 @@ export function getRollupCacheStoreKey(projectConfig: object): string {
 }
 
 export function getRollupCacheKey(projectConfig: object): string {
-  let keyInfo: string[] = [projectConfig.entryModuleName, !!projectConfig.widgetCompile];
+  let isWidget: string = projectConfig.widgetCompile ? 'widget' : 'non-widget';
+  let ohosTestInfo: string = 'non-ohosTest';
+  if (projectConfig.testFrameworkPar) {
+    ohosTestInfo = JSON.stringify(projectConfig.testFrameworkPar);
+  }
+
+  let keyInfo: string[] = [projectConfig.entryModuleName, isWidget, ohosTestInfo];
   return keyInfo.join('#');
 }
 
