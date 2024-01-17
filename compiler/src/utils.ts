@@ -972,7 +972,8 @@ export function getRollupCacheKey(projectConfig: object): string {
     ohosTestInfo = JSON.stringify(projectConfig.testFrameworkPar);
   }
 
-  let keyInfo: string[] = [projectConfig.entryModuleName, isWidget, ohosTestInfo];
+  let keyInfo: string[] = [projectConfig.entryModuleName, isWidget, ohosTestInfo, projectConfig.needCoverageInsert,
+                           projectConfig.isOhosTest];
   return keyInfo.join('#');
 }
 
