@@ -272,6 +272,9 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
   const name: ts.Identifier = item.name as ts.Identifier;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
   if (!decorators || !decorators.length) {
+    if (!name.escapedText) {
+      return updateResult;
+    }
     curPropMap.set(name.escapedText.toString(), COMPONENT_NON_DECORATOR);
     updateResult.setProperity(undefined);
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
