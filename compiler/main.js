@@ -985,3 +985,5 @@ exports.sdkConfigPrefix = sdkConfigPrefix;
 exports.ohosSystemModulePaths = ohosSystemModulePaths;
 exports.resetMain = resetMain;
 exports.allModulesPaths = allModulesPaths;
+exports.resetProjectConfig = resetProjectConfig;
+exports.resetGlobalProgram = resetGlobalProgram;
