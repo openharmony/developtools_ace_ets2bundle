@@ -212,6 +212,8 @@ class KitInfo {
 
     if (projectConfig.processTs === true && !ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
       this.needSkipType = false;
+    } else {
+      this.needSkipType = true;
     }
 
     kitTransformLog.sourceFile = node;
