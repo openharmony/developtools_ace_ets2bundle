@@ -26,7 +26,9 @@ import {
   sdkConfigs,
   sdkConfigPrefix,
   allModulesPaths,
-  partialUpdateConfig
+  partialUpdateConfig,
+  resetProjectConfig,
+  resetGlobalProgram
 } from '../main';
 import {
   preprocessExtend,
@@ -1233,7 +1235,17 @@ function initEtsStandaloneCheckerConfig(logger, config): void {
   Object.assign(projectConfig, config);
 }
 
+function resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode: string) {
+  resetProjectConfig();
+  resetGlobalProgram();
+  resetEtsCheck();
+  fastBuildLogger = beforeInitFastBuildLogger;
+  process.env.compileMode = beforeInitCompileMode;
+}
+
 export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
+  const beforeInitFastBuildLogger = fastBuildLogger;
+  const beforeInitCompileMode = process.env.compileMode;
   initEtsStandaloneCheckerConfig(logger, projectConfig);
   const rootFileNames: string[] = [];
   const resolveModulePaths: string[] = [];
@@ -1256,6 +1268,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+  resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode);
 }
 
 export function resetEtsCheck(): void {
