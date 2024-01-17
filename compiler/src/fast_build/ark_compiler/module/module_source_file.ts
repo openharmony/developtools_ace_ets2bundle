@@ -321,7 +321,7 @@ export class ModuleSourceFile {
           hasDynamicImport = true;
         }
         if ((node.type === ROLLUP_IMPORT_NODE || node.type === ROLLUP_EXPORTNAME_NODE ||
-        node.type === ROLLUP_EXPORTALL_NODE && node.source)) {
+        node.type === ROLLUP_EXPORTALL_NODE) && node.source) {
           const ohmUrl: string | undefined =
             this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
           if (ohmUrl !== undefined) {
