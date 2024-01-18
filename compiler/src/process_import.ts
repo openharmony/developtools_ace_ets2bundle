@@ -27,8 +27,7 @@ import {
   CUSTOM_DECORATOR_NAME,
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
-  CARD_LOG_TYPE_IMPORT,
-  DECORATOR_REUSEABLE,
+  DECORATOR_REUSEABLE
 } from './pre_define';
 import {
   propertyCollection,
@@ -62,7 +61,6 @@ import {
   hasDecorator,
   LogInfo,
   LogType,
-  repeatLog,
   storedFileInfo
 } from './utils';
 import {
@@ -76,11 +74,10 @@ import {
   INNER_COMPONENT_NAMES,
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
-import { validatorCard } from './process_ui_syntax';
 import { type ResolveModuleInfo, SOURCE_FILES, getRealModulePath } from './ets_checker';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
-  process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES ? SOURCE_FILES : new Map());
+  process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
@@ -186,7 +183,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
         storedFileInfo.getCurrentArkTsFile().recycleComponents.add(asExportCollection.get(node.name.getText()));
       }
     }
-    const modifiers: readonly ts.Modifier[] = 
+    const modifiers: readonly ts.Modifier[] =
       ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
     if (modifiers && modifiers.length >= MODIFIER_LENGTH && modifiers[0] &&
       modifiers[0].kind === ts.SyntaxKind.ExportKeyword && modifiers[1] &&
@@ -325,7 +322,6 @@ function collectSpecialFunctionNode(node: ts.FunctionDeclaration | ts.ClassDecla
   asNameFromParent: Map<string, string>, defaultNameFromParent: string, defaultCollection: Set<string>,
   asExportCollection: Map<string, string>, collection: Set<string>): void {
   const name: string = node.name.getText();
-  let componentName: string;
   const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   if (asNameFromParent.has(name)) {
     collection.add(asNameFromParent.get(name));
@@ -370,26 +366,6 @@ function isExportEntry(node: ts.StructDeclaration, log: LogInfo[], entryCollecti
         break;
       }
     }
-  }
-}
-
-function remindExportEntryComponent(node: ts.Node, log: LogInfo[], fileResolvePath: string,
-  sourceFile: ts.SourceFile): void {
-  const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-  const line: number = posOfNode.line + 1;
-  const column: number = posOfNode.character + 1;
-  const warnInfo: LogInfo = {
-    type: LogType.WARN,
-    message: `It's not a recommended way to export struct with @Entry decorator, ` +
-      `which may cause ACE Engine error in component preview mode.`,
-    pos: node.getStart(),
-    fileName: fileResolvePath,
-    line: line,
-    column: column
-  };
-  if (!repeatLog.has(fileResolvePath)) {
-    log.push(warnInfo);
-    repeatLog.set(fileResolvePath, warnInfo);
   }
 }
 
@@ -553,7 +529,7 @@ function hasCollection(node: ts.Identifier): boolean {
     consumeCollection.has(name) ||
     objectLinkCollection.has(name) ||
     localStorageLinkCollection.has(name) ||
-    localStoragePropCollection.has(name)
+    localStoragePropCollection.has(name);
 }
 
 function isModule(filePath: string): boolean {
