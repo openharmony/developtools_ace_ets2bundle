@@ -28,12 +28,12 @@ import {
   isTsOrEtsSourceFile,
   shouldETSOrTSFileTransformToJS
 } from './utils';
+import { toUnixPath } from '../../utils';
 import {
-  toUnixPath,
   getHookEventFactory,
   createAndStartEvent,
   stopEvent
-} from '../../utils';
+} from '../../ark_utils';
 
 export let newSourceMaps: Object = {};
 
@@ -46,7 +46,7 @@ export function transformForModule(code: string, id: string) {
   const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'transform');
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
   if (this.share.projectConfig.compileMode === ESMODULE) {
-    const projectConfig: any = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
+    const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, eventTransformForModule);
       ModuleSourceFile.newSourceFile(id, code);
@@ -55,7 +55,7 @@ export function transformForModule(code: string, id: string) {
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id) && projectConfig.compatibleSdkVersion <= 10) {
-        const transformedResult: any = transformJsByBabelPlugin(code, eventTransformForModule);
+        const transformedResult: Object = transformJsByBabelPlugin(code, eventTransformForModule);
         code = transformedResult.code;
         preserveSourceMap(id, transformedResult.map, projectConfig, eventTransformForModule);
       }
@@ -65,7 +65,7 @@ export function transformForModule(code: string, id: string) {
   stopEvent(eventTransformForModule);
 }
 
-function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig: any, parentEvent: any): void {
+function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, parentEvent: Object): void {
   if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     return;
@@ -80,9 +80,9 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: any, projectConfig
   stopEvent(eventAddSourceMapInfo);
 }
 
-function transformJsByBabelPlugin(code: string, parentEvent: any): any {
+function transformJsByBabelPlugin(code: string, parentEvent: Object): Object {
   const eventTransformByBabel = createAndStartEvent(parentEvent, 'transform Js by babel plugin');
-  const transformed: any = require('@babel/core').transformSync(code,
+  const transformed: Object = require('@babel/core').transformSync(code,
     {
       plugins: [
         [require("@babel/plugin-proposal-class-properties"), { "loose": true }]

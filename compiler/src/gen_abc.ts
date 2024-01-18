@@ -32,7 +32,7 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
     const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
     const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
     const sourceFile: string = inputPaths[i].sourceFile;
-    const singleCmd: any = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
+    const singleCmd: string = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
     logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
     try {
       childProcess.execSync(singleCmd);

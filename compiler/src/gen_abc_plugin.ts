@@ -189,7 +189,7 @@ export class GenAbcPlugin {
 
     if (projectConfig.compileMode === ESMODULE) {
       if (projectConfig.cachePath && !projectConfig.xtsMode) {
-        let cachedJson: any = {};
+        let cachedJson: Object = {};
         const cachePrebuildInfoPath: string = path.join(projectConfig.cachePath, PREBUILDINFO_JSON);
         validateFilePathLength(cachePrebuildInfoPath, logger);
         cachedJson.buildMode = projectConfig.buildArkMode;
@@ -211,7 +211,7 @@ export class GenAbcPlugin {
 
     if (projectConfig.compileMode === JSBUNDLE && process.env.minPlatformVersion) {
       if (projectConfig.cachePath && !projectConfig.xtsMode) {
-        let cachedJson: any = {};
+        let cachedJson: Object = {};
         const cachePrebuildInfoPath: string = path.join(projectConfig.cachePath, PREBUILDINFO_JSON);
         validateFilePathLength(cachePrebuildInfoPath, logger);
         cachedJson.minAPIVersion = process.env.minPlatformVersion;
@@ -298,7 +298,7 @@ function clearGlobalInfo() {
   buildMapFileList = new Set<string>();
 }
 
-function getEntryInfo(filePath: string, resourceResolveData: any): string {
+function getEntryInfo(filePath: string, resourceResolveData: Object): string {
   if (!resourceResolveData.descriptionFilePath) {
     return;
   }
@@ -334,8 +334,8 @@ function getEntryInfo(filePath: string, resourceResolveData: any): string {
   return buildNpmInfoPath;
 }
 
-function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<string>{
-  let descriptionFileData: any = resourceResolveData.descriptionFileData;
+function getEntryCandidatesFromPackageJson(resourceResolveData: Object): Set<string> {
+  let descriptionFileData: Object = resourceResolveData.descriptionFileData;
   let packagePath: string = path.resolve(resourceResolveData.descriptionFilePath, '..');
   let mainFileds: Set<string> = new Set<string>();
   if (descriptionFileData.browser) {
@@ -364,12 +364,13 @@ function getEntryCandidatesFromPackageJson(resourceResolveData: any):  Set<strin
   return mainFileds;
 }
 
-function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string, abcFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+function processNodeModulesFile(filePath: string, tempFilePath: string, buildFilePath: string,
+  abcFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
   let npmPkgPath: string = getEntryInfo(filePath, module.resourceResolveData);
   const buildNpmPkgPath: string = npmPkgPath.replace(toUnixPath(projectConfig.nodeModulesPath), '');
   const npmPkgName: string = toUnixPath(path.join(PACKAGES, buildNpmPkgPath)).replace(new RegExp(NODE_MODULES, 'g'), PACKAGES);
 
-  const descriptionFileData: any = module.resourceResolveData.descriptionFileData;
+  const descriptionFileData: Object = module.resourceResolveData.descriptionFileData;
   if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
@@ -388,7 +389,7 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
   }
 }
 
-function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+function processEtsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
   // skip declaration modules
   if (filePath.endsWith(EXTNAME_D_ETS)) {
     return;
@@ -411,7 +412,7 @@ function processEtsModule(filePath: string, tempFilePath: string, buildFilePath:
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
 }
 
-function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+function processTsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
   // skip declaration modules
   if (filePath.endsWith(EXTNAME_D_TS)) {
     return;
@@ -431,7 +432,7 @@ function processTsModule(filePath: string, tempFilePath: string, buildFilePath: 
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
 }
 
-function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+function processJsModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
   const parent: string = path.join(tempFilePath, '..');
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
@@ -450,7 +451,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
   buildMapFileList.add(toUnixPath(filePath.replace(projectConfig.projectRootPath + path.sep, '')));
 }
 
-function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: any): void {
+function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
   const abcFilePath: string = "NA";
   if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
@@ -482,7 +483,7 @@ function getCachedModuleList(): Array<string> {
   if (!fs.existsSync(CACHED_MODULELIST_FILE)) {
     return [];
   }
-  const data: any = JSON.parse(fs.readFileSync(CACHED_MODULELIST_FILE).toString());
+  const data: Object = JSON.parse(fs.readFileSync(CACHED_MODULELIST_FILE).toString());
   const moduleList: Array<string> = data.list;
   return moduleList;
 }
@@ -533,7 +534,7 @@ function eliminateUnusedFiles(moduleList: Array<string>): void{
   }
 }
 
-function handleFullModuleFiles(modules, callback): any {
+function handleFullModuleFiles(modules, callback): void {
   const nodeModulesFile: Array<string> = [];
   modules.forEach(module => {
     if (module !== undefined && module.resourceResolveData !== undefined) {
@@ -613,7 +614,7 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
     js2Abc = path.join(arkDir, 'build-mac', 'bin', 'js2abc');
   }
   validateFilePathLength(js2Abc, logger);
-  const singleCmd: any = `"${js2Abc}" --compile-npm-entries "${npmEntriesInfoPath}" "${npmEntriesProtoFilePath}`;
+  const singleCmd: string = `"${js2Abc}" --compile-npm-entries "${npmEntriesInfoPath}" "${npmEntriesProtoFilePath}`;
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {
@@ -643,7 +644,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   }
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
-    const fileSize: any = fs.statSync(cacheOutputPath).size;
+    const fileSize: number = fs.statSync(cacheOutputPath).size;
     let sourceFile: string = output.replace(/\.temp\.js$/, "_.js");
     if (!isDebug && projectConfig.projectRootPath) {
       sourceFile = toUnixPath(sourceFile.replace(projectConfig.projectRootPath + path.sep, ''));
@@ -688,7 +689,7 @@ function splitJsBundlesBySize(bundleArray: Array<File>, groupNumber: number): an
   bundleArray.sort(function(f1: File, f2: File) {
     return f2.size - f1.size;
   });
-  const groupFileSize: any = new Map();
+  const groupFileSize = new Map();
   for (let i = 0; i < groupNumber; ++i) {
     result.push([]);
     groupFileSize.set(i, 0);
@@ -869,8 +870,8 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
   if (hashFilePath.length === 0) {
     return;
   }
-  const updateJsonObject: any = {};
-  let jsonObject: any = {};
+  const updateJsonObject: Object = {};
+  let jsonObject: Object = {};
   let jsonFile: string = '';
   if (fs.existsSync(hashFilePath)) {
     jsonFile = fs.readFileSync(hashFilePath).toString();
@@ -885,8 +886,8 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
         break;
       }
       if (fs.existsSync(outputPath)) {
-        const hashInputContentData: any = toHashData(input);
-        const hashAbcContentData: any = toHashData(outputPath);
+        const hashInputContentData: string = toHashData(input);
+        const hashAbcContentData: string = toHashData(outputPath);
         if (jsonObject[input] === hashInputContentData && jsonObject[outputPath] === hashAbcContentData) {
           updateJsonObject[input] = hashInputContentData;
           updateJsonObject[outputPath] = hashAbcContentData;
@@ -911,8 +912,8 @@ function writeModuleHashJson(): void {
       process.exitCode = FAIL;
       break;
     }
-    const hashInputContentData: any = toHashData(input);
-    const hashOutputContentData: any = toHashData(outputPath);
+    const hashInputContentData: string = toHashData(input);
+    const hashOutputContentData: string = toHashData(outputPath);
     moduleHashJsonObject[input] = hashInputContentData;
     moduleHashJsonObject[outputPath] = hashOutputContentData;
   }
@@ -934,8 +935,8 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
   if (hashFilePath.length === 0) {
     return;
   }
-  const updateJsonObject: any = {};
-  let jsonObject: any = {};
+  const updateJsonObject: Object = {};
+  let jsonObject: Object = {};
   let jsonFile: string = '';
   if (fs.existsSync(hashFilePath)) {
     jsonFile = fs.readFileSync(hashFilePath).toString();
@@ -950,8 +951,8 @@ function filterIntermediateJsBundleByHashJson(buildPath: string, inputPaths: Fil
         break;
       }
       if (fs.existsSync(cacheAbcFilePath)) {
-        const hashInputContentData: any = toHashData(cacheOutputPath);
-        const hashAbcContentData: any = toHashData(cacheAbcFilePath);
+        const hashInputContentData: string = toHashData(cacheOutputPath);
+        const hashAbcContentData: string = toHashData(cacheAbcFilePath);
         if (jsonObject[cacheOutputPath] === hashInputContentData && jsonObject[cacheAbcFilePath] === hashAbcContentData) {
           updateJsonObject[cacheOutputPath] = hashInputContentData;
           updateJsonObject[cacheAbcFilePath] = hashAbcContentData;
@@ -976,8 +977,8 @@ function writeHashJson(): void {
       process.exitCode = FAIL;
       break;
     }
-    const hashInputContentData: any = toHashData(cacheOutputPath);
-    const hashAbcContentData: any = toHashData(cacheAbcFilePath);
+    const hashInputContentData: string = toHashData(cacheOutputPath);
+    const hashAbcContentData: string = toHashData(cacheAbcFilePath);
     hashJsonObject[cacheOutputPath] = hashInputContentData;
     hashJsonObject[cacheAbcFilePath] = hashAbcContentData;
   }
@@ -1189,7 +1190,7 @@ function mergeProtoToAbc(): void {
     mergeAbc = path.join(arkDir, 'build-mac', 'bin', 'merge_abc');
   }
   mkdirsSync(projectConfig.buildPath);
-  const singleCmd: any = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${MODULES_ABC} --suffix protoBin`;
+  const singleCmd: string = `"${mergeAbc}" --input "@${protoFilePath}" --outputFilePath "${projectConfig.buildPath}" --output ${MODULES_ABC} --suffix protoBin`;
   try {
     childProcess.execSync(singleCmd);
   } catch (e) {

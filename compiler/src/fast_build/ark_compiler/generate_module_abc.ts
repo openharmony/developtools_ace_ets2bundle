@@ -23,7 +23,7 @@ import {
   getHookEventFactory,
   createAndStartEvent,
   stopEvent
-} from '../../utils';
+} from '../../ark_utils';
 import type { ModuleMode } from './module/module_mode';
 
 let moduleMode: ModuleMode = null;
@@ -45,7 +45,7 @@ export async function generateModuleAbc(error) {
   }
 }
 
-function generateAbc(rollupObject: any, parentEvent: any) {
+function generateAbc(rollupObject: Object, parentEvent: Object): void {
   const eventGenerateAbc = createAndStartEvent(parentEvent, 'generate abc');
   if (rollupObject.share.projectConfig.watchMode !== 'true') {
     const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);

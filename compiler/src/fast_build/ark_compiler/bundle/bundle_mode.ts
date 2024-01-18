@@ -66,10 +66,10 @@ interface File {
 export class BundleMode extends CommonMode {
   intermediateJsBundle: Map<string, File>;
   filterIntermediateJsBundle: Array<File>;
-  hashJsonObject: any;
+  hashJsonObject: Object;
   filesInfoPath: string;
 
-  constructor(rollupObject: any, rollupBundleFileSet: any) {
+  constructor(rollupObject: Object, rollupBundleFileSet: Object) {
     super(rollupObject);
     this.intermediateJsBundle = new Map<string, File>();
     this.filterIntermediateJsBundle = [];
@@ -78,13 +78,13 @@ export class BundleMode extends CommonMode {
     this.prepareForCompilation(rollupObject, rollupBundleFileSet);
   }
 
-  prepareForCompilation(rollupObject: any, rollupBundleFileSet: any) {
+  prepareForCompilation(rollupObject: Object, rollupBundleFileSet: Object): void {
     this.collectBundleFileList(rollupBundleFileSet);
     this.removeCacheInfo(rollupObject);
     this.filterBundleFileListWithHashJson();
   }
 
-  collectBundleFileList(rollupBundleFileSet: any) {
+  collectBundleFileList(rollupBundleFileSet: Object): void {
     Object.keys(rollupBundleFileSet).forEach((fileName) => {
       // choose *.js
       if (this.projectConfig.aceModuleBuild && isSpecifiedExt(fileName, EXTNAME_JS)) {
@@ -118,8 +118,8 @@ export class BundleMode extends CommonMode {
       });
       return;
     }
-    let updatedJsonObject: any = {};
-    let jsonObject: any = {};
+    let updatedJsonObject: Object = {};
+    let jsonObject: Object = {};
     let jsonFile: string = '';
     jsonFile = fs.readFileSync(this.hashJsonFilePath).toString();
     jsonObject = JSON.parse(jsonFile);
@@ -131,8 +131,8 @@ export class BundleMode extends CommonMode {
         this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} is lost`);
       }
       if (fs.existsSync(cacheAbcFilePath)) {
-        const hashCacheFileContentData: any = toHashData(cacheFilePath);
-        const hashAbcContentData: any = toHashData(cacheAbcFilePath);
+        const hashCacheFileContentData: string = toHashData(cacheFilePath);
+        const hashAbcContentData: string = toHashData(cacheAbcFilePath);
         if (jsonObject[cacheFilePath] === hashCacheFileContentData &&
           jsonObject[cacheAbcFilePath] === hashAbcContentData) {
           updatedJsonObject[cacheFilePath] = hashCacheFileContentData;
@@ -244,7 +244,7 @@ export class BundleMode extends CommonMode {
   }
 
   private collectIntermediateJsBundle(filePath: string, cacheFilePath: string) {
-    const fileSize: any = fs.statSync(cacheFilePath).size;
+    const fileSize: number = fs.statSync(cacheFilePath).size;
     let sourceFile: string = changeFileExtension(filePath, '_.js', TEMP_JS);
     if (!this.arkConfig.isDebug && this.projectConfig.projectRootPath) {
       sourceFile = sourceFile.replace(this.projectConfig.projectRootPath + path.sep, '');
@@ -272,13 +272,13 @@ export class BundleMode extends CommonMode {
       this.setupCluster(cluster);
       const workerNumber: number = splittedBundles.length < MAX_WORKER_NUMBER ? splittedBundles.length : MAX_WORKER_NUMBER;
       for (let i = 0; i < workerNumber; ++i) {
-        const workerData: any = {
+        const workerData: Object = {
           inputs: JSON.stringify(splittedBundles[i]),
           cmd: this.cmdArgs.join(' '),
           mode: JSBUNDLE
         };
         this.triggerAsync(() => {
-          const worker: any = cluster.fork(workerData);
+          const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc, received error message.');
@@ -348,8 +348,8 @@ export class BundleMode extends CommonMode {
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheAbcFilePath)) {
         this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} or ${cacheAbcFilePath} is lost`);
       }
-      const hashCacheFileContentData: any = toHashData(cacheFilePath);
-      const hashCacheAbcContentData: any = toHashData(cacheAbcFilePath);
+      const hashCacheFileContentData: string = toHashData(cacheFilePath);
+      const hashCacheAbcContentData: string = toHashData(cacheAbcFilePath);
       this.hashJsonObject[cacheFilePath] = hashCacheFileContentData;
       this.hashJsonObject[cacheAbcFilePath] = hashCacheAbcContentData;
     }

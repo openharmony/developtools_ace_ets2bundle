@@ -16,7 +16,7 @@
 import { BundleMode } from './bundle_mode';
 
 export class BundlePreviewMode extends BundleMode {
-  constructor(rollupObject: any, rollupBundleFileSet: any) {
+  constructor(rollupObject: Object, rollupBundleFileSet: Object) {
     super(rollupObject, rollupBundleFileSet);
   }
 

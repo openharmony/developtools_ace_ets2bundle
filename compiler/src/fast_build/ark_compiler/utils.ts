@@ -35,14 +35,14 @@ import {
   genTemporaryPath,
   mkdirsSync,
   validateFilePathLength,
-  toUnixPath,
-  createAndStartEvent,
-  stopEvent
+  toUnixPath
 } from '../../utils';
 import {
   tryMangleFileNameAndWriteFile,
   writeObfuscatedSourceCode,
-  cleanUpUtilsObjects
+  cleanUpUtilsObjects,
+  createAndStartEvent,
+  stopEvent
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { newSourceMaps } from './transform';
@@ -52,17 +52,17 @@ import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanModuleMode } from './generate_module_abc';
 import { ModuleSourceFile } from './module/module_source_file';
 
-export function needAotCompiler(projectConfig: any): boolean {
+export function needAotCompiler(projectConfig: Object): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
     projectConfig.anBuildMode === AOT_PARTIAL);
 }
 
-export function isAotMode(projectConfig: any): boolean {
+export function isAotMode(projectConfig: Object): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
     projectConfig.anBuildMode === AOT_PARTIAL || projectConfig.anBuildMode === AOT_TYPE);
 }
 
-export function isDebug(projectConfig: any): boolean {
+export function isDebug(projectConfig: Object): boolean {
   return projectConfig.buildMode.toLowerCase() === DEBUG;
 }
 
@@ -84,7 +84,7 @@ function removeCacheFile(cacheFilePath: string, ext: string): void {
   }
 }
 
-export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: any): boolean {
+export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: Object): boolean {
   const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectConfig.projectRootPath), '');
   let cacheFilePath: string = path.join(projectConfig.cachePath, sufStr);
 
@@ -104,7 +104,8 @@ export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: 
   return fs.existsSync(cacheFilePath);
 }
 
-export async function writeFileContentToTempDir(id: string, content: string, projectConfig: any, logger: any, parentEvent: any) {
+export async function writeFileContentToTempDir(id: string, content: string, projectConfig: Object,
+  logger: Object, parentEvent: Object): Promise<void> {
   if (isCommonJsPluginVirtualFile(id)) {
     return;
   }
@@ -142,7 +143,8 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
   stopEvent(eventWriteFileContent);
 }
 
-async function writeFileContent(sourceFilePath: string, filePath: string, content: string, projectConfig: any, logger: any) {
+async function writeFileContent(sourceFilePath: string, filePath: string, content: string,
+  projectConfig: Object, logger: Object): Promise<void> {
   if (!isSpecifiedExt(sourceFilePath, EXTNAME_JS)) {
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
@@ -169,11 +171,11 @@ export function isCommonJsPluginVirtualFile(filePath: string): boolean {
   return filePath.includes('\x00');
 }
 
-export function isCurrentProjectFiles(filePath: string, projectConfig: any): boolean {
+export function isCurrentProjectFiles(filePath: string, projectConfig: Object): boolean {
   return filePath.indexOf(projectConfig.projectRootPath) >= 0;
 }
 
-export function genTemporaryModuleCacheDirectoryForBundle(projectConfig: any) {
+export function genTemporaryModuleCacheDirectoryForBundle(projectConfig: Object): string {
   const buildDirArr: string[] = projectConfig.aceModuleBuild.split(path.sep);
   const abilityDir: string = buildDirArr[buildDirArr.length - 1];
   const temporaryModuleCacheDirPath: string = path.join(projectConfig.cachePath, TEMPORARY, abilityDir);
@@ -186,7 +188,7 @@ export function isSpecifiedExt(filePath: string, fileExtendName: string) {
   return path.extname(filePath) === fileExtendName;
 }
 
-export function genCachePath(tailName: string, projectConfig: any, logger: any): string {
+export function genCachePath(tailName: string, projectConfig: Object, logger: Object): string {
   const pathName: string = projectConfig.cachePath !== undefined ?
     path.join(projectConfig.cachePath, TEMPORARY, tailName) : path.join(projectConfig.aceModuleBuild, tailName);
   mkdirsSync(path.dirname(pathName));
