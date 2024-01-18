@@ -35,11 +35,11 @@ import {
   updateSourceMap,
   writeFileContentToTempDir
 } from '../utils';
+import { toUnixPath } from '../../../utils';
 import {
-  toUnixPath,
   createAndStartEvent,
   stopEvent
-} from '../../../utils';
+} from '../../../ark_utils';
 import { newSourceMaps } from '../transform';
 import { writeObfuscationNameCache } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
@@ -59,8 +59,8 @@ export class ModuleSourceFile {
   private moduleId: string;
   private source: string | ts.SourceFile;
   private isSourceNode: boolean = false;
-  private static projectConfig: any;
-  private static logger: any;
+  private static projectConfig: Object;
+  private static logger: Object;
   private static mockConfigInfo: Object = {};
   private static mockFiles: string[] = [];
   private static newMockConfigInfo: Object = {};
@@ -74,7 +74,7 @@ export class ModuleSourceFile {
     }
   }
 
-  static setProcessMock(rollupObject: any): void {
+  static setProcessMock(rollupObject: Object): void {
     // only processing mock-config.json5 in preview or OhosTest mode
     if (!(rollupObject.share.projectConfig.isPreview || rollupObject.share.projectConfig.isOhosTest)) {
       ModuleSourceFile.needProcessMock = false;
@@ -93,7 +93,7 @@ export class ModuleSourceFile {
                                         rollupObject.share.projectConfig.mockParams.mockConfigPath) ? true : false;
   }
 
-  static collectMockConfigInfo(rollupObject: any): void {
+  static collectMockConfigInfo(rollupObject: Object): void {
     ModuleSourceFile.mockConfigInfo = require('json5').parse(
       fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
     for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
@@ -111,7 +111,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.newMockConfigInfo[key] = {'source': src};
   }
 
-  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: any): void {
+  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: Object): void {
     if (!ModuleSourceFile.mockConfigInfo.hasOwnProperty(originKey)) {
       return;
     }
@@ -127,7 +127,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
   }
 
-  static isMockFile(file: string, rollupObject: any): boolean {
+  static isMockFile(file: string, rollupObject: Object): boolean {
     if (!ModuleSourceFile.needProcessMock) {
       return false;
     }
@@ -142,7 +142,7 @@ export class ModuleSourceFile {
     return false;
   }
 
-  static generateMockConfigFile(rollupObject: any): void {
+  static generateMockConfigFile(rollupObject: Object): void {
     let transformedMockConfigCache: string =
       path.resolve(rollupObject.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
     let transformedMockConfig: string =
@@ -171,7 +171,7 @@ export class ModuleSourceFile {
     fs.copyFileSync(transformedMockConfigCache, transformedMockConfig);
   }
 
-  static removePotentialMockConfigCache(rollupObject: any): void {
+  static removePotentialMockConfigCache(rollupObject: Object): void {
     const transformedMockConfigCache: string =
       path.resolve(rollupObject.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
     const userDefinedMockConfigCache: string =
@@ -193,7 +193,7 @@ export class ModuleSourceFile {
     return ModuleSourceFile.sourceFiles;
   }
 
-  static async processModuleSourceFiles(rollupObject: any, parentEvent: any) {
+  static async processModuleSourceFiles(rollupObject: Object, parentEvent: Object): Promise<void> {
     this.initPluginEnv(rollupObject);
 
     // collect mockConfigInfo
@@ -243,7 +243,7 @@ export class ModuleSourceFile {
     return this.moduleId;
   }
 
-  private async writeSourceFile(parentEvent: any) {
+  private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, parentEvent, ModuleSourceFile.logger);
     } else {
@@ -251,7 +251,7 @@ export class ModuleSourceFile {
     }
   }
 
-  private getOhmUrl(rollupObject: any, moduleRequest: string, filePath: string | undefined): string | undefined {
+  private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined): string | undefined {
     let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
     if (systemOrLibOhmUrl != undefined) {
       if (ModuleSourceFile.needProcessMock) {
@@ -267,7 +267,7 @@ export class ModuleSourceFile {
       return harOhmUrl;
     }
     if (filePath) {
-      const targetModuleInfo: any = rollupObject.getModuleInfo(filePath);
+      const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       const namespace: string = targetModuleInfo['meta']['moduleName'];
       const ohmUrl: string =
         getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace);
@@ -286,9 +286,9 @@ export class ModuleSourceFile {
     return undefined;
   }
 
-  private processJsModuleRequest(rollupObject: any) {
-    const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
-    const importMap: any = moduleInfo.importedIdMaps;
+  private processJsModuleRequest(rollupObject: Object): void {
+    const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
+    const importMap: Object = moduleInfo.importedIdMaps;
     const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]|(?:import)(?:\s*)\(['"]([^'"]+)['"]\)/g;
     this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, staticModuleRequest, dynamicModuleRequest) => {
       const moduleRequest: string = staticModuleRequest || dynamicModuleRequest;
@@ -302,9 +302,9 @@ export class ModuleSourceFile {
     });
   }
 
-  private async processTransformedJsModuleRequest(rollupObject: any) {
-    const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
-    const importMap: any = moduleInfo.importedIdMaps;
+  private async processTransformedJsModuleRequest(rollupObject: Object): Promise<void> {
+    const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
+    const importMap: Object = moduleInfo.importedIdMaps;
     const code: MagicString = new MagicString(<string>this.source);
     // The data collected by moduleNodeMap represents the node dataset of related types.
     // The data is processed based on the AST collected during the transform stage.
@@ -352,7 +352,7 @@ export class ModuleSourceFile {
       // update sourceMap
       const relativeSourceFilePath: string =
         toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, ''));
-      const updatedMap: any = code.generateMap({
+      const updatedMap: Object = code.generateMap({
         source: relativeSourceFilePath,
         file: `${path.basename(this.moduleId)}`,
         includeContent: false,
@@ -364,9 +364,9 @@ export class ModuleSourceFile {
     this.source = code.toString();
   }
 
-  private processTransformedTsModuleRequest(rollupObject: any) {
-    const moduleInfo: any = rollupObject.getModuleInfo(this.moduleId);
-    const importMap: any = moduleInfo.importedIdMaps;
+  private processTransformedTsModuleRequest(rollupObject: Object): void {
+    const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
+    const importMap: Object = moduleInfo.importedIdMaps;
     let isMockFile: boolean = ModuleSourceFile.isMockFile(this.moduleId, rollupObject);
 
     const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
@@ -418,7 +418,7 @@ export class ModuleSourceFile {
   // Replace each module request in source file to a unique representation which is called 'ohmUrl'.
   // This 'ohmUrl' will be the same as the record name for each file, to make sure runtime can find the corresponding
   // record based on each module request.
-  async processModuleRequest(rollupObject: any, parentEvent: any) {
+  async processModuleRequest(rollupObject: Object, parentEvent: Object): Promise<void> {
     if (isJsonSourceFile(this.moduleId)) {
       return;
     }
@@ -443,7 +443,7 @@ export class ModuleSourceFile {
     }
   }
 
-  private static initPluginEnv(rollupObject: any) {
+  private static initPluginEnv(rollupObject: Object): void {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
   }

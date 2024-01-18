@@ -40,17 +40,17 @@ import {
 } from '../utils';
 
 export abstract class CommonMode {
-  projectConfig: any;
-  arkConfig: any;
+  projectConfig: Object;
+  arkConfig: Object;
   cmdArgs: string[] = [];
-  logger: any;
-  throwArkTsCompilerError: any;
+  logger: Object;
+  throwArkTsCompilerError: Object;
   hashJsonFilePath: string;
   genAbcScriptPath: string;
-  triggerAsync: any;
-  triggerEndSignal: any;
+  triggerAsync: Object;
+  triggerEndSignal: Object;
 
-  constructor(rollupObject: any) {
+  constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.arkConfig = initArkConfig(this.projectConfig);
     this.cmdArgs = this.initCmdEnv();
@@ -113,7 +113,7 @@ export abstract class CommonMode {
     }
   }
 
-  setupCluster(cluster: any): void {
+  setupCluster(cluster: Object): void {
     cluster.removeAllListeners('exit');
     if (nodeLargeOrEqualTargetVersion(16)) {
       cluster.setupPrimary({
@@ -128,11 +128,11 @@ export abstract class CommonMode {
     }
   }
 
-  protected needRemoveCacheInfo(rollupObject: any): boolean {
+  protected needRemoveCacheInfo(rollupObject: Object): boolean {
     return rollupObject.cache.get(IS_CACHE_INVALID) || rollupObject.cache.get(IS_CACHE_INVALID) === undefined;
   }
 
-  protected removeCacheInfo(rollupObject: any): void {
+  protected removeCacheInfo(rollupObject: Object): void {
     if (this.needRemoveCacheInfo(rollupObject)) {
       this.removeCompilationCache();
     }

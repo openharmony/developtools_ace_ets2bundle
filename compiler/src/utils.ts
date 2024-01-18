@@ -25,6 +25,7 @@ import {
   globalProgram
 } from '../main';
 import { createHash } from 'crypto';
+import type { Hash } from 'crypto';
 import {
   AUXILIARY,
   EXTNAME_ETS,
@@ -299,9 +300,9 @@ export function toUnixPath(data: string): string {
   return data;
 }
 
-export function toHashData(path: string): any {
+export function toHashData(path: string): string {
   const content: string = fs.readFileSync(path).toString();
-  const hash: any = createHash('sha256');
+  const hash: Hash = createHash('sha256');
   hash.update(content);
   return hash.digest('hex');
 }
@@ -326,7 +327,7 @@ export function genLoaderOutPathOfHar(filePath: string, cachePath: string, build
 }
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
-  projectConfig: any, buildInHar: boolean = false): string {
+  projectConfig: Object, buildInHar: boolean = false): string {
   filePath = toUnixPath(filePath).replace(/\.[cm]js$/, EXTNAME_JS);
   projectPath = toUnixPath(projectPath);
 
@@ -362,7 +363,7 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   return '';
 }
 
-export function isPackageModulesFile(filePath: string, projectConfig: any): boolean {
+export function isPackageModulesFile(filePath: string, projectConfig: Object): boolean {
   filePath = toUnixPath(filePath);
   const hapPath: string = toUnixPath(projectConfig.projectRootPath);
   const tempFilePath: string = filePath.replace(hapPath, '');
@@ -485,7 +486,7 @@ export function maxFilePathLength(): number {
   }
 }
 
-export function validateFilePathLength(filePath: string, logger: any): boolean {
+export function validateFilePathLength(filePath: string, logger: Object): boolean {
   if (maxFilePathLength() < 0) {
     logger.error(red, "Unknown OS platform", reset);
     process.exitCode = FAIL;
@@ -954,7 +955,7 @@ export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: 
     return true;
   }
 }
-
+ 
 export function isString(text: unknown): text is string {
   return typeof text === 'string';
 }
@@ -985,42 +986,6 @@ export function clearRollupCacheStore(cacheStoreManager: object, currentKey: str
   for (let key of cacheStoreManager.keys()) {
     if (key !== currentKey) {
       cacheStoreManager.unmount(key);
-    }
-  }
-}
-
-export function getHookEventFactory(share: any, pluginName: string, hookName: string): any {
-  if (typeof share.getHookEventFactory === 'function') {
-    return share.getHookEventFactory(pluginName, hookName);
-  } else {
-    return undefined;
-  }
-}
-
-export function createAndStartEvent(eventOrEventFactory: any, eventName: string, syncFlag = false): any {
-  if (eventOrEventFactory === undefined) {
-    return undefined;
-  }
-  let event: any;
-  if (typeof eventOrEventFactory.createSubEvent === 'function') {
-    event = eventOrEventFactory.createSubEvent(eventName);
-  } else {
-    event = eventOrEventFactory.createEvent(eventName);
-  }
-  if (typeof event.startAsyncEvent === 'function' && syncFlag) {
-    event.startAsyncEvent();
-  } else {
-    event.start();
-  }
-  return event;
-}
-
-export function stopEvent(event:any, syncFlag = false): void {
-  if (event !== undefined) {
-    if (typeof event.stopAsyncEvent === 'function' && syncFlag) {
-      event.stopAsyncEvent();
-    } else {
-      event.stop();
     }
   }
 }

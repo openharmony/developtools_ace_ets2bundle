@@ -28,17 +28,19 @@ import { isJsonSourceFile } from '../utils';
 import { newSourceMaps } from '../transform';
 import {
   mkdirsSync,
-  createAndStartEvent,
-  stopEvent,
   toUnixPath,
   validateFilePathLength
 } from '../../../utils';
+import {
+  createAndStartEvent,
+  stopEvent
+} from '../../../ark_utils';
 
 let isFirstBuild: boolean = true;
 
 export class ModuleHotreloadMode extends ModuleMode {
   symbolMapFilePath: string;
-  constructor(rollupObject: any) {
+  constructor(rollupObject: Object) {
     super(rollupObject);
     if (this.projectConfig.oldMapFilePath) {
       this.symbolMapFilePath = path.join(this.projectConfig.oldMapFilePath, SYMBOLMAP);
@@ -47,7 +49,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     }
   }
 
-  generateAbc(rollupObject: any, parentEvent: any) {
+  generateAbc(rollupObject: Object, parentEvent: Object): void {
     if (isFirstBuild) {
       this.compileAllFiles(rollupObject, parentEvent);
       isFirstBuild = false;
@@ -68,13 +70,13 @@ export class ModuleHotreloadMode extends ModuleMode {
     this.cmdArgs.push('--hot-reload');
   }
 
-  private compileAllFiles(rollupObject: any, parentEvent: any) {
+  private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
     this.buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent);
   }
 
-  private compileChangeListFiles(rollupObject: any, parentEvent: any) {
+  private compileChangeListFiles(rollupObject: Object, parentEvent: Object): void {
     if (!fs.existsSync(this.projectConfig.changedFileList)) {
       this.logger.debug(blue, `ArkTS: Cannot find file: ${
         this.projectConfig.changedFileList}, skip hot reload build`, reset);
@@ -116,7 +118,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     this.generateAbcByEs2abc(parentEvent);
   }
 
-  private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: any) {
+  private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
     const relativeProjectPath: string = this.projectConfig.projectPath.slice(
       this.projectConfig.projectRootPath.length + path.sep.length);
@@ -134,7 +136,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     stopEvent(eventUpdateSourceMapFromFileList);
   }
 
-  private generateAbcByEs2abc(parentEvent: any) {
+  private generateAbcByEs2abc(parentEvent: Object): void {
     this.generateEs2AbcCmd();
     this.addHotReloadArgs();
     this.generateMergedAbcOfEs2Abc(parentEvent);

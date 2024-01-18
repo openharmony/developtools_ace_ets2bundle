@@ -54,7 +54,7 @@ type ArkConfig = {
   isDebug: boolean;
 };
 
-export function initArkConfig(projectConfig: any) {
+export function initArkConfig(projectConfig: Object): ArkConfig {
   let arkRootPath: string = path.join(__dirname, '..', '..', '..', '..', 'bin', 'ark');
   if (projectConfig.arkFrontendDir) {
     arkRootPath = projectConfig.arkFrontendDir;
@@ -80,9 +80,9 @@ export function initArkConfig(projectConfig: any) {
   return arkConfig;
 }
 
-export function initArkProjectConfig(share: any) {
-  let projectConfig: any = share.projectConfig;
-  let arkProjectConfig: any = {};
+export function initArkProjectConfig(share: Object): Object {
+  let projectConfig: Object = share.projectConfig;
+  let arkProjectConfig: Object = {};
   if (projectConfig.aceBuildJson && fs.existsSync(projectConfig.aceBuildJson)) {
     const buildJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceBuildJson).toString());
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
@@ -308,7 +308,7 @@ function processPlatformInfo(arkConfig: ArkConfig): void {
   }
 }
 
-function processCompatibleVersion(projectConfig: object, arkConfig: ArkConfig): void {
+function processCompatibleVersion(projectConfig: Object, arkConfig: ArkConfig): void {
   const platformPath: string = getArkBuildDir(arkConfig.arkRootPath);
   if (projectConfig.minPlatformVersion && projectConfig.minPlatformVersion.toString() === '8') {
     // use ts2abc to compile apps with 'CompatibleSdkVersion' set to 8

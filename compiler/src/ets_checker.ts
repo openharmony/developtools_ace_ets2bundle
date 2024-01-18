@@ -82,8 +82,6 @@ import {
 import {
   hasDecorator,
   isString,
-  createAndStartEvent,
-  stopEvent,
   generateSourceFilesInHar,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
@@ -394,7 +392,7 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = {count: 0};
 export const warnCheckerResult: WarnCheckerResult = {count: 0};
 export let languageService: ts.LanguageService = null;
-export function serviceChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null, parentEvent?: any,
+export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
@@ -423,7 +421,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: any = null, r
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
-  runArkTSLinter(parentEvent, rollupShareObject);
+  runArkTSLinter(rollupShareObject);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
@@ -1120,9 +1118,7 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-function runArkTSLinter(parentEvent?: any, rollupShareObject?: any): void {
-  const eventRunArkTsLinter = createAndStartEvent(parentEvent, 'run Arkts linter');
-
+function runArkTSLinter(rollupShareObject?: Object): void {
   let wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
   let originProgram: ArkTSProgram = {
     builderProgram: globalProgram.builderProgram,
@@ -1145,7 +1141,6 @@ function runArkTSLinter(parentEvent?: any, rollupShareObject?: any): void {
       updateErrorFileCache(diagnostic);
     });
   }
-  stopEvent(eventRunArkTsLinter);
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {

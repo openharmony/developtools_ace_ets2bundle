@@ -70,16 +70,16 @@ import {
   mkdirsSync,
   toUnixPath,
   toHashData,
-  validateFilePathLength,
-  createAndStartEvent,
-  stopEvent
+  validateFilePathLength
 } from '../../../utils';
 import {
   getPackageInfo,
   getOhmUrlByFilepath,
   getOhmUrlByHarName,
   isTs2Abc,
-  isEs2Abc
+  isEs2Abc,
+  createAndStartEvent,
+  stopEvent
 } from '../../../ark_utils';
 import {
   generateAot,
@@ -122,8 +122,8 @@ export class PackageEntryInfo {
 export class ModuleMode extends CommonMode {
   moduleInfos: Map<String, ModuleInfo>;
   pkgEntryInfos: Map<String, PackageEntryInfo>;
-  hashJsonObject: any;
-  cacheSourceMapObject: any;
+  hashJsonObject: Object;
+  cacheSourceMapObject: Object;
   filesInfoPath: string;
   npmEntriesInfoPath: string;
   moduleAbcPath: string;
@@ -134,9 +134,9 @@ export class ModuleMode extends CommonMode {
   npmEntriesProtoFilePath: string;
   protoFilePath: string;
   filterModuleInfos: Map<String, ModuleInfo>;
-  symlinkMap: any;
+  symlinkMap: Object;
 
-  constructor(rollupObject: any) {
+  constructor(rollupObject: Object) {
     super(rollupObject);
     this.moduleInfos = new Map<String, ModuleInfo>();
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
@@ -158,21 +158,21 @@ export class ModuleMode extends CommonMode {
     this.symlinkMap = rollupObject.share.symlinkMap;
   }
 
-  prepareForCompilation(rollupObject: any, parentEvent: any): void {
+  prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
 
-  collectModuleFileList(module: any, fileList: IterableIterator<string>) {
+  collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
     let moduleInfos: Map<String, ModuleInfo> = new Map<String, ModuleInfo>();
     let pkgEntryInfos: Map<String, PackageEntryInfo> = new Map<String, PackageEntryInfo>();
     for (const moduleId of fileList) {
       if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
         continue;
       }
-      const moduleInfo: any = module.getModuleInfo(moduleId);
+      const moduleInfo: Object = module.getModuleInfo(moduleId);
       if (moduleInfo['meta']['isNodeEntryFile']) {
         this.getPackageEntryInfo(moduleId, moduleInfo['meta'], pkgEntryInfos);
       }
@@ -221,9 +221,9 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private getPackageEntryInfo(filePath: string, metaInfo: any, pkgEntryInfos: Map<String, PackageEntryInfo>) {
+  private getPackageEntryInfo(filePath: string, metaInfo: Object, pkgEntryInfos: Map<String, PackageEntryInfo>): void {
     if (metaInfo['isLocalDependency']) {
-      const hostModulesInfo: any = metaInfo['hostModulesInfo'];
+      const hostModulesInfo: Object = metaInfo.hostModulesInfo;
       const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
       hostModulesInfo.forEach(hostModuleInfo => {
         const hostDependencyName: string = hostModuleInfo['hostDependencyName'];
@@ -254,7 +254,7 @@ export class ModuleMode extends CommonMode {
     }
     // create symlink path to actual path mapping in ohpm
     if (this.projectConfig.packageDir == OH_MODULES && this.symlinkMap) {
-      const symlinkEntries: any = Object.entries(this.symlinkMap);
+      const symlinkEntries: Object = Object.entries(this.symlinkMap);
       for (const [actualPath, symlinkPaths] of symlinkEntries) {
         if (actualPath === pkgPath) {
           (<string[]>symlinkPaths).forEach((symlink: string) => {
@@ -269,7 +269,7 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: any) {
+  private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: Object): void {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
         const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
@@ -298,7 +298,8 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string, metaInfo: any, moduleInfos: any) {
+  private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string,
+    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
     let namespace: string = metaInfo['moduleName'];
     let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
@@ -363,7 +364,7 @@ export class ModuleMode extends CommonMode {
     });
   }
 
-  buildModuleSourceMapInfo(parentEvent: any) {
+  buildModuleSourceMapInfo(parentEvent: Object): void {
     if (this.projectConfig.widgetCompile) {
       return;
     }
@@ -444,7 +445,7 @@ export class ModuleMode extends CommonMode {
     this.generateAbcCacheFilesInfo();
   }
 
-  generateMergedAbcOfEs2Abc(parentEvent: any) {
+  generateMergedAbcOfEs2Abc(parentEvent: Object): void {
     // collect data error from subprocess
     let errMsg: string = '';
     const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
@@ -452,7 +453,7 @@ export class ModuleMode extends CommonMode {
     stopEvent(eventGenDescriptionsForMergedEs2abc);
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
-      let eventGenAbc: any;
+      let eventGenAbc: Object;
       const child = this.triggerAsync(() => {
         eventGenAbc = createAndStartEvent(parentEvent, 'generate merged abc by es2abc (async)', true);
         return childProcess.exec(genAbcCmd, { windowsHide: true });
@@ -493,8 +494,8 @@ export class ModuleMode extends CommonMode {
       return;
     }
 
-    let updatedJsonObject: any = {};
-    let jsonObject: any = {};
+    let updatedJsonObject: Object = {};
+    let jsonObject: Object = {};
     let jsonFile: string = '';
 
     if (fs.existsSync(this.hashJsonFilePath)) {
@@ -508,8 +509,8 @@ export class ModuleMode extends CommonMode {
           this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} is lost`);
         }
         if (fs.existsSync(cacheProtoFilePath)) {
-          const hashCacheFileContentData: any = toHashData(cacheFilePath);
-          const hashProtoFileContentData: any = toHashData(cacheProtoFilePath);
+          const hashCacheFileContentData: string = toHashData(cacheFilePath);
+          const hashProtoFileContentData: string = toHashData(cacheProtoFilePath);
           if (jsonObject[cacheFilePath] === hashCacheFileContentData &&
             jsonObject[cacheProtoFilePath] === hashProtoFileContentData) {
             updatedJsonObject[cacheFilePath] = cacheFilePath;
@@ -558,7 +559,7 @@ export class ModuleMode extends CommonMode {
       for (let i = 0; i < this.workerNumber; ++i) {
         const sn: number = i + 1;
         const workerFileName: string = `${FILESINFO}_${sn}${EXTNAME_TXT}`;
-        const workerData: any = {
+        const workerData: Object = {
           inputs: JSON.stringify(splittedModules[i]),
           cmd: ts2abcCmdArgs.join(' '),
           workerFileName: workerFileName,
@@ -566,7 +567,7 @@ export class ModuleMode extends CommonMode {
           cachePath: this.projectConfig.cachePath
         };
         this.triggerAsync(() => {
-          const worker: any = cluster.fork(workerData);
+          const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
             this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
@@ -645,7 +646,7 @@ export class ModuleMode extends CommonMode {
     validateFilePathLength(this.protoFilePath, this.logger);
     mkdirsSync(path.dirname(this.protoFilePath));
     let protoFilesInfo: string = '';
-    const sortModuleInfos: any = new Map([...this.moduleInfos].sort());
+    const sortModuleInfos: Object = new Map([...this.moduleInfos].sort());
     for (const value of sortModuleInfos.values()) {
       const cacheProtoPath: string = changeFileExtension(value.cacheFilePath, EXTNAME_PROTO_BIN);
       protoFilesInfo += `${toUnixPath(cacheProtoPath)}\n`;
@@ -658,7 +659,7 @@ export class ModuleMode extends CommonMode {
 
   private mergeProtoToAbc() {
     mkdirsSync(this.projectConfig.aceModuleBuild);
-    const cmd: any = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
+    const cmd: string = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
       this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
     try {
       childProcess.execSync(cmd, { windowsHide: true });
@@ -684,8 +685,8 @@ export class ModuleMode extends CommonMode {
           `ArkTS:ERROR ${cacheFilePath} or  ${cacheProtoFilePath} is lost`
         );
       }
-      const hashCacheFileContentData: any = toHashData(cacheFilePath);
-      const hashCacheProtoContentData: any = toHashData(cacheProtoFilePath);
+      const hashCacheFileContentData: string = toHashData(cacheFilePath);
+      const hashCacheProtoContentData: string = toHashData(cacheProtoFilePath);
       this.hashJsonObject[cacheFilePath] = hashCacheFileContentData;
       this.hashJsonObject[cacheProtoFilePath] = hashCacheProtoContentData;
     }
@@ -721,9 +722,9 @@ export class ModuleMode extends CommonMode {
   private removeEs2abcCompilationCache(): void {
     if (fs.existsSync(this.cacheFilePath)) {
       const data: string = fs.readFileSync(this.cacheFilePath, 'utf-8');
-      const lines: any = data.split(/\r?\n/);
+      const lines: string[] = data.split(/\r?\n/);
       lines.forEach(line => {
-        const [, abcCacheFilePath]: any = line.split(';');
+        const [, abcCacheFilePath]: string[] = line.split(';');
         if (fs.existsSync(abcCacheFilePath)) {
           fs.unlinkSync(abcCacheFilePath);
         }
@@ -738,7 +739,7 @@ export class ModuleMode extends CommonMode {
     }
     if (fs.existsSync(this.protoFilePath)) {
       const data: string = fs.readFileSync(this.protoFilePath, 'utf-8');
-      const lines: any = data.split(/\r?\n/);
+      const lines: string[] = data.split(/\r?\n/);
       lines.forEach(line => {
         const protoFilePath: string = line;
         if (fs.existsSync(protoFilePath)) {

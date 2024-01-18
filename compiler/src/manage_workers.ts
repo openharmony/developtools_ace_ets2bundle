@@ -60,7 +60,7 @@ if (arkEnvParams['workerNumber'] !== undefined &&
     }
 
     for (let i = 0; i < workerNumber; ++i) {
-      let workerData: any = {
+      let workerData: Object = {
         'inputs': JSON.stringify(splittedData[i]),
         'cmd': cmdPrefix
       };
