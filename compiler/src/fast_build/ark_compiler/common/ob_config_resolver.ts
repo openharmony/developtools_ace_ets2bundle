@@ -388,7 +388,7 @@ export class ObConfigResolver {
           continue;
         }
         case OptionType.KEEP_GLOBAL_NAME: {
-          configs.reservedToplevelNames.push(token);
+          configs.reservedGlobalNames.push(token);
           continue;
         }
         case OptionType.KEEP_PROPERTY_NAME: {
