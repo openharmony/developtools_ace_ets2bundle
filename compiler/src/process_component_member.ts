@@ -53,7 +53,6 @@ import {
   COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
-  COMPONENT_CONSTRUCTOR_PARENT,
   EXTNAME_ETS,
   _GENERATE_ID,
   RMELMTID,
@@ -76,7 +75,6 @@ import {
   RESERT,
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
-  NULL,
   OBSERVED,
   COMPONENT_REQUIRE_DECORATOR,
   TRUE,
@@ -90,8 +88,7 @@ import {
   observedClassCollection,
   enumCollection,
   componentCollection,
-  classMethodCollection,
-  stateCollection
+  classMethodCollection
 } from './validate_ui_syntax';
 import { updateConstructor } from './process_component_constructor';
 import {
@@ -114,7 +111,7 @@ import {
   createFunction,
   getRealNodePos,
   isWrappedBuilder
-} from './process_component_build'
+} from './process_component_build';
 import { CUSTOM_BUILDER_METHOD } from './component_map';
 
 export type ControllerType = {
@@ -305,7 +302,7 @@ function createStateVarsBody(name: ts.Identifier): ts.ExpressionStatement {
     ts.factory.createPropertyAccessExpression(
       ts.factory.createPropertyAccessExpression(
         ts.factory.createThis(),
-        ts.factory.createIdentifier("__"+name.escapedText.toString())
+        ts.factory.createIdentifier('__' + name.escapedText.toString())
       ),
       ts.factory.createIdentifier(RESERT)
     ),
@@ -314,7 +311,7 @@ function createStateVarsBody(name: ts.Identifier): ts.ExpressionStatement {
       ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
       name
     )]
-  ))
+  ));
 }
 
 function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Identifier,
@@ -523,18 +520,18 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_PROP_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_PROP_DECORATOR, hasPreview, log);
-      updateState = !partialUpdateConfig.partialUpdateMode
-        ? updateSynchedPropertyOneWay(name, type, decorator, log, program)
-        : updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
+      updateState = !partialUpdateConfig.partialUpdateMode ?
+        updateSynchedPropertyOneWay(name, type, decorator, log, program) :
+        updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
       break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
       updateState = updateStoragePropAndLinkProperty(node, name, decorator);
       break;
     case COMPONENT_OBJECT_LINK_DECORATOR:
-      updateState = !partialUpdateConfig.partialUpdateMode
-        ? updateSynchedPropertyNesedObject(name, type, decorator, log)
-        : updateSynchedPropertyNesedObjectPU(name, type, decorator, log);
+      updateState = !partialUpdateConfig.partialUpdateMode ?
+        updateSynchedPropertyNesedObject(name, type, decorator, log) :
+        updateSynchedPropertyNesedObjectPU(name, type, decorator, log);
       break;
     case COMPONENT_CONSUME_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
@@ -803,20 +800,6 @@ function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boole
     isWrappedBuilder(node.initializer as ts.PropertyAccessExpression)));
 }
 
-function createCustomComponentBuilderArrowFunction(parent: ts.PropertyDeclaration,
-  jsDialog: ts.Identifier, newExp: ts.Expression): ts.ArrowFunction {
-  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), ts.factory.createBlock([
-      ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList(
-        [ts.factory.createVariableDeclaration(jsDialog, undefined, undefined, newExp)],
-        ts.NodeFlags.Let)), ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(jsDialog,
-          ts.factory.createIdentifier(SET_CONTROLLER_METHOD)), undefined,
-        [ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-            parent.name as ts.Identifier)])), ts.factory.createExpressionStatement(
-        createViewCreate(jsDialog))], true));
-}
-
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
   if (partialUpdateConfig.partialUpdateMode) {
     return createFunction(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
@@ -837,8 +820,8 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
 function addCustomComponentId(node: ts.NewExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
-  let posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-  let line = posOfNode.line + 1;
+  const posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
+  const line = posOfNode.line + 1;
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -867,11 +850,11 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION), ts.factory.createObjectLiteralExpression(
             [
               ts.factory.createPropertyAssignment(
-                ts.factory.createIdentifier("page"),
+                ts.factory.createIdentifier('page'),
                 ts.factory.createStringLiteral(path.relative(process.cwd(), resourceFileName).replace(/\\/g, '/'))
               ),
               ts.factory.createPropertyAssignment(
-                ts.factory.createIdentifier("line"),
+                ts.factory.createIdentifier('line'),
                 ts.factory.createNumericLiteral(line)
               )
             ],
@@ -1209,12 +1192,12 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
   let hasInnerDecorator: boolean = false;
   let hasCustomDecorator: boolean = false;
   let innerDecorator: ts.Decorator;
-  for(let i = 0; i < decorators.length; i++) {
-    let decorator: ts.Decorator = decorators[i];
+  for (let i = 0; i < decorators.length; i++) {
+    const decorator: ts.Decorator = decorators[i];
     const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
     if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       hasInnerDecorator = true;
-      innerDecorator = innerDecorator ? innerDecorator : decorator;
+      innerDecorator = innerDecorator || decorator;
     } else {
       hasCustomDecorator = true;
     }
@@ -1225,7 +1208,7 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
       message: `The inner decorator ${innerDecorator.getText()} cannot be used together with custom decorator.`,
       pos: innerDecorator.getStart()
     });
-  } else if(!hasInnerDecorator) {
+  } else if (!hasInnerDecorator) {
     return true;
   }
   return false;
@@ -1233,7 +1216,7 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
 
 function validatePropDecorator(decorators: readonly ts.Decorator[]): boolean {
   for (let i = 0; i < decorators.length; i++) {
-    let decorator: ts.Decorator = decorators[i];
+    const decorator: ts.Decorator = decorators[i];
     const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
     if (COMPONENT_PROP_DECORATOR === decoratorName) {
       return true;
