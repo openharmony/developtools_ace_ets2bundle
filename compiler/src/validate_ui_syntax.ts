@@ -15,7 +15,6 @@
 
 import ts from 'typescript';
 import path from 'path';
-import fs from 'fs';
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -40,15 +39,11 @@ import {
   COMPONENT_OBSERVED_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
   COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
-  STYLES,
-  VALIDATE_MODULE,
   COMPONENT_BUILDER_DECORATOR,
   COMPONENT_CONCURRENT_DECORATOR,
   CHECK_EXTEND_DECORATORS,
   COMPONENT_STYLES_DECORATOR,
   RESOURCE_NAME_TYPE,
-  TTOGGLE_CHECKBOX,
-  TOGGLE_SWITCH,
   COMPONENT_BUTTON,
   COMPONENT_TOGGLE,
   COMPONENT_BUILDERPARAM_DECORATOR,
@@ -88,7 +83,6 @@ import {
   storedFileInfo,
   ExtendResult
 } from './utils';
-import { getPackageInfo } from './ark_utils'
 import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
   collectExtend,
@@ -97,7 +91,6 @@ import {
   validatorCard
 } from './process_ui_syntax';
 import { stateObjectCollection } from './process_component_member';
-import { logger } from './compile_info';
 
 export interface ComponentCollection {
   localStorageName: string;
@@ -205,7 +198,7 @@ function checkComponentDecorator(source: string, filePath: string,
       }
       if (ts.isStructDeclaration(item)) {
         if (item.name && ts.isIdentifier(item.name)) {
-          let decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+          const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
           if (decorators && decorators.length) {
             checkDecorators(decorators, result, item.name, log, sourceFile, item);
           } else {
@@ -262,16 +255,16 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
-      message: `A page which is being previewed must have one and only one '@Entry' `
-        + `decorator, or at least one '@Preview' decorator.`,
+      message: `A page which is being previewed must have one and only one '@Entry' ` +
+        `decorator, or at least one '@Preview' decorator.`,
       fileName: fileName
     });
   } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry' &&
     !abilityPagesFullPath.includes(path.resolve(fileName).toLowerCase())) {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' `
-        + `decorator.`,
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' ` +
+        `decorator.`,
       fileName: fileName
     });
   }
@@ -690,8 +683,8 @@ function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: S
   isCheckType: ParamType): boolean {
   const nodeName: ts.Identifier = node.expression as ts.Identifier;
   const BlockNode: ts.Block = getNextNode(node);
-  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType)
-    && isCheckType.value === COMPONENT_BUTTON) {
+  if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType) &&
+    isCheckType.value === COMPONENT_BUTTON) {
     if (!BlockNode) {
       return false;
     }
@@ -1146,102 +1139,9 @@ function replaceLibSo(importValue: string, libSoKey: string, sourcePath: string 
     useOSFiles.add(sourcePath);
   }
   // if change format, please update regexp in transformModuleSpecifier
-  return projectConfig.bundleName && projectConfig.moduleName
-    ? `var ${importValue} = globalThis.requireNapi("${libSoKey}", true, "${projectConfig.bundleName}/${projectConfig.moduleName}");`
-    : `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
-}
-
-function replaceOhmStartsWithBundle(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
-  const urlResult: RegExpMatchArray | null = url.match(/^(\S+)\/(\S+)\/(\S+)\/(\S+)$/);
-  if (urlResult) {
-    const moduleKind: string = urlResult[3];
-    if (moduleKind === 'lib') {
-      const libSoKey: string = urlResult[4];
-      item = replaceLibSo(importValue, libSoKey, sourcePath);
-    }
-  }
-  return item;
-}
-
-function replaceOhmStartsWithModule(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
-  const urlResult: RegExpMatchArray | null = url.match(/^(\S+)\/(\S+)\/(\S+)$/);
-  if (urlResult && projectConfig.aceModuleJsonPath) {
-    const moduleName: string = urlResult[1];
-    const moduleKind: string = urlResult[2];
-    const modulePath: string = urlResult[3];
-    const bundleName: string = getPackageInfo(projectConfig.aceModuleJsonPath)[0];
-    moduleRequest = `@bundle:${bundleName}/${moduleName}/${moduleKind}/${modulePath}`;
-    item = moduleKind === 'lib' ? replaceLibSo(importValue, modulePath, sourcePath) :
-      item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-  }
-  return item;
-}
-
-function replaceOhmStartsWithOhos(url: string, item: string, importValue:string, moduleRequest: string, isSystemModule: boolean): string {
-  url = url.replace('/', '.');
-  const urlResult: RegExpMatchArray | null = url.match(/^system\.(\S+)/);
-  moduleRequest = urlResult ? `@${url}` : `@ohos.${url}`;
-  if (!isSystemModule) {
-    item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-  } else {
-    const moduleType: string = urlResult ? 'system' : 'ohos';
-    const systemKey: string = urlResult ? url.substring(7) : url;
-    item = replaceSystemApi(item, importValue, moduleType, systemKey);
-  }
-  return item;
-}
-
-function replaceOhmStartsWithLocal(url: string, item: string, importValue: string, moduleRequest: string, sourcePath: string): string {
-  const result: RegExpMatchArray | null = sourcePath.match(/(\S+)(\/|\\)src(\/|\\)(?:main|ohosTest)(\/|\\)(ets|js)(\/|\\)(\S+)/);
-  if (result && projectConfig.aceModuleJsonPath) {
-    const packageInfo: string[] = getPackageInfo(projectConfig.aceModuleJsonPath);
-    const urlResult: RegExpMatchArray | null = url.match(/^\/(ets|js|lib|node_modules)\/(\S+)$/);
-    if (urlResult) {
-      const moduleKind: string = urlResult[1];
-      const modulePath: string = urlResult[2];
-      if (moduleKind === 'lib') {
-        item = replaceLibSo(importValue, modulePath, sourcePath);
-      } else if (moduleKind === 'node_modules') {
-        moduleRequest = `${modulePath}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-      } else {
-        moduleRequest = `@bundle:${packageInfo[0]}/${packageInfo[1]}/${moduleKind}/${modulePath}`;
-        item = item.replace(/['"](\S+)['"]/, '\"' + moduleRequest + '\"');
-      }
-    }
-  }
-  return item;
-}
-
-function replaceOhmUrl(isSystemModule: boolean, item: string, importValue: string, moduleRequest: string, sourcePath: string = null): string {
-  const result: RegExpMatchArray = moduleRequest.match(/^@(\S+):(\S+)$/);
-  const urlType: string = result[1];
-  const url: string = result[2];
-  switch (urlType) {
-    case 'bundle': {
-      item = replaceOhmStartsWithBundle(url, item, importValue, moduleRequest, sourcePath);
-      break;
-    }
-    case 'module': {
-      item = replaceOhmStartsWithModule(url, item, importValue, moduleRequest, sourcePath);
-      break;
-    }
-    case 'ohos': {
-      item = replaceOhmStartsWithOhos(url, item, importValue, moduleRequest, isSystemModule);
-      break;
-    }
-    case 'lib': {
-      item = replaceLibSo(importValue, url, sourcePath);
-      break;
-    }
-    case 'local': {
-      item = replaceOhmStartsWithLocal(url, item, importValue, moduleRequest, sourcePath);
-      break;
-    }
-    default:
-      logger.error('\u001b[31m', `ArkTS:ERROR Incorrect OpenHarmony module kind: ${urlType}`, '\u001b[39m');
-  }
-  return item;
+  return projectConfig.bundleName && projectConfig.moduleName ?
+    `var ${importValue} = globalThis.requireNapi("${libSoKey}", true, "${projectConfig.bundleName}/${projectConfig.moduleName}");` :
+    `var ${importValue} = globalThis.requireNapi("${libSoKey}", true);`;
 }
 
 export function processSystemApi(content: string, isProcessAllowList: boolean = false,
@@ -1302,12 +1202,12 @@ function collectSourcemapNames(sourcePath: string, changedName: string, original
     return;
   }
 
-  let map: Map<string, string> = sourcemapNamesCollection.get(cleanSourcePath);
+  const map: Map<string, string> = sourcemapNamesCollection.get(cleanSourcePath);
   if (map.has(changedName)) {
     return;
   }
 
-  for (let entry of originalImportNamesMap.entries()) {
+  for (const entry of originalImportNamesMap.entries()) {
     const key: string = entry[0];
     const value: string = entry[1];
     if (value === '@ohos.' + originalName || value === '@system.' + originalName) {
@@ -1330,7 +1230,7 @@ export function CollectImportNames(content: string, sourcePath: string = null): 
       if (parts.length === 4 && parts[0] === 'import' && parts[2] === 'from' && !parts[3].includes('.so')) {
         originalImportNamesMap.set(parts[1], parts[3].replace(/'/g, ''));
       }
-    })
+    });
   }
 
   if (sourcePath && sourcePath != null) {
@@ -1349,11 +1249,6 @@ function processInnerModule(content: string, systemValueCollection: Set<string>)
     }
   });
   return content;
-}
-
-const VALIDATE_MODULE_REG: RegExp = new RegExp('^(' + VALIDATE_MODULE.join('|') + ')');
-function validateAllowListModule(moduleType: string, systemKey: string): boolean {
-  return moduleType === 'ohos' && VALIDATE_MODULE_REG.test(systemKey);
 }
 
 export function resetComponentCollection() {
