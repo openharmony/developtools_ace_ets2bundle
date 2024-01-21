@@ -66,7 +66,6 @@ import {
   RMELMTID,
   ABOUTTOBEDELETEDINTERNAL,
   UPDATEDIRTYELEMENTS,
-  LINKS_DECORATORS,
   BASE_COMPONENT_NAME_PU,
   OBSERVED_PROPERTY_SIMPLE_PU,
   OBSERVED_PROPERTY_OBJECT_PU,
@@ -83,7 +82,6 @@ import {
   OLD_ELMT_ID,
   NEW_ELMT_ID,
   UPDATE_RECYCLE_ELMT_ID,
-  DECORATOR_TYPE_ANY,
   GET_ENTRYNAME,
   COMPONENT_PARAMS_FUNCTION,
   FUNCTION,
@@ -104,7 +102,6 @@ import {
   linkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  propCollection,
   builderParamObjectCollection
 } from './validate_ui_syntax';
 import {
@@ -132,18 +129,16 @@ import {
   LogInfo,
   hasDecorator,
   getPossibleBuilderTypeParameter,
-  storedFileInfo,
+  storedFileInfo
 } from './utils';
 import {
   partialUpdateConfig,
-  globalProgram,
   projectConfig
 } from '../main';
 import {
   builderTypeParameter,
   initializeMYIDS
 } from './process_ui_syntax';
-import { isRecycle } from './process_custom_component';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -553,7 +548,7 @@ function processComponentMethod(node: ts.MethodDeclaration, parentComponentName:
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
-      let parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
+      const parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
       parameters.push(createParentParameter());
       if (projectConfig.optLazyForEach) {
         parameters.push(initializeMYIDS());
@@ -710,7 +705,6 @@ function judgmentParentType(node: ts.Node): boolean {
 export function createReference(node: ts.PropertyAssignment, log: LogInfo[], isBuilder = false,
   isParamsLambda: boolean = false, isRecycleComponent: boolean = false): ts.PropertyAssignment {
   const linkParentComponent: string[] = getParentNode(node, linkCollection).slice(1);
-  const propParentComponent: string[] = getParentNode(node, propCollection).slice(1);
   const propertyName: ts.Identifier = node.name as ts.Identifier;
   let initText: string;
   const LINK_REG: RegExp = /^\$/g;
@@ -875,7 +869,7 @@ function createDeletedInternalStatement(): ts.ExpressionStatement {
 }
 
 function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
-  let updateDirtyElementStatement: ts.Statement = ts.factory.createExpressionStatement(
+  const updateDirtyElementStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
@@ -970,13 +964,13 @@ function createTypeReference(decoratorName: string, type: ts.TypeNode, log: LogI
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [
-        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
       ]);
       break;
     case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
     case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT, [
-        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
       ]);
       break;
   }
@@ -1020,13 +1014,13 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
     case COMPONENT_STORAGE_PROP_DECORATOR:
     case COMPONENT_STORAGE_LINK_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT_PU, [
-        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
       ]);
       break;
     case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR:
     case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
       newType = ts.factory.createTypeReferenceNode(OBSERVED_PROPERTY_ABSTRACT_PU, [
-        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        type || ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
       ]);
       break;
   }
