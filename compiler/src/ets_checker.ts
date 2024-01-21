@@ -169,6 +169,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
     'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE,
     'skipTscOhModuleCheck': partialUpdateConfig.skipTscOhModuleCheck,
+    'skipArkTSStaticBlocksCheck': partialUpdateConfig.skipArkTSStaticBlocksCheck,
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
     'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX)

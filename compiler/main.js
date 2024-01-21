@@ -844,6 +844,9 @@ function isPartialUpdate(metadata) {
       if (item.name === 'SkipTscOhModuleCheck' && item.value === 'true') {
         partialUpdateConfig.skipTscOhModuleCheck = true;
       }
+      if (item.name === 'SkipArkTSStaticBlocksCheck' && item.value === 'true') {
+        partialUpdateConfig.skipArkTSStaticBlocksCheck = true;
+      }
       if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
         projectConfig.useArkoala = true;
       }
@@ -851,7 +854,7 @@ function isPartialUpdate(metadata) {
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
       !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter &&
       partialUpdateConfig.arkTSVersion !== undefined && projectConfig.optLazyForEach &&
-      partialUpdateConfig.skipTscOhModuleCheck;
+      partialUpdateConfig.skipTscOhModuleCheck && partialUpdateConfig.skipArkTSStaticBlocksCheck;
   });
 }
 
@@ -904,6 +907,7 @@ const partialUpdateConfig = {
   optimizeComponent: true,
   arkTSVersion: undefined,
   skipTscOhModuleCheck: false,
+  skipArkTSStaticBlocksCheck: false,
 };
 
 function resetMain() {
