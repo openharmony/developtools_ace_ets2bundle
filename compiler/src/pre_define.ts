@@ -250,7 +250,7 @@ export const RESOURCE_TYPE = {
   strarray: 10009,
   media: 20000,
   rawfile: 30000,
-  symbol:40000,
+  symbol: 40000
 };
 
 export const WORKERS_DIR: string = 'workers';
@@ -375,7 +375,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
-  [LIST_ITEM, new Set([SELECTED])],
+  [LIST_ITEM, new Set([SELECTED])]
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
