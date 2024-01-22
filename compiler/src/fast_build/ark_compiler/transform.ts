@@ -54,10 +54,15 @@ export function transformForModule(code: string, id: string) {
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
-      if (isJsSourceFile(id) && projectConfig.compatibleSdkVersion <= 10) {
-        const transformedResult: Object = transformJsByBabelPlugin(code, eventTransformForModule);
-        code = transformedResult.code;
-        preserveSourceMap(id, transformedResult.map, projectConfig, eventTransformForModule);
+      if (isJsSourceFile(id)) {
+        if (projectConfig.compatibleSdkVersion <= 10) {
+          const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
+          code = transformedResult.code;
+          preserveSourceMap(id, transformedResult.map, projectConfig, eventTransformForModule);
+        } else {
+          // preserve sourceMap of js file without transforming
+          preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, eventTransformForModule);
+        }
       }
       ModuleSourceFile.newSourceFile(id, code);
     }
