@@ -469,7 +469,14 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
         } catch (err) {}
       }
     });
+    printDeclarationDiagnostics();
   }
+}
+
+function printDeclarationDiagnostics(): void {
+  globalProgram.builderProgram.getDeclarationDiagnostics().forEach((diagnostic: ts.Diagnostic) => {
+    printDiagnostic(diagnostic);
+  });
 }
 
 function isArkuiDependence(file: string): boolean {
