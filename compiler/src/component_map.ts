@@ -32,7 +32,7 @@ export let COMMON_ATTRS: Set<string> = new Set([]);
   for (const [id, relPath] of componentPath.entries()) {
     const componentsFile: string = path.join(__dirname, relPath);
     const files: string[] = fs.readdirSync(componentsFile);
-    files.forEach(function (item) {
+    files.forEach(function(item) {
       const fPath: string = path.join(componentsFile, item);
       const json: any = require(fPath);
       const stat: any = fs.statSync(fPath);
@@ -69,7 +69,7 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
   'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D',
   'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController',
-  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', "RichEditorController"
+  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', 'RichEditorController'
 ]);
 
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
