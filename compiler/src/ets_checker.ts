@@ -76,10 +76,7 @@ import {
   INNER_COMPONENT_NAMES,
   JS_BIND_COMPONENTS
 } from './component_map';
-import {
-  props,
-  logger
-} from './compile_info';
+import { logger } from './compile_info';
 import {
   hasDecorator,
   isString,
@@ -277,7 +274,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
     getScriptVersion: fileHashScriptVersion,
-    getScriptSnapshot: fileName => {
+    getScriptSnapshot: function(fileName) {
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
@@ -286,7 +283,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
         const extendFunctionInfo: extendInfo[] = [];
-        content = instanceInsteadThis(content, fileName, extendFunctionInfo);
+        content = instanceInsteadThis(content, fileName, extendFunctionInfo, this.uiProps);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.scriptSnapshotTime : undefined);
         return ts.ScriptSnapshot.fromString(content);
       }
@@ -312,11 +309,12 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
         currentFileName: containFilePath,
       };
     },
-    clearProps: () => {
+    uiProps: [],
+    clearProps: function() {
       dollarCollection.clear();
       decoratorParamsCollection.clear();
       extendCollection.clear();
-      props.length = 0;
+      this.uiProps.length = 0;
     }
   };
 
@@ -375,6 +373,7 @@ export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
 export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
+let props: string[] = [];
 
 export let fastBuildLogger = null;
 
@@ -392,6 +391,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
       });
     }
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
+    props = languageService.getProps();
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
@@ -407,6 +407,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
+  props = languageService.getProps();
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
@@ -851,7 +852,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
     if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
       let content: string = processContent(fs.readFileSync(fileName).toString(), fileName);
       const extendFunctionInfo: extendInfo[] = [];
-      content = instanceInsteadThis(content, fileName, extendFunctionInfo);
+      content = instanceInsteadThis(content, fileName, extendFunctionInfo, props);
       return content;
     }
     return fs.readFileSync(fileName).toString();
@@ -867,8 +868,9 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null, res
     createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}, false, resolveModulePaths));
 }
 
-export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
-  checkUISyntax(content, fileName, extendFunctionInfo);
+export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[],
+  props: string[]): string {
+  checkUISyntax(content, fileName, extendFunctionInfo, props);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
     const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
@@ -892,7 +894,7 @@ export const decoratorParamsCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
-function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[]): void {
+function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
   if (/\.ets$/.test(fileName)) {
     if (process.env.compileMode === 'moduleJson' ||
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
@@ -1252,6 +1254,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   languageService = createLanguageService(filterFiles, resolveModulePaths);
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
+  props = languageService.getProps();
   runArkTSLinter();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
@@ -1266,6 +1269,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 
 export function resetEtsCheck(): void {
   cache = {};
+  props = [];
   languageService = null;
   allResolvedModules.clear();
   checkerResult.count = 0;
