@@ -33,20 +33,15 @@ import {
   CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION,
   CUSTOM_COMPONENT_MARK_STATIC_FUNCTION,
   COMPONENT_COMMON,
-  COMPONENT_CONSTRUCTOR_PARENT,
   GENERATE_ID,
   ELMTID,
-  VIEWSTACKPROCESSOR,
   STARTGETACCESSRECORDINGFOR,
   STOPGETACCESSRECORDING,
-  ALLOCATENEWELMETIDFORNEXTCOMPONENT,
-  STATE_OBJECTLINK_DECORATORS,
   BASE_COMPONENT_NAME_PU,
   OBSERVECOMPONENTCREATION,
   OBSERVECOMPONENTCREATION2,
   ISINITIALRENDER,
   UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID,
-  COMPONENT_CUSTOM_DECORATOR,
   $$,
   COMPONENT_RECYCLE,
   COMPONENT_CREATE_RECYCLE,
@@ -62,7 +57,6 @@ import {
   NAME
 } from './pre_define';
 import {
-  propertyCollection,
   stateCollection,
   linkCollection,
   propCollection,
@@ -79,7 +73,6 @@ import {
   propInitialization
 } from './validate_ui_syntax';
 import {
-  propAndLinkDecorators,
   curPropMap,
   createViewCreate,
   createCustomComponentNewExpression
@@ -88,7 +81,7 @@ import {
   LogType,
   LogInfo,
   componentInfo,
-  storedFileInfo,
+  storedFileInfo
 } from './utils';
 import {
   bindComponentAttr,
@@ -100,7 +93,7 @@ import {
   transferBuilderCall,
   createCollectElmtIdNode,
   createViewStackProcessorStatement,
-  BuilderParamsResult,
+  BuilderParamsResult
 } from './process_component_build';
 import {
   partialUpdateConfig,
@@ -331,7 +324,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     const paramName: ts.Identifier = builderParamsResult.firstParam.name as ts.Identifier;
     arrowArgArr.push(ts.factory.createParameterDeclaration(undefined, undefined,
       paramName, undefined, undefined, ts.factory.createIdentifier(`__${paramName.escapedText.toString()}__`)
-    )); 
+    ));
   }
   if (isRecycleComponent || !partialUpdateConfig.optimizeComponent) {
     arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
@@ -576,7 +569,6 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   props: ts.ObjectLiteralElementLike[], log: LogInfo[], isBuilder: boolean): void {
   const curChildProps: Set<string> = new Set([]);
   const nodeArguments: ts.NodeArray<ts.Expression> = node.arguments;
-  const propertySet: Set<string> = getCollectionSet(name, propertyCollection);
   const linkSet: Set<string> = getCollectionSet(name, linkCollection);
   if (nodeArguments && nodeArguments.length === 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
@@ -889,31 +881,6 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
   }
 }
 
-function validateNonExistentProperty(node: ts.ObjectLiteralElementLike,
-  customComponentName: string, log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: `Property '${node.name.escapedText.toString()}' does not exist on type '${customComponentName}'.`,
-    pos: node.name.getStart()
-  });
-}
-
-function validateMandatoryToAssignmentViaParam(node: ts.CallExpression, customComponentName: string,
-  curChildProps: Set<string>, log: LogInfo[]): void {
-  if (builderParamObjectCollection.get(customComponentName) &&
-    builderParamObjectCollection.get(customComponentName).size) {
-    builderParamObjectCollection.get(customComponentName).forEach((item) => {
-      if (!curChildProps.has(item)) {
-        log.push({
-          type: LogType.ERROR,
-          message: `The property decorated with @BuilderParam '${item}' must be assigned a value .`,
-          pos: node.getStart()
-        });
-      }
-    });
-  }
-}
-
 function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
   const mandatoryToInitViaParamSet: Set<string> = new Set([
@@ -966,15 +933,6 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
     pos: node.initializer ? node.initializer.getStart() : node.getStart()
-  });
-}
-
-function validateLinkWithoutDollar(node: ts.PropertyAssignment, log: LogInfo[]): void {
-  log.push({
-    type: LogType.ERROR,
-    message: `The @Link property '${node.name.getText()}' should initialize` +
-      ` using '$' to create a reference to a @State or @Link variable.`,
-    pos: node.initializer.getStart()
   });
 }
 
