@@ -34,6 +34,7 @@
     "selectedBackgroundColor",
     "selectAll",
     "showCounter",
-    "cancelButton"
+    "cancelButton",
+    "showPasswordIcon"
   ]
 }
