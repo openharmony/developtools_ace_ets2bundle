@@ -143,7 +143,7 @@
     },
     "validateMandatoryToInitViaParam": {
         "message": "Property 'message' in the custom component 'Child' is missing (mandatory to specify).",
-        "type": "WARN"
+        "type": "ERROR"
     },
     "validateInitDecorator": {
         "message": "Property 'message' must be initialized through the component constructor.",
