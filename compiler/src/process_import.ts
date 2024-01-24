@@ -67,7 +67,8 @@ import {
   projectConfig,
   sdkConfigs,
   sdkConfigPrefix,
-  globalProgram
+  globalProgram,
+  ohosSystemModuleSubDirPaths
 } from '../main';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -96,6 +97,7 @@ isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
     if (ts.isImportDeclaration(node) && node.importClause && node.importClause.namedBindings &&
       ts.isNamedImports(node.importClause.namedBindings) &&
       node.importClause.namedBindings.elements && isEntryPage) {
+      validateModuleSpecifier(node.moduleSpecifier, log);
       node.importClause.namedBindings.elements.forEach(item => {
         if (item.name && ts.isIdentifier(item.name)) {
           validateModuleName(item.name, log);
@@ -712,10 +714,27 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
   }
 }
 
-export function processImportModule(node: ts.ImportDeclaration, pageFile: string): void {
+export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: LogInfo[]): void {
+  const moduleSpecifierStr: string = moduleSpecifier.getText().replace(/'|"/g, '');
+  const hasSubDirPath: boolean = ohosSystemModuleSubDirPaths.some((filePath: string) => {
+    return filePath === moduleSpecifierStr;
+  });
+  if (hasSubDirPath) {
+    const error: LogInfo = {
+      type: LogType.WARN,
+      message: `Cannot find module '${moduleSpecifierStr}' or its corresponding type declarations.`,
+      pos: moduleSpecifier.getStart()
+    };
+    log.push(error);
+  }
+}
+
+export function processImportModule(node: ts.ImportDeclaration, pageFile: string, log: LogInfo[]): void {
   let importSymbol: ts.Symbol;
   let realSymbol: ts.Symbol;
   let originNode: ts.Node;
+  validateModuleSpecifier(node.moduleSpecifier, log);
+
   // import xxx from 'xxx'
   if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
     getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageFile);
