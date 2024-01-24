@@ -578,3 +578,4 @@ export const MY_IDS = 'myIds';
 
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
+export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
