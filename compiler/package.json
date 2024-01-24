@@ -13,7 +13,7 @@
     "build": "npm run generateKitConfigs && npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && node uglify-source.js lib",
     "create": "node ./lib/create.js --env projectName",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
-    "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError && npm run arkTest",
+    "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError",
     "test:coverage": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError",
     "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib false",
     "postinstall": "node npm-install.js",

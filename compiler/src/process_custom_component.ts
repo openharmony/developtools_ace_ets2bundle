@@ -889,7 +889,7 @@ function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponen
   mandatoryToInitViaParamSet.forEach(item => {
     if (item && !curChildProps.has(item)) {
       log.push({
-        type: LogType.WARN,
+        type: LogType.ERROR,
         message: `Property '${item}' in the custom component '${customComponentName}'` +
           ` is missing (mandatory to specify).`,
         pos: node.getStart()
