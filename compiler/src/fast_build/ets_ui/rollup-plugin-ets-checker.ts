@@ -25,7 +25,8 @@ import {
   serviceChecker,
   languageService,
   printDiagnostic,
-  fastBuildLogger
+  fastBuildLogger,
+  emitBuildInfo
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -75,14 +76,17 @@ export function etsChecker() {
       }
       if (process.env.watchMode === 'true') {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime);
-        executedOnce = true;
         startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
-        globalProgram.program = languageService.getProgram();
-        const allDiagnostics: ts.Diagnostic[] = globalProgram.program
+        if (executedOnce) {
+          globalProgram.builderProgram = languageService.getBuilderProgram();
+          globalProgram.program = globalProgram.builderProgram.getProgram();
+        }
+        executedOnce = true;
+        const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
           .getSyntacticDiagnostics()
-          .concat(globalProgram.program.getSemanticDiagnostics())
-          .concat(globalProgram.program.getDeclarationDiagnostics());
+          .concat(globalProgram.builderProgram.getSemanticDiagnostics());
         stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+        emitBuildInfo();
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
           printDiagnostic(diagnostic);
         });

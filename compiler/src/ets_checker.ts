@@ -68,7 +68,8 @@ import {
   ATOMICSERVICE_TAG_CHECK_ERROER,
   SINCE_TAG_NAME,
   ATOMICSERVICE_TAG_CHECK_VERSION,
-  TS_BUILD_INFO_SUFFIX
+  TS_BUILD_INFO_SUFFIX,
+  HOT_RELOAD_BUILD_INFO_SUFFIX
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -151,6 +152,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
       allPath.push('../*');
     }
   }
+  const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
   Object.assign(compilerOptions, {
     'allowJs': false,
     'emitNodeModulesFiles': true,
@@ -172,7 +174,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipArkTSStaticBlocksCheck': partialUpdateConfig.skipArkTSStaticBlocksCheck,
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
-    'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', TS_BUILD_INFO_SUFFIX)
+    'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', suffix)
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -181,9 +183,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     });
   }
   if (projectConfig.packageDir === 'oh_modules') {
-    Object.assign(compilerOptions, {
-      'packageManagerType': 'ohpm'
-    });
+    Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
 }
 
@@ -258,8 +258,6 @@ interface extendInfo {
   compName: string
 }
 
-export let files: ts.MapLike<{ version: number }> = {};
-
 function createHash(str: string): string {
   const hash = crypto.createHash('sha256');
   hash.update(str);
@@ -273,22 +271,12 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
   return createHash(fs.readFileSync(fileName).toString());
 }
 
-const watchModeScriptVersion: (fileName: string) => string = (fileName: string) => {
-  if (!files[path.resolve(fileName)]) {
-    files[path.resolve(fileName)] = {version: 0};
-  }
-  return files[path.resolve(fileName)].version.toString();
-}
-
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
-  rootFileNames.forEach((fileName: string) => {
-    files[fileName] = {version: 0};
-  });
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
-    getScriptVersion: process.env.watchMode === 'true' ? watchModeScriptVersion : fileHashScriptVersion,
+    getScriptVersion: fileHashScriptVersion,
     getScriptSnapshot: fileName => {
       if (!fs.existsSync(fileName)) {
         return undefined;
@@ -430,15 +418,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   }
 }
 
+export function emitBuildInfo(): void {
+  globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
+}
+
 function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
-
-  globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
-
+  emitBuildInfo();
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
@@ -1275,7 +1265,6 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 }
 
 export function resetEtsCheck(): void {
-  files = {};
   cache = {};
   languageService = null;
   allResolvedModules.clear();
