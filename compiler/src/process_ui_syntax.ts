@@ -74,7 +74,8 @@ import {
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
-  FINISH_UPDATE_FUNC
+  FINISH_UPDATE_FUNC,
+  GLOBAL_DECLARE_WHITE_LIST
 } from './pre_define';
 import {
   componentInfo,
@@ -101,7 +102,8 @@ import {
   processBuildMember
 } from './process_component_class';
 import processImport, {
-  processImportModule
+  processImportModule,
+  validateModuleSpecifier
 } from './process_import';
 import {
   processComponentBlock,
@@ -123,11 +125,14 @@ import {
 import {
   resources,
   projectConfig,
-  partialUpdateConfig
+  partialUpdateConfig,
+  globalProgram,
+  ohosSystemModulePaths
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
 import { assignComponentParams } from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
+import { isArkuiDependence } from "./ets_checker";
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -220,7 +225,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
         ts.isImportDeclaration(node)) {
         startTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
-        processImportModule(node, pageFile);
+        processImportModule(node, pageFile, transformLog.errors);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processImportTime : undefined);
       } else if ((projectConfig.compileMode !== 'esmodule' || process.env.compileTool !== 'rollup') &&
         (ts.isImportDeclaration(node) || ts.isImportEqualsDeclaration(node) ||
@@ -332,8 +337,12 @@ export function processUISyntax(program: ts.Program, ut = false,
     }
 
     function processResourceNode(node: ts.Node): ts.Node {
-      if (isResource(node)) {
+      if (ts.isImportDeclaration(node)) {
+        validateModuleSpecifier(node.moduleSpecifier, transformLog.errors);
+      } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
+      } else if (ts.isTypeReferenceNode(node)) {
+        checkTypeReference(node);
       }
       return ts.visitEachChild(node, processResourceNode, context);
     }
@@ -552,6 +561,47 @@ export function processResourceData(node: ts.CallExpression,
     return createResourceParamWithVariable(node);
   }
   return node;
+}
+
+
+/**
+ * check arkui dependences in ts files
+ * api check from sdk
+ *
+ * @param {ts.TypeReferenceNode} node
+ * @returns {void}
+ */
+function checkTypeReference(node: ts.TypeReferenceNode): void {
+  const fileName: string = transformLog.sourceFile.fileName;
+  const currentTypeName: string = node.getText();
+  if (/(?<!\.d)\.ts$/g.test(fileName)) {
+    const checker: ts.TypeChecker = globalProgram.checker;
+    if (!checker) {
+      return;
+    }
+    const type: ts.Type = checker.getTypeAtLocation(node);
+    let sourceFile: ts.SourceFile | undefined = undefined;
+    if (type && type.aliasSymbol && type.aliasSymbol.declarations && type.aliasSymbol.declarations.length > 0) {
+      sourceFile = ts.getSourceFileOfNode(type.aliasSymbol.declarations[0]);
+    } else if (type && type.symbol && type.symbol.declarations && type.symbol.declarations.length > 0) {
+      sourceFile = ts.getSourceFileOfNode(type.symbol.declarations[0]);
+    }
+    if (!sourceFile) {
+      return;
+    }
+    const sourceBaseName: string = path.basename(sourceFile.fileName);
+    if (isArkuiDependence(sourceFile.fileName) &&
+      sourceBaseName !== 'common_ts_ets_api.d.ts' &&
+      sourceBaseName !== 'global.d.ts' ||
+      GLOBAL_DECLARE_WHITE_LIST.has(currentTypeName) &&
+      ohosSystemModulePaths.includes(sourceFile.fileName.replace(/\//g, '\\'))) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `Cannot find name '${currentTypeName}'.`,
+        pos: node.getStart()
+      });
+    }
+  }
 }
 
 function getResourceDataNode(node: ts.CallExpression,
