@@ -89,7 +89,8 @@ import {
   storedFileInfo,
   getRollupCacheStoreKey,
   getRollupCacheKey,
-  clearRollupCacheStore
+  clearRollupCacheStore,
+  toUnixPath
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -379,6 +380,8 @@ export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
 export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
+// all files of tsc and rollup for obfuscation scanning.
+export const allSourceFilePaths: Set<string> = new Set();
 export let props: string[] = [];
 
 export let fastBuildLogger = null;
@@ -416,12 +419,44 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   props = languageService.getProps();
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
+  collectAllFiles(globalProgram.program);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   runArkTSLinter(rollupShareObject);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime);
+  }
+}
+// collect the compiled files of tsc and rollup for obfuscation scanning.
+export function collectAllFiles(program?: ts.Program, rollupFileList?: IterableIterator<string>): void {
+  if (program) {
+    collectTscFiles(program);
+    return;
+  }
+  mergeRollUpFiles(rollupFileList);
+}
+
+export function collectTscFiles(program: ts.Program): void {
+  const programAllFiles: readonly ts.SourceFile[] = program.getSourceFiles();
+  let projectRootPath: string = projectConfig.projectRootPath;
+  if (!projectRootPath) {
+    return;
+  }
+  projectRootPath = toUnixPath(projectRootPath);
+  programAllFiles.forEach(sourceFile => {
+    const fileName = toUnixPath(sourceFile.fileName);
+    if (fileName.startsWith(projectRootPath)) {
+      allSourceFilePaths.add(fileName);
+    }
+  });
+}
+
+export function mergeRollUpFiles(rollupFileList: IterableIterator<string>) {
+  for (const moduleId of rollupFileList) {
+    if (fs.existsSync(moduleId)) {
+      allSourceFilePaths.add(toUnixPath(moduleId));
+    }
   }
 }
 
@@ -1287,4 +1322,5 @@ export function resetEtsCheck(): void {
   dollarCollection.clear();
   decoratorParamsCollection.clear();
   extendCollection.clear();
+  allSourceFilePaths.clear();
 }
