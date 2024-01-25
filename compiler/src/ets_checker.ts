@@ -69,7 +69,8 @@ import {
   SINCE_TAG_NAME,
   ATOMICSERVICE_TAG_CHECK_VERSION,
   TS_BUILD_INFO_SUFFIX,
-  HOT_RELOAD_BUILD_INFO_SUFFIX
+  HOT_RELOAD_BUILD_INFO_SUFFIX,
+  FIND_MODULE_WARNING
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -221,6 +222,11 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   const apiName: string = path.basename(fileName);
+  const sourceBaseName: string = path.basename(sourceFileName);
+  if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
+    sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, ts.DiagnosticCategory.Warning, true));
+  }
   if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
     if (isCardFile(fileName)) {
@@ -470,7 +476,7 @@ function printDeclarationDiagnostics(): void {
   });
 }
 
-function isArkuiDependence(file: string): boolean {
+export function isArkuiDependence(file: string): boolean {
   const fileDir: string = path.dirname(file);
   const declarationsPath: string = path.resolve(__dirname, '../declarations').replace(/\\/g, '/');
   const componentPath: string = path.resolve(__dirname, '../../../component').replace(/\\/g, '/');

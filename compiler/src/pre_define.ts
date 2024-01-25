@@ -562,6 +562,7 @@ export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
 export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
+export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
@@ -579,3 +580,5 @@ export const MY_IDS = 'myIds';
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
+
+export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController'])
