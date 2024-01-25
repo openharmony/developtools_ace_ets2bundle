@@ -5,6 +5,6 @@
     "onSelected", "selectedColor", "popupColor", "selectedBackgroundColor", "popupBackground", "usingPopup",
     "selectedFont", "popupFont", "itemSize", "font", "color", "alignStyle", "onRequestPopupData", "onPopupSelect",
     "selected", "popupPosition", "onSelect", "popupItemFont", "popupItemBackgroundColor", "popupSelectedColor",
-    "popupUnselectedColor"
+    "popupUnselectedColor", "autoCollapse"
   ]
 }
