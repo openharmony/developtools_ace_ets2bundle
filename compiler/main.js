@@ -63,12 +63,13 @@ const resources = {
 };
 const systemModules = [];
 const abilityPagesFullPath = [];
-const globalModulePaths = [];
+let globalModulePaths = [];
 let sdkConfigs = [];
 let defaultSdkConfigs = [];
-const extendSdkConfigs = [];
+let extendSdkConfigs = [];
 let sdkConfigPrefix = 'ohos|system|kit';
 let ohosSystemModulePaths = [];
+let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
 
 function initProjectConfig(projectConfig) {
@@ -603,6 +604,17 @@ function filterWorker(workerPath) {
       readFile(systemModulesPath, modulePaths);
       systemModules.push(...fs.readdirSync(systemModulesPath));
       ohosSystemModulePaths.push(...modulePaths);
+      const moduleSubdir = modulePaths.filter(filePath => {
+        const dirName = path.dirname(filePath);
+        return dirName !== path.resolve(__dirname, '../../api') && dirName !== path.resolve(__dirname, '../../kits');
+      }).map(filePath => {
+        return filePath
+          .replace(path.resolve(__dirname, '../../api'), '')
+          .replace(path.resolve(__dirname, '../../kits'), '')
+          .replace(/(^\\)|(.d.e?ts$)/g, '')
+          .replace(/\\/g, '/');
+      });
+      ohosSystemModuleSubDirPaths.push(...moduleSubdir);
       allModulesPaths.push(...modulePaths);
     }
   });
@@ -619,7 +631,7 @@ function filterWorker(workerPath) {
   const externalApiPaths = externalApiPathStr.split(path.delimiter);
   collectExternalModules(externalApiPaths);
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
-})()
+})();
 
 function collectExternalModules(sdkPaths) {
   for (let i = 0; i < sdkPaths.length; i++) {
@@ -916,6 +928,14 @@ function resetMain() {
   aceBuildJson = {};
   resetGlobalProgram();
   partialUpdateConfig.builderCheck = true;
+  globalModulePaths = [];
+  sdkConfigs = [];
+  defaultSdkConfigs = [];
+  extendSdkConfigs = [];
+  sdkConfigPrefix = 'ohos|system|kit';
+  ohosSystemModulePaths = [];
+  ohosSystemModuleSubDirPaths = [];
+  allModulesPaths = [];
 }
 
 function resetAbilityConfig() {
@@ -984,6 +1004,7 @@ exports.sdkConfigs = sdkConfigs;
 exports.sdkConfigPrefix = sdkConfigPrefix;
 exports.ohosSystemModulePaths = ohosSystemModulePaths;
 exports.resetMain = resetMain;
+exports.ohosSystemModuleSubDirPaths = ohosSystemModuleSubDirPaths;
 exports.allModulesPaths = allModulesPaths;
 exports.resetProjectConfig = resetProjectConfig;
 exports.resetGlobalProgram = resetGlobalProgram;
