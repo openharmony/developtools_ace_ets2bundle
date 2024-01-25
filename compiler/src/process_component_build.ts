@@ -176,7 +176,6 @@ import {
   validatorCard,
   builderTypeParameter
 } from './process_ui_syntax';
-import { props } from './compile_info';
 import { regularCollection } from './validate_ui_syntax';
 
 const checkComponents: Set<string> = new Set([
@@ -2430,7 +2429,6 @@ function updateArgumentFor$$(argument: any): ts.Expression {
     return ts.factory.updateElementAccessExpression(
       argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
   } else if (ts.isIdentifier(argument)) {
-    props.push(argument.getText());
     if (argument.getText() === $$_THIS) {
       return ts.factory.createThis();
     } else if (argument.getText().match(/^\$\$(.|\n)+/)) {

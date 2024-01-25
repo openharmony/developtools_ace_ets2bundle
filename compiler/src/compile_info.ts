@@ -70,7 +70,6 @@ configure({
 });
 export const logger = getLogger('ETS');
 
-export const props: string[] = [];
 const checkErrorMessage: Set<string | Info> = new Set([]);
 
 interface Info {
@@ -497,8 +496,4 @@ function handleFinishModules(modules, callback) {
       }
     });
   }
-}
-
-export function resetCompileInfo(): void {
-  props.length = 0;
 }
