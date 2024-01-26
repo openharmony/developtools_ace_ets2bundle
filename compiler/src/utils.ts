@@ -246,7 +246,7 @@ export function circularFile(inputPath: string, outputPath: string): void {
   if (!inputPath || !outputPath) {
     return;
   }
-  fs.readdir(inputPath, function(err, files) {
+  fs.readdir(inputPath, function (err, files) {
     if (!files) {
       return;
     }
@@ -275,7 +275,7 @@ function copyFile(inputFile: string, outputFile: string): void {
     const readStream: fs.ReadStream = fs.createReadStream(inputFile);
     const writeStream: fs.WriteStream = fs.createWriteStream(outputFile);
     readStream.pipe(writeStream);
-    readStream.on('close', function() {
+    readStream.on('close', function () {
       writeStream.end();
     });
   } catch (err) {
@@ -411,7 +411,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     }
     if (projectConfig.compileMode === ESMODULE && projectConfig.compileHar && (/\.d\.e?ts$/).test(jsFilePath)) {
       sourcePath = toUnixPath(sourcePath);
-      const genFilesInHar: GeneratedFileInHar = {sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent};
+      const genFilesInHar: GeneratedFileInHar = { sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent };
       harFilesRecord.set(sourcePath, genFilesInHar);
       return;
     } else {
@@ -444,9 +444,9 @@ export function nodeLargeOrEqualTargetVersion(targetVersion: number): boolean {
 export function removeDir(dirName: string): void {
   if (fs.existsSync(dirName)) {
     if (nodeLargeOrEqualTargetVersion(16)) {
-      fs.rmSync(dirName, { recursive: true});
+      fs.rmSync(dirName, { recursive: true });
     } else {
-      fs.rmdirSync(dirName, { recursive: true});
+      fs.rmdirSync(dirName, { recursive: true });
     }
   }
 }
@@ -496,7 +496,7 @@ export function validateFilePathLength(filePath: string, logger: Object): boolea
   } else if (filePath.length > maxFilePathLength()) {
     logger.error(red, `The length of ${filePath} exceeds the limitation of current platform, which is ` +
       `${maxFilePathLength()}. Please try moving the project folder to avoid deeply nested file path and try again`,
-    reset);
+      reset);
     process.exitCode = FAIL;
     return false;
   } else {
@@ -698,11 +698,11 @@ export interface CacheFile {
 // Global Information & Method
 class ProcessFileInfo {
   buildStart: boolean = true;
-  wholeFileInfo: {[id: string]: SpecialArkTSFileInfo | TSFileInfo} = {}; // Save ArkTS & TS file's infomation
+  wholeFileInfo: { [id: string]: SpecialArkTSFileInfo | TSFileInfo } = {}; // Save ArkTS & TS file's infomation
   transformedFiles: Set<string> = new Set(); // ArkTS & TS Files which should be transformed in this compilation
   cachedFiles: string[] = []; // ArkTS & TS Files which should not be transformed in this compilation
   shouldHaveEntry: string[] = []; // Which file should have @Entry decorator
-  resourceToFile: {[resource: string]: Set<string>} = {}; // Resource is used by which file
+  resourceToFile: { [resource: string]: Set<string> } = {}; // Resource is used by which file
   lastResourceList: Set<string> = new Set();
   resourceList: Set<string> = new Set(); // Whole project resource
   shouldInvalidFiles: Set<string> = new Set();
@@ -711,7 +711,7 @@ class ProcessFileInfo {
   reUseProgram: boolean = false;
   resourcesArr: Set<string> = new Set();
   lastResourcesSet: Set<string> = new Set();
-  transformCacheFiles: {[fileName: string]: CacheFile} = {};
+  transformCacheFiles: { [fileName: string]: CacheFile } = {};
   processBuilder: boolean = false;
   processGlobalBuilder: boolean = false;
   builderLikeCollection: Set<string> = new Set();
@@ -729,7 +729,7 @@ class ProcessFileInfo {
     };
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
-    resourceToFileCacheInfo: {[resource: string]: Set<string>}) {
+    resourceToFileCacheInfo: { [resource: string]: Set<string> }) {
     if (this.buildStart) {
       for (const element in resourceToFileCacheInfo) {
         this.resourceToFile[element] = new Set(resourceToFileCacheInfo[element]);
@@ -776,12 +776,12 @@ class ProcessFileInfo {
 
   saveCacheFileInfo(cache) {
     if (process.env.compileMode === 'moduleJson') {
-      const fileCacheInfo: {[id: string]: fileInfo | tsFileInfo} = cache.get('fileCacheInfo') || {};
+      const fileCacheInfo: { [id: string]: fileInfo | tsFileInfo } = cache.get('fileCacheInfo') || {};
       const resourceToFileCacheInfo = cache.get('resourceToFileCacheInfo') || {};
       for (const i in resourceToFileCacheInfo) {
         resourceToFileCacheInfo[i] = new Set(resourceToFileCacheInfo[i]);
       }
-      const resourceToFile: {[resource: string]: Set<string> | string[]} = Object.assign(resourceToFileCacheInfo, this.resourceToFile);
+      const resourceToFile: { [resource: string]: Set<string> | string[] } = Object.assign(resourceToFileCacheInfo, this.resourceToFile);
       for (const id of this.transformedFiles) {
         fileCacheInfo[id] = this.wholeFileInfo[id].fileInfo;
         for (const resource of this.wholeFileInfo[id].newFileToResourceList) {
@@ -802,7 +802,7 @@ class ProcessFileInfo {
       for (const id of this.cachedFiles) {
         fileCacheInfo[id].fileToResourceList = [...fileCacheInfo[id].fileToResourceList];
       }
-      this.resourceToFile = resourceToFile as {[resource: string]: Set<string>};
+      this.resourceToFile = resourceToFile as { [resource: string]: Set<string> };
       for (const resource in resourceToFile) {
         resourceToFile[resource] = [...resourceToFile[resource]];
       }
@@ -810,7 +810,7 @@ class ProcessFileInfo {
       cache.set('resourceListCacheInfo', [...this.resourceList]);
       cache.set('resourceToFileCacheInfo', resourceToFile);
     } else {
-      const cacheInfo: {[id: string]: fileInfo} = cache.get('fileCacheInfo') || {};
+      const cacheInfo: { [id: string]: fileInfo } = cache.get('fileCacheInfo') || {};
       for (const id of this.transformedFiles) {
         cacheInfo[id] = this.wholeFileInfo[id].fileInfo;
       }
@@ -955,14 +955,14 @@ export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: 
     return true;
   }
 }
- 
+
 export function isString(text: unknown): text is string {
   return typeof text === 'string';
 }
 
 export function getRollupCacheStoreKey(projectConfig: object): string {
   let keyInfo: string[] = [projectConfig.compileSdkVersion, projectConfig.compatibleSdkVersion, projectConfig.runtimeOS,
-                           projectConfig.etsLoaderPath];
+    projectConfig.etsLoaderPath];
   return keyInfo.join('#');
 }
 
@@ -974,7 +974,7 @@ export function getRollupCacheKey(projectConfig: object): string {
   }
 
   let keyInfo: string[] = [projectConfig.entryModuleName, isWidget, ohosTestInfo, projectConfig.needCoverageInsert,
-                           projectConfig.isOhosTest];
+    projectConfig.isOhosTest];
   return keyInfo.join('#');
 }
 
