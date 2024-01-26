@@ -379,7 +379,7 @@ export const hotReloadSupportFiles: Set<string> = new Set();
 export const shouldResolvedFiles: Set<string> = new Set();
 export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
-let props: string[] = [];
+export let props: string[] = [];
 
 export let fastBuildLogger = null;
 
