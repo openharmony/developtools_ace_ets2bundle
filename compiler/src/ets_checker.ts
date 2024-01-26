@@ -305,7 +305,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
       return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
     },
-    getFileCheckedModuleInfo:(containFilePath: string)=>{
+    getFileCheckedModuleInfo: (containFilePath: string) => {
       return {
         fileNeedCheck: true,
         checkPayload: undefined,
@@ -328,7 +328,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 }
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
-                                    rollupShareObject?: any): ts.LanguageService {
+  rollupShareObject?: any): ts.LanguageService {
   let cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
   let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
   clearRollupCacheStore(rollupShareObject?.cacheStoreManager, cacheStoreKey);
@@ -378,8 +378,8 @@ const allResolvedModules: Set<string> = new Set();
 
 export let fastBuildLogger = null;
 
-export const checkerResult: CheckerResult = {count: 0};
-export const warnCheckerResult: WarnCheckerResult = {count: 0};
+export const checkerResult: CheckerResult = { count: 0 };
+export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): void {
@@ -396,7 +396,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
       JSON.parse(fs.readFileSync(cacheFile).toString()) :
-      {'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {}};
+      { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
     if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
       cache = wholeCache.fileList;
     } else {
@@ -457,7 +457,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
                 "ArkTS:WARN doesn't generate .d" + path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
             }
           }
-        } catch (err) {}
+        } catch (err) { }
       }
     });
     printDeclarationDiagnostics();
@@ -782,9 +782,9 @@ function collectShouldPackedFiles(resolvedModules: ts.ResolvedModuleFull[]): boo
   return (projectConfig.compileHar || projectConfig.compileShared) && resolvedModules[resolvedModules.length - 1] &&
     resolvedModules[resolvedModules.length - 1].resolvedFileName &&
     (path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/(\.[^d]|[^\.]d|[^\.][^d])\.e?ts$/) ||
-    path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/\.d\.e?ts$/) &&
-    path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(
-      new RegExp('\\' + path.sep + 'src' + '\\' + path.sep + 'main' + '\\' + path.sep)));
+      path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(/\.d\.e?ts$/) &&
+      path.resolve(resolvedModules[resolvedModules.length - 1].resolvedFileName).match(
+        new RegExp('\\' + path.sep + 'src' + '\\' + path.sep + 'main' + '\\' + path.sep)));
 }
 
 function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containingFile: string): void {
@@ -807,9 +807,11 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
       }
     }
   });
-  cache[path.resolve(containingFile)] = { mtimeMs: fs.statSync(containingFile).mtimeMs, children,
+  cache[path.resolve(containingFile)] = {
+    mtimeMs: fs.statSync(containingFile).mtimeMs, children,
     parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
-      cache[path.resolve(containingFile)].parent : [], error };
+      cache[path.resolve(containingFile)].parent : [], error
+  };
 }
 
 export function createWatchCompilerHost(rootFileNames: string[],
@@ -864,7 +866,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
 export function watchChecker(rootFileNames: string[], newLogger: any = null, resolveModulePaths: string[] = null): void {
   fastBuildLogger = newLogger;
   globalProgram.watchProgram = ts.createWatchProgram(
-    createWatchCompilerHost(rootFileNames, printDiagnostic, () => {}, () => {}, false, resolveModulePaths));
+    createWatchCompilerHost(rootFileNames, printDiagnostic, () => { }, () => { }, false, resolveModulePaths));
 }
 
 export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[]): string {
@@ -958,7 +960,8 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
       extendFunctionInfo.push({
         start: node.pos,
         end: node.end,
-        compName: isExtendFunction(node, { decoratorName: '', componentName: '' })});
+        compName: isExtendFunction(node, { decoratorName: '', componentName: '' })
+      });
     }
   }
   node.getChildren().forEach((item: ts.Node) => parseAllNode(item, sourceFileNode, extendFunctionInfo));
@@ -1057,7 +1060,7 @@ function doubleDollarCollection(item: ts.Node): void {
   }
 }
 
-function isObjectPram(param: ts.Node, parentComponentName:string): boolean {
+function isObjectPram(param: ts.Node, parentComponentName: string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     param.initializer && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(param.name.getText());
@@ -1127,12 +1130,12 @@ function runArkTSLinter(rollupShareObject?: Object): void {
     wasStrict: !wasStrict
   };
   const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(),
-                                               getArkTSLinterMode(),
-                                               originProgram,
-                                               reverseStrictProgram,
-                                               printArkTSLinterDiagnostic,
-                                               !projectConfig.xtsMode,
-                                               buildInfoWriteFile);
+    getArkTSLinterMode(),
+    originProgram,
+    reverseStrictProgram,
+    printArkTSLinterDiagnostic,
+    !projectConfig.xtsMode,
+    buildInfoWriteFile);
 
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
