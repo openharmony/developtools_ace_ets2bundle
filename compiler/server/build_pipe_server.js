@@ -24,7 +24,7 @@ const { processComponentChild } = require('../lib/process_component_build');
 const { createWatchCompilerHost } = require('../lib/ets_checker');
 const { writeFileSync } = require('../lib/utils');
 const { projectConfig } = require('../main');
-const { props } = require('../lib/compile_info');
+const { props } = require('../lib/ets_checker');
 const {
   isResource,
   processResourceData,
