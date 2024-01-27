@@ -58,10 +58,12 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
+                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5 });
+                        ViewPU.create(componentCall);
                         let paramsLambda = () => {
                             return {};
                         };
-                        ViewPU.create(new ComA(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithForEach.ets", line: 5 }));
+                        componentCall.paramsGenerator_ = paramsLambda;
                     }
                     else {
                         (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});

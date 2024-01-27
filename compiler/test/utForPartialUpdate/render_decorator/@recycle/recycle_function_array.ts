@@ -89,16 +89,8 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let paramsLambda = () => {
-                        return {
-                            propvalue: this.value,
-                            linkvalue: this.value
-                        };
-                    };
-                    if (recycleNode) {
-                        recycleNode.paramsGenerator_ = paramsLambda;
-                    }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, paramsLambda, { page: "recycle_function_array.ets", line: 8 }), recycleNode !== null, "child", () => {
+                    let componentCall = new child(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, () => { }, { page: "recycle_function_array.ets", line: 8 });
+                    ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -109,6 +101,16 @@ class HomeComponent extends ViewPU {
                             recycleNode.rerender();
                         }
                     });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

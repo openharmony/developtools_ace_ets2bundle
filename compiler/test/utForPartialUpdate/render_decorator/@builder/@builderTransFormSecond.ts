@@ -155,10 +155,12 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
+                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40 });
+                ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
                 };
-                ViewPU.create(new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderTransFormSecond.ets", line: 40 }));
+                componentCall.paramsGenerator_ = paramsLambda;
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -172,10 +174,12 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
+                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41 });
+                ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
                 };
-                ViewPU.create(new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderTransFormSecond.ets", line: 41 }));
+                componentCall.paramsGenerator_ = paramsLambda;
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
