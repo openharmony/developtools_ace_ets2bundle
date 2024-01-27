@@ -73,10 +73,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new ComA(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 8 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new ComA(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 8 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -86,10 +88,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new ComB(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 9 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new ComB(this, {}, undefined, elmtId, paramsLambda, { page: "@componentParent.ets", line: 9 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

@@ -170,6 +170,15 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new AllComponent.NamespaceComponent1(this, {
+                        NamespaceComponent1Link1: this.__myState1,
+                        NamespaceComponent1Link2: this.__myState2,
+                        NamespaceComponent1Link3: this.__myState3,
+                        NamespaceComponent1Link4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 80
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 15 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             NamespaceComponent1Link1: this.myState1,
@@ -180,14 +189,7 @@ class ImportTest extends ViewPU {
                             myVar2: 80
                         };
                     };
-                    ViewPU.create(new AllComponent.NamespaceComponent1(this, {
-                        NamespaceComponent1Link1: this.__myState1,
-                        NamespaceComponent1Link2: this.__myState2,
-                        NamespaceComponent1Link3: this.__myState3,
-                        NamespaceComponent1Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 15 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -201,6 +203,15 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new AllComponent.NamespaceComponent1(this, {
+                        NamespaceComponent1Link1: this.__myState1,
+                        NamespaceComponent1Link2: this.__myState2,
+                        NamespaceComponent1Link3: this.__myState3,
+                        NamespaceComponent1Link4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 80
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 23 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             NamespaceComponent1Link1: this.myState1,
@@ -211,14 +222,7 @@ class ImportTest extends ViewPU {
                             myVar2: 80
                         };
                     };
-                    ViewPU.create(new AllComponent.NamespaceComponent1(this, {
-                        NamespaceComponent1Link1: this.__myState1,
-                        NamespaceComponent1Link2: this.__myState2,
-                        NamespaceComponent1Link3: this.__myState3,
-                        NamespaceComponent1Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 23 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -229,6 +233,15 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new AllComponent.default(this, {
+                        NamespaceComponent3Link1: this.__myState1,
+                        NamespaceComponent3Link2: this.__myState2,
+                        NamespaceComponent3Link3: this.__myState3,
+                        NamespaceComponent3Link4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 80
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 32 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             NamespaceComponent3Link1: this.myState1,
@@ -239,14 +252,7 @@ class ImportTest extends ViewPU {
                             myVar2: 80
                         };
                     };
-                    ViewPU.create(new AllComponent.default(this, {
-                        NamespaceComponent3Link1: this.__myState1,
-                        NamespaceComponent3Link2: this.__myState2,
-                        NamespaceComponent3Link3: this.__myState3,
-                        NamespaceComponent3Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 32 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -260,6 +266,15 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new AllComponent.default(this, {
+                        NamespaceComponent3Link1: this.__myState1,
+                        NamespaceComponent3Link2: this.__myState2,
+                        NamespaceComponent3Link3: this.__myState3,
+                        NamespaceComponent3Link4: this.__myState4,
+                        myVar: 100,
+                        myVar2: 80
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 40 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             NamespaceComponent3Link1: this.myState1,
@@ -270,14 +285,7 @@ class ImportTest extends ViewPU {
                             myVar2: 80
                         };
                     };
-                    ViewPU.create(new AllComponent.default(this, {
-                        NamespaceComponent3Link1: this.__myState1,
-                        NamespaceComponent3Link2: this.__myState2,
-                        NamespaceComponent3Link3: this.__myState3,
-                        NamespaceComponent3Link4: this.__myState4,
-                        myVar: 100,
-                        myVar2: 80
-                    }, undefined, elmtId, paramsLambda, { page: "importAllEts.ets", line: 40 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

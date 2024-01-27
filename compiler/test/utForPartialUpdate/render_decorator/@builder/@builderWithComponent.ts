@@ -48,10 +48,12 @@ function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
             if (isInitialRender) {
+                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4 });
+                ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
                 };
-                ViewPU.create(new child(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 4 }));
+                componentCall.paramsGenerator_ = paramsLambda;
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -81,10 +83,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 11 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -101,10 +105,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 17 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new child(this, {}, undefined, elmtId, paramsLambda, { page: "@builderWithComponent.ets", line: 17 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
