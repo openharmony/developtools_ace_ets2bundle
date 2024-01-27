@@ -110,12 +110,14 @@ class TestPage extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new TitleComp(this, { title: this.__value }, undefined, elmtId, () => { }, { page: "@builderWithLinkData.ets", line: 16 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             title: this.value
                         };
                     };
-                    ViewPU.create(new TitleComp(this, { title: this.__value }, undefined, elmtId, paramsLambda, { page: "@builderWithLinkData.ets", line: 16 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

@@ -159,10 +159,12 @@ function testIfIdComponent(value, parent = null) {
                     {
                         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
                             if (isInitialRender) {
+                                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormFirst.ets", line: 37 });
+                                ViewPU.create(componentCall);
                                 let paramsLambda = () => {
                                     return {};
                                 };
-                                ViewPU.create(new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderTransFormFirst.ets", line: 37 }));
+                                componentCall.paramsGenerator_ = paramsLambda;
                             }
                             else {
                                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});

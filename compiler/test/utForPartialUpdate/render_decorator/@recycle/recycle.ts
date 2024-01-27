@@ -197,16 +197,8 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let paramsLambda = () => {
-                        return {
-                            propvalue: this.value,
-                            linkvalue: this.value
-                        };
-                    };
-                    if (recycleNode) {
-                        recycleNode.paramsGenerator_ = paramsLambda;
-                    }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, paramsLambda, { page: "recycle.ets", line: 9 }), recycleNode !== null, "child", () => {
+                    let componentCall = new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle.ets", line: 9 });
+                    ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -217,6 +209,16 @@ class HomeComponent extends ViewPU {
                             recycleNode.rerender();
                         }
                     });
+                    let paramsLambda = () => {
+                        return {
+                            propvalue: this.value,
+                            linkvalue: this.value
+                        };
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -344,13 +346,8 @@ class child extends ViewPU {
             this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let paramsLambda = () => {
-                        return {};
-                    };
-                    if (recycleNode) {
-                        recycleNode.paramsGenerator_ = paramsLambda;
-                    }
-                    ViewPU.createRecycle(recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, paramsLambda, { page: "recycle.ets", line: 33 }), recycleNode !== null, "AnimationTest", () => {
+                    let componentCall = new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "recycle.ets", line: 33 });
+                    ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "AnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -361,6 +358,13 @@ class child extends ViewPU {
                             recycleNode.rerender();
                         }
                     });
+                    let paramsLambda = () => {
+                        return {};
+                    };
+                    if (recycleNode) {
+                        recycleNode.paramsGenerator_ = paramsLambda;
+                    }
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

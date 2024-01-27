@@ -133,6 +133,17 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new ExportStarComponent_1.AllStarComponent.ExportComponent(this, {
+                        ExportComponent1Link1: this.__myState1,
+                        ExportComponent1Link2: this.__myState2,
+                        ExportComponent1Link3: this.__myState3,
+                        ExportComponent1Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent1'
+                    }, undefined, elmtId, () => { }, { page: "importTs.ets", line: 15 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             ExportComponent1Link1: this.myState1,
@@ -145,16 +156,7 @@ class ImportTest extends ViewPU {
                             indexState4: 'ExportComponent1'
                         };
                     };
-                    ViewPU.create(new ExportStarComponent_1.AllStarComponent.ExportComponent(this, {
-                        ExportComponent1Link1: this.__myState1,
-                        ExportComponent1Link2: this.__myState2,
-                        ExportComponent1Link3: this.__myState3,
-                        ExportComponent1Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'ExportComponent1'
-                    }, undefined, elmtId, paramsLambda, { page: "importTs.ets", line: 15 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -164,6 +166,17 @@ class ImportTest extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new ExportStarComponent_1.AllStarComponent.default(this, {
+                        ExportComponent4Link1: this.__myState1,
+                        ExportComponent4Link2: this.__myState2,
+                        ExportComponent4Link3: this.__myState3,
+                        ExportComponent4Link4: this.__myState4,
+                        indexState1: { count: 1 },
+                        indexState2: 1,
+                        indexState3: true,
+                        indexState4: 'ExportComponent4'
+                    }, undefined, elmtId, () => { }, { page: "importTs.ets", line: 25 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             ExportComponent4Link1: this.myState1,
@@ -176,16 +189,7 @@ class ImportTest extends ViewPU {
                             indexState4: 'ExportComponent4'
                         };
                     };
-                    ViewPU.create(new ExportStarComponent_1.AllStarComponent.default(this, {
-                        ExportComponent4Link1: this.__myState1,
-                        ExportComponent4Link2: this.__myState2,
-                        ExportComponent4Link3: this.__myState3,
-                        ExportComponent4Link4: this.__myState4,
-                        indexState1: { count: 1 },
-                        indexState2: 1,
-                        indexState3: true,
-                        indexState4: 'ExportComponent4'
-                    }, undefined, elmtId, paramsLambda, { page: "importTs.ets", line: 25 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
