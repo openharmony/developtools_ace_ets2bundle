@@ -155,13 +155,8 @@ function testInnerComponent(value, parent = null) {
         (parent ? parent : this).observeRecycleComponentCreation("TestBuilderReusable", (elmtId, isInitialRender, recycleNode = null) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
-                let paramsLambda = () => {
-                    return {};
-                };
-                if (recycleNode) {
-                    recycleNode.paramsGenerator_ = paramsLambda;
-                }
-                ViewPU.createRecycle(recycleNode ? recycleNode : new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderTransFormThird.ets", line: 38 }), recycleNode !== null, "TestBuilderReusable", () => {
+                let componentCall = new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 38 });
+                ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "TestBuilderReusable", () => {
                     if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                         recycleNode.aboutToReuseInternal();
                     }
@@ -172,6 +167,13 @@ function testInnerComponent(value, parent = null) {
                         recycleNode.rerender();
                     }
                 });
+                let paramsLambda = () => {
+                    return {};
+                };
+                if (recycleNode) {
+                    recycleNode.paramsGenerator_ = paramsLambda;
+                }
+                componentCall.paramsGenerator_ = paramsLambda;
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});
@@ -191,13 +193,8 @@ function testInnerComponent(value, parent = null) {
         (parent ? parent : this).observeRecycleComponentCreation("TestBuilderReusable", (elmtId, isInitialRender, recycleNode = null) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
-                let paramsLambda = () => {
-                    return {};
-                };
-                if (recycleNode) {
-                    recycleNode.paramsGenerator_ = paramsLambda;
-                }
-                ViewPU.createRecycle(recycleNode ? recycleNode : new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, paramsLambda, { page: "@builderTransFormThird.ets", line: 39 }), recycleNode !== null, "TestBuilderReusable", () => {
+                let componentCall = new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 39 });
+                ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "TestBuilderReusable", () => {
                     if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                         recycleNode.aboutToReuseInternal();
                     }
@@ -208,6 +205,13 @@ function testInnerComponent(value, parent = null) {
                         recycleNode.rerender();
                     }
                 });
+                let paramsLambda = () => {
+                    return {};
+                };
+                if (recycleNode) {
+                    recycleNode.paramsGenerator_ = paramsLambda;
+                }
+                componentCall.paramsGenerator_ = paramsLambda;
             }
             else {
                 (parent ? parent : this).updateStateVarsOfChildByElmtId(elmtId, {});

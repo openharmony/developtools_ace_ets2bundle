@@ -162,12 +162,14 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new ViewA(this, { varA: this.varB.a }, undefined, elmtId, () => { }, { page: "@observed_@objectLink.ets", line: 37 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             varA: this.varB.a
                         };
                     };
-                    ViewPU.create(new ViewA(this, { varA: this.varB.a }, undefined, elmtId, paramsLambda, { page: "@observed_@objectLink.ets", line: 37 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {

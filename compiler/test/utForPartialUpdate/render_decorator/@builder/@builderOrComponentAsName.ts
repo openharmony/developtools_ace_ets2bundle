@@ -98,12 +98,14 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new AAA(this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             AAA: ComA
                         };
                     };
-                    ViewPU.create(new AAA(this, { AAA: ComA }, undefined, elmtId, paramsLambda, { page: "@builderOrComponentAsName.ets", line: 10 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -120,12 +122,14 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new CCC(this, { CCC: this.CCC }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 17 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             CCC: this.CCC
                         };
                     };
-                    ViewPU.create(new CCC(this, { CCC: this.CCC }, undefined, elmtId, paramsLambda, { page: "@builderOrComponentAsName.ets", line: 17 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -136,10 +140,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new BBB(this, {}, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 19 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new BBB(this, {}, undefined, elmtId, paramsLambda, { page: "@builderOrComponentAsName.ets", line: 19 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

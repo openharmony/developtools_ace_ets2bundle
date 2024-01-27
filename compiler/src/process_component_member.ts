@@ -847,7 +847,7 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
           isCutomDialog ? ts.factory.createPrefixUnaryExpression(
             ts.SyntaxKind.MinusToken,
             ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
-          ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION), ts.factory.createObjectLiteralExpression(
+            createArrowFunctionNode(), ts.factory.createObjectLiteralExpression(
             [
               ts.factory.createPropertyAssignment(
                 ts.factory.createIdentifier('page'),
@@ -869,6 +869,20 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
     }
   });
   return node;
+}
+
+function createArrowFunctionNode(): ts.ArrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock(
+      [],
+      false
+    )
+  );
 }
 
 function createInitExpressionStatementForDecorator(propertyName: string, functionName: string,
