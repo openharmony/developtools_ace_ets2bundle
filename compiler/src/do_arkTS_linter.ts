@@ -71,10 +71,10 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
 
   if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
     diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, reverseStrictProgram,
-                                                    /*srcFile*/ undefined, buildInfoWriteFile);
+      /*srcFile*/ undefined, buildInfoWriteFile);
   } else {
     diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, reverseStrictProgram,
-                                                    /*srcFile*/ undefined, buildInfoWriteFile);
+      /*srcFile*/ undefined, buildInfoWriteFile);
   }
 
   removeOutputFile();
@@ -233,7 +233,7 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
       resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
       directoryExists: ts.sys.directoryExists,
       getDirectories: ts.sys.getDirectories,
-      getFileCheckedModuleInfo:(containFilePath: string)=>{
+      getFileCheckedModuleInfo: (containFilePath: string) => {
         return {
           fileNeedCheck: true,
           checkPayload: undefined,
