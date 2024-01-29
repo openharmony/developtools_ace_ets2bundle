@@ -118,7 +118,7 @@ export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['background', 'bi
   'menus', 'toolBar', 'tabBar', 'onDragStart', 'onItemDragStart', 'swipeAction', 'bindContentCover', 'bindSheet',
   'navDestination', 'overlay', 'toolbarConfiguration', 'customKeyboard', 'bindSelectionMenu', 'description',
   'showUnit', 'customKeyboard', 'create', 'addBuilderSpan', 'dragPreview', 'accessibilityVirtualNode']);
-export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create', 'accessibilityVirtualNode']);
+export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create']);
 export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow']);
 
 (function initComponent() {
