@@ -17,7 +17,7 @@ import path from 'path';
 import fs from 'fs';
 import {
   ArkObfuscator,
-  readProjectProperties
+  readProjectPropertiesByCollectedPaths
 } from "arkguard"
 
 import {
@@ -156,23 +156,7 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
   if (mergedObConfig.options.disableObfuscation) {
     return;
   }
-  let projectAndLibs: {projectAndLibsReservedProperties: string[]; libExportNames: string[]};
-  projectAndLibs = readProjectProperties([projectConfig.modulePath],
-    {
-      mNameObfuscation: {
-        mEnable: true,
-        mReservedProperties: [],
-        mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
-        mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation
-      },
-      mExportObfuscation: mergedObConfig.options.enableExportObfuscation
-    }, true);
-  if (mergedObConfig.options.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
-    mergedObConfig.reservedPropertyNames.push(...(projectAndLibs.projectAndLibsReservedProperties));
-  }
-  if (mergedObConfig.options.enableExportObfuscation && projectAndLibs.libExportNames) {
-    mergedObConfig.reservedNames.push(...(projectAndLibs.libExportNames));
-  }
+
   if (!isHarCompiled) {
     mergedObConfig.options.enableFileNameObfuscation = false;
     mergedObConfig.reservedFileNames = [];
@@ -286,6 +270,30 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     }
   }
   return arkObfuscator;
+}
+
+export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator): void {
+  if (mergedObConfig?.options === undefined || mergedObConfig.options.disableObfuscation || allFiles.size === 0) {
+    return;
+  }
+  const obfOptions = mergedObConfig.options;
+  let projectAndLibs: {projectAndLibsReservedProperties: string[]; libExportNames: string[]};
+  projectAndLibs = readProjectPropertiesByCollectedPaths(allFiles,
+    {
+      mNameObfuscation: {
+        mEnable: true,
+        mReservedProperties: [],
+        mRenameProperties: obfOptions.enablePropertyObfuscation,
+        mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation
+      },
+      mExportObfuscation: obfOptions.enableExportObfuscation
+    }, true);
+  if (obfOptions.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
+    arkObfuscator.addReservedProperties(projectAndLibs.projectAndLibsReservedProperties);
+  }
+  if (obfOptions.enableExportObfuscation && projectAndLibs.libExportNames) {
+    arkObfuscator.addReservedNames(projectAndLibs.libExportNames);
+  }
 }
 
 function processPlatformInfo(arkConfig: ArkConfig): void {

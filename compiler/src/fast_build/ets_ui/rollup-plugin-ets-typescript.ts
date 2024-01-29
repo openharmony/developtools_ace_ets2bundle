@@ -69,7 +69,8 @@ import {
   compilerOptions as etsCheckerCompilerOptions,
   resolveModuleNames,
   resolveTypeReferenceDirectives,
-  resetEtsCheck
+  resetEtsCheck,
+  collectAllFiles
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -331,6 +332,7 @@ async function transform(code: string, id: string) {
     globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
+    collectAllFiles(tsProgram);
   } else {
     if (!storedFileInfo.reUseProgram) {
       globalProgram.checker = globalProgram.program.getTypeChecker();

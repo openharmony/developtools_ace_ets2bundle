@@ -48,6 +48,8 @@ import {
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
+import { readProjectAndLibsSource } from '../common/process_ark_config';
+import { allSourceFilePaths, collectAllFiles } from '../../../ets_checker';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -203,6 +205,10 @@ export class ModuleSourceFile {
     } else {
       ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
     }
+
+    collectAllFiles(undefined, rollupObject.getModuleIds());
+    readProjectAndLibsSource(allSourceFilePaths, ModuleSourceFile.projectConfig.obfuscationMergedObConfig,
+      ModuleSourceFile.projectConfig.arkObfuscator);
 
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
