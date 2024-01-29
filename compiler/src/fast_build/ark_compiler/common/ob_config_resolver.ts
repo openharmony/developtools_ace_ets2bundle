@@ -22,7 +22,7 @@ import {
   getMapFromJson,
   renameFileNameModule
 } from 'arkguard';
-import { identifierCaches } from '../../../ark_utils';
+import { nameCacheObj } from '../../../ark_utils';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -561,7 +561,8 @@ export class ObConfigResolver {
 export function readNameCache(nameCachePath: string, logger: any): void {
   try {
     const fileContent = fs.readFileSync(nameCachePath, 'utf-8');
-    const nameCache: { IdentifierCache?: Object, PropertyCache?: Object, FileNameCache?: Object } = JSON.parse(fileContent);
+    const nameCache: { compileSdkVersion?: string, [key:string]: string | {},
+                      PropertyCache?: Object, FileNameCache?: Object } = JSON.parse(fileContent);
     if (nameCache.PropertyCache) {
       renamePropertyModule.historyMangledTable = getMapFromJson(nameCache.PropertyCache);
     }
@@ -569,29 +570,30 @@ export function readNameCache(nameCachePath: string, logger: any): void {
       renameFileNameModule.historyFileNameMangledTable = getMapFromJson(nameCache.FileNameCache);
     }
 
-    Object.assign(identifierCaches, nameCache.IdentifierCache);
+    const {compileSdkVersion, PropertyCache, FileNameCache, ...rest} = nameCache;
+    Object.assign(nameCacheObj, rest);
   } catch (err) {
     logger.error(`Failed to open ${nameCachePath}. Error message: ${err}`);
   }
 }
 
-export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean): string {
+export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
   let writeContent: string = '';
-  const nameCacheCollection: { IdentifierCache?: Object, PropertyCache?: Object, FileNameCache?: Object } = {};
-  nameCacheCollection.IdentifierCache = identifierCaches;
+  let nameCacheCollection: Object = nameCacheObj;
+  nameCacheCollection["compileSdkVersion"] = sdkVersion;
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
     fillNameCache(renamePropertyModule.historyMangledTable, mergedPropertyNameCache);
     fillNameCache(renamePropertyModule.globalMangledTable, mergedPropertyNameCache);
-    nameCacheCollection.PropertyCache = Object.fromEntries(mergedPropertyNameCache);
+    nameCacheCollection["PropertyCache"] = Object.fromEntries(mergedPropertyNameCache);
   }
 
   if (enableFileNameObfuscation) {
     const mergedFileNameCache: Map<string, string> = new Map();
     fillNameCache(renameFileNameModule.historyFileNameMangledTable, mergedFileNameCache);
     fillNameCache(renameFileNameModule.globalFileNameMangledTable, mergedFileNameCache);
-    nameCacheCollection.FileNameCache = Object.fromEntries(mergedFileNameCache);
+    nameCacheCollection["FileNameCache"] = Object.fromEntries(mergedFileNameCache);
   }
 
   writeContent += JSON.stringify(nameCacheCollection, null, 2);
@@ -611,7 +613,7 @@ export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
     writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
-      projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation);
+      projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation, projectConfig.etsLoaderVersion);
   } else if (projectConfig.terserConfig) {
     writeContent = JSON.stringify(projectConfig.terserConfig.nameCache, null, 2);
   } else {
