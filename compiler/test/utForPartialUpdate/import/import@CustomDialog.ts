@@ -73,6 +73,14 @@ class CustomDialogUser extends ViewPU {
         this.__inputValue = new ObservedPropertySimplePU('click me', this, "inputValue");
         this.dialogController = new CustomDialogController({
             builder: () => {
+                let jsDialog = new import_CustomDialog_1.CustomDialogExample1(this, {
+                    cancel: this.onCancel,
+                    confirm: this.onAccept,
+                    textValue: this.__textValue,
+                    inputValue: this.__inputValue
+                }, undefined, -1, () => { }, { page: "import@CustomDialog.ets", line: 10 });
+                jsDialog.setController(this.dialogController);
+                ViewPU.create(jsDialog);
                 let paramsLambda = () => {
                     return {
                         cancel: this.onCancel,
@@ -81,14 +89,7 @@ class CustomDialogUser extends ViewPU {
                         inputValue: this.__inputValue
                     };
                 };
-                let jsDialog = new import_CustomDialog_1.CustomDialogExample1(this, {
-                    cancel: this.onCancel,
-                    confirm: this.onAccept,
-                    textValue: this.__textValue,
-                    inputValue: this.__inputValue
-                }, undefined, -1, paramsLambda, { page: "import@CustomDialog.ets", line: 10 });
-                jsDialog.setController(this.dialogController);
-                ViewPU.create(jsDialog);
+                jsDialog.paramsGenerator_ = paramsLambda;
             },
             cancel: this.existApp,
             autoCancel: true,
