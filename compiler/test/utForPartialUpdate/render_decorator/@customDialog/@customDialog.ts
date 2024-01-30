@@ -218,6 +218,15 @@ class CustomDialogUser extends ViewPU {
         this.__playingInitValue = new ObservedPropertySimplePU(false, this, "playingInitValue");
         this.dialogController = new CustomDialogController({
             builder: () => {
+                let jsDialog = new DialogExample(this, {
+                    termsToAccept: "Please accept the terms.",
+                    action1: this.onAccept,
+                    action2: this.existApp,
+                    count: this.countInitValue,
+                    isPlaying: this.__playingInitValue
+                }, undefined, -1, () => { }, { page: "@customDialog.ets", line: 47 });
+                jsDialog.setController(this.dialogController);
+                ViewPU.create(jsDialog);
                 let paramsLambda = () => {
                     return {
                         termsToAccept: "Please accept the terms.",
@@ -227,15 +236,7 @@ class CustomDialogUser extends ViewPU {
                         isPlaying: this.__playingInitValue
                     };
                 };
-                let jsDialog = new DialogExample(this, {
-                    termsToAccept: "Please accept the terms.",
-                    action1: this.onAccept,
-                    action2: this.existApp,
-                    count: this.countInitValue,
-                    isPlaying: this.__playingInitValue
-                }, undefined, -1, paramsLambda, { page: "@customDialog.ets", line: 47 });
-                jsDialog.setController(this.dialogController);
-                ViewPU.create(jsDialog);
+                jsDialog.paramsGenerator_ = paramsLambda;
             },
             cancel: this.existApp,
             autoCancel: false

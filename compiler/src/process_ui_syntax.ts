@@ -130,7 +130,10 @@ import {
   ohosSystemModulePaths
 } from '../main';
 import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
-import { assignComponentParams } from './process_custom_component';
+import { 
+  assignComponentParams,
+  assignmentFunction
+} from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 import { isArkuiDependence } from "./ets_checker";
 
@@ -506,7 +509,6 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock(
       [
-        partialUpdateConfig.partialUpdateMode ? assignComponentParams(node) : undefined,
         ts.factory.createVariableStatement(
           undefined,
           ts.factory.createVariableDeclarationList(
@@ -524,7 +526,9 @@ function createCustomComponentBuilderArrowFunction(node: ts.CallExpression, pare
             mountNodde ? [mountNodde] : undefined
           )
         ),
-        ts.factory.createExpressionStatement(createViewCreate(jsDialog))
+        ts.factory.createExpressionStatement(createViewCreate(jsDialog)),
+        partialUpdateConfig.partialUpdateMode ? assignComponentParams(node) : undefined,
+        partialUpdateConfig.partialUpdateMode ? assignmentFunction(jsDialog.escapedText.toString()) : undefined
       ],
       true
     )

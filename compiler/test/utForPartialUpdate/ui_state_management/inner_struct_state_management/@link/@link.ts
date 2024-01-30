@@ -109,12 +109,14 @@ class ParentComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new LinkComponent(this, { counter: this.__value }, undefined, elmtId, () => { }, { page: "@link.ets", line: 16 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             counter: this.value
                         };
                     };
-                    ViewPU.create(new LinkComponent(this, { counter: this.__value }, undefined, elmtId, paramsLambda, { page: "@link.ets", line: 16 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
