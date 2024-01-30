@@ -393,10 +393,12 @@ class MyComponent extends ViewPU {
                         {
                             this.observeComponentCreation2((elmtId, isInitialRender) => {
                                 if (isInitialRender) {
+                                    let componentCall = new Child(this, {}, undefined, elmtId, () => { }, { page: "id_if.ets", line: 78 });
+                                    ViewPU.create(componentCall);
                                     let paramsLambda = () => {
                                         return {};
                                     };
-                                    ViewPU.create(new Child(this, {}, undefined, elmtId, paramsLambda, { page: "id_if.ets", line: 78 }));
+                                    componentCall.paramsGenerator_ = paramsLambda;
                                 }
                                 else {
                                     this.updateStateVarsOfChildByElmtId(elmtId, {});

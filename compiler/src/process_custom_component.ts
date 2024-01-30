@@ -54,7 +54,8 @@ import {
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   COMPONENT_PARAMS_FUNCTION,
   COMPONENT_ABOUTTOREUSEINTERNAL_FUNCTION,
-  NAME
+  NAME,
+  COMPONENT_CALL
 } from './pre_define';
 import {
   stateCollection,
@@ -458,11 +459,12 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
-      [
+      [ componentParamDetachment(newNode),
+        isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
+          createNewComponent(COMPONENT_CALL),
         assignComponentParams(componentNode, isBuilder),
         isRecycleComponent ? assignRecycleParams() : undefined,
-        isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
-          createNewComponent(newNode)
+        assignmentFunction(COMPONENT_CALL)
       ], true),
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -474,13 +476,38 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
   );
 }
 
-function createNewComponent(newNode: ts.NewExpression): ts.Statement {
+export function assignmentFunction(componeParamName: string): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(componeParamName),
+      ts.factory.createIdentifier(COMPONENT_PARAMS_FUNCTION)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+    ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION)
+  ))
+}
+
+function componentParamDetachment(newNode: ts.NewExpression): ts.VariableStatement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(COMPONENT_CALL),
+        undefined,
+        undefined,
+        newNode
+      )],
+      ts.NodeFlags.Let
+    ));
+}
+
+function createNewComponent(componeParamName: string): ts.Statement {
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
-      ), undefined, [newNode]));
+      ), undefined, [ts.factory.createIdentifier(componeParamName)]));
 }
 
 function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
@@ -511,7 +538,7 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
           ts.factory.createToken(ts.SyntaxKind.QuestionToken),
           ts.factory.createIdentifier(RECYCLE_NODE),
           ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          newNode
+          ts.factory.createIdentifier(COMPONENT_CALL)
         ),
         ts.factory.createBinaryExpression(
           ts.factory.createIdentifier(RECYCLE_NODE),
