@@ -150,12 +150,14 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId, () => { }, { page: "@propComplexType.ets", line: 31 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             fruit: this.arrA[0]
                         };
                     };
-                    ViewPU.create(new CustomX(this, { fruit: this.arrA[0] }, undefined, elmtId, paramsLambda, { page: "@propComplexType.ets", line: 31 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {
@@ -167,10 +169,12 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new CustomX(this, {}, undefined, elmtId, () => { }, { page: "@propComplexType.ets", line: 32 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
                     };
-                    ViewPU.create(new CustomX(this, {}, undefined, elmtId, paramsLambda, { page: "@propComplexType.ets", line: 32 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});

@@ -279,6 +279,20 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new TestComponent_1.CustomContainerExport(this, {
+                        header: this.text,
+                        closer: () => {
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                            }, Column);
+                            specificWithParam.bind(this)("111", "22");
+                            Column.pop();
+                        }
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 56 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             header: this.text,
@@ -294,19 +308,7 @@ class CustomContainerUser extends ViewPU {
                             }
                         };
                     };
-                    ViewPU.create(new TestComponent_1.CustomContainerExport(this, {
-                        header: this.text,
-                        closer: () => {
-                            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                Column.create();
-                                Column.onClick(() => {
-                                    this.text = "changeHeader";
-                                });
-                            }, Column);
-                            specificWithParam.bind(this)("111", "22");
-                            Column.pop();
-                        }
-                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 56 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -319,6 +321,13 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new CustomContainer(this, {
+                        header: this.text,
+                        content: this.specificParam,
+                        callContent: this.callSpecificParam("callContent1", 'callContent2'),
+                        footer: "Footer",
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 66 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             header: this.text,
@@ -327,12 +336,7 @@ class CustomContainerUser extends ViewPU {
                             footer: "Footer"
                         };
                     };
-                    ViewPU.create(new CustomContainer(this, {
-                        header: this.text,
-                        content: this.specificParam,
-                        callContent: this.callSpecificParam("callContent1", 'callContent2'),
-                        footer: "Footer",
-                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 66 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
@@ -346,6 +350,20 @@ class CustomContainerUser extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
+                    let componentCall = new CustomContainer2(this, {
+                        header: this.text,
+                        content: () => {
+                            this.observeComponentCreation2((elmtId, isInitialRender) => {
+                                Column.create();
+                                Column.onClick(() => {
+                                    this.text = "changeHeader";
+                                });
+                            }, Column);
+                            this.callSpecificParam.bind(this)("111", '222');
+                            Column.pop();
+                        }
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 74 });
+                    ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
                             header: this.text,
@@ -361,19 +379,7 @@ class CustomContainerUser extends ViewPU {
                             }
                         };
                     };
-                    ViewPU.create(new CustomContainer2(this, {
-                        header: this.text,
-                        content: () => {
-                            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                                Column.create();
-                                Column.onClick(() => {
-                                    this.text = "changeHeader";
-                                });
-                            }, Column);
-                            this.callSpecificParam.bind(this)("111", '222');
-                            Column.pop();
-                        }
-                    }, undefined, elmtId, paramsLambda, { page: "@builderParam.ets", line: 74 }));
+                    componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
                     this.updateStateVarsOfChildByElmtId(elmtId, {});
