@@ -70,7 +70,8 @@ import {
   resolveModuleNames,
   resolveTypeReferenceDirectives,
   resetEtsCheck,
-  collectAllFiles
+  collectAllFiles,
+  allSourceFilePaths
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -83,6 +84,7 @@ import {
   processKitImport
 } from '../../process_kit_import';
 import { resetProcessComponentMember } from '../../process_component_member';
+import { mangleFilePath } from '../ark_compiler/common/ob_config_resolver';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -97,7 +99,7 @@ let disableCacheOptions = {
 };
 
 export function etsTransform() {
-  const incrementalFileInHar: Map<string, string> = new Map();
+  const allFilesInHar: Map<string, string> = new Map();
   let cacheFile: CacheFile;
   if (projectConfig.useArkoala) {
     // Dynamic loading to avoid resolving arkoala-only dependencies
@@ -172,34 +174,30 @@ export function etsTransform() {
       return shouldDisable;
     },
     afterBuildEnd() {
+      // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar) {
-        for (let [sourcePath, genFileInHar] of harFilesRecord) {
-          if (sourcePath && !sourcePath.match(new RegExp(projectConfig.packageDir)) &&
-            !sourcePath.startsWith('\x00') &&
-            path.resolve(sourcePath).startsWith(projectConfig.moduleRootPath + path.sep)) {
-            let buildFilePath: string = '';
-            let cachePath: string = '';
-
-            cachePath = genFileInHar.obfuscatedSourceCachePath ? genFileInHar.obfuscatedSourceCachePath : genFileInHar.sourceCachePath;
-            if (cachePath && cachePath.length > 0) {
-              buildFilePath = genLoaderOutPathOfHar(cachePath, projectConfig.cachePath,
-                projectConfig.buildPath, projectConfig.moduleRootPath, projectConfig.projectRootPath);
-              incrementalFileInHar.set(cachePath, buildFilePath);
+        for (let moduleInfoId of allSourceFilePaths) {
+          if (moduleInfoId && !moduleInfoId.match(new RegExp(projectConfig.packageDir)) &&
+            !moduleInfoId.startsWith('\x00') &&
+            path.resolve(moduleInfoId).startsWith(projectConfig.moduleRootPath + path.sep)) {
+            let filePath: string = moduleInfoId;
+            if (this.share.arkProjectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+              filePath = mangleFilePath(filePath);
             }
 
-            if (sourcePath.match(/\.e?ts$/)) {
-              cachePath = genFileInHar.obfuscatedDeclarationCachePath ? genFileInHar.obfuscatedDeclarationCachePath :
-                genFileInHar.originalDeclarationCachePath;
-              if (cachePath && cachePath.length > 0) {
-                buildFilePath = genLoaderOutPathOfHar(cachePath, projectConfig.cachePath,
-                  projectConfig.buildPath, projectConfig.moduleRootPath, projectConfig.projectRootPath);
-                incrementalFileInHar.set(cachePath, buildFilePath);
-              }
+            const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+              process.env.cachePath, projectConfig);
+            const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+              projectConfig.buildPath, projectConfig, true);
+            if (filePath.match(/\.e?ts$/)) {
+              setIncrementalFileInHar(jsCacheFilePath, jsBuildFilePath, allFilesInHar);
+            } else {
+              allFilesInHar.set(jsCacheFilePath, jsBuildFilePath);
             }
           }
         }
 
-        incrementalFileInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+        allFilesInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
           if (fs.existsSync(jsCacheFilePath)) {
             const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
             writeFileSync(jsBuildFilePath, sourceCode);
@@ -465,4 +463,10 @@ function isDir(filePath: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+function setIncrementalFileInHar(jsCacheFilePath: string, jsBuildFilePath: string, allFilesInHar: Map<string, string>): void {
+  allFilesInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
+    jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
+  allFilesInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
 }
