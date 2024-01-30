@@ -90,7 +90,10 @@ import {
   getRollupCacheStoreKey,
   getRollupCacheKey,
   clearRollupCacheStore,
-  toUnixPath
+  toUnixPath,
+  isWindows,
+  isMac,
+  tryToLowerCasePath
 } from './utils';
 import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
 import { visualTransform } from './process_visual';
@@ -130,6 +133,8 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
     fs.closeSync(fd);
   };
 }
+// The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
+const filesBuildInfo: Map<string, string> = new Map();
 
 export const compilerOptions: ts.CompilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
@@ -152,6 +157,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     }
   }
   const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
+  const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
   Object.assign(compilerOptions, {
     'allowJs': false,
     'emitNodeModulesFiles': true,
@@ -173,7 +179,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipArkTSStaticBlocksCheck': partialUpdateConfig.skipArkTSStaticBlocksCheck,
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
-    'tsBuildInfoFile': path.resolve(projectConfig.cachePath, '..', suffix)
+    'tsBuildInfoFile': buildInfoPath
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -184,6 +190,50 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   if (projectConfig.packageDir === 'oh_modules') {
     Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
+  readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
+}
+
+/**
+ * Read the source code information in the project of the last compilation process, and then use it
+ * to determine whether the file has been modified during this compilation process.
+ */
+function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig: Object): void {
+  if (!fs.existsSync(buildInfoPath) || !(projectConfig.compileHar || projectConfig.compileShared)) {
+    return;
+  }
+
+  type FileInfoType = {
+    version: string;
+    affectsGlobalScope: boolean;
+  }
+  type ProgramType = {
+    fileNames: string[];
+    fileInfos: (FileInfoType | string)[];
+  }
+  let buildInfoProgram: ProgramType = undefined;
+  try {
+    const content: {program: ProgramType} = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
+    buildInfoProgram = content.program;
+    if (!buildInfoProgram || !buildInfoProgram.fileNames || !buildInfoProgram.fileInfos) {
+      throw new Error('.tsbuildinfo content is invalid');
+    }
+  } catch (err) {
+    fastBuildLogger.warn('\u001b[33m' + 'ArkTS: Failed to parse .tsbuildinfo file. Error message: '+ err.message.toString());
+    return;
+  }
+  const buildInfoDirectory: string = path.dirname(buildInfoPath);
+  /**
+   * For the windos and mac platform, the file path in tsbuildinfo is in lowercase, while buildInfoDirectory is the original path (including uppercase).
+   * Therefore, the path needs to be converted to lowercase, and then perform path comparison.
+   */
+  const isMacOrWin = isWindows() || isMac();
+  const fileNames: string[] = buildInfoProgram.fileNames;
+  const fileInfos: (FileInfoType | string)[] = buildInfoProgram.fileInfos;
+  fileInfos.forEach((fileInfo, index) => {
+    const version: string = typeof fileInfo === 'string' ? fileInfo : fileInfo.version;
+    const absPath: string = path.resolve(buildInfoDirectory, fileNames[index]);
+    filesBuildInfo.set(isMacOrWin ? tryToLowerCasePath(absPath) : absPath, version);
+  });
 }
 
 function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
@@ -444,10 +494,17 @@ export function collectTscFiles(program: ts.Program): void {
     return;
   }
   projectRootPath = toUnixPath(projectRootPath);
+  const isMacOrWin = isWindows() || isMac();
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
-    if (fileName.startsWith(projectRootPath)) {
-      allSourceFilePaths.add(fileName);
+    if (!fileName.startsWith(projectRootPath)) {
+      return;
+    }
+    allSourceFilePaths.add(fileName);
+    // For the windos and mac platform, the file path in filesBuildInfo is in lowercase, while fileName of sourceFile is the original path (including uppercase).
+    if (filesBuildInfo.size > 0 &&
+      Reflect.get(sourceFile, 'version') !== filesBuildInfo.get(isMacOrWin ? tryToLowerCasePath(fileName) : fileName)) {
+      allResolvedModules.add(fileName);
     }
   });
 }
@@ -1323,4 +1380,5 @@ export function resetEtsCheck(): void {
   decoratorParamsCollection.clear();
   extendCollection.clear();
   allSourceFilePaths.clear();
+  filesBuildInfo.clear();
 }
