@@ -238,7 +238,7 @@ export class ModuleMode extends CommonMode {
     }
 
     if (!metaInfo['pkgPath']) {
-      this.logger.debug("Failed to get 'pkgPath' from metaInfo. File: ", filePath);
+      this.logger.debug("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ", filePath);
       return;
     }
     const pkgPath: string = metaInfo['pkgPath'];
@@ -376,7 +376,9 @@ export class ModuleMode extends CommonMode {
       const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
       fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
         if (err) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to write sourceMaps');
+          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n` +
+            `File: ${this.sourceMapPath}\n` +
+            `Error message: ${err.message}`);
         }
         fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
         stopEvent(eventWriteFile, true);
@@ -460,7 +462,8 @@ export class ModuleMode extends CommonMode {
       });
       child.on('close', (code: any) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
+          this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc\n` +
+            `genAbcCmd: ${genAbcCmd}`);
         }
         stopEvent(eventGenAbc, true);
         this.triggerEndSignal();
@@ -482,7 +485,7 @@ export class ModuleMode extends CommonMode {
         }
       });
     } catch (e) {
-      this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc. Error message: ' + e.toString());
+      this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc. Error message: ' + e.toString());
     }
   }
 
@@ -506,7 +509,9 @@ export class ModuleMode extends CommonMode {
         const cacheFilePath: string = value.cacheFilePath;
         const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
         if (!fs.existsSync(cacheFilePath)) {
-          this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} is lost`);
+          this.throwArkTsCompilerError(
+            `ArkTS:INTERNAL ERROR: Failed to get module cache abc from ${cacheFilePath} in incremental build.` +
+            `Please try to rebuild the project.`);
         }
         if (fs.existsSync(cacheProtoFilePath)) {
           const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -570,7 +575,7 @@ export class ModuleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
+            this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute ts2abc.`);
           });
         });
       }
@@ -583,7 +588,7 @@ export class ModuleMode extends CommonMode {
     if (isMasterOrPrimary()) {
       cluster.on('exit', (worker, code, signal) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc');
+          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
         }
         workerCount++;
         if (workerCount === this.workerNumber) {
@@ -664,7 +669,8 @@ export class ModuleMode extends CommonMode {
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      this.throwArkTsCompilerError(`ArkTS:ERROR failed to merge proto file to abc, error message:` + e.toString());
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.\n` +
+        `Error message:` + e.toString());
     }
   }
 

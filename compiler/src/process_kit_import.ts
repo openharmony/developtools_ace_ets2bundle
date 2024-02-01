@@ -65,8 +65,9 @@ export function processKitImport(): Function {
           } else {
             kitTransformLog.errors.push({
               type: LogType.ERROR,
-              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK, `+
-                       `please check the consistency of SDK.`,
+              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK. `+
+                       `Please make sure the Kit apis are consistent with SDK ` +
+                       `and there's no local modification on Kit apis.`,
               pos: node.getStart()
             });
           }
@@ -375,7 +376,7 @@ class KitInfo {
     } else {
       kitTransformLog.errors.push({
         type: LogType.ERROR,
-        message: `Kit '${KitInfo.getCurrentKitName()} has not exported the Identifier '${importName}'.`,
+        message: `'${importName}' is not exported from Kit '${KitInfo.getCurrentKitName()}.`,
         pos: originElement ? originElement.getStart() : this.getKitNode().getStart()
       });
     }

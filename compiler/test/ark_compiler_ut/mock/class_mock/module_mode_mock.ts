@@ -100,7 +100,7 @@ class ModuleModeMock extends ModuleMode {
     return false;
   }
 
-  checkGetPackageEntryInfo(rollup: object) {
+  checkGetPackageEntryInfo(rollup: object, isTestErrorLog: boolean = false) {
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
     const mockFileList = rollup.getModuleIds();
     for (const filePath of mockFileList) {
@@ -109,6 +109,9 @@ class ModuleModeMock extends ModuleMode {
         moduleInfos.setIsLocalDependency(false);
         moduleInfos.setIsNodeEntryFile(true);
         const metaInfo: object = moduleInfos[META];
+        if (isTestErrorLog) {
+          metaInfo['pkgPath'] = '';
+        }
         this.getPackageEntryInfo(filePath, metaInfo, this.pkgEntryInfos);
       }
     }
@@ -133,6 +136,20 @@ class ModuleModeMock extends ModuleMode {
       return false;
     }
   }
+
+  generateMergedAbcOfEs2AbcMock(parentEvent: Object) {
+    this.generateMergedAbcOfEs2Abc(parentEvent)
+  }
+
+  filterModulesByHashJsonMock() {
+    this.filterModulesByHashJson();
+  }
+
+  invokeTs2AbcWorkersToGenProtoMock(splittedModules: Object) {
+    this.invokeTs2AbcWorkersToGenProto(splittedModules)
+  }
+
+  
 }
 
 export default ModuleModeMock;

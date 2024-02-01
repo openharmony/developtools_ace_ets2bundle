@@ -45,7 +45,8 @@ export class ModuleHotreloadMode extends ModuleMode {
     if (this.projectConfig.oldMapFilePath) {
       this.symbolMapFilePath = path.join(this.projectConfig.oldMapFilePath, SYMBOLMAP);
     } else {
-      this.throwArkTsCompilerError('ArkTS:ERROR oldMapFilePath is not specified, hotReload Fail');
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Hotreload failed, ' +
+        'symbolMap file is not correctly configured.');
     }
   }
 
