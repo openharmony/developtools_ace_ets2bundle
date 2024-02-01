@@ -97,11 +97,12 @@ export class BundleMode extends CommonMode {
         } else if (rollupBundleFileSet[fileName].type === 'chunk') {
           rollupBundleSourceCode = rollupBundleFileSet[fileName].code;
         } else {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to get rollup bundle file source code');
+          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to retrieve source code` +
+            `for ${fileName} from rollup file set.`);
         }
         fs.writeFileSync(cacheOutputPath, rollupBundleSourceCode, 'utf-8');
         if (!fs.existsSync(cacheOutputPath)) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to generate cached source file');
+          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to generate cached source file: ${fileName}`);
         }
         this.collectIntermediateJsBundle(outputPath, cacheOutputPath);
       }
@@ -128,7 +129,9 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = value.cacheFilePath;
       const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheFilePath)) {
-        this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} is lost`);
+        this.throwArkTsCompilerError(
+          `ArkTS:INTERNAL ERROR: Failed to get bundle cached abc from ${cacheFilePath} in incremental build.` +
+          `Please try to rebuild the project.`);
       }
       if (fs.existsSync(cacheAbcFilePath)) {
         const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -155,8 +158,7 @@ export class BundleMode extends CommonMode {
       const splittedBundles: any[] = this.getSplittedBundles();
       this.invokeTs2AbcWorkersToGenAbc(splittedBundles);
     } else {
-      this.throwArkTsCompilerError(`Invalid projectConfig.pandaMode for bundle build, should be either
-        "${TS2ABC}" or "${ES2ABC}"`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
     }
   }
 
@@ -201,9 +203,10 @@ export class BundleMode extends CommonMode {
       const child = this.triggerAsync(() => {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
-      child.on('exit', (code: any) => {
+      child.on('close', (code: any) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc');
+          this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc.\n` +
+            `genAbcCmd: ${genAbcCmd}`);
         }
         this.afterCompilationProcess();
         this.triggerEndSignal();
@@ -281,7 +284,7 @@ export class BundleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc, received error message.');
+            this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute ts2abc`);
           });
         });
       }
@@ -289,7 +292,7 @@ export class BundleMode extends CommonMode {
       let workerCount: number = 0;
       cluster.on('exit', (worker, code, signal) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR failed to execute ts2abc, exit code non-zero');
+          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc, exit code non-zero');
         }
         workerCount++;
         if (workerCount === workerNumber) {
@@ -346,7 +349,8 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = this.filterIntermediateJsBundle[i].cacheFilePath;
       const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheAbcFilePath)) {
-        this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheFilePath} or ${cacheAbcFilePath} is lost`);
+        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: During hash JSON file generation, ` +
+          `${cacheFilePath} or ${cacheAbcFilePath} is not found.`);
       }
       const hashCacheFileContentData: string = toHashData(cacheFilePath);
       const hashCacheAbcContentData: string = toHashData(cacheAbcFilePath);
@@ -362,7 +366,8 @@ export class BundleMode extends CommonMode {
       const abcFilePath: string = changeFileExtension(value.filePath, EXTNAME_ABC, TEMP_JS);
       const cacheAbcFilePath: string = changeFileExtension(value.cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheAbcFilePath)) {
-        this.throwArkTsCompilerError(`ArkTS:ERROR ${cacheAbcFilePath} is lost`);
+        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: ${cacheAbcFilePath} not found during incremental build. ` +
+          `Please try to rebuild the project`);
       }
       const parent: string = path.join(abcFilePath, '..');
       if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {

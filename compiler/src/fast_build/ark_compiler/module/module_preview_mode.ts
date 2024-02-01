@@ -39,8 +39,7 @@ export class ModulePreviewMode extends ModuleMode {
       this.invokeTs2AbcWorkersToGenProto(splittedModules);
       this.processTs2abcWorkersToGenAbc();
     } else {
-      this.throwArkTsCompilerError(`Invalid projectConfig.pandaMode for module preview, should be either
-      "${TS2ABC}" or "${ES2ABC}"`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
     }
   }
 }

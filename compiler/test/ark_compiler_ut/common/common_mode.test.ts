@@ -15,6 +15,7 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
+import sinon from 'sinon';
 
 import {
   RELEASE,
@@ -65,6 +66,19 @@ mocha.describe('test common_mode file api', function () {
     expect(args.length === 2).to.be.true;
     expect(args[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(args[1] === CMD_DEBUG_INFO).to.be.true;
+  });
+
+  mocha.it('1-1-3: test initCmdEnv under build debug: projectConfig.pandaMode is invalid value', function () {
+    this.rollup.build();
+    const modeMock =  new CommonModeMock(this.rollup);
+    const stub = sinon.stub(modeMock, 'throwArkTsCompilerError');
+    modeMock.projectConfig.pandaMode = 'invalid value';
+    try {
+      modeMock.checkInitCmdEnv();
+    } catch (e) {
+    }
+    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`)).to.be.true;
+    stub.restore();
   });
 
   mocha.it('1-2: test initCmdEnv under build release', function () {

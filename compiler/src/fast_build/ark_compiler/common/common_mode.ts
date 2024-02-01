@@ -22,7 +22,9 @@ import {
   GEN_ABC_PLUGIN_NAME,
   GEN_ABC_SCRIPT,
   blue,
-  reset
+  reset,
+  ES2ABC,
+  TS2ABC
 } from './ark_define';
 import { initArkConfig } from './process_ark_config';
 import {
@@ -91,7 +93,7 @@ export abstract class CommonMode {
         args.push('--debug-info');
       }
     } else {
-      this.throwArkTsCompilerError('ArkTS:ERROR please set panda mode');
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
     }
 
     return args;

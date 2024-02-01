@@ -18,6 +18,7 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 import path from "path";
 import fs from "fs";
+import sinon from 'sinon';
 
 import {
   ENTRYABILITY_TS_PATH_DEFAULT,
@@ -95,5 +96,18 @@ mocha.describe('test module_hotreload_mode file api', function () {
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
     expect(moduleMode.cmdArgs[2] === SIMBOL_TABLE).to.be.true;
     expect(moduleMode.cmdArgs[3].indexOf(SYMBOLMAP_MAP) > 0).to.be.true;
+  });
+
+  mocha.it('3-1: test the error message of the ModuleHotreloadMode constructor', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.oldMapFilePath = '';
+    const stub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    try {
+      new ModuleHotreloadMode(this.rollup);
+    } catch (e) {
+    }
+    expect(stub.calledWith('ArkTS:INTERNAL ERROR: Hotreload failed, ' +
+      'symbolMap file is not correctly configured.')).to.be.true;
+    stub.restore();
   });
 });
