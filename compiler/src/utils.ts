@@ -1061,3 +1061,7 @@ export function resetUtils(): void {
   harFilesRecord.clear();
   storedFileInfo = new ProcessFileInfo();
 }
+
+export function getStoredFileInfo(): ProcessFileInfo {
+  return storedFileInfo;
+}
