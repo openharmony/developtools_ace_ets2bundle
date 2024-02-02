@@ -629,7 +629,6 @@ function getResourceDataNode(node: ts.CallExpression,
       });
       return node;
     }
-    const isResourceModule: boolean = /^\[.*\]$/g.test(resourceData[0]);
     if (isResourceModule) {
       resourceValue = -1;
       resourceType = -1;
