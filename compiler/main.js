@@ -22,7 +22,7 @@ const {
   readFile,
   writeFileSync,
   resourcesRawfile,
-  storedFileInfo
+  getStoredFileInfo
 } = require('./lib/utils');
 
 const {
@@ -679,7 +679,7 @@ function readAppResource(filePath) {
     }
   }
   if (process.env.rawFileResource && process.env.compileMode === 'moduleJson') {
-    resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
+    resourcesRawfile(process.env.rawFileResource, getStoredFileInfo().resourcesArr);
   }
 }
 
@@ -701,7 +701,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
         resourceMap.set(resourceData[0], obj);
       }
       if (process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
-        storedFileInfo.updateResourceList(resourceData[0] + '_' + resourceData[1]);
+        getStoredFileInfo().updateResourceList(resourceData[0] + '_' + resourceData[1]);
       }
     } else {
       logger.warn(`\u001b[31m ArkTS:WARN The format of file '${filePath}' is incorrect. \u001b[39m`);

@@ -25,7 +25,8 @@ import {
 } from '../../utils';
 import {
   projectConfig,
-  readAppResource
+  readAppResource,
+  resources
 } from '../../../main';
 import {
   incrementWatchFile,
@@ -55,6 +56,7 @@ export function watchChangeFiles() {
       if (path.resolve(id) === path.resolve(process.env.appResource) && process.env.compileMode === 'moduleJson') {
         storedFileInfo.resourceTableChanged = true;
         storedFileInfo.resourceList.clear();
+        resources.app = {};
         readAppResource(process.env.appResource);
         if (process.env.rawFileResource) {
           resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
