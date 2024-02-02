@@ -546,42 +546,38 @@ function assignParameter(forEachParameters: ts.NodeArray<ts.ParameterDeclaration
 
 export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   isBuilder: boolean = false): ts.ExpressionStatement {
-  if (node.expression && ts.isCallExpression(node.expression) && node.expression.arguments &&
-    node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
-    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-      ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          node.expression.expression,
-          ts.factory.createIdentifier(BUILDER_ATTR_BIND)
-        ),
-        undefined,
-        [ts.factory.createThis()]
+  if (node.expression && ts.isCallExpression(node.expression)) {
+    const newNode: ts.Expression = ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        node.expression.expression,
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
-      [ts.factory.createCallExpression(
-        ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+      [ts.factory.createThis()]
+    )
+    newNode.expression.questionDotToken = node.expression.questionDotToken;
+    if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
+      return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        newNode,
         undefined,
-        [
-          ts.factory.createStringLiteral(name),
-          traverseBuilderParams(node.expression.arguments[0], isBuilder)
-        ]
-      )]
-    ));
-  } else {
-    return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-      ts.factory.createCallExpression(
-        ts.factory.createPropertyAccessExpression(
-          node.expression.expression,
-          ts.factory.createIdentifier(BUILDER_ATTR_BIND)
-        ),
+        [ts.factory.createCallExpression(
+          ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+          undefined,
+          [
+            ts.factory.createStringLiteral(name),
+            traverseBuilderParams(node.expression.arguments[0], isBuilder)
+          ]
+        )]
+      ));
+    } else {
+      return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        newNode,
         undefined,
-        [ts.factory.createThis()]
-      ),
-      undefined,
-      !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
-        storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
-        [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
-    ));
+        !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
+          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
+          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
+      ));
+    }
   }
 }
 
