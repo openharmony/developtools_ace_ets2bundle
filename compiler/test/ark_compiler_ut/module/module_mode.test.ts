@@ -20,7 +20,6 @@ import path from 'path';
 import sinon from 'sinon';
 import fs from 'fs';
 import childProcess from 'child_process'
-import cluster from 'cluster';
 
 import { toUnixPath } from '../../../lib/utils';
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
@@ -37,6 +36,7 @@ import {
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import ModuleModeMock from '../mock/class_mock/module_mode_mock';
 import { ModuleHotreloadMode } from '../../../lib/fast_build/ark_compiler/module/module_hotreload_mode';
+import { ModuleMode } from '../../../lib/fast_build/ark_compiler/module/module_mode';
 import {
   ENTRYABILITY_TS_PATH_DEFAULT,
   ENTRYABILITY_JS_PATH_DEFAULT,
@@ -632,6 +632,58 @@ mocha.describe('test module_mode file api', function () {
     expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
   });
 
+  mocha.it('8-5: test the error message of buildModuleSourceMapInfo under build debug', async function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    moduleMode.sourceMapPath = '';
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(100);
+    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    stub.restore();
+    copyFileSyncStub.restore()
+  });
+
+  mocha.it('8-6: test the error message of buildModuleSourceMapInfo under build release', async function () {
+    this.rollup.build(RELEASE);
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    moduleMode.sourceMapPath = '';
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(100);
+    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    stub.restore();
+    copyFileSyncStub.restore()
+  });
+
+  mocha.it('8-7: test the error message of buildModuleSourceMapInfo under preview debug', async function () {
+    this.rollup.preview();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    moduleMode.sourceMapPath = '';
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(100);
+    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    stub.restore();
+    copyFileSyncStub.restore()
+  });
+
+  mocha.it('8-8: test the error message of buildModuleSourceMapInfo under hot reload debug', async function () {
+    this.rollup.hotReload();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
+    moduleMode.sourceMapPath = '';
+    moduleMode.buildModuleSourceMapInfoMock();
+    await sleep(100);
+    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    stub.restore();
+    copyFileSyncStub.restore()
+  });
+
   mocha.it('9-1: test getPkgModulesFilePkgName under build debug', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.packageDir = OH_MODULES;
@@ -930,6 +982,17 @@ mocha.describe('test module_mode file api', function () {
       `Please try to rebuild the project.`)).to.be.true;
     existsSyncStub.restore();
     readFileSyncStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('15-1: test the error message of mergeProtoToAbc', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleMode(this.rollup);
+    const execSyncStub = sinon.stub(childProcess, 'execSync').throws(new Error('Execution failed'));
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    moduleMode.mergeProtoToAbc();
+    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.')).to.be.true;
+    execSyncStub.restore();
     stub.restore();
   });
 });
