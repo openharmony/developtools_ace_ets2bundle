@@ -35,6 +35,7 @@ import {
   writeCollectionFile,
   getAllComponentsOrModules
 } from '../../utils';
+import { hasTsNoCheckOrTsIgnoreFiles } from "../../process_kit_import";
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const allFiles: Set<string> = new Set();
@@ -55,7 +56,9 @@ export function apiTransform() {
       if (filter(id)) {
         if (projectConfig.compileMode === "esmodule") {
           code = processSystemApiAndLibso(code, id, useOSFiles);
-          hiresStatus = this.share.projectConfig.needCompleteSourcesMap ? true : false;
+          hiresStatus = this.share.projectConfig.needCompleteSourcesMap || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
+            true :
+            false;
         } else {
           code = processSystemApi(code, id);
           code = processLibso(code, id, useOSFiles);
