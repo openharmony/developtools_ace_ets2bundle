@@ -11,7 +11,7 @@
     "onAppear", "onDisAppear", "visibility", "flexBasis", "flexShrink", "flexGrow", "alignSelf",
     "useAlign", "zIndex", "sharedTransition", "direction", "align", "position", "markAnchor",
     "offset", "enabled", "aspectRatio", "displayPriority",
-    "onDragStart", "onDragEnter", "onDragMove", "onDragLeave", "onDrop", "onDragEnd",
+    "onDragStart", "onDragEnter", "onDragMove", "onDragLeave", "onDrop", "onDragEnd", "draggable",
     "overlay", "linearGradient", "sweepGradient", "radialGradient",
     "gridOffset", "gridSpan", "useSizeType",
     "motionPath", "clip", "shadow", "mask", "key", "id", "restoreId",
