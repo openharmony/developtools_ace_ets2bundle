@@ -113,7 +113,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.newMockConfigInfo[key] = {'source': src};
   }
 
-  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: Object): void {
+  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: Object, importerFile: string): void {
     if (!ModuleSourceFile.mockConfigInfo.hasOwnProperty(originKey)) {
       return;
     }
@@ -123,7 +123,8 @@ export class ModuleSourceFile {
     let mockFileOhmUrl: string = getOhmUrlByFilepath(mockFilePath,
                                                      ModuleSourceFile.projectConfig,
                                                      ModuleSourceFile.logger,
-                                                     rollupObject.share.projectConfig.entryModuleName);
+                                                     rollupObject.share.projectConfig.entryModuleName,
+                                                     importerFile);
     mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
     // record mock target mapping for incremental compilation
     ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
@@ -257,18 +258,18 @@ export class ModuleSourceFile {
     }
   }
 
-  private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined): string | undefined {
+  private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined, importerFile: string): string | undefined {
     let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
     if (systemOrLibOhmUrl != undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject);
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
       }
       return systemOrLibOhmUrl;
     }
     const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, ModuleSourceFile.projectConfig);
     if (harOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, harOhmUrl, rollupObject);
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, harOhmUrl, rollupObject, importerFile);
       }
       return harOhmUrl;
     }
@@ -276,16 +277,16 @@ export class ModuleSourceFile {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       const namespace: string = targetModuleInfo['meta']['moduleName'];
       const ohmUrl: string =
-        getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace);
+        getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace, importerFile);
       let res: string = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
       if (ModuleSourceFile.needProcessMock) {
         // processing cases of har or lib mock targets
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, res, rollupObject);
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, res, rollupObject, importerFile);
         // processing cases of user-defined mock targets
         let mockedTarget: string = toUnixPath(filePath).
             replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
             replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(mockedTarget, res, rollupObject);
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(mockedTarget, res, rollupObject, importerFile);
       }
       return res;
     }
@@ -298,7 +299,7 @@ export class ModuleSourceFile {
     const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]|(?:import)(?:\s*)\(['"]([^'"]+)['"]\)/g;
     this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, staticModuleRequest, dynamicModuleRequest) => {
       const moduleRequest: string = staticModuleRequest || dynamicModuleRequest;
-      const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+      const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest], this.moduleId);
       if (ohmUrl !== undefined) {
         item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
           return quotation + ohmUrl + quotation;
@@ -329,7 +330,7 @@ export class ModuleSourceFile {
         if ((node.type === ROLLUP_IMPORT_NODE || node.type === ROLLUP_EXPORTNAME_NODE ||
         node.type === ROLLUP_EXPORTALL_NODE) && node.source) {
           const ohmUrl: string | undefined =
-            this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+            this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value], this.moduleId);
           if (ohmUrl !== undefined) {
             code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
           }
@@ -344,7 +345,7 @@ export class ModuleSourceFile {
           if (node.source) {
             if (node.source.type === ROLLUP_LITERAL_NODE) {
               const ohmUrl: string | undefined =
-                this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value]);
+                this.getOhmUrl(rollupObject, node.source.value, importMap[node.source.value], this.moduleId);
               if (ohmUrl !== undefined) {
                 code.update(node.source.start, node.source.end, `'${ohmUrl}'`);
               }
@@ -383,7 +384,7 @@ export class ModuleSourceFile {
           // moduleSpecifier.getText() returns string carrying on quotation marks which the importMap's key does not,
           // so we need to remove the quotation marks from moduleRequest.
           const moduleRequest: string = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
-          let ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+          let ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest], this.moduleId);
           if (ohmUrl !== undefined) {
             // the import module are added with ".origin" at the end of the ohm url in every mock file.
             const realOhmUrl: string = isMockFile ? `${ohmUrl}${ORIGIN_EXTENTION}` : ohmUrl;
@@ -403,7 +404,7 @@ export class ModuleSourceFile {
         // dynamicImport node
         if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
           const moduleRequest: string = node.arguments[0].getText().replace(/'|"/g, '');
-          const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest]);
+          const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest], this.moduleId);
           if (ohmUrl !== undefined) {
             const args: ts.Expression[] = [...node.arguments];
             args[0] = ts.factory.createStringLiteral(ohmUrl);
