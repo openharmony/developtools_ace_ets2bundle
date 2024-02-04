@@ -82,6 +82,9 @@ struct StylesComponent {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function __Button__fancybut(color) {
     Button.backgroundColor(color);
     Button.width(200);
@@ -95,6 +98,7 @@ class ExtendComponent extends ViewPU {
         }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.width_value !== undefined) {
@@ -154,6 +158,7 @@ class StylesComponent extends ViewPU {
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.__size_value = new ObservedPropertySimplePU(50, this, "size_value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.enable !== undefined) {

@@ -62,6 +62,9 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "import@CustomDialog_" + ++__generate__Id;
@@ -91,6 +94,7 @@ class CustomDialogUser extends View {
             customStyle: false
         }, this);
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.textValue !== undefined) {

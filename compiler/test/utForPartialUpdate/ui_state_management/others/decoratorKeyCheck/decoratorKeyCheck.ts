@@ -66,6 +66,9 @@ struct Index {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const decoratorKeyCheck_1 = require("./test/pages/decoratorKeyCheck");
 let para = { 'PropA': 47 };
 let storage = new LocalStorage(para);
@@ -120,6 +123,7 @@ class Index extends ViewPU {
         this.__Consume3 = this.initializeConsume('Consume3', "Consume3");
         this.__Consume4 = this.initializeConsume("Consume4", "Consume4");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.Provide !== undefined) {

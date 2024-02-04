@@ -87,7 +87,11 @@ import {
   FUNCTION,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   DECORATOR_COMPONENT_FREEZEWHENINACTIVE,
-  INIT_ALLOW_COMPONENT_FREEZE
+  INIT_ALLOW_COMPONENT_FREEZE,
+  FINALIZE_CONSTRUCTION,
+  PROTOTYPE,
+  REFLECT,
+  CREATE_SET_METHOD
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -1025,4 +1029,32 @@ function createTypeReferencePU(decoratorName: string, type: ts.TypeNode, log: Lo
       break;
   }
   return newType;
+}
+
+export function checkFinalizeConstruction(): ts.Statement {
+  return ts.factory.createIfStatement(
+    ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.ExclamationToken,
+      ts.factory.createParenthesizedExpression(ts.factory.createBinaryExpression(
+        ts.factory.createStringLiteral(FINALIZE_CONSTRUCTION),
+        ts.factory.createToken(ts.SyntaxKind.InKeyword), ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU), ts.factory.createIdentifier(PROTOTYPE))))
+    ),
+    ts.factory.createBlock(
+      [
+        ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(REFLECT), ts.factory.createIdentifier(CREATE_SET_METHOD)
+          ), undefined,
+          [
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU), ts.factory.createIdentifier(PROTOTYPE)
+            ),
+            ts.factory.createStringLiteral(FINALIZE_CONSTRUCTION),
+            ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+              ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              ts.factory.createBlock([], false)
+            )
+          ]
+        ))
+      ], true), undefined);
 }

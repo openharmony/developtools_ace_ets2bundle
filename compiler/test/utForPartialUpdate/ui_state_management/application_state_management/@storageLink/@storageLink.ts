@@ -49,6 +49,9 @@ struct MyComponent {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let varA = AppStorage.Link('varA');
 let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends ViewPU {
@@ -61,6 +64,7 @@ class MyComponent extends ViewPU {
         this.__lang = this.createStorageProp('languageCode', 'en', "lang");
         this.label = 'count';
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.label !== undefined) {

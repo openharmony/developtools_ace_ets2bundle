@@ -76,6 +76,9 @@ struct HomeComponent {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
@@ -93,6 +96,7 @@ class HomeComponent extends ViewPU {
         this.myTimeController = new TextTimerController();
         this.__format = new ObservedPropertySimplePU("hh:mm:ss:ms", this, "format");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.value1 !== undefined) {

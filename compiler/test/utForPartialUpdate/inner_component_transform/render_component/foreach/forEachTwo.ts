@@ -41,6 +41,9 @@ struct Index {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -55,6 +58,7 @@ class Index extends ViewPU {
             { w: 50, h: 50 }
         ], this, "WIDTH_AND_HEIGHT");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.WIDTH_AND_HEIGHT !== undefined) {

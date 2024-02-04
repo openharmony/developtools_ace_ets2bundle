@@ -35,6 +35,9 @@ struct CustomY {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class CustomX extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -43,6 +46,7 @@ class CustomX extends ViewPU {
         }
         this.__fruit = new SynchedPropertySimpleOneWayPU(params.fruit, this, "fruit");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.fruit === undefined) {
@@ -80,6 +84,7 @@ class CustomY extends ViewPU {
         }
         this.__parentFruit = new ObservedPropertySimplePU('苹果', this, "parentFruit");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.parentFruit !== undefined) {

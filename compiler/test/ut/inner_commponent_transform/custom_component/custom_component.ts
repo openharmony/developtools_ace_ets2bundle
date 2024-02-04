@@ -47,6 +47,9 @@ struct Banner {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "custom_component_" + ++__generate__Id;
@@ -55,6 +58,7 @@ class MyComponent extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
@@ -157,6 +161,7 @@ class Banner extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.value = "Hello";
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.value !== undefined) {

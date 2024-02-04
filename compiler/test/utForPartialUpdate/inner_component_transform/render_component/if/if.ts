@@ -41,6 +41,9 @@ struct IFView {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class IFView extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -51,6 +54,7 @@ class IFView extends ViewPU {
         this.__toggle2 = new ObservedPropertySimplePU(false, this, "toggle2");
         this.__toggle3 = new ObservedPropertySimplePU(false, this, "toggle3");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.toggle1 !== undefined) {

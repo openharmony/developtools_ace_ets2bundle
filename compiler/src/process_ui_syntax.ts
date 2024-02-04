@@ -99,7 +99,8 @@ import {
 import {
   processComponentClass,
   createParentParameter,
-  processBuildMember
+  processBuildMember,
+  checkFinalizeConstruction
 } from './process_component_class';
 import processImport, {
   processImportModule,
@@ -145,6 +146,7 @@ export const builderTypeParameter: {params: string[]} = {params: []};
 export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null): Function {
   let entryNodeKey: ts.Expression;
+  let hasStruct: boolean = false;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
@@ -186,6 +188,9 @@ export function processUISyntax(program: ts.Program, ut = false,
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
+        if (hasStruct) {
+          statements.unshift(checkFinalizeConstruction());
+        }
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
@@ -236,6 +241,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         processImport(node, pagesDir, transformLog.errors);
       }
       if (ts.isStructDeclaration(node)) {
+        hasStruct = true;
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);

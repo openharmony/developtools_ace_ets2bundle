@@ -143,6 +143,9 @@ struct MyComponent {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function noParam(parent = null) {
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Row.create();
@@ -177,6 +180,7 @@ class MyComponent extends ViewPU {
         this.controller = new TabsController();
         this.__hideBar = new ObservedPropertySimplePU(true, this, "hideBar");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {

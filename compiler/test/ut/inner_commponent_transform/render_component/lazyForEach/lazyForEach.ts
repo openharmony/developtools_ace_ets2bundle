@@ -108,6 +108,9 @@ struct MyComponent {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "lazyForEach_" + ++__generate__Id;
@@ -186,6 +189,7 @@ class MyComponent extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.data = new MyDataSource();
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.data !== undefined) {

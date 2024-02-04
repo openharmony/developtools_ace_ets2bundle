@@ -66,6 +66,9 @@ struct Index {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function global(parent = null) {
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
         Text.create('Global Builder');
@@ -80,6 +83,7 @@ class Index extends ViewPU {
         }
         this.judge = true;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.judge !== undefined) {
