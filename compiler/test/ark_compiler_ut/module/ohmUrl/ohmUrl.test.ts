@@ -15,13 +15,24 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
+import sinon from 'sinon';
 
 import { getOhmUrlByFilepath, getOhmUrlBySystemApiOrLibRequest, getOhmUrlByHarName } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
 import { projectConfig as mainProjectConfig } from '../../../../main';
+import RollUpPluginMock from '../../mock/rollup_mock/rollup_plugin_mock';
+import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 
 mocha.describe('generate ohmUrl', function () {
+  mocha.before(function () {
+    this.rollup = new RollUpPluginMock();
+  });
+
+  mocha.after(() => {
+    delete this.rollup;
+  });
+
   mocha.it('nested src main ets|js in filePath', function () {
     const filePath = `${projectConfig.projectRootPath}/entry/src/main/ets/feature/src/main/js/`
       + `subfeature/src/main/ets/pages/test.ts`;
@@ -120,5 +131,23 @@ mocha.describe('generate ohmUrl', function () {
     const ohmUrl = getOhmUrlByFilepath(ohosTestfilePath, projectConfig, undefined, moduleName);
     const expected = 'UtTestApplication/entry/ets/pages/test';
     expect(ohmUrl == expected).to.be.true;
+  });
+
+  mocha.it('the error message of processPackageDir', function () {
+    this.rollup.build();
+    projectConfig.modulePathMap = {};
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const filePath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName = 'entry';
+    const importerFile = 'importTest.ts';
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
+    const loggerStub = sinon.stub(logger, 'error');
+    getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
+    expect(loggerStub.calledWith(red,
+      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
+    `Please check whether the module which ${filePath} belongs to is correctly configured` +
+    `and the corresponding file name matches (case sensitive)`, reset)).to.be.true;
+    loggerStub.restore();
   });
 });
