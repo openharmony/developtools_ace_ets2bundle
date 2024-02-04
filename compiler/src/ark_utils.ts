@@ -63,11 +63,12 @@ import { getRealModulePath, type ResolveModuleInfo } from './ets_checker';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
+const IDENTIFIER_CACHE:string = 'IdentifierCache';
 
 export const SRC_MAIN: string = 'src/main';
 
 export var newSourceMaps: Object = {};
-export var identifierCaches: Object = {};
+export var nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string, importerFile?: string): string {
@@ -420,15 +421,18 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
   }
 
-  let historyNameCache: Map<string, string> = undefined;
-
-  if (identifierCaches) {
+  let historyNameCache = new Map<string, string>();
+  if (nameCacheObj) {
     let namecachePath = relativeSourceFilePath;
     if (isDeclaration) {
       namecachePath = harFilesRecord.get(originalFilePath).sourceCachePath;
     }
-    if (identifierCaches[namecachePath]) {
-      historyNameCache = getMapFromJson(identifierCaches[namecachePath]);
+    let identifierCache = nameCacheObj[namecachePath]?.[IDENTIFIER_CACHE];
+    if (identifierCache) {
+      for (const [key, value] of Object.entries(identifierCache)) {
+        let newKey = key.includes(':') ? key.split(':')[0] : key;
+        historyNameCache.set(newKey, value as string);
+      }
     }
   }
 
@@ -445,7 +449,12 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   }
 
   if (mixedInfo.nameCache && !isDeclaration) {
-    identifierCaches[relativeSourceFilePath] = mixedInfo.nameCache;
+    let obfName: string = relativeSourceFilePath;
+    if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+      obfName = mangleFilePath(relativeSourceFilePath);
+    }
+    mixedInfo.nameCache["obfName"] = obfName;
+    nameCacheObj[relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
   tryMangleFileNameAndWriteFile(filePath, mixedInfo.content, projectConfig, originalFilePath);
@@ -727,7 +736,7 @@ function checkBundleVersion(bundleVersion: string): boolean {
 
 export function cleanUpUtilsObjects(): void {
   newSourceMaps = {};
-  identifierCaches = {};
+  nameCacheObj = {};
   packageCollection.clear();
 }
 
