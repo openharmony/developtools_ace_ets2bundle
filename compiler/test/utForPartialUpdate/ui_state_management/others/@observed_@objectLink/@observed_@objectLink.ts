@@ -64,6 +64,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let NextID = 0;
 let ClassA = class ClassA {
     constructor(c) {
@@ -90,6 +93,7 @@ class ViewA extends ViewPU {
         }
         this.__varA = new SynchedPropertyNesedObjectPU(params.varA, this, "varA");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         this.__varA.set(params.varA);
@@ -130,6 +134,7 @@ class ViewB extends ViewPU {
         }
         this.__varB = new ObservedPropertyObjectPU(new ClassB(new ClassA(0)), this, "varB");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.varB !== undefined) {

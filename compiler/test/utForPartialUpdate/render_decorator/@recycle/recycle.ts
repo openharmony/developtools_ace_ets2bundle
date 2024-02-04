@@ -137,6 +137,9 @@ struct AnimationTest {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class HomeComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -146,6 +149,7 @@ class HomeComponent extends ViewPU {
         this.__state_value = new ObservedPropertySimplePU("100%", this, "state_value");
         this.__value = new ObservedPropertySimplePU(1, this, "value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.state_value !== undefined) {
@@ -256,6 +260,7 @@ class child extends ViewPU {
         this.controller = new TabsController();
         this.__heightValue = new ObservedPropertySimplePU(100, this, "heightValue");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.state_value !== undefined) {
@@ -534,6 +539,7 @@ class NormalComponent extends ViewPU {
         }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.width_value !== undefined) {
@@ -580,6 +586,7 @@ class AnimationTest extends ViewPU {
         }
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.width_value !== undefined) {

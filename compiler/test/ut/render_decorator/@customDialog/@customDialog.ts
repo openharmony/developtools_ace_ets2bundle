@@ -100,6 +100,9 @@ struct CustomDialogUser {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "@customDialog_" + ++__generate__Id;
@@ -114,6 +117,7 @@ class DialogExample extends View {
         this.action1 = undefined;
         this.action2 = undefined;
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         this.count = params.count;
@@ -204,6 +208,7 @@ class CustomDialogUser extends View {
             autoCancel: false
         }, this);
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.countInitValue !== undefined) {

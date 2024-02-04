@@ -66,6 +66,9 @@ struct ViewB {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "import@Observed_" + ++__generate__Id;
@@ -77,6 +80,7 @@ class ViewA extends View {
         this.label = 'ViewA1';
         this.__a = new SynchedPropertyNesedObject(params.a, this, "a");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.label !== undefined) {
@@ -107,6 +111,7 @@ class ViewB extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__arrA = new ObservedPropertyObject([new import_Observed_1.ClassB(0), new import_Observed_1.ClassB(0)], this, "arrA");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.arrA !== undefined) {

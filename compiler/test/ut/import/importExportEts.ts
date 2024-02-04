@@ -58,6 +58,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "importExportEts_" + ++__generate__Id;
@@ -72,6 +75,7 @@ class ImportTest extends View {
         this.__myState3 = new ObservedPropertySimple(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimple('ImportTest', this, "myState4");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.myState1 !== undefined) {

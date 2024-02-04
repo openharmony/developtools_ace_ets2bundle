@@ -69,6 +69,9 @@ struct linkPage {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "@link_" + ++__generate__Id;
@@ -80,6 +83,7 @@ class linkComp extends View {
         this.__items = new SynchedPropertyObjectTwoWay(params.items, this, "items");
         this.__obj = new SynchedPropertyObjectTwoWay(params.obj, this, "obj");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
@@ -151,6 +155,7 @@ class linkPage extends View {
         this.__itemsArr = new ObservedPropertyObject([1, 2, 3], this, "itemsArr");
         this.__peoples = new ObservedPropertyObject([{ name: 'xiaoming', age: 8 }], this, "peoples");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.isPlaying !== undefined) {

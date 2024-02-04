@@ -105,6 +105,9 @@ struct ParentView5 {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class ParentView extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -113,6 +116,7 @@ class ParentView extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -165,6 +169,7 @@ class ParentView1 extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -217,6 +222,7 @@ class ParentView2 extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -269,6 +275,7 @@ class ParentView3 extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -321,6 +328,7 @@ class ParentView4 extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -373,6 +381,7 @@ class ParentView5 extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {

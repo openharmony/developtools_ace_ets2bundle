@@ -39,6 +39,9 @@ struct TestPage{
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class TitleComp extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -47,6 +50,7 @@ class TitleComp extends ViewPU {
         }
         this.__title = new SynchedPropertySimpleTwoWayPU(params.title, this, "title");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -84,6 +88,7 @@ class TestPage extends ViewPU {
         }
         this.__value = new ObservedPropertySimplePU('hello world', this, "value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.value !== undefined) {

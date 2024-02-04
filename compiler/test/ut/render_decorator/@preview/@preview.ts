@@ -38,6 +38,9 @@ struct HomePreviewComponent_Preview {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "@preview_" + ++__generate__Id;
@@ -47,6 +50,7 @@ class HomePreviewComponent extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.value = "hello world";
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.value !== undefined) {
@@ -66,6 +70,7 @@ class HomePreviewComponent_Preview extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
