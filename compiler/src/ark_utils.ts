@@ -70,7 +70,7 @@ export var newSourceMaps: Object = {};
 export var identifierCaches: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 
-export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string): string {
+export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string, importerFile?: string): string {
   // remove '\x00' from the rollup virtual commonjs file's filePath
   if (filePath.startsWith('\x00')) {
     filePath = filePath.replace('\x00', '');
@@ -110,6 +110,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, log
     projectConfig,
     namespace,
     logger,
+    importerFile,
     originalFilePath: filePath
   };
   return processPackageDir(processParams);
@@ -131,7 +132,7 @@ function processSrcMain(result: RegExpMatchArray | null, projectFilePath: string
 function processPackageDir(params: Object): string {
   const {
     projectFilePath, unixFilePath, packageDir, projectRootPath, moduleRootPath, 
-    projectConfig, namespace, logger, originalFilePath
+    projectConfig, namespace, logger, importerFile, originalFilePath
   } = params;
   if (projectFilePath.indexOf(packageDir) !== -1) {
     if (process.env.compileTool === 'rollup') {
@@ -149,7 +150,10 @@ function processPackageDir(params: Object): string {
         }
       }
 
-      logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${originalFilePath}"`, reset);
+      logger.error(red,
+        `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}"` +
+        `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
+        `and the corresponding file name matches (case sensitive)`, reset);
       return originalFilePath;
     }
 
@@ -179,7 +183,10 @@ function processPackageDir(params: Object): string {
     }
   }
 
-  logger.error(red, `ArkTS:ERROR Failed to get an resolved OhmUrl by filepath "${originalFilePath}"`, reset);
+  logger.error(red,
+    `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}"` +
+    `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
+    `and the corresponding file name matches (case sensitive)`, reset);
   return originalFilePath;
 }
 
@@ -429,7 +436,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache, originalFilePath);
   } catch {
-    logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file with arkguard: ${relativeSourceFilePath}`);
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
@@ -492,7 +499,7 @@ export async function writeTerserObfuscatedSourceCode(content: string, filePath:
   try {
     result = await minify(content, minifyOptions);
   } catch {
-    logger.error(red, `ArkTS:ERROR Failed to obfuscate file: ${relativeSourceFilePath}`);
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file with terser: ${relativeSourceFilePath}`);
   }
 
   if (result.map) {
@@ -524,7 +531,7 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
     }
     result = await minify(content, minifyOptions);
   } catch {
-    logger.error(red, `ArkTS:ERROR Failed to source code obfuscation.`, reset);
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate source code for ${filePath}`, reset);
   }
 
   fs.writeFileSync(filePath, result.code);

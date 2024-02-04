@@ -17,6 +17,10 @@
 import { expect } from 'chai';
 import mocha from 'mocha';
 import path from 'path';
+import sinon from 'sinon';
+import fs from 'fs';
+import childProcess from 'child_process'
+import cluster from 'cluster';
 
 import { toUnixPath } from '../../../lib/utils';
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
@@ -27,7 +31,8 @@ import {
   EXTNAME_TS,
   EXTNAME_JS,
   EXTNAME_ETS,
-  OH_MODULES
+  OH_MODULES,
+  GEN_ABC_PLUGIN_NAME
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import ModuleModeMock from '../mock/class_mock/module_mode_mock';
@@ -539,6 +544,62 @@ mocha.describe('test module_mode file api', function () {
     expect(moduleMode.pkgEntryInfos.size !== 0).to.be.true;
   });
 
+  mocha.it('7-5: test the error message of getPackageEntryInfo under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const isTestErrorLog = true;
+    try {
+      moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
+    } catch (e) {
+    }
+    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('7-6: test the error message of getPackageEntryInfo under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const isTestErrorLog = true;
+    try {
+      moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
+    } catch (e) {
+    }
+    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('7-7: test the error message of getPackageEntryInfo under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const isTestErrorLog = true;
+    try {
+      moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
+    } catch (e) {
+    }
+    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('7-8: test the error message of getPackageEntryInfo under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.packageDir = OH_MODULES;
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const isTestErrorLog = true;
+    try {
+      moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
+    } catch (e) {
+    }
+    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    stub.restore();
+  });
+
   mocha.it('8-1: test buildModuleSourceMapInfo under build debug', async function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
@@ -809,5 +870,66 @@ mocha.describe('test module_mode file api', function () {
     const sufStr = toUnixPath(filePath).replace(toUnixPath(projectConfig.projectRootPath), '');
     const returnInfo = moduleMode.genFileCachePath(filePath, projectConfig.projectRootPath, cachePath);
     expect(returnInfo === path.join(cachePath, sufStr)).to.be.true;
+  });
+
+  mocha.it('13-1: test the error message of generateMergedAbcOfEs2Abc throw error on failed code', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const childStub = sinon.stub(childProcess, 'exec').callsFake((cmd, options, callback) => {
+      const child = new EventEmitter();
+      process.nextTick(() => {
+        child.emit('close', FAIL);
+      });
+      return child;
+    });
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    let parentEvent = undefined;
+    moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
+    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc')).to.be.true;
+    childStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('13-2: test the error message of generateMergedAbcOfEs2Abc handle error', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').throws(new Error('Execution failed'));
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    try {
+      let parentEvent = undefined;
+      moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
+    } catch (e) {
+    }
+    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc. Error message: ')).to.be.true;
+    triggerAsyncStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('14-1: test the error message of filterModulesByHashJson', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    let existsSyncStub = sinon.stub(fs, 'existsSync');
+    let readFileSyncStub = sinon.stub(fs, 'readFileSync');
+    let stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    moduleMode.moduleInfos = new Map([
+      ['moduleKey', { cacheFilePath: 'test' }] // 添加测试条目
+    ]);
+    existsSyncStub.callsFake((path) => {
+      if (path === moduleMode.hashJsonFilePath) {
+        return true;
+      }
+      return false;
+    });
+    readFileSyncStub.withArgs(moduleMode.hashJsonFilePath).returns(JSON.stringify({}));
+    try {
+      moduleMode.filterModulesByHashJsonMock();
+    } catch (e) {
+    }
+    expect(stub.calledWithMatch(
+      `ArkTS:INTERNAL ERROR: Failed to get module cache abc from test in incremental build.` +
+      `Please try to rebuild the project.`)).to.be.true;
+    existsSyncStub.restore();
+    readFileSyncStub.restore();
+    stub.restore();
   });
 });
