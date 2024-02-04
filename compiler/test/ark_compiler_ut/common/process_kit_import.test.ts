@@ -18,7 +18,10 @@ import mocha from 'mocha';
 import * as ts from 'typescript';
 import path from 'path';
 
-import { processKitImport } from '../../../lib/process_kit_import'
+import {
+  processKitImport,
+  kitTransformLog
+} from '../../../lib/process_kit_import'
 
 const KIT_IMPORT_CODE: string =
 `
@@ -59,6 +62,9 @@ const KIT_STAR_EXPORT_CODE_EXPECT: string =
 'export * from "@ohos.multimedia.systemSoundManager";\n'+
 '//# sourceMappingURL=kitTest.js.map'
 
+const KIT_IMPORT_ERROR_EXPECT: string =
+'import { Ability } from "@kit.Kit";'
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -91,5 +97,19 @@ mocha.describe('process Kit Imports tests', function () {
       transformers: { before: [ processKitImport() ] }
     });
     expect(result.outputText == KIT_STAR_EXPORT_CODE_EXPECT).to.be.true;
+  });
+
+  mocha.it('the error message of processKitImport', function () {
+    ts.transpileModule(KIT_IMPORT_ERROR_EXPECT, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes("Kit '@kit.Kit' has no corresponding config file in ArkTS SDK. "+
+      'Please make sure the Kit apis are consistent with SDK ' +
+      "and there's no local modification on Kit apis.")
+    );
+    expect(hasError).to.be.true;
   });
 });
