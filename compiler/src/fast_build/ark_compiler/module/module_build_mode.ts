@@ -15,7 +15,6 @@
 
 import { ModuleMode } from './module_mode';
 import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
-import { ES2ABC, TS2ABC } from '../common/ark_define';
 
 export class ModuleBuildMode extends ModuleMode {
   constructor(rollupObject: Object) {

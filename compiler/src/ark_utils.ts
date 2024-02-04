@@ -131,10 +131,8 @@ function processSrcMain(result: RegExpMatchArray | null, projectFilePath: string
 }
 
 function processPackageDir(params: Object): string {
-  const {
-    projectFilePath, unixFilePath, packageDir, projectRootPath, moduleRootPath, 
-    projectConfig, namespace, logger, importerFile, originalFilePath
-  } = params;
+  const { projectFilePath, unixFilePath, packageDir, projectRootPath, moduleRootPath,
+    projectConfig, namespace, logger, importerFile, originalFilePath } = params;
   if (projectFilePath.indexOf(packageDir) !== -1) {
     if (process.env.compileTool === 'rollup') {
       const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
@@ -152,7 +150,7 @@ function processPackageDir(params: Object): string {
       }
 
       logger.error(red,
-        `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}"` +
+        `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
         `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
         `and the corresponding file name matches (case sensitive)`, reset);
       return originalFilePath;
@@ -185,7 +183,7 @@ function processPackageDir(params: Object): string {
   }
 
   logger.error(red,
-    `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}"` +
+    `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
     `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
     `and the corresponding file name matches (case sensitive)`, reset);
   return originalFilePath;

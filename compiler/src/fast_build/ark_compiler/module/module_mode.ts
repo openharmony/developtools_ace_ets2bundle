@@ -669,8 +669,8 @@ export class ModuleMode extends CommonMode {
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.\n` +
-        `Error message:` + e.toString());
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.\n' +
+        'Error message:' + e.toString());
     }
   }
 

@@ -97,7 +97,7 @@ export class BundleMode extends CommonMode {
         } else if (rollupBundleFileSet[fileName].type === 'chunk') {
           rollupBundleSourceCode = rollupBundleFileSet[fileName].code;
         } else {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to retrieve source code` +
+          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to retrieve source code ` +
             `for ${fileName} from rollup file set.`);
         }
         fs.writeFileSync(cacheOutputPath, rollupBundleSourceCode, 'utf-8');
