@@ -150,4 +150,23 @@ mocha.describe('generate ohmUrl', function () {
     `and the corresponding file name matches (case sensitive)`, reset)).to.be.true;
     loggerStub.restore();
   });
+
+  mocha.it('the error message of processPackageDir(packageDir is invalid value)', function () {
+    this.rollup.build();
+    projectConfig.packageDir = undefined;
+    projectConfig.modulePathMap = {};
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const filePath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName = 'entry';
+    const importerFile = 'importTest.ts';
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
+    const loggerStub = sinon.stub(logger, 'error');
+    getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
+    expect(loggerStub.calledWith(red,
+      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
+      `Please check whether the module which ${filePath} belongs to is correctly configured` +
+      `and the corresponding file name matches (case sensitive)`, reset)).to.be.true;
+    loggerStub.restore();
+  });
 });

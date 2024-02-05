@@ -179,7 +179,7 @@ class SpecificerInfo {
   }
 }
 
-class KitInfo {
+export class KitInfo {
   private static currentKitInfo: KitInfo = undefined;
   private static currentFileType: FileType = FileType.ETS;
   private static currentKitName: string = '';
