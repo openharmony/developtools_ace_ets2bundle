@@ -19,7 +19,8 @@ import mocha from 'mocha';
 import path from 'path';
 import sinon from 'sinon';
 import fs from 'fs';
-import childProcess from 'child_process'
+import childProcess from 'child_process';
+import cluster from 'cluster';
 
 import { toUnixPath } from '../../../lib/utils';
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
@@ -924,21 +925,17 @@ mocha.describe('test module_mode file api', function () {
     expect(returnInfo === path.join(cachePath, sufStr)).to.be.true;
   });
 
-  mocha.it('13-1: test the error message of generateMergedAbcOfEs2Abc throw error on failed code', function () {
+  mocha.it('13-1: test the error message of generateMergedAbcOfEs2Abc throw error on failed code', async function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
-    const childStub = sinon.stub(childProcess, 'exec').callsFake((cmd, options, callback) => {
-      const child = new EventEmitter();
-      process.nextTick(() => {
-        child.emit('close', FAIL);
-      });
-      return child;
-    });
+    const child = childProcess.exec('false', { windowsHide: true });
+    const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').returns(child);
     const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
     let parentEvent = undefined;
     moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
-    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc')).to.be.true;
-    childStub.restore();
+    await sleep(1000);
+    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc\n')).to.be.true;
+    triggerAsyncStub.restore();
     stub.restore();
   });
 
@@ -964,7 +961,7 @@ mocha.describe('test module_mode file api', function () {
     let readFileSyncStub = sinon.stub(fs, 'readFileSync');
     let stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
     moduleMode.moduleInfos = new Map([
-      ['moduleKey', { cacheFilePath: 'test' }] // 添加测试条目
+      ['moduleKey', { cacheFilePath: 'test' }]
     ]);
     existsSyncStub.callsFake((path) => {
       if (path === moduleMode.hashJsonFilePath) {
@@ -993,6 +990,51 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.mergeProtoToAbc();
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.')).to.be.true;
     execSyncStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('16-1: test the error message of invokeTs2AbcWorkersToGenProto', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleMode(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const clusterStub = sinon.stub(cluster, 'fork');
+    const fakeWorker = {
+      on: sinon.stub()
+    };
+    clusterStub.returns(fakeWorker);
+    const splittedModules = [{
+      'test': ''
+    }]
+    try {
+      fakeWorker.on.withArgs('message').callsFake((event, callback) => {
+        callback({ data: 'error' });
+      });
+      moduleMode.invokeTs2AbcWorkersToGenProto(splittedModules)
+    } catch (e) {
+    }
+    expect(stub.calledWith('ArkTS:ERROR Failed to execute ts2abc.')).to.be.true;
+    clusterStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('17-1: test the error message of invokeTs2AbcWorkersToGenAbc', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleMode(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const clusterStub = sinon.stub(cluster, 'on');
+    const fakeWorker = {
+      on: sinon.stub()
+    };
+    clusterStub.returns(fakeWorker);
+    try {
+      clusterStub.withArgs('exit').callsFake((event, callback) => {
+        callback(fakeWorker, 1, null);
+      });
+      moduleMode.processTs2abcWorkersToGenAbc()
+    } catch (e) {
+    }
+    expect(stub.calledWith('ArkTS:ERROR Failed to execute ts2abc')).to.be.true;
+    clusterStub.restore();
     stub.restore();
   });
 });

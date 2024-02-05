@@ -28,7 +28,8 @@ import {
 import {
   DEFAULT_PROJECT,
   MODULE_ID_ROLLUP_PLACEHOLDER,
-  NODE_MODULES_PATH
+  NODE_MODULES_PATH,
+  AN_BUILD_OUTPUT_PATH
 } from "./path_config";
 import { scanFiles } from "../../utils/utils";
 import { IArkProjectConfig } from "./project_config";
@@ -121,7 +122,8 @@ class RollUpPluginMock {
       hotReload: undefined,
       patchAbcPath: undefined,
       changedFileList: undefined,
-      compileMode: ESMODULE
+      compileMode: ESMODULE,
+      anBuildOutPut: `${projectRootDir}/${entryName}/${mode}/${AN_BUILD_OUTPUT_PATH}`
     }
   }
 

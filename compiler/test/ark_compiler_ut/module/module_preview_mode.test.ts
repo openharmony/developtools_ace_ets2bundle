@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,7 @@ import sinon from 'sinon';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModulePreviewMode } from '../../../lib/fast_build/ark_compiler/module/module_preview_mode';
 
-mocha.describe('test module_mode file api', function () {
+mocha.describe('test module_preview_mode file api', function () {
   mocha.before(function () {
     this.rollup = new RollUpPluginMock();
   });

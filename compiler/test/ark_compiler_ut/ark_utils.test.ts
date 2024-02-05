@@ -13,11 +13,14 @@
  * limitations under the License.
  */
 
+// Execute this file first to avoid circular dependency problems
+
 import { expect } from 'chai';
 import mocha from 'mocha';
 import fs from "fs";
 import path from "path";
 import MagicString from 'magic-string';
+import sinon from 'sinon';
 
 import {
   getBuildModeInLowerCase,
@@ -25,8 +28,10 @@ import {
   genSourceMapFileName,
   isOhModules,
   isEs2Abc,
+  writeArkguardObfuscatedSourceCode,
+  writeMinimizedSourceCode,
   writeTerserObfuscatedSourceCode
-} from '../../../lib/ark_utils';
+} from '../../lib/ark_utils';
 import {
   DEBUG,
   RELEASE,
@@ -35,35 +40,36 @@ import {
   EXTNAME_JS,
   EXTNAME_ETS,
   OBFUSCATION_TOOL
-} from '../../../lib/fast_build/ark_compiler/common/ark_define';
-import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
+} from '../../lib/fast_build/ark_compiler/common/ark_define';
+import RollUpPluginMock from './mock/rollup_mock/rollup_plugin_mock';
 import {
   BUNDLE_NAME_DEFAULT,
   ENTRY_MODULE_NAME_DEFAULT,
   EXTNAME_MAP,
   ENTRYABILITY_JS
-} from '../mock/rollup_mock/common';
-import projectConfig from '../utils/processProjectConfig';
+} from './mock/rollup_mock/common';
+import projectConfig from './utils/processProjectConfig';
 import {
   ES2ABC,
   TS2ABC
-} from '../../../lib/pre_define';
-import { changeFileExtension } from '../../../lib/fast_build/ark_compiler/utils';
-import ModuleSourceFileMock from '../mock/class_mock/module_source_files_mock';
+} from '../../lib/pre_define';
+import { changeFileExtension } from '../../lib/fast_build/ark_compiler/utils';
+import ModuleSourceFileMock from './mock/class_mock/module_source_files_mock';
 import {
   genTemporaryPath,
   toUnixPath
-} from '../../../lib/utils';
+} from '../../lib/utils';
 import {
   ObConfigResolver,
   MergedConfig
-} from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
+} from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   utProcessArkConfig
-} from '../../../lib/fast_build/ark_compiler/common/process_ark_config';
-import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
-import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
-import { TERSER_PROCESSED_EXPECTED_CODE } from '../mock/rollup_mock/path_config';
+} from '../../lib/fast_build/ark_compiler/common/process_ark_config';
+import { ModuleSourceFile } from '../../lib/fast_build/ark_compiler/module/module_source_file';
+import { newSourceMaps } from '../../lib/fast_build/ark_compiler/transform';
+import { TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock/path_config';
+import { GEN_ABC_PLUGIN_NAME } from '../../lib/fast_build/ark_compiler/common/ark_define';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -339,5 +345,51 @@ mocha.describe('test ark_utils file api', function () {
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+  });
+
+  mocha.it('6-2: test the error message of writeTerserObfuscatedSourceCode', async function () {
+    this.rollup.build(RELEASE);
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const stub = sinon.stub(logger, 'error');
+    const red: string = '\x1B[31m';
+    try {
+      await writeTerserObfuscatedSourceCode(undefined, '', logger, undefined);
+    } catch (e) {
+    }
+    expect(stub.calledWith(red,
+      'ArkTS:INTERNAL ERROR: Failed to obfuscate file with terser: '
+    )).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('7-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
+    this.rollup.build(RELEASE);
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const stub = sinon.stub(logger, 'error');
+    const red: string = '\x1B[31m';
+    try {
+      await writeArkguardObfuscatedSourceCode(undefined, '', logger, this.rollup.share.projectConfig, '', {}, '');
+    } catch (e) {
+    }
+    expect(stub.calledWith(red,
+      'ArkTS:INTERNAL ERROR: Failed to obfuscate file with arkguard: '
+    )).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('8-1: test the error message of writeMinimizedSourceCode', async function () {
+    this.rollup.build(RELEASE);
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const stub = sinon.stub(logger, 'error');
+    const red: string = '\x1B[31m';
+    const reset: string = '\x1B[39m';
+    try {
+      await writeMinimizedSourceCode(undefined, '', logger);
+    } catch (e) {
+    }
+    expect(stub.calledWith(red,
+      'ArkTS:INTERNAL ERROR: Failed to obfuscate source code for ', reset
+    )).to.be.true;
+    stub.restore();
   });
 });
