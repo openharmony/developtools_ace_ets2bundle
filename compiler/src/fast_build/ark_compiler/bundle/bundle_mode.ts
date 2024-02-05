@@ -185,8 +185,7 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = info.cacheFilePath;
       const recordName: string = 'null_recordName';
       const moduleType: string = 'script';
-      const sourceFile: string = isDebug(this.projectConfig) ? info.sourceFile :
-        this.generateReleaseSourceFileName(cacheFilePath);
+      const sourceFile: string = this.generateReleaseSourceFileName(cacheFilePath);
       const abcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       filesInfo += `${cacheFilePath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
     });
