@@ -56,6 +56,9 @@ struct Child2 {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let options = { message: 'Hi' };
 class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -66,6 +69,7 @@ class Index extends ViewPU {
         this.__message1 = new ObservedPropertySimplePU('hello', this, "message1");
         this.message2 = 'Hi';
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.message1 !== undefined) {
@@ -147,6 +151,7 @@ class Child extends ViewPU {
         this.__message1 = new SynchedPropertySimpleTwoWayPU(params.message1, this, "message1");
         this.__message2 = new SynchedPropertySimpleOneWayPU(params.message2, this, "message2");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.options !== undefined) {
@@ -200,6 +205,7 @@ class Child2 extends ViewPU {
         }
         this.message = undefined;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.message !== undefined) {

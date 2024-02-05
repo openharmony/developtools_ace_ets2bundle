@@ -103,6 +103,9 @@ struct CustomContainerUser {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -115,6 +118,7 @@ class CustomContainer extends ViewPU {
         this.callContent = undefined;
         this.footer = "";
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.header !== undefined) {
@@ -167,6 +171,7 @@ class CustomContainer2 extends ViewPU {
         this.header = "";
         this.content = undefined;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.header !== undefined) {
@@ -223,6 +228,7 @@ class CustomContainerUser extends ViewPU {
         }
         this.__text = new ObservedPropertySimplePU('header', this, "text");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.text !== undefined) {

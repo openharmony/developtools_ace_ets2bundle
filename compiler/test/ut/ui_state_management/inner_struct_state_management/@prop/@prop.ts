@@ -65,6 +65,9 @@ struct PageComponent {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "@prop_" + ++__generate__Id;
@@ -77,6 +80,7 @@ class ctComponent extends View {
         this.__count = new SynchedPropertySimpleOneWay(params.count, this, "count");
         this.costOfOneAttempt = undefined;
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         this.name = params.name;
@@ -149,6 +153,7 @@ class PageComponent extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__countDownStartValue = new ObservedPropertySimple(10, this, "countDownStartValue");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.countDownStartValue !== undefined) {

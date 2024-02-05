@@ -36,6 +36,9 @@ struct TapGestureExample {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "tapGesture_" + ++__generate__Id;
@@ -45,6 +48,7 @@ class TapGestureExample extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__value = new ObservedPropertySimple('', this, "value");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.value !== undefined) {

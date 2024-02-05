@@ -100,6 +100,9 @@ struct CustomDialogUser {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class DialogExample extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -113,6 +116,7 @@ class DialogExample extends ViewPU {
         this.action1 = undefined;
         this.action2 = undefined;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.controller !== undefined) {
@@ -242,6 +246,7 @@ class CustomDialogUser extends ViewPU {
             autoCancel: false
         }, this);
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.countInitValue !== undefined) {

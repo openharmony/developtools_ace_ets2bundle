@@ -41,6 +41,9 @@ struct Index {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "forEachTwo_" + ++__generate__Id;
@@ -56,6 +59,7 @@ class Index extends View {
             { w: 50, h: 50 }
         ], this, "WIDTH_AND_HEIGHT");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.WIDTH_AND_HEIGHT !== undefined) {

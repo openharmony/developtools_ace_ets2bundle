@@ -44,6 +44,9 @@ struct child{
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
@@ -68,6 +71,7 @@ class Index extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -130,6 +134,7 @@ class child extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

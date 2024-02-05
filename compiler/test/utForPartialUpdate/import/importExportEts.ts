@@ -58,6 +58,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const ExportStarComponent_1 = require("./test/pages/ExportStarComponent");
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
@@ -71,6 +74,7 @@ class ImportTest extends ViewPU {
         this.__myState3 = new ObservedPropertySimplePU(false, this, "myState3");
         this.__myState4 = new ObservedPropertySimplePU('ImportTest', this, "myState4");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.myState1 !== undefined) {

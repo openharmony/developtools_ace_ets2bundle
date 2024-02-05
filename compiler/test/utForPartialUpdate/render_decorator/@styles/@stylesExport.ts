@@ -58,6 +58,9 @@ exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FancyUseExp = void 0;
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class FancyUseExp extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -66,6 +69,7 @@ class FancyUseExp extends ViewPU {
         }
         this.__enable = new ObservedPropertySimplePU(true, this, "enable");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.enable !== undefined) {

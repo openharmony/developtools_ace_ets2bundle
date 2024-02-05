@@ -91,6 +91,9 @@ struct $$Component {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const value5 = [true, false];
 let value6 = { item1: true };
 let isCountDown = false;
@@ -109,6 +112,7 @@ class $$Component extends ViewPU {
         this.__format = new ObservedPropertySimplePU("hh:mm:ss:ms", this, "format");
         this.__width_value = new ObservedPropertySimplePU("100%", this, "width_value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.value1 !== undefined) {

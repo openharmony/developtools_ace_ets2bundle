@@ -59,6 +59,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 var nextID = 0;
 let Model = class Model {
     constructor(t, c) {
@@ -79,6 +82,7 @@ class CustomText extends ViewPU {
         }
         this.__model = new SynchedPropertyNesedObjectPU(params.model, this, "model");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         this.__model.set(params.model);
@@ -120,6 +124,7 @@ class Parent extends ViewPU {
         this.nextId = 1;
         this.__models = new ObservedPropertyObjectPU([new Model('0', '#ffffff'), new Model('1', '#fff456')], this, "models");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.nextId !== undefined) {

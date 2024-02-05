@@ -34,6 +34,9 @@ struct MyComponent {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class MyComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -42,6 +45,7 @@ class MyComponent extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU([10, 20, 30], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {

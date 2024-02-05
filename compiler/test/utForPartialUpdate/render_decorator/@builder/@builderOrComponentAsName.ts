@@ -74,6 +74,9 @@ struct CCC {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function ComA(parent = null) {
 }
 class Index extends ViewPU {
@@ -83,6 +86,7 @@ class Index extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -166,6 +170,7 @@ class AAA extends ViewPU {
         }
         this.AAA = undefined;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.AAA !== undefined) {
@@ -198,6 +203,7 @@ class BBB extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -230,6 +236,7 @@ class CCC extends ViewPU {
         }
         this.CCC = this.DDD;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.CCC !== undefined) {

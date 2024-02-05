@@ -47,6 +47,9 @@ struct PageTransitionExample1 {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class PageTransitionExample1 extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -57,6 +60,7 @@ class PageTransitionExample1 extends ViewPU {
         this.__opacity2 = new ObservedPropertySimplePU(1, this, "opacity2");
         this.__active = new ObservedPropertySimplePU(false, this, "active");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.scale2 !== undefined) {

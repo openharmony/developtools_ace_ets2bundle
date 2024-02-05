@@ -62,6 +62,9 @@ struct CustomDialogUser {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const import_CustomDialog_1 = require("./test/pages/import@CustomDialog");
 class CustomDialogUser extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -99,6 +102,7 @@ class CustomDialogUser extends ViewPU {
             customStyle: false
         }, this);
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.textValue !== undefined) {

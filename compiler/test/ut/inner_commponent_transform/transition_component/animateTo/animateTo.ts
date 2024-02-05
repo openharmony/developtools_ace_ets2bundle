@@ -84,6 +84,9 @@ struct TransitionExample {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "animateTo_" + ++__generate__Id;
@@ -101,6 +104,7 @@ class TransitionExample extends View {
         this.__opacity1 = new ObservedPropertySimple(1, this, "opacity1");
         this.__borderRaius1 = new ObservedPropertySimple(10, this, "borderRaius1");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.btnW !== undefined) {
