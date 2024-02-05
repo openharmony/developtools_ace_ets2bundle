@@ -35,6 +35,9 @@ struct ParentComponent {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class LinkComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -43,6 +46,7 @@ class LinkComponent extends ViewPU {
         }
         this.__counter = new SynchedPropertySimpleTwoWayPU(params.counter, this, "counter");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -80,6 +84,7 @@ class ParentComponent extends ViewPU {
         }
         this.__value = new ObservedPropertySimplePU('first init content', this, "value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.value !== undefined) {

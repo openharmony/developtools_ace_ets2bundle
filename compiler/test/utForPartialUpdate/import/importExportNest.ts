@@ -58,6 +58,9 @@ struct ImportTest {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -75,6 +78,7 @@ class ImportTest extends ViewPU {
         this.__testState4 = new ObservedPropertySimplePU(3, this, "testState4");
         this.__testState5 = new ObservedPropertySimplePU(10, this, "testState5");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.testText1 !== undefined) {

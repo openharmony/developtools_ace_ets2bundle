@@ -35,6 +35,9 @@ struct ButtonExample {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "button_" + ++__generate__Id;
@@ -43,6 +46,7 @@ class ButtonExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }

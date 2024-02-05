@@ -44,6 +44,9 @@ struct ComB {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 const import_ComponentConst_1 = require("./test/pages/import@ComponentConst");
 class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -55,6 +58,7 @@ class Index extends ViewPU {
             super["initAllowComponentFreeze"](true);
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -116,6 +120,7 @@ class ComA extends ViewPU {
             super["initAllowComponentFreeze"](import_ComponentConst_1.componentParent);
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -143,6 +148,7 @@ class ComB extends ViewPU {
             super["initAllowComponentFreeze"](import_ComponentConst_1.componentParentObj.componentParent);
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

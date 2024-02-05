@@ -45,6 +45,9 @@ struct ComA {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function ComB(param, parent = null) {
     const __param__ = param;
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
@@ -84,6 +87,7 @@ class Index extends ViewPU {
         }
         this.__arr = new ObservedPropertyObjectPU(['1', '2', '3', '4', '5'], this, "arr");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
@@ -124,6 +128,7 @@ class ComA extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

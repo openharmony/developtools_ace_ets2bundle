@@ -66,6 +66,9 @@ struct CompA {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class CompA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -79,6 +82,7 @@ class CompA extends ViewPU {
         this.setInitiallyProvidedValue(params);
         this.declareWatch("shopBasket", this.onBasketUpdated);
         this.declareWatch("defArray", this.onPutItem);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.shopBasket !== undefined) {

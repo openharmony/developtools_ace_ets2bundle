@@ -45,6 +45,9 @@ struct HomeComponent {
 `
 
 exports.expectResult = `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 function animatablePoints(points, elmtId, isInitialRender, parent) {
     if (isInitialRender) {
         Polyline.createAnimatableProperty("animatablePoints", points, (points) => {
@@ -85,6 +88,7 @@ class HomeComponent extends ViewPU {
         }
         this.points = 1;
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.points !== undefined) {

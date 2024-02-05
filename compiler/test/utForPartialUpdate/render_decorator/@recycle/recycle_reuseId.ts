@@ -54,6 +54,9 @@ struct child {
 }`
 
 exports.expectResult = `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let a = "aaaaaaaaaa";
 class HomeComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -64,6 +67,7 @@ class HomeComponent extends ViewPU {
         this.__state_value = new ObservedPropertySimplePU("100%", this, "state_value");
         this.__value = new ObservedPropertySimplePU(1, this, "value");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.state_value !== undefined) {
@@ -328,6 +332,7 @@ class child extends ViewPU {
         this.__propvalue = new SynchedPropertySimpleOneWayPU(params.propvalue, this, "propvalue");
         this.__linkvalue = new SynchedPropertySimpleTwoWayPU(params.linkvalue, this, "linkvalue");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

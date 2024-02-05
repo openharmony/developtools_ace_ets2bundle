@@ -47,6 +47,9 @@ struct PageTransitionExample1 {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "pageTransition_" + ++__generate__Id;
@@ -58,6 +61,7 @@ class PageTransitionExample1 extends View {
         this.__opacity = new ObservedPropertySimple(1, this, "opacity");
         this.__active = new ObservedPropertySimple(false, this, "active");
         this.updateWithValueParams(params);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.scale !== undefined) {

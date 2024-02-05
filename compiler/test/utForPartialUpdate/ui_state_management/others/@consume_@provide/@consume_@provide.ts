@@ -61,6 +61,9 @@ struct CompC {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class CompA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -74,6 +77,7 @@ class CompA extends ViewPU {
         this.addProvidedVar('aliasName', this.__message, true);
         this.addProvidedVar("message", this.__message, true);
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.reviewVotes !== undefined) {
@@ -151,6 +155,7 @@ class CompB extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }
@@ -195,6 +200,7 @@ class CompC extends ViewPU {
         }
         this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

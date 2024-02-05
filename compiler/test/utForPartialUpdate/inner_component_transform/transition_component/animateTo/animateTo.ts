@@ -84,6 +84,9 @@ struct TransitionExample {
 
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class TransitionExample extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -100,6 +103,7 @@ class TransitionExample extends ViewPU {
         this.__opacity1 = new ObservedPropertySimplePU(1, this, "opacity1");
         this.__borderRaius1 = new ObservedPropertySimplePU(10, this, "borderRaius1");
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.btnW !== undefined) {

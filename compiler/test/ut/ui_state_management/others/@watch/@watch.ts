@@ -66,6 +66,9 @@ struct CompA {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let __generate__Id = 0;
 function generateId() {
     return "@watch_" + ++__generate__Id;
@@ -80,6 +83,7 @@ class CompA extends View {
         this.updateWithValueParams(params);
         this.declareWatch("shopBasket", this.onBasketUpdated);
         this.declareWatch("defArray", this.onPutItem);
+        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.shopBasket !== undefined) {

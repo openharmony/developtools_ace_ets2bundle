@@ -44,6 +44,9 @@ struct LocalStorageComponent {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 let storage = LocalStorage.GetShared();
 class ClassA {
     constructor(a) {
@@ -62,6 +65,7 @@ class LocalStorageComponent extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
     }

@@ -104,6 +104,9 @@ build() {
 `
 exports.expectResult =
 `"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
 class BasicDataSource {
     constructor() {
         this.listeners = [];
@@ -181,6 +184,7 @@ class Test extends ViewPU {
         }
         this.data = new MyDataSource();
         this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.data !== undefined) {
