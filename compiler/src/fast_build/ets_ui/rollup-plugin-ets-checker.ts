@@ -27,7 +27,8 @@ import {
   printDiagnostic,
   fastBuildLogger,
   emitBuildInfo,
-  runArkTSLinter
+  runArkTSLinter,
+  collectFileToIgnoreDiagnostics
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -100,9 +101,10 @@ export function etsChecker() {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
           timePrinterInstance.appendTime(ts.TimePhase.START);
-          globalProgram.builderProgram = languageService.getBuilderProgram();
+          globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
           globalProgram.program = globalProgram.builderProgram.getProgram();
           timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+          collectFileToIgnoreDiagnostics(rootFileNames);
           runArkTSLinter();
         }
         executedOnce = true;

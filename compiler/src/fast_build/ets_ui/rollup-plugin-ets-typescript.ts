@@ -353,7 +353,6 @@ async function transform(code: string, id: string) {
     storedFileInfo.reUseProgram = true;
   }
 
-  targetSourceFile.fileName = id;
   startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
@@ -379,7 +378,7 @@ async function transform(code: string, id: string) {
       {
         before: [
           processUISyntax(null, false, compilationTime),
-          processKitImport()
+          processKitImport(id)
         ]
       }
     );

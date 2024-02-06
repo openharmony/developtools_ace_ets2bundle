@@ -51,7 +51,7 @@ const KIT_PREFIX = '@kit.';
 *      import ErrorCode from '@ohos.ability.errorCode'
 *    ```
 */
-export function processKitImport(): Function {
+export function processKitImport(id: string): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -90,7 +90,7 @@ export function processKitImport(): Function {
         // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
         const processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-        ModuleSourceFile.newSourceFile(path.normalize(processedNode.fileName), processedNode);
+        ModuleSourceFile.newSourceFile(id, processedNode);
         return node; // this node not used for [writeFile]
       }
       // process KitImport transforming
