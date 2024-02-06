@@ -50,6 +50,7 @@ export const COMPONENT_CUSTOM_DECORATOR: string = 'COMPONENT_CUSTOM_DECORATOR';
 export const COMPONENT_REQUIRE_DECORATOR: string = '@Require';
 
 export const CLASS_TRACK_DECORATOR: string = 'Track';
+export const CLASS_MIN_TRACK_DECORATOR: string = 'track';
 
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
@@ -68,6 +69,7 @@ export const STRUCT_DECORATORS: Set<string> = new Set([...INNER_COMPONENT_DECORA
 
 export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const OBSERVED: string = 'Observed';
+export const MIN_OBSERVED: string = 'observed';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
 export const COMPONENT_STYLES_DECORATOR: string = '@Styles';

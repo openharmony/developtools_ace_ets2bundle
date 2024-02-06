@@ -280,5 +280,23 @@
     "@Track": {
         "message": "The '@Track' decorator can only be used in 'class'.",
         "type": "ERROR"
-    }
+    },
+    "validate_track_observed": [
+        {
+            "message": "The struct 'child' use invalid decorator.",
+            "type": "WARN"
+        },
+        {
+            "message": "The '@track' decorator can only be used in 'class'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@observed' decorator can only be used in 'class'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@track' decorator can only be used within a 'class' decorated with observed.",
+            "type": "ERROR"
+        }
+    ]
 }
