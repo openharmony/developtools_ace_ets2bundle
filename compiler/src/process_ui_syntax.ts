@@ -613,7 +613,7 @@ function getResourceDataNode(node: ts.CallExpression,
   const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
   if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog)) {
     const resourceType: number = RESOURCE_TYPE[resourceData[1]];
-    if (resourceType === undefined) {
+    if (resourceType === undefined && !previewLog.isAcceleratePreview) {
       transformLog.errors.push({
         type: LogType.ERROR,
         message: `The resource type ${resourceData[1]} is not supported.`,
