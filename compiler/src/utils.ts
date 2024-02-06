@@ -300,6 +300,10 @@ export function toUnixPath(data: string): string {
   return data;
 }
 
+export function tryToLowerCasePath(filePath: string): string {
+  return toUnixPath(filePath).toLowerCase();
+}
+
 export function toHashData(path: string): string {
   const content: string = fs.readFileSync(path).toString();
   const hash: Hash = createHash('sha256');
