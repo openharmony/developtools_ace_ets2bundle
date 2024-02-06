@@ -58,7 +58,9 @@ import {
   CHECK_COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
   CLASS_TRACK_DECORATOR,
   COMPONENT_REQUIRE_DECORATOR,
-  COMPONENT_SENDABLE_DECORATOR
+  COMPONENT_SENDABLE_DECORATOR,
+  CLASS_MIN_TRACK_DECORATOR,
+  MIN_OBSERVED
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -429,21 +431,34 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
           extendResult.componentName, node.name.getText());
       }
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
-      if (ts.isBlock(node.body) && node.body.statements) {
-        if (ts.isFunctionDeclaration(node)) {
-          GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
-        } else {
-          INNER_STYLE_FUNCTION.set(node.name.getText(), node.body);
-        }
-        STYLES_ATTRIBUTE.add(node.name.getText());
-        BUILDIN_STYLE_NAMES.add(node.name.getText());
-      }
+      collectStyles(node);
     }
     if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
   }
+  checkDecorator(sourceFileNode, node, log, structContext, classContext);
+  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
+    log, structContext, classContext, fileQuery));
+  structContext = false;
+  classContext = false;
+}
+
+function collectStyles(node: ts.FunctionLikeDeclarationBase): void {
+  if (ts.isBlock(node.body) && node.body.statements) {
+    if (ts.isFunctionDeclaration(node)) {
+      GLOBAL_STYLE_FUNCTION.set(node.name.getText(), node.body);
+    } else {
+      INNER_STYLE_FUNCTION.set(node.name.getText(), node.body);
+    }
+    STYLES_ATTRIBUTE.add(node.name.getText());
+    BUILDIN_STYLE_NAMES.add(node.name.getText());
+  }
+}
+
+function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
+  log: LogInfo[], structContext: boolean, classContext: boolean): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
@@ -451,22 +466,39 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName);
   }
-  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext, classContext, fileQuery));
-  structContext = false;
-  classContext = false;
 }
+
+const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   classContext: boolean, decoratorName: string): void {
-  if (!classContext && decoratorName === CLASS_TRACK_DECORATOR) {
-    const message: string = `The '@Track' decorator can only be used in 'class'.`;
+  if (!classContext && classDecorators.includes(decoratorName)) {
+    const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   } else if ('@' + decoratorName === COMPONENT_SENDABLE_DECORATOR &&
       (!node.parent || !node.parent.parent || !ts.isClassDeclaration(node.parent.parent))) {
     const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  } else if (decoratorName === CLASS_MIN_TRACK_DECORATOR && !hasObservedClass(classContext, node)) {
+    const message: string = `The '@track' decorator can only be used within a 'class' decorated with observed.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
+}
+
+function parseClassDecorator(node: ts.ClassDeclaration): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  return decorators.some((item: ts.Decorator) => {
+    return ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === MIN_OBSERVED;
+  });
+}
+
+function hasObservedClass(classContext: boolean, node: ts.Identifier): boolean {
+  let isObservedClass: boolean = false;
+  if (classContext && ts.isDecorator(node.parent) && ts.isPropertyDeclaration(node.parent.parent) &&
+    ts.isClassDeclaration(node.parent.parent.parent)) {
+    isObservedClass = parseClassDecorator(node.parent.parent.parent);
+  }
+  return isObservedClass;
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
