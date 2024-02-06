@@ -86,10 +86,7 @@ import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 import {
   doArkTSLinter,
   ArkTSLinterMode,
-  ArkTSProgram,
   ArkTSVersion,
-  getReverseStrictBuilderProgram,
-  wasOptionsStrict
 } from './do_arkTS_linter';
 import {
   getJsDocNodeCheckConfig,
@@ -118,7 +115,7 @@ export function readDeaclareFiles(): string[] {
 }
 
 const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
-  if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
+  if (fileName.includes(TS_BUILD_INFO_SUFFIX)) {
     const fd: number = fs.openSync(fileName, 'w');
     fs.writeSync(fd, data, undefined, 'utf8');
     fs.closeSync(fd);
@@ -150,7 +147,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
   Object.assign(compilerOptions, {
-    'allowJs': false,
+    'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
+    'checkJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined,
     'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
@@ -430,15 +428,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
-  globalProgram.builderProgram = languageService.getBuilderProgram();
+
+  globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   collectAllFiles(globalProgram.program);
+  collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
-  runArkTSLinter(rollupShareObject);
+  runArkTSLinter();
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
@@ -553,10 +553,58 @@ function containFormError(message: string): boolean {
   return false;
 }
 
+let fileToIgnoreDiagnostics: Set<string> | undefined = undefined;
+
+function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set<string>) {
+  const normalizedFilePath: string = path.resolve(file);
+  const unixFilePath: string = toUnixPath(file);
+  if (fileToThrowDiagnostics.has(unixFilePath)) {
+    return;
+  }
+
+  fileToThrowDiagnostics.add(unixFilePath);
+  if (path.extname(file) === EXTNAME_JS ||
+    !cache[normalizedFilePath] || cache[normalizedFilePath].children.length === 0) {
+    return;
+  }
+  cache[normalizedFilePath].children.forEach(file => {
+    collectFileToThrowDiagnostics(file, fileToThrowDiagnostics);
+  });
+}
+
+export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
+  if (getArkTSLinterMode() === ArkTSLinterMode.NOT_USE) {
+    return;
+  }
+
+  // With arkts linter enabled, `allowJs` option is set to true, resulting JavaScript-referenced files are included
+  // in the program and checking process, potentially introducing new errors. For instance, in scenarios where
+  // an ets file imports js file imports ts file, it’s necessary to filter out errors from ts files.
+  let fileToThrowDiagnostics: Set<string> = new Set<string>();
+  rootFileNames.forEach(file => {
+    collectFileToThrowDiagnostics(file, fileToThrowDiagnostics);
+  });
+
+  fileToIgnoreDiagnostics = new Set<string>();
+  globalProgram.program.getSourceFiles().forEach(sourceFile => {
+    sourceFile.fileName && fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
+  });
+
+  fileToThrowDiagnostics.forEach(file => {
+    fileToIgnoreDiagnostics.delete(file);
+  })
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
   if (projectConfig.ignoreWarning) {
     return;
   }
+
+  if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
+    fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName))) {
+    return;
+  }
+
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
@@ -857,7 +905,7 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
   const children: string[] = [];
   const error: boolean = false;
   resolvedModules.forEach(moduleObj => {
-    if (moduleObj && moduleObj.resolvedFileName && /(?<!\.d)\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
+    if (moduleObj && moduleObj.resolvedFileName && /\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
       const file: string = path.resolve(moduleObj.resolvedFileName);
       const mtimeMs: number = fs.statSync(file).mtimeMs;
       children.push(file);
@@ -1228,23 +1276,14 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-export function runArkTSLinter(rollupShareObject?: Object): void {
-  const wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
-  const originProgram: ArkTSProgram = {
-    builderProgram: globalProgram.builderProgram,
-    wasStrict: wasStrict
-  };
-  const reverseStrictProgram: ArkTSProgram = {
-    builderProgram: getReverseStrictBuilderProgram(rollupShareObject, globalProgram.program, wasStrict),
-    wasStrict: !wasStrict
-  };
+export function runArkTSLinter(): void {
+  const originProgram: ts.BuilderProgram = globalProgram.builderProgram;
+
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
-  timePrinterInstance.appendTime(ts.TimePhase.GET_REVERSE_STRICT_BUILDER_PROGRAM)
 
   const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(),
     getArkTSLinterMode(),
     originProgram,
-    reverseStrictProgram,
     printArkTSLinterDiagnostic,
     !projectConfig.xtsMode,
     buildInfoWriteFile);
@@ -1389,10 +1428,11 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
-  globalProgram.builderProgram = languageService.getBuilderProgram();
+  globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+  collectFileToIgnoreDiagnostics(filterFiles);
   runArkTSLinter();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
@@ -1419,4 +1459,5 @@ export function resetEtsCheck(): void {
   filesBuildInfo.clear();
   fileExistsCache.clear();
   dirExistsCache.clear();
+  fileToIgnoreDiagnostics = undefined;
 }
