@@ -181,7 +181,7 @@ export function etsTransform() {
             !moduleInfoId.startsWith('\x00') &&
             path.resolve(moduleInfoId).startsWith(projectConfig.moduleRootPath + path.sep)) {
             let filePath: string = moduleInfoId;
-            if (this.share.arkProjectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+            if (this.share.arkProjectConfig?.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
               filePath = mangleFilePath(filePath);
             }
 
