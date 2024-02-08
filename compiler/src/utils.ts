@@ -413,7 +413,8 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
       sourceContent = uglifyJS.minify(sourceContent).code;
     }
-    if (projectConfig.compileMode === ESMODULE && projectConfig.compileHar && (/\.d\.e?ts$/).test(jsFilePath)) {
+    // collect the declaration files for obfuscation
+    if (projectConfig.compileMode === ESMODULE && (/\.d\.e?ts$/).test(jsFilePath)) {
       sourcePath = toUnixPath(sourcePath);
       const genFilesInHar: GeneratedFileInHar = { sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent };
       harFilesRecord.set(sourcePath, genFilesInHar);
