@@ -84,7 +84,7 @@ import {
   processKitImport
 } from '../../process_kit_import';
 import { resetProcessComponentMember } from '../../process_component_member';
-import { mangleFilePath } from '../ark_compiler/common/ob_config_resolver';
+import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_config_resolver';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -198,6 +198,7 @@ export function etsTransform() {
         }
 
         allFilesInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+          // if the ts or ets file code only contain interface, it doesn't have js file.
           if (fs.existsSync(jsCacheFilePath)) {
             const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
             writeFileSync(jsBuildFilePath, sourceCode);
@@ -232,6 +233,7 @@ export function etsTransform() {
       resetProcessUiSyntax();
       resetUtils();
       resetValidateUiSyntax();
+      resetObfuscation();
     }
   };
 }
@@ -466,6 +468,10 @@ function isDir(filePath: string): boolean {
 }
 
 function setIncrementalFileInHar(jsCacheFilePath: string, jsBuildFilePath: string, allFilesInHar: Map<string, string>): void {
+  if (jsCacheFilePath.match(/\.d.e?ts$/)) {
+    allFilesInHar.set(jsCacheFilePath, jsBuildFilePath);
+    return;
+  }
   allFilesInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
     jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
   allFilesInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
