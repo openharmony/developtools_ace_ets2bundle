@@ -484,7 +484,7 @@ export const __LAZYFOREACHITEMIDFUNC: string = '__lazyForEachItemIdFunc';
 export const FOREACHUPDATEFUNCTION: string = 'forEachUpdateFunction';
 export const ALLOCATENEWELMETIDFORNEXTCOMPONENT: string = 'AllocateNewElmetIdForNextComponent';
 export const STATE_OBJECTLINK_DECORATORS: string[] = [COMPONENT_STATE_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
-export const COMPONENT_INITIAl_RENDER_FUNCTION: string = 'initialRender';
+export const COMPONENT_INITIAL_RENDER_FUNCTION: string = 'initialRender';
 export const DECORATOR_COMPONENT_FREEZEWHENINACTIVE: string = 'freezeWhenInactive';
 export const INIT_ALLOW_COMPONENT_FREEZE: string = 'initAllowComponentFreeze';
 export const GRID_COMPONENT: string = 'Grid';
@@ -587,4 +587,4 @@ export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
 
-export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController'])
+export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);

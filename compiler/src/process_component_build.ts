@@ -71,11 +71,9 @@ import {
   STARTGETACCESSRECORDINGFOR,
   OBSERVECOMPONENTCREATION,
   OBSERVECOMPONENTCREATION2,
-  ISLAZYCREATE,
   DEEPRENDERFUNCTION,
   ITEMCREATION,
   ITEMCREATION2,
-  OBSERVEDSHALLOWRENDER,
   OBSERVEDDEEPRENDER,
   ItemComponents,
   FOREACHITEMGENFUNCTION,
@@ -84,7 +82,7 @@ import {
   FOREACHITEMIDFUNC,
   __LAZYFOREACHITEMIDFUNC,
   FOREACHUPDATEFUNCTION,
-  COMPONENT_INITIAl_RENDER_FUNCTION,
+  COMPONENT_INITIAL_RENDER_FUNCTION,
   LIST_ITEM,
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
@@ -138,12 +136,9 @@ import {
   NEEDPOP_COMPONENT,
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
-  COMMON_ATTRS,
   CUSTOM_BUILDER_PROPERTIES,
   CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY,
   CUSTOM_BUILDER_CONSTRUCTORS,
-  INNER_CUSTOM_BUILDER_METHOD,
-  GLOBAL_CUSTOM_BUILDER_METHOD,
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
   STYLES_ATTRIBUTE
@@ -152,12 +147,12 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection,
+  enumCollection
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
   createConditionParent,
-  isRecycle,
+  isRecycle
 } from './process_custom_component';
 import {
   LogType,
@@ -178,10 +173,6 @@ import {
 } from './process_ui_syntax';
 import { regularCollection } from './validate_ui_syntax';
 
-const checkComponents: Set<string> = new Set([
-  "TextArea", "TextInput", "GridContainer"
-]);
-
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
@@ -189,7 +180,7 @@ export function processComponentBuild(node: ts.MethodDeclaration,
   if (!partialUpdateConfig.partialUpdateMode) {
     renderNode = ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION);
   } else {
-    renderNode = ts.factory.createIdentifier(COMPONENT_INITIAl_RENDER_FUNCTION);
+    renderNode = ts.factory.createIdentifier(COMPONENT_INITIAL_RENDER_FUNCTION);
   }
   if (node.body && node.body.statements && node.body.statements.length &&
     validateRootNode(node, log)) {
@@ -554,7 +545,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
       ),
       undefined,
       [ts.factory.createThis()]
-    )
+    );
     newNode.expression.questionDotToken = node.expression.questionDotToken;
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
       return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -679,8 +670,8 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
   } else {
     log.push({
       type: LogType.ERROR,
-      message: `In the trailing lambda case, '${name}' must have one and only one property decorated with `
-        + `@BuilderParam, and its @BuilderParam expects no parameter.`,
+      message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
+        `@BuilderParam, and its @BuilderParam expects no parameter.`,
       pos: node.getStart()
     });
     return null;
@@ -1144,7 +1135,7 @@ function createItemCreation(node: ts.ExpressionStatement, isGlobalBuilder: boole
                 ts.factory.createBlock(
                   [createComponent(node, COMPONENT_POP_FUNCTION).newNode],
                   true
-                ),
+                )
               ),
               createViewStackProcessorStatement(STOPGETACCESSRECORDING)
             ],
@@ -1206,7 +1197,7 @@ function createDeepRenderFunction(
   node: ts.ExpressionStatement,
   deepItemRenderInnerStatements: ts.Statement[],
   isGlobalBuilder: boolean,
-  builderParamsResult: BuilderParamsResult,
+  builderParamsResult: BuilderParamsResult
 ): ts.VariableStatement {
   const blockNode: ts.Statement[] = [
     ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -1364,7 +1355,7 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
     argumentsArray.splice(0, 1, arrayObserveredObject);
     const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
     const newArrowNode: ts.ArrowFunction =
-      processForEachBlock(node.expression, log, newForEachArrowFunc, isBuilder, ) as ts.ArrowFunction;
+      processForEachBlock(node.expression, log, newForEachArrowFunc, isBuilder) as ts.ArrowFunction;
     if (newArrowNode) {
       argumentsArray.splice(1, 1, newArrowNode);
     }
@@ -1733,9 +1724,9 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
     } else if (ts.isIfStatement(thenStatement)) {
       thenStatement = processInnerIfStatement(thenStatement, 0, log, isBuilder, isGlobalBuilder, builderParamsResult);
       thenStatement = ts.factory.createBlock(
-        partialUpdateConfig.partialUpdateMode
-          ? [createIfCreate(), createIfBranchFunc(id, [thenStatement], isGlobalBuilder), createIfPop()]
-          : [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()],
+        partialUpdateConfig.partialUpdateMode ?
+          [createIfCreate(), createIfBranchFunc(id, [thenStatement], isGlobalBuilder), createIfPop()] :
+          [createIfCreate(), createIfBranchId(id), thenStatement, createIfPop()],
         true
       );
     } else {
@@ -1856,9 +1847,9 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     ts.isEtsComponentExpression(temp.parent)) && ts.isIdentifier(temp)) {
     if (temp.getText() === COMPONENT_BUTTON && type !== COMPONENT_POP_FUNCTION) {
       res.isButton = true;
-      identifierNode = type === COMPONENT_CREATE_CHILD_FUNCTION
-        ? ts.factory.createIdentifier(COMPONENT_CREATE_CHILD_FUNCTION)
-        : ts.factory.createIdentifier(COMPONENT_CREATE_LABEL_FUNCTION);
+      identifierNode = type === COMPONENT_CREATE_CHILD_FUNCTION ?
+        ts.factory.createIdentifier(COMPONENT_CREATE_CHILD_FUNCTION) :
+        ts.factory.createIdentifier(COMPONENT_CREATE_LABEL_FUNCTION);
     }
     if (NEEDPOP_COMPONENT.has(temp.getText())) {
       res.needPop = true;
@@ -1866,9 +1857,9 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     if (checkContainer(temp.getText(), temp.parent)) {
       res.isContainerComponent = true;
     }
-    res.newNode = type === COMPONENT_POP_FUNCTION
-      ? ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null))
-      : ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
+    res.newNode = type === COMPONENT_POP_FUNCTION ?
+      ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null)) :
+      ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
@@ -1893,7 +1884,7 @@ function checkArguments(temp: ts.Identifier, type: string): ts.Expression[] {
     // @ts-ignore
     temp.parent.arguments.concat([
       ts.factory.createStringLiteral(`${projectConfig.bundleName}/${projectConfig.moduleName}`)
-    ]) : temp.parent.arguments
+    ]) : temp.parent.arguments;
 }
 
 function checkContainer(name: string, node: ts.Node): boolean {
@@ -1949,7 +1940,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   const lastStatement: AnimationInfo = {
     statement: null,
     kind: false,
-    hasAnimationAttr: false,
+    hasAnimationAttr: false
   };
   const isRecycleComponent: boolean = isRecycle(componentCollection.currentClassName);
   if (ts.isPropertyAccessExpression(temp)) {
@@ -2108,7 +2099,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW,TITLE].includes(
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW, TITLE].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
         storedFileInfo.builderLikeCollection.has(property.initializer.escapedText.toString())) {
@@ -2512,9 +2503,9 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     }
     const extendNode: ts.Statement = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createIdentifier(functionName), undefined,
-      extendType.type === CHECK_COMPONENT_EXTEND_DECORATOR
-        ? temp.arguments
-        : [
+        extendType.type === CHECK_COMPONENT_EXTEND_DECORATOR ?
+          temp.arguments :
+          [
             ...temp.arguments, ts.factory.createIdentifier(ELMTID),
             ts.factory.createIdentifier(ISINITIALRENDER),
             ts.factory.createThis()
@@ -2650,8 +2641,8 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
     PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && temp.arguments.length && temp.arguments[0] ?
-    temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null
-    : false;
+    temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null :
+    false;
 }
 
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
@@ -2754,11 +2745,11 @@ function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
       ts.isPropertyAssignment(item.initializer.properties[0])) {
       bindComponentAttr(ts.factory.createExpressionStatement(
         item.initializer.properties[0].initializer), identifierNode, statements, log, false, true,
-        newImmutableStatements);
+      newImmutableStatements);
       if (isRecycleComponent) {
         bindComponentAttr(ts.factory.createExpressionStatement(
           item.initializer.properties[0].initializer), identifierNode, updateStatements, log, false, true,
-          newImmutableStatements);
+        newImmutableStatements);
       }
     } else {
       if (!(ts.isObjectLiteralExpression(item.initializer) && item.initializer.properties.length === 0)) {
@@ -2942,7 +2933,7 @@ function isEtsComponent(node: ts.ExpressionStatement): boolean {
 
 function isSomeName(forEachParameters: ts.NodeArray<ts.ParameterDeclaration>, name: string): boolean {
   return Array.isArray(forEachParameters) &&
-    forEachParameters.some((item)=>{
+    forEachParameters.some((item) => {
       return ts.isIdentifier(item.name) ? item.name.escapedText.toString() === name : false;
     });
 }
@@ -3089,7 +3080,7 @@ function checkEtsComponent(node: ts.ExpressionStatement, log: LogInfo[]): void {
 function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[]): void {
   if (node.arguments && node.arguments.length !== 0) {
     for (let i = 0; i < node.arguments.length; i++) {
-      let argument: ts.Expression = node.arguments[i];
+      const argument: ts.Expression = node.arguments[i];
       if (ts.isStringLiteral(argument) || (ts.isCallExpression(argument) && ts.isIdentifier(argument.expression) &&
         (argument.expression.escapedText.toString() === RESOURCE))) {
         log.push({
