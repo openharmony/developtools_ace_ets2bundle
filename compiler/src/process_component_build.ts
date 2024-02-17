@@ -2074,7 +2074,7 @@ function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
   );
 }
 
-function updateArgumentFor$$(argument: any): ts.Expression {
+function updateArgumentFor$$(argument): ts.Expression {
   if (ts.isElementAccessExpression(argument)) {
     return ts.factory.updateElementAccessExpression(
       argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
@@ -2089,6 +2089,7 @@ function updateArgumentFor$$(argument: any): ts.Expression {
     return ts.factory.updatePropertyAccessExpression(
       argument, updateArgumentFor$$(argument.expression), argument.name);
   }
+  return argument;
 }
 
 function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
