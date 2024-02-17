@@ -58,9 +58,6 @@ struct ImportTest {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "importExportNest_" + ++__generate__Id;
@@ -79,7 +76,6 @@ class ImportTest extends View {
         this.__testState4 = new ObservedPropertySimple(3, this, "testState4");
         this.__testState5 = new ObservedPropertySimple(10, this, "testState5");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.testText1 !== undefined) {

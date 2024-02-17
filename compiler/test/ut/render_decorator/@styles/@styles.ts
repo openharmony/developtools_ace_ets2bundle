@@ -55,9 +55,6 @@ struct FancyUse {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "@styles_" + ++__generate__Id;
@@ -67,7 +64,6 @@ class FancyUse extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__enable = new ObservedPropertySimple(true, this, "enable");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.enable !== undefined) {

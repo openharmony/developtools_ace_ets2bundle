@@ -178,9 +178,12 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   });
   const callSuperStatement: ts.Statement = createCallSuperStatement();
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
+  const newBody: ts.Statement[] = [updateWithValueParamsStatement, ...watchStatements];
+  if (partialUpdateConfig.partialUpdateMode) {
+    newBody.push(createFinalizeConstruction());
+  }
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], [], true), [],
-    [updateWithValueParamsStatement, ...watchStatements, createFinalizeConstruction()], [], false,
-    true, parentComponentName);
+    newBody, [], false, true, parentComponentName);
 }
 
 function createCallSuperStatement(): ts.Statement {

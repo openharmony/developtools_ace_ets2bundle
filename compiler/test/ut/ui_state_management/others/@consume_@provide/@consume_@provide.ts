@@ -60,9 +60,6 @@ struct CompC {
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "@consume_@provide_" + ++__generate__Id;
@@ -74,7 +71,6 @@ class CompA extends View {
         this.addProvidedVar("reviewVote", this.__reviewVotes, false);
         this.addProvidedVar("reviewVotes", this.__reviewVotes, false);
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.reviewVotes !== undefined) {
@@ -119,7 +115,6 @@ class CompB extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
@@ -144,7 +139,6 @@ class CompC extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__reviewVotes = this.initializeConsume("reviewVote", "reviewVotes");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }

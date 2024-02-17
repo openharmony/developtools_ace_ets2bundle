@@ -103,9 +103,6 @@ struct CustomContainerUser {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "@builderParam_" + ++__generate__Id;
@@ -119,7 +116,6 @@ class CustomContainer extends View {
         this.callContent = undefined;
         this.footer = "";
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.header !== undefined) {
@@ -155,7 +151,6 @@ class CustomContainer2 extends View {
         this.header = "";
         this.content = undefined;
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.header !== undefined) {
@@ -191,7 +186,6 @@ class CustomContainerUser extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__text = new ObservedPropertySimple('header', this, "text");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.text !== undefined) {
