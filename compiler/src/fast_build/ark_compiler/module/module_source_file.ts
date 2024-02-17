@@ -50,6 +50,7 @@ import {
 } from '../../../pre_define';
 import { readProjectAndLibsSource } from '../common/process_ark_config';
 import { allSourceFilePaths, collectAllFiles } from '../../../ets_checker';
+import { projectConfig } from '../../../../main';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -307,6 +308,13 @@ export class ModuleSourceFile {
       }
       return item;
     });
+    this.processJsResourceRequest();
+  }
+
+  private processJsResourceRequest(): void {
+    this.source = (this.source as string)
+      .replace(/\b__harDefaultBundleName__\b/gi, projectConfig.bundleName)
+      .replace(/\b__harDefaultModuleName__\b/gi, projectConfig.moduleName);
   }
 
   private async processTransformedJsModuleRequest(rollupObject: Object): Promise<void> {
