@@ -641,8 +641,8 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
 
 function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>): void {
   if (projectConfig.compileHar) {
-    projectConfig.bundleName = '';
-    projectConfig.moduleName = '';
+    projectConfig.bundleName = '__harDefaultBundleName__';
+    projectConfig.moduleName = '__harDefaultModuleName__';
   }
 
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
