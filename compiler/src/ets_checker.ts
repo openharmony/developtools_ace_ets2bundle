@@ -109,12 +109,6 @@ import {
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
-function collectSourceFilesMap(program: ts.Program): void {
-  program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
-    SOURCE_FILES.set(path.normalize(sourceFile.fileName), sourceFile);
-  });
-}
-
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
   fs.readdirSync(path.resolve(__dirname, '../declarations'))
@@ -128,11 +122,11 @@ export function readDeaclareFiles(): string[] {
 
 const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string) => {
   if (fileName.endsWith(TS_BUILD_INFO_SUFFIX)) {
-    let fd: number = fs.openSync(fileName, 'w');
+    const fd: number = fs.openSync(fileName, 'w');
     fs.writeSync(fd, data, undefined, 'utf8');
     fs.closeSync(fd);
-  };
-}
+  }
+};
 // The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
 const filesBuildInfo: Map<string, string> = new Map();
 
@@ -210,7 +204,7 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
     fileNames: string[];
     fileInfos: (FileInfoType | string)[];
   }
-  let buildInfoProgram: ProgramType = undefined;
+  let buildInfoProgram: ProgramType;
   try {
     const content: {program: ProgramType} = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
     buildInfoProgram = content.program;
@@ -218,7 +212,7 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
       throw new Error('.tsbuildinfo content is invalid');
     }
   } catch (err) {
-    fastBuildLogger.warn('\u001b[33m' + 'ArkTS: Failed to parse .tsbuildinfo file. Error message: '+ err.message.toString());
+    fastBuildLogger.warn('\u001b[33m' + 'ArkTS: Failed to parse .tsbuildinfo file. Error message: ' + err.message.toString());
     return;
   }
   const buildInfoDirectory: string = path.dirname(buildInfoPath);
@@ -249,21 +243,6 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: t
     checkValidCallback: checkValidCallback,
     checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback
   };
-}
-
-function checkAtomicserviceAPIVersion(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
-  let currentAPIVersion: number = 0;
-  for (let i = 0; i < jsDocTags.length; i++) {
-    const jsDocTag: ts.JSDocTag = jsDocTags[i];
-    if (jsDocTag.tagName.escapedText === SINCE_TAG_NAME) {
-      currentAPIVersion = jsDocTag.comment ? parseInt(jsDocTag.comment) : 0;
-      break;
-    }
-  }
-  if (currentAPIVersion < ATOMICSERVICE_TAG_CHECK_VERSION) {
-    return false;
-  }
-  return true;
 }
 
 function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
@@ -323,7 +302,7 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
     return '0';
   }
   return createHash(fs.readFileSync(fileName).toString());
-}
+};
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): ts.LanguageService {
@@ -363,7 +342,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       return {
         fileNeedCheck: true,
         checkPayload: undefined,
-        currentFileName: containFilePath,
+        currentFileName: containFilePath
       };
     },
     uiProps: [],
@@ -384,8 +363,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
   rollupShareObject?: any): ts.LanguageService {
-  let cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
-  let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
+  const cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
+  const cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
   clearRollupCacheStore(rollupShareObject?.cacheStoreManager, cacheStoreKey);
 
   let service: ts.LanguageService | undefined =
@@ -394,7 +373,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
-    let updateRootFileNames = [...rootFileNames, ...readDeaclareFiles()];
+    const updateRootFileNames = [...rootFileNames, ...readDeaclareFiles()];
     service.updateRootFiles(updateRootFileNames);
   }
 
@@ -607,7 +586,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
     }
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
-    const etsCheckerLogger = fastBuildLogger ? fastBuildLogger : logger;
+    const etsCheckerLogger = fastBuildLogger || logger;
     let logMessage: string;
     if (logPrefix === 'ERROR') {
       checkerResult.count += 1;
@@ -711,7 +690,7 @@ const moduleResolutionHost: ts.ModuleResolutionHost = {
   trace(s: string): void {
     console.info(s);
   }
-}
+};
 
 export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts.FileReference[]): ts.ResolvedTypeReferenceDirective[] {
   if (typeDirectiveNames.length === 0) {
@@ -720,9 +699,9 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 
   const resolvedTypeReferenceCache: ts.ResolvedTypeReferenceDirective[] = [];
   const cache: Map<string, ts.ResolvedTypeReferenceDirective> = new Map<string, ts.ResolvedTypeReferenceDirective>();
-  const containingFile: string = path.join(projectConfig.modulePath, "build-profile.json5");
+  const containingFile: string = path.join(projectConfig.modulePath, 'build-profile.json5');
 
-  for (let entry of typeDirectiveNames) {
+  for (const entry of typeDirectiveNames) {
     const typeName = isString(entry) ? entry : entry.fileName.toLowerCase();
     if (!cache.has(typeName)) {
       const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
@@ -742,8 +721,8 @@ const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   startTimeStatisticsLocation(resolveModuleNamesTime);
   const resolvedModules: ts.ResolvedModuleFull[] = [];
-  if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile))
-    || !(resolvedModulesCache[path.resolve(containingFile)] &&
+  if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
+    !(resolvedModulesCache[path.resolve(containingFile)] &&
       resolvedModulesCache[path.resolve(containingFile)].length === moduleNames.length)) {
     for (const moduleName of moduleNames) {
       const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost);
@@ -1220,12 +1199,12 @@ export function incrementWatchFile(watchModifiedFiles: string[],
 }
 
 function runArkTSLinter(rollupShareObject?: Object): void {
-  let wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
-  let originProgram: ArkTSProgram = {
+  const wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
+  const originProgram: ArkTSProgram = {
     builderProgram: globalProgram.builderProgram,
     wasStrict: wasStrict
   };
-  let reverseStrictProgram: ArkTSProgram = {
+  const reverseStrictProgram: ArkTSProgram = {
     builderProgram: getReverseStrictBuilderProgram(rollupShareObject, globalProgram.program, wasStrict),
     wasStrict: !wasStrict
   };
@@ -1300,7 +1279,7 @@ function getArkTSVersion(): ArkTSVersion {
   } else if (projectConfig.arkTSVersion === '1.1') {
     return ArkTSVersion.ArkTS_1_1;
   } else if (projectConfig.arkTSVersion !== undefined) {
-    const arkTSVersionLogger = fastBuildLogger ? fastBuildLogger : logger;
+    const arkTSVersionLogger = fastBuildLogger || logger;
     arkTSVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid ArkTS version\n');
   }
 
@@ -1309,7 +1288,7 @@ function getArkTSVersion(): ArkTSVersion {
   } else if (partialUpdateConfig.arkTSVersion === '1.1') {
     return ArkTSVersion.ArkTS_1_1;
   } else if (partialUpdateConfig.arkTSVersion !== undefined) {
-    const arkTSVersionLogger = fastBuildLogger ? fastBuildLogger : logger;
+    const arkTSVersionLogger = fastBuildLogger || logger;
     arkTSVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid ArkTS version in metadata\n');
   }
 
