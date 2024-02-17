@@ -45,9 +45,6 @@ struct ComA {
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "@builderWithForEach_" + ++__generate__Id;
@@ -76,7 +73,6 @@ class Index extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__arr = new ObservedPropertyObject(['1', '2', '3', '4', '5'], this, "arr");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.arr !== undefined) {
@@ -103,7 +99,6 @@ class ComA extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
