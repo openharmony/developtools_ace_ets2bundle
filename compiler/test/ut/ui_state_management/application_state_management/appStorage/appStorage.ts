@@ -49,9 +49,6 @@ struct MyComponent {
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "appStorage_" + ++__generate__Id;
@@ -65,7 +62,6 @@ class MyComponent extends View {
         this.__lang = AppStorage.SetAndProp('languageCode', 'en', this, "lang");
         this.label = 'count';
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.label !== undefined) {

@@ -34,9 +34,6 @@ struct MyComponent {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "forEachSecondFunction_" + ++__generate__Id;
@@ -46,7 +43,6 @@ class MyComponent extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__arr = new ObservedPropertyObject([10, 20, 30], this, "arr");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.arr !== undefined) {

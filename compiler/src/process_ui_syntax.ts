@@ -188,7 +188,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         INTERFACE_NODE_SET.forEach(item => {
           statements.unshift(item);
         });
-        if (hasStruct) {
+        if (partialUpdateConfig.partialUpdateMode && hasStruct) {
           statements.unshift(checkFinalizeConstruction());
         }
         node = ts.factory.updateSourceFile(node, statements);

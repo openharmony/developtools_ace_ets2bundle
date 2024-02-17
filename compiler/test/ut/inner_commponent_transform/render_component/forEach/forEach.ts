@@ -103,9 +103,6 @@ struct MyComponent {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "forEach_" + ++__generate__Id;
@@ -131,7 +128,6 @@ class MyComponent extends View {
             new Month(2020, 6, [...Array(30).keys()]),
         ], this, "calendar");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.languages !== undefined) {

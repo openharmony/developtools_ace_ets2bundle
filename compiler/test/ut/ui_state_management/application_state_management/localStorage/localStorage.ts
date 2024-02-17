@@ -44,9 +44,6 @@ struct LocalStorageComponent {
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "localStorage_" + ++__generate__Id;
@@ -66,7 +63,6 @@ class LocalStorageComponent extends View {
         this.__simpleVarName = this.localStorage_.setAndLink("storageSimpleProp", 0, this, "simpleVarName");
         this.__objectName = this.localStorage_.setAndProp("storageObjectProp", new ClassA("x"), this, "objectName");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }

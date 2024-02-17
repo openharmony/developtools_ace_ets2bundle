@@ -75,9 +75,6 @@ struct HomeComponent {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "$$_component_" + ++__generate__Id;
@@ -96,7 +93,6 @@ class HomeComponent extends View {
         this.myTimeController = new TextTimerController();
         this.__format = new ObservedPropertySimple("hh:mm:ss:ms", this, "format");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.value1 !== undefined) {
