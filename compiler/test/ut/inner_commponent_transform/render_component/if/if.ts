@@ -54,9 +54,6 @@ struct MyComponent {
 exports.expectResult =
 `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "if_" + ++__generate__Id;
@@ -69,7 +66,6 @@ class MyComponent extends View {
         this.pass = true;
         this.count = 10;
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.pass !== undefined) {

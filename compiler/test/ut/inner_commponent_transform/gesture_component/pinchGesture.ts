@@ -42,9 +42,6 @@ struct PinchGestureExample {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "pinchGesture_" + ++__generate__Id;
@@ -54,7 +51,6 @@ class PinchGestureExample extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__scale = new ObservedPropertySimple(1, this, "scale");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.scale !== undefined) {

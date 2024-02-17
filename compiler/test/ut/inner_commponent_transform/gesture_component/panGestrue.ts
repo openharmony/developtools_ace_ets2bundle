@@ -46,9 +46,6 @@ struct PanGestureExample {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "panGestrue_" + ++__generate__Id;
@@ -59,7 +56,6 @@ class PanGestureExample extends View {
         this.__offsetX = new ObservedPropertySimple(0, this, "offsetX");
         this.__offsetY = new ObservedPropertySimple(0, this, "offsetY");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.offsetX !== undefined) {

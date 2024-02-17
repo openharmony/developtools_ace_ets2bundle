@@ -39,9 +39,6 @@ struct TestPage{
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let __generate__Id = 0;
 function generateId() {
     return "@builderWithLinkData_" + ++__generate__Id;
@@ -51,7 +48,6 @@ class TitleComp extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__title = new SynchedPropertySimpleTwoWay(params.title, this, "title");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
     }
@@ -75,7 +71,6 @@ class TestPage extends View {
         super(compilerAssignedUniqueChildId, parent, localStorage);
         this.__value = new ObservedPropertySimple('hello world', this, "value");
         this.updateWithValueParams(params);
-        this.finalizeConstruction();
     }
     updateWithValueParams(params) {
         if (params.value !== undefined) {
