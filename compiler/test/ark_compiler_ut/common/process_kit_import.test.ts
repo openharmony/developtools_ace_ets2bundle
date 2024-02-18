@@ -20,8 +20,10 @@ import path from 'path';
 
 import {
   processKitImport,
-  kitTransformLog
-} from '../../../lib/process_kit_import'
+  kitTransformLog,
+  KitInfo
+} from '../../../lib/process_kit_import';
+import { findImportSpecifier } from '../utils/utils';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -62,8 +64,11 @@ const KIT_STAR_EXPORT_CODE_EXPECT: string =
 'export * from "@ohos.multimedia.systemSoundManager";\n'+
 '//# sourceMappingURL=kitTest.js.map'
 
-const KIT_IMPORT_ERROR_EXPECT: string =
+const KIT_IMPORT_ERROR_CODE: string =
 'import { Ability } from "@kit.Kit";'
+
+const KIT_IMPORT_DEFAULT_CODE: string =
+'import { Ability } from "@kit.AbilityKit";'
 
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
@@ -100,7 +105,7 @@ mocha.describe('process Kit Imports tests', function () {
   });
 
   mocha.it('the error message of processKitImport', function () {
-    ts.transpileModule(KIT_IMPORT_ERROR_EXPECT, {
+    ts.transpileModule(KIT_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
@@ -109,6 +114,26 @@ mocha.describe('process Kit Imports tests', function () {
       error.message.includes("Kit '@kit.Kit' has no corresponding config file in ArkTS SDK. "+
       'Please make sure the Kit apis are consistent with SDK ' +
       "and there's no local modification on Kit apis.")
+    );
+    expect(hasError).to.be.true;
+  });
+
+  mocha.it('the error message of newSpecificerInfo', function () {
+    const symbols = {
+      'test': ''
+    }
+    const sourceCode = 'import { test } from "my-module";';
+    const sourceFile = ts.createSourceFile(
+        "tempFile.ts",
+        sourceCode,
+        ts.ScriptTarget.Latest,
+        true
+    );
+    const kitNode = findImportSpecifier(sourceFile);
+    const kitInfo = new KitInfo(kitNode, symbols);
+    kitInfo.newSpecificerInfo('', 'test', undefined)
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes("'test' is not exported from Kit")
     );
     expect(hasError).to.be.true;
   });

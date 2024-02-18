@@ -16,6 +16,7 @@
 import os from 'os';
 import fs from "fs";
 import path from "path";
+import * as ts from 'typescript';
 import { PROJECT_ROOT } from "../mock/rollup_mock/path_config";
 import { DEFAULT_PROJECT } from "../mock/rollup_mock/path_config";
 
@@ -44,4 +45,22 @@ export function scanFiles(filepath: string, fileList: Set<string>) {
 }
 export function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function findImportSpecifier(node) {
+  if (ts.isImportSpecifier(node)) {
+    return node;
+  }
+  let result = null;
+  let found = false;
+  ts.forEachChild(node, child => {
+    if (!found) {
+      const potentialResult = findImportSpecifier(child);
+      if (potentialResult !== null) {
+        result = potentialResult;
+        found = true;
+      }
+    }
+  });
+  return result;
 }

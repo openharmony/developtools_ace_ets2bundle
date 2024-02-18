@@ -39,7 +39,7 @@ interface IArkProjectConfig {
   oldMapFilePath?: object,
   processTs: boolean,
   pandaMode: string,
-  anBuildOutPut?: object,
+  anBuildOutPut?: string,
   anBuildMode?: object,
   apPath?: object,
   nodeModulesPath?: object,
