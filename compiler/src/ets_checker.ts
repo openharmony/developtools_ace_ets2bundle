@@ -51,6 +51,7 @@ import {
   TS_WATCH_END_MSG,
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
+  WATCH_COMPILER_BUILD_INFO_SUFFIX,
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -798,9 +799,12 @@ export function createWatchCompilerHost(rootFileNames: string[],
     });
   }
   setCompilerOptions(resolveModulePaths);
+  // Change the buildInfo file path, or it will cover the buildInfo file created before.
+  const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', WATCH_COMPILER_BUILD_INFO_SUFFIX);
+  const watchCompilerOptions = {...compilerOptions, tsBuildInfoFile: buildInfoPath};
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
-    [...rootFileNames, ...readDeaclareFiles()], compilerOptions,
+    [...rootFileNames, ...readDeaclareFiles()], watchCompilerOptions,
     ts.sys, createProgram, reportDiagnostic,
     (diagnostic: ts.Diagnostic) => {
       if ([6031, 6032].includes(diagnostic.code)) {
