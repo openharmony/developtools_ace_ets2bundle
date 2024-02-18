@@ -67,22 +67,28 @@ import {
   projectConfig,
   sdkConfigs,
   sdkConfigPrefix,
-  globalProgram,
-  ohosSystemModuleSubDirPaths
+  globalProgram
 } from '../main';
 import {
   CUSTOM_BUILDER_METHOD,
   INNER_COMPONENT_NAMES,
   GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
-import { type ResolveModuleInfo, SOURCE_FILES, getRealModulePath } from './ets_checker';
+import { 
+  type ResolveModuleInfo,
+  SOURCE_FILES
+} from './ets_checker';
+import { 
+  getRealModulePath,
+  validateModuleSpecifier
+} from './fast_build/system_api/api_check_utils';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
 
 export default function processImport(node: ts.ImportDeclaration | ts.ImportEqualsDeclaration |
   ts.ExportDeclaration, pagesDir: string, log: LogInfo[], asName: Map<string, string> = new Map(),
-isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
+  isEntryPage: boolean = true, pathCollection: Set<string> = new Set()): void {
   let filePath: string;
   let defaultName: string;
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -710,21 +716,6 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
         column: column
       });
     }
-    log.push(error);
-  }
-}
-
-export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: LogInfo[]): void {
-  const moduleSpecifierStr: string = moduleSpecifier.getText().replace(/'|"/g, '');
-  const hasSubDirPath: boolean = ohosSystemModuleSubDirPaths.some((filePath: string) => {
-    return filePath === moduleSpecifierStr;
-  });
-  if (hasSubDirPath) {
-    const error: LogInfo = {
-      type: LogType.WARN,
-      message: `Cannot find module '${moduleSpecifierStr}' or its corresponding type declarations.`,
-      pos: moduleSpecifier.getStart()
-    };
     log.push(error);
   }
 }

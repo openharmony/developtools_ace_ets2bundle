@@ -221,7 +221,7 @@ export const CUSTOM_COMPONENT_EARLIER_CREATE_CHILD: string = 'earlierCreatedChil
 export const CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID: string = 'findChildById';
 export const CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION: string = 'needsUpdate';
 export const CUSTOM_COMPONENT_MARK_STATIC_FUNCTION: string = 'markStatic';
-export const CUSTOM_COMPONENT_EXTRAINFO:string = 'extraInfo';
+export const CUSTOM_COMPONENT_EXTRAINFO: string = 'extraInfo';
 
 export const COMPONENT_GESTURE: string = 'Gesture';
 export const COMPONENT_GESTURE_GROUP: string = 'GestureGroup';
@@ -384,8 +384,8 @@ export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFR
 export const HEADER: string = 'header';
 export const FOOTER: string = 'footer';
 
-export const INTERFACE_NAME_SUFFIX:string = '_Params';
-export const OBSERVED_PROPERTY_ABSTRACT:string = 'ObservedPropertyAbstract';
+export const INTERFACE_NAME_SUFFIX: string = '_Params';
+export const OBSERVED_PROPERTY_ABSTRACT: string = 'ObservedPropertyAbstract';
 
 export const SUPERVISUAL: string = './supervisual';
 export const SUPERVISUAL_SOURCEMAP_EXT: string = '.visual.js.map';
@@ -474,7 +474,7 @@ export const DEEPRENDERFUNCTION: string = 'deepRenderFunction';
 export const ITEMCREATION: string = 'itemCreation';
 export const ITEMCREATION2: string = 'itemCreation2';
 export const OBSERVEDSHALLOWRENDER: string = 'observedShallowRender';
-export const OBSERVEDDEEPRENDER:string = 'observedDeepRender';
+export const OBSERVEDDEEPRENDER: string = 'observedDeepRender';
 export const ItemComponents: string[] = ['ListItem', 'GridItem'];
 export const FOREACHITEMGENFUNCTION: string = 'forEachItemGenFunction';
 export const __LAZYFOREACHITEMGENFUNCTION: string = '__lazyForEachItemGenFunction';
@@ -499,7 +499,7 @@ export const SYNCHED_PROPERTY_OBJECT_ONE_WAY_PU: string = 'SynchedPropertyObject
 export const SYNCHED_PROPERTY_SIMPLE_TWO_WAY_PU: string = 'SynchedPropertySimpleTwoWayPU';
 export const SYNCHED_PROPERTY_OBJECT_TWO_WAY_PU: string = 'SynchedPropertyObjectTwoWayPU';
 export const SYNCHED_PROPERTY_NESED_OBJECT_PU: string = 'SynchedPropertyNesedObjectPU';
-export const OBSERVED_PROPERTY_ABSTRACT_PU:string = 'ObservedPropertyAbstractPU';
+export const OBSERVED_PROPERTY_ABSTRACT_PU: string = 'ObservedPropertyAbstractPU';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_PU: string = '__localStorage';
 export const COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU: string = 'LocalStorage';
 export const IFELSEBRANCHUPDATEFUNCTION = 'ifElseBranchUpdateFunction';
@@ -587,4 +587,12 @@ export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
 
-export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);
+export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
+  'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);;
+
+export const CONSTANT_STEP_0: number = 0;
+export const CONSTANT_STEP_1: number = 1;
+export const CONSTANT_STEP_2: number = 2;
+export const CONSTANT_STEP_3: number = 3;
+export const CONSTANT_STEP_4: number = 4;
+export const CONSTANT_VERSION_10: number = 10;

@@ -74,8 +74,7 @@ import {
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
-  FINISH_UPDATE_FUNC,
-  GLOBAL_DECLARE_WHITE_LIST
+  FINISH_UPDATE_FUNC
 } from './pre_define';
 import {
   componentInfo,
@@ -103,8 +102,7 @@ import {
   checkFinalizeConstruction
 } from './process_component_class';
 import processImport, {
-  processImportModule,
-  validateModuleSpecifier
+  processImportModule
 } from './process_import';
 import {
   processComponentBlock,
@@ -126,22 +124,26 @@ import {
 import {
   resources,
   projectConfig,
-  partialUpdateConfig,
-  globalProgram,
-  ohosSystemModulePaths
+  partialUpdateConfig
 } from '../main';
-import { createCustomComponentNewExpression, createViewCreate } from './process_component_member';
+import {
+  createCustomComponentNewExpression,
+  createViewCreate
+} from './process_component_member';
 import { 
   assignComponentParams,
   assignmentFunction
 } from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
-import { isArkuiDependence } from "./ets_checker";
+import {
+  checkTypeReference,
+  validateModuleSpecifier
+} from './fast_build/system_api/api_check_utils';
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
-export const builderTypeParameter: {params: string[]} = {params: []};
+export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null): Function {
@@ -351,7 +353,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       } else if (isResource(node)) {
         node = processResourceData(node as ts.CallExpression);
       } else if (ts.isTypeReferenceNode(node)) {
-        checkTypeReference(node);
+        checkTypeReference(node, transformLog);
       }
       return ts.visitEachChild(node, processResourceNode, context);
     }
@@ -583,46 +585,6 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
       type: LogType.ERROR,
       message: 'not support AcceleratePreview'
     });
-  }
-}
-
-/**
- * check arkui dependences in ts files
- * api check from sdk
- *
- * @param {ts.TypeReferenceNode} node
- * @returns {void}
- */
-function checkTypeReference(node: ts.TypeReferenceNode): void {
-  const fileName: string = transformLog.sourceFile.fileName;
-  const currentTypeName: string = node.getText();
-  if (/(?<!\.d)\.ts$/g.test(fileName)) {
-    const checker: ts.TypeChecker = globalProgram.checker;
-    if (!checker) {
-      return;
-    }
-    const type: ts.Type = checker.getTypeAtLocation(node);
-    let sourceFile: ts.SourceFile | undefined = undefined;
-    if (type && type.aliasSymbol && type.aliasSymbol.declarations && type.aliasSymbol.declarations.length > 0) {
-      sourceFile = ts.getSourceFileOfNode(type.aliasSymbol.declarations[0]);
-    } else if (type && type.symbol && type.symbol.declarations && type.symbol.declarations.length > 0) {
-      sourceFile = ts.getSourceFileOfNode(type.symbol.declarations[0]);
-    }
-    if (!sourceFile) {
-      return;
-    }
-    const sourceBaseName: string = path.basename(sourceFile.fileName);
-    if (isArkuiDependence(sourceFile.fileName) &&
-      sourceBaseName !== 'common_ts_ets_api.d.ts' &&
-      sourceBaseName !== 'global.d.ts' ||
-      GLOBAL_DECLARE_WHITE_LIST.has(currentTypeName) &&
-      ohosSystemModulePaths.includes(sourceFile.fileName.replace(/\//g, '\\'))) {
-      transformLog.errors.push({
-        type: LogType.WARN,
-        message: `Cannot find name '${currentTypeName}'.`,
-        pos: node.getStart()
-      });
-    }
   }
 }
 
