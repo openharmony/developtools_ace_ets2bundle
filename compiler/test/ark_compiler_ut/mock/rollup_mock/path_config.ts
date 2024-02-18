@@ -28,6 +28,7 @@ export const MODULE_ID_ROLLUP_PLACEHOLDER = "\x00rollup_plugin_ignore_empty_modu
 
 // project build node_modules
 export const NODE_MODULES_PATH = "default/intermediates/loader_out/default/node_modules";
+export const AN_BUILD_OUTPUT_PATH = 'default/intermediates/loader_out/default/an/arm64-v8a';
 
 export const ES2ABC_PATH: string = '/build/bin/es2abc';
 export const TS2ABC_PATH: string = '/build/src/index.js';
