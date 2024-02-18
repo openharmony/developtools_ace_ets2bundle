@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson } from "arkguard"
+import { getMapFromJson } from 'arkguard';
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -59,7 +59,7 @@ import {
   sdkConfigPrefix
 } from '../main';
 import { mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
-import { getRealModulePath, type ResolveModuleInfo } from './ets_checker';
+import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -219,28 +219,6 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
     });
   }
   return undefined;
-}
-
-function moduleRequestCallback(moduleRequest, _, moduleType, systemKey): string {
-  for (let config of extendSdkConfigs.values()) {
-    if (config.prefix === '@arkui-x') {
-      continue;
-    }
-    if (moduleRequest.startsWith(config.prefix + '.')) {
-      let compileRequest: string = `${config.prefix}:${systemKey}`;
-      const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(config.apiPath, moduleRequest, ['.d.ts', '.d.ets']);
-      const modulePath: string = resolveModuleInfo.modulePath;
-      if (!fs.existsSync(modulePath)) {
-        return compileRequest;
-      }
-      const bundleInfo: BundleInfo = parseOhmBundle(modulePath);
-      if (checkBundleVersion(bundleInfo.bundleVersion)) {
-        compileRequest = `@bundle:${bundleInfo.bundlePath}`;
-      }
-      return compileRequest;
-    }
-  }
-  return '';
 }
 
 export function genSourceMapFileName(temporaryFile: string): string {
@@ -691,59 +669,11 @@ export function getBuildBinDir(arkDir: string): string {
   return path.join(getArkBuildDir(arkDir), 'bin');
 }
 
-interface BundleInfo {
-  bundlePath: string;
-  bundleVersion: string;
-}
-
-function parseOhmBundle(modulePath: string): BundleInfo {
-  const apiCode: string = fs.readFileSync(modulePath, {encoding: 'utf-8'});
-  const bundleTags: string[] = apiCode.match(/@bundle.+/g);
-  const bundleInfo: BundleInfo = {
-    bundlePath: '',
-    bundleVersion: ''
-  };
-  if (bundleTags && bundleTags.length > CONSTANT_STEP_0) {
-    const bundleTag: string = bundleTags[CONSTANT_STEP_0];
-    const bundleInfos: string[] = bundleTag.split(' ');
-    if (bundleInfos.length === CONSTANT_STEP_3) {
-      bundleInfo.bundlePath = bundleInfos[CONSTANT_STEP_1];
-      bundleInfo.bundleVersion = bundleInfos[CONSTANT_STEP_2];
-    }
-  }
-  return bundleInfo;
-}
-
-function checkBundleVersion(bundleVersion: string): boolean {
-  const versionSteps: string[] = bundleVersion.split(/[\.\(\)]/g);
-  // eg: since xx
-  if (versionSteps.length === CONSTANT_STEP_1 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
-    Number(versionSteps[CONSTANT_STEP_0]) > CONSTANT_VERSION_10) {
-    return true;
-  // eg: since x.x.x(xx)
-  } else if (versionSteps.length >= CONSTANT_STEP_3 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
-    !isNaN(Number(versionSteps[CONSTANT_STEP_1]))) {
-    const firstStep: number = Number(versionSteps[CONSTANT_STEP_0]);
-    const secondStep: number = Number(versionSteps[CONSTANT_STEP_1]);
-    if (firstStep > CONSTANT_STEP_4 || firstStep === CONSTANT_STEP_4 && secondStep >= CONSTANT_STEP_1) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export function cleanUpUtilsObjects(): void {
   newSourceMaps = {};
   nameCacheObj = {};
   packageCollection.clear();
 }
-
-const CONSTANT_STEP_0: number = 0;
-const CONSTANT_STEP_1: number = 1;
-const CONSTANT_STEP_2: number = 2;
-const CONSTANT_STEP_3: number = 3;
-const CONSTANT_STEP_4: number = 4;
-const CONSTANT_VERSION_10: number = 10;
 
 export function getHookEventFactory(share: Object, pluginName: string, hookName: string): Object {
   if (typeof share.getHookEventFactory === 'function') {

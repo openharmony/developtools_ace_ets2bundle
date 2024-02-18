@@ -25,7 +25,6 @@ import {
   globalProgram,
   sdkConfigs,
   sdkConfigPrefix,
-  allModulesPaths,
   partialUpdateConfig,
   resetProjectConfig,
   resetGlobalProgram
@@ -50,27 +49,8 @@ import {
   FOREACH_LAZYFOREACH,
   COMPONENT_IF,
   TS_WATCH_END_MSG,
-  FORM_TAG_CHECK_NAME,
-  FORM_TAG_CHECK_ERROR,
-  CROSSPLATFORM_TAG_CHECK_NAME,
-  CROSSPLATFORM_TAG_CHECK_ERROER,
-  DEPRECATED_TAG_CHECK_NAME,
-  DEPRECATED_TAG_CHECK_WARNING,
-  FA_TAG_CHECK_NAME,
-  FA_TAG_HUMP_CHECK_NAME,
-  FA_TAG_CHECK_ERROR,
-  STAGE_TAG_CHECK_NAME,
-  STAGE_TAG_HUMP_CHECK_NAME,
-  STAGE_TAG_CHECK_ERROR,
-  STAGE_COMPILE_MODE,
-  ATOMICSERVICE_BUNDLE_TYPE,
-  ATOMICSERVICE_TAG_CHECK_NAME,
-  ATOMICSERVICE_TAG_CHECK_ERROER,
-  SINCE_TAG_NAME,
-  ATOMICSERVICE_TAG_CHECK_VERSION,
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
-  FIND_MODULE_WARNING
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -95,7 +75,10 @@ import {
   isMac,
   tryToLowerCasePath
 } from './utils';
-import { isExtendFunction, isOriginalExtend } from './process_ui_syntax';
+import {
+  isExtendFunction,
+  isOriginalExtend
+} from './process_ui_syntax';
 import { visualTransform } from './process_visual';
 import { tsWatchEmitter } from './fast_build/ets_ui/rollup-plugin-ets-checker';
 import {
@@ -106,6 +89,11 @@ import {
   getReverseStrictBuilderProgram,
   wasOptionsStrict
 } from './do_arkTS_linter';
+import {
+  getJsDocNodeCheckConfig,
+  isCardFile,
+  getRealModulePath
+} from './fast_build/system_api/api_check_utils';
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
@@ -228,61 +216,6 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
     const absPath: string = path.resolve(buildInfoDirectory, fileNames[index]);
     filesBuildInfo.set(isMacOrWin ? tryToLowerCasePath(absPath) : absPath, version);
   });
-}
-
-function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
-  tagNameShouldExisted: boolean, checkValidCallback?: (jsDocTag: ts.JSDocTag, config: ts.JsDocNodeCheckConfigItem) => boolean,
-  checkJsDocSpecialValidCallback?: (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) => boolean): ts.JsDocNodeCheckConfigItem {
-  return {
-    tagName: tagName,
-    message: message,
-    needConditionCheck: false,
-    type: type,
-    specifyCheckConditionFuncName: '',
-    tagNameShouldExisted: tagNameShouldExisted,
-    checkValidCallback: checkValidCallback,
-    checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback
-  };
-}
-
-function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
-  let needCheckResult: boolean = false;
-  const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
-  const apiName: string = path.basename(fileName);
-  const sourceBaseName: string = path.basename(sourceFileName);
-  if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
-    sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, ts.DiagnosticCategory.Warning, true));
-  }
-  if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
-    if (isCardFile(fileName)) {
-      needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
-    }
-    if (projectConfig.isCrossplatform) {
-      needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER, ts.DiagnosticCategory.Error, true));
-    }
-    if (process.env.compileMode === STAGE_COMPILE_MODE) {
-      needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME], FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
-    } else if (process.env.compileMode !== '') {
-      needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME], STAGE_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Warning, false));
-    }
-    if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE && projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
-      needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true));
-    }
-  }
-
-  return {
-    nodeNeedCheck: needCheckResult,
-    checkConfig: checkConfigArray
-  };
 }
 
 interface extendInfo {
@@ -548,25 +481,6 @@ function printDeclarationDiagnostics(): void {
   });
 }
 
-export function isArkuiDependence(file: string): boolean {
-  const fileDir: string = path.dirname(file);
-  const declarationsPath: string = path.resolve(__dirname, '../declarations').replace(/\\/g, '/');
-  const componentPath: string = path.resolve(__dirname, '../../../component').replace(/\\/g, '/');
-  if (fileDir === declarationsPath || fileDir === componentPath) {
-    return true;
-  }
-  return false;
-}
-
-function isCardFile(file: string): boolean {
-  for (const key in projectConfig.cardEntryObj) {
-    if (path.normalize(projectConfig.cardEntryObj[key]) === path.normalize(file)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function containFormError(message: string): boolean {
   if (/can't support form application./.test(message)) {
     return true;
@@ -827,28 +741,6 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
   }
   stopTimeStatisticsLocation(resolveModuleNamesTime);
   return resolvedModulesCache[path.resolve(containingFile)];
-}
-
-export function getRealModulePath(apiDirs: string[], moduleName: string, exts: string[]): ResolveModuleInfo {
-  const resolveResult: ResolveModuleInfo = {
-    modulePath: '',
-    isEts: true
-  };
-  for (let i = 0; i < apiDirs.length; i++) {
-    const dir = apiDirs[i];
-    for (let i = 0; i < exts.length; i++) {
-      const ext = exts[i];
-      const moduleDir = path.resolve(dir, moduleName + ext);
-      if (!fs.existsSync(moduleDir)) {
-        continue;
-      }
-      resolveResult.modulePath = moduleDir;
-      if (ext === '.d.ts') {
-        resolveResult.isEts = false;
-      }
-    }
-  }
-  return resolveResult;
 }
 
 export interface ResolveModuleInfo {
