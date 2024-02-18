@@ -168,6 +168,8 @@ export function etsTransform() {
           }
         }
       }
+      // If a file import an const enum object from other changed file, this file also need to be transformed.
+      shouldDisable = shouldDisable || checkRelateToConstEnum(options.id);
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
@@ -475,4 +477,16 @@ function setIncrementalFileInHar(jsCacheFilePath: string, jsBuildFilePath: strin
   allFilesInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
     jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
   allFilesInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
+}
+
+function checkRelateToConstEnum(id: string): boolean {
+  let tsProgram: ts.Program = globalProgram.builderProgram;
+  let targetSourceFile: ts.SourceFile | undefined = tsProgram ? tsProgram.getSourceFile(id) : undefined;
+  if (!targetSourceFile) {
+    return false;
+  }
+  if (!tsProgram.isFileUpdateInConstEnumCache) {
+    return false;
+  }
+  return tsProgram.isFileUpdateInConstEnumCache(targetSourceFile);
 }
