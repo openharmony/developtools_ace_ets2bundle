@@ -145,10 +145,28 @@
         "message": "Property 'message' in the custom component 'Child' is missing (mandatory to specify).",
         "type": "ERROR"
     },
-    "validateInitDecorator": {
-        "message": "Property 'message' must be initialized through the component constructor.",
-        "type": "ERROR"
-    },
+    "validateInitDecorator": [
+        {
+            "message": "Property 'build_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'prop_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'regular_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'state_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'provide_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        }
+    ],
     "validateIllegalInitFromParent": {
         "message": "The regular property 'message' cannot be assigned to the @Link property 'message'.",
         "type": "ERROR"
