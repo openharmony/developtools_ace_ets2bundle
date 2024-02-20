@@ -138,6 +138,7 @@
         "ListItemGroup",
         "LoadingProgress",
         "Marquee",
+        "MediaCachedImage",
         "Menu",
         "MenuItem",
         "MenuItemGroup",
@@ -406,6 +407,11 @@
             "name": "Marquee",
             "type": "MarqueeAttribute",
             "instance": "MarqueeInstance"
+          },
+          {
+            "name": "MediaCachedImage",
+            "type": "MediaCachedImageAttribute",
+            "instance": "MediaCachedImageInstance"
           },
           {
             "name": "Menu",
