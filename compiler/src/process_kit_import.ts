@@ -344,6 +344,11 @@ export class KitInfo {
     this.currentKitInfo && this.currentKitInfo.transform();
   }
 
+  static cleanUp(): void {
+    this.currentKitInfo = undefined;
+    this.tsEmitResolver = undefined;
+  }
+
   getSymbols(): KitSymbols {
     return this.symbols;
   }
@@ -571,5 +576,8 @@ function trimSourceSuffix(source: string): string {
 }
 
 export function cleanUpKitImportObjects(): void {
+  KitInfo.cleanUp();
   kitTransformLog.cleanUp();
+  hasTsNoCheckOrTsIgnoreFiles = [];
+  compilingEtsOrTsFiles = [];
 }
