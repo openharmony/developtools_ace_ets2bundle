@@ -554,7 +554,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
       ),
       undefined,
       [ts.factory.createThis()]
-    )
+    );
     newNode.expression.questionDotToken = node.expression.questionDotToken;
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
       return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -590,7 +590,7 @@ function traverseBuilderParams(node: ts.ObjectLiteralExpression,
         ts.isPropertyAccessExpression(property.initializer) && property.initializer.expression &&
         property.initializer.name && ts.isIdentifier(property.initializer.name)) {
         const name: string = property.initializer.name.escapedText.toString();
-        if (!isBuilder && property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword ||
+        if (!storedFileInfo.processGlobalBuilder && property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword ||
           isBuilder && ts.isIdentifier(property.initializer.expression) &&
           property.initializer.expression.escapedText.toString() === $$) {
           addProperties(properties, property, name, isBuilder);

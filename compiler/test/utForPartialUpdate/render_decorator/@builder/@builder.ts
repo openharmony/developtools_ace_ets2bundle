@@ -14,6 +14,9 @@
  */
 
 exports.source = `
+interface ExpInterface {
+  expProp: boolean;
+}
 @Builder function noParam(){
   Row(){
     Text('this is a no param builder')
@@ -24,6 +27,9 @@ exports.source = `
     Text(label1)
     Text(label2)
   }
+}
+@Builder function reveive$$($$: ExpInterface) {
+  Text($$.expProp.toString())
 }
 @Entry
 @Component
@@ -50,6 +56,10 @@ struct MyComponent {
       Text('Test menu item 2')
         .fontSize(20)
     }.width(100)
+  }
+  @Builder
+  deliver$$() {
+    reveive$$({expProp: this.hideBar})
   }
 
   build() {
@@ -170,6 +180,13 @@ function specificParam(label1, label2, parent = null) {
     Text.pop();
     Column.pop();
 }
+function reveive$$($$, parent = null) {
+    const __$$__ = $$;
+    (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, $$ = __$$__) => {
+        Text.create($$.expProp.toString());
+    }, Text);
+    Text.pop();
+}
 class MyComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -248,6 +265,9 @@ class MyComponent extends ViewPU {
         }, Text);
         Text.pop();
         Flex.pop();
+    }
+    deliver$$(parent = null) {
+        reveive$$.bind(this)(makeBuilderParameterProxy("reveive$$", { expProp: () => ($$["__hideBar"] ? $$["__hideBar"] : $$["hideBar"]) }));
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
