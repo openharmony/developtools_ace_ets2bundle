@@ -74,7 +74,8 @@ import {
   propInitialization,
   regularInitialization,
   stateInitialization,
-  provideInitialization
+  provideInitialization,
+  privateCollection
 } from './validate_ui_syntax';
 import {
   curPropMap,
@@ -949,6 +950,16 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
       log.push({
         type: LogType.ERROR,
         message: `Property '${item}' must be initialized through the component constructor.`,
+        pos: node.getStart()
+      });
+    }
+  });
+  const privateParamSet: Set<string> = privateCollection.get(customComponentName) || new Set([]);
+  curChildProps.forEach((item: string) => {
+    if (privateParamSet.has(item)) {
+      log.push({
+        type: LogType.WARN,
+        message: `Property '${item}' is private and can not be initialized through the component constructor.`,
         pos: node.getStart()
       });
     }
