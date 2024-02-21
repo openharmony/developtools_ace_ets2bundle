@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson } from 'arkguard';
+import { getMapFromJson, deleteLineInfoForNameString } from "arkguard"
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -404,12 +404,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
       namecachePath = harFilesRecord.get(originalFilePath).sourceCachePath;
     }
     let identifierCache = nameCacheObj[namecachePath]?.[IDENTIFIER_CACHE];
-    if (identifierCache) {
-      for (const [key, value] of Object.entries(identifierCache)) {
-        let newKey = key.includes(':') ? key.split(':')[0] : key;
-        historyNameCache.set(newKey, value as string);
-      }
-    }
+    deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
   let mixedInfo: {content: string, sourceMap?: Object, nameCache?: Object};
