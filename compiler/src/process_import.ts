@@ -57,7 +57,8 @@ import {
   propInitialization,
   regularInitialization,
   stateInitialization,
-  provideInitialization
+  provideInitialization,
+  privateCollection
 } from './validate_ui_syntax';
 import {
   getExtensionIfUnfullySpecifiedFilepath,
@@ -857,4 +858,5 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
   regularInitialization.set(name, componentSet.regularInit);
   stateInitialization.set(name, componentSet.stateInit);
   provideInitialization.set(name, componentSet.provideInit);
+  privateCollection.set(name, componentSet.privateCollection);
 }

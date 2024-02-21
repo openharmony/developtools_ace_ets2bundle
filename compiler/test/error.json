@@ -316,5 +316,47 @@
             "message": "The '@track' decorator can only be used within a 'class' decorated with observed.",
             "type": "ERROR"
         }
+    ],
+    "validateAccessQualifier": [
+        {
+            "message": "Property 'storage_value' can not be decorated with both @StorageLink and public.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'consume_value' can not be decorated with both @Consume and public.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'link_value' can not be decorated with both @Link and private.",
+            "type": "WARN"
+        },
+        {
+            "message": "The member attributes of a struct can not be protected.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'prop_value' can not be decorated with both @Require and private.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'value' can not be decorated with both @Require and private.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'regular_value' is private and can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'state_value' is private and can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'prop_value' is private and can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'value' is private and can not be initialized through the component constructor.",
+            "type": "WARN"
+        }
     ]
 }
