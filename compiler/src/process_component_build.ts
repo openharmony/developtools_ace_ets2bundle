@@ -1459,22 +1459,24 @@ function createItemGenFunctionStatement(
 }
 
 function isForEachItemGeneratorParam(argumentsArray: ts.Expression, newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
-  return [
-    ts.factory.createVariableStatement(
-      undefined,
-      ts.factory.createVariableDeclarationList(
-        [ts.factory.createVariableDeclaration(
-          ts.factory.createIdentifier(
-            argumentsArray.parameters[0] && argumentsArray.parameters[0].name.getText()),
-          undefined,
-          undefined,
-          ts.factory.createIdentifier(_ITEM)
-        )],
-        ts.NodeFlags.Const
-      )
-    ),
-    ...newArrowNode
-  ];
+  const createVariableStatementNode: ts.Statement[] = [];
+  createVariableStatementNode.push(ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(
+          argumentsArray.parameters[0] && argumentsArray.parameters[0].name.getText()),
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(_ITEM)
+      )],
+      ts.NodeFlags.Const
+    )
+  ));
+  if (newArrowNode) {
+    createVariableStatementNode.push(...newArrowNode);
+  }
+  return createVariableStatementNode;
 }
 
 function getParameters(node: ts.ArrowFunction): ts.ParameterDeclaration[] {
@@ -1504,7 +1506,7 @@ function createItemIdFuncStatement(
   node: ts.CallExpression,
   argumentsArray: ts.Expression[]
 ): ts.VariableStatement {
-  if (argumentsArray[2] && ts.isArrowFunction(argumentsArray[2])) {
+  if (argumentsArray[2]) {
     return ts.factory.createVariableStatement(
       undefined,
       ts.factory.createVariableDeclarationList(
@@ -1624,13 +1626,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
   if (node.arguments.length > 1 && ts.isArrowFunction(arrowNode)) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const body: ts.ConciseBody = arrowNode.body;
-    if (node.arguments.length > 2 && !ts.isArrowFunction(node.arguments[2])) {
-      log.push({
-        type: LogType.ERROR,
-        message: 'There should be wrapped in curly braces in ForEach.',
-        pos: body.getStart()
-      });
-    } else if (!ts.isBlock(body)) {
+    if (!ts.isBlock(body)) {
       const statement: ts.Statement = ts.factory.createExpressionStatement(body);
       const blockNode: ts.Block = ts.factory.createBlock([statement], true);
       // @ts-ignore
