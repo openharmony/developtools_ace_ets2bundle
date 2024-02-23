@@ -335,8 +335,7 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
 function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.PropertyDeclaration,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, name: ts.Identifier,
   watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
-  context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration):
-  void {
+  context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration): void {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const propertyDecorators: string[] = [];
   for (let i = 0; i < decorators.length; i++) {
@@ -371,7 +370,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       stateObjectCollection.add(name.escapedText.toString());
     }
     if (decoratorName === COMPONENT_WATCH_DECORATOR &&
-      validateWatchDecorator(name, decorators.length, log)) {
+      validateWatchDecorator(name, decorators, log)) {
       processWatch(node, decorators[i], watchMap, log);
     } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       propertyDecorators.push(decoratorName);
@@ -381,31 +380,28 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       }
     }
   }
-  validateropertyDecorator(propertyDecorators, name, log);
+  validatePropertyDecorator(propertyDecorators, name, log);
 }
 
-function validateropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
+function validatePropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
   log: LogInfo[]): void {
-  if (propertyDecorators.length === 1 && propertyDecorators[0] === COMPONENT_REQUIRE_DECORATOR) {
-    log.push({
-      type: LogType.ERROR,
-      message: 'The decorator @Require must be used with either @Prop or @BuilderParam.',
-      pos: name.getStart()
-    });
-    return;
-  }
   if (propertyDecorators.length > 1 && !validateRequireDecorator(propertyDecorators)) {
     validateMultiDecorators(name, log);
   }
 }
 
 const DECORATOR_LENGTH: number = 2;
+const SUPPORT_REQUIRE_DECORATOR: string[] = [COMPONENT_PROP_DECORATOR,
+  COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
+  COMPONENT_WATCH_DECORATOR
+];
 
 function validateRequireDecorator(propertyDecorators: string[]): boolean {
+  const isSupportRequire: boolean = propertyDecorators.some((item: string) => {
+    return SUPPORT_REQUIRE_DECORATOR.includes(item);
+  });
   return propertyDecorators.length === DECORATOR_LENGTH &&
-    propertyDecorators.includes(COMPONENT_REQUIRE_DECORATOR) &&
-    (propertyDecorators.includes(COMPONENT_PROP_DECORATOR) ||
-      propertyDecorators.includes(COMPONENT_BUILDERPARAM_DECORATOR));
+    propertyDecorators.includes(COMPONENT_REQUIRE_DECORATOR) && isSupportRequire;
 }
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
@@ -1138,8 +1134,15 @@ function validateDuplicateDecorator(decorator: ts.Decorator, log: LogInfo[]): vo
   });
 }
 
-function validateWatchDecorator(propertyName: ts.Identifier, length: number, log: LogInfo[]): boolean {
-  if (length === 1) {
+function validateWatchDecorator(propertyName: ts.Identifier, decorators: readonly ts.Decorator[],
+  log: LogInfo[]): boolean {
+  let isRegular: boolean = false;
+  if (decorators.length === DECORATOR_LENGTH) {
+    isRegular = decorators.some((item: ts.Decorator) => {
+      return item.getText() === COMPONENT_REQUIRE_DECORATOR;
+    });
+  }
+  if (decorators.length === 1 || isRegular) {
     log.push({
       type: LogType.ERROR,
       message: `Regular variable '${propertyName.escapedText.toString()}' can not be decorated with @Watch.`,

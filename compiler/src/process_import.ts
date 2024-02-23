@@ -54,7 +54,11 @@ import {
   localStorageLinkCollection,
   localStoragePropCollection,
   builderParamInitialization,
-  propInitialization
+  propInitialization,
+  regularInitialization,
+  stateInitialization,
+  provideInitialization,
+  privateCollection
 } from './validate_ui_syntax';
 import {
   getExtensionIfUnfullySpecifiedFilepath,
@@ -807,26 +811,14 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
     }
     if (isCustomComponent(originNode, structDecorator)) {
       let isDETS: boolean = false;
-      componentCollection.customComponents.add(name);
-      const ComponentSet: IComponentSet = getComponentSet(originNode, false);
+      const componentSet: IComponentSet = getComponentSet(originNode, false);
       while (originNode) {
         if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
           isDETS = true;
         }
         originNode = originNode.parent;
       }
-      if (isDETS) {
-        storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
-      }
-      if (structDecorator.hasRecycle) {
-        storedFileInfo.getCurrentArkTsFile().recycleComponents.add(name);
-      }
-      setDependencies(name, ComponentSet.links, ComponentSet.properties,
-        ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
-        ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
-        ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
-        ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
-        structDecorator);
+      setComponentCollectionInfo(name, componentSet, isDETS, structDecorator);
     }
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
@@ -844,4 +836,18 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
       mtimeMs: fs.existsSync(originFile) ? fs.statSync(originFile).mtimeMs : 0
     });
   }
+}
+
+function setComponentCollectionInfo(name: string, componentSet: IComponentSet, isDETS: boolean,
+  structDecorator: structDecoratorResult): void {
+  setDependencies(name, componentSet.links, componentSet.properties,
+    componentSet.props, componentSet.builderParams, componentSet.states, componentSet.regulars,
+    componentSet.storageProps, componentSet.storageLinks, componentSet.provides,
+    componentSet.consumes, componentSet.objectLinks, componentSet.localStorageLink,
+    componentSet.localStorageProp, componentSet.builderParamData, componentSet.propData, isDETS,
+    structDecorator);
+  regularInitialization.set(name, componentSet.regularInit);
+  stateInitialization.set(name, componentSet.stateInit);
+  provideInitialization.set(name, componentSet.provideInit);
+  privateCollection.set(name, componentSet.privateCollection);
 }
