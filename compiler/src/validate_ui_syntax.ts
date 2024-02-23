@@ -60,7 +60,8 @@ import {
   COMPONENT_REQUIRE_DECORATOR,
   COMPONENT_SENDABLE_DECORATOR,
   CLASS_MIN_TRACK_DECORATOR,
-  MIN_OBSERVED
+  MIN_OBSERVED,
+  COMPONENT_NON_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -105,22 +106,26 @@ export interface ComponentCollection {
   currentClassName: string;
 }
 
-export interface IComponentSet {
-  properties: Set<string>;
-  regulars: Set<string>;
-  states: Set<string>;
-  links: Set<string>;
-  props: Set<string>;
-  storageProps: Set<string>;
-  storageLinks: Set<string>;
-  provides: Set<string>;
-  consumes: Set<string>;
-  objectLinks: Set<string>;
-  localStorageLink: Map<string, Set<string>>;
-  localStorageProp: Map<string, Set<string>>;
-  builderParams: Set<string>;
-  builderParamData: Set<string>;
-  propData: Set<string>;
+export class IComponentSet {
+  properties: Set<string> = new Set();
+  regulars: Set<string> = new Set();
+  states: Set<string> = new Set();
+  links: Set<string> = new Set();
+  props: Set<string> = new Set();
+  storageProps: Set<string> = new Set();
+  storageLinks: Set<string> = new Set();
+  provides: Set<string> = new Set();
+  consumes: Set<string> = new Set();
+  objectLinks: Set<string> = new Set();
+  localStorageLink: Map<string, Set<string>> = new Map();
+  localStorageProp: Map<string, Set<string>> = new Map();
+  builderParams: Set<string> = new Set();
+  builderParamData: Set<string> = new Set();
+  propData: Set<string> = new Set();
+  regularInit: Set<string> = new Set();
+  stateInit: Set<string> = new Set();
+  provideInit: Set<string> = new Set();
+  privateCollection: Set<string> = new Set();
 }
 
 export const componentCollection: ComponentCollection = {
@@ -154,6 +159,10 @@ export const localStorageLinkCollection: Map<string, Map<string, Set<string>>> =
 export const localStoragePropCollection: Map<string, Map<string, Set<string>>> = new Map();
 export const builderParamInitialization: Map<string, Set<string>> = new Map();
 export const propInitialization: Map<string, Set<string>> = new Map();
+export const regularInitialization: Map<string, Set<string>> = new Map();
+export const stateInitialization: Map<string, Set<string>> = new Map();
+export const provideInitialization: Map<string, Set<string>> = new Map();
+export const privateCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -948,84 +957,76 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
 
 function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean): void {
   const componentName: string = node.name.getText();
-  const ComponentSet: IComponentSet = getComponentSet(node, judgeInitializeInEntry);
-  propertyCollection.set(componentName, ComponentSet.properties);
-  stateCollection.set(componentName, ComponentSet.states);
-  linkCollection.set(componentName, ComponentSet.links);
-  propCollection.set(componentName, ComponentSet.props);
-  regularCollection.set(componentName, ComponentSet.regulars);
-  storagePropCollection.set(componentName, ComponentSet.storageProps);
-  storageLinkCollection.set(componentName, ComponentSet.storageLinks);
-  provideCollection.set(componentName, ComponentSet.provides);
-  consumeCollection.set(componentName, ComponentSet.consumes);
-  objectLinkCollection.set(componentName, ComponentSet.objectLinks);
-  localStorageLinkCollection.set(componentName, ComponentSet.localStorageLink);
-  localStoragePropCollection.set(componentName, ComponentSet.localStorageProp);
-  builderParamObjectCollection.set(componentName, ComponentSet.builderParams);
-  builderParamInitialization.set(componentName, ComponentSet.builderParamData);
-  propInitialization.set(componentName, ComponentSet.propData);
+  const componentSet: IComponentSet = getComponentSet(node, judgeInitializeInEntry, true);
+  propertyCollection.set(componentName, componentSet.properties);
+  stateCollection.set(componentName, componentSet.states);
+  linkCollection.set(componentName, componentSet.links);
+  propCollection.set(componentName, componentSet.props);
+  regularCollection.set(componentName, componentSet.regulars);
+  storagePropCollection.set(componentName, componentSet.storageProps);
+  storageLinkCollection.set(componentName, componentSet.storageLinks);
+  provideCollection.set(componentName, componentSet.provides);
+  consumeCollection.set(componentName, componentSet.consumes);
+  objectLinkCollection.set(componentName, componentSet.objectLinks);
+  localStorageLinkCollection.set(componentName, componentSet.localStorageLink);
+  localStoragePropCollection.set(componentName, componentSet.localStorageProp);
+  builderParamObjectCollection.set(componentName, componentSet.builderParams);
+  builderParamInitialization.set(componentName, componentSet.builderParamData);
+  propInitialization.set(componentName, componentSet.propData);
+  regularInitialization.set(componentName, componentSet.regularInit);
+  stateInitialization.set(componentName, componentSet.stateInit);
+  provideInitialization.set(componentName, componentSet.provideInit);
+  privateCollection.set(componentName, componentSet.privateCollection);
 }
 
-export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEntry: boolean): IComponentSet {
-  const properties: Set<string> = new Set();
-  const states: Set<string> = new Set();
-  const links: Set<string> = new Set();
-  const props: Set<string> = new Set();
-  const regulars: Set<string> = new Set();
-  const storageProps: Set<string> = new Set();
-  const storageLinks: Set<string> = new Set();
-  const provides: Set<string> = new Set();
-  const consumes: Set<string> = new Set();
-  const objectLinks: Set<string> = new Set();
-  const builderParams: Set<string> = new Set();
-  const localStorageLink: Map<string, Set<string>> = new Map();
-  const localStorageProp: Map<string, Set<string>> = new Map();
-  const builderParamData: Set<string> = new Set();
-  const propData: Set<string> = new Set();
-  traversalComponentProps(node, judgeInitializeInEntry, properties, regulars, states, links, props,
-    storageProps, storageLinks, provides, consumes, objectLinks, localStorageLink, localStorageProp,
-    builderParams, builderParamData, propData);
-  return {
-    properties, regulars, states, links, props, storageProps, storageLinks, provides, consumes,
-    objectLinks, localStorageLink, localStorageProp, builderParams, builderParamData, propData
-  };
+export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
+  uiCheck: boolean = false): IComponentSet {
+  const componentSet: IComponentSet = new IComponentSet();
+  traversalComponentProps(node, judgeInitializeInEntry, componentSet, uiCheck);
+  return componentSet;
 }
 
 class RecordRequire {
   hasRequire: boolean = false;
   hasProp: boolean = false;
   hasBuilderParam: boolean = false;
+  hasRegular: boolean = false;
+  hasState: boolean = false;
+  hasProvide: boolean = false;
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
-  properties: Set<string>, regulars: Set<string>, states: Set<string>, links: Set<string>, props: Set<string>,
-  storageProps: Set<string>, storageLinks: Set<string>, provides: Set<string>,
-  consumes: Set<string>, objectLinks: Set<string>,
-  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
-  builderParams: Set<string>, builderParamData: Set<string>, propData: Set<string>): void {
+  componentSet: IComponentSet, uiCheck: boolean = false): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
     node.members.forEach(item => {
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
         const propertyName: string = item.name.getText();
-        properties.add(propertyName);
+        componentSet.properties.add(propertyName);
         const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+        const accessQualifierResult: AccessQualifierResult = getAccessQualifier(item, uiCheck);
         if (!decorators || !decorators.length) {
-          regulars.add(propertyName);
+          componentSet.regulars.add(propertyName);
+          setPrivateCollection(componentSet, accessQualifierResult, propertyName, COMPONENT_NON_DECORATOR);
         } else {
           isStatic = false;
+          let hasValidatePrivate: boolean = false;
           const recordRequire: RecordRequire = new RecordRequire();
           for (let i = 0; i < decorators.length; i++) {
             const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
               collectionStates(decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
-                states, links, props, storageProps, storageLinks, provides, consumes, objectLinks,
-                localStorageLink, localStorageProp, builderParams, recordRequire);
+                componentSet, recordRequire);
+              setPrivateCollection(componentSet, accessQualifierResult, propertyName, decoratorName);
+              validateAccessQualifier(item, propertyName, decoratorName, accessQualifierResult,
+                recordRequire, uiCheck, hasValidatePrivate);
+              hasValidatePrivate = true;
             }
           }
-          checkRequire(propertyName, builderParamData, propData, recordRequire);
+          regularAndRequire(decorators, componentSet, recordRequire, propertyName, accessQualifierResult);
+          checkRequire(propertyName, componentSet, recordRequire);
         }
       }
       if (ts.isMethodDeclaration(item) && item.name && ts.isIdentifier(item.name)) {
@@ -1038,70 +1039,162 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
   isStaticViewCollection.set(node.name.getText(), isStatic);
 }
 
-function checkRequire(name: string, builderParamData: Set<string>,
-  propData: Set<string>, recordRequire: RecordRequire): void {
-  if (recordRequire.hasRequire) {
-    if (recordRequire.hasProp) {
-      propData.add(name);
+const FORBIDDEN_PUBLIC_ACCESS: string[] = [COMPONENT_STORAGE_PROP_DECORATOR,
+  COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_LINK_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_PROP_DECORATOR, COMPONENT_CONSUME_DECORATOR
+];
+const FORBIDDEN_PRIVATE_ACCESS: string[] = [COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR];
+
+function validateAccessQualifier(node: ts.PropertyDeclaration, propertyName: string,
+  decoratorName: string, accessQualifierResult: AccessQualifierResult,
+  recordRequire: RecordRequire, uiCheck: boolean = false, hasValidatePrivate: boolean): void {
+  if (uiCheck) {
+    if (accessQualifierResult.hasPublic && FORBIDDEN_PUBLIC_ACCESS.includes(decoratorName)) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `Property '${propertyName}' can not be decorated with both ${decoratorName} and public.`,
+        pos: node.getStart()
+      });
     }
-    if (recordRequire.hasBuilderParam) {
-      builderParamData.add(name);
+    if (accessQualifierResult.hasPrivate) {
+      if (FORBIDDEN_PRIVATE_ACCESS.includes(decoratorName)) {
+        transformLog.errors.push({
+          type: LogType.WARN,
+          message: `Property '${propertyName}' can not be decorated with both ${decoratorName} and private.`,
+          pos: node.getStart()
+        });
+      }
+      if (recordRequire.hasRequire && !hasValidatePrivate) {
+        transformLog.errors.push({
+          type: LogType.WARN,
+          message: `Property '${propertyName}' can not be decorated with both @Require and private.`,
+          pos: node.getStart()
+        });
+      }
     }
   }
 }
 
-function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, decorator: string, name: string,
-  states: Set<string>, links: Set<string>, props: Set<string>, storageProps: Set<string>,
-  storageLinks: Set<string>, provides: Set<string>, consumes: Set<string>, objectLinks: Set<string>,
-  localStorageLink: Map<string, Set<string>>, localStorageProp: Map<string, Set<string>>,
-  builderParams: Set<string>, recordRequire: RecordRequire): void {
-  switch (decorator) {
-    case COMPONENT_STATE_DECORATOR:
-      states.add(name);
-      break;
-    case COMPONENT_LINK_DECORATOR:
-      links.add(name);
-      break;
-    case COMPONENT_PROP_DECORATOR:
-      recordRequire.hasProp = true;
-      props.add(name);
-      break;
-    case COMPONENT_STORAGE_PROP_DECORATOR:
-      storageProps.add(name);
-      break;
-    case COMPONENT_STORAGE_LINK_DECORATOR:
-      storageLinks.add(name);
-      break;
-    case COMPONENT_PROVIDE_DECORATOR:
-      provides.add(name);
-      break;
-    case COMPONENT_CONSUME_DECORATOR:
-      consumes.add(name);
-      break;
-    case COMPONENT_OBJECT_LINK_DECORATOR:
-      objectLinks.add(name);
-      break;
-    case COMPONENT_BUILDERPARAM_DECORATOR:
-      if (judgeInitializeInEntry) {
+const SUPPORT_PRIVATE_PROPS: string[] = [COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR,
+  COMPONENT_PROP_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR
+];
+
+function setPrivateCollection(componentSet: IComponentSet, accessQualifierResult: AccessQualifierResult,
+  propertyName: string, decoratorName: string): void {
+  if (accessQualifierResult.hasPrivate && SUPPORT_PRIVATE_PROPS.includes(decoratorName)) {
+    componentSet.privateCollection.add(propertyName);
+  }
+}
+
+class AccessQualifierResult {
+  hasPrivate: boolean = false;
+  hasPublic: boolean = false;
+}
+
+function getAccessQualifier(node: ts.PropertyDeclaration, uiCheck: boolean = false): AccessQualifierResult {
+  const modifiers: readonly ts.Modifier[] = ts.getModifiers(node);
+  const accessQualifierResult: AccessQualifierResult = new AccessQualifierResult();
+  if (modifiers && modifiers.length) {
+    modifiers.forEach((item) => {
+      if (item.kind === ts.SyntaxKind.PrivateKeyword) {
+        accessQualifierResult.hasPrivate = true;
+      }
+      if (item.kind === ts.SyntaxKind.PublicKeyword) {
+        accessQualifierResult.hasPublic = true;
+      }
+      if (uiCheck && item.kind === ts.SyntaxKind.ProtectedKeyword) {
         transformLog.errors.push({
           type: LogType.WARN,
-          message: `'${name}' should be initialized in @Entry Component`,
+          message: `The member attributes of a struct can not be protected.`,
           pos: node.getStart()
         });
       }
+    });
+  }
+  return accessQualifierResult;
+}
+
+function regularAndRequire(decorators: readonly ts.Decorator[], componentSet: IComponentSet,
+  recordRequire: RecordRequire, propertyName: string, accessQualifierResult: AccessQualifierResult): void {
+  if (decorators && decorators.length === 1 && decorators[0].getText() === COMPONENT_REQUIRE_DECORATOR) {
+    componentSet.regulars.add(propertyName);
+    recordRequire.hasRegular = true;
+    setPrivateCollection(componentSet, accessQualifierResult, propertyName, COMPONENT_NON_DECORATOR);
+  }
+}
+
+function checkRequire(name: string, componentSet: IComponentSet, recordRequire: RecordRequire): void {
+  if (recordRequire.hasRequire) {
+    setInitValue('hasProp', 'propData', name, componentSet, recordRequire);
+    setInitValue('hasBuilderParam', 'builderParamData', name, componentSet, recordRequire);
+    setInitValue('hasRegular', 'regularInit', name, componentSet, recordRequire);
+    setInitValue('hasState', 'stateInit', name, componentSet, recordRequire);
+    setInitValue('hasProvide', 'provideInit', name, componentSet, recordRequire);
+  }
+}
+
+function setInitValue(requirekey: string, initKey: string, name: string, componentSet: IComponentSet,
+  recordRequire: RecordRequire): void {
+  if (recordRequire[requirekey]) {
+    componentSet[initKey].add(name);
+  }
+}
+
+function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, decorator: string, name: string,
+  componentSet: IComponentSet, recordRequire: RecordRequire): void {
+  switch (decorator) {
+    case COMPONENT_STATE_DECORATOR:
+      componentSet.states.add(name);
+      recordRequire.hasState = true;
+      break;
+    case COMPONENT_LINK_DECORATOR:
+      componentSet.links.add(name);
+      break;
+    case COMPONENT_PROP_DECORATOR:
+      recordRequire.hasProp = true;
+      componentSet.props.add(name);
+      break;
+    case COMPONENT_STORAGE_PROP_DECORATOR:
+      componentSet.storageProps.add(name);
+      break;
+    case COMPONENT_STORAGE_LINK_DECORATOR:
+      componentSet.storageLinks.add(name);
+      break;
+    case COMPONENT_PROVIDE_DECORATOR:
+      recordRequire.hasProvide = true;
+      componentSet.provides.add(name);
+      break;
+    case COMPONENT_CONSUME_DECORATOR:
+      componentSet.consumes.add(name);
+      break;
+    case COMPONENT_OBJECT_LINK_DECORATOR:
+      componentSet.objectLinks.add(name);
+      break;
+    case COMPONENT_BUILDERPARAM_DECORATOR:
+      if (judgeInitializeInEntry) {
+        validateInitializeInEntry(node, name);
+      }
       recordRequire.hasBuilderParam = true;
-      builderParams.add(name);
+      componentSet.builderParams.add(name);
       break;
     case COMPONENT_LOCAL_STORAGE_LINK_DECORATOR :
-      collectionlocalStorageParam(node, name, localStorageLink);
+      collectionlocalStorageParam(node, name, componentSet.localStorageLink);
       break;
     case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
-      collectionlocalStorageParam(node, name, localStorageProp);
+      collectionlocalStorageParam(node, name, componentSet.localStorageProp);
       break;
     case COMPONENT_REQUIRE_DECORATOR:
       recordRequire.hasRequire = true;
       break;
   }
+}
+
+function validateInitializeInEntry(node: ts.Decorator, name: string): void {
+  transformLog.errors.push({
+    type: LogType.WARN,
+    message: `'${name}' should be initialized in @Entry Component`,
+    pos: node.getStart()
+  });
 }
 
 function collectionlocalStorageParam(node: ts.Decorator, name: string,
@@ -1293,6 +1386,10 @@ export function resetComponentCollection() {
   propCollection.clear();
   objectLinkCollection.clear();
   linkCollection.clear();
+  regularInitialization.clear();
+  stateInitialization.clear();
+  provideInitialization.clear();
+  privateCollection.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {

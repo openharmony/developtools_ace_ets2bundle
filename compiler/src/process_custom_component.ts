@@ -71,7 +71,11 @@ import {
   builderParamObjectCollection,
   getLocalStorageCollection,
   builderParamInitialization,
-  propInitialization
+  propInitialization,
+  regularInitialization,
+  stateInitialization,
+  provideInitialization,
+  privateCollection
 } from './validate_ui_syntax';
 import {
   curPropMap,
@@ -929,15 +933,33 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
   curChildProps: Set<string>, log: LogInfo[]): void {
   const mandatoryToInitViaParamSet: Set<string> = new Set([
     ...getCollectionSet(customComponentName, builderParamObjectCollection),
-    ...getCollectionSet(customComponentName, propCollection)]);
+    ...getCollectionSet(customComponentName, propCollection),
+    ...getCollectionSet(customComponentName, regularCollection),
+    ...getCollectionSet(customComponentName, stateCollection),
+    ...getCollectionSet(customComponentName, provideCollection)
+  ]);
   const decoratorVariable: Set<string> = new Set([
     ...(builderParamInitialization.get(customComponentName) || []),
-    ...(propInitialization.get(customComponentName) || [])]);
+    ...(propInitialization.get(customComponentName) || []),
+    ...(regularInitialization.get(customComponentName) || []),
+    ...(stateInitialization.get(customComponentName) || []),
+    ...(provideInitialization.get(customComponentName) || [])
+  ]);
   mandatoryToInitViaParamSet.forEach((item: string) => {
     if (item && !curChildProps.has(item) && decoratorVariable && decoratorVariable.has(item)) {
       log.push({
         type: LogType.ERROR,
         message: `Property '${item}' must be initialized through the component constructor.`,
+        pos: node.getStart()
+      });
+    }
+  });
+  const privateParamSet: Set<string> = privateCollection.get(customComponentName) || new Set([]);
+  curChildProps.forEach((item: string) => {
+    if (privateParamSet.has(item)) {
+      log.push({
+        type: LogType.WARN,
+        message: `Property '${item}' is private and can not be initialized through the component constructor.`,
         pos: node.getStart()
       });
     }
