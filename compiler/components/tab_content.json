@@ -1,6 +1,10 @@
 {
   "name": "TabContent",
   "parents": ["Tabs"],
-  "attrs": ["tabBar"],
+  "attrs": [
+    "tabBar",
+    "onWillShow",
+    "onWillHide"
+  ],
   "single": true
 }
