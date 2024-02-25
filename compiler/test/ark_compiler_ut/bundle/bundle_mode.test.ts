@@ -32,7 +32,7 @@ mocha.describe('test bundle_mode file api', function () {
     delete this.rollup;
   });
 
-  mocha.it('1-1: test error message of executeCompiler', function () {
+  mocha.it('1-1: test error message of executeArkCompiler', function () {
     this.rollup.build();
     const rollupBundleFileSet: Object = {
       'test.js': {
