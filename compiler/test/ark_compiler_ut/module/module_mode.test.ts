@@ -1017,7 +1017,7 @@ mocha.describe('test module_mode file api', function () {
     stub.restore();
   });
 
-  mocha.it('17-1: test the error message of invokeTs2AbcWorkersToGenAbc', function () {
+  mocha.it('17-1: test the error message of processTs2abcWorkersToGenAbc', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
     const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
