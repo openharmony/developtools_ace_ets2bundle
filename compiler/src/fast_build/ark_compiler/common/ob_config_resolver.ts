@@ -23,6 +23,7 @@ import {
   renameFileNameModule
 } from 'arkguard';
 import { nameCacheObj } from '../../../ark_utils';
+import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -217,7 +218,9 @@ export class ObConfigResolver {
       if (isFileExist(systemApiCachePath)) {
         this.getSystemApiConfigsByCache(selfConfig, systemApiCachePath);
       } else {
+        performancePrinter?.iniPrinter?.startEvent('  Scan system api');
         this.getSystemApiCache(selfConfig, systemApiCachePath);
+        performancePrinter?.iniPrinter?.endEvent('  Scan system api');
       }
     }
 

@@ -60,6 +60,7 @@ import {
 } from '../main';
 import { mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
+import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -360,7 +361,9 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
   if (projectConfig.arkObfuscator) {
+    performancePrinter?.filesPrinter?.startEvent(filePath);
     await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
+    performancePrinter?.filesPrinter?.endEvent(filePath, undefined, true);
     return;
   }
   mkdirsSync(path.dirname(filePath));

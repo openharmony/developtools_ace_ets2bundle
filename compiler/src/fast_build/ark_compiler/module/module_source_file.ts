@@ -51,6 +51,8 @@ import {
 import { readProjectAndLibsSource } from '../common/process_ark_config';
 import { allSourceFilePaths, collectAllFiles } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
+import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
+import { EventList } from 'arkguard/lib/utils/PrinterUtils';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -209,9 +211,12 @@ export class ModuleSourceFile {
     }
 
     collectAllFiles(undefined, rollupObject.getModuleIds());
+    performancePrinter?.iniPrinter?.startEvent('Scan source files');
     readProjectAndLibsSource(allSourceFilePaths, ModuleSourceFile.projectConfig.obfuscationMergedObConfig,
       ModuleSourceFile.projectConfig.arkObfuscator);
+    performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
+    performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     for (const source of ModuleSourceFile.sourceFiles) {
@@ -229,6 +234,9 @@ export class ModuleSourceFile {
     if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
       await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
     }
+    performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
+    performancePrinter?.timeSumPrinter?.print('Sum up time cost of processes');
+    performancePrinter?.timeSumPrinter?.summarizeEventDuration();
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&

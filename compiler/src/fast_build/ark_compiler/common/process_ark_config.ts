@@ -17,8 +17,12 @@ import path from 'path';
 import fs from 'fs';
 import {
   ArkObfuscator,
-  readProjectPropertiesByCollectedPaths
+  readProjectPropertiesByCollectedPaths,
+  performancePrinter
 } from "arkguard"
+import {
+  EventList
+} from 'arkguard/lib/utils/PrinterUtils'
 
 import {
   TS2ABC,
@@ -42,6 +46,16 @@ import {
   readNameCache,
 } from './ob_config_resolver';
 import type { MergedConfig } from './ob_config_resolver';
+export const printerConfig = {
+  //Print obfuscation time&memory usage of all files and obfuscation processes
+  mFilesPrinter: false,
+  //Print time&memory usage of a single file obfuscation in transform processes
+  mSingleFilePrinter: false,
+  //Print sum up time of transform processes during obfuscation
+  mSumPrinter: false,
+  //Output path of printer
+  mOutputPath: "" 
+};
 
 type ArkConfig = {
   arkRootPath: string;
@@ -144,7 +158,9 @@ export function initArkProjectConfig(share: Object): Object {
 
   if (projectConfig.compileHar || !isDebug(projectConfig))  {
     const logger: any = share.getLogger(OBFUSCATION_TOOL);
+    performancePrinter?.iniPrinter?.startEvent(EventList.OBFUSCATION_INITIALIZATION);
     initObfuscationConfig(projectConfig, arkProjectConfig, logger);
+    performancePrinter?.iniPrinter?.endEvent(EventList.OBFUSCATION_INITIALIZATION);
   }
   return arkProjectConfig;
 }
@@ -246,7 +262,8 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     mEnableSourceMap: true,
     mEnableNameCache: true,
     mRenameFileName: undefined,
-    mExportObfuscation: mergedObConfig.options.enableExportObfuscation
+    mExportObfuscation: mergedObConfig.options.enableExportObfuscation,
+    mPerformancePrinter: printerConfig
   }
 
   if (isHarCompiled) {
