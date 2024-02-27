@@ -319,8 +319,7 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = isDebug(this.projectConfig) ? toUnixPath(sourceFile) :
-      cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+    sourceFile = cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
@@ -339,11 +338,9 @@ export class ModuleMode extends CommonMode {
     let unusedFiles = [];
     let compileFileList: Set<string> = new Set();
     this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
-      if (!isDebug(this.projectConfig)) {
-        moduleId = moduleId.replace(this.projectConfig.projectRootPath, this.projectConfig.cachePath);
-        if (moduleId.endsWith(EXTNAME_ETS)) {
-          moduleId = changeFileExtension(moduleId, EXTNAME_TS);
-        }
+      moduleId = moduleId.replace(this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+      if (moduleId.endsWith(EXTNAME_ETS)) {
+        moduleId = changeFileExtension(moduleId, EXTNAME_TS);
       }
       compileFileList.add(toUnixPath(moduleId));
     })
@@ -758,9 +755,7 @@ export class ModuleMode extends CommonMode {
 
   private modifySourceMapKeyToCachePath(sourceMap: object): void {
     const projectConfig: object = this.projectConfig;
-    if (isDebug(projectConfig)) {
-      return;
-    }
+
     // modify source map keys to keep IDE tools right
     const relativeCachePath: string = toUnixPath(projectConfig.cachePath.replace(
       projectConfig.projectRootPath + path.sep, ''));

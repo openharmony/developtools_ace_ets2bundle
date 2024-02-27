@@ -126,7 +126,7 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
@@ -183,7 +183,7 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
@@ -212,7 +212,7 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
   });
