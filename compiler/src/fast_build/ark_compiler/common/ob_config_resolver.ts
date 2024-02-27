@@ -579,21 +579,21 @@ export function readNameCache(nameCachePath: string, logger: any): void {
 
 export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
   let writeContent: string = '';
-  let nameCacheCollection: Object = nameCacheObj;
-  nameCacheCollection["compileSdkVersion"] = sdkVersion;
+  let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object } = nameCacheObj;
+  nameCacheCollection.compileSdkVersion = sdkVersion;
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
     fillNameCache(renamePropertyModule.historyMangledTable, mergedPropertyNameCache);
     fillNameCache(renamePropertyModule.globalMangledTable, mergedPropertyNameCache);
-    nameCacheCollection["PropertyCache"] = Object.fromEntries(mergedPropertyNameCache);
+    nameCacheCollection.PropertyCache = Object.fromEntries(mergedPropertyNameCache);
   }
 
   if (enableFileNameObfuscation) {
     const mergedFileNameCache: Map<string, string> = new Map();
     fillNameCache(renameFileNameModule.historyFileNameMangledTable, mergedFileNameCache);
     fillNameCache(renameFileNameModule.globalFileNameMangledTable, mergedFileNameCache);
-    nameCacheCollection["FileNameCache"] = Object.fromEntries(mergedFileNameCache);
+    nameCacheCollection.FileNameCache = Object.fromEntries(mergedFileNameCache);
   }
 
   writeContent += JSON.stringify(nameCacheCollection, null, 2);
@@ -674,6 +674,7 @@ export function mangleFilePath(originalPath: string): string {
 export function resetObfuscation(): void {
   renamePropertyModule.globalMangledTable?.clear();
   renamePropertyModule.historyMangledTable?.clear();
+  renamePropertyModule.globalSwappedMangledTable?.clear();
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
