@@ -810,10 +810,10 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
   isCutomDialog: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, name, isBuilder, isGlobalBuilder, isCutomDialog);
+  return addCustomComponentId(newNode, node, name, isBuilder, isGlobalBuilder, isCutomDialog);
 }
 
-function addCustomComponentId(node: ts.NewExpression, componentName: string,
+function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
   const posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
@@ -825,10 +825,16 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
     let argumentsArray: ts.Expression[];
     if (node.arguments && node.arguments.length) {
       argumentsArray = Array.from(node.arguments);
+      if (partialUpdateConfig.partialUpdateMode && node.arguments.length === 1) {
+        manageLocalStorageComponents(oldNode, argumentsArray);
+      }
     }
     if (componentName === name) {
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
+        if (partialUpdateConfig.partialUpdateMode) {
+          argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
+        }  
       }
       if (!partialUpdateConfig.partialUpdateMode) {
         ++componentInfo.id;
@@ -839,23 +845,10 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
         argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
-        argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
-          isCutomDialog ? ts.factory.createPrefixUnaryExpression(
-            ts.SyntaxKind.MinusToken,
-            ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
-            createArrowFunctionNode(), ts.factory.createObjectLiteralExpression(
-            [
-              ts.factory.createPropertyAssignment(
-                ts.factory.createIdentifier('page'),
-                ts.factory.createStringLiteral(path.relative(process.cwd(), resourceFileName).replace(/\\/g, '/'))
-              ),
-              ts.factory.createPropertyAssignment(
-                ts.factory.createIdentifier('line'),
-                ts.factory.createNumericLiteral(line)
-              )
-            ],
-            false
-          ));
+        argumentsArray.push(isCutomDialog ? ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.MinusToken,
+          ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
+          createArrowFunctionNode(), componentParamRowAndColumn(line));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
@@ -865,6 +858,38 @@ function addCustomComponentId(node: ts.NewExpression, componentName: string,
     }
   });
   return node;
+}
+
+function manageLocalStorageComponents(node: ts.CallExpression, argumentsArray: ts.Expression[]): void {
+  if (isLocalStorageParameter(node)) {
+    argumentsArray.unshift(ts.factory.createObjectLiteralExpression([], false));
+  } else {
+    argumentsArray.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
+  }
+}
+
+export function isLocalStorageParameter(node: ts.CallExpression): boolean {
+  return globalProgram.checker && globalProgram.checker.getResolvedSignature &&
+    globalProgram.checker.getResolvedSignature(node) &&
+    globalProgram.checker.getResolvedSignature(node).parameters &&
+    globalProgram.checker.getResolvedSignature(node).parameters.length === 1 &&
+    globalProgram.checker.getResolvedSignature(node).parameters[0].escapedName === '##storage';
+}
+
+function componentParamRowAndColumn(line: number): ts.ObjectLiteralExpression {
+  return ts.factory.createObjectLiteralExpression(
+    [
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier('page'),
+        ts.factory.createStringLiteral(path.relative(process.cwd(), resourceFileName).replace(/\\/g, '/'))
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier('line'),
+        ts.factory.createNumericLiteral(line)
+      )
+    ],
+    false
+  );
 }
 
 function createArrowFunctionNode(): ts.ArrowFunction {
