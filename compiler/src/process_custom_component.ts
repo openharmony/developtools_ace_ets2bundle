@@ -232,15 +232,39 @@ function isToChange(item: ts.PropertyAssignment, name: string): boolean {
   return false;
 }
 
-function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ArrowFunction {
+function changeNodeFromCallToArrow(node: ts.CallExpression): ts.ConditionalExpression {
   let builderBindThis: ts.ExpressionStatement = ts.factory.createExpressionStatement(node);
   if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
     GLOBAL_CUSTOM_BUILDER_METHOD.has(node.expression.escapedText.toString())) {
     builderBindThis = transferBuilderCall(ts.factory.createExpressionStatement(node), node.expression.escapedText.toString());
   }
-  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    ts.factory.createBlock([builderBindThis], true));
+  return changeNodeFromCallToArrowDetermine(node, builderBindThis);
+}
+
+function changeNodeFromCallToArrowDetermine(node: ts.CallExpression, builderBindThis: ts.ExpressionStatement): ts.ConditionalExpression {
+  if (ts.isCallExpression(node)) {
+    return ts.factory.createConditionalExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(node),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+      node,
+      ts.factory.createToken(ts.SyntaxKind.ColonToken),
+      ts.factory.createArrowFunction(
+        undefined,
+        undefined,
+        [],
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock(
+          [builderBindThis],
+          true
+        )
+      )
+    );
+  }
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
