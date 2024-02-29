@@ -80,7 +80,8 @@ import {
 import {
   curPropMap,
   createViewCreate,
-  createCustomComponentNewExpression
+  createCustomComponentNewExpression,
+  isLocalStorageParameter
 } from './process_component_member';
 import {
   LogType,
@@ -410,7 +411,7 @@ export function assignComponentParams(componentNode: ts.CallExpression,
         ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
         ts.factory.createBlock(
           [ts.factory.createReturnStatement(
-            integrateParams ? componentNode.arguments[0] : ts.factory.createObjectLiteralExpression(
+            integrateParams ? paramsLambdaCallBack(componentNode) : ts.factory.createObjectLiteralExpression(
               reWriteComponentParams(keyArray, valueArray),
               true
             )
@@ -421,6 +422,15 @@ export function assignComponentParams(componentNode: ts.CallExpression,
     )],
     ts.NodeFlags.Let
     ));
+}
+
+function paramsLambdaCallBack(componentNode: ts.CallExpression): ts.Expression {
+  if (partialUpdateConfig.partialUpdateMode && componentNode.arguments.length === 1 &&
+    isLocalStorageParameter(componentNode)) {
+    return ts.factory.createObjectLiteralExpression([], true);
+  } else {
+    return componentNode.arguments[0];
+  }
 }
 
 function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): (ts.PropertyAssignment |
@@ -601,7 +611,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   const curChildProps: Set<string> = new Set([]);
   const nodeArguments: ts.NodeArray<ts.Expression> = node.arguments;
   const linkSet: Set<string> = getCollectionSet(name, linkCollection);
-  if (nodeArguments && nodeArguments.length === 1 &&
+  if (nodeArguments && nodeArguments.length >= 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
     nodeArgument.properties.forEach(item => {
