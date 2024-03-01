@@ -174,7 +174,7 @@ export function processUISyntax(program: ts.Program, ut = false,
               writeFileSyncByNode(processedNode, projectConfig);
             }
           }
-          return node;
+          return ts.visitEachChild(node, visitor, context);
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
@@ -201,7 +201,7 @@ export function processUISyntax(program: ts.Program, ut = false,
             writeFileSyncByNode(processedNode, projectConfig);
           }
         }
-        return node;
+        return ts.visitEachChild(node, visitor, context);
       } else {
         return node;
       }
@@ -364,6 +364,10 @@ export function processUISyntax(program: ts.Program, ut = false,
         return true;
       }
       return false;
+    }
+
+    function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
+      return ts.visitEachChild(node, visitor, context);
     }
   };
 }
