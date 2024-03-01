@@ -148,12 +148,12 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
-    'target': ts.ScriptTarget.ES2017,
+    'target': convertConfigTarget(compilerOptions.target),
     'baseUrl': basePath,
     'paths': {
       '*': allPath
     },
-    'lib': ['lib.es2020.d.ts'],
+    'lib': convertConfigLib(compilerOptions.lib),
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
@@ -174,6 +174,30 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
+}
+
+// Change target to enum's value，e.g: "es2021" => ts.ScriptTarget.ES2021
+function convertConfigTarget(target: number | string): number | string {
+  if ((typeof target === 'number') && (target in ts.ScriptTarget)) {
+    return target;
+  }
+  return ts.convertCompilerOptionsFromJson({ 'target': target }, '').options.target;
+}
+
+// Change lib to libMap's value，e.g: "es2021" => "lib.es2021.d.ts"
+function convertConfigLib(libs: string[]): string[] {
+  let converted: boolean = true;
+  let libMapValues: string[] = Array.from(ts.libMap.values());
+  for (let i = 0; i < libs.length; i++) {
+    if (!libMapValues.includes(libs[i])) {
+      converted = false;
+      break;
+    }
+  }
+  if (converted) {
+    return libs;
+  }
+  return ts.convertCompilerOptionsFromJson({ 'lib': compilerOptions.lib }, '').options.lib;
 }
 
 /**
@@ -457,10 +481,10 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
     }, null, 2));
   }
   if (projectConfig.compileHar || projectConfig.compileShared) {
-    let emit: string | undefined  = undefined;
-    let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean) => {
+    let emit: string | undefined = undefined;
+    let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean): void => {
       emit = text;
-    }
+    };
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
       if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {

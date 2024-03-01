@@ -798,11 +798,11 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "module": "es2020",
-    "target": "es2017",
+    "target": "es2021",
     "types": [],
     "typeRoots": [],
     "lib": [
-      "es2020"
+      "es2021"
     ],
     "alwaysStrict": true
   },
