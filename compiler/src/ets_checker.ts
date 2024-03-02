@@ -375,10 +375,15 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     }
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
   }
+
+  const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
+  timePrinterInstance.setArkTSTimePrintSwitch(false);
+  timePrinterInstance.appendTime(ts.TimePhase.START);
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
+  timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   collectAllFiles(globalProgram.program);
@@ -1100,6 +1105,9 @@ function runArkTSLinter(rollupShareObject?: Object): void {
     builderProgram: getReverseStrictBuilderProgram(rollupShareObject, globalProgram.program, wasStrict),
     wasStrict: !wasStrict
   };
+  const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
+  timePrinterInstance.appendTime(ts.TimePhase.GET_REVERSE_STRICT_BUILDER_PROGRAM)
+
   const arkTSLinterDiagnostics = doArkTSLinter(getArkTSVersion(),
     getArkTSLinterMode(),
     originProgram,
@@ -1112,7 +1120,10 @@ function runArkTSLinter(rollupShareObject?: Object): void {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
     });
+    timePrinterInstance.appendTime(ts.TimePhase.UPDATE_ERROR_FILE);
   }
+  timePrinterInstance.printTimes();
+  ts.ArkTSLinterTimePrinter.destroyInstance();
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
@@ -1224,9 +1235,13 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   }
   const filterFiles: string[] = filterInput(rootFileNames);
   languageService = createLanguageService(filterFiles, resolveModulePaths);
+  const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
+  timePrinterInstance.setArkTSTimePrintSwitch(false);
+  timePrinterInstance.appendTime(ts.TimePhase.START);
   globalProgram.builderProgram = languageService.getBuilderProgram();
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
+  timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   runArkTSLinter();
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
