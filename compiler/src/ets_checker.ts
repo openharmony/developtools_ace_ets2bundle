@@ -457,6 +457,10 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
     }, null, 2));
   }
   if (projectConfig.compileHar || projectConfig.compileShared) {
+    let emit: string | undefined  = undefined;
+    let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean) => {
+      emit = text;
+    }
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
       if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {
@@ -464,13 +468,13 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
               projectConfig);
           } else {
-            const emit: any = languageService.getEmitOutput(moduleFile, true, true);
-            if (emit.outputFiles[0]) {
-              generateSourceFilesInHar(moduleFile, emit.outputFiles[0].text, '.d' + path.extname(moduleFile),
-                projectConfig);
-            } else {
-              console.warn(this.yellow,
-                "ArkTS:WARN doesn't generate .d" + path.extname(moduleFile) + ' for ' + moduleFile, this.reset);
+            emit = undefined;
+            let sourcefile = globalProgram.program.getSourceFile(moduleFile);
+            if (sourcefile) {
+              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true);
+            }
+            if (emit) {
+              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig);
             }
           }
         } catch (err) { }
