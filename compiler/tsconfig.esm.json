@@ -122,6 +122,7 @@
         "Divider",
         "EffectComponent",
         "Ellipse",
+        "EmbeddedComponent",
         "Flex",
         "FormComponent",
         "Gauge",
@@ -327,6 +328,11 @@
             "name": "Ellipse",
             "type": "EllipseAttribute",
             "instance": "EllipseInstance"
+          },
+          {
+            "name": "EmbeddedComponent",
+            "type": "EmbeddedComponentAttribute",
+            "instance": "EmbeddedComponentInstance"
           },
           {
             "name": "Flex",
