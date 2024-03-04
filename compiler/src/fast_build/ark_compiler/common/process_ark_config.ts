@@ -256,7 +256,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mReservedToplevelNames: mergedObConfig.reservedGlobalNames,
     },
     mRemoveDeclarationComments: {
-      mEnable: true,
+      mEnable: mergedObConfig.options.removeComments,
       mReservedComments: mergedObConfig.keepComments
     },
     mEnableSourceMap: true,
