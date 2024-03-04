@@ -282,7 +282,6 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     uiProps: [],
     clearProps: function() {
       dollarCollection.clear();
-      decoratorParamsCollection.clear();
       extendCollection.clear();
       this.uiProps.length = 0;
     }
@@ -874,7 +873,6 @@ function getResolveModule(modulePath: string, type): ts.ResolvedModuleFull {
 }
 
 export const dollarCollection: Set<string> = new Set();
-export const decoratorParamsCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
@@ -886,7 +884,7 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
-      props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
+      props.push(...dollarCollection, ...extendCollection);
     }
   }
 }
@@ -915,9 +913,6 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
               const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
               if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
                 dollarCollection.add('$' + propertyName);
-              }
-              if (isDecoratorCollection(decorators[i], decoratorName)) {
-                decoratorParamsCollection.add(decorators[i].expression.arguments[0].getText());
               }
             }
           }
@@ -1054,14 +1049,6 @@ function isCanAddDoubleDollar(propertyName: string, parentComponentName: string)
   return PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(propertyName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propertyName);
-}
-
-function isDecoratorCollection(item: ts.Decorator, decoratorName: string): boolean {
-  return COMPONENT_DECORATORS_PARAMS.has(decoratorName) &&
-    // @ts-ignore
-    item.expression.arguments && item.expression.arguments.length &&
-    // @ts-ignore
-    ts.isIdentifier(item.expression.arguments[0]);
 }
 
 function processContent(source: string, id: string): string {
@@ -1271,7 +1258,6 @@ export function resetEtsCheck(): void {
   warnCheckerResult.count = 0;
   resolvedModulesCache.clear();
   dollarCollection.clear();
-  decoratorParamsCollection.clear();
   extendCollection.clear();
   allSourceFilePaths.clear();
   filesBuildInfo.clear();
