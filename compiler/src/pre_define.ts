@@ -586,6 +586,7 @@ export const COMPONENT_CALL: string = 'componentCall';
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
+export const WATCH_COMPILER_BUILD_INFO_SUFFIX = 'watchCompiler.tsbuildinfo';
 
 export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
   'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);;
