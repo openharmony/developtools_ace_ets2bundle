@@ -91,7 +91,8 @@ import {
   FINALIZE_CONSTRUCTION,
   PROTOTYPE,
   REFLECT,
-  CREATE_SET_METHOD
+  CREATE_SET_METHOD,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -418,6 +419,16 @@ function addIntoNewMembers(
   }
 }
 
+export function isRegularProperty(decorators: readonly ts.Decorator[]): boolean {
+  if (decorators && decorators.length) {
+    if (decorators.length === 1 && decorators[0].getText() === COMPONENT_REQUIRE_DECORATOR) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
+
 function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
   program: ts.Program, parentComponentName: string, log: LogInfo[]): void {
   const propertyItem: ts.PropertyDeclaration = item as ts.PropertyDeclaration;
@@ -425,7 +436,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
   let updatePropertyItem: ts.PropertyDeclaration;
   const type: ts.TypeNode = propertyItem.type;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyItem);
-  if (!decorators || decorators.length === 0) {
+  if (isRegularProperty(decorators)) {
     updatePropertyItem = createPropertyDeclaration(propertyItem, type, true);
     newMembers.push(updatePropertyItem);
   } else {
@@ -449,7 +460,7 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       if (!updatePropertyItem) {
         updatePropertyItem = newUpdatePropertyItem;
       } else if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName) &&
-        decoratorName !== COMPONENT_WATCH_DECORATOR) {
+        ![COMPONENT_WATCH_DECORATOR, COMPONENT_REQUIRE_DECORATOR].includes(decoratorName)) {
         updatePropertyItem = newUpdatePropertyItem;
       }
     }
@@ -797,10 +808,11 @@ function addDeleteParamsFunc(statements: ts.PropertyDeclaration[],
     const name: ts.Identifier = statement.name as ts.Identifier;
     let paramsStatement: ts.ExpressionStatement;
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(statement);
-    if (!partialUpdateConfig.partialUpdateMode || decorators && decorators.length !== 0) {
+    const isRegular: boolean = isRegularProperty(decorators);
+    if (!partialUpdateConfig.partialUpdateMode || !isRegular) {
       paramsStatement = createParamsWithUnderlineStatement(name);
     }
-    if (partialUpdateConfig.partialUpdateMode && decorators && decorators.length !== 0) {
+    if (partialUpdateConfig.partialUpdateMode && !isRegular) {
       updateStatements.push(createElmtIdWithUnderlineStatement(name));
     }
     deleteStatements.push(paramsStatement);
