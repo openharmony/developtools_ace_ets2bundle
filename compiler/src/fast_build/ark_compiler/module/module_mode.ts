@@ -91,6 +91,9 @@ import {
 import {
   NATIVE_MODULE
 } from '../../../pre_define';
+import {
+  sharedModuleSet
+} from '../check_shared_module';
 
 export class ModuleInfo {
   filePath: string;
@@ -454,7 +457,9 @@ export class ModuleMode extends CommonMode {
     let filesInfo: string = '';
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
-      filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName}\n`;
+      const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
+      filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
+        `${isSharedModule}\n`;
     });
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
