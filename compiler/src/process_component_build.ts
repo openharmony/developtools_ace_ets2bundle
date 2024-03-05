@@ -584,7 +584,8 @@ function traverseBuilderParams(node: ts.ObjectLiteralExpression,
         if (!storedFileInfo.processGlobalBuilder && property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword ||
           isBuilder && ts.isIdentifier(property.initializer.expression) &&
           property.initializer.expression.escapedText.toString() === $$) {
-          addProperties(properties, property, name, isBuilder);
+          const useThis: boolean = property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword;
+          addProperties(properties, property, name, isBuilder, useThis);
         } else {
           properties.push(ts.factory.createPropertyAssignment(
             property.name,
@@ -617,7 +618,7 @@ function traverseBuilderParams(node: ts.ObjectLiteralExpression,
 }
 
 function addProperties(properties: ts.ObjectLiteralElementLike[], property: ts.ObjectLiteralElementLike,
-  name: string, isBuilder: boolean): void {
+  name: string, isBuilder: boolean, useThis: boolean): void {
   properties.push(ts.factory.createPropertyAssignment(
     property.name,
     ts.factory.createArrowFunction(
@@ -628,17 +629,17 @@ function addProperties(properties: ts.ObjectLiteralElementLike[], property: ts.O
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
       ts.factory.createParenthesizedExpression(ts.factory.createConditionalExpression(
         ts.factory.createElementAccessExpression(
-          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          (isBuilder && !useThis) ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
           ts.factory.createStringLiteral('__' + name)
         ),
         ts.factory.createToken(ts.SyntaxKind.QuestionToken),
         ts.factory.createElementAccessExpression(
-          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          (isBuilder && !useThis) ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
           ts.factory.createStringLiteral('__' + name)
         ),
         ts.factory.createToken(ts.SyntaxKind.ColonToken),
         ts.factory.createElementAccessExpression(
-          isBuilder ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
+          (isBuilder && !useThis) ? ts.factory.createIdentifier($$) : ts.factory.createThis(),
           ts.factory.createStringLiteral(name)
         )
       ))
