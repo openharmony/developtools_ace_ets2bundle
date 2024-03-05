@@ -597,14 +597,6 @@ export function processBuildMember(node: ts.MethodDeclaration | ts.FunctionDecla
     if (isProperty(node)) {
       node = createReference(node as ts.PropertyAssignment, log, isBuilder);
     }
-    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
-      stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
-      ts.isPropertyAccessExpression(node.parent.expression) && node !== node.parent.expression &&
-      node.parent.expression.name.escapedText.toString() !== FOREACH_GET_RAW_OBJECT) {
-      return ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-        ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
-        ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
-    }
     return ts.visitEachChild(node, visitBuild, context);
   }
   function checkStateName(node: ts.PropertyAccessExpression): string {
