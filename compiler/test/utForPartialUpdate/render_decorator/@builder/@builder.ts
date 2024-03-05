@@ -263,7 +263,7 @@ class MyComponent extends ViewPU {
         Flex.pop();
     }
     deliver$$(parent = null) {
-        reveive$$.bind(this)(makeBuilderParameterProxy("reveive$$", { expProp: () => ($$["__hideBar"] ? $$["__hideBar"] : $$["hideBar"]) }));
+        reveive$$.bind(this)(makeBuilderParameterProxy("reveive$$", { expProp: () => (this["__hideBar"] ? this["__hideBar"] : this["hideBar"]) }));
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
