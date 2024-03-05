@@ -98,7 +98,8 @@ import {
 } from './utils';
 import {
   createReference,
-  isProperty
+  isProperty,
+  isRegularProperty
 } from './process_component_class';
 import { transformLog, resourceFileName } from './process_ui_syntax';
 import {
@@ -268,7 +269,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
-  if (!decorators || !decorators.length) {
+  if (isRegularProperty(decorators)) {
     if (!name.escapedText) {
       return updateResult;
     }
@@ -340,13 +341,15 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
   const propertyDecorators: string[] = [];
   for (let i = 0; i < decorators.length; i++) {
     const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
-    if (decoratorName !== COMPONENT_WATCH_DECORATOR) {
+    const includeWatchAndRequire: boolean =
+      [COMPONENT_WATCH_DECORATOR, COMPONENT_REQUIRE_DECORATOR].includes(decoratorName);
+    if (!includeWatchAndRequire) {
       curPropMap.set(name.escapedText.toString(), decoratorName);
     }
     if (BUILDIN_STYLE_NAMES.has(decoratorName.replace('@', ''))) {
       validateDuplicateDecorator(decorators[i], log);
     }
-    if (decoratorName !== COMPONENT_WATCH_DECORATOR && isForbiddenUseStateType(node.type)) {
+    if (!includeWatchAndRequire && isForbiddenUseStateType(node.type)) {
       // @ts-ignore
       validateForbiddenUseStateType(name, decoratorName, node.type.typeName.getText(), log);
       return;
