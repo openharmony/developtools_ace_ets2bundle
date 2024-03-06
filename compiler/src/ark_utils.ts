@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson, deleteLineInfoForNameString } from "arkguard"
+import { getMapFromJson, deleteLineInfoForNameString } from 'arkguard';
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -395,6 +395,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(filePath);
+  const packageDir = projectConfig.packageDir;
+  const projectRootPath= projectConfig.projectRootPath;
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
@@ -410,9 +412,11 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
-  let mixedInfo: {content: string, sourceMap?: Object, nameCache?: Object};
+  let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object };
+  let pathInfo: { packageDir: string, projectRootPath: string } = { packageDir, projectRootPath };
   try {
-    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap, historyNameCache, originalFilePath);
+    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
+                historyNameCache, originalFilePath, pathInfo);
   } catch {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file with arkguard: ${relativeSourceFilePath}`);
   }
@@ -436,13 +440,14 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
 export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: Object, originalFilePath: string): void {
   originalFilePath = toUnixPath(originalFilePath);
+  let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
   if (!genFileInHar) {
     genFileInHar = {sourcePath: originalFilePath};
     harFilesRecord.set(originalFilePath, genFileInHar);
   }
 
-  if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+  if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation && !isOhModule) {
     const mangledFilePath: string = mangleFilePath(filePath);
     if ((/\.d\.e?ts$/).test(filePath)) {
       genFileInHar.obfuscatedDeclarationCachePath = mangledFilePath;
