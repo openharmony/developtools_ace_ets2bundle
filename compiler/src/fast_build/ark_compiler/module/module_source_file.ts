@@ -209,7 +209,7 @@ export class ModuleSourceFile {
 
     collectAllFiles(undefined, rollupObject.getModuleIds());
     readProjectAndLibsSource(allSourceFilePaths, ModuleSourceFile.projectConfig.obfuscationMergedObConfig,
-      ModuleSourceFile.projectConfig.arkObfuscator);
+      ModuleSourceFile.projectConfig.arkObfuscator, ModuleSourceFile.projectConfig.compileHar);
 
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
