@@ -57,6 +57,7 @@ import {
   isDebug
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
+import { mangleFilePath } from '../common/ob_config_resolver';
 import { newSourceMaps } from '../transform';
 import {
   changeFileExtension,
@@ -300,13 +301,16 @@ export class ModuleMode extends CommonMode {
 
   private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string,
     metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
+    const isPackageModules = isPackageModulesFile(filePath, this.projectConfig);
+    // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
+    filePath = this.handleObfuscatedFilePath(filePath, isPackageModules);
     let namespace: string = metaInfo['moduleName'];
     let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
-    if (isPackageModulesFile(filePath, this.projectConfig)) {
+    if (isPackageModules) {
       packageName = this.getPkgModulesFilePkgName(metaInfo['pkgPath']);
     } else {
       packageName =
@@ -403,6 +407,20 @@ export class ModuleMode extends CommonMode {
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
+  }
+
+  private handleObfuscatedFilePath(filePath: string, isPackageModules: boolean) {
+    const isDebugMode = isDebug(this.projectConfig);
+    const hasObfuscationConfig = this.projectConfig.obfuscationMergedObConfig;
+    if (isPackageModules || isDebugMode || !hasObfuscationConfig) {
+      return filePath;
+    }
+    const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
+    const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
+    if (!disableObfuscation && enableFileNameObfuscation) {
+      return mangleFilePath(filePath);
+    }
+    return filePath;
   }
 
   private generateCompileFilesInfo() {

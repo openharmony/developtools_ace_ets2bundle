@@ -268,7 +268,7 @@ export class ObConfigResolver {
   static readonly KEEP_DTS = '-keep-dts';
   static readonly KEEP_GLOBAL_NAME = '-keep-global-name';
   static readonly KEEP_PROPERTY_NAME = '-keep-property-name';
-  static readonly KEPP_FILE_NAME = '-keep-file-name';
+  static readonly KEEP_FILE_NAME = '-keep-file-name';
   static readonly KEEP_COMMENTS = '-keep-comments';
   static readonly DISABLE_OBFUSCATION = '-disable-obfuscation';
   static readonly ENABLE_PROPERTY_OBFUSCATION = '-enable-property-obfuscation';
@@ -300,7 +300,7 @@ export class ObConfigResolver {
         return OptionType.KEEP_GLOBAL_NAME;
       case ObConfigResolver.KEEP_PROPERTY_NAME:
         return OptionType.KEEP_PROPERTY_NAME;
-      case ObConfigResolver.KEPP_FILE_NAME:
+      case ObConfigResolver.KEEP_FILE_NAME:
         return OptionType.KEEP_FILE_NAME;
       case ObConfigResolver.KEEP_COMMENTS:
         return OptionType.KEEP_COMMENTS;
@@ -678,8 +678,17 @@ export function generateConsumerObConfigFile(obfuscationOptions: any, logger: an
  * @param moduleJsonPath The 'srcEntry' filed in module.json5 needs to be reserved.
  * @returns reservedFileNames
  */
-export function collectResevedFileNameInIDEConfig(ohPackagePath: string, moduleJsonPath: string, projectPath: string, cachePath: string): string[] {
+export function collectResevedFileNameInIDEConfig(ohPackagePath: string, moduleJsonPath: string,
+                projectPath: string, cachePath: string, modulePathMap: Object | undefined): string[] {
   const reservedFileNames: string[] = [];
+
+  if (modulePathMap) {
+    //  modulePathMap: { packageName: path }
+    //  packageName of local har package should be reserved as it is a fixed part of ohmUrl.
+    for (const key of Object.keys(modulePathMap)) {
+      reservedFileNames.push(key);
+    }
+  }
   if (fs.existsSync(ohPackagePath)) {
     const ohPackageContent = JSON5.parse(fs.readFileSync(ohPackagePath, 'utf-8'));
     ohPackageContent.main && reservedFileNames.push(ohPackageContent.main);
