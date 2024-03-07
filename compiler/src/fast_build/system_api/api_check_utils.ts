@@ -275,6 +275,7 @@ export function isCardFile(file: string): boolean {
   return false;
 }
 
+const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig>> = new Map<string, Map<string, ts.JsDocNodeCheckConfig>>();
 /**
  * get tagName where need to be determined based on the file path
  *
@@ -283,6 +284,15 @@ export function isCardFile(file: string): boolean {
  * @returns {ts.JsDocNodeCheckConfig}
  */
 export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
+  let byFileName = jsDocNodeCheckConfigCache.get(fileName);
+  if (byFileName === undefined) {
+    byFileName = new Map<string, ts.JsDocNodeCheckConfig>();
+    jsDocNodeCheckConfigCache.set(fileName, byFileName)
+  }
+  let result = byFileName.get(sourceFileName);
+  if (result !== undefined) {
+    return result
+  }
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   const apiName: string = path.basename(fileName);
@@ -322,33 +332,12 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
         ts.DiagnosticCategory.Error, true));
     }
   }
-  return {
+  result = {
     nodeNeedCheck: needCheckResult,
     checkConfig: checkConfigArray
   };
-}
-
-/**
- * judge a jsdoc list tag, judge since is not less than {@link ATOMICSERVICE_TAG_CHECK_VERSION}
- *
- * @param {ts.JSDocTag[]} jsDocTags - jsdoc list
- * @param {ts.JsDocNodeCheckConfigItem} config
- * @returns {boolean}
- */
-export function checkAtomicserviceAPIVersion(jsDocTags: readonly ts.JSDocTag[],
-  config: ts.JsDocNodeCheckConfigItem): boolean {
-  let currentAPIVersion: number = 0;
-  for (let i = 0; i < jsDocTags.length; i++) {
-    const jsDocTag: ts.JSDocTag = jsDocTags[i];
-    if (jsDocTag.tagName.escapedText === SINCE_TAG_NAME) {
-      currentAPIVersion = jsDocTag.comment ? parseInt(jsDocTag.comment.toString()) : 0;
-      break;
-    }
-  }
-  if (currentAPIVersion < ATOMICSERVICE_TAG_CHECK_VERSION) {
-    return false;
-  }
-  return true;
+  byFileName.set(sourceFileName, result)
+  return result;
 }
 
 /**
