@@ -213,7 +213,7 @@ export class ModuleSourceFile {
     collectAllFiles(undefined, rollupObject.getModuleIds());
     performancePrinter?.iniPrinter?.startEvent('Scan source files');
     readProjectAndLibsSource(allSourceFilePaths, ModuleSourceFile.projectConfig.obfuscationMergedObConfig,
-      ModuleSourceFile.projectConfig.arkObfuscator);
+      ModuleSourceFile.projectConfig.arkObfuscator, ModuleSourceFile.projectConfig.compileHar);
     performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
     performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
