@@ -563,6 +563,8 @@ export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomi
 export const SINCE_TAG_NAME: string = 'since';
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
+export const SYSCAP_TAG_CHECK_NAME: string = 'syscap';
+export const SYSCAP_TAG_CHECK_WARNING: string = "The default system capabilities of devices $DT do not include system capability of '{0}'. Configure the capabilities in syscap.json. It may cause your application crush in some devices. Attention: Such illegal interface call will lead to compilation error in the future version!"
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
