@@ -70,7 +70,9 @@ import {
   ATOMICSERVICE_TAG_CHECK_VERSION,
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
-  FIND_MODULE_WARNING
+  FIND_MODULE_WARNING,
+  SYSCAP_TAG_CHECK_NAME,
+  SYSCAP_TAG_CHECK_WARNING,
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
@@ -188,7 +190,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     });
   }
   if (projectConfig.packageDir === 'oh_modules') {
-    Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
+    Object.assign(compilerOptions, { 'packageManagerType': 'ohpm' });
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
 }
@@ -212,13 +214,13 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
   }
   let buildInfoProgram: ProgramType = undefined;
   try {
-    const content: {program: ProgramType} = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
+    const content: { program: ProgramType } = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
     buildInfoProgram = content.program;
     if (!buildInfoProgram || !buildInfoProgram.fileNames || !buildInfoProgram.fileInfos) {
       throw new Error('.tsbuildinfo content is invalid');
     }
   } catch (err) {
-    fastBuildLogger.warn('\u001b[33m' + 'ArkTS: Failed to parse .tsbuildinfo file. Error message: '+ err.message.toString());
+    fastBuildLogger.warn('\u001b[33m' + 'ArkTS: Failed to parse .tsbuildinfo file. Error message: ' + err.message.toString());
     return;
   }
   const buildInfoDirectory: string = path.dirname(buildInfoPath);
@@ -251,19 +253,16 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: t
   };
 }
 
-function checkAtomicserviceAPIVersion(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
-  let currentAPIVersion: number = 0;
+function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  let currentSyscapValue: string = '';
   for (let i = 0; i < jsDocTags.length; i++) {
     const jsDocTag: ts.JSDocTag = jsDocTags[i];
-    if (jsDocTag.tagName.escapedText === SINCE_TAG_NAME) {
-      currentAPIVersion = jsDocTag.comment ? parseInt(jsDocTag.comment) : 0;
+    if (jsDocTag.tagName.escapedText.toString() === SYSCAP_TAG_CHECK_NAME) {
+      currentSyscapValue = jsDocTag.comment as string;
       break;
     }
   }
-  if (currentAPIVersion < ATOMICSERVICE_TAG_CHECK_VERSION) {
-    return false;
-  }
-  return true;
+  return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
 }
 
 function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
@@ -277,6 +276,7 @@ function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.J
   }
   if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, ts.DiagnosticCategory.Warning, false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage), ts.DiagnosticCategory.Warning, false, null, checkSyscapAbility));
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, ts.DiagnosticCategory.Error, true));
@@ -540,7 +540,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
     }, null, 2));
   }
   if (projectConfig.compileHar || projectConfig.compileShared) {
-    let emit: string | undefined  = undefined;
+    let emit: string | undefined = undefined;
     let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean) => {
       emit = text;
     }
