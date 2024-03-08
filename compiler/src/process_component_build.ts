@@ -2177,7 +2177,7 @@ function isPropertyAccessExpressionNode(node: ts.Node): boolean {
 function processBindPopupBuilder(node: ts.CallExpression): ts.CallExpression {
   const newArguments: ts.Expression[] = [];
   node.arguments.forEach((argument: ts.ObjectLiteralExpression, index: number) => {
-    if (index === 1) {
+    if (index === 1 && ts.isObjectLiteralExpression(argument)) {
       // @ts-ignore
       newArguments.push(processBindPopupBuilderProperty(argument));
     } else {
