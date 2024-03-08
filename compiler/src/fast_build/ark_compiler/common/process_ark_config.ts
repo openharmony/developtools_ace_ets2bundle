@@ -272,7 +272,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
   return arkObfuscator;
 }
 
-export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator): void {
+export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator, isHarCompiled: boolean): void {
   if (mergedObConfig?.options === undefined || mergedObConfig.options.disableObfuscation || allFiles.size === 0) {
     return;
   }
@@ -287,7 +287,7 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
         mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation
       },
       mExportObfuscation: obfOptions.enableExportObfuscation
-    }, true);
+    }, isHarCompiled);
   if (obfOptions.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
     arkObfuscator.addReservedProperties(projectAndLibs.projectAndLibsReservedProperties);
   }
