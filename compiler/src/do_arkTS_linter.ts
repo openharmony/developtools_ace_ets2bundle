@@ -26,6 +26,7 @@ import {
   resolveModuleNames,
   resolveTypeReferenceDirectives,
   fileHashScriptVersion,
+  LanguageServiceCache,
 } from './ets_checker';
 import { ARKTS_LINTER_BUILD_INFO_SUFFIX } from './pre_define';
 
@@ -208,9 +209,14 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
   wasStrict: boolean): ts.BuilderProgram {
   let cacheManagerKey: string = getRollupCacheStoreKey(projectConfig);
   let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'linter_service';
-  let service: ts.LanguageService | undefined =
+
+  let cache: LanguageServiceCache | undefined =
     rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).getCache(cacheServiceKey);
-  if (!service) {
+  let service: ts.LanguageService | undefined = cache?.service;
+  const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
+  const lastHash: string | undefined= cache?.pkgJsonFileHash;
+  const shouldRebuild: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
+  if (!service || shouldRebuild) {
     // Create language service for linter
     // Revert strict options for linter program
     const compilerOptions: ts.CompilerOptions = setCompilerOptions(originProgram, !wasStrict);
@@ -246,7 +252,8 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
   }
 
   service.updateRootFiles([...originProgram.getRootFileNames()]);
-  rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).setCache(cacheServiceKey, service);
+  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
+  rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).setCache(cacheServiceKey, newCache);
 
   return service.getBuilderProgram();
 }
