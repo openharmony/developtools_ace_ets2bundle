@@ -96,6 +96,11 @@ import {
   getRealModulePath
 } from './fast_build/system_api/api_check_utils';
 
+export interface LanguageServiceCache {
+  service?: ts.LanguageService;
+  pkgJsonFileHash?: string;
+}
+
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 
 export function readDeaclareFiles(): string[] {
@@ -300,9 +305,13 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
   clearRollupCacheStore(rollupShareObject?.cacheStoreManager, cacheStoreKey);
 
-  let service: ts.LanguageService | undefined =
+  let cache: LanguageServiceCache | undefined =
     rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).getCache(cacheServiceKey);
-  if (!service) {
+  let service: ts.LanguageService | undefined = cache?.service;
+  const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
+  const lastHash: string | undefined= cache?.pkgJsonFileHash;
+  const shouldRebuild: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
+  if (!service || shouldRebuild) {
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -310,7 +319,8 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service.updateRootFiles(updateRootFileNames);
   }
 
-  rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).setCache(cacheServiceKey, service);
+  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
+  rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).setCache(cacheServiceKey, newCache);
   return service;
 }
 
