@@ -726,6 +726,9 @@ class ProcessFileInfo {
   isFirstBuild: boolean = true;
   processForEach: number = 0;
   processLazyForEach: number = 0;
+  isAsPageImport: boolean = false;
+  overallObjectLinkCollection: Map<string, Set<string>> = new Map();
+  overallLinkCollection: Map<string, Set<string>> = new Map();
   lazyForEachInfo: {
     forEachParameters: ts.ParameterDeclaration,
     isDependItem: boolean
@@ -857,6 +860,7 @@ class ProcessFileInfo {
   clearCollectedInfo(cache) {
     this.buildStart = false;
     this.resourceTableChanged = false;
+    this.isAsPageImport = false;
     this.saveCacheFileInfo(cache);
     this.transformedFiles = new Set();
     this.cachedFiles = [];
