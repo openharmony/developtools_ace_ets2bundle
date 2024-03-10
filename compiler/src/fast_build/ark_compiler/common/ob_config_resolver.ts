@@ -16,14 +16,20 @@
 import fs from 'fs';
 import path from 'path';
 import JSON5 from 'json5';
+import * as ts from 'typescript';
 import {
+  ArkObfuscator,
   ApiExtractor,
   renamePropertyModule,
   getMapFromJson,
-  renameFileNameModule
+  renameFileNameModule,
+  FileUtils
 } from 'arkguard';
 import { nameCacheObj } from '../../../ark_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
+import { isWindows, toUnixPath } from '../../../utils';
+import { allSourceFilePaths } from '../../../ets_checker';
+import { yellow } from './ark_define';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -42,6 +48,7 @@ import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 
 enum OptionType {
   NONE,
+  KEEP,
   KEEP_DTS,
   KEEP_GLOBAL_NAME,
   KEEP_PROPERTY_NAME,
@@ -127,6 +134,7 @@ export class MergedConfig {
   reservedNames: string[] = [];
   reservedFileNames: string[] = [];
   keepComments: string[] = [];
+  keepSourceOfPaths: string[] = []; // The file path or folder path configured by the developer.
 
   merge(other: MergedConfig) {
     this.options.merge(other.options);
@@ -134,6 +142,7 @@ export class MergedConfig {
     this.reservedGlobalNames.push(...other.reservedGlobalNames);
     this.reservedFileNames.push(...other.reservedFileNames);
     this.keepComments.push(...other.keepComments);
+    this.keepSourceOfPaths.push(...other.keepSourceOfPaths);
   }
 
   sortAndDeduplicate() {
@@ -143,6 +152,7 @@ export class MergedConfig {
     this.reservedGlobalNames = sortAndDeduplicateStringArr(this.reservedGlobalNames);
     this.reservedFileNames = sortAndDeduplicateStringArr(this.reservedFileNames);
     this.keepComments = sortAndDeduplicateStringArr(this.keepComments);
+    this.keepSourceOfPaths = sortAndDeduplicateStringArr(this.keepSourceOfPaths);
   }
 
   serializeMergedConfig(): string {
@@ -254,6 +264,7 @@ export class ObConfigResolver {
   }
 
   // obfuscation options
+  static readonly KEEP = '-keep';
   static readonly KEEP_DTS = '-keep-dts';
   static readonly KEEP_GLOBAL_NAME = '-keep-global-name';
   static readonly KEEP_PROPERTY_NAME = '-keep-property-name';
@@ -315,6 +326,8 @@ export class ObConfigResolver {
         return OptionType.PRINT_NAMECACHE;
       case ObConfigResolver.APPLY_NAMECACHE:
         return OptionType.APPLY_NAMECACHE;
+      case ObConfigResolver.KEEP:
+        return OptionType.KEEP;
       default:
         return OptionType.NONE;
     }
@@ -331,6 +344,7 @@ export class ObConfigResolver {
     let type: OptionType = OptionType.NONE;
     let tokenType: OptionType;
     let dtsFilePaths: string[] = [];
+    let keepConfigs: string[] = [];
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       tokenType = this.getTokenType(token);
@@ -371,6 +385,7 @@ export class ObConfigResolver {
           configs.options.removeLog = true;
           continue;
         }
+        case OptionType.KEEP:
         case OptionType.KEEP_DTS:
         case OptionType.KEEP_GLOBAL_NAME:
         case OptionType.KEEP_PROPERTY_NAME:
@@ -386,6 +401,10 @@ export class ObConfigResolver {
       }
       // handle 'keep' options and 'namecache' options
       switch (type) {
+        case OptionType.KEEP: {
+          keepConfigs.push(token);
+          continue;
+        }
         case OptionType.KEEP_DTS: {
           dtsFilePaths.push(token);
           continue;
@@ -423,6 +442,7 @@ export class ObConfigResolver {
     }
 
     this.resolveDts(dtsFilePaths, configs);
+    this.resolveKeepConfig(keepConfigs, configs, configPath);
   }
 
   // get names in .d.ts files and add them into reserved list
@@ -438,6 +458,18 @@ export class ObConfigResolver {
       [...ApiExtractor.mPropertySet]
     );
     ApiExtractor.mPropertySet.clear();
+  }
+
+  private resolveKeepConfig(keepConfigs: string[], configs: MergedConfig, configPath: string): void {
+    for (let keepPath of keepConfigs) {
+      let tempAbsPath = FileUtils.getAbsPathBaseConfigPath(configPath, keepPath);
+      if (!fs.existsSync(tempAbsPath)) {
+        this.logger.warn(yellow + 'ArkTS: The path of obfuscation \'-keep\' configuration does not exist: ' + keepPath);
+        continue;
+      }
+      tempAbsPath = fs.realpathSync(tempAbsPath);
+      configs.keepSourceOfPaths.push(toUnixPath(tempAbsPath));
+    }
   }
 
   // the content from '#' to '\n' are comments
@@ -681,4 +713,80 @@ export function resetObfuscation(): void {
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
+}
+
+// Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
+function collectAllKeepFiles(startPaths: string[]): Set<string> {
+  const allKeepFiles: Set<string> = new Set();
+  const keepFolders: string[] = [];
+  startPaths.forEach(filePath => {
+    if (fs.statSync(filePath).isDirectory()) {
+      keepFolders.push(filePath);
+    } else {
+      allKeepFiles.add(filePath);
+    }
+  });
+  if (keepFolders.length === 0) {
+    return allKeepFiles;
+  }
+
+  allSourceFilePaths.forEach(filePath => {
+    if (keepFolders.some(folderPath => filePath.startsWith(folderPath))) {
+      allKeepFiles.add(filePath);
+    }
+  });
+  return allKeepFiles;
+}
+
+// Collect all keep files and then collect their dependency files.
+export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, projectRootPath: string,
+  arkObfuscator: ArkObfuscator) {
+  if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0 ) {
+    return new Set();
+  }
+  const keepPaths = mergedObConfig.keepSourceOfPaths;
+  let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths);
+  arkObfuscator.setKeepSourceOfPaths(allKeepFiles);
+  const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(resolvedModulesCache, mergedObConfig, allKeepFiles, projectRootPath);
+  return keepFilesAndDependencies;
+}
+
+/**
+ * Use tsc's dependency collection to collect the dependency files of the keep files.
+ * Risk: The files resolved by typescript are different from the files resolved by rollup. For example, the two entry files have different priorities. 
+ * Tsc looks for files in the types field in oh-packagek.json5 first, and rollup looks for files in the main field.
+ */
+function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, allKeepFiles: Set<string>,
+  projectRootPath: string): Set<string> {
+  const keepFilesAndDependencies: Set<string>  = new Set<string>();
+  if (!mergedObConfig.options.enableExportObfuscation) {
+    return keepFilesAndDependencies;
+  }
+  let stack: string[] = Array.from(allKeepFiles);
+  projectRootPath = toUnixPath(projectRootPath);
+  while (stack.length > 0) {
+    const filePath = stack.pop();
+    if (keepFilesAndDependencies.has(filePath)) {
+      continue;
+    }
+
+    keepFilesAndDependencies.add(filePath);
+    const resolvedModules = resolvedModulesCache[path.resolve(filePath)];
+    if (!resolvedModules) {
+      continue;
+    }
+
+    for (const resolvedModule of resolvedModules) {
+      // For `import moduleName form 'xx.so'`, when the xx.so cannot be resolved, resolvedModules is [null]
+      if (!resolvedModule) {
+        continue;
+      }
+      let tempPath = toUnixPath(resolvedModule.resolvedFileName)
+      // resolvedModule can record system API declaration files and ignore them.
+      if (tempPath.startsWith(projectRootPath)) {
+        stack.push(tempPath);
+      }
+    }
+  }
+  return keepFilesAndDependencies;
 }

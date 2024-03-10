@@ -263,7 +263,11 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     mEnableNameCache: true,
     mRenameFileName: undefined,
     mExportObfuscation: mergedObConfig.options.enableExportObfuscation,
-    mPerformancePrinter: printerConfig
+    mPerformancePrinter: printerConfig,
+    mKeepFileSourceCode: {
+      mKeepSourceOfPaths: new Set(),
+      mkeepFilesAndDependencies: new Set(),
+    }
   }
 
   if (isHarCompiled) {
@@ -289,7 +293,9 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
   return arkObfuscator;
 }
 
-export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator, isHarCompiled: boolean): void {
+// Scan the source code of project and libraries to collect whitelists.
+export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator, isHarCompiled: boolean,
+  keepFilesAndDependencies: Set<string>): void {
   if (mergedObConfig?.options === undefined || mergedObConfig.options.disableObfuscation || allFiles.size === 0) {
     return;
   }
@@ -303,7 +309,11 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
         mRenameProperties: obfOptions.enablePropertyObfuscation,
         mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation
       },
-      mExportObfuscation: obfOptions.enableExportObfuscation
+      mExportObfuscation: obfOptions.enableExportObfuscation,
+      mKeepFileSourceCode: {
+        mKeepSourceOfPaths: new Set(),
+        mkeepFilesAndDependencies: keepFilesAndDependencies,
+      }
     }, isHarCompiled);
   if (obfOptions.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
     arkObfuscator.addReservedProperties(projectAndLibs.projectAndLibsReservedProperties);
