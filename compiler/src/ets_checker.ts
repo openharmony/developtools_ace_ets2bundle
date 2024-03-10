@@ -649,7 +649,8 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
   return resolvedTypeReferenceCache;
 }
 
-const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
+// resolvedModulesCache records the files and their dependencies of program.
+export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   startTimeStatisticsLocation(resolveModuleNamesTime);

@@ -41,7 +41,11 @@ import {
   stopEvent
 } from '../../../ark_utils';
 import { newSourceMaps } from '../transform';
-import { writeObfuscationNameCache } from '../common/ob_config_resolver';
+import {
+  MergedConfig,
+  handleKeepFilesAndGetDependencies,
+  writeObfuscationNameCache
+} from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
   ESMODULE,
@@ -49,7 +53,7 @@ import {
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
 import { readProjectAndLibsSource } from '../common/process_ark_config';
-import { allSourceFilePaths, collectAllFiles } from '../../../ets_checker';
+import { allSourceFilePaths, collectAllFiles, resolvedModulesCache } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { EventList } from 'arkguard/lib/utils/PrinterUtils';
@@ -212,8 +216,12 @@ export class ModuleSourceFile {
 
     collectAllFiles(undefined, rollupObject.getModuleIds());
     performancePrinter?.iniPrinter?.startEvent('Scan source files');
-    readProjectAndLibsSource(allSourceFilePaths, ModuleSourceFile.projectConfig.obfuscationMergedObConfig,
-      ModuleSourceFile.projectConfig.arkObfuscator, ModuleSourceFile.projectConfig.compileHar);
+    // obfuscation initialization, include collect file, resolve denpendency, read source
+    const obfuscationConfig: MergedConfig = ModuleSourceFile.projectConfig.obfuscationMergedObConfig;
+    const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig, ModuleSourceFile.projectConfig.projectRootPath,
+      ModuleSourceFile.projectConfig.arkObfuscator);
+    readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, ModuleSourceFile.projectConfig.arkObfuscator,ModuleSourceFile.projectConfig.compileHar,
+      keepFilesAndDependencies);
     performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
     performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
