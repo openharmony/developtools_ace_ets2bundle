@@ -247,7 +247,7 @@ class TransitionExample extends View {
         Column.create();
         Context.animation({ duration: 1000 });
         Column.opacity(this.opacity1);
-        Column.backgroundColor(this.color);
+        Column.backgroundColor(ObservedObject.GetRawObject(this.color));
         Context.animation(null);
         Context.animation({ duration: 2000 });
         Column.width(this.width1);
