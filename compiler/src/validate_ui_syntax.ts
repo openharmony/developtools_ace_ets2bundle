@@ -574,6 +574,7 @@ function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
     case ts.SyntaxKind.StringKeyword:
     case ts.SyntaxKind.NumberKeyword:
     case ts.SyntaxKind.BooleanKeyword:
+    case ts.SyntaxKind.BigIntKeyword:
       return true;
     case ts.SyntaxKind.TypeReference: {
       if (globalProgram.checker) {
