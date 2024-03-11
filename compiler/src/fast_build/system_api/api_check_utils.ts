@@ -284,12 +284,12 @@ const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig
  * @returns {ts.JsDocNodeCheckConfig}
  */
 export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
-  let byFileName = jsDocNodeCheckConfigCache.get(fileName);
+  let byFileName: Map<string, ts.JsDocNodeCheckConfig> | undefined = jsDocNodeCheckConfigCache.get(fileName);
   if (byFileName === undefined) {
     byFileName = new Map<string, ts.JsDocNodeCheckConfig>();
     jsDocNodeCheckConfigCache.set(fileName, byFileName)
   }
-  let result = byFileName.get(sourceFileName);
+  let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
     return result
   }
@@ -340,6 +340,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   return result;
 }
 
+const arkuiDependenceMap: Map<string, boolean> = new Map<string, boolean>();
 /**
  * return a file path is Arkui path
  *
@@ -347,13 +348,16 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
  * @returns {boolean}
  */
 function isArkuiDependence(file: string): boolean {
+  let exists: boolean | undefined = arkuiDependenceMap.get(file);
+  if (exists !== undefined) {
+    return exists;
+  }
   const fileDir: string = path.dirname(file);
   const declarationsPath: string = path.resolve(__dirname, '../declarations').replace(/\\/g, '/');
   const componentPath: string = path.resolve(__dirname, '../../../component').replace(/\\/g, '/');
-  if (fileDir === declarationsPath || fileDir === componentPath) {
-    return true;
-  }
-  return false;
+  exists = fileDir === declarationsPath || fileDir === componentPath;
+  arkuiDependenceMap.set(file, exists);
+  return exists;
 }
 
 /**
@@ -361,7 +365,6 @@ function isArkuiDependence(file: string): boolean {
  *
  * @param {ts.Expression} moduleSpecifier - the moduleSpecifier of import
  * @param {LogInfo[]} log - log list
- * @returns {void}
  */
 export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: LogInfo[]): void {
   const moduleSpecifierStr: string = moduleSpecifier.getText().replace(/'|"/g, '');
