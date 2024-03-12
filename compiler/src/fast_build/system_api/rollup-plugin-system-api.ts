@@ -226,7 +226,7 @@ function compareKitModules(value: Set<string>, kitKey: string, kitValue: Map<str
   value.forEach((element: string) => {
     if (kitValue.get(element)) {
       kitValue.get(element).forEach((kitModuleRequest: string) => {
-        realModules.add(kitModuleRequest);
+        realModules.add(kitModuleRequest.replace(/\.d\.e?ts$/, ''));
       });
     } else {
       realModules.add(element);
