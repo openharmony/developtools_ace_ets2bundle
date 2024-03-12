@@ -1,11 +1,11 @@
 {
-  "entry/build/entry/src/main/entryability/EntryAbility.ts": {
+  "entry/build/entry/src/main/entryability/EntryAbility.js": {
     "file": "EntryAbility.ts",
     "sources": [
       "entry/src/main/entryability/EntryAbility.ts"
     ]
   },
-  "entry/build/entry/src/main/pages/Index.ts": {
+  "entry/build/entry/src/main/pages/Index.js": {
     "file": "Index.ets",
     "sources": [
       "entry/src/main/pages/Index.ets"
