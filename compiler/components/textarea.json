@@ -24,6 +24,12 @@
     "enableKeyboardOnFocus",
     "onTextSelectionChange",
     "onContentScroll",
-    "selectionMenuHidden"
+    "selectionMenuHidden",
+    "enterKeyType",
+    "onSubmit",
+    "barState",
+    "maxLines",
+    "customKeyboard",
+    "type"
   ]
 }
