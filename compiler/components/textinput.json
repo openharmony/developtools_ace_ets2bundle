@@ -35,6 +35,14 @@
     "selectAll",
     "showCounter",
     "cancelButton",
-    "showPasswordIcon"
+    "showPasswordIcon",
+    "textAlign",
+    "caretStyle",
+    "caretPosition",
+    "barState",
+    "maxLines",
+    "customKeyboard",
+    "enableAutoFill",
+    "passwordRules"
   ]
 }
