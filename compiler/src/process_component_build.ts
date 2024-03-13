@@ -691,10 +691,14 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
   let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
   if (argumentsArray && !argumentsArray.length) {
     argumentsArray = [ts.factory.createObjectLiteralExpression([newPropertyAssignment], true)];
-  } else if (ts.isObjectLiteralExpression(argumentsArray[0])) {
-    argumentsArray.splice(0, 1, ts.factory.createObjectLiteralExpression(
+  } else if (ts.isObjectLiteralExpression(argumentsArray[0]) && argumentsArray.length === 1) {
+    argumentsArray = [ts.factory.createObjectLiteralExpression(
       // @ts-ignore
-      node.expression.arguments[0].properties.concat([newPropertyAssignment]), true));
+      node.expression.arguments[0].properties.concat([newPropertyAssignment]), true)];
+  } else if (ts.isObjectLiteralExpression(argumentsArray[0]) && argumentsArray.length === 2) {
+    argumentsArray = [ts.factory.createObjectLiteralExpression(
+      // @ts-ignore
+      node.expression.arguments[0].properties.concat([newPropertyAssignment]), true), argumentsArray[1]];
   }
   const callNode: ts.CallExpression = ts.factory.updateCallExpression(
     // @ts-ignore
