@@ -24,6 +24,7 @@ import cluster from 'cluster';
 
 import { toUnixPath } from '../../../lib/utils';
 import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
+import { shouldETSOrTSFileTransformToJS } from '../../../lib/fast_build/ark_compiler/utils';
 import {
   RELEASE,
   DEBUG,
@@ -49,7 +50,13 @@ import {
   PKG_MODULES,
   ENTRY_MODULE_NAME_DEFAULT,
   TEST,
-  NEWFILE
+  NEWFILE,
+  INDEX_SOURCE_PATH,
+  INDEX_JS_CACHE_PATH,
+  INDEX_TS_CACHE_PATH,
+  ENTRYABILITY_SOURCE_PATH,
+  ENTRYABILITY_JS_CACHE_PATH,
+  ENTRYABILITY_TS_CACHE_PATH
 } from '../mock/rollup_mock/common';
 import projectConfig from '../utils/processProjectConfig';
 import {
@@ -416,6 +423,31 @@ mocha.describe('test module_mode file api', function () {
       delete newSourceMaps[key];
     }
   });
+
+  mocha.it('3-5: test updateCachedSourceMaps when ets(ts) file is transformed to js file', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.cacheSourceMapPath = '';
+    newSourceMaps[INDEX_SOURCE_PATH] = {};
+    moduleMode.updateCachedSourceMapsMock();
+    let moduleId: string = moduleMode.projectConfig.projectRootPath + path.sep + INDEX_SOURCE_PATH;
+    if (shouldETSOrTSFileTransformToJS(moduleId, moduleMode.projectConfig)) {
+      expect(INDEX_JS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+    } else {
+      expect(INDEX_TS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+    }
+    newSourceMaps[ENTRYABILITY_SOURCE_PATH] = {};
+    moduleMode.updateCachedSourceMapsMock();
+    moduleId = moduleMode.projectConfig.projectRootPath + path.sep + ENTRYABILITY_SOURCE_PATH;
+    if (shouldETSOrTSFileTransformToJS(moduleId, moduleMode.projectConfig)) {
+      expect(ENTRYABILITY_JS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+    } else {
+      expect(ENTRYABILITY_TS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+    }
+    for (const key of Object.keys(newSourceMaps)) {
+      delete newSourceMaps[key];
+    }
+  })
 
   mocha.it('4-1: test generateCompileFilesInfo under build debug', function () {
     this.rollup.build();

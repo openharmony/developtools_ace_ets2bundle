@@ -338,9 +338,10 @@ export class ModuleMode extends CommonMode {
     let unusedFiles = [];
     let compileFileList: Set<string> = new Set();
     this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
+      const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
       moduleId = moduleId.replace(this.projectConfig.projectRootPath, this.projectConfig.cachePath);
-      if (moduleId.endsWith(EXTNAME_ETS)) {
-        moduleId = changeFileExtension(moduleId, EXTNAME_TS);
+      if (moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_TS)) {
+        moduleId = changeFileExtension(moduleId, extName);
       }
       compileFileList.add(toUnixPath(moduleId));
     })
@@ -761,8 +762,10 @@ export class ModuleMode extends CommonMode {
       projectConfig.projectRootPath + path.sep, ''));
     Object.keys(sourceMap).forEach(key => {
       let newKey: string = relativeCachePath + '/' + key;
-      if (newKey.endsWith(EXTNAME_ETS)) {
-        newKey = changeFileExtension(newKey, EXTNAME_TS);
+      if (!newKey.endsWith(EXTNAME_JS)) {
+        const moduleId: string = this.projectConfig.projectRootPath + path.sep + key;
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
+        newKey = changeFileExtension(newKey, extName);
       }
       sourceMap[newKey] = sourceMap[key];
       delete sourceMap[key];
