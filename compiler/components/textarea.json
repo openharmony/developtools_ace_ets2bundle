@@ -29,6 +29,7 @@
     "onSubmit",
     "barState",
     "maxLines",
+    "wordBreak",
     "customKeyboard",
     "type"
   ]
