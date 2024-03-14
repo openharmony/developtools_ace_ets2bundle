@@ -41,6 +41,7 @@
     "caretPosition",
     "barState",
     "maxLines",
+    "wordBreak",
     "customKeyboard",
     "enableAutoFill",
     "passwordRules"
