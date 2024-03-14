@@ -57,7 +57,6 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
   temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  mkdirsSync(path.dirname(temporaryFile));
   let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
@@ -73,6 +72,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     stopEvent(eventWriteObfuscatedSourceCode);
     return;
   }
+  mkdirsSync(path.dirname(temporaryFile));
   fs.writeFileSync(temporaryFile, mixedInfo.content);
   stopEvent(eventWriteFileSyncByNode);
 }
