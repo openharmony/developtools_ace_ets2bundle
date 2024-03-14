@@ -43,7 +43,7 @@ function expectActual(name: string, filePath: string) {
   validateUISyntax(source, afterProcess, `${name}.ts`);
   const result: ts.TranspileOutput = ts.transpileModule(afterProcess, {
     compilerOptions: {
-      "target": ts.ScriptTarget.ES2017
+      "target": ts.ScriptTarget.ES2021
     },
     fileName: `${name}.ts`,
     transformers: { before: [processUISyntax(null, true)] }
