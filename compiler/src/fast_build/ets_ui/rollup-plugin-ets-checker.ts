@@ -44,9 +44,6 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
-      if (projectConfig.useArkoala) {
-        return;
-      }
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
