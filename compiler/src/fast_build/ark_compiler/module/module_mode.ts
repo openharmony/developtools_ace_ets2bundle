@@ -343,11 +343,11 @@ export class ModuleMode extends CommonMode {
     let compileFileList: Set<string> = new Set();
     this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
       const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
-      moduleId = moduleId.replace(this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+      moduleId = toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath));
       if (moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_TS)) {
         moduleId = changeFileExtension(moduleId, extName);
       }
-      compileFileList.add(toUnixPath(moduleId));
+      compileFileList.add(moduleId);
     })
 
     Object.keys(this.cacheSourceMapObject).forEach(key => {
@@ -410,18 +410,23 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
   }
 
-  private handleObfuscatedFilePath(filePath: string, isPackageModules: boolean) {
+  private handleObfuscatedFilePath(filePath: string, isPackageModules: boolean): string {
     const isDebugMode = isDebug(this.projectConfig);
     const hasObfuscationConfig = this.projectConfig.obfuscationMergedObConfig;
-    if (isPackageModules || isDebugMode || !hasObfuscationConfig) {
+    if (isDebugMode || !hasObfuscationConfig) {
       return filePath;
     }
     const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
     const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
-    if (!disableObfuscation && enableFileNameObfuscation) {
+    if (disableObfuscation || !enableFileNameObfuscation) {
+      return filePath;
+    }
+    // Do not obfuscate the file path in dir oh_modules.
+    if (!isPackageModules) {
       return mangleFilePath(filePath);
     }
-    return filePath;
+    // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
+    return toUnixPath(filePath);
   }
 
   private generateCompileFilesInfo() {
@@ -785,6 +790,8 @@ export class ModuleMode extends CommonMode {
         const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
         newKey = changeFileExtension(newKey, extName);
       }
+      const isOhModules = key.startsWith('oh_modules');
+      newKey = this.handleObfuscatedFilePath(newKey, isOhModules);
       sourceMap[newKey] = sourceMap[key];
       delete sourceMap[key];
     });
