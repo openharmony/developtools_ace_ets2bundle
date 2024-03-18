@@ -978,6 +978,32 @@ function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration
   return node;
 }
 
+function transformQuestionToken(node: ts.PropertyDeclaration): ts.PropertyDeclaration {
+  let updatedTypeNode: ts.TypeNode = node.type;
+
+  if (ts.isUnionTypeNode(updatedTypeNode)) {
+    if (!updatedTypeNode.types.find(type => type.kind == ts.SyntaxKind.UndefinedKeyword)) {
+      updatedTypeNode = ts.factory.createUnionTypeNode([
+        ...updatedTypeNode.types,
+        ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
+      ])
+    }
+  } else {
+    updatedTypeNode = ts.factory.createUnionTypeNode([
+      updatedTypeNode,
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
+    ])
+  }
+
+  return ts.factory.createPropertyDeclaration(
+    node.modifiers,
+    node.name,
+    undefined,
+    updatedTypeNode,
+    node.initializer? node.initializer : ts.factory.createIdentifier("undefined")
+  )
+}
+
 function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
   let hasConstructor = false;
   let updatedMembers: ts.NodeArray<ts.ClassElement> = node.members;
@@ -991,6 +1017,13 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
   );
 
   for (const member of node.members) {
+    if (ts.isPropertyDeclaration(member) && member.questionToken) {
+      const propertyDecl: ts.PropertyDeclaration = member as ts.PropertyDeclaration;
+      const updatedPropertyDecl: ts.PropertyDeclaration = transformQuestionToken(member);
+      updatedMembers = ts.factory.createNodeArray(
+        updatedMembers.map(member => (member === propertyDecl? updatedPropertyDecl : member))
+      );
+    }
     if (ts.isConstructorDeclaration(member)) {
       hasConstructor = true;
       const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
@@ -1000,13 +1033,15 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
         ...constructor.body.statements
       ];
 
-      const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(constructor, constructor.modifiers,
-        constructor.parameters, ts.factory.updateBlock(constructor.body, statementArray));
+      const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
+        constructor,
+        constructor.modifiers,
+        constructor.parameters,
+        ts.factory.updateBlock(constructor.body, statementArray));
 
       updatedMembers = ts.factory.createNodeArray(
         updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
       );
-      break;
     }
   }
 
