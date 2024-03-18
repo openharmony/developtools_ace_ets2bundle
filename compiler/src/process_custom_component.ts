@@ -390,24 +390,6 @@ function componentPop(name: string): ts.ObjectLiteralExpression {
   );
 }
 
-function assignRecycleParams(): ts.IfStatement {
-  return ts.factory.createIfStatement(
-    ts.factory.createIdentifier(RECYCLE_NODE),
-    ts.factory.createBlock(
-      [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createIdentifier(RECYCLE_NODE),
-          ts.factory.createIdentifier(COMPONENT_PARAMS_FUNCTION)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-        ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION)
-      ))],
-      true
-    ),
-    undefined
-  );
-}
-
 export function assignComponentParams(componentNode: ts.CallExpression,
   isBuilder: boolean = false): ts.VariableStatement {
   const isParamsLambda: boolean = true;
@@ -483,11 +465,10 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
-      [ componentParamDetachment(newNode),
+      [ componentParamDetachment(newNode, isRecycleComponent),
         isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
           createNewComponent(COMPONENT_CALL),
         assignComponentParams(componentNode, isBuilder),
-        isRecycleComponent ? assignRecycleParams() : undefined,
         assignmentFunction(COMPONENT_CALL)
       ], true),
     ts.factory.createBlock(
@@ -511,7 +492,7 @@ export function assignmentFunction(componeParamName: string): ts.ExpressionState
   ))
 }
 
-function componentParamDetachment(newNode: ts.NewExpression): ts.VariableStatement {
+function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent: boolean): ts.VariableStatement {
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
@@ -519,7 +500,12 @@ function componentParamDetachment(newNode: ts.NewExpression): ts.VariableStateme
         ts.factory.createIdentifier(COMPONENT_CALL),
         undefined,
         undefined,
-        newNode
+        isRecycleComponent ? ts.factory.createConditionalExpression(
+          ts.factory.createIdentifier(RECYCLE_NODE),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createIdentifier(RECYCLE_NODE),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken),
+          newNode) : newNode
       )],
       ts.NodeFlags.Let
     ));
@@ -557,13 +543,7 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
         ts.factory.createIdentifier(COMPONENT_CREATE_RECYCLE)
       ), undefined,
       [
-        ts.factory.createConditionalExpression(
-          ts.factory.createIdentifier(RECYCLE_NODE),
-          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-          ts.factory.createIdentifier(RECYCLE_NODE),
-          ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          ts.factory.createIdentifier(COMPONENT_CALL)
-        ),
+        ts.factory.createIdentifier(COMPONENT_CALL),
         ts.factory.createBinaryExpression(
           ts.factory.createIdentifier(RECYCLE_NODE),
           ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
