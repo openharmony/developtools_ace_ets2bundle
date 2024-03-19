@@ -16,7 +16,10 @@
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
-import { projectConfig } from '../main';
+import {
+  globalProgram,
+  projectConfig
+} from '../main';
 import {
   toUnixPath,
   getRollupCacheStoreKey,
@@ -214,8 +217,13 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
     rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).getCache(cacheServiceKey);
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
-  const lastHash: string | undefined= cache?.pkgJsonFileHash;
-  const shouldRebuild: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
+  const lastHash: string | undefined = cache?.pkgJsonFileHash;
+  // It's not supported to modify oh-package.json5 file under watch mode, so there is no need to rebuild here
+  const shouldRebuild: boolean | undefined = (process.env.watchMode === 'true') ?
+                                              false : (currentHash && lastHash && currentHash !== lastHash);
+  if (!service && process.env.watchMode === 'true') {
+    service = globalProgram.strictLanguageService;
+  }
   if (!service || shouldRebuild) {
     // Create language service for linter
     // Revert strict options for linter program
@@ -254,6 +262,9 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
   service.updateRootFiles([...originProgram.getRootFileNames()]);
   const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
   rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).setCache(cacheServiceKey, newCache);
+  if (process.env.watchMode === 'true') {
+    globalProgram.strictLanguageService = service;
+  }
 
   return service.getBuilderProgram();
 }
