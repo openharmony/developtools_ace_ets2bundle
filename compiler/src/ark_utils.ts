@@ -72,6 +72,33 @@ export const SRC_MAIN: string = 'src/main';
 export var newSourceMaps: Object = {};
 export var nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
+export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
+  pkgName?: string, pkgPath?: string, importerFile?: string, isRecordName: boolean = false): string {
+  // remove '\x00' from the rollup virtual commonjs file's filePath
+  if (filePath.startsWith('\x00')) {
+    filePath = filePath.replace('\x00', '');
+  }
+  let unixFilePath: string = toUnixPath(filePath);
+  unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
+  let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
+  const pkgContextInfo = projectConfig.pkgContextInfo;
+  if (projectFilePath === '') {
+      projectFilePath = `/${pkgContextInfo.entryPath}`;
+      projectFilePath = projectFilePath.substring(0, filePath.lastIndexOf('.'));
+  }
+  let pkgInfo = pkgContextInfo[pkgName];
+  if (pkgInfo === undefined) {
+    logger.error(red,
+      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
+      `Please check whether the module which ${filePath} belongs to is correctly configured ` +
+      `and the corresponding file name is correct(including case-sensitivity)`, reset);
+  }
+  let recordName = `${pkgInfo.bundleName}&${pkgName}${projectFilePath}&${pkgInfo.version}`;
+  if (isRecordName) {
+    return recordName;
+  }
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` + recordName;
+}
 
 export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string, importerFile?: string): string {
   // remove '\x00' from the rollup virtual commonjs file's filePath
@@ -153,8 +180,8 @@ function processPackageDir(params: Object): string {
 
       logger.error(red,
         `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
-        `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
-        `and the corresponding file name matches (case sensitive)`, reset);
+        `Please check whether the module which ${originalFilePath} belongs to is correctly configured ` +
+        `and the corresponding file name is correct(including case-sensitivity)`, reset);
       return originalFilePath;
     }
 
@@ -186,14 +213,14 @@ function processPackageDir(params: Object): string {
 
   logger.error(red,
     `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
-    `Please check whether the module which ${originalFilePath} belongs to is correctly configured` +
-    `and the corresponding file name matches (case sensitive)`, reset);
+    `Please check whether the module which ${originalFilePath} belongs to is correctly configured ` +
+    `and the corresponding file name is correct(including case-sensitivity)`, reset);
   return originalFilePath;
 }
 
 
-export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
-{
+export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object,
+  useNormalizedOHMUrl: boolean = false) : string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
@@ -219,6 +246,12 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
     });
   }
   if (REG_LIB_SO.test(moduleRequest.trim())) {
+    if (useNormalizedOHMUrl) {
+      const pkgContextInfo = config.pkgContextInfo;
+      const pkgInfo = pkgContextInfo[moduleRequest];
+      return `@normalized:${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` +
+             `${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
+    }
     return moduleRequest.replace(REG_LIB_SO, (_, libsoKey) => {
       return `@app:${projectConfig.bundleName}/${projectConfig.moduleName}/${libsoKey}`;
     });
@@ -281,21 +314,52 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   });
 }
 
-export function getOhmUrlByHarName(moduleRequest: string, projectConfig: Object): string | undefined {
+function removeSuffix(filePath: string) {
+  const typeExts = ['.d.ets', '.d.ts','.ets', '.ts'];
+  const mainName = filePath.split(path.sep).join('/');
+  const ext: string | undefined = typeExts.find(ext => mainName.endsWith(ext));
+  return ext ? mainName.substring(0, mainName.lastIndexOf(ext)) : mainName;
+}
+
+export function getNormalizedOhmUrlByHspName(pkgName: string, projectConfig: Object,
+  logger?: Object, filePath?: string) {
+  const pkgContextInfo = projectConfig.pkgContextInfo;
+  let pkgInfo = pkgContextInfo[pkgName];
+  if (pkgInfo === undefined) {
+    logger.error(red, `ArkTS:INTERNAL ERROR: Not to found the package: ${pkgName}`, reset);
+  }
+  let normalizedPath = filePath;
+  if (normalizedPath === undefined) {
+    normalizedPath = `${pkgName}/${toUnixPath(pkgInfo.entryPath)}`;
+    normalizedPath = removeSuffix(normalizedPath);
+  }
+  return `@normalized:${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` +
+         `${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
+}
+
+export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object, logger?: Object,
+  useNormalizedOHMUrl: boolean = false): string | undefined {
+  // The harNameOhmMap store the old ohmurl with hsp package.
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
+      if(useNormalizedOHMUrl) {
+        return getNormalizedOhmUrlByHspName(moduleRequest, projectConfig);
+      }
       return projectConfig.harNameOhmMap[moduleRequest];
     }
     // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
-    for (const harName in projectConfig.harNameOhmMap) {
-      if (moduleRequest.startsWith(harName + '/')) {
-        const idx: number = projectConfig.harNameOhmMap[harName].split('/', 2).join('/').length;
-        const harOhmName: string = projectConfig.harNameOhmMap[harName].substring(0, idx);
-        if (moduleRequest.indexOf(harName + '/' + SRC_MAIN) === 0) {
-          return moduleRequest.replace(harName + '/' + SRC_MAIN, harOhmName);
+    for (const hspName in projectConfig.harNameOhmMap) {
+      if (moduleRequest.startsWith(hspName + '/')) {
+        if(useNormalizedOHMUrl) {
+          return getNormalizedOhmUrlByHspName(hspName, projectConfig, logger, moduleRequest);
+        }
+        const idx: number = projectConfig.harNameOhmMap[hspName].split('/', 2).join('/').length;
+        const hspOhmName: string = projectConfig.harNameOhmMap[hspName].substring(0, idx);
+        if (moduleRequest.indexOf(hspName + '/' + SRC_MAIN) === 0) {
+          return moduleRequest.replace(hspName + '/' + SRC_MAIN, hspOhmName);
         } else {
-          return moduleRequest.replace(harName, harOhmName);
+          return moduleRequest.replace(hspName, hspOhmName);
         }
       }
     }
@@ -304,10 +368,10 @@ export function getOhmUrlByHarName(moduleRequest: string, projectConfig: Object)
 }
 
 function replaceHarDependency(item:string, moduleRequest: string, projectConfig: Object): string {
-  const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, projectConfig);
-  if (harOhmUrl !== undefined) {
+  const hspOhmUrl: string | undefined = getOhmUrlByHspName(moduleRequest, projectConfig);
+  if (hspOhmUrl !== undefined) {
     return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
-      return quotation + harOhmUrl + quotation;
+      return quotation + hspOhmUrl + quotation;
     });
   }
   return item;

@@ -75,8 +75,9 @@ import {
 } from '../../../utils';
 import {
   getPackageInfo,
+  getNormalizedOhmUrlByFilepath,
   getOhmUrlByFilepath,
-  getOhmUrlByHarName,
+  getOhmUrlByHspName,
   isTs2Abc,
   isEs2Abc,
   createAndStartEvent,
@@ -203,7 +204,8 @@ export class ModuleMode extends CommonMode {
           this.updatePkgEntryInfos(pkgEntryInfos, pkgName, ohmurl);
           continue;
         }
-        let hspOhmurl: string | undefined = getOhmUrlByHarName(pkgName, this.projectConfig);
+        let hspOhmurl: string | undefined = getOhmUrlByHspName(pkgName, this.projectConfig, this.logger,
+          this.useNormalizedOHMUrl);
         if (hspOhmurl !== undefined) {
           hspOhmurl = hspOhmurl.replace(/^@(\w+):(.*)/, '@$1.$2');
           this.updatePkgEntryInfos(pkgEntryInfos, pkgName, hspOhmurl);
@@ -225,7 +227,8 @@ export class ModuleMode extends CommonMode {
   private getPackageEntryInfo(filePath: string, metaInfo: Object, pkgEntryInfos: Map<String, PackageEntryInfo>): void {
     if (metaInfo['isLocalDependency']) {
       const hostModulesInfo: Object = metaInfo.hostModulesInfo;
-      const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
+      let pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
+
       hostModulesInfo.forEach(hostModuleInfo => {
         const hostDependencyName: string = hostModuleInfo['hostDependencyName'];
         const hostModuleName: string = hostModuleInfo['hostModuleName'];
@@ -242,6 +245,7 @@ export class ModuleMode extends CommonMode {
       this.logger.debug("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ", filePath);
       return;
     }
+ 
     const pkgPath: string = metaInfo['pkgPath'];
     let originPkgEntryPath: string = toUnixPath(filePath.replace(pkgPath, ''));
     if (originPkgEntryPath.startsWith('/')) {
@@ -304,17 +308,26 @@ export class ModuleMode extends CommonMode {
     const isPackageModules = isPackageModulesFile(filePath, this.projectConfig);
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
     filePath = this.handleObfuscatedFilePath(filePath, isPackageModules);
+
     let namespace: string = metaInfo['moduleName'];
-    let recordName: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
+    let recordName: string = '';
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
-    if (isPackageModules) {
-      packageName = this.getPkgModulesFilePkgName(metaInfo['pkgPath']);
+    if (this.useNormalizedOHMUrl) {
+      packageName = metaInfo['pkgName'];
+      const pkgPath = metaInfo['pkgPath']
+      recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger,
+                                                 packageName, pkgPath, undefined, true);
     } else {
-      packageName =
-        metaInfo['isLocalDependency'] ? namespace : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+      recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
+      if (isPackageModules) {
+        packageName = this.getPkgModulesFilePkgName(metaInfo['pkgPath']);
+      } else {
+        packageName =
+          metaInfo['isLocalDependency'] ? namespace : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+      }
     }
 
     if (extName.length !== 0) {

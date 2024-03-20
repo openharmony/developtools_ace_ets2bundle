@@ -51,6 +51,7 @@ export abstract class CommonMode {
   genAbcScriptPath: string;
   triggerAsync: Object;
   triggerEndSignal: Object;
+  useNormalizedOHMUrl: boolean;
 
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
@@ -67,6 +68,7 @@ export abstract class CommonMode {
     // If the child process throws an error by calling throwArkTsCompilerError(), IDE will reset the counting state.
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
+    this.useNormalizedOHMUrl = this.getUseNormalizedOHMUrl();
   }
 
   initCmdEnv() {
@@ -97,6 +99,13 @@ export abstract class CommonMode {
     }
 
     return args;
+  }
+
+  private getUseNormalizedOHMUrl() {
+    if (this.projectConfig.hasOwnProperty('useNormalizedOHMUrl')) {
+      return this.projectConfig.useNormalizedOHMUrl;
+    }
+    return false;
   }
 
   private genHashJsonFilePath() {
