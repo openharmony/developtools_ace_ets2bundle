@@ -22,8 +22,9 @@ import {
   PACKAGES
 } from '../common/ark_define';
 import {
+  getNormalizedOhmUrlByFilepath,
   getOhmUrlByFilepath,
-  getOhmUrlByHarName,
+  getOhmUrlByHspName,
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
 } from '../../../ark_utils';
@@ -125,14 +126,31 @@ export class ModuleSourceFile {
       return;
     }
 
+    let useNormalizedOHMUrl = false;
+    if (rollupObject.share.projectConfig.hasOwnProperty('useNormalizedOHMUrl')) {
+      useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
+    }
     let mockFile: string = ModuleSourceFile.mockConfigInfo[originKey].source;
     let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
-    let mockFileOhmUrl: string = getOhmUrlByFilepath(mockFilePath,
-                                                     ModuleSourceFile.projectConfig,
-                                                     ModuleSourceFile.logger,
-                                                     rollupObject.share.projectConfig.entryModuleName,
-                                                     importerFile);
-    mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
+    let mockFileOhmUrl: string = '';
+    if (useNormalizedOHMUrl) {
+      const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
+      mockFileOhmUrl = getNormalizedOhmUrlByFilepath(mockFilePath,
+        ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger,
+        targetModuleInfo.meta.pkgName,
+        targetModuleInfo.meta.pkgPath,
+        importerFile);
+      mockFileOhmUrl = `@normalized:${mockFileOhmUrl}`;
+    } else {
+      mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
+        ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger,
+        rollupObject.share.projectConfig.entryModuleName,
+        importerFile);
+      mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
+    }
+
     // record mock target mapping for incremental compilation
     ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
   }
@@ -275,26 +293,41 @@ export class ModuleSourceFile {
   }
 
   private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined, importerFile: string): string | undefined {
-    let systemOrLibOhmUrl: string | undefined = getOhmUrlBySystemApiOrLibRequest(moduleRequest);
+    let useNormalizedOHMUrl = false;
+    if (rollupObject.share.projectConfig.hasOwnProperty('useNormalizedOHMUrl')) {
+      useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
+    }
+    let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig, useNormalizedOHMUrl);
     if (systemOrLibOhmUrl != undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
       }
       return systemOrLibOhmUrl;
     }
-    const harOhmUrl: string | undefined = getOhmUrlByHarName(moduleRequest, ModuleSourceFile.projectConfig);
-    if (harOhmUrl !== undefined) {
+    const hspOhmurl: string | undefined = getOhmUrlByHspName(moduleRequest, ModuleSourceFile.projectConfig,
+      ModuleSourceFile.logger, useNormalizedOHMUrl);
+    if (hspOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, harOhmUrl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
       }
-      return harOhmUrl;
+      return hspOhmurl;
     }
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
-      const namespace: string = targetModuleInfo['meta']['moduleName'];
-      const ohmUrl: string =
-        getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace, importerFile);
-      let res: string = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
+      let res: string = "";
+      if (useNormalizedOHMUrl) {
+        const pkgName = targetModuleInfo['meta']['pkgName'];
+        const pkgPath = targetModuleInfo['meta']['pkgPath'];
+        const ohmUrl: string = 
+          getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger,
+            pkgName, pkgPath, importerFile);
+        res = `@normalized:${ohmUrl}`;
+      } else {
+        const namespace: string = targetModuleInfo['meta']['moduleName'];
+        const ohmUrl: string =
+          getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace, importerFile);
+        res = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
+      }
       if (ModuleSourceFile.needProcessMock) {
         // processing cases of har or lib mock targets
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, res, rollupObject, importerFile);
