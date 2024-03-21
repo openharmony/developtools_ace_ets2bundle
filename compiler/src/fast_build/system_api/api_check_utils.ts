@@ -353,8 +353,8 @@ function isArkuiDependence(file: string): boolean {
     return exists;
   }
   const fileDir: string = path.dirname(file);
-  const declarationsPath: string = path.resolve(__dirname, '../declarations').replace(/\\/g, '/');
-  const componentPath: string = path.resolve(__dirname, '../../../component').replace(/\\/g, '/');
+  const declarationsPath: string = path.resolve(__dirname, '../../../declarations').replace(/\\/g, '/');
+  const componentPath: string = path.resolve(__dirname, '../../../../../component').replace(/\\/g, '/');
   exists = fileDir === declarationsPath || fileDir === componentPath;
   arkuiDependenceMap.set(file, exists);
   return exists;
