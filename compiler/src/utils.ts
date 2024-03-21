@@ -701,8 +701,13 @@ export interface CacheFile {
   children: Array<ChildrenCacheFile>,
 }
 
+export interface RouterInfo {
+  name: string,
+  buildFunction: string,
+}
+
 // Global Information & Method
-class ProcessFileInfo {
+export class ProcessFileInfo {
   buildStart: boolean = true;
   wholeFileInfo: { [id: string]: SpecialArkTSFileInfo | TSFileInfo } = {}; // Save ArkTS & TS file's infomation
   transformedFiles: Set<string> = new Set(); // ArkTS & TS Files which should be transformed in this compilation
@@ -733,6 +738,7 @@ class ProcessFileInfo {
       forEachParameters: null,
       isDependItem: false
     };
+  routerInfo: Map<string, Array<RouterInfo>> = new Map();
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: { [resource: string]: Set<string> }) {

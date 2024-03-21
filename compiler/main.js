@@ -129,6 +129,7 @@ function loadEntryObj(projectConfig) {
     setIntentEntryPages(projectConfig);
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
+    loadNavigationConfig(aceBuildJson);
   }
 
   if (staticPreviewPage) {
@@ -169,6 +170,22 @@ function loadEntryObj(projectConfig) {
           '. \u001b[39m').message;
       }
     }
+  }
+}
+
+function loadNavigationConfig(aceBuildJson) {
+  if (aceBuildJson && aceBuildJson.routerMap && Array.isArray(aceBuildJson.routerMap)) {
+    aceBuildJson.routerMap.forEach((item) => {
+      if (item.pageSourceFile && item.name && item.buildFunction) {
+        const filePath = path.resolve(item.pageSourceFile);
+        const storedFileInfo = getStoredFileInfo();
+        if (storedFileInfo.routerInfo.has(filePath)) {
+          storedFileInfo.routerInfo.get(filePath).push({name: item.name, buildFunction: item.buildFunction});
+        } else {
+          storedFileInfo.routerInfo.set(filePath, [{name: item.name, buildFunction: item.buildFunction}]);
+        }
+      }
+    });
   }
 }
 
