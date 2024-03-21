@@ -91,7 +91,11 @@ import {
   CompilationTimeStatistics,
   getStoredFileInfo,
   ProcessFileInfo,
-  RouterInfo
+  RouterInfo,
+  EntryOptionValue,
+  judgeUseSharedStorageForExpresion,
+  createGetSharedForVariable,
+  createGetShared
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -1148,7 +1152,7 @@ function createEntryNode(node: ts.SourceFile, context: ts.TransformationContext,
 }
 
 function createEntryFunction(name: string, context: ts.TransformationContext, cardRelativePath: string,
-  entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | (ts.ExpressionStatement | ts.Block | ts.IfStatement)[] {
+  entryNodeKey: ts.Expression, id: number): ts.ExpressionStatement | (ts.Statement | ts.Block)[] {
   const newArray: ts.Expression[] = [
     context.factory.createStringLiteral(id.toString()),
     context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
@@ -1190,22 +1194,21 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
 
 function createLoadPageConditionalJudgMent(context: ts.TransformationContext, name: string,
   cardRelativePath: string, localStorageName: string, entryOptionNode: ts.Expression,
-  argsArr: ts.Expression[] = undefined, isComponentPreview: boolean = false)
-  : (ts.ExpressionStatement | ts.Block | ts.IfStatement)[] {
+  argsArr: ts.Expression[] = undefined, isComponentPreview: boolean = false): (ts.Statement | ts.Block)[] {
   let isObject: boolean = false;
-  let routeNameNode: ts.Expression;
-  let storageNode: ts.Expression;
+  const entryOptionValue: EntryOptionValue = new EntryOptionValue();
   if (!entryOptionNode) {
     let originArray: ts.ExpressionStatement[];
     if (projectConfig.minAPIVersion > 10) {
+      if (componentCollection.entryComponent === name && componentCollection.localSharedStorage) {
+        return createLoadPageBySharedStorage(context, name, cardRelativePath, argsArr);
+      }
       const newArray: ts.Expression[] = [
         context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
         context.factory.createObjectLiteralExpression([], false)
       ];
       const newExpressionParams: any[] = [
-        context.factory.createNewExpression(
-          context.factory.createIdentifier(name),
-          undefined, newArray)];
+        context.factory.createNewExpression(context.factory.createIdentifier(name), undefined, newArray)];
       originArray = [
         createRegisterNamedRoute(context, newExpressionParams, false, undefined, false)
       ];
@@ -1223,19 +1226,18 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
     if (entryOptionNode.properties) {
       entryOptionNode.properties.forEach((property) => {
         if (ts.isPropertyAssignment(property) && property.name && ts.isIdentifier(property.name)) {
-          if (property.name.escapedText.toString() === ROUTE_NAME) {
-            routeNameNode = property.initializer;
-          } else if (property.name.escapedText.toString() === STORAGE) {
-            storageNode = property.initializer;
-          }
+          entryOptionValue[property.name.escapedText.toString()] = property.initializer;
         }
       });
+      if (entryOptionValue.useSharedStorage) {
+        entryOptionValue.storage = createGetShared(entryOptionValue);
+      }
     }
   } else {
     isObject = false;
   }
-  return generateLoadDocumentEntrance(isObject, routeNameNode, storageNode, isComponentPreview, context,
-    name, cardRelativePath, entryOptionNode, argsArr);
+  return generateLoadDocumentEntrance(isObject, entryOptionValue.routeName, entryOptionValue.storage,
+    isComponentPreview, context, name, cardRelativePath, entryOptionNode, argsArr);
 }
 
 function generateLoadDocumentEntrance(isObject: boolean, routeNameNode: ts.Expression,
@@ -1346,12 +1348,14 @@ function judgeRouteNameAndStorageForIdentifier(context: ts.TransformationContext
           ],
           true
         ),
-        ts.factory.createBlock(
-          [
-            ...createLoadDocumentWithRoute(context, name, cardRelativePath, isObject, entryOptionNode,
-              routeNameNode, storageNode, false, false, true, argsArr)
-          ],
-          true
+        ts.factory.createIfStatement(
+          judgeUseSharedStorageForExpresion(entryOptionNode),
+          ts.factory.createBlock(
+            [...createSharedStorageWithRoute(context, name, cardRelativePath, entryOptionNode, true, argsArr)], true),
+          ts.factory.createBlock(
+            [...createLoadDocumentWithRoute(context, name, cardRelativePath, false, entryOptionNode,
+              null, null, false, false, true, argsArr)
+            ], true)
         )
       )
     )
@@ -1422,28 +1426,29 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
   ];
   if (entryOptionNode) {
     if (!isObject) {
-      if (hasStorage) {
-        newArray.push(ts.factory.createPropertyAccessExpression(
-          entryOptionNode,
-          ts.factory.createIdentifier(STORAGE)
-        ));
-      } else if (!hasRouteName) {
+      if (routeNameNode === null && storageNode === null) {
         newArray.push(entryOptionNode);
+      } else {
+        newArray.push(createGetSharedForVariable(entryOptionNode));
       }
     } else if (storageNode) {
-      newArray.push(storageNode);
+      newArray.push(storageNode as ts.Expression);
     }
   }
-  const newExpressionParams: any[] = [
-    context.factory.createNewExpression(
-      context.factory.createIdentifier(name),
-      undefined, newArray)];
+  return loadDocumentWithRoute(context, name, newArray, argsArr, hasRouteName, shouldCreateAccsessRecording,
+    isObject, entryOptionNode, cardRelativePath);
+}
+
+function loadDocumentWithRoute(context: ts.TransformationContext, name: string, newArray: ts.Expression[],
+  argsArr: ts.Expression[], hasRouteName: boolean, shouldCreateAccsessRecording: boolean,
+  isObject: boolean, entryOptionNode: ts.Expression, cardRelativePath: string): ts.ExpressionStatement[] {
+  const newExpressionParams = [context.factory.createNewExpression(
+    context.factory.createIdentifier(name), undefined, newArray)];
   if (argsArr) {
     argsArr = [];
     componentCollection.previewComponent.forEach((componentName: string) => {
       const newExpression: ts.Expression = context.factory.createNewExpression(
-        context.factory.createIdentifier(componentName),
-        undefined,
+        context.factory.createIdentifier(componentName), undefined,
         componentName === name ? newArray : newArray.slice(0, newArray.length - 1)
       );
       argsArr.push(context.factory.createStringLiteral(componentName), newExpression);
@@ -1456,16 +1461,12 @@ function createLoadDocumentWithRoute(context: ts.TransformationContext, name: st
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
     if (projectConfig.minAPIVersion > 10) {
-      return [
-        createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)
-      ];
+      return [createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)];
     } else {
-      return [
-        shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
-        context.factory.createExpressionStatement(
-          context.factory.createCallExpression(
-            context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
-              PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)),
+      return [shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
+        context.factory.createExpressionStatement(context.factory.createCallExpression(
+          context.factory.createIdentifier(cardRelativePath ? CARD_ENTRY_FUNCTION_NAME :
+            PAGE_ENTRY_FUNCTION_NAME), undefined, newExpressionParams)),
         shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
     }
   }
@@ -1513,7 +1514,7 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
   ));
 }
 
-function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
+export function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
   return context.factory.createExpressionStatement(
     context.factory.createCallExpression(
       context.factory.createPropertyAccessExpression(
@@ -1864,4 +1865,31 @@ export function validatorCard(log: any[], type: number, pos: number,
 export function resetProcessUiSyntax(): void {
   transformLog = new FileLog();
   contextGlobal = undefined;
+}
+
+function createLoadPageBySharedStorage(context: ts.TransformationContext, name: string,
+  cardRelativePath: string, argsArr: ts.Expression[]): ts.Statement[] {
+  return [
+    ts.factory.createIfStatement(
+      judgeUseSharedStorageForExpresion(componentCollection.localSharedStorage as ts.Expression),
+      ts.factory.createBlock(
+        [...createSharedStorageWithRoute(context, name, cardRelativePath,
+          componentCollection.localSharedStorage as ts.Expression, true, argsArr)], true),
+      ts.factory.createBlock(
+        [...createLoadDocumentWithRoute(context, name, cardRelativePath, false, null,
+          null, null, false, false, true, argsArr)
+        ], true)
+    )
+  ];
+}
+
+function createSharedStorageWithRoute(context: ts.TransformationContext, name: string, cardRelativePath: string,
+  entryOptionNode: ts.Expression, shouldCreateAccsessRecording: boolean, argsArr: ts.Expression[]): ts.Statement[] {
+  const newArray: ts.Expression[] = [
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+    ts.factory.createObjectLiteralExpression([], false),
+    createGetSharedForVariable(entryOptionNode, false)
+  ];
+  return loadDocumentWithRoute(context, name, newArray, argsArr, false, shouldCreateAccsessRecording,
+    false, entryOptionNode, cardRelativePath);
 }
