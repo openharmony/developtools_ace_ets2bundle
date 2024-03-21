@@ -597,3 +597,6 @@ export const CONSTANT_STEP_2: number = 2;
 export const CONSTANT_STEP_3: number = 3;
 export const CONSTANT_STEP_4: number = 4;
 export const CONSTANT_VERSION_10: number = 10;
+
+export const GET_SHARED: string = 'getShared';
+export const USE_SHARED_STORAGE: string = 'useSharedStorage';

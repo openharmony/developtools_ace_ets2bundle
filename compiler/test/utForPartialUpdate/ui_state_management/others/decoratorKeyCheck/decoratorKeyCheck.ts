@@ -402,14 +402,19 @@ class Index extends ViewPU {
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {
-    registerNamedRoute(() => new Index(undefined, {}, storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "decoratorKeyCheck" });
+    registerNamedRoute(() => new Index(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "decoratorKeyCheck" });
 }
 else if (storage && storage.routeName != undefined && storage.storage == undefined) {
-    registerNamedRoute(() => new Index(undefined, {}), storage.routeName, { bundleName: "", moduleName: "", pagePath: "decoratorKeyCheck" });
+    registerNamedRoute(() => new Index(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "decoratorKeyCheck" });
 }
 else if (storage && storage.routeName == undefined && storage.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-    loadDocument(new Index(undefined, {}, storage.storage));
+    loadDocument(new Index(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage));
+    ViewStackProcessor.StopGetAccessRecording();
+}
+else if (storage && storage.useSharedStorage != undefined) {
+    ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+    loadDocument(new Index(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : undefined));
     ViewStackProcessor.StopGetAccessRecording();
 }
 else {
