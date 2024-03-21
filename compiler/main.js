@@ -909,6 +909,7 @@ const globalProgram = {
   program: null,
   watchProgram: null,
   checker: null,
+  strictLanguageService: null,
 };
 
 const partialUpdateConfig = {
@@ -976,6 +977,7 @@ function resetGlobalProgram() {
   globalProgram.builderProgram = null;
   globalProgram.program = null;
   globalProgram.checker = null;
+  globalProgram.strictLanguageService = null;
 }
 
 function initMain() {

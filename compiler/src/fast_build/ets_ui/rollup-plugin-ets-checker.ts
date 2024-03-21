@@ -26,7 +26,8 @@ import {
   languageService,
   printDiagnostic,
   fastBuildLogger,
-  emitBuildInfo
+  emitBuildInfo,
+  runArkTSLinter
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -75,8 +76,13 @@ export function etsChecker() {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime);
         startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         if (executedOnce) {
+          const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
+          timePrinterInstance.setArkTSTimePrintSwitch(false);
+          timePrinterInstance.appendTime(ts.TimePhase.START);
           globalProgram.builderProgram = languageService.getBuilderProgram();
           globalProgram.program = globalProgram.builderProgram.getProgram();
+          timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+          runArkTSLinter();
         }
         executedOnce = true;
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram

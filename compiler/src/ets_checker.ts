@@ -1125,7 +1125,7 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-function runArkTSLinter(rollupShareObject?: Object): void {
+export function runArkTSLinter(rollupShareObject?: Object): void {
   const wasStrict: boolean = wasOptionsStrict(globalProgram.program.getCompilerOptions());
   const originProgram: ArkTSProgram = {
     builderProgram: globalProgram.builderProgram,
