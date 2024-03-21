@@ -74,7 +74,8 @@ import {
   GET_AND_PUSH_FRAME_NODE,
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
-  FINISH_UPDATE_FUNC
+  FINISH_UPDATE_FUNC,
+  FUNCTION
 } from './pre_define';
 import {
   componentInfo,
@@ -87,7 +88,10 @@ import {
   ExtendResult,
   startTimeStatisticsLocation,
   stopTimeStatisticsLocation,
-  CompilationTimeStatistics
+  CompilationTimeStatistics,
+  getStoredFileInfo,
+  ProcessFileInfo,
+  RouterInfo
 } from './utils';
 import { writeFileSyncByNode } from './process_module_files';
 import {
@@ -119,7 +123,8 @@ import {
   INNER_STYLE_FUNCTION,
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
-  ID_ATTRS
+  ID_ATTRS,
+  GLOBAL_CUSTOM_BUILDER_METHOD
 } from './component_map';
 import {
   resources,
@@ -130,7 +135,7 @@ import {
   createCustomComponentNewExpression,
   createViewCreate
 } from './process_component_member';
-import { 
+import {
   assignComponentParams,
   assignmentFunction
 } from './process_custom_component';
@@ -139,6 +144,7 @@ import {
   checkTypeReference,
   validateModuleSpecifier
 } from './fast_build/system_api/api_check_utils';
+import constantDefine from './constant_define';
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -193,6 +199,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         if (partialUpdateConfig.partialUpdateMode && hasStruct) {
           statements.unshift(checkFinalizeConstruction());
         }
+        createNavigationInit(resourceFileName, statements);
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
@@ -370,6 +377,49 @@ export function processUISyntax(program: ts.Program, ut = false,
       return ts.visitEachChild(node, visitor, context);
     }
   };
+}
+
+function createNavigationInit(fileName: string, statements: ts.Statement[]): void {
+  const newStoredFileInfo: ProcessFileInfo = getStoredFileInfo();
+  if (newStoredFileInfo.routerInfo.has(fileName)) {
+    const routerInfoArr: Array<RouterInfo> = newStoredFileInfo.routerInfo.get(fileName);
+    const builderStatements: ts.Statement[] = [];
+    routerInfoArr.forEach((item) => {
+      if (GLOBAL_CUSTOM_BUILDER_METHOD.has(item.buildFunction)) {
+        builderStatements.push(createNavigationRegister(item));
+      } else {
+        transformLog.errors.push({
+          type: LogType.ERROR,
+          message: `The buildFunction '${item.buildFunction}' configured in the routerMap json file does not exist.`
+        });
+      }
+    });
+    statements.push(ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createParenthesizedExpression(ts.factory.createFunctionExpression(
+        undefined, undefined, undefined, undefined, [], undefined,
+        ts.factory.createBlock(
+          [ts.factory.createIfStatement(ts.factory.createBinaryExpression(
+            ts.factory.createTypeOfExpression(ts.factory.createIdentifier(constantDefine.NAVIGATION_BUILDER_REGISTER)),
+            ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken), ts.factory.createStringLiteral(FUNCTION)),
+          ts.factory.createBlock(builderStatements, true), undefined)], true)
+      )), undefined, []
+    )));
+  }
+}
+
+function createNavigationRegister(routerInfo: RouterInfo): ts.Statement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createIdentifier(constantDefine.NAVIGATION_BUILDER_REGISTER),
+    undefined,
+    [
+      ts.factory.createStringLiteral(routerInfo.name),
+      ts.factory.createCallExpression(
+        ts.factory.createIdentifier(WRAPBUILDER_FUNCTION),
+        undefined,
+        [ts.factory.createIdentifier(routerInfo.buildFunction)]
+      )
+    ]
+  ));
 }
 
 export function initializeMYIDS(): ts.ParameterDeclaration {
