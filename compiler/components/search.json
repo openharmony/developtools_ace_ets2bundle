@@ -6,6 +6,8 @@
     "placeholderColor",
     "placeholderFont",
     "textFont",
+    "minFontSize",
+    "maxFontSize",
     "decoration",
     "letterSpacing",
     "lineHeight",
