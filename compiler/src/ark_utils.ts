@@ -396,7 +396,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(filePath);
   const packageDir = projectConfig.packageDir;
-  const projectRootPath= projectConfig.projectRootPath;
+  const projectRootPath = projectConfig.projectRootPath;
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
@@ -428,7 +428,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
   if (mixedInfo.nameCache && !isDeclaration) {
     let obfName: string = relativeSourceFilePath;
-    if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
+    let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
+    if (projectConfig.obfuscationMergedObConfig?.options.enableFileNameObfuscation && !isOhModule) {
       obfName = mangleFilePath(relativeSourceFilePath);
     }
     mixedInfo.nameCache["obfName"] = obfName;
