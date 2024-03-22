@@ -3,6 +3,6 @@
   "atomic": true,
   "attrs": [
     "muted", "autoPlay", "controls", "loop", "objectFit", "onSeeking", "onFullscreenChange",
-    "onStart", "onPause", "onPrepared", "onFinish", "onSeeked", "onUpdate", "onError"
+    "onStart", "onPause", "onPrepared", "onFinish", "onSeeked", "onUpdate", "onError", "onStop"
   ]
 }
