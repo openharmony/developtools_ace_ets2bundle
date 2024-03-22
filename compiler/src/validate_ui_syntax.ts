@@ -569,6 +569,9 @@ function isSendableTypeReference(type: ts.Type): boolean {
 }
 
 function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
+  if (ts.isUnionTypeNode(typeNode)) {
+    return true;
+  }
   // input typeNode should not be undefined or none, ensured by caller
   switch (typeNode.kind) {
     case ts.SyntaxKind.StringKeyword:
