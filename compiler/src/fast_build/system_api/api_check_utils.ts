@@ -33,6 +33,7 @@ import {
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
+  ARKTS_MODULE_PREFIX,
   GLOBAL_DECLARE_WHITE_LIST,
   FIND_MODULE_WARNING,
   FORM_TAG_CHECK_NAME,
@@ -173,7 +174,7 @@ export function getRealModulePath(apiDirs: string[], moduleName: string, exts: s
 export function moduleRequestCallback(moduleRequest: string, _: string,
   moduleType: string, systemKey: string): string {
   for (let config of extendSdkConfigs.values()) {
-    if (config.prefix === '@arkui-x') {
+    if (config.prefix === '@arkui-x' || config.prefix === ARKTS_MODULE_PREFIX) {
       continue;
     }
     if (moduleRequest.startsWith(config.prefix + '.')) {
