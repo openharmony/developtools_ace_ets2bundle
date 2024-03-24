@@ -301,68 +301,7 @@ mocha.describe('test ark_utils file api', function () {
     expect(returnInfoTS2ABC).to.be.false;
   });
 
-  mocha.it('6-1: test writeTerserObfuscatedSourceCode under build release', async function () {
-    this.rollup.build(RELEASE);
-    const mockFileList: object = this.rollup.getModuleIds();
-    for (const moduleId of mockFileList) {
-      if (moduleId.endsWith(EXTNAME_TS)) {
-        const code: string =
-          fs.readFileSync(`${this.rollup.share.projectConfig.projectTopDir}/${ENTRYABILITY_JS}`, 'utf-8');
-        const moduleSource = new ModuleSourceFileMock(moduleId, code);
-        moduleSource.initPluginEnvMock(this.rollup);
-        const filePath =
-          genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-            moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
-        const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
-        const relativeSourceFilePath: string =
-          toUnixPath(moduleSource.moduleId).replace(toUnixPath(moduleSource.projectConfig.projectRootPath) + '/', '');
-        const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
-        const obConfig: ObConfigResolver = new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
-        const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-        const isHarCompiled: boolean = this.rollup.share.projectConfig.compileHar;
-        moduleSource.projectConfig.terserConfig =
-          utProcessArkConfig.initTerserConfig(this.rollup.share.projectConfig, logger, mergedObConfig, isHarCompiled);
-        const Code: string = fs.readFileSync(moduleId, 'utf-8');
-        const ModuleSource = new ModuleSourceFile(relativeSourceFilePath, Code);
-        const codeString: MagicString = new MagicString(<string>ModuleSource.source);
-        const sourceMap: object = codeString.generateMap({
-          source: relativeSourceFilePath,
-          file: `${path.basename(ModuleSource.moduleId)}`,
-          includeContent: false,
-          hires: true
-        });
-        newSourceMaps[relativeSourceFilePath] = sourceMap;
-        delete newSourceMaps[relativeSourceFilePath].sourcesContent;
-
-        await writeTerserObfuscatedSourceCode(moduleSource.source, newFilePath, moduleSource.logger,
-          moduleSource.projectConfig.terserConfig, relativeSourceFilePath, newSourceMaps);
-        const readFilecontent = fs.readFileSync(newFilePath, 'utf-8');
-        const expectResult = fs.readFileSync(TERSER_PROCESSED_EXPECTED_CODE, 'utf-8');
-        expect(readFilecontent === expectResult).to.be.true;
-      }
-    }
-
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
-  });
-
-  mocha.it('6-2: test the error message of writeTerserObfuscatedSourceCode', async function () {
-    this.rollup.build(RELEASE);
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
-    const stub = sinon.stub(logger, 'error');
-    const red: string = '\x1B[31m';
-    try {
-      await writeTerserObfuscatedSourceCode(undefined, '', logger, undefined);
-    } catch (e) {
-    }
-    expect(stub.calledWith(red,
-      'ArkTS:INTERNAL ERROR: Failed to obfuscate file with terser: '
-    )).to.be.true;
-    stub.restore();
-  });
-
-  mocha.it('7-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
+  mocha.it('6-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
     this.rollup.build(RELEASE);
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
     const stub = sinon.stub(logger, 'error');
@@ -377,7 +316,7 @@ mocha.describe('test ark_utils file api', function () {
     stub.restore();
   });
 
-  mocha.it('8-1: test the error message of writeMinimizedSourceCode', async function () {
+  mocha.it('7-1: test the error message of writeMinimizedSourceCode', async function () {
     this.rollup.build(RELEASE);
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
     const stub = sinon.stub(logger, 'error');

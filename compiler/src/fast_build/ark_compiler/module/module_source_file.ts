@@ -247,8 +247,7 @@ export class ModuleSourceFile {
     performancePrinter?.timeSumPrinter?.summarizeEventDuration();
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
-    if ((ModuleSourceFile.projectConfig.arkObfuscator || ModuleSourceFile.projectConfig.terserConfig) &&
-      ModuleSourceFile.projectConfig.obfuscationOptions) {
+    if (ModuleSourceFile.projectConfig.arkObfuscator && ModuleSourceFile.projectConfig.obfuscationOptions) {
       writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
         ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
     }

@@ -649,8 +649,6 @@ export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir
   if (projectConfig.arkObfuscator) {
     writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
       projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation, projectConfig.etsLoaderVersion);
-  } else if (projectConfig.terserConfig) {
-    writeContent = JSON.stringify(projectConfig.terserConfig.nameCache, null, 2);
   } else {
     return;
   }
