@@ -634,9 +634,24 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
   }
 }
 
+const fileExistsCache: Map<string, boolean> = new Map<string, boolean>();
+const dirExistsCache: Map<string, boolean> = new Map<string, boolean>();
 const moduleResolutionHost: ts.ModuleResolutionHost = {
-  fileExists(fileName: string): boolean {
-    return ts.sys.fileExists(fileName);
+  fileExists: (fileName: string): boolean => {
+    let exists = fileExistsCache.get(fileName);
+    if (exists === undefined) {
+      exists = ts.sys.fileExists(fileName);
+      fileExistsCache.set(fileName, exists);
+    }
+    return exists;
+  },
+  directoryExists: (directoryName: string): boolean => {
+    let exists = dirExistsCache.get(directoryName);
+    if (exists === undefined) {
+      exists = ts.sys.directoryExists(directoryName);
+      dirExistsCache.set(directoryName, exists);
+    }
+    return exists;
   },
   readFile(fileName: string): string | undefined {
     return ts.sys.readFile(fileName);
@@ -1296,4 +1311,6 @@ export function resetEtsCheck(): void {
   extendCollection.clear();
   allSourceFilePaths.clear();
   filesBuildInfo.clear();
+  fileExistsCache.clear();
+  dirExistsCache.clear();
 }
