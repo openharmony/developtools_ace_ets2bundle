@@ -107,6 +107,8 @@ class ProjectConfig {
   aceSoPath?: string;
   mockParams?: object;
   projectRootPath: string;
+  pkgContextInfo: object;
+  useNormalizedOHMUrl: boolean = false;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
