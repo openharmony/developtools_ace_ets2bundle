@@ -18,6 +18,7 @@
     "enableKeyboardOnFocus",
     "onTextSelectionChange",
     "onContentScroll",
-    "selectionMenuHidden"
+    "selectionMenuHidden",
+    "enterKeyType"
   ]
 }
