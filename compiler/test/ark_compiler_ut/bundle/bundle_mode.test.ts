@@ -18,10 +18,17 @@ import mocha from 'mocha';
 import sinon from 'sinon';
 import fs from 'fs';
 import cluster from 'cluster';
+import path from 'path';
 
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { BundleMode } from '../../../lib/fast_build/ark_compiler/bundle/bundle_mode';
-
+import { changeFileExtension } from '../../../lib/fast_build/ark_compiler/utils'
+import {
+  DEBUG,
+  RELEASE,
+  TEMPORARY
+} from '../../../lib/fast_build/ark_compiler/common/ark_define'
+import { toUnixPath } from '../../../lib/utils'
 
 mocha.describe('test bundle_mode file api', function () {
   mocha.before(function () {
@@ -190,5 +197,43 @@ mocha.describe('test bundle_mode file api', function () {
     expect(stub.calledWithMatch('not found during incremental build. ' +
       'Please try to rebuild the project')).to.be.true;
     stub.restore();
+  });
+
+  mocha.it('8-1: test sourceFile field of bundle mode in release', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.buildMode = RELEASE
+    const rollupBundleFileSet: Object = {
+      'test.js': {
+        'type': 'asset',
+        'source': 'test'
+      }
+    };
+    const bundleMode =  new BundleMode(this.rollup, rollupBundleFileSet);
+    const filesinfo: string[] = fs.readFileSync(bundleMode.generateFileInfoOfBundle()).toString().split(";");
+    // sourceFile is the 4th field in filesInfo
+    const sourceFile: string = filesinfo[3];
+    const relativeCachePath: string = toUnixPath(bundleMode.projectConfig.cachePath.replace(
+      bundleMode.projectConfig.projectRootPath + path.sep, ''));
+    const buildDirArr: string[] = bundleMode.projectConfig.aceModuleBuild.split(path.sep);
+    const abilityDir: string = buildDirArr[buildDirArr.length - 1];
+
+    expect(sourceFile === path.join(relativeCachePath, TEMPORARY, abilityDir, 'test.temp.js')).to.be.true;
+  });
+
+  mocha.it('9-1: test sourceFile field of bundle mode in debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.buildMode = DEBUG
+    const rollupBundleFileSet: Object = {
+      'test.js': {
+        'type': 'asset',
+        'source': 'test'
+      }
+    };
+    const bundleMode =  new BundleMode(this.rollup, rollupBundleFileSet);
+    const filesinfo: string[] = fs.readFileSync(bundleMode.generateFileInfoOfBundle()).toString().split(";");
+    // sourceFile is the 4th field in filesInfo
+    const sourceFile: string = filesinfo[3];
+  
+    expect(sourceFile === path.join(bundleMode.projectConfig.aceModuleBuild, 'test.js')).to.be.true;
   });
 });
