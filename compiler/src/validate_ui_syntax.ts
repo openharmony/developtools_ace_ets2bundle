@@ -558,8 +558,19 @@ function isSendableClassDeclaration(classDeclarationNode: ts.ClassDeclaration): 
 }
 
 function isSendableTypeReference(type: ts.Type): boolean {
-  if (!type || !type.getSymbol() || !type.getSymbol().valueDeclaration) {
+  if (!type) {
     return false;
+  }
+  // enum supported in sendable class
+  if ((type.flags & (ts.TypeFlags.Enum | ts.TypeFlags.EnumLiteral)) !== 0) {
+    return true;
+  }
+  if (!type.getSymbol() || (!type.getSymbol().valueDeclaration && !type.getSymbol().declarations)) {
+    return false;
+  }
+  const decls: ts.Declaration[] = type.getSymbol().declarations;
+  if (decls && decls.length > 0 && ts.isInterfaceDeclaration(decls[0])) {
+    return true;
   }
   const valueDeclarationNode: ts.Node = type.getSymbol().valueDeclaration;
   if (valueDeclarationNode && ts.isClassDeclaration(valueDeclarationNode)) {
