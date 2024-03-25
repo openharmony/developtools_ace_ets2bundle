@@ -62,12 +62,14 @@ action("build_ets_loader_library") {
   _declarations_file_dir = "//interface/sdk-js/api/@internal/component/ets"
   _kit_configs_file_dir = "//interface/sdk-js/kits"
   _kit_apis_file_dir = "//interface/sdk-js/api"
+  _arkts_apis_file_dir = "//interface/sdk-js/arkts"
   isPublic = "false"
   if (sdk_build_public) {
     _declarations_file_dir =
         "//out/sdk-public/public_interface/sdk-js/api/@internal/component/ets"
     _kit_configs_file_dir = "//out/sdk-public/public_interface/sdk-js/kits"
     _kit_apis_file_dir = "//out/sdk-public/public_interface/sdk-js/api"
+    _arkts_apis_file_dir = "//out/sdk-public/public_interface/sdk-js/arkts"
     isPublic = "true"
   }
 
@@ -120,6 +122,8 @@ action("build_ets_loader_library") {
     rebase_path(ets_loader_kit_configs_dir, root_build_dir),
     "--kit-apis-file-dir",
     rebase_path(_kit_apis_file_dir, root_build_dir),
+    "--arkts-apis-file-dir",
+    rebase_path(_arkts_apis_file_dir, root_build_dir),
     "--build-public-sdk",
     isPublic,
   ]

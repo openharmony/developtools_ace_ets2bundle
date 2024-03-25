@@ -613,7 +613,10 @@ function filterWorker(workerPath) {
 })();
 
 ;(function readSystemModules() {
-  const systemModulePathArray = [path.resolve(__dirname, '../../api'), path.resolve(__dirname, '../../kits')];
+  const apiDirPath = path.resolve(__dirname, '../../api');
+  const arktsDirPath = path.resolve(__dirname, '../../arkts');
+  const kitsDirPath = path.resolve(__dirname, '../../kits');
+  const systemModulePathArray = [apiDirPath, arktsDirPath, kitsDirPath];
   systemModulePathArray.forEach(systemModulesPath => {
     if (fs.existsSync(systemModulesPath)) {
       globalModulePaths.push(systemModulesPath);
@@ -623,11 +626,12 @@ function filterWorker(workerPath) {
       ohosSystemModulePaths.push(...modulePaths);
       const moduleSubdir = modulePaths.filter(filePath => {
         const dirName = path.dirname(filePath);
-        return dirName !== path.resolve(__dirname, '../../api') && dirName !== path.resolve(__dirname, '../../kits');
+        return !(dirName === apiDirPath || dirName === arktsDirPath || dirName === kitsDirPath);
       }).map(filePath => {
         return filePath
-          .replace(path.resolve(__dirname, '../../api'), '')
-          .replace(path.resolve(__dirname, '../../kits'), '')
+          .replace(apiDirPath, '')
+          .replace(arktsDirPath, '')
+          .replace(kitsDirPath, '')
           .replace(/(^\\)|(.d.e?ts$)/g, '')
           .replace(/\\/g, '/');
       });
@@ -642,6 +646,9 @@ function filterWorker(workerPath) {
     }, {
       'apiPath': systemModulePathArray,
       'prefix': '@system'
+    }, {
+      'apiPath': systemModulePathArray,
+      'prefix': '@arkts'
     }
   ];
   const externalApiPathStr = process.env.externalApiPaths || '';

@@ -212,7 +212,7 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
         return `@native:${systemModule}`;
       } else if (moduleType === ARKTS_MODULE_NAME) {
         // @arkts.xxx -> @ohos:arkts.xxx
-        return `@ohos:${moduleType}.${systemKey}`;
+        return `@ohos:${systemModule}`;
       } else {
         return `@ohos:${systemKey}`;
       };
