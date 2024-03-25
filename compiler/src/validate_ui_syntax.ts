@@ -489,7 +489,7 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
     const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   } else if (decoratorName === CLASS_MIN_TRACK_DECORATOR && !hasObservedClass(classContext, node)) {
-    const message: string = `The '@track' decorator can only be used within a 'class' decorated with observed.`;
+    const message: string = `The '@Trace' can decorate only member variables within a 'class' decorated with ObservedV2.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
 }
