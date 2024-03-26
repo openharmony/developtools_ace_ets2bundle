@@ -181,11 +181,7 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
   }
   arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;
 
-  if (isAotMode(arkProjectConfig) || isHarCompiled) {
-    arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig, isHarCompiled);
-    return;
-  }
-  arkProjectConfig.terserConfig = initTerserConfig(projectConfig, logger, mergedObConfig, isHarCompiled);
+  arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig, isHarCompiled);
 }
 
 function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): any {
