@@ -532,6 +532,9 @@ function containFormError(message: string): boolean {
 }
 
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
+  if (projectConfig.ignoreWarning) {
+    return;
+  }
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
