@@ -305,15 +305,15 @@
             "type": "WARN"
         },
         {
-            "message": "The '@track' decorator can only be used in 'class'.",
+            "message": "The '@Trace' decorator can only be used in 'class'.",
             "type": "ERROR"
         },
         {
-            "message": "The '@observed' decorator can only be used in 'class'.",
+            "message": "The '@ObservedV2' decorator can only be used in 'class'.",
             "type": "ERROR"
         },
         {
-            "message": "The '@track' decorator can only be used within a 'class' decorated with observed.",
+            "message": "The '@Trace' can decorate only member variables within a 'class' decorated with ObservedV2.",
             "type": "ERROR"
         }
     ],
