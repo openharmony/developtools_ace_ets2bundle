@@ -62,6 +62,10 @@ import {
   CONSTANT_VERSION_10,
   PERMISSION_TAG_CHECK_NAME,
   PERMISSION_TAG_CHECK_ERROR,
+  SYSTEM_API_TAG_CHECK_NAME,
+  SYSTEM_API_TAG_CHECK_WARNING,
+  TEST_TAG_CHECK_NAME,
+  TEST_TAG_CHECK_ERROR
 } from '../../pre_define';
 
 
@@ -308,6 +312,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING,
       ts.DiagnosticCategory.Warning, false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING,
+      ts.DiagnosticCategory.Warning, false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR,
       ts.DiagnosticCategory.Warning, false, undefined, (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) => {
         const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
@@ -320,6 +326,12 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
         };
         return JsDocCheckService.validPermission(jsDoctag, module, sourceFileName);
       }))
+    const ohosTestDir: string = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
+    //TODO:fix error type in the feature
+    if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([TEST_TAG_CHECK_NAME], TEST_TAG_CHECK_ERROR,
+        ts.DiagnosticCategory.Warning, false));
+    }
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR,

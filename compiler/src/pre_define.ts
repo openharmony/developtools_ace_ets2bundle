@@ -570,6 +570,10 @@ export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 export const PERMISSION_TAG_CHECK_NAME: string = 'permission';
 export const PERMISSION_TAG_CHECK_ERROR: string = "'{0}' is incompatible";
+export const SYSTEM_API_TAG_CHECK_NAME: string = 'systemapi';
+export const SYSTEM_API_TAG_CHECK_WARNING: string = "'{0}' is system api";
+export const TEST_TAG_CHECK_NAME: string = 'test';
+export const TEST_TAG_CHECK_ERROR: string = "'{0}' can only be used for testing directories ";
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
