@@ -1172,6 +1172,9 @@ export class JsDocCheckService {
    * STEP2. Recursive queue to obtain whether the current permission configuration supports it
    */
   static validPermission(jsDocTag: ts.JSDocTag, permissionsArray: string[]): boolean {
+    if (!jsDocTag) {
+      return false;
+    }
     const comment: string = typeof jsDocTag.comment === 'string'
       ? jsDocTag.comment
       : ts.getTextOfJSDocComment(jsDocTag.comment);
