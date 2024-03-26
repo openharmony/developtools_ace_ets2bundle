@@ -37,7 +37,12 @@ import {
   $$,
   EXTEND_DECORATORS,
   COMPONENT_EXTEND_DECORATOR,
-  COMPONENT_ANIMATABLE_EXTEND_DECORATOR
+  COMPONENT_ANIMATABLE_EXTEND_DECORATOR,
+  COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU,
+  GET_SHARED,
+  COMPONENT_CONSTRUCTOR_UNDEFINED,
+  USE_SHARED_STORAGE,
+  STORAGE
 } from './pre_define';
 
 export enum LogType {
@@ -1075,4 +1080,61 @@ export function resetUtils(): void {
 
 export function getStoredFileInfo(): ProcessFileInfo {
   return storedFileInfo;
+}
+
+export class EntryOptionValue {
+  routeName: ts.Expression;
+  storage: ts.Expression;
+  useSharedStorage: ts.Expression;
+}
+
+function sharedNode(): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_LOCALSTORAGE_TYPE_PU),
+      ts.factory.createIdentifier(GET_SHARED)
+    ),
+    undefined,
+    []
+  );
+}
+
+export function createGetShared(entryOptionValue: EntryOptionValue): ts.ConditionalExpression {
+  return ts.factory.createConditionalExpression(
+    entryOptionValue.useSharedStorage,
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    sharedNode(),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    entryOptionValue.storage || ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+  );
+}
+
+export function createGetSharedForVariable(entryOptionNode: ts.Expression, isShare: boolean = true): ts.ConditionalExpression {
+  return ts.factory.createConditionalExpression(
+    ts.factory.createPropertyAccessExpression(
+      entryOptionNode,
+      ts.factory.createIdentifier(USE_SHARED_STORAGE)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    sharedNode(),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    isShare ? ts.factory.createPropertyAccessExpression(
+      entryOptionNode, ts.factory.createIdentifier(STORAGE)) :
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+  );
+}
+
+export function judgeUseSharedStorageForExpresion(entryOptionNode: ts.Expression): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    entryOptionNode,
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        entryOptionNode,
+        ts.factory.createIdentifier(USE_SHARED_STORAGE)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+    )
+  );
 }
