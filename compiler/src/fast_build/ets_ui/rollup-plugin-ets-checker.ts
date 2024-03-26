@@ -36,6 +36,7 @@ import {
   stopTimeStatisticsLocation,
   CompilationTimeStatistics
 } from '../../utils';
+import { configureSyscapInfo } from '../system_api/api_check_utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -66,6 +67,9 @@ export function etsChecker() {
         isCrossplatform: projectConfig.isCrossplatform,
         requestPermissions: projectConfig.requestPermissions,
         definePermissions: projectConfig.definePermissions,
+        syscapIntersectionSet: projectConfig.syscapIntersectionSet,
+        syscapUnionSet: projectConfig.syscapUnionSet,
+        deviceTypesMessage: projectConfig.deviceTypesMessage
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
