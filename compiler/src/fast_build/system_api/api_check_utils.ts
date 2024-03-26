@@ -68,7 +68,8 @@ import {
   TEST_TAG_CHECK_ERROR,
   SYSCAP_TAG_CHECK_NAME,
   SYSCAP_TAG_CONDITION_CHECK_WARNING,
-  SYSCAP_TAG_CHECK_WARNING
+  SYSCAP_TAG_CHECK_WARNING,
+  CANIUSE_FUNCTION_NAME
 } from '../../pre_define';
 
 
@@ -255,7 +256,8 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: Fil
  * @param {CheckJsDocSpecialValidCallbackInterface} [checkJsDocSpecialValidCallback]
  * @returns  {ts.JsDocNodeCheckConfigItem}
  */
-function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
+function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needConditionCheck: boolean,
+  type: ts.DiagnosticCategory, specifyCheckConditionFuncName: string,
   tagNameShouldExisted: boolean, checkValidCallback?: CheckValidCallbackInterface,
   checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
   return {
@@ -286,6 +288,7 @@ export function isCardFile(file: string): boolean {
 }
 
 const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig>> = new Map<string, Map<string, ts.JsDocNodeCheckConfig>>();
+let permissionsArray: string[] = [];
 /**
  * get tagName where need to be determined based on the file path
  *
@@ -301,7 +304,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
-    return result
+    return result;
   }
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
@@ -309,57 +312,54 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   const sourceBaseName: string = path.basename(sourceFileName);
   if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
     sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, ts.DiagnosticCategory.Warning, true));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, false, ts.DiagnosticCategory.Warning,
+      '', true));
   }
   if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) ||
     isArkuiDependence(sourceFileName))) {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING,
-      ts.DiagnosticCategory.Warning, false));
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING,
-      ts.DiagnosticCategory.Warning, false));
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR,
-      ts.DiagnosticCategory.Warning, false, undefined, (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) => {
-        const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
-          return item.tagName.getText() === 'permission';
-        })
-        const module: PermissionModule = {
-          modulePath: fileName,
-          testPermissions: projectConfig.requestPermissions,
-          permissions: projectConfig.requestPermissions,
-        };
-        return JsDocCheckService.validPermission(jsDoctag, module, sourceFileName);
-      }))
-    const ohosTestDir: string = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
-    //TODO:fix error type in the feature
-    if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([TEST_TAG_CHECK_NAME], TEST_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Warning, false));
+    permissionsArray = projectConfig.requestPermissions
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, false,
+      ts.DiagnosticCategory.Warning, '', false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
+      ts.DiagnosticCategory.Warning, '', false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], '', true, ts.DiagnosticCategory.Warning,
+      CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
+    if (projectConfig.projectRootPath) {
+      const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
+      //TODO:fix error type in the feature
+      if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
+        permissionsArray = projectConfig.requestPermissions
+        checkConfigArray.push(getJsDocNodeCheckConfigItem([TEST_TAG_CHECK_NAME], TEST_TAG_CHECK_ERROR, false,
+          ts.DiagnosticCategory.Warning, '', false));
+      }
     }
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR, false,
+      ts.DiagnosticCategory.Warning, '', false, undefined, checkPermissionValue))
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, false,
+        ts.DiagnosticCategory.Error, '', true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning, '', false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
-        STAGE_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Warning, false));
+        STAGE_TAG_CHECK_ERROR, false,
+        ts.DiagnosticCategory.Warning, '', false));
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
   }
   result = {
@@ -459,12 +459,51 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
   let currentSyscapValue: string = '';
   for (let i = 0; i < jsDocTags.length; i++) {
     const jsDocTag: ts.JSDocTag = jsDocTags[i];
-    if (jsDocTag.tagName.escapedText.toString() === SYSCAP_TAG_CHECK_NAME) {
+    if (jsDocTag && jsDocTag.tagName.escapedText.toString() === SYSCAP_TAG_CHECK_NAME) {
       currentSyscapValue = jsDocTag.comment as string;
       break;
     }
   }
   return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
+}
+
+interface configPermission {
+  requestPermissions: Array<{ name: any, [key: string]: any }>;
+  definePermissions: Array<{ name: any, [key: string]: any }>;
+}
+/**
+ * configure permissionInfo to this.share.projectConfig
+ *
+ * @param config this.share.projectConfig
+ */
+export function configurePermission(config: any): void {
+  const permission: configPermission = config.permission;
+  config.requestPermissions = [];
+  config.definePermissions = [];
+  if (permission.requestPermissions) {
+    config.requestPermissions = getNameFromArray(permission.requestPermissions);
+  }
+  if (permission.definePermissions) {
+    config.definePermissions = getNameFromArray(permission.definePermissions);
+  }
+}
+
+function getNameFromArray(array: Array<{ name: any, [key: string]: any }>): string[] {
+  return array.map((item: { name: any }) => { return String(item.name) })
+}
+
+/**
+ *  Determine the necessity of permission check
+ *
+ * @param {ts.JSDocTag[]} jsDocTags
+ * @param {ts.JsDocNodeCheckConfigItem} config
+ * @returns {boolean}
+ */
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
+  })
+  return JsDocCheckService.validPermission(jsDoctag, permissionsArray);
 }
 
 /**
