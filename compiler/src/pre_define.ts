@@ -568,6 +568,8 @@ export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomi
 export const SINCE_TAG_NAME: string = 'since';
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
+export const PERMISSION_TAG_CHECK_NAME: string = 'permission';
+export const PERMISSION_TAG_CHECK_ERROR: string = "'{0}' is incompatible";
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';

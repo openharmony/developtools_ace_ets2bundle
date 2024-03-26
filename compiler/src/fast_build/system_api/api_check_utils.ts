@@ -29,7 +29,9 @@ import {
 import {
   LogType,
   LogInfo,
-  FileLog
+  FileLog,
+  PermissionModule,
+  JsDocCheckService,
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -52,13 +54,14 @@ import {
   ATOMICSERVICE_TAG_CHECK_NAME,
   ATOMICSERVICE_TAG_CHECK_ERROER,
   ATOMICSERVICE_TAG_CHECK_VERSION,
-  SINCE_TAG_NAME,
   CONSTANT_STEP_0,
   CONSTANT_STEP_1,
   CONSTANT_STEP_2,
   CONSTANT_STEP_3,
   CONSTANT_STEP_4,
-  CONSTANT_VERSION_10
+  CONSTANT_VERSION_10,
+  PERMISSION_TAG_CHECK_NAME,
+  PERMISSION_TAG_CHECK_ERROR,
 } from '../../pre_define';
 
 
@@ -305,6 +308,18 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     isArkuiDependence(sourceFileName))) {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING,
       ts.DiagnosticCategory.Warning, false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR,
+      ts.DiagnosticCategory.Warning, false, undefined, (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) => {
+        const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+          return item.tagName.getText() === 'permission';
+        })
+        const module: PermissionModule = {
+          modulePath: fileName,
+          testPermissions: projectConfig.requestPermissions,
+          permissions: projectConfig.requestPermissions,
+        };
+        return JsDocCheckService.validPermission(jsDoctag, module, sourceFileName);
+      }))
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR,
