@@ -95,15 +95,16 @@ import {
 } from './process_ui_syntax';
 import { stateObjectCollection } from './process_component_member';
 
-export interface ComponentCollection {
-  localStorageName: string;
-  localStorageNode: ts.Identifier | ts.ObjectLiteralExpression;
-  entryComponentPos: number;
-  entryComponent: string;
-  previewComponent: Array<string>;
-  customDialogs: Set<string>;
-  customComponents: Set<string>;
-  currentClassName: string;
+export class ComponentCollection {
+  localStorageName: string = null;
+  localStorageNode: ts.Identifier | ts.ObjectLiteralExpression = null;
+  localSharedStorage: ts.Node = null;
+  entryComponentPos: number = null;
+  entryComponent: string = null;
+  previewComponent: Array<string> = [];
+  customDialogs: Set<string> = new Set([]);
+  customComponents: Set<string> = new Set([]);
+  currentClassName: string = null;
 }
 
 export class IComponentSet {
@@ -128,16 +129,7 @@ export class IComponentSet {
   privateCollection: Set<string> = new Set();
 }
 
-export const componentCollection: ComponentCollection = {
-  localStorageName: null,
-  localStorageNode: null,
-  entryComponentPos: null,
-  entryComponent: null,
-  previewComponent: new Array(),
-  customDialogs: new Set([]),
-  customComponents: new Set([]),
-  currentClassName: null
-};
+export let componentCollection: ComponentCollection = new ComponentCollection();
 
 export const observedClassCollection: Set<string> = new Set();
 export const enumCollection: Set<string> = new Set();
@@ -175,6 +167,7 @@ export function validateUISyntax(source: string, content: string, filePath: stri
   let log: LogInfo[] = [];
   if (process.env.compileMode === 'moduleJson' ||
     path.resolve(filePath) !== path.resolve(projectConfig.projectPath || '', 'app.ets')) {
+    componentCollection = new ComponentCollection();
     const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery, sourceFile);
     if (res) {
       log = log.concat(res);
@@ -389,6 +382,8 @@ function collectLocalStorageName(node: ts.Decorator): void {
         } else if (ts.isObjectLiteralExpression(item) && index === 0) {
           componentCollection.localStorageName = null;
           componentCollection.localStorageNode = item;
+        } else {
+          componentCollection.localSharedStorage = item;
         }
       });
     }
@@ -1380,7 +1375,7 @@ function processInnerModule(content: string, systemValueCollection: Set<string>)
 export function resetComponentCollection() {
   componentCollection.entryComponent = null;
   componentCollection.entryComponentPos = null;
-  componentCollection.previewComponent = new Array();
+  componentCollection.previewComponent = [];
   stateObjectCollection.clear();
   builderParamInitialization.clear();
   propInitialization.clear();

@@ -113,14 +113,19 @@ class LocalStorageComponent extends ViewPU {
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
 }
 else if (storage && storage.routeName != undefined && storage.storage == undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorage" });
 }
 else if (storage && storage.routeName == undefined && storage.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-    loadDocument(new LocalStorageComponent(undefined, {}, storage.storage));
+    loadDocument(new LocalStorageComponent(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage));
+    ViewStackProcessor.StopGetAccessRecording();
+}
+else if (storage && storage.useSharedStorage != undefined) {
+    ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+    loadDocument(new LocalStorageComponent(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : undefined));
     ViewStackProcessor.StopGetAccessRecording();
 }
 else {
