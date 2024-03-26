@@ -664,6 +664,9 @@ const moduleResolutionHost: ts.ModuleResolutionHost = {
   }
 };
 
+//This is only for test
+export const moduleResolutionHostTest = moduleResolutionHost;
+
 export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts.FileReference[]): ts.ResolvedTypeReferenceDirective[] {
   if (typeDirectiveNames.length === 0) {
     return [];
