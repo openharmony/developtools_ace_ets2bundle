@@ -1201,7 +1201,8 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
     let originArray: ts.ExpressionStatement[];
     if (projectConfig.minAPIVersion > 10) {
       if (componentCollection.entryComponent === name && componentCollection.localSharedStorage) {
-        return createLoadPageBySharedStorage(context, name, cardRelativePath, argsArr);
+        return [judgeRouteNameAndStorageForIdentifier(context, name,
+          cardRelativePath, isObject, componentCollection.localSharedStorage, undefined, undefined, argsArr)];
       }
       const newArray: ts.Expression[] = [
         context.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
@@ -1573,20 +1574,30 @@ function addStorageParam(name: string): [string, ts.Expression] {
   let localStorageNode: ts.Identifier | ts.ObjectLiteralExpression;
   const localStorageNum: number = (localStorageLinkCollection.get(name) || new Set()).size +
     (localStoragePropCollection.get(name) || new Set()).size;
-  if (componentCollection.entryComponent === name && componentCollection.localStorageNode) {
-    localStorageNode = componentCollection.localStorageNode;
-  }
-  if (componentCollection.entryComponent === name && componentCollection.localStorageName) {
-    localStorageName = componentCollection.localStorageName;
-  } else if (componentCollection.entryComponent === name && !componentCollection.localStorageName &&
-    !componentCollection.localStorageNode && localStorageNum) {
-    transformLog.errors.push({
-      type: LogType.WARN,
-      message: `@Entry should have a parameter, like '@Entry (storage)'.`,
-      pos: componentCollection.entryComponentPos
-    });
+  if (componentCollection.entryComponent === name) {
+    if (componentCollection.localStorageNode) {
+      localStorageNode = componentCollection.localStorageNode;
+    }
+    if (componentCollection.localStorageName) {
+      localStorageName = componentCollection.localStorageName;
+    }
+    if (!hasStorage() && localStorageNum) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `@Entry should have a parameter, like '@Entry (storage)'.`,
+        pos: componentCollection.entryComponentPos
+      });
+    }
   }
   return [localStorageName, localStorageNode];
+}
+
+function hasStorage(): boolean {
+  if (componentCollection.localStorageName || componentCollection.localStorageNode ||
+    componentCollection.localSharedStorage) {
+    return true;
+  }
+  return false;
 }
 
 function createPreviewComponentFunction(name: string, context: ts.TransformationContext,
@@ -1865,22 +1876,6 @@ export function validatorCard(log: any[], type: number, pos: number,
 export function resetProcessUiSyntax(): void {
   transformLog = new FileLog();
   contextGlobal = undefined;
-}
-
-function createLoadPageBySharedStorage(context: ts.TransformationContext, name: string,
-  cardRelativePath: string, argsArr: ts.Expression[]): ts.Statement[] {
-  return [
-    ts.factory.createIfStatement(
-      judgeUseSharedStorageForExpresion(componentCollection.localSharedStorage as ts.Expression),
-      ts.factory.createBlock(
-        [...createSharedStorageWithRoute(context, name, cardRelativePath,
-          componentCollection.localSharedStorage as ts.Expression, true, argsArr)], true),
-      ts.factory.createBlock(
-        [...createLoadDocumentWithRoute(context, name, cardRelativePath, false, null,
-          null, null, false, false, true, argsArr)
-        ], true)
-    )
-  ];
 }
 
 function createSharedStorageWithRoute(context: ts.TransformationContext, name: string, cardRelativePath: string,
