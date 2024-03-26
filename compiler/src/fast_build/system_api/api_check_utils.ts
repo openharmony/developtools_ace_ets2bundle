@@ -65,7 +65,10 @@ import {
   SYSTEM_API_TAG_CHECK_NAME,
   SYSTEM_API_TAG_CHECK_WARNING,
   TEST_TAG_CHECK_NAME,
-  TEST_TAG_CHECK_ERROR
+  TEST_TAG_CHECK_ERROR,
+  SYSCAP_TAG_CHECK_NAME,
+  SYSCAP_TAG_CONDITION_CHECK_WARNING,
+  SYSCAP_TAG_CHECK_WARNING
 } from '../../pre_define';
 
 
@@ -406,4 +409,95 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
     };
     log.push(error);
   }
+}
+
+/**
+ * configure syscapInfo to this.share.projectConfig
+ *
+ * @param config this.share.projectConfig
+ */
+export function configureSyscapInfo(config: any): void {
+  config.deviceTypesMessage = config.deviceTypes.join(',');
+  const deviceDir: string = path.resolve(__dirname, '../../../../../api/device-define/');
+  const syscaps: Array<string[]> = [];
+  let allSyscaps: string[] = [];
+  config.deviceTypes.forEach((deviceType: string) => {
+    let syscapFilePath: string = '';
+    if (deviceType === 'phone') {
+      syscapFilePath = path.resolve(deviceDir, 'default.json');
+    } else {
+      syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
+    }
+    if (fs.existsSync(syscapFilePath)) {
+      const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+      syscaps.push(content['SysCaps']);
+      allSyscaps = allSyscaps.concat(content['SysCaps']);
+    }
+  });
+  const intersectNoRepeatTwice = (arrs: Array<string[]>) => {
+    return arrs.reduce(function (prev: string[], cur: string[]) {
+      return Array.from(new Set(cur.filter((item: string) => { return prev.includes(item) })));
+    });
+  };
+  let syscapIntersection: string[] = [];
+  if (config.deviceTypes.length === 1 || syscaps.length === 1) {
+    syscapIntersection = syscaps[0];
+  } else if (syscaps.length > 1) {
+    syscapIntersection = intersectNoRepeatTwice(syscaps);
+  }
+  config.syscapIntersectionSet = new Set(syscapIntersection);
+  config.syscapUnionSet = new Set(allSyscaps);
+}
+
+/**
+ * Determine the necessity of syscap check.
+ * @param jsDocTags 
+ * @param config 
+ * @returns 
+ */
+export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  let currentSyscapValue: string = '';
+  for (let i = 0; i < jsDocTags.length; i++) {
+    const jsDocTag: ts.JSDocTag = jsDocTags[i];
+    if (jsDocTag.tagName.escapedText.toString() === SYSCAP_TAG_CHECK_NAME) {
+      currentSyscapValue = jsDocTag.comment as string;
+      break;
+    }
+  }
+  return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
+}
+
+/**
+ * custom condition check
+ * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo 
+ * @param { ts.JsDocTagInfo[] } jsDocs 
+ * @returns 
+ */
+export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]):
+  ts.ConditionCheckResult {
+  const result: ts.ConditionCheckResult = {
+    valid: true
+  };
+  let currentSyscapValue: string = '';
+  for (let i = 0; i < jsDocs.length; i++) {
+    const jsDocTag: ts.JsDocTagInfo = jsDocs[i];
+    if (jsDocTag.name === SYSCAP_TAG_CHECK_NAME) {
+      currentSyscapValue = jsDocTag.text as string;
+      break;
+    }
+  }
+  if (!projectConfig.syscapIntersectionSet || !projectConfig.syscapUnionSet) {
+    return result;
+  }
+  if (!projectConfig.syscapIntersectionSet.has(currentSyscapValue) && projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+    result.valid = false;
+    result.type = ts.DiagnosticCategory.Warning;
+    result.message = SYSCAP_TAG_CONDITION_CHECK_WARNING;
+  } else if (!projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+    result.valid = false;
+    // TODO: fix to error in the feature
+    result.type = ts.DiagnosticCategory.Warning;
+    result.message = SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage);
+  }
+  return result;
 }

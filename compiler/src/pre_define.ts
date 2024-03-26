@@ -574,6 +574,10 @@ export const SYSTEM_API_TAG_CHECK_NAME: string = 'systemapi';
 export const SYSTEM_API_TAG_CHECK_WARNING: string = "'{0}' is system api";
 export const TEST_TAG_CHECK_NAME: string = 'test';
 export const TEST_TAG_CHECK_ERROR: string = "'{0}' can only be used for testing directories ";
+export const SYSCAP_TAG_CHECK_NAME: string = 'syscap';
+export const SYSCAP_TAG_CHECK_WARNING: string = "The default system capabilities of devices $DT do not include system capability of '{0}'. Configure the capabilities in syscap.json. It may cause your application crush in some devices. Attention: Such illegal interface call will lead to compilation error in the future version!";
+export const SYSCAP_TAG_CONDITION_CHECK_WARNING: string = 'The API is not supported on all devices. Use the canIUse condition to determine whether the API is supported.';
+export const CANIUSE_FUNCTION_NAME: string = 'syscap';
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
