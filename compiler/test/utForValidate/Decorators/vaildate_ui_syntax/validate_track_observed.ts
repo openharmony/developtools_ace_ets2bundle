@@ -17,7 +17,7 @@ exports.source = `
 @Entry
 @Component
 struct HomeComponent {
-  @track value: string
+  @Trace value: string
   build() {
     Column() {
       Text("hello")
@@ -26,7 +26,7 @@ struct HomeComponent {
   }
 }
 
-@observed
+@ObservedV2
 @Component
 struct child {
   build() {
@@ -35,11 +35,11 @@ struct child {
 }
 
 class A {
-  @track value: string
+  @Trace value: string
 }
 
-@observed
+@ObservedV2
 class B {
-  @track value: string
+  @Trace value: string
 }
 `;
