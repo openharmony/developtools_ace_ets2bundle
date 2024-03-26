@@ -367,10 +367,6 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
     return;
   }
   mkdirsSync(path.dirname(filePath));
-  if (projectConfig.terserConfig) {
-    await writeTerserObfuscatedSourceCode(content, filePath, logger, projectConfig.terserConfig, relativeSourceFilePath, rollupNewSourceMaps);
-    return;
-  }
   if (process.env.compileTool !== 'rollup') {
     await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
     return;
@@ -472,32 +468,6 @@ export async function mangleDeclarationFileName(logger: Object, projectConfig: O
         relativeSourceFilePath, {}, sourcePath);
     }
   }
-}
-
-export async function writeTerserObfuscatedSourceCode(content: string, filePath: string, logger: Object,
-  minifyOptions: Object, relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}): Promise<void> {
-  let result: MinifyOutput;
-
-  if (relativeSourceFilePath.length > 0) {
-    minifyOptions['sourceMap'] = {
-      content: rollupNewSourceMaps[relativeSourceFilePath],
-      asObject: true
-    };
-  }
-
-  try {
-    result = await minify(content, minifyOptions);
-  } catch {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file with terser: ${relativeSourceFilePath}`);
-  }
-
-  if (result.map) {
-    result.map.sourcesContent && delete result.map.sourcesContent;
-    result.map.sources = [relativeSourceFilePath];
-    rollupNewSourceMaps[relativeSourceFilePath] = result.map;
-  }
-
-  fs.writeFileSync(filePath, result.code ?? '');
 }
 
 export async function writeMinimizedSourceCode(content: string, filePath: string, logger: Object,
