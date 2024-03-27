@@ -197,8 +197,8 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle.ets", line: 9 });
-                    ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "child", () => {
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle.ets", line: 9 });
+                    ViewPU.createRecycle(componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -215,9 +215,6 @@ class HomeComponent extends ViewPU {
                             linkvalue: this.value
                         };
                     };
-                    if (recycleNode) {
-                        recycleNode.paramsGenerator_ = paramsLambda;
-                    }
                     componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
@@ -346,8 +343,8 @@ class child extends ViewPU {
             this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "recycle.ets", line: 33 });
-                    ViewPU.createRecycle(recycleNode ? recycleNode : componentCall, recycleNode !== null, "AnimationTest", () => {
+                    let componentCall = recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "recycle.ets", line: 33 });
+                    ViewPU.createRecycle(componentCall, recycleNode !== null, "AnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -361,9 +358,6 @@ class child extends ViewPU {
                     let paramsLambda = () => {
                         return {};
                     };
-                    if (recycleNode) {
-                        recycleNode.paramsGenerator_ = paramsLambda;
-                    }
                     componentCall.paramsGenerator_ = paramsLambda;
                 }
                 else {
