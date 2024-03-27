@@ -22,6 +22,7 @@ import { getMapFromJson, deleteLineInfoForNameString } from 'arkguard';
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
+  ARKTS_MODULE_NAME,
   PACKAGES,
   TEMPORARY,
   ZERO,
@@ -209,6 +210,9 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string) : string
       const systemModule: string = `${moduleType}.${systemKey}`;
       if (NATIVE_MODULE.has(systemModule)) {
         return `@native:${systemModule}`;
+      } else if (moduleType === ARKTS_MODULE_NAME) {
+        // @arkts.xxx -> @ohos:arkts.xxx
+        return `@ohos:${systemModule}`;
       } else {
         return `@ohos:${systemKey}`;
       };
