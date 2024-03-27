@@ -52,11 +52,13 @@ import {
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
   WATCH_COMPILER_BUILD_INFO_SUFFIX,
+  COMPONENT_STYLES_DECORATOR
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
   INNER_COMPONENT_NAMES,
-  JS_BIND_COMPONENTS
+  JS_BIND_COMPONENTS,
+  BUILDIN_STYLE_NAMES
 } from './component_map';
 import { logger } from './compile_info';
 import {
@@ -936,12 +938,45 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
+      collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...extendCollection);
     }
   }
 }
 
+function collectionCustomizeStyles(node: ts.Node): void {
+  if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
+    isStylesDecorator(node, COMPONENT_STYLES_DECORATOR) && node.name && ts.isIdentifier(node.name)) {
+    BUILDIN_STYLE_NAMES.add(node.name.escapedText.toString());
+  }
+  if (ts.isSourceFile(node)) {
+    node.statements.forEach((item: ts.Node) => {
+      return collectionCustomizeStyles(item);
+    })
+  } else if (ts.isStructDeclaration(node)) {
+    node.members.forEach((item: ts.Node) => {
+      return collectionCustomizeStyles(item);
+    })
+  }
+}
+
+function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      if (originalDecortor === decortorName) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  } else {
+    return false;
+  }
+}
 function collectComponents(node: ts.SourceFile): void {
   // @ts-ignore
   if (process.env.watchMode !== 'true' && node.identifiers && node.identifiers.size) {
