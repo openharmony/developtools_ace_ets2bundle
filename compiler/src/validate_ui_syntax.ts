@@ -564,6 +564,9 @@ function isSendableTypeReference(type: ts.Type): boolean {
 }
 
 function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
+  if (ts.isUnionTypeNode(typeNode)) {
+    return true;
+  }
   // input typeNode should not be undefined or none, ensured by caller
   switch (typeNode.kind) {
     case ts.SyntaxKind.StringKeyword:
@@ -601,10 +604,7 @@ function validateSendableClass(sourceFileNode: ts.SourceFile, node: ts.ClassDecl
   node.members.forEach(item => {
     if (ts.isPropertyDeclaration(item)) {
       const propertyItem: ts.PropertyDeclaration = (item as ts.PropertyDeclaration);
-      if (propertyItem.questionToken) {
-        addLog(LogType.ERROR, 'Optional properties are not supported in @Sendable classes',
-          propertyItem.questionToken.getStart(), log, sourceFileNode);
-      } else if (propertyItem.exclamationToken) {
+      if (propertyItem.exclamationToken) {
         addLog(LogType.ERROR, 'Definite assignment assertions are not supported in @Sendable classes.',
           propertyItem.exclamationToken.getStart(), log, sourceFileNode);
       } else if (!ts.isIdentifier(propertyItem.name)) {
