@@ -60,6 +60,8 @@ def parse_args():
         help='path kit configs file to output')
     parser.add_argument('--kit-apis-file-dir',
         help='path apis file')
+    parser.add_argument('--arkts-apis-file-dir',
+        help='path apis file')
     parser.add_argument('--build-public-sdk',
         help='build public sdk or not')
 
@@ -99,6 +101,7 @@ def main():
         options.kit_configs_file_dir,
         options.output_kit_configs_dir,
         options.kit_apis_file_dir,
+        options.arkts_apis_file_dir,
         options.output_dir]
     depfile_deps.append(options.build_kit_configs_file_js)
 

@@ -19,10 +19,12 @@ const ts = require('typescript');
 const SECOND_PARAM = 2;
 const THIRD_PARAM = 3;
 const FOURTH_PARAM = 4;
+const FIFTH_PARAM = 5;
 const systemModules = [];
 
-function generateKitConfig(kitFilePath, output, apiFilePath) {
+function generateKitConfig(kitFilePath, output, apiFilePath, arktsFilePath) {
   readSystemApis(apiFilePath, systemModules);
+  readSystemApis(arktsFilePath, systemModules);
   const kitFiles = [];
   readFile(kitFilePath, kitFiles);
   if (fs.existsSync(output)) {
@@ -142,4 +144,4 @@ function createKitConfigs(fileName, content) {
   });
 }
 
-generateKitConfig(process.argv[SECOND_PARAM], process.argv[THIRD_PARAM], process.argv[FOURTH_PARAM]);
+generateKitConfig(process.argv[SECOND_PARAM], process.argv[THIRD_PARAM], process.argv[FOURTH_PARAM], process.argv[FIFTH_PARAM]);
