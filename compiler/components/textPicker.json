@@ -1,4 +1,4 @@
 {
   "name": "TextPicker",
-  "attrs": ["defaultPickerItemHeight", "onAccept", "onCancel", "onChange", "selectedIndex", "divider"]
+  "attrs": ["defaultPickerItemHeight", "onAccept", "onCancel", "onChange", "selectedIndex", "divider", "gradientHeight"]
 }
