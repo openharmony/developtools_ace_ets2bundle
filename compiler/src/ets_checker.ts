@@ -93,7 +93,8 @@ import {
 import {
   getJsDocNodeCheckConfig,
   isCardFile,
-  getRealModulePath
+  getRealModulePath,
+  getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
 
 export interface LanguageServiceCache {
@@ -307,6 +308,9 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
         checkPayload: undefined,
         currentFileName: containFilePath
       };
+    },
+    getJsDocNodeConditionCheckedResult: (jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]) => {
+      return getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo, jsDocs);
     },
     uiProps: [],
     clearProps: function() {
