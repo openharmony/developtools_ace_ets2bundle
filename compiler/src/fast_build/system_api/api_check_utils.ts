@@ -30,8 +30,6 @@ import {
   LogType,
   LogInfo,
   FileLog,
-  PermissionModule,
-  JsDocCheckService,
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -60,6 +58,8 @@ import {
   CONSTANT_STEP_3,
   CONSTANT_STEP_4,
   CONSTANT_VERSION_10,
+} from '../../pre_define';
+import {
   PERMISSION_TAG_CHECK_NAME,
   PERMISSION_TAG_CHECK_ERROR,
   SYSTEM_API_TAG_CHECK_NAME,
@@ -69,8 +69,9 @@ import {
   SYSCAP_TAG_CHECK_NAME,
   SYSCAP_TAG_CONDITION_CHECK_WARNING,
   SYSCAP_TAG_CHECK_WARNING,
-  CANIUSE_FUNCTION_NAME
-} from '../../pre_define';
+  CANIUSE_FUNCTION_NAME,
+} from './api_check_define';
+import { JsDocCheckService } from './api_check_permission';
 
 
 /**
