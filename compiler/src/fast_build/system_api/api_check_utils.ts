@@ -29,7 +29,7 @@ import {
 import {
   LogType,
   LogInfo,
-  FileLog
+  FileLog,
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -52,14 +52,27 @@ import {
   ATOMICSERVICE_TAG_CHECK_NAME,
   ATOMICSERVICE_TAG_CHECK_ERROER,
   ATOMICSERVICE_TAG_CHECK_VERSION,
-  SINCE_TAG_NAME,
   CONSTANT_STEP_0,
   CONSTANT_STEP_1,
   CONSTANT_STEP_2,
   CONSTANT_STEP_3,
   CONSTANT_STEP_4,
-  CONSTANT_VERSION_10
+  CONSTANT_VERSION_10,
 } from '../../pre_define';
+import {
+  PERMISSION_TAG_CHECK_NAME,
+  PERMISSION_TAG_CHECK_ERROR,
+  SYSTEM_API_TAG_CHECK_NAME,
+  SYSTEM_API_TAG_CHECK_WARNING,
+  TEST_TAG_CHECK_NAME,
+  TEST_TAG_CHECK_ERROR,
+  SYSCAP_TAG_CHECK_NAME,
+  SYSCAP_TAG_CONDITION_CHECK_WARNING,
+  SYSCAP_TAG_CHECK_WARNING,
+  CANIUSE_FUNCTION_NAME,
+  RUNTIME_OS_OH
+} from './api_check_define';
+import { JsDocCheckService } from './api_check_permission';
 
 
 /**
@@ -245,7 +258,8 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: Fil
  * @param {CheckJsDocSpecialValidCallbackInterface} [checkJsDocSpecialValidCallback]
  * @returns  {ts.JsDocNodeCheckConfigItem}
  */
-function getJsDocNodeCheckConfigItem(tagName: string[], message: string, type: ts.DiagnosticCategory,
+function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needConditionCheck: boolean,
+  type: ts.DiagnosticCategory, specifyCheckConditionFuncName: string,
   tagNameShouldExisted: boolean, checkValidCallback?: CheckValidCallbackInterface,
   checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
   return {
@@ -276,6 +290,7 @@ export function isCardFile(file: string): boolean {
 }
 
 const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig>> = new Map<string, Map<string, ts.JsDocNodeCheckConfig>>();
+let permissionsArray: string[] = [];
 /**
  * get tagName where need to be determined based on the file path
  *
@@ -291,7 +306,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
-    return result
+    return result;
   }
   let needCheckResult: boolean = false;
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
@@ -299,37 +314,54 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   const sourceBaseName: string = path.basename(sourceFileName);
   if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
     sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, ts.DiagnosticCategory.Warning, true));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, false, ts.DiagnosticCategory.Warning,
+      '', true));
   }
   if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) ||
     isArkuiDependence(sourceFileName))) {
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING,
-      ts.DiagnosticCategory.Warning, false));
+    permissionsArray = projectConfig.requestPermissions
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, false,
+      ts.DiagnosticCategory.Warning, '', false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
+      ts.DiagnosticCategory.Warning, '', false));
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], '', true, ts.DiagnosticCategory.Warning,
+      CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
+    if (projectConfig.projectRootPath) {
+      const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
+      //TODO:fix error type in the feature
+      if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
+        permissionsArray = projectConfig.requestPermissions
+        checkConfigArray.push(getJsDocNodeCheckConfigItem([TEST_TAG_CHECK_NAME], TEST_TAG_CHECK_ERROR, false,
+          ts.DiagnosticCategory.Warning, '', false));
+      }
+    }
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR, false,
+      ts.DiagnosticCategory.Warning, '', false, undefined, checkPermissionValue))
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Error, true));
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, false,
+        ts.DiagnosticCategory.Error, '', true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        FA_TAG_CHECK_ERROR, ts.DiagnosticCategory.Warning, false));
+        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning, '', false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
-        STAGE_TAG_CHECK_ERROR,
-        ts.DiagnosticCategory.Warning, false));
+        STAGE_TAG_CHECK_ERROR, false,
+        ts.DiagnosticCategory.Warning, '', false));
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
-        ts.DiagnosticCategory.Error, true));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
   }
   result = {
@@ -379,4 +411,182 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
     };
     log.push(error);
   }
+}
+
+/**
+ * configure syscapInfo to this.share.projectConfig
+ *
+ * @param config this.share.projectConfig
+ */
+export function configureSyscapInfo(config: any): void {
+  config.deviceTypesMessage = config.deviceTypes.join(',');
+  const deviceDir: string = path.resolve(__dirname, '../../../../../api/device-define/');
+  const deviceInfoMap: Map<string, string[]> = new Map();
+  const syscaps: Array<string[]> = [];
+  let allSyscaps: string[] = [];
+  config.deviceTypes.forEach((deviceType: string) => {
+    collectOhSyscapInfos(deviceType, deviceDir, deviceInfoMap);
+  });
+  if (config.runtimeOS !== RUNTIME_OS_OH) {
+    collectExternalSyscapInfos(config.externalApiPaths, config.deviceTypes, deviceInfoMap);
+  }
+  deviceInfoMap.forEach((value: string[]) => {
+    syscaps.push(value);
+    allSyscaps = allSyscaps.concat(value);
+  });
+  const intersectNoRepeatTwice = (arrs: Array<string[]>) => {
+    return arrs.reduce(function (prev: string[], cur: string[]) {
+      return Array.from(new Set(cur.filter((item: string) => { return prev.includes(item) })));
+    });
+  };
+  let syscapIntersection: string[] = [];
+  if (config.deviceTypes.length === 1 || syscaps.length === 1) {
+    syscapIntersection = syscaps[0];
+  } else if (syscaps.length > 1) {
+    syscapIntersection = intersectNoRepeatTwice(syscaps);
+  }
+  config.syscapIntersectionSet = new Set(syscapIntersection);
+  config.syscapUnionSet = new Set(allSyscaps);
+}
+
+function collectOhSyscapInfos(deviceType: string, deviceDir: string, deviceInfoMap: Map<string, string[]>) {
+  let syscapFilePath: string = '';
+  if (deviceType === 'phone') {
+    syscapFilePath = path.resolve(deviceDir, 'default.json');
+  } else {
+    syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
+  }
+  if (fs.existsSync(syscapFilePath)) {
+    const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+    if (deviceInfoMap.get(deviceType)) {
+      deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+    } else {
+      deviceInfoMap.set(deviceType, content['SysCaps']);
+    }
+  }
+}
+
+function collectExternalSyscapInfos(
+  externalApiPaths: string[],
+  deviceTypes: string[],
+  deviceInfoMap: Map<string, string[]>
+) {
+  const externalDeviceDirs: string[] = [];
+  externalApiPaths.forEach((externalApiPath: string) => {
+    const externalDeviceDir: string = path.resolve(externalApiPath, './api/device-define');
+    if (fs.existsSync(externalDeviceDir)) {
+      externalDeviceDirs.push(externalDeviceDir);
+    }
+  });
+  externalDeviceDirs.forEach((externalDeviceDir: string) => {
+    deviceTypes.forEach((deviceType: string) => {
+      let syscapFilePath: string = '';
+      const files: string[] = fs.readdirSync(externalDeviceDir);
+      files.forEach((fileName: string) => {
+        if (fileName.startsWith(deviceType)) {
+          syscapFilePath = path.resolve(externalDeviceDir, fileName);
+          if (fs.existsSync(syscapFilePath)) {
+            const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+            if (deviceInfoMap.get(deviceType)) {
+              deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+            } else {
+              deviceInfoMap.set(deviceType, content['SysCaps']);
+            }
+          }
+        }
+      });
+    });
+  });
+}
+
+/**
+ * Determine the necessity of syscap check.
+ * @param jsDocTags 
+ * @param config 
+ * @returns 
+ */
+export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  let currentSyscapValue: string = '';
+  for (let i = 0; i < jsDocTags.length; i++) {
+    const jsDocTag: ts.JSDocTag = jsDocTags[i];
+    if (jsDocTag && jsDocTag.tagName.escapedText.toString() === SYSCAP_TAG_CHECK_NAME) {
+      currentSyscapValue = jsDocTag.comment as string;
+      break;
+    }
+  }
+  return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
+}
+
+interface configPermission {
+  requestPermissions: Array<{ name: any, [key: string]: any }>;
+  definePermissions: Array<{ name: any, [key: string]: any }>;
+}
+/**
+ * configure permissionInfo to this.share.projectConfig
+ *
+ * @param config this.share.projectConfig
+ */
+export function configurePermission(config: any): void {
+  const permission: configPermission = config.permission;
+  config.requestPermissions = [];
+  config.definePermissions = [];
+  if (permission.requestPermissions) {
+    config.requestPermissions = getNameFromArray(permission.requestPermissions);
+  }
+  if (permission.definePermissions) {
+    config.definePermissions = getNameFromArray(permission.definePermissions);
+  }
+}
+
+function getNameFromArray(array: Array<{ name: any, [key: string]: any }>): string[] {
+  return array.map((item: { name: any }) => { return String(item.name) })
+}
+
+/**
+ *  Determine the necessity of permission check
+ *
+ * @param {ts.JSDocTag[]} jsDocTags
+ * @param {ts.JsDocNodeCheckConfigItem} config
+ * @returns {boolean}
+ */
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
+  })
+  return JsDocCheckService.validPermission(jsDoctag, permissionsArray);
+}
+
+/**
+ * custom condition check
+ * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo 
+ * @param { ts.JsDocTagInfo[] } jsDocs 
+ * @returns 
+ */
+export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]):
+  ts.ConditionCheckResult {
+  const result: ts.ConditionCheckResult = {
+    valid: true
+  };
+  let currentSyscapValue: string = '';
+  for (let i = 0; i < jsDocs.length; i++) {
+    const jsDocTag: ts.JsDocTagInfo = jsDocs[i];
+    if (jsDocTag.name === SYSCAP_TAG_CHECK_NAME) {
+      currentSyscapValue = jsDocTag.text as string;
+      break;
+    }
+  }
+  if (!projectConfig.syscapIntersectionSet || !projectConfig.syscapUnionSet) {
+    return result;
+  }
+  if (!projectConfig.syscapIntersectionSet.has(currentSyscapValue) && projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+    result.valid = false;
+    result.type = ts.DiagnosticCategory.Warning;
+    result.message = SYSCAP_TAG_CONDITION_CHECK_WARNING;
+  } else if (!projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+    result.valid = false;
+    // TODO: fix to error in the feature
+    result.type = ts.DiagnosticCategory.Warning;
+    result.message = SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage);
+  }
+  return result;
 }

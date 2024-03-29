@@ -36,6 +36,10 @@ import {
   stopTimeStatisticsLocation,
   CompilationTimeStatistics
 } from '../../utils';
+import {
+  configureSyscapInfo,
+  configurePermission
+} from '../system_api/api_check_utils';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -54,13 +58,24 @@ export function etsChecker() {
           });
         });
       }
+      if (this.share.projectConfig.deviceTypes) {
+        configureSyscapInfo(this.share.projectConfig);
+      }
+      if (this.share.projectConfig.permission) {
+        configurePermission(this.share.projectConfig);
+      }
       Object.assign(projectConfig, this.share.projectConfig);
       Object.assign(this.share.projectConfig, {
         compileHar: projectConfig.compileHar,
         compileShared: projectConfig.compileShared,
         moduleRootPath: projectConfig.moduleRootPath,
         buildPath: projectConfig.buildPath,
-        isCrossplatform: projectConfig.isCrossplatform
+        isCrossplatform: projectConfig.isCrossplatform,
+        requestPermissions: projectConfig.requestPermissions,
+        definePermissions: projectConfig.definePermissions,
+        syscapIntersectionSet: projectConfig.syscapIntersectionSet,
+        syscapUnionSet: projectConfig.syscapUnionSet,
+        deviceTypesMessage: projectConfig.deviceTypesMessage
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
