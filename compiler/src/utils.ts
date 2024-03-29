@@ -988,13 +988,13 @@ export function isString(text: unknown): text is string {
   return typeof text === 'string';
 }
 
-export function getRollupCacheStoreKey(projectConfig: object): string {
+function getRollupCacheStoreKey(projectConfig: object): string {
   let keyInfo: string[] = [projectConfig.compileSdkVersion, projectConfig.compatibleSdkVersion, projectConfig.runtimeOS,
     projectConfig.etsLoaderPath];
   return keyInfo.join('#');
 }
 
-export function getRollupCacheKey(projectConfig: object): string {
+function getRollupCacheKey(projectConfig: object): string {
   let isWidget: string = projectConfig.widgetCompile ? 'widget' : 'non-widget';
   let ohosTestInfo: string = 'non-ohosTest';
   if (projectConfig.testFrameworkPar) {
@@ -1006,7 +1006,7 @@ export function getRollupCacheKey(projectConfig: object): string {
   return keyInfo.join('#');
 }
 
-export function clearRollupCacheStore(cacheStoreManager: object, currentKey: string): void {
+function clearRollupCacheStore(cacheStoreManager: object, currentKey: string): void {
   if (!cacheStoreManager) {
     return;
   }
@@ -1148,4 +1148,53 @@ export function judgeUseSharedStorageForExpresion(entryOptionNode: ts.Expression
       ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
     )
   );
+}
+
+export function getRollupCache(rollupShareObject: object, projectConfig: object, key: string): object | undefined {
+  if (!rollupShareObject) {
+    return undefined;
+  }
+
+  // Preferentially get cache object from the rollup’s cache interface.
+  if (rollupShareObject.cache) {
+    // Only the cache object’s name as the cache key is required.
+    return rollupShareObject.cache.get(key);
+  }
+
+  // Try to get cache object from the rollup's cacheStoreManager interface.
+  if (rollupShareObject.cacheStoreManager) {
+    // The cache under cacheStoreManager is divided into two layers. The key for the first layer of cache is determined
+    // by the SDK and runtimeOS, accessed through the `mount` interface. The key for the second layer of cache is
+    // determined by the compilation task and the name of the cache object,
+    // accessed through `getCache` or `setCache` interface.
+    const cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
+    const cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + key;
+
+    // Clear the cache if the SDK path or runtimeOS changed
+    clearRollupCacheStore(rollupShareObject.cacheStoreManager, cacheStoreKey);
+    return rollupShareObject.cacheStoreManager.mount(cacheStoreKey).getCache(cacheServiceKey);
+  }
+
+  return undefined;
+}
+
+export function setRollupCache(rollupShareObject: object, projectConfig: object, key: string, value: object): void {
+  if (!rollupShareObject) {
+    return;
+  }
+
+  // Preferentially set cache object to the rollup’s cache interface.
+  if (rollupShareObject.cache) {
+    // Only the cache object’s name as the cache key is required.
+    rollupShareObject.cache.set(key, value);
+    return;
+  }
+
+  // Try to set cache object to the rollup's cacheStoreManager interface.
+  if (rollupShareObject.cacheStoreManager) {
+    const cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
+    const cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + key;
+
+    rollupShareObject.cacheStoreManager.mount(cacheStoreKey).setCache(cacheServiceKey, value);
+  }
 }
