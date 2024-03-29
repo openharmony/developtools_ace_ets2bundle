@@ -75,6 +75,9 @@ import {
   DYNAMICIMPORT_ETS,
   UPDATESOURCEMAP
 } from '../mock/rollup_mock/common';
+import{
+  moduleResolutionHostTest
+} from '../../../lib/ets_checker';
 
 mocha.describe('test utils file api', function () {
   mocha.before(function () {
@@ -1088,5 +1091,24 @@ mocha.describe('test utils file api', function () {
     const fileJson = TEST_JS;
     const returnInfoJson = isJsonSourceFile(fileJson);
     expect(returnInfoJson).to.be.false;
+  });
+
+  mocha.it('14-1: test moduleResolutionHost', function () {
+    const dirExists = moduleResolutionHostTest.directoryExists(path.resolve(__dirname));
+    const dirNotExists = moduleResolutionHostTest.directoryExists(path.resolve('./dirNotExists'));
+    expect(dirExists).to.be.true;
+    expect(dirNotExists).to.be.false;
+    const fileExists = moduleResolutionHostTest.fileExists(path.resolve(__filename));
+    const fileNotExists = moduleResolutionHostTest.fileExists(path.resolve('./fileNotExists'));
+    expect(fileExists).to.be.true;
+    expect(fileNotExists).to.be.false;
+    const dirExistsCache = moduleResolutionHostTest.directoryExists(path.resolve(__dirname));
+    const dirNotExistsCache = moduleResolutionHostTest.directoryExists(path.resolve('./dirNotExists'));
+    expect(dirExistsCache).to.be.true;
+    expect(dirNotExistsCache).to.be.false;
+    const fileExistsCache = moduleResolutionHostTest.fileExists(path.resolve(__filename));
+    const fileNotExistsCache = moduleResolutionHostTest.fileExists(path.resolve('./fileNotExists'));
+    expect(fileExistsCache).to.be.true;
+    expect(fileNotExistsCache).to.be.false;
   });
 });
