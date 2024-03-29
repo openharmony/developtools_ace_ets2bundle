@@ -70,6 +70,7 @@ import {
   SYSCAP_TAG_CONDITION_CHECK_WARNING,
   SYSCAP_TAG_CHECK_WARNING,
   CANIUSE_FUNCTION_NAME,
+  RUNTIME_OS_OH
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 
@@ -420,20 +421,18 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
 export function configureSyscapInfo(config: any): void {
   config.deviceTypesMessage = config.deviceTypes.join(',');
   const deviceDir: string = path.resolve(__dirname, '../../../../../api/device-define/');
+  const deviceInfoMap: Map<string, string[]> = new Map();
   const syscaps: Array<string[]> = [];
   let allSyscaps: string[] = [];
   config.deviceTypes.forEach((deviceType: string) => {
-    let syscapFilePath: string = '';
-    if (deviceType === 'phone') {
-      syscapFilePath = path.resolve(deviceDir, 'default.json');
-    } else {
-      syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
-    }
-    if (fs.existsSync(syscapFilePath)) {
-      const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
-      syscaps.push(content['SysCaps']);
-      allSyscaps = allSyscaps.concat(content['SysCaps']);
-    }
+    collectOhSyscapInfos(deviceType, deviceDir, deviceInfoMap);
+  });
+  if (config.runtimeOS !== RUNTIME_OS_OH) {
+    collectExternalSyscapInfos(config.externalApiPaths, config.deviceTypes, deviceInfoMap);
+  }
+  deviceInfoMap.forEach((value: string[]) => {
+    syscaps.push(value);
+    allSyscaps = allSyscaps.concat(value);
   });
   const intersectNoRepeatTwice = (arrs: Array<string[]>) => {
     return arrs.reduce(function (prev: string[], cur: string[]) {
@@ -448,6 +447,56 @@ export function configureSyscapInfo(config: any): void {
   }
   config.syscapIntersectionSet = new Set(syscapIntersection);
   config.syscapUnionSet = new Set(allSyscaps);
+}
+
+function collectOhSyscapInfos(deviceType: string, deviceDir: string, deviceInfoMap: Map<string, string[]>) {
+  let syscapFilePath: string = '';
+  if (deviceType === 'phone') {
+    syscapFilePath = path.resolve(deviceDir, 'default.json');
+  } else {
+    syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
+  }
+  if (fs.existsSync(syscapFilePath)) {
+    const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+    if (deviceInfoMap.get(deviceType)) {
+      deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+    } else {
+      deviceInfoMap.set(deviceType, content['SysCaps']);
+    }
+  }
+}
+
+function collectExternalSyscapInfos(
+  externalApiPaths: string[],
+  deviceTypes: string[],
+  deviceInfoMap: Map<string, string[]>
+) {
+  const externalDeviceDirs: string[] = [];
+  externalApiPaths.forEach((externalApiPath: string) => {
+    const externalDeviceDir: string = path.resolve(externalApiPath, './api/device-define');
+    if (fs.existsSync(externalDeviceDir)) {
+      externalDeviceDirs.push(externalDeviceDir);
+    }
+  });
+  externalDeviceDirs.forEach((externalDeviceDir: string) => {
+    deviceTypes.forEach((deviceType: string) => {
+      let syscapFilePath: string = '';
+      const files: string[] = fs.readdirSync(externalDeviceDir);
+      files.forEach((fileName: string) => {
+        if (fileName.startsWith(deviceType)) {
+          syscapFilePath = path.resolve(externalDeviceDir, fileName);
+          if (fs.existsSync(syscapFilePath)) {
+            const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+            if (deviceInfoMap.get(deviceType)) {
+              deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+            } else {
+              deviceInfoMap.set(deviceType, content['SysCaps']);
+            }
+          }
+        }
+      });
+    });
+  });
 }
 
 /**
