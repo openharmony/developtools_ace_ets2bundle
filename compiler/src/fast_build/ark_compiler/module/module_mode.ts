@@ -137,6 +137,7 @@ export class ModuleMode extends CommonMode {
   protoFilePath: string;
   filterModuleInfos: Map<String, ModuleInfo>;
   symlinkMap: Object;
+  useNormalizedOHMUrl: boolean;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -158,6 +159,7 @@ export class ModuleMode extends CommonMode {
     this.hashJsonObject = {};
     this.filterModuleInfos = new Map<String, ModuleInfo>();
     this.symlinkMap = rollupObject.share.symlinkMap;
+    this.useNormalizedOHMUrl = this.isUsingNormalizedOHMUrl();
   }
 
   prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
@@ -175,16 +177,22 @@ export class ModuleMode extends CommonMode {
         continue;
       }
       const moduleInfo: Object = module.getModuleInfo(moduleId);
-      if (moduleInfo['meta']['isNodeEntryFile']) {
+      if (moduleInfo['meta']['isNodeEntryFile'] && !this.useNormalizedOHMUrl) {
         this.getPackageEntryInfo(moduleId, moduleInfo['meta'], pkgEntryInfos);
       }
 
       this.processModuleInfos(moduleId, moduleInfos, moduleInfo['meta']);
     }
-    this.getDynamicImportEntryInfo(pkgEntryInfos);
-    this.getNativeModuleEntryInfo(pkgEntryInfos);
+    if (!this.useNormalizedOHMUrl) {
+      this.getDynamicImportEntryInfo(pkgEntryInfos);
+      this.getNativeModuleEntryInfo(pkgEntryInfos);
+    }
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
+  }
+
+  private isUsingNormalizedOHMUrl() {
+    return !!this.projectConfig.useNormalizedOHMUrl;
   }
 
   private updatePkgEntryInfos(pkgEntryInfos: Map<String, PackageEntryInfo>, key: String, value: PackageEntryInfo): void {
@@ -227,8 +235,7 @@ export class ModuleMode extends CommonMode {
   private getPackageEntryInfo(filePath: string, metaInfo: Object, pkgEntryInfos: Map<String, PackageEntryInfo>): void {
     if (metaInfo['isLocalDependency']) {
       const hostModulesInfo: Object = metaInfo.hostModulesInfo;
-      let pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
-
+      const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
       hostModulesInfo.forEach(hostModuleInfo => {
         const hostDependencyName: string = hostModuleInfo['hostDependencyName'];
         const hostModuleName: string = hostModuleInfo['hostModuleName'];
@@ -245,7 +252,6 @@ export class ModuleMode extends CommonMode {
       this.logger.debug("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ", filePath);
       return;
     }
- 
     const pkgPath: string = metaInfo['pkgPath'];
     let originPkgEntryPath: string = toUnixPath(filePath.replace(pkgPath, ''));
     if (originPkgEntryPath.startsWith('/')) {
@@ -308,8 +314,7 @@ export class ModuleMode extends CommonMode {
     const isPackageModules = isPackageModulesFile(filePath, this.projectConfig);
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
     filePath = this.handleObfuscatedFilePath(filePath, isPackageModules);
-
-    let namespace: string = metaInfo['moduleName'];
+    let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string =
@@ -317,16 +322,19 @@ export class ModuleMode extends CommonMode {
     let packageName: string = '';
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
-      const pkgPath = metaInfo['pkgPath']
-      recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger,
-                                                 packageName, pkgPath, undefined, true);
+      const pkgParams = {
+        pkgName: packageName,
+        pkgPath: metaInfo['pkgPath'],
+        isRecordName: true
+      };
+      recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
     } else {
-      recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, namespace);
+      recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
         packageName = this.getPkgModulesFilePkgName(metaInfo['pkgPath']);
       } else {
         packageName =
-          metaInfo['isLocalDependency'] ? namespace : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+          metaInfo['isLocalDependency'] ? moduleName : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
       }
     }
 
