@@ -102,7 +102,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new AAA(this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10 });
+                    let componentCall = new AAA(this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -126,7 +126,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new CCC(this, { CCC: this.CCC }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 17 });
+                    let componentCall = new CCC(this, { CCC: this.CCC }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 17, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -144,7 +144,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new BBB(this, {}, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 19 });
+                    let componentCall = new BBB(this, {}, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 19, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};

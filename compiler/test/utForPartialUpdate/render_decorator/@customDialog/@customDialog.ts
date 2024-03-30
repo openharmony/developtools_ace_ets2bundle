@@ -228,7 +228,7 @@ class CustomDialogUser extends ViewPU {
                     action2: this.existApp,
                     count: this.countInitValue,
                     isPlaying: this.__playingInitValue
-                }, undefined, -1, () => { }, { page: "@customDialog.ets", line: 47 });
+                }, undefined, -1, () => { }, { page: "@customDialog.ets", line: 47, col: 14 });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
                 let paramsLambda = () => {

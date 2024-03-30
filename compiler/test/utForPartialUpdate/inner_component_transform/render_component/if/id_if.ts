@@ -397,7 +397,7 @@ class MyComponent extends ViewPU {
                         {
                             this.observeComponentCreation2((elmtId, isInitialRender) => {
                                 if (isInitialRender) {
-                                    let componentCall = new Child(this, {}, undefined, elmtId, () => { }, { page: "id_if.ets", line: 78 });
+                                    let componentCall = new Child(this, {}, undefined, elmtId, () => { }, { page: "id_if.ets", line: 78, col: 11 });
                                     ViewPU.create(componentCall);
                                     let paramsLambda = () => {
                                         return {};

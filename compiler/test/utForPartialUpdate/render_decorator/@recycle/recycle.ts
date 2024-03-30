@@ -201,7 +201,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle.ets", line: 9 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle.ets", line: 9, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -348,7 +348,7 @@ class child extends ViewPU {
             this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "recycle.ets", line: 33 });
+                    let componentCall = recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "recycle.ets", line: 33, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "AnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();

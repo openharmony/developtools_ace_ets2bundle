@@ -118,7 +118,7 @@ class CompA extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new CompB(this, {}, undefined, elmtId, () => { }, { page: "@consume_@provide.ets", line: 10 });
+                    let componentCall = new CompB(this, {}, undefined, elmtId, () => { }, { page: "@consume_@provide.ets", line: 10, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -174,7 +174,7 @@ class CompB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new CompC(this, {}, undefined, elmtId, () => { }, { page: "@consume_@provide.ets", line: 26 });
+                    let componentCall = new CompC(this, {}, undefined, elmtId, () => { }, { page: "@consume_@provide.ets", line: 26, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};

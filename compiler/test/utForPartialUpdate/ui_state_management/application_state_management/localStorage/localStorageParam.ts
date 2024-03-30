@@ -102,7 +102,7 @@ class localStorageParam extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComA(this, { message: 'Hi' }, storage, elmtId, () => { }, { page: "localStorageParam.ets", line: 11 });
+                    let componentCall = new ComA(this, { message: 'Hi' }, storage, elmtId, () => { }, { page: "localStorageParam.ets", line: 11, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -121,7 +121,7 @@ class localStorageParam extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComB(this, {}, storage, elmtId, () => { }, { page: "localStorageParam.ets", line: 12 });
+                    let componentCall = new ComB(this, {}, storage, elmtId, () => { }, { page: "localStorageParam.ets", line: 12, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -136,7 +136,7 @@ class localStorageParam extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComD(this, storage, undefined, elmtId, () => { }, { page: "localStorageParam.ets", line: 13 });
+                    let componentCall = new ComD(this, storage, undefined, elmtId, () => { }, { page: "localStorageParam.ets", line: 13, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return storage;
@@ -151,7 +151,7 @@ class localStorageParam extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComE(this, {}, undefined, elmtId, () => { }, { page: "localStorageParam.ets", line: 14 });
+                    let componentCall = new ComE(this, {}, undefined, elmtId, () => { }, { page: "localStorageParam.ets", line: 14, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};

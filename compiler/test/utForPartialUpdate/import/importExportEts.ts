@@ -146,7 +146,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'ExportComponent1'
-                    }, undefined, elmtId, () => { }, { page: "importExportEts.ets", line: 15 });
+                    }, undefined, elmtId, () => { }, { page: "importExportEts.ets", line: 15, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -179,7 +179,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'ExportComponent4'
-                    }, undefined, elmtId, () => { }, { page: "importExportEts.ets", line: 25 });
+                    }, undefined, elmtId, () => { }, { page: "importExportEts.ets", line: 25, col: 11 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

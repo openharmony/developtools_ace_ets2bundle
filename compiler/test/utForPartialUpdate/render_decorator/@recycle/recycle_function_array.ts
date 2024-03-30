@@ -93,7 +93,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, () => { }, { page: "recycle_function_array.ets", line: 8 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, () => { }, { page: "recycle_function_array.ets", line: 8, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
