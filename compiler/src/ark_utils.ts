@@ -72,21 +72,26 @@ export const SRC_MAIN: string = 'src/main';
 export var newSourceMaps: Object = {};
 export var nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
+// Splicing ohmurl or record name based on filePath and context information table. 
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
-  pkgName?: string, pkgPath?: string, importerFile?: string, isRecordName: boolean = false): string {
-  // remove '\x00' from the rollup virtual commonjs file's filePath
+  pkgParams: Object, importerFile: string): string {
+  const {pkgName, pkgPath, isRecordName} = pkgParams;
+  // rollup uses commonjs plugin to handle commonjs files,
+  // the commonjs files are prefixed with '\x00' and need to be removed.
   if (filePath.startsWith('\x00')) {
     filePath = filePath.replace('\x00', '');
   }
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
   let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
-  const pkgContextInfo = projectConfig.pkgContextInfo;
-  if (projectFilePath === '') {
-      projectFilePath = `/${pkgContextInfo.entryPath}`;
-      projectFilePath = projectFilePath.substring(0, filePath.lastIndexOf('.'));
-  }
-  let pkgInfo = pkgContextInfo[pkgName];
+  // case1: /entry/src/main/ets/xxx/yyy
+  // case2: /entry/src/ohosTest/ets/xxx/yyy
+  // case3: /node_modules/xxx/yyy
+  // case4: /entry/node_modules/xxx/yyy
+  // case5: /library/node_modules/xxx/yyy
+  // case6: /library/index.ts
+  // ---> @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
+  let pkgInfo = projectConfig.pkgContextInfo[pkgName];
   if (pkgInfo === undefined) {
     logger.error(red,
       `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
@@ -95,12 +100,14 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   }
   let recordName = `${pkgInfo.bundleName}&${pkgName}${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
+    // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
     return recordName;
   }
-  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` + recordName;
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&${recordName}`;
 }
 
-export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string, importerFile?: string): string {
+export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object, namespace?: string,
+  importerFile?: string): string {
   // remove '\x00' from the rollup virtual commonjs file's filePath
   if (filePath.startsWith('\x00')) {
     filePath = filePath.replace('\x00', '');
@@ -247,10 +254,9 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
   }
   if (REG_LIB_SO.test(moduleRequest.trim())) {
     if (useNormalizedOHMUrl) {
-      const pkgContextInfo = config.pkgContextInfo;
-      const pkgInfo = pkgContextInfo[moduleRequest];
-      return `@normalized:${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` +
-             `${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
+      const pkgInfo = config.pkgContextInfo[moduleRequest];
+      const isSo = pkgInfo.isSO ? 'Y' : 'N';
+      return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
     }
     return moduleRequest.replace(REG_LIB_SO, (_, libsoKey) => {
       return `@app:${projectConfig.bundleName}/${projectConfig.moduleName}/${libsoKey}`;
@@ -315,31 +321,36 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
 }
 
 function removeSuffix(filePath: string) {
-  const typeExts = ['.d.ets', '.d.ts','.ets', '.ts'];
-  const mainName = filePath.split(path.sep).join('/');
-  const ext: string | undefined = typeExts.find(ext => mainName.endsWith(ext));
-  return ext ? mainName.substring(0, mainName.lastIndexOf(ext)) : mainName;
+  const SUFFIX_REG = /\.(?:d\.)?e?ts$/;
+  return filePath.split(path.sep).join('/').replace(SUFFIX_REG ,'');
 }
 
-export function getNormalizedOhmUrlByHspName(pkgName: string, projectConfig: Object,
+export function getNormalizedOhmUrlByHspName(aliasName: string, projectConfig: Object,
   logger?: Object, filePath?: string) {
-  const pkgContextInfo = projectConfig.pkgContextInfo;
-  let pkgInfo = pkgContextInfo[pkgName];
-  if (pkgInfo === undefined) {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Not to found the package: ${pkgName}`, reset);
+  let pkgName: string = aliasName;
+  const aliasPkgNameMap: Map<string, string> = projectConfig.dependencyAliasMap;
+  if (aliasPkgNameMap.has(aliasName)) {
+    pkgName = aliasPkgNameMap.get(aliasName);
   }
-  let normalizedPath = filePath;
-  if (normalizedPath === undefined) {
+  const pkgInfo: Object = projectConfig.pkgContextInfo[pkgName];
+  if (pkgInfo === undefined) {
+    logger.error(red, `ArkTS:INTERNAL ERROR: package ${pkgName} not found`, reset);
+  }
+  let normalizedPath: string = '';
+  if (filePath === undefined) {
     normalizedPath = `${pkgName}/${toUnixPath(pkgInfo.entryPath)}`;
     normalizedPath = removeSuffix(normalizedPath);
+  } else {
+    const relativePath = toUnixPath(filePath).replace(aliasName, '');
+    normalizedPath = `${pkgName}${relativePath}`;
   }
-  return `@normalized:${pkgInfo.isSO ? 'Y' : 'N'}&${pkgInfo.moduleName}&` +
-         `${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
+  const isSo = pkgInfo.isSO ? 'Y' : 'N';
+  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
 export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object, logger?: Object,
   useNormalizedOHMUrl: boolean = false): string | undefined {
-  // The harNameOhmMap store the old ohmurl with hsp package.
+  // The harNameOhmMap store the ohmurl with the alias of hsp package .
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {

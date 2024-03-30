@@ -135,19 +135,13 @@ export class ModuleSourceFile {
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
-      mockFileOhmUrl = getNormalizedOhmUrlByFilepath(mockFilePath,
-        ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger,
-        targetModuleInfo.meta.pkgName,
-        targetModuleInfo.meta.pkgPath,
-        importerFile);
-      mockFileOhmUrl = `@normalized:${mockFileOhmUrl}`;
+      mockFileOhmUrl = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, mockFilePath, importerFile);
     } else {
       mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
-        ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger,
-        rollupObject.share.projectConfig.entryModuleName,
-        importerFile);
+                                           ModuleSourceFile.projectConfig,
+                                           ModuleSourceFile.logger,
+                                           rollupObject.share.projectConfig.entryModuleName,
+                                           importerFile);
       mockFileOhmUrl = mockFileOhmUrl.startsWith(PACKAGES) ? `@package:${mockFileOhmUrl}` : `@bundle:${mockFileOhmUrl}`;
     }
 
@@ -316,16 +310,11 @@ export class ModuleSourceFile {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       let res: string = "";
       if (useNormalizedOHMUrl) {
-        const pkgName = targetModuleInfo['meta']['pkgName'];
-        const pkgPath = targetModuleInfo['meta']['pkgPath'];
-        const ohmUrl: string = 
-          getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger,
-            pkgName, pkgPath, importerFile);
-        res = `@normalized:${ohmUrl}`;
+        res = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, filePath, importerFile);
       } else {
-        const namespace: string = targetModuleInfo['meta']['moduleName'];
+        const moduleName: string = targetModuleInfo['meta']['moduleName'];
         const ohmUrl: string =
-          getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, namespace, importerFile);
+          getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, moduleName, importerFile);
         res = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
       }
       if (ModuleSourceFile.needProcessMock) {
@@ -340,6 +329,18 @@ export class ModuleSourceFile {
       return res;
     }
     return undefined;
+  }
+
+  private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile: string): string {
+    const pkgParams = {
+      pkgName: moduleInfo['meta']['pkgName'],
+      pkgPath: moduleInfo['meta']['pkgPath'],
+      isRecordName: false
+    };
+    const ohmUrl: string =
+      getNormalizedOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, pkgParams,
+        importerFile);
+    return `@normalized:${ohmUrl}`;
   }
 
   private processJsModuleRequest(rollupObject: Object): void {
