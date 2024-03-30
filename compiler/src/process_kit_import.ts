@@ -254,8 +254,7 @@ export class KitInfo {
         const importClause = ts.isImportClause(node) ? node : (node as ts.ImportDeclaration).importClause;
         if (importClause) {
           isTypeSymbol = importClause.isTypeOnly;
-          if (importClause.name &&
-            !resolver.isReferencedAliasDeclaration(importClause) && resolver.isReferenced(node)) {
+          if (importClause.name && !resolver.isReferencedAliasDeclaration(importClause)) {
               isTypeSymbol = true;
           }
         }
@@ -263,7 +262,7 @@ export class KitInfo {
       }
       case ts.SyntaxKind.ImportSpecifier: {
         isTypeSymbol = (node as ts.ImportSpecifier).isTypeOnly;
-        if (!resolver.isReferencedAliasDeclaration(node) && resolver.isReferenced(node)) {
+        if (!resolver.isReferencedAliasDeclaration(node)) {
           isTypeSymbol = true;
         }
         break;
