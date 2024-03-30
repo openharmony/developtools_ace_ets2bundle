@@ -70,6 +70,38 @@ const KIT_IMPORT_ERROR_CODE: string =
 const KIT_IMPORT_DEFAULT_CODE: string =
 'import { Ability } from "@kit.AbilityKit";'
 
+const KIT_UNUSED_TYPE_IMPROT_CODE: string = 
+'import { BusinessError } from "@kit.BasicServicesKit";'
+
+const KIT_UNUSED_TYPE_IMPROT_CODE_EXPECT: string =
+'export {};\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const KIT_USED_TYPE_IMPROT_CODE: string = 
+'import { BusinessError } from "@kit.BasicServicesKit";\n' +
+'let e: BusinessError = undefined';
+
+const KIT_USED_TYPE_IMPROT_CODE_EXPECT: string =
+'let e = undefined;\n' +
+'export {};\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const KIT_UNUSED_VALUE_IMPORT_CODE: string =
+'import { appAccount } from "@kit.BasicServicesKit";'
+
+const KIT_UNUSED_VALUE_IMPROT_CODE_EXPECT: string =
+'export {};\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const KIT_USED_VALUE_IMPORT_CODE: string =
+'import { appAccount } from "@kit.BasicServicesKit";\n' +
+'appAccount.createAppAccountManager();';
+
+const KIT_USED_VALUE_IMPROT_CODE_EXPECT: string =
+'import appAccount from "@ohos.account.appAccount";\n' +
+'appAccount.createAppAccountManager();\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -102,6 +134,44 @@ mocha.describe('process Kit Imports tests', function () {
       transformers: { before: [ processKitImport() ] }
     });
     expect(result.outputText == KIT_STAR_EXPORT_CODE_EXPECT).to.be.true;
+  });
+
+  mocha.it('process unused type import', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_UNUSED_TYPE_IMPROT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == KIT_UNUSED_TYPE_IMPROT_CODE_EXPECT).to.be.true;
+  });
+
+  mocha.it('process used type import', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_USED_TYPE_IMPROT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    console.error(result.outputText);
+    expect(result.outputText == KIT_USED_TYPE_IMPROT_CODE_EXPECT).to.be.true;
+  });
+
+  mocha.it('process unused value import', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_UNUSED_VALUE_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == KIT_UNUSED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
+  });
+
+  mocha.it('process used value import', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_USED_VALUE_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    console.error(result.outputText);
+    expect(result.outputText == KIT_USED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
   mocha.it('the error message of processKitImport', function () {
