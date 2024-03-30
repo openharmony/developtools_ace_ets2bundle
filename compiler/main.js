@@ -616,7 +616,10 @@ function filterWorker(workerPath) {
   const apiDirPath = path.resolve(__dirname, '../../api');
   const arktsDirPath = path.resolve(__dirname, '../../arkts');
   const kitsDirPath = path.resolve(__dirname, '../../kits');
-  const systemModulePathArray = [apiDirPath, arktsDirPath, kitsDirPath];
+  const systemModulePathArray = [apiDirPath];
+  if (!process.env.isFaMode) {
+    systemModulePathArray.push(arktsDirPath, kitsDirPath);
+  }
   systemModulePathArray.forEach(systemModulesPath => {
     if (fs.existsSync(systemModulesPath)) {
       globalModulePaths.push(systemModulesPath);
