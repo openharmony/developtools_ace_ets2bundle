@@ -73,11 +73,13 @@ import {
   FIND_MODULE_WARNING,
   SYSCAP_TAG_CHECK_NAME,
   SYSCAP_TAG_CHECK_WARNING,
+  COMPONENT_STYLES_DECORATOR
 } from './pre_define';
 import { getName } from './process_component_build';
 import {
   INNER_COMPONENT_NAMES,
-  JS_BIND_COMPONENTS
+  JS_BIND_COMPONENTS,
+  BUILDIN_STYLE_NAMES
 } from './component_map';
 import { logger } from './compile_info';
 import {
@@ -1015,6 +1017,7 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
         ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
       collectComponents(sourceFile);
+      collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
       props.push(...dollarCollection, ...decoratorParamsCollection, ...extendCollection);
     }
@@ -1030,6 +1033,39 @@ function collectComponents(node: ts.SourceFile): void {
         appComponentCollection.get(path.join(node.fileName)).add(key);
       }
     }
+  }
+}
+
+function collectionCustomizeStyles(node: ts.Node): void {
+  if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
+    isStylesDecorator(node, COMPONENT_STYLES_DECORATOR) && node.name && ts.isIdentifier(node.name)) {
+    BUILDIN_STYLE_NAMES.add(node.name.escapedText.toString());
+  }
+  if (ts.isSourceFile(node)) {
+    node.statements.forEach((item: ts.Node) => {
+      return collectionCustomizeStyles(item);
+    })
+  } else if (ts.isStructDeclaration(node)) {
+    node.members.forEach((item: ts.Node) => {
+      return collectionCustomizeStyles(item);
+    })
+  }
+}
+
+function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      if (originalDecortor === decortorName) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  } else {
+    return false;
   }
 }
 
