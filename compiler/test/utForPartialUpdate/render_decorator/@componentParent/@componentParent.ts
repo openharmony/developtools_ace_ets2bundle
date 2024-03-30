@@ -77,7 +77,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComA(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 8 });
+                    let componentCall = new ComA(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 8, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -92,7 +92,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ComB(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 9 });
+                    let componentCall = new ComB(this, {}, undefined, elmtId, () => { }, { page: "@componentParent.ets", line: 9, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};

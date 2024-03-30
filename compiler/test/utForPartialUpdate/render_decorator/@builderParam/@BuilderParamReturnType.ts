@@ -82,7 +82,7 @@ class ComA extends ViewPU {
                         createView: typeof this.uiModule.createView() === "function" ? this.uiModule.createView() : () => {
                             this.uiModule.createView();
                         }
-                    }, undefined, elmtId, () => { }, { page: "@BuilderParamReturnType.ets", line: 8 });
+                    }, undefined, elmtId, () => { }, { page: "@BuilderParamReturnType.ets", line: 8, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

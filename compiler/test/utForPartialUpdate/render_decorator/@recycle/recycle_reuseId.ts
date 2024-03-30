@@ -117,7 +117,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 10 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 10, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "reuse_key", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -158,7 +158,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(this.state_value, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 14 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 14, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, this.state_value, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -195,7 +195,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key11111111111", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 17 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 17, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "reuse_key11111111111", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -236,7 +236,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 19 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 19, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "child", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -273,7 +273,7 @@ class HomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(a, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 22 });
+                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "recycle_reuseId.ets", line: 22, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, a, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();

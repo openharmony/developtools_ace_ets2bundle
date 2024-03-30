@@ -102,7 +102,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Child(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, () => { }, { page: "component_object.ets", line: 13 });
+                    let componentCall = new Child(this, { options, message1: this.__message1, message2: this.message2 }, undefined, elmtId, () => { }, { page: "component_object.ets", line: 13, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -123,7 +123,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Child2(this, options, undefined, elmtId, () => { }, { page: "component_object.ets", line: 14 });
+                    let componentCall = new Child2(this, options, undefined, elmtId, () => { }, { page: "component_object.ets", line: 14, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return options;

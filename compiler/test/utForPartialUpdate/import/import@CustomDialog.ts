@@ -81,7 +81,7 @@ class CustomDialogUser extends ViewPU {
                     confirm: this.onAccept,
                     textValue: this.__textValue,
                     inputValue: this.__inputValue
-                }, undefined, -1, () => { }, { page: "import@CustomDialog.ets", line: 10 });
+                }, undefined, -1, () => { }, { page: "import@CustomDialog.ets", line: 10, col: 14 });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
                 let paramsLambda = () => {

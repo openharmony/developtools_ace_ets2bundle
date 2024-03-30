@@ -114,7 +114,7 @@ class CustomY extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new CustomX(this, { fruit: this.parentFruit }, undefined, elmtId, () => { }, { page: "@prop.ets", line: 15 });
+                    let componentCall = new CustomX(this, { fruit: this.parentFruit }, undefined, elmtId, () => { }, { page: "@prop.ets", line: 15, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -133,7 +133,7 @@ class CustomY extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new CustomX(this, {}, undefined, elmtId, () => { }, { page: "@prop.ets", line: 16 });
+                    let componentCall = new CustomX(this, {}, undefined, elmtId, () => { }, { page: "@prop.ets", line: 16, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
