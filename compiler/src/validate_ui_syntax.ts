@@ -556,8 +556,8 @@ function isSendableTypeReference(type: ts.Type): boolean {
   if (!type) {
     return false;
   }
-  // enum supported in sendable class
-  if ((type.flags & (ts.TypeFlags.Enum | ts.TypeFlags.EnumLiteral)) !== 0) {
+  // enum / typeparameter supported in sendable class
+  if ((type.flags & (ts.TypeFlags.Enum | ts.TypeFlags.EnumLiteral | ts.TypeFlags.TypeParameter)) !== 0) {
     return true;
   }
   if (!type.getSymbol() || (!type.getSymbol().valueDeclaration && !type.getSymbol().declarations)) {
@@ -574,6 +574,11 @@ function isSendableTypeReference(type: ts.Type): boolean {
   return false;
 }
 
+function isNullKeyword(type: ts.Type): boolean {
+  // NullKeyword supported in sendable class
+  return type && ((type.flags & ts.TypeFlags.Null) !== 0);
+}
+
 function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
   if (ts.isUnionTypeNode(typeNode)) {
     return true;
@@ -584,12 +589,12 @@ function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
     case ts.SyntaxKind.NumberKeyword:
     case ts.SyntaxKind.BooleanKeyword:
     case ts.SyntaxKind.BigIntKeyword:
+    case ts.SyntaxKind.UndefinedKeyword:
       return true;
+    case ts.SyntaxKind.LiteralType:
+      return globalProgram.checker && isNullKeyword(globalProgram.checker.getTypeFromTypeNode(typeNode));
     case ts.SyntaxKind.TypeReference: {
-      if (globalProgram.checker) {
-        return isSendableTypeReference(globalProgram.checker.getTypeFromTypeNode(typeNode));
-      }
-      return false;
+      return globalProgram.checker && isSendableTypeReference(globalProgram.checker.getTypeFromTypeNode(typeNode));
     }
     default:
       return false;
