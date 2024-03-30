@@ -114,6 +114,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
   projectConfig.optLazyForEach = false;
   projectConfig.useArkoala = false;
+  projectConfig.resetBundleName = false;
 }
 
 function loadEntryObj(projectConfig) {
