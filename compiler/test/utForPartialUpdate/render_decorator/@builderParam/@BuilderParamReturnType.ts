@@ -45,9 +45,6 @@ class TestUlModule4 {
 `
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 class ComA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -56,7 +53,6 @@ class ComA extends ViewPU {
         }
         this.uiModule = new TestUlModule4();
         this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.uiModule !== undefined) {
@@ -110,7 +106,6 @@ class FeedComponent extends ViewPU {
         }
         this.createView = undefined;
         this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.createView !== undefined) {

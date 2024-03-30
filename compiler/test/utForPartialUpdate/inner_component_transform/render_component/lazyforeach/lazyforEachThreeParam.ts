@@ -144,9 +144,6 @@ struct lazyforEachThreeParam {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 class BasicDataSource {
     constructor() {
         this.listeners = [];
@@ -228,7 +225,6 @@ class lazyforEachThreeParam extends ViewPU {
         this.mKeyGenerator = undefined;
         this.mKeyGenerator1 = (item, index) => 'item' + index;
         this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.data !== undefined) {
