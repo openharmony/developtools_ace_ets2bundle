@@ -105,6 +105,7 @@ export interface LanguageServiceCache {
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
+export let localPackageSet: Set<string> = new Set();
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -436,12 +437,13 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   }
 }
 // collect the compiled files of tsc and rollup for obfuscation scanning.
-export function collectAllFiles(program?: ts.Program, rollupFileList?: IterableIterator<string>): void {
+export function collectAllFiles(program?: ts.Program, rollupFileList?: IterableIterator<string>,
+  rollupObject?: Object): void {
   if (program) {
     collectTscFiles(program);
     return;
   }
-  mergeRollUpFiles(rollupFileList);
+  mergeRollUpFiles(rollupFileList, rollupObject);
 }
 
 export function collectTscFiles(program: ts.Program): void {
@@ -466,10 +468,15 @@ export function collectTscFiles(program: ts.Program): void {
   });
 }
 
-export function mergeRollUpFiles(rollupFileList: IterableIterator<string>) {
+export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
+    }
+    const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+    const metaInfo: Object = moduleInfo['meta'];
+    if (metaInfo.pkgName && metaInfo.isLocalDependency) {
+      localPackageSet.add(metaInfo.pkgName);
     }
   }
 }

@@ -27,6 +27,7 @@ import {
   getOhmUrlByHspName,
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
+  compileToolIsRollUp
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
@@ -54,7 +55,12 @@ import {
   USER_DEFINE_MOCK_CONFIG
 } from '../../../pre_define';
 import { readProjectAndLibsSource } from '../common/process_ark_config';
-import { allSourceFilePaths, collectAllFiles, resolvedModulesCache } from '../../../ets_checker';
+import {
+  allSourceFilePaths,
+  collectAllFiles,
+  resolvedModulesCache,
+  localPackageSet
+} from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { EventList } from 'arkguard/lib/utils/PrinterUtils';
@@ -226,19 +232,23 @@ export class ModuleSourceFile {
       ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
     }
 
-    collectAllFiles(undefined, rollupObject.getModuleIds());
+    collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
     performancePrinter?.iniPrinter?.startEvent('Scan source files');
+    let sourceProjectConfig: Object = ModuleSourceFile.projectConfig;
     // obfuscation initialization, include collect file, resolve denpendency, read source
-    const obfuscationConfig: MergedConfig = ModuleSourceFile.projectConfig.obfuscationMergedObConfig;
-    const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig, ModuleSourceFile.projectConfig.projectRootPath,
-      ModuleSourceFile.projectConfig.arkObfuscator);
-    readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, ModuleSourceFile.projectConfig.arkObfuscator,ModuleSourceFile.projectConfig.compileHar,
-      keepFilesAndDependencies);
+    if (compileToolIsRollUp()) {
+      const obfuscationConfig: MergedConfig = sourceProjectConfig.obfuscationMergedObConfig;
+      const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig,
+        sourceProjectConfig.projectRootPath, sourceProjectConfig.arkObfuscator);
+      readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
+        sourceProjectConfig.compileHar, keepFilesAndDependencies);
+    }
     performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
     performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
+    sourceProjectConfig.localPackageSet = localPackageSet;
     for (const source of ModuleSourceFile.sourceFiles) {
       if (!rollupObject.share.projectConfig.compileHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
@@ -251,7 +261,7 @@ export class ModuleSourceFile {
       stopEvent(eventWriteSourceFile);
     }
 
-    if (rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
+    if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
       await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
     }
     performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
@@ -259,9 +269,9 @@ export class ModuleSourceFile {
     performancePrinter?.timeSumPrinter?.summarizeEventDuration();
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
-    if (ModuleSourceFile.projectConfig.arkObfuscator && ModuleSourceFile.projectConfig.obfuscationOptions) {
-      writeObfuscationNameCache(ModuleSourceFile.projectConfig, ModuleSourceFile.projectConfig.obfuscationOptions.obfuscationCacheDir,
-        ModuleSourceFile.projectConfig.obfuscationMergedObConfig.options?.printNameCache);
+    if (compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions) {
+      writeObfuscationNameCache(sourceProjectConfig, sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
+        sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache);
     }
     stopEvent(eventObfuscatedCode);
 
