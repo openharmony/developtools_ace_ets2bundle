@@ -820,7 +820,8 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
   const posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
-  const line = posOfNode.line + 1;
+  const line: number = posOfNode.line + 1;
+  const col: number = posOfNode.character + 1;
   for (const item of componentCollection.customComponents) {
     componentInfo.componentNames.add(item);
   }
@@ -851,7 +852,7 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
         argumentsArray.push(isCutomDialog ? ts.factory.createPrefixUnaryExpression(
           ts.SyntaxKind.MinusToken,
           ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),
-          createArrowFunctionNode(), componentParamRowAndColumn(line));
+        createArrowFunctionNode(), componentParamRowAndColumn(line, col));
       }
       node =
         ts.factory.updateNewExpression(node, node.expression, node.typeArguments, argumentsArray);
@@ -879,7 +880,7 @@ export function isLocalStorageParameter(node: ts.CallExpression): boolean {
     globalProgram.checker.getResolvedSignature(node).parameters[0].escapedName === '##storage';
 }
 
-function componentParamRowAndColumn(line: number): ts.ObjectLiteralExpression {
+function componentParamRowAndColumn(line: number, col: number): ts.ObjectLiteralExpression {
   return ts.factory.createObjectLiteralExpression(
     [
       ts.factory.createPropertyAssignment(
@@ -889,6 +890,10 @@ function componentParamRowAndColumn(line: number): ts.ObjectLiteralExpression {
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier('line'),
         ts.factory.createNumericLiteral(line)
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier('col'),
+        ts.factory.createNumericLiteral(col)
       )
     ],
     false

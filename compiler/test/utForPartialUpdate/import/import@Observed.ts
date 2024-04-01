@@ -162,7 +162,7 @@ class ViewB extends ViewPU {
                 {
                     this.observeComponentCreation2((elmtId, isInitialRender) => {
                         if (isInitialRender) {
-                            let componentCall = new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 26 });
+                            let componentCall = new ViewA(this, { label: JSON.stringify(item.id), a: item }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 26, col: 9 });
                             ViewPU.create(componentCall);
                             let paramsLambda = () => {
                                 return {
@@ -186,7 +186,7 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 28 });
+                    let componentCall = new ViewA(this, { label: JSON.stringify(this.arrA[0]), a: this.arrA[0] }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 28, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -206,7 +206,7 @@ class ViewB extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 29 });
+                    let componentCall = new ViewA(this, { label: JSON.stringify(this.arrA[this.arrA.length - 1]), a: this.arrA[this.arrA.length - 1] }, undefined, elmtId, () => { }, { page: "import@Observed.ets", line: 29, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

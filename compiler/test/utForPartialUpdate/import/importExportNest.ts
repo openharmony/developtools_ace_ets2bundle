@@ -220,7 +220,7 @@ class ImportTest extends ViewPU {
                         testStr: this.__testState1,
                         testNum: this.__testState2,
                         testObj: this.__testState3
-                    }, undefined, elmtId, () => { }, { page: "importExportNest.ets", line: 29 });
+                    }, undefined, elmtId, () => { }, { page: "importExportNest.ets", line: 29, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -242,7 +242,7 @@ class ImportTest extends ViewPU {
                     let componentCall = new ImportNestAll_1.DivideTest(this, {
                         testNum1: this.__testState4,
                         testNum2: this.__testState5
-                    }, undefined, elmtId, () => { }, { page: "importExportNest.ets", line: 34 });
+                    }, undefined, elmtId, () => { }, { page: "importExportNest.ets", line: 34, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

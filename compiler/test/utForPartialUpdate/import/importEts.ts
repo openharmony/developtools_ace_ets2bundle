@@ -217,7 +217,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent2'
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 22 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 22, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -256,7 +256,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 35 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 35, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -287,7 +287,7 @@ class ImportTest extends ViewPU {
                         DefaultComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 45 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 45, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -318,7 +318,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent3'
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 53 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 53, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -349,7 +349,7 @@ class ImportTest extends ViewPU {
                         AMDComponentLink4: this.__myState4,
                         myVar: 100,
                         myVar2: 100
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 63 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 63, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -380,7 +380,7 @@ class ImportTest extends ViewPU {
                         indexState2: 1,
                         indexState3: true,
                         indexState4: 'LinkComponent1'
-                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 71 });
+                    }, undefined, elmtId, () => { }, { page: "importEts.ets", line: 71, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

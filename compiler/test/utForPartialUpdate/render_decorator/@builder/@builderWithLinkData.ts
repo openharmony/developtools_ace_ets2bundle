@@ -115,7 +115,7 @@ class TestPage extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new TitleComp(this, { title: this.__value }, undefined, elmtId, () => { }, { page: "@builderWithLinkData.ets", line: 16 });
+                    let componentCall = new TitleComp(this, { title: this.__value }, undefined, elmtId, () => { }, { page: "@builderWithLinkData.ets", line: 16, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

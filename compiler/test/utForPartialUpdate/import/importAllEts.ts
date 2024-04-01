@@ -181,7 +181,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 15 });
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 15, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -214,7 +214,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent1Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 23 });
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 23, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -244,7 +244,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 32 });
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 32, col: 11 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -277,7 +277,7 @@ class ImportTest extends ViewPU {
                         NamespaceComponent3Link4: this.__myState4,
                         myVar: 100,
                         myVar2: 80
-                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 40 });
+                    }, undefined, elmtId, () => { }, { page: "importAllEts.ets", line: 40, col: 11 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

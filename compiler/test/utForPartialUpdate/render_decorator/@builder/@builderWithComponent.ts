@@ -51,7 +51,7 @@ function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
             if (isInitialRender) {
-                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4 });
+                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4, col: 3 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -87,7 +87,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11 });
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -109,7 +109,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 17 });
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 17, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
