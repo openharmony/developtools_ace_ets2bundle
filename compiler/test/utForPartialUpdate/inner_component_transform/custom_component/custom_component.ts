@@ -76,7 +76,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 7 });
+                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 7, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -95,7 +95,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 8 });
+                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 8, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -116,7 +116,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 10 });
+                    let componentCall = new Banner(this, {}, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 10, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -132,7 +132,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 13 });
+                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 13, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -153,7 +153,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 14 });
+                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 14, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -176,7 +176,7 @@ class MyComponent extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 16 });
+                    let componentCall = new Banner(this, { value: "Hello" }, undefined, elmtId, () => { }, { page: "custom_component.ets", line: 16, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

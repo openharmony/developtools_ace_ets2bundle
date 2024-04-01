@@ -101,7 +101,7 @@ class HomePreviewComponent_Preview extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new HomePreviewComponent(this, {}, undefined, elmtId, () => { }, { page: "@preview.ets", line: 18 });
+                    let componentCall = new HomePreviewComponent(this, {}, undefined, elmtId, () => { }, { page: "@preview.ets", line: 18, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};

@@ -297,7 +297,7 @@ class CustomContainerUser extends ViewPU {
                             specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
-                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 56 });
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 56, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -332,7 +332,7 @@ class CustomContainerUser extends ViewPU {
                         content: this.specificParam,
                         callContent: this.callSpecificParam("callContent1", 'callContent2'),
                         footer: "Footer",
-                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 66 });
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 66, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -368,7 +368,7 @@ class CustomContainerUser extends ViewPU {
                             this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
-                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 74 });
+                    }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 74, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
