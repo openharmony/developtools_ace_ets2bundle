@@ -38,7 +38,6 @@ export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
 export const ARK: string = 'ark';
 export const TEMPORARY: string = 'temporary';
-export const RELEASEASSETS: string = 'releaseAssets';
 export const MAIN: string = 'main';
 export const AUXILIARY: string = 'auxiliary';
 export const HAP_PACKAGE: string = '0';
