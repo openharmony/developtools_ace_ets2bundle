@@ -538,17 +538,11 @@ function assignParameter(forEachParameters: ts.NodeArray<ts.ParameterDeclaration
 export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   isBuilder: boolean = false): ts.ExpressionStatement {
   if (node.expression && ts.isCallExpression(node.expression)) {
-    const newNode: ts.Expression = ts.factory.createCallExpression(
-      ts.factory.createPropertyAccessExpression(
-        node.expression.expression,
-        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
-      ),
-      undefined,
-      [ts.factory.createThis()]
-    );
+    let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
-      return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+        node.expression,
         newNode,
         undefined,
         [ts.factory.createCallExpression(
@@ -561,7 +555,8 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
         )]
       ));
     } else {
-      return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+        node.expression,
         newNode,
         undefined,
         !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
@@ -570,6 +565,33 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
       ));
     }
   }
+}
+
+function builderCallNode(node: ts.CallExpression): ts.Expression {
+  let newNode: ts.Expression;
+  if (node.expression && ts.isPropertyAccessExpression(node.expression)
+  && node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
+    newNode = ts.factory.createCallChain(
+      ts.factory.createPropertyAccessChain(
+        node.expression,
+        node.questionDotToken,
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+      ),
+      undefined,
+      undefined,
+      [ts.factory.createThis()]
+    );
+  } else {
+    newNode = ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        node.expression,
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+      ),
+      undefined,
+      [ts.factory.createThis()]
+    );
+  }
+  return newNode;
 }
 
 function traverseBuilderParams(node: ts.ObjectLiteralExpression,
