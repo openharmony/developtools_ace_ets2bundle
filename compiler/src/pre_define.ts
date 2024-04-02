@@ -383,6 +383,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
 export const HEADER: string = 'header';
+export const INDICATORBUILDER: string = 'indicatorBuilder';
 export const FOOTER: string = 'footer';
 
 export const INTERFACE_NAME_SUFFIX: string = '_Params';
