@@ -122,6 +122,7 @@ import {
   WRAPPEDBUILDER_CLASS,
   ALL_COMPONENTS,
   ATTRIBUTE_ATTRIBUTE_MODIFIER,
+  ATTRIBUTE_CONTENT_MODIFIER,
   TITLE
 } from './pre_define';
 import {
@@ -2552,7 +2553,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
       let isAttributeModifier: boolean = false;
-      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER) {
+      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER || propName === ATTRIBUTE_CONTENT_MODIFIER) {
         isAttributeModifier = true;
       }
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(

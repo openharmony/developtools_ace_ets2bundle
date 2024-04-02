@@ -159,6 +159,7 @@ export const ATTRIBUTE_ANIMATETO_SET: Set<string> = new Set(['animateTo', 'anima
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 export const ATTRIBUTE_ID: string = 'id';
 export const ATTRIBUTE_ATTRIBUTE_MODIFIER: string = 'attributeModifier';
+export const ATTRIBUTE_CONTENT_MODIFIER: string = 'contentModifier';
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
 export const NULL: string = 'null';
