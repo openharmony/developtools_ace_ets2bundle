@@ -17,12 +17,17 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 import sinon from 'sinon';
 
-import { getOhmUrlByFilepath, getOhmUrlBySystemApiOrLibRequest, getOhmUrlByHarName } from '../../../../lib/ark_utils';
+import {
+  getOhmUrlByFilepath,
+  getOhmUrlByHspName,
+  getOhmUrlBySystemApiOrLibRequest
+} from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 import RollUpPluginMock from '../../mock/rollup_mock/rollup_plugin_mock';
 import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
+import { ModuleSourceFile } from '../../../../lib/fast_build/ark_compiler/module/module_source_file';
 
 mocha.describe('generate ohmUrl', function () {
   mocha.before(function () {
@@ -34,10 +39,10 @@ mocha.describe('generate ohmUrl', function () {
   });
 
   mocha.it('nested src main ets|js in filePath', function () {
-    const filePath = `${projectConfig.projectRootPath}/entry/src/main/ets/feature/src/main/js/`
+    const filePath: string = `${projectConfig.projectRootPath}/entry/src/main/ets/feature/src/main/js/`
       + `subfeature/src/main/ets/pages/test.ts`;
-    const moduleName = 'entry';
-    const moduleNamespace = 'library';
+    const moduleName: string = 'entry';
+    const moduleNamespace: string = 'library';
     let ohmUrl_1 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
     let ohmUrl_2 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleNamespace);
     let expected_1 = 'UtTestApplication/entry/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
@@ -47,10 +52,10 @@ mocha.describe('generate ohmUrl', function () {
   });
 
   mocha.it('nested src ohosTest ets|js in filePath', function () {
-    const filePath = `${projectConfig.projectRootPath}/entry/src/ohosTest/ets/feature/src/main/js/`
+    const filePath: string = `${projectConfig.projectRootPath}/entry/src/ohosTest/ets/feature/src/main/js/`
       + `subfeature/src/main/ets/pages/test.ts`;
-    const moduleName = 'entry';
-    const moduleNamespace = 'library';
+    const moduleName: string = 'entry';
+    const moduleNamespace: string = 'library';
     let ohmUrl_1 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
     let ohmUrl_2 = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleNamespace);
     let expected_1 = 'UtTestApplication/entry/ets/feature/src/main/js/subfeature/src/main/ets/pages/test';
@@ -80,9 +85,9 @@ mocha.describe('generate ohmUrl', function () {
     const sharedLibraryPackageName: string = "@ohos/sharedLibrary";
     const sharedLibraryPage: string = "@ohos/sharedLibrary/src/main/ets/pages/page1";
     const errorSharedLibrary: string = "@ohos/staticLibrary";
-    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByHarName(sharedLibraryPackageName, projectConfig);
-    const sharedLibraryPageOhmUrl: string = getOhmUrlByHarName(sharedLibraryPage, projectConfig);
-    const errorSharedLibraryOhmUrl = getOhmUrlByHarName(errorSharedLibrary, projectConfig);
+    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByHspName(sharedLibraryPackageName, projectConfig);
+    const sharedLibraryPageOhmUrl: string = getOhmUrlByHspName(sharedLibraryPage, projectConfig);
+    const errorSharedLibraryOhmUrl = getOhmUrlByHspName(errorSharedLibrary, projectConfig);
     const expectedSharedLibraryOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
     const expectedSharedLibraryPageOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/pages/page1";
     const expectedErrorSharedLibraryOhmUrl = undefined;
@@ -92,10 +97,10 @@ mocha.describe('generate ohmUrl', function () {
   });
 
   mocha.it('project module', function () {
-    const filePath = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/test.ts`;
+    const filePath: string = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/test.ts`;
     const harFilePath = `${projectConfig.projectRootPath}/library/src/main/ets/pages/test.ts`;
-    const moduleName = 'entry';
-    const moduleNamespace = 'library';
+    const moduleName: string = 'entry';
+    const moduleNamespace: string = 'library';
     const ohmUrl = getOhmUrlByFilepath(filePath, projectConfig, undefined, moduleName);
     const harOhmUrl = getOhmUrlByFilepath(harFilePath, projectConfig, undefined, moduleNamespace);
     const expected = 'UtTestApplication/entry/ets/pages/test';
@@ -107,7 +112,7 @@ mocha.describe('generate ohmUrl', function () {
   mocha.it('thirdParty module', function () {
     const moduleLevelPkgPath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
     const projectLevelPkgPath = `${projectConfig.projectRootPath}/oh_modules/json5/dist/index.js`;
-    const moduleName = 'entry';
+    const moduleName: string = 'entry';
     const moduleLevelPkgOhmUrl = getOhmUrlByFilepath(moduleLevelPkgPath, projectConfig, undefined, undefined);
     const projectLevelPkgOhmUrl = getOhmUrlByFilepath(projectLevelPkgPath, projectConfig, undefined, undefined);
     const moduleLevelPkgOhmUrlExpected = `${PACKAGES}@${moduleName}/json5/dist/index`;
@@ -118,7 +123,7 @@ mocha.describe('generate ohmUrl', function () {
 
   mocha.it('static library entry', function () {
     const staticLibraryEntry = `${projectConfig.projectRootPath}/library/index.ets`;
-    const moduleNamespace = 'library';
+    const moduleNamespace: string = 'library';
     const staticLibraryEntryOhmUrl =
       getOhmUrlByFilepath(staticLibraryEntry, projectConfig, undefined, moduleNamespace);
     const staticLibraryEntryOhmUrlExpected = 'UtTestApplication/entry@library/index';
@@ -127,7 +132,7 @@ mocha.describe('generate ohmUrl', function () {
 
   mocha.it('ohosTest module', function () {
     const ohosTestfilePath = `${projectConfig.projectRootPath}/entry/src/ohosTest/ets/pages/test.ts`;
-    const moduleName = 'entry';
+    const moduleName: string = 'entry';
     const ohmUrl = getOhmUrlByFilepath(ohosTestfilePath, projectConfig, undefined, moduleName);
     const expected = 'UtTestApplication/entry/ets/pages/test';
     expect(ohmUrl == expected).to.be.true;
@@ -138,16 +143,16 @@ mocha.describe('generate ohmUrl', function () {
     projectConfig.modulePathMap = {};
     const red: string = '\u001b[31m';
     const reset: string = '\u001b[39m';
-    const filePath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
-    const moduleName = 'entry';
-    const importerFile = 'importTest.ts';
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
     const loggerStub = sinon.stub(logger, 'error');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
     expect(loggerStub.calledWith(red,
       `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
-    `Please check whether the module which ${filePath} belongs to is correctly configured` +
-    `and the corresponding file name matches (case sensitive)`, reset)).to.be.true;
+    `Please check whether the module which ${filePath} belongs to is correctly configured ` +
+    `and the corresponding file name is correct(including case-sensitivity)`, reset)).to.be.true;
     loggerStub.restore();
   });
 
@@ -157,16 +162,689 @@ mocha.describe('generate ohmUrl', function () {
     projectConfig.modulePathMap = {};
     const red: string = '\u001b[31m';
     const reset: string = '\u001b[39m';
-    const filePath = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
-    const moduleName = 'entry';
-    const importerFile = 'importTest.ts';
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
     const loggerStub = sinon.stub(logger, 'error');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
     expect(loggerStub.calledWith(red,
       `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
-      `Please check whether the module which ${filePath} belongs to is correctly configured` +
-      `and the corresponding file name matches (case sensitive)`, reset)).to.be.true;
+      `Please check whether the module which ${filePath} belongs to is correctly configured ` +
+      `and the corresponding file name is correct(including case-sensitivity)`, reset)).to.be.true;
     loggerStub.restore();
+  });
+
+  mocha.it('NormalizedOHMUrl inter-app hsp self import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghsp': {
+        'packageName': 'pkghsp',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghsp',
+        pkgPath: '/testHsp/hsp'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghsp/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&pkghsp/src/main/ets/utils/Calc&';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl inter-app hsp others import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghsp': {
+        'packageName': 'pkghsp',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': 'hsp',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    this.rollup.share.projectConfig.dependencyAliasMap = new Map([
+      ['pkghsp_alias', 'pkghsp']
+    ]);
+    this.rollup.share.projectConfig.harNameOhmMap = {
+      'pkghsp_alias': '@bundle:com.test.testHsp/src/main/ets/utils/Calc'
+    }
+    const filePath: string = 'pkghsp/src/main/ets/utils/Calc';
+    const indexFilePath: string = 'pkghsp_alias';
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = 'pkghsp_alias';
+    const standardImportPath: string = 'pkghsp_alias/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&hsp&com.test.testHsp&pkghsp/Index&';
+    const standardImportPathNormalizedOhmUrl: string =
+      '@normalized:N&hsp&com.test.testHsp&pkghsp/src/main/ets/utils/Calc&';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl in-app hsp self import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghsp': {
+        'packageName': 'pkghsp',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghsp',
+        pkgPath: '/testHsp/hsp'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghsp/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&&pkghsp/src/main/ets/utils/Calc&';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl in-app hsp others import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghsp': {
+        'packageName': 'pkghsp',
+        'bundleName': '',
+        'moduleName': 'hsp',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    this.rollup.share.projectConfig.dependencyAliasMap = new Map([
+      ['pkghsp_alias', 'pkghsp']
+    ]);
+    this.rollup.share.projectConfig.harNameOhmMap = {
+      'pkghsp_alias': '@bundle:com.test.testHap/src/main/ets/utils/Calc'
+    }
+    const filePath: string = 'pkghsp_alias/src/main/ets/utils/Calc';
+    const indexFilePath: string = 'pkghsp_alias'; 
+
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = 'pkghsp_alias';
+    const standardImportPath: string = 'pkghsp_alias/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&hsp&&pkghsp/Index&';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&hsp&&pkghsp/src/main/ets/utils/Calc&';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl hap self import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHap/entry/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'entry',
+        pkgPath: '/testHap/entry'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'entry/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&&entry/src/main/ets/utils/Calc&';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl source code har self import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghar',
+        pkgPath: '/testHar/har'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHar/har/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup); 
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl source code har others import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    const indexFilePath: string = '/testHar/har/Index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: 'pkghar',
+          pkgPath: '/testHar/har'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHar/entry/src/main/ets/pages/Index.ets'
+    const importByPkgName = 'pkghar';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&pkghar/Index&1.0.1';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl source code har self import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghar',
+        pkgPath: '/testHsp/har'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHsp/har/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup); 
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl source code har others import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/har/src/main/ets/utils/Calc.ets';
+    const indexFilePath: string = '/testHsp/har/Index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: 'pkghar',
+          pkgPath: '/testHsp/har'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const importByPkgName = 'pkghar';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&pkghar/Index&1.0.1';
+    const standardImportPathNormalizedOhmUrl: string =
+      '@normalized:N&&com.test.testHsp&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl product har self import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghar',
+        pkgPath: '/testHar/har'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHar/har/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup); 
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl product har others import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHap/oh_modules/.ohpm/pkghar@test=/oh_modules/pkghar/src/main/ets/utils/Calc.ets';
+    const indexFilePath: string = '/testHap/oh_modules/.ohpm/pkghar@test=/oh_modules/pkghar/Index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: 'pkghar',
+          pkgPath: '/testHap/oh_modules/.ohpm/pkghar@test=/oh_modules/pkghar'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHar/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = 'pkghar';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&pkghar/Index&1.0.1';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl remote source code har self import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        pkgName: 'pkghar',
+        pkgPath: '/testHsp/har'
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const importerFile: string = '/testHsp/har/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup); 
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl remote source code har others import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'pkghar': {
+        'packageName': 'pkghar',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '1.0.1',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = '/testHsp/har/src/main/ets/utils/Calc.ets';
+    const indexFilePath: string = '/testHsp/har/Index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: 'pkghar',
+          pkgPath: '/testHsp/har'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const importByPkgName = 'pkghar';
+    const standardImportPath: string = 'pkghar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&pkghar/Index&1.0.1';
+    const standardImportPathNormalizedOhmUrl: string =
+      '@normalized:N&&com.test.testHsp&pkghar/src/main/ets/utils/Calc&1.0.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl native so others import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'libproduct.so': {
+        'packageName': 'libproduct.so',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': true
+      }
+    }
+    const importerFile: string = '/testHap/hsp/src/main/ets/pages/Index.ets'
+    const moduleRequest = 'libproduct.so';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const moduleRequestOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, undefined, importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:Y&&&libproduct.so&';
+    expect(moduleRequestOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl native so others import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'libproduct.so': {
+        'packageName': 'libproduct.so',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': true
+      }
+    }
+    const importerFile: string = '/testHsp/hsp/src/main/ets/pages/Index.ets'
+    const moduleRequest = 'libproduct.so';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const moduleRequestOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, undefined, importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:Y&&com.test.testHsp&libproduct.so&';
+    expect(moduleRequestOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl native so others import (source code har)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'libhar.so': {
+        'packageName': 'libhar.so',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': true
+      }
+    }
+    const importerFile: string = '/testHap/har/src/main/ets/pages/Index.ets'
+    const moduleRequest = 'libhar.so';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const moduleRequestOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, undefined, importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:Y&&&libhar.so&';
+    expect(moduleRequestOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl native so others import (product har)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'libhar.so': {
+        'packageName': 'libhar.so',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': true
+      }
+    }
+    const importerFile: string =
+      '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
+    const moduleRequest = 'libhar.so';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const moduleRequestOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, undefined, importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:Y&&&libhar.so&';
+    expect(moduleRequestOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl ohpm package others import (hap/in-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      '@ohos/Test': {
+        'packageName': '@ohos/Test',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '2.3.1',
+        'entryPath': 'index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string =
+      '/testHap/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test/src/main/ets/utils/Calc.ets'
+    const indexFilePath: string = '/testHap/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test/index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: '@ohos/Test',
+          pkgPath: '/testHap/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = '@ohos/Test';
+    const standardImportPath: string = '@ohos/Test/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&@ohos/Test/index&2.3.1';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&@ohos/Test/src/main/ets/utils/Calc&2.3.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('NormalizedOHMUrl ohpm package others import (inter-app hsp)', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      '@ohos/Test': {
+        'packageName': '@ohos/Test',
+        'bundleName': 'com.test.testHsp',
+        'moduleName': '',
+        'version': '2.3.1',
+        'entryPath': 'index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string =
+      '/testHsp/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test/src/main/ets/utils/Calc.ets'
+    const indexFilePath: string = '/testHsp/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test/index.ets';
+    for (let file of [filePath, indexFilePath]) {
+      const moduleInfo = {
+        id: file,
+        meta: {
+          pkgName: '@ohos/Test',
+          pkgPath: '/testHsp/oh_modules/.ohpm/@ohos+test@2.3.1/oh_modules/@ohos/test'
+        }
+      }
+      this.rollup.moduleInfos.push(moduleInfo);
+    }
+    const importerFile: string = '/testHsp/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = '@ohos/Test';
+    const standardImportPath: string = '@ohos/Test/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&com.test.testHsp&@ohos/Test/index&2.3.1';
+    const standardImportPathNormalizedOhmUrl: string =
+      '@normalized:N&&com.test.testHsp&@ohos/Test/src/main/ets/utils/Calc&2.3.1';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
   });
 });

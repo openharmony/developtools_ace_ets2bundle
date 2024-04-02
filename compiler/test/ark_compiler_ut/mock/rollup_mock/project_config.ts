@@ -107,6 +107,9 @@ class ProjectConfig {
   aceSoPath?: string;
   mockParams?: object;
   projectRootPath: string;
+  pkgContextInfo: object;
+  useNormalizedOHMUrl: boolean = false;
+  dependencyAliasMap: Map<string, string>;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
