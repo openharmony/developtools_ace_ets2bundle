@@ -2643,7 +2643,7 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
     PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && temp.arguments.length && temp.arguments[0] ?
-    temp.arguments[0].getText().match(/^\$\$(.|\n)+/) !== null :
+    temp.arguments[0].getText().match(/^(?!\$\$\.)\$\$(.|\n)+/) !== null :
     false;
 }
 
@@ -2680,8 +2680,8 @@ function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName
   if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length >= 2) {
     const varExp: ts.Expression = updateArgumentFor$$(args[0]);
     argumentsArr.push(generateObjectFor$$(varExp), ...args.slice(1));
-  } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.getText()) && args.length === 1 &&
-    PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.getText()).has(propName) ||
+  } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) && args.length === 1 &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 1) {
     const varExp: ts.Expression = updateArgumentFor$$(args[0]);
     argumentsArr.push(varExp, createArrowFunctionFor$$(varExp));
