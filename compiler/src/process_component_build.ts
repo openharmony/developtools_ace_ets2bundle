@@ -2122,7 +2122,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   const newProperties: ts.PropertyAssignment[] = [];
   node.properties.forEach((property: ts.PropertyAssignment) => {
     if (property.name && ts.isIdentifier(property.name) &&
-      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, FOOTER, START, END, PREVIEW, TITLE].includes(
+      [CUSTOM_DIALOG_CONTROLLER_BUILDER, HEADER, "indicatorBuilder",FOOTER, START, END, PREVIEW, TITLE].includes(
         property.name.escapedText.toString()) && property.initializer) {
       if (isPropertyAccessExpressionNode(property.initializer) || ts.isIdentifier(property.initializer) &&
         storedFileInfo.builderLikeCollection.has(property.initializer.escapedText.toString())) {
