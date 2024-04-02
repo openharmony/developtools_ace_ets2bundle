@@ -18,13 +18,15 @@ import { MODULE_ID_ROLLUP_PLACEHOLDER } from '../rollup_mock/path_config';
 class Meta {
   hostModulesInfo: Array<object>;
   moduleName: string;
+  pkgName: string;
   isLocalDependency: boolean;
   isNodeEntryFile: boolean;
   pkgPath: string;
 
-  constructor(entryModuleName: string, modulePath: string) {
+  constructor(entryModuleName: string, modulePath: string, packageName: string) {
     this.hostModulesInfo = [];
     this.moduleName = entryModuleName;
+    this.pkgName = packageName;
     this.isLocalDependency = true;
     this.isNodeEntryFile = false;
     this.pkgPath = modulePath;
