@@ -265,9 +265,9 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
   return {
     tagName: tagName,
     message: message,
-    needConditionCheck: false,
+    needConditionCheck: needConditionCheck,
     type: type,
-    specifyCheckConditionFuncName: '',
+    specifyCheckConditionFuncName: specifyCheckConditionFuncName,
     tagNameShouldExisted: tagNameShouldExisted,
     checkValidCallback: checkValidCallback,
     checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback
@@ -550,10 +550,17 @@ function getNameFromArray(array: Array<{ name: any, [key: string]: any }>): stri
  * @returns {boolean}
  */
 export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
-  const jsDoctag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
-  })
-  return JsDocCheckService.validPermission(jsDoctag, permissionsArray);
+  });
+  if (!jsDocTag) {
+    return false;
+  }
+  const comment: string = typeof jsDocTag.comment === 'string' ?
+    jsDocTag.comment :
+    ts.getTextOfJSDocComment(jsDocTag.comment);
+  config.message = config.message.replace('$DT', comment);
+  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
 }
 
 /**
