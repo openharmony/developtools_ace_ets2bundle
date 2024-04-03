@@ -688,9 +688,7 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
   }
-  if (projectConfig.resetBundleName) {
-    projectConfig.bundleName = '';
-  }
+
   let moduleName: string;
   if (resourceModuleName && isResourceModule) {
     moduleName = resourceModuleName.replace(/^\[|\]$/g, '');
@@ -703,7 +701,7 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      ts.factory.createStringLiteral(projectConfig.bundleName)
+      ts.factory.createStringLiteral(projectConfig.resetBundleName ? '' : projectConfig.bundleName)
     ));
   }
 
