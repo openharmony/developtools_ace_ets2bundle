@@ -94,6 +94,7 @@ import {
   validatorCard
 } from './process_ui_syntax';
 import { stateObjectCollection } from './process_component_member';
+import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 
 export class ComponentCollection {
   localStorageName: string = null;
@@ -177,6 +178,8 @@ export function validateUISyntax(source: string, content: string, filePath: stri
     checkUISyntax(filePath, allComponentNames, content, log, sourceFile, fileQuery);
     componentCollection.customComponents.forEach(item => componentInfo.componentNames.add(item));
   }
+
+  collectSharedModule(source, filePath, sourceFile, log);
 
   return log;
 }
@@ -530,7 +533,7 @@ function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
   }
 }
 
-function isSendableClassDeclaration(classDeclarationNode: ts.ClassDeclaration): boolean {
+export function isSendableClassDeclaration(classDeclarationNode: ts.ClassDeclaration): boolean {
   return hasDecorator(classDeclarationNode, COMPONENT_SENDABLE_DECORATOR) ||
       (classDeclarationNode.members && classDeclarationNode.members.some((member: ts.Node) => {
         // Check if the constructor has "use sendable" as the first statement
@@ -583,7 +586,7 @@ function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
   if (ts.isUnionTypeNode(typeNode)) {
     return true;
   }
-  // input typeNode should not be undefined or none, ensured by caller
+
   switch (typeNode.kind) {
     case ts.SyntaxKind.StringKeyword:
     case ts.SyntaxKind.NumberKeyword:
