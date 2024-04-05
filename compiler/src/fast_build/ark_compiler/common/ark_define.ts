@@ -102,3 +102,11 @@ export const FALSE: string = 'false';
 
 export const IS_CACHE_INVALID: string = 'is_cache_invalid';
 export const ARK_COMPILER_META_INFO: string = 'ark_compiler_meta_info';
+
+// The following strings are used to specify 'ISendable' interface.
+// 'ISendable' interface is in the 'lang' namespace of '@arkts.lang.d.ets' file.
+export const ARKTS_LANG_D_ETS = '@arkts.lang.d.ets';
+export const LANG_NAMESPACE = 'lang';
+export const ISENDABLE_TYPE = 'ISendable';
+
+export const USE_SHARED: string = 'use shared';

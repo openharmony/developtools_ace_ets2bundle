@@ -28,6 +28,7 @@ import {
 } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
 import { META } from '../rollup_mock/common';
+import { sharedModuleSet } from '../../../../lib/fast_build/ark_compiler/check_shared_module';
 class ModuleModeMock extends ModuleMode {
   collectModuleFileListMock(rollupObject: object) {
     const fileList = Array.from(rollupObject.getModuleIds());
@@ -62,8 +63,10 @@ class ModuleModeMock extends ModuleMode {
     const filesInfo = fs.readFileSync(this.filesInfoPath, 'utf-8');
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
+      const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
       mockfilesInfo +=
-        `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName}\n`;
+        `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
+        `${isSharedModule}\n`;
     });
     if (filesInfo === mockfilesInfo) {
       return true;
