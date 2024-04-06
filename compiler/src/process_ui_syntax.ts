@@ -695,7 +695,7 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
   }
 
   if (!resourceModuleName && isResourceModule) {
-    moduleName = '';
+    moduleName = projectConfig.moduleName;
   }
 
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
