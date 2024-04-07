@@ -2553,7 +2553,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
       let isAttributeModifier: boolean = false;
-      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER || propName === ATTRIBUTE_CONTENT_MODIFIER) {
+      if ([ATTRIBUTE_ATTRIBUTE_MODIFIER, ATTRIBUTE_CONTENT_MODIFIER].includes(propName)) {
         isAttributeModifier = true;
       }
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
