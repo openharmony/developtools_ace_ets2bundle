@@ -179,7 +179,9 @@ export function validateUISyntax(source: string, content: string, filePath: stri
     componentCollection.customComponents.forEach(item => componentInfo.componentNames.add(item));
   }
 
-  collectSharedModule(source, filePath, sourceFile, log);
+  if (projectConfig.compileMode === ESMODULE) {
+    collectSharedModule(source, filePath, sourceFile, log);
+  }
 
   return log;
 }
