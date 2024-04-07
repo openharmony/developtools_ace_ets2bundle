@@ -41,9 +41,14 @@ export function collectSharedModule(source: string, filePath: string, sourceFile
   checker = globalProgram.checker;
 
   // "use shared" will only be effective when used after imports, before other statements
+  const len: number = sourceFile.statements.length;
   let count: number = 0;
-  while (ts.isImportDeclaration(sourceFile.statements[count])) {
+  while ((count < len) && ts.isImportDeclaration(sourceFile.statements[count])) {
     count++;
+  }
+
+  if (count === len) {
+    return;
   }
 
   const statement: ts.Statement = sourceFile.statements[count];
