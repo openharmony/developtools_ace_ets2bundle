@@ -13,16 +13,25 @@
  * limitations under the License.
  */
 
-const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap',
-  'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext',
-  'Resource', 'WebviewController']);
+exports.source = `
+@Entry
+@Component
+struct HomeComponent {
 
-const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
+  build() {
+    Column() {}
+  }
+}
 
-const MONITOR: string = 'Monitor';
+class Test1 {
+  @Monitor("aa") onChange() {
+    
+  }
+}
+declare const Custom: () => MethodDecorator
+@ObservedV2
+class Test2 {
+  @Monitor("aa") @Custom() onChange() {
 
-export default {
-  GLOBAL_DECLARE_WHITE_LIST,
-  NAVIGATION_BUILDER_REGISTER,
-  MONITOR
-};
+  }
+}`
