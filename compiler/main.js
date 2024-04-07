@@ -611,6 +611,16 @@ function filterWorker(workerPath) {
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
   }
+  if (process.env.externalApiPaths) {
+    const sysResourceExtPath = path.resolve(__dirname, process.env.externalApiPaths, 'sysResource.js');
+    if (fs.existsSync(sysResourceExtPath)) {
+      Object.entries(require(sysResourceExtPath).sys).forEach(([key, value]) => {
+        if (key in resources.sys) {
+          Object.assign(resources.sys[key], value);
+        }
+      });
+    }
+  }
 })();
 
 ;(function readSystemModules() {
