@@ -79,7 +79,6 @@ import {
   MERGE_ABC,
   CACHE_FILE,
   TARGET_API_VERSION,
-  TYPE_EXTRACTOR
 } from '../mock/rollup_mock/path_config';
 import {
   scanFiles,
@@ -777,8 +776,6 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    expect(moduleMode.cmdArgs[7] === TYPE_EXTRACTOR).to.be.true;
-    moduleMode.cmdArgs.splice(7, 1);
     checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion);
   });
 
