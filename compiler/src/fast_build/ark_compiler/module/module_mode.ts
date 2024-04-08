@@ -188,8 +188,8 @@ export class ModuleMode extends CommonMode {
     }
     if (!this.useNormalizedOHMUrl) {
       this.getDynamicImportEntryInfo(pkgEntryInfos);
-      this.getNativeModuleEntryInfo(pkgEntryInfos);
     }
+    this.getNativeModuleEntryInfo(pkgEntryInfos);
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
   }
