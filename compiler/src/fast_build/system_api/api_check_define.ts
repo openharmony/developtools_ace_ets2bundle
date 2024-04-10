@@ -24,3 +24,8 @@ export const SYSCAP_TAG_CHECK_WARNING: string = "The default system capabilities
 export const SYSCAP_TAG_CONDITION_CHECK_WARNING: string = 'The API is not supported on all devices. Use the canIUse condition to determine whether the API is supported.';
 export const CANIUSE_FUNCTION_NAME: string = 'canIUse';
 export const RUNTIME_OS_OH: string = 'OpenHarmony';
+
+export const CONSTANT_STEP_0: number = 0;
+export const CONSTANT_STEP_1: number = 1;
+export const CONSTANT_STEP_2: number = 2;
+export const CONSTANT_STEP_3: number = 3;
