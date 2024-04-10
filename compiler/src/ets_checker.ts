@@ -969,7 +969,7 @@ function collectionCustomizeStyles(node: ts.Node): void {
 }
 
 function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
-  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string,): boolean {
+  ts.StructDeclaration | ts.ClassDeclaration, decortorName: string): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
     for (let i = 0; i < decorators.length; i++) {
@@ -1074,16 +1074,28 @@ function traverseBuild(node: ts.Node, index: number): void {
       }
     }
   } else if (ts.isIfStatement(node)) {
-    if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
-      node.thenStatement.statements.forEach((item, indexIfBlock) => {
-        traverseBuild(item, indexIfBlock);
-      });
-    }
-    if (node.elseStatement && ts.isBlock(node.elseStatement) && node.elseStatement.statements) {
-      node.elseStatement.statements.forEach((item, indexElseBlock) => {
-        traverseBuild(item, indexElseBlock);
-      });
-    }
+    ifInner$$Attribute(node);
+  }
+}
+
+function ifInner$$Attribute(node: ts.IfStatement): void {
+  if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
+    node.thenStatement.statements.forEach((item, indexIfBlock) => {
+      traverseBuild(item, indexIfBlock);
+    });
+  }
+  if (node.elseStatement) {
+    elseInner$$Attribute(node);
+  }
+}
+
+function elseInner$$Attribute(node: ts.IfStatement): void {
+  if (ts.isIfStatement(node.elseStatement) && node.elseStatement.thenStatement && ts.isBlock(node.elseStatement.thenStatement)) {
+    traverseBuild(node.elseStatement, 0);
+  } else if (ts.isBlock(node.elseStatement) && node.elseStatement.statements) {
+    node.elseStatement.statements.forEach((item, indexElseBlock) => {
+      traverseBuild(item, indexElseBlock);
+    });
   }
 }
 
