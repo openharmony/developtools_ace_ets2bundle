@@ -48,6 +48,10 @@ export const ENTRYABILITY_JS_RECORDNAME: string = '/entry/src/main/entryability/
 export const INDEX_ETS_RECORDNAME: string = '/entry/src/main/pages/Index';
 export const EXTNAME_MAP: string = '.map';
 
+export const ENTRYABILITY_TS_NORMALIZED_RECORDNAME: string = 'entry/src/main/entryability/EntryAbility';
+export const ENTRYABILITY_JS_NORMALIZED_RECORDNAME: string = 'entry/src/main/entryability/EntryAbility';
+export const INDEX_ETS_NORMALIZED_RECORDNAME: string = 'entry/src/main/pages/Index';
+
 export const ENTRYABILITY_TS_PATH: string = '/main/entryability/EntryAbility.ts';
 export const INDEX_ETS_PATH: string = '/main/pages/Index.ets';
 export const ENTRYABILITY_TS: string = 'EntryAbility.ts';

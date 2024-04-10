@@ -47,6 +47,9 @@ import {
   ENTRYABILITY_TS_RECORDNAME,
   ENTRYABILITY_JS_RECORDNAME,
   INDEX_ETS_RECORDNAME,
+  ENTRYABILITY_TS_NORMALIZED_RECORDNAME,
+  ENTRYABILITY_JS_NORMALIZED_RECORDNAME,
+  INDEX_ETS_NORMALIZED_RECORDNAME,
   PKG_MODULES,
   ENTRY_MODULE_NAME_DEFAULT,
   TEST,
@@ -221,6 +224,170 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
+  });
+
+  mocha.it('1-5: test collectModuleFileList useNormalizedOHMUrl under build debug', function () {
+    this.rollup.build();
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const fileList = this.rollup.getModuleIds();
+    for (const filePath of fileList) {
+      if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS)) {
+        const moduleInfo = this.rollup.getModuleInfo(filePath);
+        moduleInfo.setIsNodeEntryFile(true);
+        moduleInfo.setIsLocalDependency(false);
+        moduleInfo.meta.pkgName = 'entry';
+      }
+    }
+    moduleMode.projectConfig.packageDir = OH_MODULES;
+    moduleMode.collectModuleFileListMock(this.rollup);
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+
+      expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
+
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+    });
+    expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+  });
+
+  mocha.it('1-6: test collectModuleFileList useNormalizedOHMUrl under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const fileList = this.rollup.getModuleIds();
+    for (const filePath of fileList) {
+      if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS)) {
+        const moduleInfo = this.rollup.getModuleInfo(filePath);
+        moduleInfo.setIsNodeEntryFile(true);
+        moduleInfo.setIsLocalDependency(false);
+        moduleInfo.meta.pkgName = 'entry';
+      }
+    }
+    moduleMode.projectConfig.packageDir = OH_MODULES;
+    moduleMode.collectModuleFileListMock(this.rollup);
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+
+      expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
+
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+    });
+    expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+  });
+
+  mocha.it('1-7: test collectModuleFileList useNormalizedOHMUrl under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const fileList = this.rollup.getModuleIds();
+    for (const filePath of fileList) {
+      if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS)) {
+        const moduleInfo = this.rollup.getModuleInfo(filePath);
+        moduleInfo.setIsNodeEntryFile(true);
+        moduleInfo.setIsLocalDependency(false);
+        moduleInfo.meta.pkgName = 'entry';
+      }
+    }
+    moduleMode.projectConfig.packageDir = OH_MODULES;
+    moduleMode.collectModuleFileListMock(this.rollup);
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+
+      expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
+
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+    });
+    expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+  });
+
+  mocha.it('1-8: test collectModuleFileList useNormalizedOHMUrl under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const fileList = this.rollup.getModuleIds();
+    for (const filePath of fileList) {
+      if (filePath.endsWith(EXTNAME_JS) || filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS)) {
+        const moduleInfo = this.rollup.getModuleInfo(filePath);
+        moduleInfo.setIsNodeEntryFile(true);
+        moduleInfo.setIsLocalDependency(false);
+        moduleInfo.meta.pkgName = 'entry';
+      }
+    }
+    moduleMode.projectConfig.packageDir = OH_MODULES;
+    moduleMode.collectModuleFileListMock(this.rollup);
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+
+      expect(moduleInfo.recordName.indexOf(ENTRYABILITY_TS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
+        moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
+
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+    });
+    expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
   });
 
   mocha.it('2-1-1: test addModuleInfoItem under build debug: isPackageModulesFile`s return is true', function () {
