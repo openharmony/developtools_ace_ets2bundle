@@ -52,12 +52,6 @@ import {
   ATOMICSERVICE_TAG_CHECK_NAME,
   ATOMICSERVICE_TAG_CHECK_ERROER,
   ATOMICSERVICE_TAG_CHECK_VERSION,
-  CONSTANT_STEP_0,
-  CONSTANT_STEP_1,
-  CONSTANT_STEP_2,
-  CONSTANT_STEP_3,
-  CONSTANT_STEP_4,
-  CONSTANT_VERSION_10,
 } from '../../pre_define';
 import {
   PERMISSION_TAG_CHECK_NAME,
@@ -70,7 +64,11 @@ import {
   SYSCAP_TAG_CONDITION_CHECK_WARNING,
   SYSCAP_TAG_CHECK_WARNING,
   CANIUSE_FUNCTION_NAME,
-  RUNTIME_OS_OH
+  RUNTIME_OS_OH,
+  CONSTANT_STEP_0,
+  CONSTANT_STEP_1,
+  CONSTANT_STEP_2,
+  CONSTANT_STEP_3,
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 
@@ -126,19 +124,17 @@ function parseOhmBundle(modulePath: string): BundleInfo {
  * @returns {boolean}
  */
 function checkBundleVersion(bundleVersion: string): boolean {
-  const versionSteps: string[] = bundleVersion.split(/[\.\(\)]/g);
-  // eg: since xx
-  if (versionSteps.length === CONSTANT_STEP_1 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
-    Number(versionSteps[CONSTANT_STEP_0]) > CONSTANT_VERSION_10) {
+  const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion;
+  let bundleVersionNumber: number = 0;
+  const bundleVersionArr = bundleVersion.match(/(?<=\().*(?=\))/g);
+  if (bundleVersionArr && bundleVersionArr.length === 1) {
+    bundleVersionNumber = Number(bundleVersionArr[CONSTANT_STEP_0]);
+  } else {
+    bundleVersionNumber = Number(bundleVersion);
+  }
+  if (!isNaN(bundleVersionNumber) && !isNaN(Number(compatibleSdkVersion)) &&
+    Number(compatibleSdkVersion) >= bundleVersionNumber) {
     return true;
-    // eg: since x.x.x(xx)
-  } else if (versionSteps.length >= CONSTANT_STEP_3 && !isNaN(Number(versionSteps[CONSTANT_STEP_0])) &&
-    !isNaN(Number(versionSteps[CONSTANT_STEP_1]))) {
-    const firstStep: number = Number(versionSteps[CONSTANT_STEP_0]);
-    const secondStep: number = Number(versionSteps[CONSTANT_STEP_1]);
-    if (firstStep > CONSTANT_STEP_4 || firstStep === CONSTANT_STEP_4 && secondStep >= CONSTANT_STEP_1) {
-      return true;
-    }
   }
   return false;
 }
