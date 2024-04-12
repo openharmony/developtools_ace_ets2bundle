@@ -40,9 +40,6 @@ struct foreachThreeParam {
 
 exports.expectResult =
 `"use strict";
-if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
 let mKeyGenerator2 = (item, index) => 'item' + index;
 class foreachThreeParam extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -54,7 +51,6 @@ class foreachThreeParam extends ViewPU {
         this.mKeyGenerator = undefined;
         this.mKeyGenerator1 = (item, index) => 'item' + index;
         this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
