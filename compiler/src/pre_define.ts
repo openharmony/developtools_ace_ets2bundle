@@ -597,13 +597,6 @@ export const WATCH_COMPILER_BUILD_INFO_SUFFIX = 'watchCompiler.tsbuildinfo';
 export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
   'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);;
 
-export const CONSTANT_STEP_0: number = 0;
-export const CONSTANT_STEP_1: number = 1;
-export const CONSTANT_STEP_2: number = 2;
-export const CONSTANT_STEP_3: number = 3;
-export const CONSTANT_STEP_4: number = 4;
-export const CONSTANT_VERSION_10: number = 10;
-
 export const GET_SHARED: string = 'getShared';
 export const USE_SHARED_STORAGE: string = 'useSharedStorage';
 export const ARKTS_MODULE_PREFIX: string = '@arkts';

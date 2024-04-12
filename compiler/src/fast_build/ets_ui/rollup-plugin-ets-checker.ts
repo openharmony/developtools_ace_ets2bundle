@@ -78,7 +78,10 @@ export function etsChecker() {
         definePermissions: projectConfig.definePermissions,
         syscapIntersectionSet: projectConfig.syscapIntersectionSet,
         syscapUnionSet: projectConfig.syscapUnionSet,
-        deviceTypesMessage: projectConfig.deviceTypesMessage
+        deviceTypesMessage: projectConfig.deviceTypesMessage,
+        compileSdkVersion: projectConfig.compileSdkVersion,
+        compatibleSdkVersion: projectConfig.compatibleSdkVersion,
+        runtimeOS: projectConfig.runtimeOS
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];

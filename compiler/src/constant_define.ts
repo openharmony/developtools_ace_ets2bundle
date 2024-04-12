@@ -13,16 +13,11 @@
  * limitations under the License.
  */
 
-const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap',
-  'UnifiedData', 'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext',
-  'Resource', 'WebviewController']);
-
 const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
 
 const MONITOR: string = 'Monitor';
 
 export default {
-  GLOBAL_DECLARE_WHITE_LIST,
   NAVIGATION_BUILDER_REGISTER,
   MONITOR
 };
