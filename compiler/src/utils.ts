@@ -791,7 +791,7 @@ export class ProcessFileInfo {
     });
   }
 
-  saveCacheFileInfo(cache) {
+  saveCacheFileInfo(cache): void {
     if (process.env.compileMode === 'moduleJson') {
       const fileCacheInfo: { [id: string]: fileInfo | tsFileInfo } = cache.get('fileCacheInfo') || {};
       const resourceToFileCacheInfo = cache.get('resourceToFileCacheInfo') || {};
@@ -803,10 +803,7 @@ export class ProcessFileInfo {
         fileCacheInfo[id] = this.wholeFileInfo[id].fileInfo;
         for (const resource of this.wholeFileInfo[id].newFileToResourceList) {
           if (!(fileCacheInfo[id].fileToResourceList as Set<string>).has(resource)) {
-            if (!resourceToFile[resource]) {
-              resourceToFile[resource] = new Set();
-            }
-            (resourceToFile[resource] as Set<string>).add(id);
+            this.resourceToFileBecomeSet(resourceToFile, resource, id);
           }
         }
         for (const resource of fileCacheInfo[id].fileToResourceList) {
@@ -832,6 +829,20 @@ export class ProcessFileInfo {
         cacheInfo[id] = this.wholeFileInfo[id].fileInfo;
       }
       cache.set('fileCacheInfo', cacheInfo);
+    }
+  }
+
+  resourceToFileBecomeSet(resourceToFile: { [resource: string]: Set<string> | string[] }, resource: string, id: string): void {
+    if (!resourceToFile[resource]) {
+      resourceToFile[resource] = new Set();
+    }
+    if (resourceToFile[resource] instanceof Set) {
+      resourceToFile[resource].add(id);
+    } else if (Array.isArray(resourceToFile[resource])) {
+      resourceToFile[resource] = new Set(resourceToFile[resource]);
+      resourceToFile[resource].add(id);
+    } else {
+      return;
     }
   }
 
