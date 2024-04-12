@@ -160,7 +160,7 @@ export function generateBuiltinAbc(arkDir: string, abcArgs: string[], cachePath:
   if (pandaMode === TS2ABC) {
     singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
   } else {
-    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" --type-dts-builtin --type-extractor --module --merge-abc --output "${builtinAbcPath}"`;
+    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" --module --merge-abc --output "${builtinAbcPath}"`;
   }
   try {
     logger.debug(`generateBuiltinAbc cmd: ${singleCmd}`);

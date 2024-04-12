@@ -17,7 +17,7 @@ exports.source = `
 @Entry
 @Component
 struct AddLog {
-  @Track log: string = 'Hello Word!';
+  @Trace log: string = 'Hello Word!';
 
   build() {
     Row() {
@@ -30,4 +30,10 @@ struct AddLog {
     }
     .height('100%')
   }
-}`
+}
+
+@ObservedV2
+class C {
+  @Trace onChange() {}
+}
+`

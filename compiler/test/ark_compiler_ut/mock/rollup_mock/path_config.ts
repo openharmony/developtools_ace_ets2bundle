@@ -60,7 +60,6 @@ export const MERGE_ABC: string ="--merge-abc";
 export const CACHE_FILE: string ="--cache-file";
 export const SIMBOL_TABLE: string ="--dump-symbol-table";
 export const TARGET_API_VERSION: string = "--target-api-version=";
-export const TYPE_EXTRACTOR: string = "--type-extractor";
 export const ARKCONFIG_TS2ABC_PATH: string = 'bin/ark/build/legacy_api8/src/index.js';
 
 export const EXPECT_ENTRY_TS: string = `${PROJECT_ROOT}/expect/expect_EntryAbility.ts`;

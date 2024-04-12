@@ -91,6 +91,9 @@ import {
 import {
   NATIVE_MODULE
 } from '../../../pre_define';
+import {
+  sharedModuleSet
+} from '../check_shared_module';
 
 export class ModuleInfo {
   filePath: string;
@@ -185,8 +188,8 @@ export class ModuleMode extends CommonMode {
     }
     if (!this.useNormalizedOHMUrl) {
       this.getDynamicImportEntryInfo(pkgEntryInfos);
-      this.getNativeModuleEntryInfo(pkgEntryInfos);
     }
+    this.getNativeModuleEntryInfo(pkgEntryInfos);
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
   }
@@ -421,9 +424,6 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
     this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
-    if (isAotMode(this.projectConfig) && isEs2Abc(this.projectConfig)) {
-      this.cmdArgs.push("--type-extractor");
-    }
   }
 
   addCacheFileArgs() {
@@ -454,7 +454,9 @@ export class ModuleMode extends CommonMode {
     let filesInfo: string = '';
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
-      filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName}\n`;
+      const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
+      filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
+        `${isSharedModule}\n`;
     });
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }

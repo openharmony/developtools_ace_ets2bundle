@@ -147,6 +147,8 @@ export const GLOBAL_THIS_REQUIRE_NAPI: string = 'globalThis.requireNapi';
 export const COMPONENT_BUTTON: string = 'Button';
 export const COMPONENT_FOREACH: string = 'ForEach';
 export const COMPONENT_LAZYFOREACH: string = 'LazyForEach';
+export const COMPONENT_REPEAT: string = 'Repeat';
+export const REPEAT_EACH: string = 'each';
 export const IS_RENDERING_IN_PROGRESS: string = 'isRenderingInProgress';
 export const FOREACH_OBSERVED_OBJECT: string = 'ObservedObject';
 export const FOREACH_GET_RAW_OBJECT: string = 'GetRawObject';
@@ -159,6 +161,7 @@ export const ATTRIBUTE_ANIMATETO_SET: Set<string> = new Set(['animateTo', 'anima
 export const ATTRIBUTE_STATESTYLES: string = 'stateStyles';
 export const ATTRIBUTE_ID: string = 'id';
 export const ATTRIBUTE_ATTRIBUTE_MODIFIER: string = 'attributeModifier';
+export const ATTRIBUTE_CONTENT_MODIFIER: string = 'contentModifier';
 export const TRUE: string = 'true';
 export const FALSE: string = 'false';
 export const NULL: string = 'null';
@@ -294,6 +297,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
   ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Radio', new Set([COMPONENT_CREATE_FUNCTION])],
+  ['Checkbox', new Set([COMPONENT_CREATE_FUNCTION])],
   [ALL_COMPONENTS, new Set(['bindContextMenu', 'bindSheet', 'dragPreview'])]
 ]);
 

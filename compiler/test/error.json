@@ -295,10 +295,16 @@
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
         "type": "ERROR"
     },
-    "@Track": {
-        "message": "The '@Track' decorator can only be used in 'class'.",
-        "type": "ERROR"
-    },
+    "@Track": [
+        {
+            "message": "The '@Trace' decorator can only be used in 'class'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Trace' can decorate only member variables within a 'class' decorated with ObservedV2.",
+            "type": "ERROR"
+        }
+    ],
     "validate_track_observed": [
         {
             "message": "The struct 'child' use invalid decorator.",
@@ -357,6 +363,16 @@
         {
             "message": "Property 'value' is private and can not be initialized through the component constructor.",
             "type": "WARN"
+        }
+    ],
+    "Monitor": [
+        {
+            "message": "The '@Monitor' can decorate only member method within a 'class' decorated with ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Monitor' decorator can not be used together with other decorators.",
+            "type": "ERROR"
         }
     ]
 }

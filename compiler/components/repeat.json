@@ -1,0 +1,7 @@
+{
+  "name": "Repeat",
+  "attrs": [
+    "each",
+    "key"
+  ]
+}
