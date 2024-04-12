@@ -119,7 +119,7 @@ export const CUSTOM_BUILDER_PROPERTIES: Set<string> = new Set(['background', 'bi
   'navDestination', 'overlay', 'toolbarConfiguration', 'customKeyboard', 'bindSelectionMenu', 'description',
   'showUnit', 'customKeyboard', 'create', 'addBuilderSpan', 'dragPreview', 'accessibilityVirtualNode']);
 export const CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY: Set<string> = new Set(['showUnit', 'create']);
-export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow', 'Radio']);
+export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'MenuItemGroup', 'Refresh', 'WaterFlow', 'Radio', 'Checkbox']);
 
 (function initComponent() {
   Object.keys(COMPONENT_MAP).forEach((componentName) => {

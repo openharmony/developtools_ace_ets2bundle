@@ -928,7 +928,7 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
 
 function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
-  const mandatoryToInitViaParamSet: Set<string> = new Set([
+  const mandatoryToInitViaParamSet = new Set([
     ...getCollectionSet(customComponentName, linkCollection),
     ...getCollectionSet(customComponentName, objectLinkCollection)]);
   mandatoryToInitViaParamSet.forEach(item => {

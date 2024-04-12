@@ -94,6 +94,10 @@ class RollUpPluginMock {
     this.doBuild(testcase);
   }
 
+  public useNormalizedOHMUrl() {
+    this.share.projectConfig.useNormalizedOHMUrl = true;
+  }
+
   private doBuild(testcase: string) {
     this.share.scan(testcase);
     this.load();

@@ -83,6 +83,8 @@ import {
   __LAZYFOREACHITEMIDFUNC,
   FOREACHUPDATEFUNCTION,
   COMPONENT_INITIAL_RENDER_FUNCTION,
+  COMPONENT_REPEAT,
+  REPEAT_EACH,
   LIST_ITEM,
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
@@ -123,6 +125,7 @@ import {
   WRAPPEDBUILDER_CLASS,
   ALL_COMPONENTS,
   ATTRIBUTE_ATTRIBUTE_MODIFIER,
+  ATTRIBUTE_CONTENT_MODIFIER,
   TITLE
 } from './pre_define';
 import {
@@ -471,6 +474,10 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             } else {
               processForEachComponentNew(item, newStatements, log, isGlobalBuilder, builderParamsResult);
             }
+            break;
+          case ComponentType.repeatComponent:
+            parent = undefined;
+            processRepeatComponent(item, newStatements, log, isBuilder, isGlobalBuilder, isTransition, builderParamsResult);
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
@@ -859,6 +866,45 @@ export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression):
     ),
     undefined
   );
+}
+
+function processRepeatComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false,
+  isTransition: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  const chainCallTransform: ts.CallExpression =
+    recurseRepeatExpression(node.expression as ts.CallExpression, log, isBuilder, isGlobalBuilder, isTransition) as ts.CallExpression;
+  innerCompStatements.push(createComponentCreationStatement(node,
+    [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        chainCallTransform,
+        ts.factory.createIdentifier(COMPONENT_RENDER_FUNCTION)
+      ),
+      undefined,
+      [ts.factory.createIdentifier(ISINITIALRENDER)]
+    ))], COMPONENT_REPEAT, isGlobalBuilder, isTransition, undefined, null, builderParamsResult));
+}
+
+function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpression,
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false):
+  ts.PropertyAccessExpression | ts.CallExpression {
+  if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+    node.expression.getText() === COMPONENT_REPEAT) {
+    return ts.factory.createCallExpression(node.expression, node.typeArguments, [...node.arguments, ts.factory.createThis()]);
+  } else if (ts.isPropertyAccessExpression(node)) {
+    return ts.factory.updatePropertyAccessExpression(node,
+      recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition), node.name);
+  } else {
+    let repeatPropArgs: ts.ArrowFunction[] = node.arguments;
+    if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
+      node.expression.name.getText() === REPEAT_EACH && node.arguments && node.arguments.length) {
+      repeatPropArgs = [ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
+        repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
+        processComponentBlock(repeatPropArgs[0].body, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
+    }
+    return ts.factory.updateCallExpression(node,
+      recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition) as ts.PropertyAccessExpression,
+      undefined, repeatPropArgs);
+  }
 }
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
@@ -2575,7 +2621,7 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
       let isAttributeModifier: boolean = false;
-      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER) {
+      if (propName === ATTRIBUTE_ATTRIBUTE_MODIFIER || propName === ATTRIBUTE_CONTENT_MODIFIER) {
         isAttributeModifier = true;
       }
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
@@ -2941,7 +2987,8 @@ enum ComponentType {
   customBuilderMethod,
   builderParamMethod,
   function,
-  builderTypeFunction
+  builderTypeFunction,
+  repeatComponent
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -2984,6 +3031,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     return ComponentType.customComponent;
   } else if (name === COMPONENT_FOREACH || name === COMPONENT_LAZYFOREACH) {
     return ComponentType.forEachComponent;
+  } else if (name === COMPONENT_REPEAT) {
+    return ComponentType.repeatComponent;
   } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName || isWrappedBuilderExpression(node)) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
