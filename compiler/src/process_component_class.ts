@@ -144,6 +144,7 @@ import {
   builderTypeParameter,
   initializeMYIDS
 } from './process_ui_syntax';
+import constantDefine from './constant_define';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -169,7 +170,7 @@ function checkPreview(node: ts.StructDeclaration): boolean {
   return hasPreview;
 }
 
-type BuildCount = {
+export type BuildCount = {
   count: number;
 }
 type FreezeParamType = {
@@ -232,7 +233,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     }
     if (ts.isMethodDeclaration(item) && item.name) {
       updateItem =
-        processComponentMethod(item, parentComponentName, context, log, buildCount);
+        processComponentMethod(item, context, log, buildCount);
     }
     if (updateItem) {
       newMembers.push(updateItem);
@@ -295,7 +296,7 @@ function isFreezeComponents(decorator: ts.Decorator, context: ts.TransformationC
   return isComponentAssignParent;
 }
 
-function getEntryNameFunction(entryName: string): ts.MethodDeclaration {
+export function getEntryNameFunction(entryName: string): ts.MethodDeclaration {
   return ts.factory.createMethodDeclaration(
     [ts.factory.createToken(ts.SyntaxKind.StaticKeyword)],
     undefined,
@@ -528,8 +529,8 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   }
 }
 
-function processComponentMethod(node: ts.MethodDeclaration, parentComponentName: ts.Identifier,
-  context: ts.TransformationContext, log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
+export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
+  log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
@@ -667,8 +668,8 @@ function getGeometryReaderFunctionBlock(node: ts.ArrowFunction | ts.FunctionExpr
   return processComponentBlock(blockNode, false, log);
 }
 
-function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[])
-  : ts.NodeArray<ts.HeritageClause> {
+export function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[],
+  isComponentV2: boolean = false): ts.NodeArray<ts.HeritageClause> {
   if (node.heritageClauses && !checkHeritageClauses(node)) {
     log.push({
       type: LogType.ERROR,
@@ -677,7 +678,7 @@ function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[])
     });
   }
   const result: ts.HeritageClause[] = [];
-  const heritageClause: ts.HeritageClause = createHeritageClause();
+  const heritageClause: ts.HeritageClause = createHeritageClause(isComponentV2);
   result.push(heritageClause);
   return ts.factory.createNodeArray(result);
 }
@@ -884,7 +885,7 @@ function createDeletedInternalStatement(): ts.ExpressionStatement {
       ts.factory.createIdentifier(ABOUTTOBEDELETEDINTERNAL)), undefined, []));
 }
 
-function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
+export function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaration {
   const updateDirtyElementStatement: ts.Statement = ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
@@ -908,7 +909,7 @@ function createParamsInitBlock(express: string, statements: ts.Statement[],
   return methodDeclaration;
 }
 
-function validateBuildMethodCount(buildCount: BuildCount, parentComponentName: ts.Identifier,
+export function validateBuildMethodCount(buildCount: BuildCount, parentComponentName: ts.Identifier,
   log: LogInfo[]): void {
   if (buildCount.count !== 1) {
     log.push({
@@ -930,11 +931,13 @@ function validateHasController(componentName: ts.Identifier, checkController: Co
   }
 }
 
-function createHeritageClause(): ts.HeritageClause {
+function createHeritageClause(isComponentV2: boolean = false): ts.HeritageClause {
   if (partialUpdateConfig.partialUpdateMode) {
     return ts.factory.createHeritageClause(
       ts.SyntaxKind.ExtendsKeyword,
-      [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU), [])]
+      [ts.factory.createExpressionWithTypeArguments(
+        ts.factory.createIdentifier(isComponentV2 ? constantDefine.STRUCT_PARENT : BASE_COMPONENT_NAME_PU),
+        [])]
     );
   }
   return ts.factory.createHeritageClause(
