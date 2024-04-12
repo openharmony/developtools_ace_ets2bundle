@@ -31,11 +31,10 @@ import {
   ELMTID,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   COMPONENT_IF_UNDEFINED,
-  CUSTOM_COMPONENT_EXTRAINFO,
-  FINALIZE_CONSTRUCTION
+  CUSTOM_COMPONENT_EXTRAINFO
 } from './pre_define';
-
 import { partialUpdateConfig } from '../main';
+import createAstNodeUtils from './create_ast_node_utils';
 
 export function getInitConstructor(members: ts.NodeArray<ts.Node>, parentComponentName: ts.Identifier
 ): ts.ConstructorDeclaration {
@@ -180,7 +179,7 @@ export function addConstructor(ctorNode: any, watchMap: Map<string, ts.Node>,
   const updateWithValueParamsStatement: ts.Statement = createUPdWithValStatement();
   const newBody: ts.Statement[] = [updateWithValueParamsStatement, ...watchStatements];
   if (partialUpdateConfig.partialUpdateMode) {
-    newBody.push(createFinalizeConstruction());
+    newBody.push(createAstNodeUtils.createFinalizeConstruction());
   }
   return updateConstructor(updateConstructor(ctorNode, [], [callSuperStatement], [], true), [],
     newBody, [], false, true, parentComponentName);
@@ -217,15 +216,4 @@ function createUPdWithValStatement(): ts.Statement {
       [ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)]
     )
   );
-}
-
-function createFinalizeConstruction(): ts.Statement {
-  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(
-      ts.factory.createThis(),
-      ts.factory.createIdentifier(FINALIZE_CONSTRUCTION)
-    ),
-    undefined,
-    []
-  ));
 }

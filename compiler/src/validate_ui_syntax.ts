@@ -61,7 +61,8 @@ import {
   COMPONENT_SENDABLE_DECORATOR,
   CLASS_MIN_TRACK_DECORATOR,
   MIN_OBSERVED,
-  COMPONENT_NON_DECORATOR
+  COMPONENT_NON_DECORATOR,
+  COMPONENT_DECORATOR_COMPONENT_V2
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -96,6 +97,7 @@ import {
 import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
+import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 
 export class ComponentCollection {
   localStorageName: string = null;
@@ -207,18 +209,7 @@ function checkComponentDecorator(source: string, filePath: string,
         enumCollection.add(item.name.getText());
       }
       if (ts.isStructDeclaration(item)) {
-        if (item.name && ts.isIdentifier(item.name)) {
-          const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
-          if (decorators && decorators.length) {
-            checkDecorators(decorators, result, item.name, log, sourceFile, item);
-          } else {
-            const message: string = `A struct should use decorator '@Component'.`;
-            addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
-          }
-        } else {
-          const message: string = `A struct must have a name.`;
-          addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
-        }
+        validateStructSpec(item, result, log, sourceFile);
       }
       if (ts.isMissingDeclaration(item)) {
         const decorators = ts.getAllDecorators(item);
@@ -243,6 +234,22 @@ function checkComponentDecorator(source: string, filePath: string,
   }
 
   return log.length ? log : null;
+}
+
+function validateStructSpec(item: ts.StructDeclaration, result: DecoratorResult, log: LogInfo[],
+  sourceFile: ts.SourceFile | null): void {
+  if (item.name && ts.isIdentifier(item.name)) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
+    if (decorators && decorators.length) {
+      checkDecorators(decorators, result, item.name, log, sourceFile, item);
+    } else {
+      const message: string = `A struct should use decorator '@Component' or '@ComponentV2'.`;
+      addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
+    }
+  } else {
+    const message: string = `A struct must have a name.`;
+    addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+  }
 }
 
 function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string,
@@ -303,6 +310,7 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
   component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile, node: ts.StructDeclaration): void {
   let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentName);
   decorators.forEach((element) => {
     let name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (element.expression && element.expression.expression && ts.isIdentifier(element.expression.expression)) {
@@ -322,27 +330,48 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
           result.previewCount++;
           componentCollection.previewComponent.push(componentName);
           break;
+        case COMPONENT_DECORATOR_COMPONENT_V2:
+          hasComponentDecorator = true;
+          structInfo.isComponentV2 = true;
+          break;
         case COMPONENT_DECORATOR_COMPONENT:
           hasComponentDecorator = true;
+          structInfo.isComponentV1 = true;
           break;
         case COMPONENT_DECORATOR_CUSTOM_DIALOG:
           componentCollection.customDialogs.add(componentName);
           hasComponentDecorator = true;
+          structInfo.isCustomDialog = true;
           break;
         case COMPONENT_DECORATOR_REUSEABLE:
           storedFileInfo.getCurrentArkTsFile().recycleComponents.add(componentName);
           hasComponentDecorator = true;
+          structInfo.isReusable = true;
           break;
       }
     } else {
-      const pos: number = element.expression ? element.expression.pos : element.pos;
-      const message: string = `The struct '${componentName}' use invalid decorator.`;
-      addLog(LogType.WARN, message, pos, log, sourceFile);
+      validateInvalidStructDecorator(element, componentName, log, sourceFile);
     }
   });
+  validateStruct(hasComponentDecorator, componentName, component, log, sourceFile, structInfo);
+}
+
+function validateInvalidStructDecorator(element: ts.Decorator, componentName: string, log: LogInfo[],
+  sourceFile: ts.SourceFile): void {
+  const pos: number = element.expression ? element.expression.pos : element.pos;
+  const message: string = `The struct '${componentName}' use invalid decorator.`;
+  addLog(LogType.WARN, message, pos, log, sourceFile);
+}
+
+function validateStruct(hasComponentDecorator: boolean, componentName: string, component: ts.Identifier,
+  log: LogInfo[], sourceFile: ts.SourceFile, structInfo: StructInfo): void {
   if (!hasComponentDecorator) {
     const message: string = `The struct '${componentName}' should use decorator '@Component'.`;
     addLog(LogType.WARN, message, component.pos, log, sourceFile);
+  } else if (structInfo.isComponentV2 && (structInfo.isComponentV1 || structInfo.isReusable || structInfo.isCustomDialog) ) {
+    const message: string = `The struct '${componentName}' can not be decorated with '@ComponentV2' ` +
+      `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
   if (BUILDIN_STYLE_NAMES.has(componentName)) {
     const message: string = `The struct '${componentName}' cannot have the same name ` +
@@ -404,7 +433,7 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, fileQuery);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery);
 }
 
 function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
@@ -412,10 +441,18 @@ function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
-  log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean, fileQuery: string): void {
+  log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
+  isComponentV2: boolean, fileQuery: string): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
-    collectComponentProps(node, propertyInitializeInEntry(fileQuery, node.name.escapedText.toString()));
+    const structName: string = node.name.escapedText.toString();
+    const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+    if (structInfo.isComponentV2) {
+      processStructComponentV2.parseComponentProperty(node, structInfo, log, sourceFileNode);
+      isComponentV2 = true;
+    } else {
+      collectComponentProps(node, propertyInitializeInEntry(fileQuery, structName), structInfo);
+    }
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
@@ -427,11 +464,11 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
-    validateMethod(node, sourceFileNode, log);
+    validateMethod(node, sourceFileNode, log, structContext, isComponentV2);
   }
-  checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass);
+  checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2);
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext, classContext, isObservedClass, fileQuery));
+    log, structContext, classContext, isObservedClass, isComponentV2, fileQuery));
   structContext = false;
   classContext = false;
   isObservedClass = false;
@@ -472,36 +509,54 @@ function collectStyles(node: ts.FunctionLikeDeclarationBase): void {
 }
 
 function validateMethod(node: ts.MethodDeclaration | ts.FunctionDeclaration, sourceFileNode: ts.SourceFile,
-  log: LogInfo[]): void {
+  log: LogInfo[], structContext: boolean, isComponentV2: boolean): void {
   if (ts.isMethodDeclaration(node)) {
+    let hasMonitor: boolean = false;
+    let monitorNode: ts.Decorator;
+    let decoratorCount: number = 0;
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-    validateMonitorDecorator(node, decorators, sourceFileNode, log);
+    decorators.forEach((item: ts.Decorator) => {
+      const name: string = item.getText().replace(/\([^\(\)]*\)/, '');
+      if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
+        const message: string = `'${item.getText()}' can not decorate the method.`;
+        addLog(LogType.ERROR, message, item.getStart(), log, sourceFileNode);
+      }
+      if (constantDefine.METHOD_DECORATOR_V2.includes(name)) {
+        decoratorCount++;
+      }
+      if (name === '@Monitor') {
+        hasMonitor = true;
+        monitorNode = item;
+      }
+    });
+    validateMutilMethodDecorator(node, sourceFileNode, log, decoratorCount);
+    validateMonitorDecorator(hasMonitor, monitorNode, sourceFileNode, log, structContext, isComponentV2);
   }
 }
 
-function validateMonitorDecorator(node: ts.MethodDeclaration, decorators: readonly ts.Decorator[],
-  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  let monitorNode: ts.Identifier;
-  const hasMonitor: boolean = decorators.some((item: ts.Decorator) => {
-    if (ts.isCallExpression(item.expression) && ts.isIdentifier(item.expression.expression) &&
-      item.expression.expression.escapedText.toString() === constantDefine.MONITOR) {
-      monitorNode = item.expression.expression;
-      return true;
-    }
-    return false;
-  });
-  if (hasMonitor && decorators.length > 1) {
-    const message: string = `The '@Monitor' decorator can not be used together with other decorators.`;
-    addLog(LogType.ERROR, message, monitorNode.pos, log, sourceFileNode);
+function validateMutilMethodDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], decoratorCount: number): void {
+  if (decoratorCount > 1) {
+    const message: string = 'The method can not be decorated by multiple built-in method decorators.';
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+  }
+}
+
+function validateMonitorDecorator(hasMonitor: boolean, monitorNode: ts.Decorator,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], structContext: boolean, isComponentV2: boolean): void {
+  if (hasMonitor && structContext && !isComponentV2) {
+    const message: string = `The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
+    addLog(LogType.ERROR, message, monitorNode.getStart(), log, sourceFileNode);
   }
 }
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
-  log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean): void {
+  log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
+  isComponentV2: boolean): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
-    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName);
+    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass);
   }
@@ -548,8 +603,19 @@ function parseClassDecorator(node: ts.ClassDeclaration): boolean {
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
-  structContext: boolean, decoratorName: string): void {
-  if (!structContext && STRUCT_DECORATORS.has(`@${decoratorName}`)) {
+  structContext: boolean, decoratorName: string, isComponentV2: boolean): void {
+  const name: string = `@${decoratorName}`;
+  if (structContext) {
+    if (isComponentV2) {
+      if (constantDefine.COMPONENT_MEMBER_DECORATOR_V1.includes(name)) {
+        const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
+        addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+      }
+    } else if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
+      const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    }
+  } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
     const message: string = `The '@${decoratorName}' decorator can only be used with 'struct'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
@@ -914,7 +980,8 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   return false;
 }
 
-function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean): void {
+function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
+  structInfo: StructInfo): void {
   const componentName: string = node.name.getText();
   const componentSet: IComponentSet = getComponentSet(node, judgeInitializeInEntry, true);
   propertyCollection.set(componentName, componentSet.properties);
@@ -936,6 +1003,10 @@ function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntr
   stateInitialization.set(componentName, componentSet.stateInit);
   provideInitialization.set(componentName, componentSet.provideInit);
   privateCollection.set(componentName, componentSet.privateCollection);
+  structInfo.updatePropsDecoratorsV1.push(
+    ...componentSet.states, ...componentSet.props, ...componentSet.links,
+    ...componentSet.provides, ...componentSet.objectLinks
+  );
 }
 
 export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,

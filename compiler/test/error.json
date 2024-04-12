@@ -180,7 +180,7 @@
         "type": "ERROR"
     },
     "notComponent": {
-        "message": "A struct should use decorator '@Component'.",
+        "message": "A struct should use decorator '@Component' or '@ComponentV2'.",
         "type": "WARN"
     },
     "notConcurrent": {

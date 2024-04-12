@@ -86,6 +86,7 @@ import {
 import { resetProcessComponentMember } from '../../process_component_member';
 import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
+import processStructComponentV2 from '../../process_struct_componentV2';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -389,6 +390,7 @@ async function transform(code: string, id: string) {
   }
 
   resetCollection();
+  processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
     emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);

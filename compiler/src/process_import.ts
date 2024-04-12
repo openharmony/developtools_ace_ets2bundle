@@ -86,6 +86,7 @@ import {
   getRealModulePath,
   validateModuleSpecifier
 } from './fast_build/system_api/api_check_utils';
+import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
@@ -806,20 +807,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
-    if (isCustomDialogClass(originNode)) {
-      componentCollection.customDialogs.add(name);
-    }
-    if (isCustomComponent(originNode, structDecorator)) {
-      let isDETS: boolean = false;
-      const componentSet: IComponentSet = getComponentSet(originNode, false);
-      while (originNode) {
-        if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
-          isDETS = true;
-        }
-        originNode = originNode.parent;
-      }
-      setComponentCollectionInfo(name, componentSet, isDETS, structDecorator);
-    }
+    parseComponentInImportNode(originNode, name, structDecorator, originFile);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
@@ -850,4 +838,52 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
   stateInitialization.set(name, componentSet.stateInit);
   provideInitialization.set(name, componentSet.provideInit);
   privateCollection.set(name, componentSet.privateCollection);
+  processStructComponentV2.getOrCreateStructInfo(name).updatePropsDecoratorsV1.push(
+    ...componentSet.states, ...componentSet.props, ...componentSet.links,
+    ...componentSet.provides, ...componentSet.objectLinks
+  );
+}
+
+function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
+  structDecorator: structDecoratorResult, originFile: string): void {
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
+  if (isComponentV2(originNode)) {
+    parseComponentV2InImportNode(originNode, name, originFile, structInfo);
+    return;
+  }
+  if (isCustomDialogClass(originNode)) {
+    structInfo.isCustomDialog = true;
+    componentCollection.customDialogs.add(name);
+  }
+  if (isCustomComponent(originNode, structDecorator)) {
+    structInfo.isComponentV1 = true;
+    let isDETS: boolean = false;
+    const componentSet: IComponentSet = getComponentSet(originNode, false);
+    while (originNode) {
+      if (ts.isSourceFile(originNode) && /\.d\.ets$/.test(originNode.fileName)) {
+        isDETS = true;
+      }
+      originNode = originNode.parent;
+    }
+    setComponentCollectionInfo(name, componentSet, isDETS, structDecorator);
+  }
+}
+
+function parseComponentV2InImportNode(node: ts.StructDeclaration, name: string, originFile: string,
+  structInfo: StructInfo): void {
+  structInfo.isComponentV2 = true;
+  componentCollection.customComponents.add(name);
+  const isDETS: boolean = originFile && /\.d\.ets$/.test(originFile);
+  if (isDETS) {
+    storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);
+  }
+  processStructComponentV2.parseComponentProperty(node, structInfo, null, null);
+}
+
+function isComponentV2(node: ts.StructDeclaration): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  return decorators.some((item: ts.Decorator) => {
+    const name: string = item.getText().replace(/\([^\(\)]*\)/, '').replace('@', '').trim();
+    return name === 'ComponentV2';
+  });
 }
