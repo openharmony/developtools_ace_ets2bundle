@@ -775,11 +775,7 @@ function getParentNode(node: ts.PropertyAssignment, collection: Map<string, Set<
     grandparentName = grandparentExpression.escapedText.toString();
     parentComponent = collection.get(grandparentName);
   } else if (ts.isPropertyAccessExpression(grandparentExpression)) {
-    if (storedFileInfo.isAsPageImport) {
-      grandparentName = grandparentExpression.getText();
-    } else {
-      grandparentName = grandparentExpression.name.escapedText.toString();
-    }
+    grandparentName = grandparentExpression.name.escapedText.toString();
     parentComponent = collection.get(grandparentName);
   } else {
     // ignore

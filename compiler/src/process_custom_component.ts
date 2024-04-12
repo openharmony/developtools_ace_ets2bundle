@@ -928,17 +928,9 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
 
 function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponentName: string,
   curChildProps: Set<string>, log: LogInfo[]): void {
-  let mandatoryToInitViaParamSet: Set<string>;
-  if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' && node.expression) {
-    mandatoryToInitViaParamSet = new Set([
-      ...getCollectionSet(node.expression.getText(), storedFileInfo.overallLinkCollection),
-      ...getCollectionSet(node.expression.getText(), storedFileInfo.overallObjectLinkCollection)]);
-    customComponentName = node.expression.getText();
-  } else {
-    mandatoryToInitViaParamSet = new Set([
-      ...getCollectionSet(customComponentName, linkCollection),
-      ...getCollectionSet(customComponentName, objectLinkCollection)]);
-  }
+  const mandatoryToInitViaParamSet = new Set([
+    ...getCollectionSet(customComponentName, linkCollection),
+    ...getCollectionSet(customComponentName, objectLinkCollection)]);
   mandatoryToInitViaParamSet.forEach(item => {
     if (item && !curChildProps.has(item)) {
       log.push({
