@@ -492,8 +492,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
                 historyNameCache, originalFilePath, pathInfo);
-  } catch {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file with arkguard: ${relativeSourceFilePath}`);
+  } catch (err) {
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${relativeSourceFilePath}' with arkguard. ${err}`);
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
