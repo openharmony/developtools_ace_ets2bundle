@@ -28,6 +28,29 @@ import { projectConfig as mainProjectConfig } from '../../../../main';
 import RollUpPluginMock from '../../mock/rollup_mock/rollup_plugin_mock';
 import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 import { ModuleSourceFile } from '../../../../lib/fast_build/ark_compiler/module/module_source_file';
+const PRVIEW_MOCK_CONFIG : Object = {
+  // system api mock
+  "@ohos.bluetooth": {
+    "source": "src/main/mock/ohos/bluetooth.mock.ts"
+  },
+  // local function mock
+  "./src/main/ets/calc": {
+    "source": "src/main/mock/module/calc.mock.ts"
+  },
+  // ohpm dependency mock
+  "lib": {
+    "source": "src/main/mock/module/bigInt.mock.ts"
+  },
+  // native mock
+  "libentry.so": {
+    "source": "src/main/mock/native/libentry.mock.ts"
+  }
+}
+
+const MOCK_CONFIG_FILEPATH = {
+  'lib': `${projectConfig.projectRootPath}/oh_modules/lib/dist/index.js`,
+  './src/main/ets/calc': `${projectConfig.projectRootPath}/entry/src/main/ets/calc.ets`,
+}
 
 mocha.describe('generate ohmUrl', function () {
   mocha.before(function () {
@@ -846,5 +869,148 @@ mocha.describe('generate ohmUrl', function () {
       '@normalized:N&&com.test.testHsp&@ohos/Test/src/main/ets/utils/Calc&2.3.1';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('transform mockConfigInfo', function () {
+    this.rollup.preview();
+    ModuleSourceFile.mockConfigInfo = PRVIEW_MOCK_CONFIG;
+    this.rollup.share.projectConfig.modulePath = `${projectConfig.projectRootPath}/entry`;
+    this.rollup.share.projectConfig.mockParams = {
+      etsSourceRootPath: 'src/main/ets',
+      mockConfigPath: `${projectConfig.projectRootPath}/entry/src/mock/mock-config.json5`
+    }
+    this.rollup.share.projectConfig.entryModuleName = 'entry';
+    const importerFile: string = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/index.ets`;
+    const moduleInfo = {
+      id: importerFile,
+      meta: {
+        moduleName: 'entry',
+      }
+    };
+    this.rollup.moduleInfos.push(moduleInfo);
+    for (let moduleRequest in PRVIEW_MOCK_CONFIG) {
+      let mockPath = PRVIEW_MOCK_CONFIG[moduleRequest]
+      let filePath: string;
+      if (Object.prototype.hasOwnProperty.call(MOCK_CONFIG_FILEPATH, moduleRequest)) {
+        filePath = MOCK_CONFIG_FILEPATH[moduleRequest];
+        const moduleInfo = {
+          id: filePath,
+          meta: {
+            moduleName: moduleRequest === 'lib' ? 'lib' : 'entry',
+            pkgName: moduleRequest === 'lib' ? 'lib' : 'entry',
+            pkgPath: moduleRequest === 'lib' ? `${projectConfig.projectRootPath}/oh_modules/lib` :
+              `${projectConfig.projectRootPath}/entry`
+          }
+        };
+        this.rollup.moduleInfos.push(moduleInfo);
+      }
+      const moduleSourceFile: string = new ModuleSourceFile();
+      ModuleSourceFile.initPluginEnv(this.rollup);
+      ModuleSourceFile.setProcessMock(this.rollup);
+      moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, filePath, importerFile);
+    }
+    const expectMockConfig: Object = {
+      '@ohos:bluetooth': {
+        source: '@bundle:com.example.app/entry/mock/ohos/bluetooth.mock'
+      },
+      '@bundle:com.example.app/entry/ets/calc': {
+        source: '@bundle:com.example.app/entry/mock/module/calc.mock'
+      },
+      '@bundle:/testProjectRootPath/oh_modules/lib/dist/index.js': {
+        source: '@bundle:com.example.app/entry/mock/module/bigInt.mock'
+      },
+      '@app:UtTestApplication/entry/entry': {
+        source: '@bundle:com.example.app/entry/mock/native/libentry.mock'
+      }
+    };
+    expect(ModuleSourceFile.newMockConfigInfo.toString() === expectMockConfig.toString()).to.be.true;
+    ModuleSourceFile.cleanUpObjects();
+  });
+
+  mocha.it('NormalizedOHMUrl transform mockConfigInfo', function () {
+    this.rollup.preview();
+    this.rollup.useNormalizedOHMUrl()
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'index.ets',
+        'isSO': false
+      },
+      'lib': {
+        'packageName': 'lib',
+        'bundleName': '',
+        'moduleName': 'lib',
+        'version': '',
+        'entryPath': 'index.ets',
+        'isSO': false
+      },
+      'libentry.so': {
+        'packageName': 'libentry.so',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': '',
+        'isSO': true
+      }
+    };
+    ModuleSourceFile.mockConfigInfo = PRVIEW_MOCK_CONFIG;
+    this.rollup.share.projectConfig.modulePath = `${projectConfig.projectRootPath}/entry`;
+    this.rollup.share.projectConfig.mockParams = {
+      etsSourceRootPath: 'src/main/ets',
+      mockConfigPath: `${projectConfig.projectRootPath}/entry/src/mock/mock-config.json5`
+    }
+    this.rollup.share.projectConfig.entryModuleName = 'entry';
+    
+    const importerFile: string = `${projectConfig.projectRootPath}/entry/src/main/ets/pages/index.ets`;
+    const moduleInfo = {
+      id: importerFile,
+      meta: {
+        moduleName: 'entry',
+        pkgName: 'entry',
+        pkgPath: `${projectConfig.projectRootPath}/entry`
+      }
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    
+    for (let moduleRequest in PRVIEW_MOCK_CONFIG) {
+      let mockPath = PRVIEW_MOCK_CONFIG[moduleRequest]
+      let filePath: string;
+      if (Object.prototype.hasOwnProperty.call(MOCK_CONFIG_FILEPATH, moduleRequest)) {
+        filePath = MOCK_CONFIG_FILEPATH[moduleRequest];
+        const moduleInfo = {
+          id: filePath,
+          meta: {
+            moduleName: moduleRequest === 'lib' ? 'lib' : 'entry',
+            pkgName: moduleRequest === 'lib' ? 'lib' : 'entry',
+            pkgPath: moduleRequest === 'lib' ? `${projectConfig.projectRootPath}/oh_modules/lib` :
+              `${projectConfig.projectRootPath}/entry`
+          }
+        }
+        this.rollup.moduleInfos.push(moduleInfo);
+      }
+      const moduleSourceFile: string = new ModuleSourceFile();
+      ModuleSourceFile.initPluginEnv(this.rollup);
+      ModuleSourceFile.setProcessMock(this.rollup);
+      moduleSourceFile.getOhmUrl(this.rollup, moduleRequest, filePath, importerFile);
+    }
+    const expectMockConfig = {
+      '@ohos:bluetooth': {
+        source: '@normalized:N&&&entry/src/main/mock/ohos/bluetooth.mock&'
+      },
+      '@normalized:N&&&entry/src/main/ets/calc&': {
+        source: '@normalized:N&&&entry/src/main/mock/module/calc.mock&'
+      },
+      '@normalized:N&lib&&lib/dist/index&': {
+        source: '@normalized:N&&&entry/src/main/mock/module/bigInt.mock&'
+      },
+      '@normalized:Y&&&libentry.so&': {
+        source: '@normalized:N&&&entry/src/main/mock/native/libentry.mock&'
+      }
+    };
+    expect(ModuleSourceFile.newMockConfigInfo.toString() === expectMockConfig.toString()).to.be.true;
+    ModuleSourceFile.cleanUpObjects();
   });
 });
