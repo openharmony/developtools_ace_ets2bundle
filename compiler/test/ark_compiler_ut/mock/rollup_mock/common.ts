@@ -19,6 +19,7 @@ export const ETS_LOADER_VERSION: string = '4.1.2.3';
 
 export const BUNDLE_NAME_DEFAULT: string = 'com.example.app';
 export const ENTRY_MODULE_NAME_DEFAULT: string = 'entry';
+export const ENTRY_MODULE_VERSION_DEFAULT: string = '1.0.0';
 
 export const RUNTIME_OS_OPENHARMONY: string = 'OpenHarmony';
 export const MODULE_NAME_HASH_DEFAULT: string = '1043bfc77febe75fafec0c4309faccf1';
@@ -63,6 +64,7 @@ export const OHURL_SHAREDLIBRARY: string = "@bundle:UtTestApplication/sharedLibr
 
 export const FILE: string = 'file';
 export const SOURCE: string = 'sources';
+export const ENTRY_PACKAGE_INFO: string = 'entry-package-info';
 export const DYNAMICIMPORT_ETS: string = 'DynamicImport.ets';
 
 export const PKG_MODULES: string = 'pkg_modules';

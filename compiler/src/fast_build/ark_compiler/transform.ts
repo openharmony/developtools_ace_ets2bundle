@@ -34,8 +34,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../ark_utils';
-
-export let newSourceMaps: Object = {};
+import { SourceMapGenerator } from './generate_sourcemap';
 
 /**
  * rollup transform hook
@@ -71,6 +70,8 @@ export function transformForModule(code: string, id: string) {
 }
 
 function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, parentEvent: Object): void {
+  const sourceMapGenerator = SourceMapGenerator.getInstance();
+
   if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     return;
@@ -78,10 +79,11 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectCon
 
   const eventAddSourceMapInfo = createAndStartEvent(parentEvent, 'preserve source map for ts/ets files');
   const relativeSourceFilePath = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
-  sourcemap['sources'] = [ relativeSourceFilePath ];
+  sourcemap['sources'] = [relativeSourceFilePath];
   sourcemap['file'] = path.basename(relativeSourceFilePath);
   sourcemap.sourcesContent && delete sourcemap.sourcesContent;
-  newSourceMaps[relativeSourceFilePath] = sourcemap;
+  sourceMapGenerator.fillSourceMapPackageInfo(sourceFilePath, sourcemap);
+  sourceMapGenerator.updateSourceMap(sourceFilePath, sourcemap)
   stopEvent(eventAddSourceMapInfo);
 }
 
@@ -98,8 +100,4 @@ function transformJsByBabelPlugin(code: string, parentEvent: Object): Object {
   );
   stopEvent(eventTransformByBabel);
   return transformed;
-}
-
-export function cleanSourceMapObject(): void {
-  newSourceMaps = {};
 }

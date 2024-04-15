@@ -35,7 +35,7 @@ import {
   writeCollectionFile,
   getAllComponentsOrModules
 } from '../../utils';
-import { hasTsNoCheckOrTsIgnoreFiles } from "../../process_kit_import";
+import { hasTsNoCheckOrTsIgnoreFiles } from "../ark_compiler/utils";
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const allFiles: Set<string> = new Set();

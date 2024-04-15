@@ -29,6 +29,7 @@ import {
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
 import { META } from '../rollup_mock/common';
 import { sharedModuleSet } from '../../../../lib/fast_build/ark_compiler/check_shared_module';
+import { SourceMapGenerator } from '../../../../lib/fast_build/ark_compiler/generate_sourcemap';
 class ModuleModeMock extends ModuleMode {
   collectModuleFileListMock(rollupObject: object) {
     const fileList = Array.from(rollupObject.getModuleIds());
@@ -120,12 +121,12 @@ class ModuleModeMock extends ModuleMode {
     }
   }
 
-  updateCachedSourceMapsMock() {
-    this.updateCachedSourceMaps();
+  updateCachedSourceMapsMock(sourceMapGenerator: Object) {
+    sourceMapGenerator.updateCachedSourceMaps();
   }
 
-  buildModuleSourceMapInfoMock() {
-    this.buildModuleSourceMapInfo();
+  buildModuleSourceMapInfoMock(sourceMapGenerator: Object) {
+    sourceMapGenerator.buildModuleSourceMapInfo();
   }
 
   checkModuleSourceMapInfoMock(): boolean {

@@ -36,7 +36,6 @@ export class ModuleHotfixMode extends ModuleMode {
     this.inOldSymbolTablePath = this.projectConfig.inOldSymbolTablePath || this.projectConfig.projectRootPath;
     this.enableMap = this.projectConfig.enableMap || false;
     this.prepareForCompilation(rollupObject, parentEvent);
-    this.buildModuleSourceMapInfo(parentEvent);
 
     this.generateEs2AbcCmdForHotfix();
     this.generateMergedAbcOfEs2Abc(parentEvent);
