@@ -25,8 +25,12 @@ exports.source = `
 
 @Extend(Button) function fancybut(color:string|Color){
   .backgroundColor(color)
-  .width(200)
   .height(100)
+  .stateStyles({
+      normal: {
+        .width(200)
+      }
+  })
 }
 
 @Entry
@@ -67,8 +71,10 @@ function __Text__superFancy(size) {
 }
 function __Button__fancybut(color) {
     Button.backgroundColor(color);
-    Button.width(200);
     Button.height(100);
+    ViewStackProcessor.visualState("normal");
+    Button.width(200);
+    ViewStackProcessor.visualState();
 }
 class FancyUse extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {

@@ -14,6 +14,15 @@
  */
 
 exports.source = `
+function emptyFunc() {}
+
+function checkTrailingClosure() {
+  emptyFunc()
+  {
+    let innerVar: number = 1
+  }
+}
+
 interface ExpInterface {
   expProp: boolean;
 }
@@ -155,6 +164,13 @@ exports.expectResult =
 `"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+function emptyFunc() { }
+function checkTrailingClosure() {
+    emptyFunc();
+    {
+        let innerVar = 1;
+    }
 }
 function noParam(parent = null) {
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
