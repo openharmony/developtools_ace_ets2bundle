@@ -420,9 +420,6 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
     isObservedClass = parseClassDecorator(node);
-    if (isSendableClassDeclaration(node as ts.ClassDeclaration)) {
-      validateSendableClass(sourceFileNode, node as ts.ClassDeclaration, log);
-    }
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     methodDecoratorCollect(node);
@@ -595,101 +592,6 @@ export function isSendableClassDeclaration(classDeclarationNode: ts.ClassDeclara
         }
         return false;
       }));
-}
-
-function isSendableTypeReference(type: ts.Type): boolean {
-  if (!type) {
-    return false;
-  }
-  // enum / typeparameter supported in sendable class
-  if ((type.flags & (ts.TypeFlags.Enum | ts.TypeFlags.EnumLiteral | ts.TypeFlags.TypeParameter)) !== 0) {
-    return true;
-  }
-  if (!type.getSymbol() || (!type.getSymbol().valueDeclaration && !type.getSymbol().declarations)) {
-    return false;
-  }
-  const decls: ts.Declaration[] = type.getSymbol().declarations;
-  if (decls && decls.length > 0 && ts.isInterfaceDeclaration(decls[0])) {
-    return true;
-  }
-  const valueDeclarationNode: ts.Node = type.getSymbol().valueDeclaration;
-  if (valueDeclarationNode && ts.isClassDeclaration(valueDeclarationNode)) {
-    return isSendableClassDeclaration(valueDeclarationNode as ts.ClassDeclaration);
-  }
-  return false;
-}
-
-function isNullKeyword(type: ts.Type): boolean {
-  // NullKeyword supported in sendable class
-  return type && ((type.flags & ts.TypeFlags.Null) !== 0);
-}
-
-function isSendableTypeNode(typeNode: ts.TypeNode): boolean {
-  if (ts.isUnionTypeNode(typeNode)) {
-    return true;
-  }
-
-  switch (typeNode.kind) {
-    case ts.SyntaxKind.StringKeyword:
-    case ts.SyntaxKind.NumberKeyword:
-    case ts.SyntaxKind.BooleanKeyword:
-    case ts.SyntaxKind.BigIntKeyword:
-    case ts.SyntaxKind.UndefinedKeyword:
-      return true;
-    case ts.SyntaxKind.LiteralType:
-      return globalProgram.checker && isNullKeyword(globalProgram.checker.getTypeFromTypeNode(typeNode));
-    case ts.SyntaxKind.TypeReference: {
-      return globalProgram.checker && isSendableTypeReference(globalProgram.checker.getTypeFromTypeNode(typeNode));
-    }
-    default:
-      return false;
-  }
-}
-
-function validateSendableClass(sourceFileNode: ts.SourceFile, node: ts.ClassDeclaration, log: LogInfo[]): void {
-  // process parent classes
-  // extend clause must precede implements clause, so parent can only be heritageClauses[0]
-  if (node.heritageClauses && node.heritageClauses.length >= 1 &&
-      node.heritageClauses[0].token && node.heritageClauses[0].token === ts.SyntaxKind.ExtendsKeyword &&
-      node.heritageClauses[0].types && node.heritageClauses[0].types.length === 1) {
-    const expressionNode: ts.ExpressionWithTypeArguments = node.heritageClauses[0].types[0];
-    if (expressionNode.expression && ts.isIdentifier(expressionNode.expression) && globalProgram.checker) {
-      if (!isSendableTypeReference(globalProgram.checker.getTypeAtLocation(expressionNode.expression))) {
-        addLog(LogType.ERROR, 'The parent class of @Sendable classes must be @Sendable class',
-          expressionNode.expression.getStart(), log, sourceFileNode);
-      }
-    }
-  }
-
-  // process all properties
-  node.members.forEach(item => {
-    if (ts.isPropertyDeclaration(item)) {
-      const propertyItem: ts.PropertyDeclaration = (item as ts.PropertyDeclaration);
-      if (propertyItem.exclamationToken) {
-        addLog(LogType.ERROR, 'Definite assignment assertions are not supported in @Sendable classes.',
-          propertyItem.exclamationToken.getStart(), log, sourceFileNode);
-      } else if (!ts.isIdentifier(propertyItem.name)) {
-        addLog(LogType.ERROR,
-          'Properties with names that are not identifiers are not supported in @Sendable classes.',
-          propertyItem.name.getStart(), log, sourceFileNode);
-      } else if (!propertyItem.type) {
-        addLog(LogType.ERROR,
-          'Property declarations without explicit types are not supported in @Sendable classes.',
-          propertyItem.name.getStart(), log, sourceFileNode);
-      } else if (!isSendableTypeNode(propertyItem.type)) {
-        addLog(LogType.ERROR,
-          'Properties with types that are not basic types (string, number, boolean) or @Sendable classes ' +
-          'are not supported in @Sendable classes.',
-          propertyItem.type.getStart(), log, sourceFileNode);
-      }
-    } else if (ts.isGetAccessorDeclaration(item) || ts.isSetAccessorDeclaration(item)) {
-      if (!ts.isIdentifier((item as ts.AccessorDeclaration).name)) {
-        addLog(LogType.ERROR,
-          'Accessors with names that are not identifiers are not supported in @Sendable classes.',
-          item.name.getStart(), log, sourceFileNode);
-      }
-    }
-  });
 }
 
 export function checkAllNode(
