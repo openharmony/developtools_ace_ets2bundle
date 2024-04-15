@@ -47,13 +47,7 @@ export class JsDocCheckService {
    * STER1. Parse the permission information configured on the API
    * STEP2. Recursive queue to obtain whether the current permission configuration supports it
    */
-  static validPermission(jsDocTag: ts.JSDocTag, permissionsArray: string[]): boolean {
-    if (!jsDocTag) {
-      return false;
-    }
-    const comment: string = typeof jsDocTag.comment === 'string'
-      ? jsDocTag.comment
-      : ts.getTextOfJSDocComment(jsDocTag.comment);
+  static validPermission(comment: string, permissionsArray: string[]): boolean {
     const permissionsItem: string[] = JsDocCheckService.getSplitsArrayWithDesignatedCharAndStr(comment ?? '', ' ')
       .filter((item) => {
         return item !== '';
