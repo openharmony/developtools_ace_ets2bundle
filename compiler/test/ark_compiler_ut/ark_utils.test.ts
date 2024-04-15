@@ -30,7 +30,6 @@ import {
   isEs2Abc,
   writeArkguardObfuscatedSourceCode,
   writeMinimizedSourceCode,
-  writeTerserObfuscatedSourceCode
 } from '../../lib/ark_utils';
 import {
   DEBUG,
@@ -311,7 +310,7 @@ mocha.describe('test ark_utils file api', function () {
     } catch (e) {
     }
     expect(stub.calledWith(red,
-      'ArkTS:INTERNAL ERROR: Failed to obfuscate file with arkguard: '
+      `ArkTS:INTERNAL ERROR: Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')`
     )).to.be.true;
     stub.restore();
   });
