@@ -145,6 +145,7 @@
         "Menu",
         "MenuItem",
         "MenuItemGroup",
+        "MovingPhotoView",
         "NavDestination",
         "NavRouter",
         "Navigation",
@@ -449,6 +450,11 @@
             "name": "MenuItemGroup",
             "type": "MenuItemGroupAttribute",
             "instance": "MenuItemGroupInstance"
+          },
+          {
+            "name": "MovingPhotoView",
+            "type": "MovingPhotoViewAttribute",
+            "instance": "MovingPhotoViewInstance"
           },
           {
             "name": "NavDestination",
