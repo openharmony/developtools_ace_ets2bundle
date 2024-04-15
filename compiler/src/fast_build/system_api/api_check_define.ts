@@ -14,7 +14,7 @@
  */
 
 export const PERMISSION_TAG_CHECK_NAME: string = 'permission';
-export const PERMISSION_TAG_CHECK_ERROR: string = "'{0}' is incompatible";
+export const PERMISSION_TAG_CHECK_ERROR: string = "To use this API, you need to apply for the permissions: $DT";
 export const SYSTEM_API_TAG_CHECK_NAME: string = 'systemapi';
 export const SYSTEM_API_TAG_CHECK_WARNING: string = "'{0}' is system api";
 export const TEST_TAG_CHECK_NAME: string = 'test';
