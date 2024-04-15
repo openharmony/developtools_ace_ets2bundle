@@ -170,7 +170,7 @@ function processPackageDir(params: Object): string {
   const { projectFilePath, unixFilePath, packageDir, projectRootPath, moduleRootPath,
     projectConfig, namespace, logger, importerFile, originalFilePath } = params;
   if (projectFilePath.indexOf(packageDir) !== -1) {
-    if (process.env.compileTool === 'rollup') {
+    if (compileToolIsRollUp()) {
       const tryProjectPkg: string = toUnixPath(path.join(projectRootPath, packageDir));
       if (unixFilePath.indexOf(tryProjectPkg) !== -1) {
         return unixFilePath.replace(tryProjectPkg, `${packageDir}`).replace(new RegExp(packageDir, 'g'), PACKAGES);
@@ -276,7 +276,7 @@ export function genSourceMapFileName(temporaryFile: string): string {
 }
 
 export function getBuildModeInLowerCase(projectConfig: Object): string {
-  return (process.env.compileTool === 'rollup' ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
+  return (compileToolIsRollUp() ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
@@ -439,14 +439,14 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
-  if (projectConfig.arkObfuscator) {
+  if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
     performancePrinter?.filesPrinter?.startEvent(filePath);
     await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
     performancePrinter?.filesPrinter?.endEvent(filePath, undefined, true);
     return;
   }
   mkdirsSync(path.dirname(filePath));
-  if (process.env.compileTool !== 'rollup') {
+  if (!compileToolIsRollUp()) {
     await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
     return;
   }
@@ -472,6 +472,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const isDeclaration = (/\.d\.e?ts$/).test(filePath);
   const packageDir = projectConfig.packageDir;
   const projectRootPath = projectConfig.projectRootPath;
+  const useNormalized = projectConfig.useNormalizedOHMUrl;
+  const localPackageSet = projectConfig.localPackageSet;
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
     previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
@@ -488,10 +490,15 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   }
 
   let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object };
-  let pathInfo: { packageDir: string, projectRootPath: string } = { packageDir, projectRootPath };
+  let projectInfo: {
+    packageDir: string,
+    projectRootPath: string,
+    localPackageSet: Set<string>,
+    useNormalized: boolean
+  } = { packageDir, projectRootPath, localPackageSet, useNormalized };
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
-                historyNameCache, originalFilePath, pathInfo);
+                historyNameCache, originalFilePath, projectInfo);
   } catch (err) {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${relativeSourceFilePath}' with arkguard. ${err}`);
   }
@@ -762,4 +769,8 @@ export function stopEvent(event: Object, syncFlag = false): void {
       event.stop();
     }
   }
+}
+
+export function compileToolIsRollUp (): boolean {
+  return process.env.compileTool === 'rollup';
 }
