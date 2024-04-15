@@ -74,6 +74,10 @@
         {
           "name": "Require",
           "emitParameters" : false
+        },
+        {
+          "name": "Sendable",
+          "emitParameters" : false
         }
       ],
       "propertyDecorators": [
