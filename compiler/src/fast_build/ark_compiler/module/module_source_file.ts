@@ -42,7 +42,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../ark_utils';
-import { newSourceMaps } from '../transform';
+import { SourceMapGenerator } from '../generate_sourcemap';
 import {
   MergedConfig,
   handleKeepFilesAndGetDependencies,
@@ -434,7 +434,10 @@ export class ModuleSourceFile {
         includeContent: false,
         hires: true
       });
-      newSourceMaps[relativeSourceFilePath] = await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
+      const sourceMapGenerator = SourceMapGenerator.getInstance();
+      const sourcemap = await updateSourceMap(sourceMapGenerator.getSourceMap(this.moduleId), updatedMap); 
+      sourceMapGenerator.fillSourceMapPackageInfo(this.moduleId, sourcemap);
+      sourceMapGenerator.updateSourceMap(this.moduleId, sourcemap);
     }
 
     this.source = code.toString();

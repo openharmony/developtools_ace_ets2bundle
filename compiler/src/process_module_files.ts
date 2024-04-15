@@ -17,7 +17,7 @@ import path from 'path';
 import ts from 'typescript';
 import fs from 'fs';
 
-import { newSourceMaps as rollupNewSourceMaps } from './fast_build/ark_compiler/transform';
+import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import {
   EXTNAME_TS,
   EXTNAME_ETS,
@@ -45,7 +45,8 @@ export const SRC_MAIN: string = 'src/main';
 export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
-  const mixedInfo: {content: string, sourceMapJson: ts.RawSourceMap} = genContentAndSourceMapInfo(node, projectConfig);
+  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig);
+  const sourceMapGenerator = SourceMapGenerator.getInstance();
   stopEvent(eventGenContentAndSourceMapInfo);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig);
@@ -60,10 +61,12 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
-    rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
-    sourceMaps = rollupNewSourceMaps;
+    sourceMapGenerator.fillSourceMapPackageInfo(node.fileName, mixedInfo.sourceMapJson);
+    sourceMapGenerator.updateSourceMap(node.fileName, mixedInfo.sourceMapJson);
+    sourceMaps = sourceMapGenerator.getSourceMaps();
   } else {
-    webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
+    sourceMapGenerator.fillSourceMapPackageInfo(node.fileName, mixedInfo.sourceMapJson);
+    sourceMapGenerator.updateSpecifySourceMap(webpackNewSourceMaps, node.fileName, mixedInfo.sourceMapJson)
     sourceMaps = webpackNewSourceMaps;
   }
   if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
@@ -104,7 +107,7 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object):
   // @ts-ignore
   const writer: ts.EmitTextWriter = ts.createTextWriter(
     // @ts-ignore
-    ts.getNewLineCharacter({newLine: ts.NewLineKind.LineFeed, removeComments: false}));
+    ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
   printer['writeFile'](node, writer, sourceMapGenerator);
   const sourceMapJson: ts.RawSourceMap = sourceMapGenerator.toJSON();
   sourceMapJson['sources'] = [toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];

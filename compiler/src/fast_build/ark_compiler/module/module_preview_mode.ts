@@ -24,7 +24,6 @@ export class ModulePreviewMode extends ModuleMode {
 
   generateAbc(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
-    this.buildModuleSourceMapInfo(parentEvent);
     this.executeArkCompiler(parentEvent);
   }
 

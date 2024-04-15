@@ -15,13 +15,16 @@
 
 import { initArkProjectConfig } from './common/process_ark_config';
 import { generateBundleAbc } from './generate_bundle_abc';
-import { generateModuleAbc } from './generate_module_abc';
+import { generateModuleAbc, cleanModuleMode } from './generate_module_abc';
 import { transformForModule } from './transform';
-import { cleanUpObjects } from './utils';
 import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
 import { checkIfJsImportingArkts } from './check_import_module';
 import { compilerOptions } from '../../ets_checker';
 import { ModuleSourceFile } from './module/module_source_file';
+import { SourceMapGenerator } from './generate_sourcemap';
+import { cleanUpUtilsObjects } from '../../ark_utils';
+import { cleanUpKitImportObjects } from '../../process_kit_import';
+import { cleanUpFilesList } from './utils';
 
 export function genAbc() {
   return {
@@ -29,6 +32,8 @@ export function genAbc() {
     buildStart() {
       this.share.arkProjectConfig = initArkProjectConfig(this.share);
       checkArkCompilerCacheInfo(this);
+      //init SourceMapGenerator
+      SourceMapGenerator.initInstance(this);
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
@@ -46,6 +51,13 @@ export function genAbc() {
     },
     buildEnd: generateModuleAbc,
     generateBundle: generateBundleAbc,
-    cleanUp: cleanUpObjects
+    cleanUp: () => {
+      SourceMapGenerator.cleanSourceMapObject();
+      cleanUpUtilsObjects();
+      cleanUpKitImportObjects();
+      cleanUpFilesList();
+      cleanModuleMode();
+      ModuleSourceFile.cleanUpObjects();
+    }
   };
 }

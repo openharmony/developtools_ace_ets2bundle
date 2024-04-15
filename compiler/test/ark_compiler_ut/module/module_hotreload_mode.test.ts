@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use rollupObject file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2023 Huawei Device Co., Ltd.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use rollupObject file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 
 import { expect } from 'chai';
@@ -27,7 +27,6 @@ import {
 } from '../mock/rollup_mock/common';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModuleHotreloadMode } from '../../../lib/fast_build/ark_compiler/module/module_hotreload_mode';
-import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
 import { toUnixPath } from '../../../lib/utils';
 import {
   SOURCEMAPS,
@@ -47,6 +46,7 @@ import {
   FILE,
   SOURCE
 } from '../mock/rollup_mock/common';
+import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
 
 mocha.describe('test module_hotreload_mode file api', function () {
   mocha.before(function () {
@@ -62,6 +62,8 @@ mocha.describe('test module_hotreload_mode file api', function () {
     this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
     const moduleMode = new ModuleHotreloadMode(this.rollup);
     const fileList = this.rollup.getModuleIds();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     for (const filePath of fileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS)) {
         const sourceMap: Map<string, string[]> = new Map<string, string[]>();
@@ -69,10 +71,13 @@ mocha.describe('test module_hotreload_mode file api', function () {
           toUnixPath(filePath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
         sourceMap[FILE] = path.basename(relativeSourceFilePath);
         sourceMap[SOURCE] = [relativeSourceFilePath];
-        newSourceMaps[relativeSourceFilePath] = sourceMap;
+        sourceMapGenerator.updateSourceMap(filePath, sourceMap);
       }
     }
-    const fileListArray: Array<string> = [ENTRYABILITY_TS_PATH, INDEX_ETS_PATH];
+    const fileListArray: Array<string> = [
+      path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT),
+      path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT)
+    ];
     moduleMode.updateSourceMapFromFileList(fileListArray);
     const sourceMapFilePath: string = path.join(this.rollup.share.projectConfig.patchAbcPath, SOURCEMAPS);
     if (sourceMapFilePath && fs.existsSync(sourceMapFilePath)) {
@@ -82,9 +87,11 @@ mocha.describe('test module_hotreload_mode file api', function () {
         testObject.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
     }
 
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-1: test addHotReloadArgs under hot reload debug', function () {

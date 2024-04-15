@@ -62,10 +62,11 @@ import {
 import { mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
+import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
-const IDENTIFIER_CACHE:string = 'IdentifierCache';
+const IDENTIFIER_CACHE: string = 'IdentifierCache';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -75,7 +76,7 @@ export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table. 
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
-  const {pkgName, pkgPath, isRecordName} = pkgParams;
+  const { pkgName, pkgPath, isRecordName } = pkgParams;
   // rollup uses commonjs plugin to handle commonjs files,
   // the commonjs files are prefixed with '\x00' and need to be removed.
   if (filePath.startsWith('\x00')) {
@@ -227,7 +228,7 @@ function processPackageDir(params: Object): string {
 
 
 export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object,
-  useNormalizedOHMUrl: boolean = false) : string {
+  useNormalizedOHMUrl: boolean = false): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
@@ -276,7 +277,7 @@ export function genSourceMapFileName(temporaryFile: string): string {
 }
 
 export function getBuildModeInLowerCase(projectConfig: Object): string {
-  return (compileToolIsRollUp() ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
+  return (compileToolIsRollUp() ? projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
@@ -322,7 +323,7 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
 
 function removeSuffix(filePath: string) {
   const SUFFIX_REG = /\.(?:d\.)?e?ts$/;
-  return filePath.split(path.sep).join('/').replace(SUFFIX_REG ,'');
+  return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
 export function getNormalizedOhmUrlByHspName(aliasName: string, projectConfig: Object,
@@ -354,7 +355,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
   if (projectConfig.harNameOhmMap) {
     // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
-      if(useNormalizedOHMUrl) {
+      if (useNormalizedOHMUrl) {
         return getNormalizedOhmUrlByHspName(moduleRequest, projectConfig);
       }
       return projectConfig.harNameOhmMap[moduleRequest];
@@ -362,7 +363,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
     // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
     for (const hspName in projectConfig.harNameOhmMap) {
       if (moduleRequest.startsWith(hspName + '/')) {
-        if(useNormalizedOHMUrl) {
+        if (useNormalizedOHMUrl) {
           return getNormalizedOhmUrlByHspName(hspName, projectConfig, logger, moduleRequest);
         }
         const idx: number = projectConfig.harNameOhmMap[hspName].split('/', 2).join('/').length;
@@ -378,7 +379,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
   return undefined;
 }
 
-function replaceHarDependency(item:string, moduleRequest: string, projectConfig: Object): string {
+function replaceHarDependency(item: string, moduleRequest: string, projectConfig: Object): string {
   const hspOhmUrl: string | undefined = getOhmUrlByHspName(moduleRequest, projectConfig);
   if (hspOhmUrl !== undefined) {
     return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
@@ -401,7 +402,7 @@ function locateActualFilePathWithModuleRequest(absolutePath: string): string {
   return path.join(absolutePath, 'index');
 }
 
-function replaceRelativeDependency(item:string, moduleRequest: string, sourcePath: string, projectConfig: Object): string {
+function replaceRelativeDependency(item: string, moduleRequest: string, sourcePath: string, projectConfig: Object): string {
   if (sourcePath && projectConfig.compileMode === ESMODULE) {
     // remove file extension from moduleRequest
     const SUFFIX_REG: RegExp = /\.(?:[cm]?js|[e]?ts|json)$/;
@@ -455,7 +456,7 @@ export async function writeObfuscatedSourceCode(content: string, filePath: strin
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(sourcePath);
 
   if (!genFileInHar) {
-    genFileInHar = {sourcePath: sourcePath};
+    genFileInHar = { sourcePath: sourcePath };
   }
   if (!genFileInHar.sourceCachePath) {
     genFileInHar.sourceCachePath = toUnixPath(filePath);
@@ -474,9 +475,11 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const projectRootPath = projectConfig.projectRootPath;
   const useNormalized = projectConfig.useNormalizedOHMUrl;
   const localPackageSet = projectConfig.localPackageSet;
+  const sourceMapGenerator = SourceMapGenerator.getInstance();
+
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
-    previousStageSourceMap = rollupNewSourceMaps[relativeSourceFilePath];
+    previousStageSourceMap = sourceMapGenerator.getSpecifySourceMap(rollupNewSourceMaps, originalFilePath);
   }
 
   let historyNameCache = new Map<string, string>();
@@ -498,14 +501,15 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   } = { packageDir, projectRootPath, localPackageSet, useNormalized };
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
-                historyNameCache, originalFilePath, projectInfo);
+      historyNameCache, originalFilePath, projectInfo);
   } catch (err) {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${relativeSourceFilePath}' with arkguard. ${err}`);
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
     mixedInfo.sourceMap.sources = [relativeSourceFilePath];
-    rollupNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMap;
+    sourceMapGenerator.fillSourceMapPackageInfo(originalFilePath, mixedInfo.sourceMap);
+    sourceMapGenerator.updateSpecifySourceMap(rollupNewSourceMaps, originalFilePath, mixedInfo.sourceMap)
   }
 
   if (mixedInfo.nameCache && !isDeclaration) {
@@ -526,7 +530,7 @@ export function tryMangleFileNameAndWriteFile(filePath: string, content: string,
   let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
   if (!genFileInHar) {
-    genFileInHar = {sourcePath: originalFilePath};
+    genFileInHar = { sourcePath: originalFilePath };
     harFilesRecord.set(originalFilePath, genFileInHar);
   }
 
@@ -710,7 +714,7 @@ export function removeDuplicateInfo(moduleInfos: Array<any>): Array<any> {
 
 export function buildCachePath(tailName: string, projectConfig: Object, logger: Object): string {
   let pathName: string = process.env.cachePath !== undefined ?
-      path.join(projectConfig.cachePath, tailName) : path.join(projectConfig.aceModuleBuild, tailName);
+    path.join(projectConfig.cachePath, tailName) : path.join(projectConfig.aceModuleBuild, tailName);
   validateFilePathLength(pathName, logger);
   return pathName;
 }
@@ -771,6 +775,6 @@ export function stopEvent(event: Object, syncFlag = false): void {
   }
 }
 
-export function compileToolIsRollUp (): boolean {
+export function compileToolIsRollUp(): boolean {
   return process.env.compileTool === 'rollup';
 }

@@ -58,7 +58,6 @@ import {
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
 import { mangleFilePath } from '../common/ob_config_resolver';
-import { newSourceMaps } from '../transform';
 import {
   changeFileExtension,
   getEs2abcFileThreadNumber,
@@ -93,6 +92,7 @@ import {
 import {
   sharedModuleSet
 } from '../check_shared_module';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
 export class ModuleInfo {
   filePath: string;
@@ -322,6 +322,8 @@ export class ModuleMode extends CommonMode {
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
+    let sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
       const pkgParams = {
@@ -346,70 +348,10 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+    sourceFile = sourceMapGenerator.genKey(filePath);
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
-  }
-
-  updateCachedSourceMaps(): void {
-    this.modifySourceMapKeyToCachePath(newSourceMaps);
-    if (!fs.existsSync(this.cacheSourceMapPath)) {
-      this.cacheSourceMapObject = newSourceMaps;
-      return;
-    }
-
-    this.cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
-
-    // remove unused source files's sourceMap
-    let unusedFiles = [];
-    let compileFileList: Set<string> = new Set();
-    this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
-      const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
-      moduleId = toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath));
-      if (moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_TS)) {
-        moduleId = changeFileExtension(moduleId, extName);
-      }
-      compileFileList.add(moduleId);
-    })
-
-    Object.keys(this.cacheSourceMapObject).forEach(key => {
-      const sourceFileAbsolutePath: string = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
-      if (!compileFileList.has(sourceFileAbsolutePath)) {
-        unusedFiles.push(key);
-      }
-    });
-    unusedFiles.forEach(file => {
-      delete this.cacheSourceMapObject[file];
-    })
-
-    // update sourceMap
-    Object.keys(newSourceMaps).forEach(key => {
-      this.cacheSourceMapObject[key] = newSourceMaps[key];
-    });
-  }
-
-  buildModuleSourceMapInfo(parentEvent: Object): void {
-    if (this.projectConfig.widgetCompile) {
-      return;
-    }
-
-    const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
-    this.updateCachedSourceMaps();
-    stopEvent(eventUpdateCachedSourceMaps);
-    this.triggerAsync(() => {
-      const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
-      fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
-        if (err) {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n` +
-            `File: ${this.sourceMapPath}\n` +
-            `Error message: ${err.message}`);
-        }
-        fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
-        stopEvent(eventWriteFile, true);
-        this.triggerEndSignal();
-      });
-    });
   }
 
   generateEs2AbcCmd() {
@@ -705,8 +647,7 @@ export class ModuleMode extends CommonMode {
 
   private mergeProtoToAbc() {
     mkdirsSync(this.projectConfig.aceModuleBuild);
-    const cmd: string = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
-      this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
+    const cmd: string = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
@@ -746,8 +687,7 @@ export class ModuleMode extends CommonMode {
       return;
     }
     mkdirsSync(path.dirname(this.npmEntriesProtoFilePath));
-    const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${
-      this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
+    const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {

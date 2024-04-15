@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,7 +25,6 @@ import {
   SYMBOLMAP
 } from '../common/ark_define';
 import { isJsonSourceFile } from '../utils';
-import { newSourceMaps } from '../transform';
 import {
   mkdirsSync,
   toUnixPath,
@@ -35,8 +34,9 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../ark_utils';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
-let isFirstBuild: boolean = true;
+export let isFirstBuild: boolean = true;
 
 export class ModuleHotreloadMode extends ModuleMode {
   symbolMapFilePath: string;
@@ -73,14 +73,12 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
-    this.buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent);
   }
 
   private compileChangeListFiles(rollupObject: Object, parentEvent: Object): void {
     if (!fs.existsSync(this.projectConfig.changedFileList)) {
-      this.logger.debug(blue, `ArkTS: Cannot find file: ${
-        this.projectConfig.changedFileList}, skip hot reload build`, reset);
+      this.logger.debug(blue, `ArkTS: Cannot find file: ${this.projectConfig.changedFileList}, skip hot reload build`, reset);
       return;
     }
 
@@ -112,7 +110,7 @@ export class ModuleHotreloadMode extends ModuleMode {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
-    this.updateSourceMapFromFileList(changedFileList, parentEvent);
+    this.updateSourceMapFromFileList(changedFileListInAbsolutePath, parentEvent);
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
@@ -121,15 +119,13 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
-    const relativeProjectPath: string = this.projectConfig.projectPath.slice(
-      this.projectConfig.projectRootPath.length + path.sep.length);
+    const sourceMapGenerator = SourceMapGenerator.getInstance();
     let hotReloadSourceMap: Object = {};
     for (const file of fileList) {
-      const sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
-      validateFilePathLength(sourceMapPath, this.logger);
-      hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
+      validateFilePathLength(file, this.logger);
+      sourceMapGenerator.fillSourceMapPackageInfo(file, sourceMapGenerator.getSourceMap(file));
+      sourceMapGenerator.updateSpecifySourceMap(hotReloadSourceMap, file, sourceMapGenerator.getSourceMap(file))
     }
-    this.modifySourceMapKeyToCachePath(hotReloadSourceMap);
     const sourceMapFilePath: string = path.join(this.projectConfig.patchAbcPath, SOURCEMAPS);
     validateFilePathLength(sourceMapFilePath, this.logger);
     fs.writeFileSync(sourceMapFilePath,

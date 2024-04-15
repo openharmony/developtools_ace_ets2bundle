@@ -25,6 +25,7 @@ import {
   stopEvent
 } from '../../ark_utils';
 import type { ModuleMode } from './module/module_mode';
+import { SourceMapGenerator } from './generate_sourcemap';
 
 let moduleMode: ModuleMode = null;
 
@@ -37,6 +38,9 @@ export async function generateModuleAbc(error) {
   }
   if (this.share.projectConfig.compileMode === ESMODULE) {
     await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
+    //build sourcemap
+    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(hookEventFactory);
+
     if (this.share.projectConfig.compileHar) {
       // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
       return;
@@ -67,7 +71,7 @@ function generateAbc(rollupObject: Object, parentEvent: Object): void {
   stopEvent(eventGenerateAbc);
 }
 
-export function cleanModuleMode():void {
+export function cleanModuleMode(): void {
   if (moduleMode) {
     moduleMode.triggerAsync = null;
     moduleMode.triggerEndSignal = null;

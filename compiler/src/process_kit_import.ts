@@ -24,6 +24,7 @@ import {
 import { projectConfig } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
+import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 
 /*
 * basic implementation logic:
@@ -36,8 +37,6 @@ import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-
 */
 
 export const kitTransformLog: FileLog = new FileLog();
-export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
-export let compilingEtsOrTsFiles: string[] = [];
 
 const KIT_PREFIX = '@kit.';
 
@@ -577,6 +576,4 @@ function trimSourceSuffix(source: string): string {
 export function cleanUpKitImportObjects(): void {
   KitInfo.cleanUp();
   kitTransformLog.cleanUp();
-  hasTsNoCheckOrTsIgnoreFiles = [];
-  compilingEtsOrTsFiles = [];
 }
