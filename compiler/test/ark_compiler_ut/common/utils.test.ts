@@ -78,6 +78,10 @@ import {
 import{
   moduleResolutionHostTest
 } from '../../../lib/ets_checker';
+import {
+  getRollupCache,
+  setRollupCache
+} from '../../../lib/utils';
 
 mocha.describe('test utils file api', function () {
   mocha.before(function () {
@@ -1111,4 +1115,44 @@ mocha.describe('test utils file api', function () {
     expect(fileExistsCache).to.be.true;
     expect(fileNotExistsCache).to.be.false;
   });
+
+  mocha.it('15-1: test get/setRollupCache with hvigor provided cache interface', function () {
+    this.rollup.build();
+    let cacheKey: string = "cache1";
+    let cacheKeyNotExist: string = "cacheNotExist";
+    let cacheValue: object = {
+      value: "value1"
+    };
+    this.rollup.share.initWithCache();
+    setRollupCache(this.rollup.share, projectConfig, cacheKey, cacheValue);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKey)).to.be.equal(cacheValue);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKeyNotExist)).to.be.equal(undefined);
+  });
+
+  mocha.it('15-2: test get/setRollupCache with hvigor provided cacheStoreManager interface', function () {
+    this.rollup.build();
+    let cacheKey: string = "cache1";
+    let cacheKeyNotExist: string = "cacheNotExist";
+    let cacheValue: object = {
+      value: "value1"
+    };
+    this.rollup.share.initWithCacheStoreManager();
+    setRollupCache(this.rollup.share, projectConfig, cacheKey, cacheValue);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKey)).to.be.equal(cacheValue);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKeyNotExist)).to.be.equal(undefined);
+  });
+
+  mocha.it('15-3: test get/setRollupCache without hvigor cache interface provided', function () {
+    this.rollup.build();
+    let cacheKey: string = "cache1";
+    let cacheKeyNotExist: string = "cacheNotExist";
+    let cacheValue: object = {
+      value: "value1"
+    };
+    this.rollup.share.initWithoutCache();
+    setRollupCache(this.rollup.share, projectConfig, cacheKey, cacheValue);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKey)).to.be.equal(undefined);
+    expect(getRollupCache(this.rollup.share, projectConfig, cacheKeyNotExist)).to.be.equal(undefined);
+  });
+
 });

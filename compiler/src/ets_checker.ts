@@ -70,13 +70,12 @@ import {
   resolveModuleNamesTime,
   CompilationTimeStatistics,
   storedFileInfo,
-  getRollupCacheStoreKey,
-  getRollupCacheKey,
-  clearRollupCacheStore,
   toUnixPath,
   isWindows,
   isMac,
-  tryToLowerCasePath
+  tryToLowerCasePath,
+  getRollupCache,
+  setRollupCache
 } from './utils';
 import {
   isExtendFunction,
@@ -332,12 +331,9 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
   rollupShareObject?: any): ts.LanguageService {
-  const cacheStoreKey: string = getRollupCacheStoreKey(projectConfig);
-  const cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'service';
-  clearRollupCacheStore(rollupShareObject?.cacheStoreManager, cacheStoreKey);
+  let cacheKey: string = 'service';
+  let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
-  let cache: LanguageServiceCache | undefined =
-    rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).getCache(cacheServiceKey);
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const lastHash: string | undefined= cache?.pkgJsonFileHash;
@@ -351,7 +347,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   }
 
   const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
-  rollupShareObject?.cacheStoreManager?.mount(cacheStoreKey).setCache(cacheServiceKey, newCache);
+  setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
 }
 

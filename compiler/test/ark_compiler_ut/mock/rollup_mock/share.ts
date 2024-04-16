@@ -59,6 +59,50 @@ class Logger {
   }
 }
 
+class CacheInCacheStoreManager {
+  cache: Map<string, object>;
+
+  constructor() {
+    this.cache = new Map<string, object>();
+  }
+
+  public getCache(key: string): object {
+    return this.cache.get(key);
+  }
+
+  public setCache(key: string, value: object): void {
+    this.cache.set(key, value);
+  }
+}
+
+class CacheStoreManager {
+  cacheInCacheStoreManager: Map<string, CacheInCacheStoreManager>;
+
+  constructor() {
+    this.cacheInCacheStoreManager = new Map<string, CacheInCacheStoreManager>();
+  }
+
+  public mount(cacheStoreManagerKey: string): CacheInCacheStoreManager {
+    let cacheInCacheStoreManagerValue: CacheInCacheStoreManager | undefined =
+      this.cacheInCacheStoreManager.get(cacheStoreManagerKey);
+
+    if (!cacheInCacheStoreManagerValue) {
+      cacheInCacheStoreManagerValue = new CacheInCacheStoreManager();
+      this.cacheInCacheStoreManager.set(cacheStoreManagerKey, cacheInCacheStoreManagerValue);
+    }
+
+    return cacheInCacheStoreManagerValue;
+  }
+
+  public unmount(cacheStoreManagerKey: string): void {
+    this.cacheInCacheStoreManager?.delete(cacheStoreManagerKey);
+  }
+
+  public keys(): IterableIterator<string> {
+    return this.cacheInCacheStoreManager?.keys();
+  }
+}
+
 class Share {
   projectConfig: ProjectConfig;
   arkProjectConfig: IArkProjectConfig;
@@ -67,6 +111,8 @@ class Share {
 
   allComponents?: Map<string, Array<string>>;
   allFiles?: Set<string>;
+  cache?: Map<string, object>;
+  cacheStoreManager?: CacheStoreManager;
 
   constructor(buildMode: string) {
     this.projectConfig = new ProjectConfig(buildMode);
@@ -96,6 +142,21 @@ class Share {
 
   public setMockParams() {
     this.projectConfig.setMockParams({ mockConfigPath: MOCK_CONFIG_PATH });
+  }
+
+  public initWithCache(): void {
+    this.cache = new Map<string, object>();
+    this.cacheStoreManager = undefined;
+  }
+
+  public initWithCacheStoreManager(): void {
+    this.cache = undefined;
+    this.cacheStoreManager = new CacheStoreManager();
+  }
+
+  public initWithoutCache(): void {
+    this.cache = undefined;
+    this.cacheStoreManager = undefined;
   }
 }
 
