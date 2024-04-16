@@ -20,14 +20,21 @@ import {
   ARKTS_LANG_D_ETS,
   ISENDABLE_TYPE,
   LANG_NAMESPACE,
-  USE_SHARED
+  USE_SHARED,
+  USE_SHARED_COMMENT
 } from './common/ark_define';
 import {
   addLog,
+  GeneratedFileInHar,
+  harFilesRecord,
   LogInfo,
-  LogType
+  LogType,
+  toUnixPath
 } from '../../utils';
-import { globalProgram } from '../../../main';
+import {
+  globalProgram,
+  projectConfig
+} from '../../../main';
 import { isSendableClassDeclaration } from '../../validate_ui_syntax';
 
 export const sharedModuleSet: Set<string> = new Set();
@@ -57,6 +64,7 @@ export function collectSharedModule(source: string, filePath: string, sourceFile
       // Check from next statement
       checkSharedModule(sourceFile, log, count + 1);
       sharedModuleSet.add(filePath);
+      processDeclarationFile(filePath);
     }
   }
 }
@@ -68,6 +76,19 @@ function checkSharedModule(sourceFile: ts.SourceFile, log: LogInfo[], index: num
       ts.isExportDeclaration(statement) || ts.isExportAssignment(statement)) {
       checkExportClause(sourceFile, statement, log);
     }
+  }
+}
+
+// For hsp and close-source har, we need add comment '// use shared' for shared modules to inform developers.
+function processDeclarationFile(filePath: string): void {
+  if (!projectConfig.compileHar && !projectConfig.compileShared) {
+    return;
+  }
+
+  const generatedDetsFilesInHar: GeneratedFileInHar = harFilesRecord.get(toUnixPath(filePath));
+  if (generatedDetsFilesInHar) {
+    generatedDetsFilesInHar.originalDeclarationContent = USE_SHARED_COMMENT + '\n' +
+      generatedDetsFilesInHar.originalDeclarationContent;
   }
 }
 
@@ -155,7 +176,7 @@ function isShareableType(tsType: ts.Type): boolean {
   }
 
   return isBasicType(tsType) || isOrDerivedFromType(tsType, isISendableInterface) ||
-    isSendableClass(tsType) || ts.ArkTSLinter_1_1.Utils.isConstEnumType(tsType);
+    isSendableClass(tsType) || isConstEnumType(tsType);
 }
 
 function isBasicType(tsType: ts.Type): boolean {
@@ -308,4 +329,21 @@ function followIfAliased(sym: ts.Symbol): ts.Symbol {
     return checker.getAliasedSymbol(sym);
   }
   return sym;
+}
+
+function isConstEnum(sym: ts.Symbol | undefined): boolean {
+  if (sym.flags === ts.SymbolFlags.ConstEnum || sym.flags === ts.SymbolFlags.EnumMember && (sym as any).parent &&
+    (sym as any).parent.flags === ts.SymbolFlags.ConstEnum) {
+    return true;
+  }
+  return false;
+}
+
+function isConstEnumType(tsType: ts.Type): boolean {
+  const targetType = reduceReference(tsType);
+  const sym = targetType.symbol;
+  if (!sym) {
+    return false;
+  }
+  return isConstEnum(sym);
 }
