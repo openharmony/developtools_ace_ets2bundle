@@ -22,8 +22,8 @@ import {
 } from '../main';
 import {
   toUnixPath,
-  getRollupCacheStoreKey,
-  getRollupCacheKey
+  getRollupCache,
+  setRollupCache
 } from './utils';
 import {
   resolveModuleNames,
@@ -210,11 +210,9 @@ function setCompilerOptions(originProgram: ts.Program, wasStrict: boolean): ts.C
 
 export function getReverseStrictBuilderProgram(rollupShareObject: any, originProgram: ts.Program,
   wasStrict: boolean): ts.BuilderProgram {
-  let cacheManagerKey: string = getRollupCacheStoreKey(projectConfig);
-  let cacheServiceKey: string = getRollupCacheKey(projectConfig) + '#' + 'linter_service';
+  let cacheKey: string = 'linter_service';
+  let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
-  let cache: LanguageServiceCache | undefined =
-    rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).getCache(cacheServiceKey);
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
@@ -261,7 +259,7 @@ export function getReverseStrictBuilderProgram(rollupShareObject: any, originPro
 
   service.updateRootFiles([...originProgram.getRootFileNames()]);
   const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
-  rollupShareObject?.cacheStoreManager?.mount(cacheManagerKey).setCache(cacheServiceKey, newCache);
+  setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   if (process.env.watchMode === 'true') {
     globalProgram.strictLanguageService = service;
   }
