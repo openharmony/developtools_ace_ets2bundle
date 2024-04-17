@@ -156,7 +156,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
-    'target': convertConfigTarget(compilerOptions.target),
+    'target': convertConfigTarget(getTargetESVersion(compilerOptions.target)),
     'baseUrl': basePath,
     'paths': {
       '*': allPath
@@ -1301,6 +1301,24 @@ function getArkTSVersion(): ArkTSVersion {
   }
 
   return ArkTSVersion.ArkTS_1_1;
+}
+
+enum TargetESVersion {
+  ES2017 = 'ES2017',
+  ES2021 = 'ES2021',
+}
+
+function getTargetESVersion(defaultESVersion : string | number): string | number {
+  const targetESVersion = projectConfig?.projectArkOption?.tscConfig?.targetESVersion;
+  if (targetESVersion === 'ES2017') {
+    return TargetESVersion.ES2017;
+  } else if (targetESVersion === 'ES2021') {
+    return TargetESVersion.ES2021;
+  } else if (targetESVersion !== undefined) {
+    const targetESVersionLogger = fastBuildLogger || logger;
+    targetESVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid Target ES version\n');
+  }
+  return defaultESVersion;
 }
 
 function initEtsStandaloneCheckerConfig(logger, config): void {
