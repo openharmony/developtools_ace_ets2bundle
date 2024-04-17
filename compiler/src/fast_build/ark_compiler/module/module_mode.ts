@@ -85,7 +85,6 @@ import {
 } from '../../../ark_utils';
 import {
   generateAot,
-  generateBuiltinAbc,
   FaultHandler
 } from '../../../gen_aot';
 import {
@@ -656,9 +655,7 @@ export class ModuleMode extends CommonMode {
       return;
     }
     let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
-    const builtinAbcPath: string = generateBuiltinAbc(this.arkConfig.arkRootPath, this.initCmdEnv(),
-      this.projectConfig.cachePath, this.logger, faultHandler, this.projectConfig.pandaMode);
-    generateAot(this.arkConfig.arkRootPath, builtinAbcPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
+    generateAot(this.arkConfig.arkRootPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
   private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string): string {
