@@ -88,7 +88,6 @@ import {
 } from './gen_merged_abc';
 import {
   generateAot,
-  generateBuiltinAbc,
   FaultHandler
 } from './gen_aot'
 
@@ -1350,9 +1349,8 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
           let faultHandler: FaultHandler = (error) => { logger.error(error); process.exit(FAIL); }
           let abcArgs: string[] = initAbcEnv();
           abcArgs.unshift(nodeJs);
-          const builtinAbcPath: string = generateBuiltinAbc(arkDir, abcArgs, process.env.cachePath, logger, faultHandler, projectConfig.pandaMode);
           const appAbc: string = path.join(projectConfig.buildPath, MODULES_ABC);
-          generateAot(arkDir, builtinAbcPath, appAbc, projectConfig, logger, faultHandler);
+          generateAot(arkDir, appAbc, projectConfig, logger, faultHandler);
         }
       }
     });
