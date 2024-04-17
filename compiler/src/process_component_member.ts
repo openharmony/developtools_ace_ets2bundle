@@ -790,7 +790,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
   ));
 }
 
-function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boolean {
+export function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration): boolean {
   return node.initializer && !(node.initializer && (ts.isIdentifier(node.initializer) &&
     CUSTOM_BUILDER_METHOD.has(node.initializer.escapedText.toString()) ||
     ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
