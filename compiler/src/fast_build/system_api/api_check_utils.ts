@@ -132,8 +132,8 @@ function checkBundleVersion(bundleVersion: string): boolean {
   } else {
     bundleVersionNumber = Number(bundleVersion);
   }
-  if (!isNaN(bundleVersionNumber) && !isNaN(Number(compatibleSdkVersion)) &&
-    Number(compatibleSdkVersion) >= bundleVersionNumber) {
+  if (bundleVersion && bundleVersion !== '' && !isNaN(bundleVersionNumber) &&
+    !isNaN(Number(compatibleSdkVersion)) && Number(compatibleSdkVersion) >= bundleVersionNumber) {
     return true;
   }
   return false;
