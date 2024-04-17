@@ -140,7 +140,9 @@ export class ModuleSourceFile {
     let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
-      const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
+      // For file A that imports file B, the mock file of file B will be located in the same package of file A. So the
+      // moduleInfo for mock file should be the same with file A.
+      const targetModuleInfo: Object = rollupObject.getModuleInfo(importerFile);
       mockFileOhmUrl = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, mockFilePath, importerFile);
     } else {
       mockFileOhmUrl = getOhmUrlByFilepath(mockFilePath,
