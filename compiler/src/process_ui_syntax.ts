@@ -149,6 +149,7 @@ import {
   validateModuleSpecifier
 } from './fast_build/system_api/api_check_utils';
 import constantDefine from './constant_define';
+import processStructComponentV2 from './process_struct_componentV2';
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -258,7 +259,9 @@ export function processUISyntax(program: ts.Program, ut = false,
         componentCollection.currentClassName = node.name.getText();
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         startTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
-        node = processComponentClass(node, context, transformLog.errors, program);
+        node = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName).isComponentV2 ?
+          processStructComponentV2.processStructComponentV2(node, transformLog.errors, context) :
+          processComponentClass(node, context, transformLog.errors, program);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processComponentClassTime : undefined);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {
