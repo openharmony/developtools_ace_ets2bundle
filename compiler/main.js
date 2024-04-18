@@ -26,11 +26,12 @@ const {
 } = require('./lib/utils');
 
 const {
-  WORKERS_DIR,
+  COLD_RELOAD_MODE,
+  ES2ABC,
+  FAIL,
   TEST_RUNNER_DIR_SET,
   TS2ABC,
-  ES2ABC,
-  FAIL
+  WORKERS_DIR
 } = require('./lib/pre_define');
 
 const {
@@ -590,6 +591,8 @@ function readWorkerFile() {
 function readPatchConfig() {
   if (aceBuildJson.patchConfig) {
     projectConfig.hotReload = process.env.watchMode === 'true' && !projectConfig.isPreview;
+    projectConfig.coldReload = aceBuildJson.patchConfig.mode === COLD_RELOAD_MODE ? true : false;
+    projectConfig.isFirstBuild = process.env.isFirstBuild === 'false' ? false : true;
     projectConfig.patchAbcPath = aceBuildJson.patchConfig.patchAbcPath;
     projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
       aceBuildJson.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
