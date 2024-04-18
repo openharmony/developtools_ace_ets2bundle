@@ -426,14 +426,15 @@ export class ObConfigResolver {
           continue;
         }
         case OptionType.PRINT_NAMECACHE: {
-          configs.options.printNameCache = token;
+          configs.options.printNameCache = this.resolvePath(configPath, token);
           type = OptionType.NONE;
           continue;
         }
         case OptionType.APPLY_NAMECACHE: {
-          configs.options.applyNameCache = token;
+          const absNameCachePath: string = this.resolvePath(configPath, token);
+          this.determineNameCachePath(absNameCachePath, configPath);
+          configs.options.applyNameCache = absNameCachePath;
           type = OptionType.NONE;
-          this.determineNameCachePath(token, configPath);
           continue;
         }
         default:
@@ -443,6 +444,15 @@ export class ObConfigResolver {
 
     this.resolveDts(dtsFilePaths, configs);
     this.resolveKeepConfig(keepConfigs, configs, configPath);
+  }
+
+  // get absolute path
+  private resolvePath(configPath: string, token: string){
+    const configDirectory = path.dirname(configPath);
+    if (path.isAbsolute(token)) {
+      return token;
+    }
+    return path.resolve(configDirectory, token);
   }
 
   // get names in .d.ts files and add them into reserved list
@@ -615,10 +625,13 @@ export function readNameCache(nameCachePath: string, logger: any): void {
   }
 }
 
-export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
+export function getArkguardNameCache(entryPackageInfo: string, enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
+  let nameVersionInfo: string = entryPackageInfo;
   let writeContent: string = '';
-  let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object } = nameCacheObj;
+  let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object,
+                             entryPackageInfo?: string } = nameCacheObj;
   nameCacheCollection.compileSdkVersion = sdkVersion;
+  nameCacheCollection.entryPackageInfo = nameVersionInfo;
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
@@ -647,10 +660,10 @@ function fillNameCache(table: Map<string, string>, nameCache: Map<string, string
   return;
 }
 
-export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir?: string, printNameCache?: string): void {
+export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
-    writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
+    writeContent = getArkguardNameCache(entryPackageInfo, projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
       projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation, projectConfig.etsLoaderVersion);
   } else {
     return;
@@ -663,6 +676,9 @@ export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir
     fs.writeFileSync(defaultNameCachePath, writeContent);
   }
   if (printNameCache && printNameCache.length > 0) {
+    if (!fs.existsSync(path.dirname(printNameCache))) {
+      fs.mkdirSync(path.dirname(printNameCache), {recursive: true});
+    }
     fs.writeFileSync(printNameCache, writeContent);
   }
 }
