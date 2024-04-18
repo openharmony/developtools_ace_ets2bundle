@@ -84,6 +84,16 @@ class RollUpPluginMock {
     this.doBuild(testcase);
   }
 
+  public coldReload(buildMode: string = DEBUG) {
+    this.isPreview = false;
+    this.share = new Share(buildMode);
+
+    this.share.projectConfig.setPreview(this.isPreview);
+    this.meta.watchMode = false;
+
+    this.doBuild(DEFAULT_PROJECT);
+  }
+
   public hotReload(testcase: string = DEFAULT_PROJECT) {
     this.isPreview = false;
     this.share = new Share(DEBUG);

@@ -15,6 +15,7 @@
 
 import { ESMODULE } from './common/ark_define';
 import { ModuleBuildMode } from './module/module_build_mode';
+import { ModuleColdreloadMode } from './module/module_coldreload_mode';
 import { ModuleHotfixMode } from './module/module_hotfix_mode';
 import { ModuleHotreloadMode } from './module/module_hotreload_mode';
 import { ModulePreviewMode } from './module/module_preview_mode';
@@ -48,9 +49,15 @@ export async function generateModuleAbc(error) {
 function generateAbc(rollupObject: Object, parentEvent: Object): void {
   const eventGenerateAbc = createAndStartEvent(parentEvent, 'generate abc');
   if (rollupObject.share.projectConfig.watchMode !== 'true') {
-    const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);
-    moduleBuildMode.generateAbc(rollupObject, eventGenerateAbc);
-    moduleMode = moduleBuildMode;
+    if (rollupObject.share.arkProjectConfig.coldReload) {
+      const moduleColdreloadMode: ModuleColdreloadMode = new ModuleColdreloadMode(rollupObject);
+      moduleColdreloadMode.generateAbc(rollupObject, eventGenerateAbc);
+      moduleMode = moduleColdreloadMode;
+    } else {
+      const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);
+      moduleBuildMode.generateAbc(rollupObject, eventGenerateAbc);
+      moduleMode = moduleBuildMode;
+    }
   } else if (rollupObject.share.arkProjectConfig.hotReload) {
     const moduleHotreloadMode: ModuleHotreloadMode = new ModuleHotreloadMode(rollupObject);
     moduleHotreloadMode.generateAbc(rollupObject, eventGenerateAbc);
