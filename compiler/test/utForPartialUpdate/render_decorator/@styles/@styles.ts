@@ -18,6 +18,14 @@ exports.source = `
   .backgroundColor(Color.Red)
 }
 
+@Styles function useStateStyles() {
+  .stateStyles({
+    normal: {
+      .width(200)
+    }
+  })
+}
+
 @Entry
 @Component
 struct FancyUse {
@@ -49,6 +57,8 @@ struct FancyUse {
         disabled: this.componentFancy,
         pressed: globalFancy
       })
+      Text("Fancy")
+        .useStateStyles()
     }
   }
 }`
@@ -126,6 +136,13 @@ class FancyUse extends ViewPU {
         }, Text);
         Text.pop();
         Button.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create("Fancy");
+            ViewStackProcessor.visualState("normal");
+            Text.width(200);
+            ViewStackProcessor.visualState();
+        }, Text);
+        Text.pop();
         Column.pop();
     }
     rerender() {
