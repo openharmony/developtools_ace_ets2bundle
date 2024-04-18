@@ -2,6 +2,7 @@
   "name": "Repeat",
   "attrs": [
     "each",
-    "key"
+    "key",
+    "onMove"
   ]
 }

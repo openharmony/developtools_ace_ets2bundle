@@ -72,11 +72,12 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', 'RichEditorController'
 ]);
 
+const FOREACH_ATTRIBUTE = ['onMove'];
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
 export const NO_DEBUG_LINE_COMPONENT: Set<string> = new Set();
 export const BUILDIN_CONTAINER_COMPONENT: Set<string> = new Set();
 export const BUILDIN_STYLE_NAMES: Set<string> = new Set([
-  ...COMMON_ATTRS, ...GESTURE_ATTRS, ...TRANSITION_COMMON_ATTRS
+  ...COMMON_ATTRS, ...GESTURE_ATTRS, ...TRANSITION_COMMON_ATTRS, ...FOREACH_ATTRIBUTE
 ]);
 export const AUTOMIC_COMPONENT: Set<string> = new Set();
 export const SINGLE_CHILD_COMPONENT: Set<string> = new Set();
