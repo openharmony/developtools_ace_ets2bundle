@@ -472,7 +472,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (!partialUpdateConfig.partialUpdateMode) {
               processForEachComponent(item, newStatements, log, isBuilder, isGlobalBuilder);
             } else {
-              processForEachComponentNew(item, newStatements, log, isGlobalBuilder, builderParamsResult);
+              processForEachComponentNew(item, newStatements, log, name, isGlobalBuilder, builderParamsResult);
             }
             break;
           case ComponentType.repeatComponent:
@@ -1439,44 +1439,71 @@ function processForEachComponent(node: ts.ExpressionStatement, newStatements: ts
   newStatements.push(node, popNode);
 }
 
+function collectForEachAttribute(node: ts.ExpressionStatement,
+  attributeList: ts.ExpressionStatement[], name: string): ts.ExpressionStatement {
+  let tempNode = node.expression;
+  while (tempNode && ts.isCallExpression(tempNode)) {
+    if (tempNode.expression && ts.isPropertyAccessExpression(tempNode.expression)) {
+      attributeList.unshift(generateForEachAttribute(tempNode, name));
+    } else if (tempNode.expression && ts.isIdentifier(tempNode.expression)) {
+      return ts.factory.updateExpressionStatement(node, tempNode);
+    }
+    tempNode = tempNode.expression?.expression;
+  }
+  return node;
+}
+
+function generateForEachAttribute(tempNode: ts.CallExpression, name: string): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(name),
+      tempNode.expression.name
+    ),
+    undefined,
+    tempNode.arguments
+  ));
+}
+
 function processForEachComponentNew(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  log: LogInfo[], name: string, isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  const attributeList: ts.ExpressionStatement[] = [];
+  const newNode = collectForEachAttribute(node, attributeList, name);
   const newForEachStatements: ts.Statement[] = [];
   const popNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(createFunction(
-    (node.expression as ts.CallExpression).expression as ts.Identifier,
+    (newNode.expression as ts.CallExpression).expression as ts.Identifier,
     ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), null));
-  if (ts.isCallExpression(node.expression)) {
-    if (checkForEachComponent(node)) {
+  if (ts.isCallExpression(newNode.expression)) {
+    if (checkForEachComponent(newNode)) {
       storedFileInfo.processForEach += 1;
     } else {
       storedFileInfo.processLazyForEach += 1;
     }
-    const argumentsArray: ts.Expression[] = Array.from(node.expression.arguments);
+    const argumentsArray: ts.Expression[] = Array.from(newNode.expression.arguments);
     const propertyNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
-        node.expression.expression as ts.Identifier,
+        newNode.expression.expression as ts.Identifier,
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
-    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(node.expression);
+    const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(newNode.expression);
     const newArrowNode: ts.NodeArray<ts.Statement> =
-      processForEachBlock(node.expression, log, newForEachArrowFunc, false, isGlobalBuilder,
+      processForEachBlock(newNode.expression, log, newForEachArrowFunc, false, isGlobalBuilder,
         builderParamsResult) as ts.NodeArray<ts.Statement>;
-    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(node.expression, newArrowNode, newForEachArrowFunc);
-    const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(node.expression, argumentsArray);
+    const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(newNode.expression, newArrowNode, newForEachArrowFunc);
+    const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(newNode.expression, argumentsArray);
     const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, newForEachArrowFunc, isGlobalBuilder);
     const lazyForEachStatement: ts.ExpressionStatement = createLazyForEachStatement(argumentsArray);
-    if (node.expression.expression.getText() === COMPONENT_FOREACH) {
-      newForEachStatements.push(propertyNode, itemGenFunctionStatement, updateFunctionStatement);
-      newStatements.push(createComponentCreationStatement(node, newForEachStatements, COMPONENT_FOREACH,
+    if (newNode.expression.expression.getText() === COMPONENT_FOREACH) {
+      newForEachStatements.push(propertyNode, ...attributeList, itemGenFunctionStatement, updateFunctionStatement);
+      newStatements.push(createComponentCreationStatement(newNode, newForEachStatements, COMPONENT_FOREACH,
         isGlobalBuilder, false, undefined, null, builderParamsResult), popNode);
     } else {
       if (argumentsArray[2]) {
         newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, itemIdFuncStatement, lazyForEachStatement,
-          popNode], true));
+          ...attributeList, popNode], true));
       } else {
-        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, lazyForEachStatement, popNode], true));
+        newStatements.push(ts.factory.createBlock([itemGenFunctionStatement, lazyForEachStatement, popNode, ...attributeList], true));
       }
     }
-    if (checkForEachComponent(node)) {
+    if (checkForEachComponent(newNode)) {
       storedFileInfo.processForEach -= 1;
     } else {
       storedFileInfo.processLazyForEach -= 1;

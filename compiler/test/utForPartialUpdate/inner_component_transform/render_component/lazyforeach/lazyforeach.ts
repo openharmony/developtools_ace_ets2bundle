@@ -101,6 +101,26 @@ build() {
   }
 }
 }
+
+@Component
+struct ChildTest {
+private data: MyDataSource = new MyDataSource()
+count: number = 0;
+build() {
+  Grid() {
+    LazyForEach (this.data,
+    (row) => {
+      GridItem() {
+        Text(row)
+      }
+    },
+    row => row)
+    .onMove((from: number, to: number) => {
+      this.count += 1;
+    })
+  }
+}
+}
 `
 exports.expectResult =
 `"use strict";
@@ -223,6 +243,68 @@ class Test extends ViewPU {
             };
             const __lazyForEachItemIdFunc = row => row;
             LazyForEach.create("1", this, this.data, __lazyForEachItemGenFunction, __lazyForEachItemIdFunc);
+            LazyForEach.pop();
+        }
+        Grid.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class ChildTest extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.data = new MyDataSource();
+        this.count = 0;
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.data !== undefined) {
+            this.data = params.data;
+        }
+        if (params.count !== undefined) {
+            this.count = params.count;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Grid.create();
+        }, Grid);
+        {
+            const __lazyForEachItemGenFunction = _item => {
+                const row = _item;
+                {
+                    const itemCreation2 = (elmtId, isInitialRender) => {
+                        GridItem.create(() => { }, false);
+                    };
+                    const observedDeepRender = () => {
+                        this.observeComponentCreation2(itemCreation2, GridItem);
+                        this.observeComponentCreation2((elmtId, isInitialRender) => {
+                            Text.create(row);
+                        }, Text);
+                        Text.pop();
+                        GridItem.pop();
+                    };
+                    observedDeepRender();
+                }
+            };
+            const __lazyForEachItemIdFunc = row => row;
+            LazyForEach.create("1", this, this.data, __lazyForEachItemGenFunction, __lazyForEachItemIdFunc);
+            LazyForEach.onMove((from, to) => {
+                this.count += 1;
+            });
             LazyForEach.pop();
         }
         Grid.pop();
