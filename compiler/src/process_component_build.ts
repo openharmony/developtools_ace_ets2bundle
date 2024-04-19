@@ -126,6 +126,7 @@ import {
   ALL_COMPONENTS,
   ATTRIBUTE_ATTRIBUTE_MODIFIER,
   ATTRIBUTE_CONTENT_MODIFIER,
+  ATTRIBUTE_MENUITEM_CONTENT_MODIFIER,
   TITLE
 } from './pre_define';
 import {
@@ -2621,7 +2622,8 @@ function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
     temp = loopEtscomponent(temp, isStylesAttr);
     if (propName !== RECYCLE_REUSE_ID) {
       let isAttributeModifier: boolean = false;
-      if ([ATTRIBUTE_ATTRIBUTE_MODIFIER, ATTRIBUTE_CONTENT_MODIFIER].includes(propName)) {
+      if ([ATTRIBUTE_ATTRIBUTE_MODIFIER, ATTRIBUTE_CONTENT_MODIFIER,
+        ATTRIBUTE_MENUITEM_CONTENT_MODIFIER].includes(propName)) {
         isAttributeModifier = true;
       }
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
