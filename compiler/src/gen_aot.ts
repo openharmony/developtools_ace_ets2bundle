@@ -86,18 +86,18 @@ export function checkAotConfig(compileMode: string, buildJsonInfo: any, faultHan
     checkAotPartialConfig(compileMode, buildJsonInfo, faultHandler);
 }
 
-export function generateAot(arkDir: string, builtinAbcPath: string, appAbc: string,
+export function generateAot(arkDir: string, appAbc: string,
                             projectConfig: any, logger: any, faultHandler: FaultHandler): void {
   let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? "ark_aot_compiler.exe" : "ark_aot_compiler");
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
-  if (!validateFilePathLengths([aotCompiler, appAbc, builtinAbcPath, appAot], logger)) {
+  if (!validateFilePathLengths([aotCompiler, appAbc, appAot], logger)) {
     faultHandler(`ArkTS:ERROR GenerateAot failed. Invalid file path.`);
   }
   if (!fs.existsSync(appAbc)) {
     faultHandler(`ArkTS:ERROR GenerateAot failed. AppAbc not found in "${appAbc}"`);
   }
-  const singleCmdPrefix: string = `"${aotCompiler}" --builtins-dts="${builtinAbcPath}" ` +
+  const singleCmdPrefix: string = `"${aotCompiler}" ` +
     `--aot-file="${appAot}" --compiler-target-triple=aarch64-unknown-linux-gnu `;
   let singleCmd: string = "";
   if (projectConfig.anBuildMode === AOT_FULL) {
@@ -141,34 +141,4 @@ export function generateAot(arkDir: string, builtinAbcPath: string, appAbc: stri
     logger.warn(`ArkTS:WARN ${e}`);
     logger.warn(`ArkTS:WARN Failed to generate aot file, the module may run with an interpreter`);
   }
-}
-
-export function generateBuiltinAbc(arkDir: string, abcArgs: string[], cachePath: string,
-  logger: any, faultHandler: FaultHandler, pandaMode: string | undefined): string {
-  const builtinFilePath: string = path.join(getArkBuildDir(arkDir), "aot", "src", "lib_ark_builtins.d.ts");
-  const builtinAbcPath: string = path.join(cachePath, TEMPORARY, "aot", "lib_ark_builtins.d.abc");
-  if (fs.existsSync(builtinAbcPath)) {
-    logger.debug(`builtin.d.abc already exists, no need to rebuild again`);
-    return builtinAbcPath;
-  }
-  mkdirsSync(path.dirname(builtinAbcPath));
-  if (!validateFilePathLengths([builtinFilePath, builtinAbcPath], logger)) {
-    faultHandler(`ArkTS:ERROR Failed to generateBuiltinAbc. Invalid file path.`);
-  }
-  const tempAbcArgs: string[] = abcArgs.slice(0);
-  let singleCmd: string;
-  if (pandaMode === TS2ABC) {
-    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" -q -b -m --merge-abc -o "${builtinAbcPath}"`;
-  } else {
-    singleCmd= `${tempAbcArgs.join(' ')} "${toUnixPath(builtinFilePath)}" --module --merge-abc --output "${builtinAbcPath}"`;
-  }
-  try {
-    logger.debug(`generateBuiltinAbc cmd: ${singleCmd}`);
-    childProcess.execSync(singleCmd, { windowsHide: true });
-  } catch (e) {
-    faultHandler(`ArkTS:ERROR Failed to generate builtin to abc.\n` +
-      `Failed file: ${builtinFilePath}\n` +
-      `Error message: ${e}`);
-  }
-  return builtinAbcPath;
 }
