@@ -23,8 +23,12 @@ import {
   renamePropertyModule,
   getMapFromJson,
   renameFileNameModule,
-  FileUtils
+  FileUtils,
+  separateUniversalReservedItem,
+  containWildcards,
+  wildcardTransformer
 } from 'arkguard';
+import type { ReservedNameInfo } from 'arkguard';
 import { nameCacheObj } from '../../../ark_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { isWindows, toUnixPath } from '../../../utils';
@@ -135,6 +139,10 @@ export class MergedConfig {
   reservedFileNames: string[] = [];
   keepComments: string[] = [];
   keepSourceOfPaths: string[] = []; // The file path or folder path configured by the developer.
+  universalReservedPropertyNames: RegExp[] = []; // Support reserved property names contain wildcards.
+  keepUniversalPaths: RegExp[] = []; // Support reserved paths contain wildcards.
+  excludeUniversalPaths: RegExp[] = []; // Support excluded paths contain wildcards.
+  excludePathSet: Set<string> = new Set();
 
   merge(other: MergedConfig) {
     this.options.merge(other.options);
@@ -222,6 +230,7 @@ export class ObConfigResolver {
       enableObfuscation = enableObfuscation && !dependencyConfigs.options.disableObfuscation;
     }
     const mergedConfigs: MergedConfig = this.getMergedConfigs(selfConfig, dependencyConfigs);
+    this.handleReservedPropertyArray(mergedConfigs);
 
     if (enableObfuscation && mergedConfigs.options.enablePropertyObfuscation) {
       const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, 'systemApiCache.json');
@@ -261,6 +270,14 @@ export class ObConfigResolver {
       throw err;
     }
     this.handleConfigContent(fileContent, configs, path);
+  }
+
+  private handleReservedPropertyArray(mergedConfigs: MergedConfig): void {
+    if (mergedConfigs.options.enablePropertyObfuscation && mergedConfigs.reservedPropertyNames) {
+      const propertyReservedInfo: ReservedNameInfo = separateUniversalReservedItem(mergedConfigs.reservedPropertyNames);
+      mergedConfigs.universalReservedPropertyNames = propertyReservedInfo.universalReservedArray;
+      mergedConfigs.reservedPropertyNames = propertyReservedInfo.specificReservedArray;
+    }
   }
 
   // obfuscation options
@@ -464,8 +481,37 @@ export class ObConfigResolver {
   }
 
   private resolveKeepConfig(keepConfigs: string[], configs: MergedConfig, configPath: string): void {
+    const specialRegex = /[\\\^\$\.\+\|\(\)\[\]\{\}]/;
     for (let keepPath of keepConfigs) {
-      let tempAbsPath = FileUtils.getAbsPathBaseConfigPath(configPath, keepPath);
+      // do not process elements containing special characters
+      // special characters: '\', '^', '$', '.', '+', '|', '[', ']', '{', '}'
+      if (specialRegex.test(keepPath)) {
+        continue;
+      }
+      let tempAbsPath: string;
+      const isExclude: boolean = keepPath.startsWith('!');
+      // 1: remove '!'
+      tempAbsPath = FileUtils.getAbsPathBaseConfigPath(configPath, isExclude ? keepPath.substring(1) : keepPath);
+
+      if (containWildcards(tempAbsPath)) {
+        // contains '*', '?'
+        const regexPattern = wildcardTransformer(tempAbsPath, true);
+        const regexOperator = new RegExp(`^${regexPattern}$`);
+        if (isExclude) {
+          // start with '!'
+          configs.excludeUniversalPaths.push(regexOperator);
+        } else {
+          configs.keepUniversalPaths.push(regexOperator);
+        }
+        continue;
+      }
+
+      if (isExclude) {
+        // exclude specific path
+        configs.excludePathSet.add(tempAbsPath);
+        continue;
+      }
+
       if (!fs.existsSync(tempAbsPath)) {
         this.logger.warn(yellow + 'ArkTS: The path of obfuscation \'-keep\' configuration does not exist: ' + keepPath);
         continue;
@@ -596,6 +642,35 @@ export class ObConfigResolver {
   }
 }
 
+/**
+ * collect the reserved or excluded paths containing wildcards
+ */
+export function handleUniversalPathInObf(mergedObConfig: MergedConfig, allSourceFilePaths: Set<string>): void {
+  if (!mergedObConfig || (mergedObConfig.keepUniversalPaths.length === 0 &&
+    mergedObConfig.excludeUniversalPaths.length === 0)) {
+    return;
+  }
+  for (const realFilePath of allSourceFilePaths) {
+    let isReserved = false;
+    for (const universalPath of mergedObConfig.keepUniversalPaths) {
+      if (universalPath.test(realFilePath)) {
+        isReserved = true;
+        break;
+      }
+    }
+    for (const excludePath of mergedObConfig.excludeUniversalPaths) {
+      if (excludePath.test(realFilePath)) {
+        isReserved = false;
+        mergedObConfig.excludePathSet.add(realFilePath);
+        break;
+      }
+    }
+    if (isReserved) {
+      mergedObConfig.keepSourceOfPaths.push(realFilePath);
+    }
+  }
+}
+
 export function readNameCache(nameCachePath: string, logger: any): void {
   try {
     const fileContent = fs.readFileSync(nameCachePath, 'utf-8');
@@ -700,22 +775,22 @@ export function collectResevedFileNameInIDEConfig(ohPackagePath: string, project
   }
   if (fs.existsSync(ohPackagePath)) {
     const ohPackageContent = JSON5.parse(fs.readFileSync(ohPackagePath, 'utf-8'));
-    ohPackageContent.main && reservedFileNames.push(ohPackageContent.main);
-    ohPackageContent.types && reservedFileNames.push(ohPackageContent.types);
+    ohPackageContent.main && reservedFileNames.push(toUnixPath(ohPackageContent.main));
+    ohPackageContent.types && reservedFileNames.push(toUnixPath(ohPackageContent.types));
   }
 
   if (fs.existsSync(moduleJsonPath)) {
     const moduleJsonContent = JSON5.parse(fs.readFileSync(moduleJsonPath, 'utf-8'));
-    moduleJsonContent.module?.srcEntry && reservedFileNames.push(moduleJsonContent.module?.srcEntry);
+    moduleJsonContent.module?.srcEntry && reservedFileNames.push(toUnixPath(moduleJsonContent.module?.srcEntry));
   }
 
   if (projectConfig.compileShared) {
-    reservedFileNames.push(projectConfig.aceModuleBuild);
+    reservedFileNames.push(toUnixPath(projectConfig.aceModuleBuild));
     reservedFileNames.push('etsFortgz');
   }
 
-  reservedFileNames.push(projectPath);
-  reservedFileNames.push(cachePath);
+  reservedFileNames.push(toUnixPath(projectPath));
+  reservedFileNames.push(toUnixPath(cachePath));
   return reservedFileNames;
 }
 
@@ -734,10 +809,13 @@ export function resetObfuscation(): void {
 }
 
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
-function collectAllKeepFiles(startPaths: string[]): Set<string> {
+function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>): Set<string> {
   const allKeepFiles: Set<string> = new Set();
   const keepFolders: string[] = [];
   startPaths.forEach(filePath => {
+    if (excludePathSet.has(filePath)) {
+      return;
+    }
     if (fs.statSync(filePath).isDirectory()) {
       keepFolders.push(filePath);
     } else {
@@ -749,7 +827,7 @@ function collectAllKeepFiles(startPaths: string[]): Set<string> {
   }
 
   allSourceFilePaths.forEach(filePath => {
-    if (keepFolders.some(folderPath => filePath.startsWith(folderPath))) {
+    if (keepFolders.some(folderPath => filePath.startsWith(folderPath)) && !excludePathSet.has(filePath)) {
       allKeepFiles.add(filePath);
     }
   });
@@ -759,11 +837,12 @@ function collectAllKeepFiles(startPaths: string[]): Set<string> {
 // Collect all keep files and then collect their dependency files.
 export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, projectRootPath: string,
   arkObfuscator: ArkObfuscator) {
-  if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0 ) {
+  if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0) {
     return new Set();
   }
   const keepPaths = mergedObConfig.keepSourceOfPaths;
-  let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths);
+  const excludePaths = mergedObConfig.excludePathSet;
+  let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths, excludePaths);
   arkObfuscator.setKeepSourceOfPaths(allKeepFiles);
   const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(resolvedModulesCache, mergedObConfig, allKeepFiles, projectRootPath);
   return keepFilesAndDependencies;
