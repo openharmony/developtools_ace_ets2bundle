@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson, deleteLineInfoForNameString } from 'arkguard';
+import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils } from 'arkguard';
 
 import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
 import {
@@ -440,9 +440,11 @@ function replaceRelativeDependency(item:string, moduleRequest: string, sourcePat
 export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
   relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
+    MemoryUtils.tryGC();
     performancePrinter?.filesPrinter?.startEvent(filePath);
     await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
     performancePrinter?.filesPrinter?.endEvent(filePath, undefined, true);
+    MemoryUtils.tryGC();
     return;
   }
   mkdirsSync(path.dirname(filePath));
