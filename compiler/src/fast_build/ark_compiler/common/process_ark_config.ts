@@ -36,6 +36,7 @@ import {
   isDebug, 
   isBranchElimination 
 } from '../utils';
+import { toUnixPath } from "../../../utils"
 import {
   isLinux,
   isMac,
@@ -168,6 +169,7 @@ export function initArkProjectConfig(share: Object): Object {
     arkProjectConfig.processTs = mainProjectConfig.processTs;
   }
   arkProjectConfig.compileMode = projectConfig.compileMode;
+  arkProjectConfig.entryObj = mainProjectConfig.entryObj;
 
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;

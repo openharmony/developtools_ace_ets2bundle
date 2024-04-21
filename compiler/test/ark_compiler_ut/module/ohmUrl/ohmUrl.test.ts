@@ -332,7 +332,7 @@ mocha.describe('generate ohmUrl', function () {
       'pkghsp_alias': '@bundle:com.test.testHap/src/main/ets/utils/Calc'
     }
     const filePath: string = 'pkghsp_alias/src/main/ets/utils/Calc';
-    const indexFilePath: string = 'pkghsp_alias'; 
+    const indexFilePath: string = 'pkghsp_alias';
 
     const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
     const importByPkgName = 'pkghsp_alias';
@@ -1012,5 +1012,43 @@ mocha.describe('generate ohmUrl', function () {
     };
     expect(ModuleSourceFile.newMockConfigInfo.toString() === expectMockConfig.toString()).to.be.true;
     ModuleSourceFile.cleanUpObjects();
+  });
+
+  mocha.it('NormalizedOHMUrl bytecode har import', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'bytecode_har': {
+        'packageName': 'bytecode_har',
+        'bundleName': '',
+        'moduleName': 'bytecode_har',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    this.rollup.share.projectConfig.dependencyAliasMap = new Map([
+      ['bytecode_alias', 'bytecode_har']
+    ]);
+    this.rollup.share.projectConfig.byteCodeHarInfo = {
+      'bytecode_alias': {
+        'abcPath':'D:\\projectPath\\bytecode_har\\modules.abc'
+      }
+    }
+    const filePath: string = 'bytecode_alias/src/main/ets/utils/Calc';
+    const indexFilePath: string = 'bytecode_alias'; 
+
+    const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
+    const importByPkgName = 'bytecode_alias';
+    const standardImportPath: string = 'bytecode_alias/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&bytecode_har&&bytecode_har/Index&1.0.0';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&bytecode_har&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
+    expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
   });
 });

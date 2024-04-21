@@ -27,7 +27,9 @@ import {
   ModuleMode,
   PackageEntryInfo
 } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
+import { getNormalizedOhmUrlByFilepath } from '../../../../lib/ark_utils';
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
+import { toUnixPath } from '../../../../lib/utils';
 import { META } from '../rollup_mock/common';
 import { sharedModuleSet } from '../../../../lib/fast_build/ark_compiler/check_shared_module';
 import { SourceMapGenerator } from '../../../../lib/fast_build/ark_compiler/generate_sourcemap';
@@ -82,6 +84,49 @@ class ModuleModeMock extends ModuleMode {
 
   generateAbcCacheFilesInfoMock() {
     this.generateAbcCacheFilesInfo();
+  }
+
+  generateCompileContextInfoMock(rollupObject: object) {
+      this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
+  }
+
+  checkGenerateCompileContextInfo(rollupObject: object): boolean {
+    let mockfilesInfo: string = '';
+    const cacheCompileContextInfo = fs.readFileSync(this.compileContextInfoPath, 'utf-8');
+
+    let compileContextInfo: Object = {};
+    let compileEntries: Array<string> = [];
+    for (const key in rollupObject.share.projectConfig.entryObj) {
+      let moduleId: string = rollupObject.share.projectConfig.entryObj[key];
+      let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+      let metaInfo: Object = moduleInfo.meta;
+      const pkgParams = {
+        pkgName: metaInfo.pkgName,
+        pkgPath: metaInfo.pkgPath,
+        isRecordName: true
+      };
+      let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, rollupObject.share.projectConfig,
+        rollupObject.share.logger, pkgParams, undefined);
+      compileEntries.push(recordName);
+    }
+    compileContextInfo.compileEntries = compileEntries;
+    compileContextInfo.projectRootPath = toUnixPath(rollupObject.share.projectConfig.projectRootPath);
+    if (Object.prototype.hasOwnProperty.call(rollupObject.share.projectConfig, 'pkgContextInfo')) {
+      compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;
+    }
+    let hspPkgNames: Array<string> = [];
+    for (const hspName in rollupObject.share.projectConfig.harNameOhmMap) {
+      let hspPkgName: string = hspName;
+      if (rollupObject.share.projectConfig.dependencyAliasMap.has(hspName)) {
+        hspPkgName = rollupObject.share.projectConfig.dependencyAliasMap.get(hspName);
+      }
+      hspPkgNames.push(toUnixPath(hspPkgName));
+    }
+    compileContextInfo.hspPkgNames = hspPkgNames;
+    if (JSON.stringify(compileContextInfo) === cacheCompileContextInfo) {
+      return true;
+    }
+    return false;
   }
 
   checkGenerateCompileFilesInfo(): boolean {

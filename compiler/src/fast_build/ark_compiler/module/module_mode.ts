@@ -20,6 +20,7 @@ import cluster from 'cluster';
 
 import {
   COMMONJS,
+  COMPILE_CONTEXT_INFO_JSON,
   ESM,
   ESMODULE,
   EXTNAME_CJS,
@@ -143,6 +144,7 @@ export class ModuleMode extends CommonMode {
   filterModuleInfos: Map<String, ModuleInfo>;
   symlinkMap: Object;
   useNormalizedOHMUrl: boolean;
+  compileContextInfoPath: string;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -166,9 +168,50 @@ export class ModuleMode extends CommonMode {
     this.useNormalizedOHMUrl = this.isUsingNormalizedOHMUrl();
   }
 
+  private generateCompileContextInfo(rollupObject: Object): string {
+    let compileContextInfoPath: string = path.join(this.projectConfig.cachePath, COMPILE_CONTEXT_INFO_JSON);;
+    let compileContextInfo: Object = {};
+    let compileEntries: Array<string> = [];
+    for (const key in this.projectConfig.entryObj) {
+      let moduleId: string = this.projectConfig.entryObj[key];
+      let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+      if (moduleInfo === undefined) {
+        this.logger.error(red, `ArkTS:INTERNAL ERROR: cannot find module info with ${moduleId}`, reset);
+      }
+      let metaInfo: Object = moduleInfo.meta;
+      const pkgParams = {
+        pkgName: metaInfo.pkgName,
+        pkgPath: metaInfo.pkgPath,
+        isRecordName: true
+      };
+      let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
+        undefined);
+      compileEntries.push(recordName);
+    }
+    compileContextInfo.compileEntries = compileEntries;
+    compileContextInfo.projectRootPath = toUnixPath(this.projectConfig.projectRootPath);
+    if (Object.prototype.hasOwnProperty.call(this.projectConfig, 'pkgContextInfo')) {
+      compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
+    }
+    let hspPkgNames: Array<string> = [];
+    for (const hspName in this.projectConfig.harNameOhmMap) {
+      let hspPkgName: string = hspName;
+      if (this.projectConfig.dependencyAliasMap.has(hspName)) {
+        hspPkgName = this.projectConfig.dependencyAliasMap.get(hspName);
+      }
+      hspPkgNames.push(toUnixPath(hspPkgName));
+    }
+    compileContextInfo.hspPkgNames = hspPkgNames;
+    fs.writeFileSync(compileContextInfoPath, JSON.stringify(compileContextInfo), 'utf-8');
+    return compileContextInfoPath;
+  }
+
   prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
+    if (this.useNormalizedOHMUrl) {
+      this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
+    }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
@@ -404,6 +447,10 @@ export class ModuleMode extends CommonMode {
     if (this.projectConfig.transformLib) {
       this.cmdArgs.push(`--transform-lib`);
       this.cmdArgs.push(`"${this.projectConfig.transformLib}"`);
+    }
+    if (this.compileContextInfoPath !== undefined) {
+      this.cmdArgs.push(`--compile-context-info`);
+      this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
     }
   }
 

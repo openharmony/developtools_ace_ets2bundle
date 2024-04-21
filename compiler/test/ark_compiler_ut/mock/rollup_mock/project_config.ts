@@ -32,6 +32,7 @@ import {
   OHPM,
   RELEASE
 } from "../../../../lib/fast_build/ark_compiler/common/ark_define";
+import EntryAbility from "../../testdata/expect/expect_EntryAbility";
 
 interface IArkProjectConfig {
   projectRootPath: string,
@@ -112,6 +113,9 @@ class ProjectConfig {
   pkgContextInfo: object;
   useNormalizedOHMUrl: boolean = false;
   dependencyAliasMap: Map<string, string>;
+  abcPaths: string[] = [];
+  entryObj: object;
+  harNameOhmMap: object;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -139,6 +143,46 @@ class ProjectConfig {
 
   public setMockParams(params: object) {
     this.mockParams = params;
+  }
+
+  public mockCompileContextInfo() {
+    this.entryObj = {
+      'entryAbility/EntryAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryability/EntryAbility.ets`,
+      'page/Intex': `${PROJECT_ROOT}\\entry\\src\\main\\ets\\page\\Index.ets`
+    }
+    this.projectRootPath = PROJECT_ROOT;
+    this.pkgContextInfo = {
+      'entry': {
+        'packageName': 'entry',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      },
+      'har': {
+        'packageName': 'har',
+        'bundleName': '',
+        'moduleName': 'har',
+        'version': '',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      },
+      'hsp': {
+        'packageName': 'hsp',
+        'bundleName': '',
+        'moduleName': 'hsp',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      },
+    };
+    this.harNameOhmMap = {
+      'hspAlias': '@normalized:N&&&hsp/Index&1.0.0'
+    }
+    this.dependencyAliasMap = new Map([
+      ['hspAlias', 'hsp']
+    ]);
   }
 
   private initPath(proPath: string) {
