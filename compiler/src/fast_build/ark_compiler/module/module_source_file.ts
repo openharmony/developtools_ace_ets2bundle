@@ -23,8 +23,10 @@ import {
 } from '../common/ark_define';
 import {
   getNormalizedOhmUrlByFilepath,
+  getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
   getOhmUrlByHspName,
+
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
   compileToolIsRollUp
@@ -320,6 +322,14 @@ export class ModuleSourceFile {
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
       }
       return hspOhmurl;
+    }
+    const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig,
+      ModuleSourceFile.logger, useNormalizedOHMUrl);
+    if (byteCodeHarOhmurl !== undefined) {
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
+      }
+      return byteCodeHarOhmurl;
     }
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
