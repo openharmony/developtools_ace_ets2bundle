@@ -46,7 +46,8 @@ import { newSourceMaps } from '../transform';
 import {
   MergedConfig,
   handleKeepFilesAndGetDependencies,
-  writeObfuscationNameCache
+  writeObfuscationNameCache,
+  handleUniversalPathInObf
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
@@ -240,6 +241,7 @@ export class ModuleSourceFile {
     // obfuscation initialization, include collect file, resolve denpendency, read source
     if (compileToolIsRollUp()) {
       const obfuscationConfig: MergedConfig = sourceProjectConfig.obfuscationMergedObConfig;
+      handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
       const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig,
         sourceProjectConfig.projectRootPath, sourceProjectConfig.arkObfuscator);
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,

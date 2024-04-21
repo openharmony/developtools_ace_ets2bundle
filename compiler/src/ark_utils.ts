@@ -276,7 +276,7 @@ export function genSourceMapFileName(temporaryFile: string): string {
 }
 
 export function getBuildModeInLowerCase(projectConfig: Object): string {
-  return (compileToolIsRollUp() ?  projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
+  return (compileToolIsRollUp() ? projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
@@ -773,6 +773,6 @@ export function stopEvent(event: Object, syncFlag = false): void {
   }
 }
 
-export function compileToolIsRollUp (): boolean {
+export function compileToolIsRollUp(): boolean {
   return process.env.compileTool === 'rollup';
 }
