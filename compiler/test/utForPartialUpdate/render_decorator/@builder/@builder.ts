@@ -283,7 +283,7 @@ class MyComponent extends ViewPU {
         Flex.pop();
     }
     deliver$$(parent = null) {
-        reveive$$.bind(this)(makeBuilderParameterProxy("reveive$$", { expProp: () => (this["__hideBar"] ? this["__hideBar"] : this["hideBar"]) }));
+        reveive$$.bind(this)(makeBuilderParameterProxy("reveive$$", { expProp: () => (this["__hideBar"] ? this["__hideBar"] : this["hideBar"]) }), parent ? parent : this);
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -303,7 +303,7 @@ class MyComponent extends ViewPU {
             });
         }, Text);
         Text.pop();
-        specificParam.bind(this)('test1', 'test2');
+        specificParam.bind(this)('test1', 'test2', this);
         Row.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
