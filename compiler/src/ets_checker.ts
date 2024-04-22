@@ -267,7 +267,19 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
   if (!fs.existsSync(fileName)) {
     return '0';
   }
-  return createHash(fs.readFileSync(fileName).toString());
+
+  let fileContent: string = fs.readFileSync(fileName).toString();
+  let cacheInfo: CacheFileName = cache[path.resolve(fileName)];
+
+  // Error code corresponding to message `Cannot find module xx or its corresponding type declarations`
+  const errorCodeRequireRecheck: number = 2307;
+
+  if (cacheInfo && cacheInfo.error === true && cacheInfo.errorCodes.includes(errorCodeRequireRecheck)) {
+    // If this file had errors that require recheck in the last compilation,
+    // mark the file as modified by modifying its hash value, thereby triggering tsc to recheck.
+    fileContent += Date.now().toString();
+  }
+  return createHash(fileContent);
 };
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
@@ -355,7 +367,8 @@ interface CacheFileName {
   mtimeMs: number,
   children: string[],
   parent: string[],
-  error: boolean
+  error: boolean,
+  errorCodes?: number[]
 }
 interface NeedUpdateFlag {
   flag: boolean;
@@ -598,8 +611,17 @@ function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
 }
 
 function updateErrorFileCache(diagnostic: ts.Diagnostic): void {
-  if (diagnostic.file && cache[path.resolve(diagnostic.file.fileName)]) {
-    cache[path.resolve(diagnostic.file.fileName)].error = true;
+  if (!diagnostic.file) {
+    return;
+  }
+
+  let cacheInfo: CacheFileName = cache[path.resolve(diagnostic.file.fileName)];
+  if (cacheInfo) {
+    cacheInfo.error = true;
+    if (!cacheInfo.errorCodes) {
+      cacheInfo.errorCodes = [];
+    }
+    cacheInfo.errorCodes.includes(diagnostic.code) || cacheInfo.errorCodes.push(diagnostic.code);
   }
 }
 
