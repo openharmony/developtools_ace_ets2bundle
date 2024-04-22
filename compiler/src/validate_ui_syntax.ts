@@ -62,7 +62,8 @@ import {
   CLASS_MIN_TRACK_DECORATOR,
   MIN_OBSERVED,
   COMPONENT_NON_DECORATOR,
-  COMPONENT_DECORATOR_COMPONENT_V2
+  COMPONENT_DECORATOR_COMPONENT_V2,
+  OBSERVED
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -456,7 +457,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
-    isObservedClass = parseClassDecorator(node);
+    isObservedClass = parseClassDecorator(node, sourceFileNode, log);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     methodDecoratorCollect(node);
@@ -464,14 +465,33 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
-    validateMethod(node, sourceFileNode, log, structContext, isComponentV2);
   }
+  checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2);
   node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
     log, structContext, classContext, isObservedClass, isComponentV2, fileQuery));
   structContext = false;
   classContext = false;
   isObservedClass = false;
+}
+
+function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (ts.isPropertyDeclaration || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+    let innerDecoratorCount: number = 0;
+    const exludeDecorators: string[] = ['@Require', '@Once'];
+    decorators.forEach((item: ts.Decorator) => {
+      const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
+      if (!exludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
+        decoratorName === '@BuilderParam')) {
+        innerDecoratorCount++;
+      }
+    });
+    if (innerDecoratorCount > 1) {
+      const message: string = 'The member property or method can not be decorated by multiple built-in decorators.';
+      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    }
+  }
 }
 
 function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
@@ -508,48 +528,6 @@ function collectStyles(node: ts.FunctionLikeDeclarationBase): void {
   }
 }
 
-function validateMethod(node: ts.MethodDeclaration | ts.FunctionDeclaration, sourceFileNode: ts.SourceFile,
-  log: LogInfo[], structContext: boolean, isComponentV2: boolean): void {
-  if (ts.isMethodDeclaration(node)) {
-    let hasMonitor: boolean = false;
-    let monitorNode: ts.Decorator;
-    let decoratorCount: number = 0;
-    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-    decorators.forEach((item: ts.Decorator) => {
-      const name: string = item.getText().replace(/\([^\(\)]*\)/, '');
-      if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
-        const message: string = `'${item.getText()}' can not decorate the method.`;
-        addLog(LogType.ERROR, message, item.getStart(), log, sourceFileNode);
-      }
-      if (constantDefine.METHOD_DECORATOR_V2.includes(name)) {
-        decoratorCount++;
-      }
-      if (name === '@Monitor') {
-        hasMonitor = true;
-        monitorNode = item;
-      }
-    });
-    validateMutilMethodDecorator(node, sourceFileNode, log, decoratorCount);
-    validateMonitorDecorator(hasMonitor, monitorNode, sourceFileNode, log, structContext, isComponentV2);
-  }
-}
-
-function validateMutilMethodDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], decoratorCount: number): void {
-  if (decoratorCount > 1) {
-    const message: string = 'The method can not be decorated by multiple built-in method decorators.';
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
-  }
-}
-
-function validateMonitorDecorator(hasMonitor: boolean, monitorNode: ts.Decorator,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], structContext: boolean, isComponentV2: boolean): void {
-  if (hasMonitor && structContext && !isComponentV2) {
-    const message: string = `The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
-    addLog(LogType.ERROR, message, monitorNode.getStart(), log, sourceFileNode);
-  }
-}
-
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
   isComponentV2: boolean): void {
@@ -559,10 +537,38 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
     validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass);
+    return;
+  }
+  if (ts.isDecorator(node)) {
+    validateSingleDecorator(node, sourceFileNode, log);
+  }
+}
+
+function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFile,
+  log: LogInfo[]): void {
+  const decoratorName: string = node.getText().replace(/\([^\(\)]*\)/, '');
+  if (decoratorName === constantDefine.COMPUTED_DECORATOR && node.parent && !ts.isGetAccessor(node.parent)) {
+    const message: string = `@Computed can only decorate 'GetAccessor'.`;
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    return;
+  }
+  if (decoratorName === constantDefine.MONITOR_DECORATOR && node.parent &&
+    !ts.isMethodDeclaration(node.parent)) {
+    const message: string = '@Monitor can only decorate method.';
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    return;
+  }
+  if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(decoratorName) && node.parent &&
+    !ts.isPropertyDeclaration(node.parent)) {
+    const message: string = `'${decoratorName}' can only decorate member property.`;
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    return;
   }
 }
 
 const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
+const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR,
+  constantDefine.MONITOR, constantDefine.COMPUTED];
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   classContext: boolean, decoratorName: string, isObservedClass: boolean): void {
@@ -573,17 +579,25 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
       (!node.parent || !node.parent.parent || !ts.isClassDeclaration(node.parent.parent))) {
     const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
-  } else if (classContext && [CLASS_MIN_TRACK_DECORATOR, constantDefine.MONITOR].includes(decoratorName)) {
+  } else if (classContext && classMemberDecorators.includes(decoratorName)) {
     validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode);
   }
 }
 
 function validateMemberInClass(isObservedClass: boolean, decoratorName: string, node: ts.Identifier,
   log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  if (decoratorName === CLASS_TRACK_DECORATOR) {
+    if (isObservedClass) {
+      const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with ObservedV2.`;
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    }
+    return;
+  }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
     const message: string = `The '@${decoratorName}' can decorate only member ${info} within a 'class' decorated with ObservedV2.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    return;
   }
 }
 
@@ -595,11 +609,98 @@ function isPropertyForTrace(node: ts.Identifier, decoratorName: string): boolean
   return true;
 }
 
-function parseClassDecorator(node: ts.ClassDeclaration): boolean {
+class ClassDecoratorResult {
+  hasObserved: boolean = false;
+  hasObservedV2: boolean = false;
+}
+
+function parseClassDecorator(node: ts.ClassDeclaration, sourceFileNode: ts.SourceFile,
+  log: LogInfo[]): boolean {
+  const classResult: ClassDecoratorResult = getClassDecoratorResult(node);
+  validateMutilObserved(node, classResult, sourceFileNode, log);
+  if (classResult.hasObserved || classResult.hasObservedV2) {
+    parseInheritClass(node, classResult, sourceFileNode, log);
+  }
+  return classResult.hasObservedV2;
+}
+
+function getClassDecoratorResult(node: ts.ClassDeclaration): ClassDecoratorResult {
+  const classResult: ClassDecoratorResult = new ClassDecoratorResult();
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  return decorators.some((item: ts.Decorator) => {
-    return ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === MIN_OBSERVED;
+  decorators.forEach((item: ts.Decorator) => {
+    if (ts.isIdentifier(item.expression)) {
+      const decoratorName: string = item.expression.escapedText.toString();
+      switch (decoratorName) {
+        case MIN_OBSERVED:
+          classResult.hasObservedV2 = true;
+          break;
+        case OBSERVED:
+          classResult.hasObserved = true;
+          break;
+      }
+    }
   });
+  return classResult;
+}
+
+function validateMutilObserved(node: ts.ClassDeclaration, classResult: ClassDecoratorResult,
+  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (classResult.hasObserved && classResult.hasObservedV2) {
+    const message: string = `A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.`;
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+  }
+}
+
+function parseInheritClass(node: ts.ClassDeclaration, childClassResult: ClassDecoratorResult,
+  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (globalProgram.checker && process.env.compileTool === 'rollup' && node.heritageClauses) {
+    for (const heritageClause of node.heritageClauses) {
+      if (heritageClause.token === ts.SyntaxKind.ExtendsKeyword && heritageClause.types &&
+        heritageClause.types.length) {
+        getClassNode(heritageClause.types[0].expression, childClassResult, node, sourceFileNode, log);
+      }
+    }
+  }
+}
+
+function getClassNode(parentType: ts.Node, childClassResult: ClassDecoratorResult,
+  childClass: ts.ClassDeclaration, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const symbol: ts.Symbol = parentType && getSymbolIfAliased(parentType);
+  if (symbol && symbol.valueDeclaration) {
+    if (ts.isClassDeclaration(symbol.valueDeclaration)) {
+      validateInheritClassDecorator(symbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
+      return;
+    }
+    // export default {a: b}
+    // @ts-ignore
+    getClassNode(symbol.valueDeclaration.initializer || symbol.valueDeclaration.name,
+      childClassResult, childClass, sourceFileNode, log);
+  }
+}
+
+function getSymbolIfAliased(node: ts.Node): ts.Symbol {
+  const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
+  if ((symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
+    return globalProgram.checker.getAliasedSymbol(symbol);
+  }
+  return symbol;
+}
+
+function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childClassResult: ClassDecoratorResult,
+  childClass: ts.ClassDeclaration, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const parentClassResult: ClassDecoratorResult = getClassDecoratorResult(parentNode);
+  if (childClassResult.hasObservedV2 && parentClassResult.hasObserved) {
+    const message: string = `Because the current class is decorated by '@ObservedV2', ` +
+      `it can not inherit a class decorated by '@Observed'.`;
+    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode);
+    return;
+  }
+  if (childClassResult.hasObserved && parentClassResult.hasObservedV2) {
+    const message: string = `Because the current class is decorated by '@Observed', ` +
+      `it can not inherit a class decorated by '@ObservedV2'.`;
+    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode);
+    return;
+  }
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
@@ -611,7 +712,7 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
         const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
         addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
       }
-    } else if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
+    } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
     }
