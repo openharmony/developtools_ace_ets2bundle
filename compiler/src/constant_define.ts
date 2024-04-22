@@ -16,7 +16,10 @@
 const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
 
 const MONITOR: string = 'Monitor';
+const COMPUTED: string = 'Computed';
 const REQUIRE: string = 'Require';
+const MONITOR_DECORATOR: string = '@Monitor';
+const COMPUTED_DECORATOR: string = '@Computed';
 
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
   '@State', '@Prop', '@Link', '@Provide', '@Consume', '@Watch', '@StorageLink', '@StorageProp',
@@ -26,11 +29,11 @@ const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
 const COMPONENT_MEMBER_DECORATOR_V2: string[] = [
   '@Local', '@Param', '@Once', '@Event', '@Provider', '@Consumer'
 ];
-const STRUCT_CLASS_MEMBER_DECORATOR: string[] = [
+const STRUCT_CLASS_MEMBER_DECORATOR_V2: string[] = [
   '@Monitor', '@Computed'
 ];
-const METHOD_DECORATOR_V2: string[] = [
-  '@Monitor', '@Computed'
+const DECORATOR_V2: string[] = [
+  ...COMPONENT_MEMBER_DECORATOR_V2, ...STRUCT_CLASS_MEMBER_DECORATOR_V2
 ];
 
 const STRUCT_PARENT: string = 'ViewV2';
@@ -41,13 +44,15 @@ const UPDATE_STATE_VARS: string = 'updateStateVars';
 export default {
   NAVIGATION_BUILDER_REGISTER,
   MONITOR,
+  COMPUTED,
   STRUCT_PARENT,
   COMPONENT_MEMBER_DECORATOR_V1,
   COMPONENT_MEMBER_DECORATOR_V2,
-  STRUCT_CLASS_MEMBER_DECORATOR,
-  METHOD_DECORATOR_V2,
   INIT_PARAM,
   UPDATE_PARAM,
   UPDATE_STATE_VARS,
-  REQUIRE
+  REQUIRE,
+  MONITOR_DECORATOR,
+  COMPUTED_DECORATOR,
+  DECORATOR_V2
 };
