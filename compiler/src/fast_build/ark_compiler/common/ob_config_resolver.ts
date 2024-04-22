@@ -457,6 +457,9 @@ export class ObConfigResolver {
     configs.reservedPropertyNames = configs.reservedPropertyNames.concat(
       [...ApiExtractor.mPropertySet]
     );
+    configs.reservedGlobalNames = configs.reservedGlobalNames.concat(
+      [...ApiExtractor.mPropertySet]
+    );
     ApiExtractor.mPropertySet.clear();
   }
 
