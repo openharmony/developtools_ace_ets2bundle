@@ -561,7 +561,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ts.factory.createStringLiteral(name),
             traverseBuilderParams(node.expression.arguments[0], isBuilder)
           ]
-        )]
+        ), storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()]
       ));
     } else {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
@@ -569,8 +569,16 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
         newNode,
         undefined,
         !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
-          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
-          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
+          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ?
+          [
+            ...node.expression.arguments,
+            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()
+          ] :
+          [
+            ...node.expression.arguments,
+            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis(),
+            ts.factory.createIdentifier(MY_IDS)
+          ]
       ));
     }
   }

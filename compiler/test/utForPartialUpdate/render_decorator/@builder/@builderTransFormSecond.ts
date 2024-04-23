@@ -156,7 +156,7 @@ function testInnerComponent(value, parent = null) {
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
         Column.create();
     }, Column);
-    commonBuilder.bind(this)();
+    commonBuilder.bind(this)(parent ? parent : this);
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {

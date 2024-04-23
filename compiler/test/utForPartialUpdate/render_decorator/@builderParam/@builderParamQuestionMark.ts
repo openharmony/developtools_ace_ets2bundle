@@ -77,7 +77,7 @@ class ChildComponent extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
-        this.trailing?.bind(this)?.();
+        this.trailing?.bind(this)?.(this);
         Column.pop();
     }
     rerender() {
