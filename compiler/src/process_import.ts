@@ -233,7 +233,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
     hasCollection(node.expression)) {
     if (defaultNameFromParent) {
       const propertiesName: string = node.expression.escapedText.toString();
-      setDependencies(defaultNameFromParent, linkCollection.get(propertiesName),
+      setDependencies(defaultNameFromParent, undefined, linkCollection.get(propertiesName),
         propertyCollection.get(propertiesName), propCollection.get(propertiesName),
         builderParamObjectCollection.get(propertiesName), stateCollection.get(propertiesName),
         regularCollection.get(propertiesName), storagePropCollection.get(propertiesName),
@@ -268,7 +268,7 @@ function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromP
             if (asNameFromParent.has(asExportName)) {
               asExportName = asNameFromParent.get(asExportName);
             }
-            setDependencies(asExportName, linkCollection.get(asExportPropertyName),
+            setDependencies(asExportName, undefined, linkCollection.get(asExportPropertyName),
               propertyCollection.get(asExportPropertyName),
               propCollection.get(asExportPropertyName),
               builderParamObjectCollection.get(asExportPropertyName),
@@ -390,21 +390,21 @@ function addDependencies(node: ts.StructDeclaration, defaultNameFromParent: stri
   if (defaultNameFromParent && modifiers && modifiers.length >= MODIFIER_LENGTH && modifiers[0] &&
     modifiers[1] && modifiers[0].kind === ts.SyntaxKind.ExportKeyword &&
     modifiers[1].kind === ts.SyntaxKind.DefaultKeyword) {
-    setDependencies(defaultNameFromParent, ComponentSet.links, ComponentSet.properties,
+    setDependencies(defaultNameFromParent, undefined, ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
       ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
       structDecorator);
   } else if (asNameFromParent.has(componentName)) {
-    setDependencies(asNameFromParent.get(componentName), ComponentSet.links, ComponentSet.properties,
+    setDependencies(asNameFromParent.get(componentName), undefined, ComponentSet.links, ComponentSet.properties,
       ComponentSet.props, ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
       ComponentSet.localStorageProp, ComponentSet.builderParamData, ComponentSet.propData, isDETS,
       structDecorator);
   } else {
-    setDependencies(componentName, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
+    setDependencies(componentName, undefined, ComponentSet.links, ComponentSet.properties, ComponentSet.props,
       ComponentSet.builderParams, ComponentSet.states, ComponentSet.regulars,
       ComponentSet.storageProps, ComponentSet.storageLinks, ComponentSet.provides,
       ComponentSet.consumes, ComponentSet.objectLinks, ComponentSet.localStorageLink,
@@ -423,7 +423,7 @@ function addDefaultExport(node: ts.StructDeclaration | ts.ExportAssignment, isDE
   } else {
     return;
   }
-  setDependencies(CUSTOM_COMPONENT_DEFAULT,
+  setDependencies(CUSTOM_COMPONENT_DEFAULT, undefined,
     linkCollection.has(CUSTOM_COMPONENT_DEFAULT) ?
       new Set([...linkCollection.get(CUSTOM_COMPONENT_DEFAULT), ...linkCollection.get(name)]) :
       linkCollection.get(name),
@@ -491,14 +491,22 @@ function getNewLocalStorageMap(collection: Map<string, Map<string, Set<string>>>
   return localStorageLinkMap;
 }
 
-function setDependencies(component: string, linkArray: Set<string>, propertyArray: Set<string>,
+function setDependencies(component: string, asComponentName: string, linkArray: Set<string>, propertyArray: Set<string>,
   propArray: Set<string>, builderParamArray: Set<string>, stateArray: Set<string>,
   regularArray: Set<string>, storagePropsArray: Set<string>, storageLinksArray: Set<string>,
   providesArray: Set<string>, consumesArray: Set<string>, objectLinksArray: Set<string>,
   localStorageLinkMap: Map<string, Set<string>>, localStoragePropMap: Map<string, Set<string>>,
   builderParamData: Set<string>, propData: Set<string>, isDETS: boolean,
   structDecorator: structDecoratorResult): void {
-  linkCollection.set(component, linkArray);
+  if (asComponentName) {
+    linkCollection.set(asComponentName, linkArray);
+    storedFileInfo.overallLinkCollection.set(asComponentName, linkArray);
+  } else if (!asComponentName && component) {
+    linkCollection.set(component, linkArray);
+    if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup') {
+      storedFileInfo.overallLinkCollection.set(component, linkArray);
+    }
+  }
   propertyCollection.set(component, propertyArray);
   if (!propCollection.get(component)) {
     propCollection.set(component, propArray);
@@ -517,6 +525,12 @@ function setDependencies(component: string, linkArray: Set<string>, propertyArra
   storageLinkCollection.set(component, storageLinksArray);
   provideCollection.set(component, providesArray);
   consumeCollection.set(component, consumesArray);
+  if (asComponentName) {
+    storedFileInfo.overallObjectLinkCollection.set(asComponentName, objectLinksArray);
+  } else if (!asComponentName && component && projectConfig.compileMode === 'esmodule' &&
+    process.env.compileTool === 'rollup') {
+    storedFileInfo.overallObjectLinkCollection.set(component, objectLinksArray);
+  }
   objectLinkCollection.set(component, objectLinksArray);
   localStorageLinkCollection.set(component, localStorageLinkMap);
   localStoragePropCollection.set(component, localStoragePropMap);
@@ -751,6 +765,7 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
   if (node.importClause && node.importClause.namedBindings &&
     ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
     ts.isIdentifier(node.importClause.namedBindings.name)) {
+    storedFileInfo.isAsPageImport = true;
     getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageFile);
   }
 }
@@ -799,7 +814,11 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   usedPropName: string, pageFile: string): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
+  let asComponentName: string;
   if (importIntegration) {
+    if (storedFileInfo.isAsPageImport) {
+      asComponentName = usedNode.escapedText.toString() + '.' + usedPropName;
+    }
     name = usedPropName;
   } else {
     name = usedNode.escapedText.toString();
@@ -807,7 +826,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
-    parseComponentInImportNode(originNode, name, structDecorator, originFile);
+    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
@@ -827,8 +846,8 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
 }
 
 function setComponentCollectionInfo(name: string, componentSet: IComponentSet, isDETS: boolean,
-  structDecorator: structDecoratorResult): void {
-  setDependencies(name, componentSet.links, componentSet.properties,
+  structDecorator: structDecoratorResult, asComponentName: string): void {
+  setDependencies(name, asComponentName, componentSet.links, componentSet.properties,
     componentSet.props, componentSet.builderParams, componentSet.states, componentSet.regulars,
     componentSet.storageProps, componentSet.storageLinks, componentSet.provides,
     componentSet.consumes, componentSet.objectLinks, componentSet.localStorageLink,
@@ -845,7 +864,7 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
-  structDecorator: structDecoratorResult, originFile: string): void {
+  asComponentName: string, structDecorator: structDecoratorResult, originFile: string): void {
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
   if (isComponentV2(originNode)) {
     parseComponentV2InImportNode(originNode, name, originFile, structInfo);
@@ -865,7 +884,7 @@ function parseComponentInImportNode(originNode: ts.StructDeclaration, name: stri
       }
       originNode = originNode.parent;
     }
-    setComponentCollectionInfo(name, componentSet, isDETS, structDecorator);
+    setComponentCollectionInfo(name, componentSet, isDETS, structDecorator, asComponentName);
   }
 }
 
