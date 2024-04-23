@@ -31,7 +31,7 @@ import {
   OH_MODULES,
   OBFUSCATION_TOOL
 } from './ark_define';
-import { isAotMode, isDebug } from '../utils';
+import { isAotMode, isDebug, isBranchElimination } from '../utils';
 import {
   isLinux,
   isMac,
@@ -66,6 +66,7 @@ type ArkConfig = {
   aotCompilerPath: string;
   nodePath: string;
   isDebug: boolean;
+  isBranchElimination: boolean;
 };
 
 export function initArkConfig(projectConfig: Object): ArkConfig {
@@ -81,13 +82,15 @@ export function initArkConfig(projectConfig: Object): ArkConfig {
     es2abcPath: '',
     aotCompilerPath: '',
     nodePath: '',
-    isDebug: false
+    isDebug: false,
+    isBranchElimination: false
   };
   arkConfig.nodePath = 'node';
   if (projectConfig.nodeJs) {
     arkConfig.nodePath = projectConfig.nodePath;
   }
   arkConfig.isDebug = isDebug(projectConfig);
+  arkConfig.isBranchElimination = isBranchElimination(projectConfig);
   arkConfig.arkRootPath = arkRootPath;
   processPlatformInfo(arkConfig);
   processCompatibleVersion(projectConfig, arkConfig);
