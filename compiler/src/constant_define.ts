@@ -16,6 +16,7 @@
 const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
 
 const MONITOR: string = 'Monitor';
+const REQUIRE: string = 'Require';
 
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
   '@State', '@Prop', '@Link', '@Provide', '@Consume', '@Watch', '@StorageLink', '@StorageProp',
@@ -47,5 +48,6 @@ export default {
   METHOD_DECORATOR_V2,
   INIT_PARAM,
   UPDATE_PARAM,
-  UPDATE_STATE_VARS
+  UPDATE_STATE_VARS,
+  REQUIRE
 };
