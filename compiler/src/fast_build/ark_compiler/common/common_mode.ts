@@ -92,6 +92,9 @@ export abstract class CommonMode {
       if (this.arkConfig.isDebug) {
         args.push('--debug-info');
       }
+      if (this.arkConfig.isBranchElimination) {
+        args.push('--branch-elimination');
+      }
     } else {
       this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
     }

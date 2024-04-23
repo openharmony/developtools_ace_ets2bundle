@@ -28,7 +28,8 @@ import {
   EXTNAME_JSON,
   EXTNAME_CJS,
   EXTNAME_MJS,
-  TEMPORARY
+  TEMPORARY,
+  TRUE
 } from './common/ark_define';
 import {
   nodeLargeOrEqualTargetVersion,
@@ -64,6 +65,10 @@ export function isAotMode(projectConfig: Object): boolean {
 
 export function isDebug(projectConfig: Object): boolean {
   return projectConfig.buildMode.toLowerCase() === DEBUG;
+}
+
+export function isBranchElimination(projectConfig: Object): boolean {
+  return projectConfig.branchElimination === undefined ? false : projectConfig.branchElimination.toLowerCase() === TRUE;
 }
 
 export function isMasterOrPrimary() {
