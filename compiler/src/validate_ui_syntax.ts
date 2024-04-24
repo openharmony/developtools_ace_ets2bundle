@@ -987,6 +987,7 @@ function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntr
   propertyCollection.set(componentName, componentSet.properties);
   stateCollection.set(componentName, componentSet.states);
   linkCollection.set(componentName, componentSet.links);
+  storedFileInfo.overallLinkCollection.set(componentName, componentSet.links);
   propCollection.set(componentName, componentSet.props);
   regularCollection.set(componentName, componentSet.regulars);
   storagePropCollection.set(componentName, componentSet.storageProps);
@@ -994,6 +995,7 @@ function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntr
   provideCollection.set(componentName, componentSet.provides);
   consumeCollection.set(componentName, componentSet.consumes);
   objectLinkCollection.set(componentName, componentSet.objectLinks);
+  storedFileInfo.overallObjectLinkCollection.set(componentName, componentSet.objectLinks);
   localStorageLinkCollection.set(componentName, componentSet.localStorageLink);
   localStoragePropCollection.set(componentName, componentSet.localStorageProp);
   builderParamObjectCollection.set(componentName, componentSet.builderParams);
@@ -1416,6 +1418,8 @@ export function resetComponentCollection() {
   propCollection.clear();
   objectLinkCollection.clear();
   linkCollection.clear();
+  storedFileInfo.overallLinkCollection.clear();
+  storedFileInfo.overallObjectLinkCollection.clear();
   regularInitialization.clear();
   stateInitialization.clear();
   provideInitialization.clear();

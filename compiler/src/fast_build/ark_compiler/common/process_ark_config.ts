@@ -31,7 +31,10 @@ import {
   OH_MODULES,
   OBFUSCATION_TOOL
 } from './ark_define';
-import { isAotMode, isDebug, isBranchElimination } from '../utils';
+import { 
+  isAotMode, 
+  isDebug, 
+  isBranchElimination } from '../utils';
 import {
   isLinux,
   isMac,
