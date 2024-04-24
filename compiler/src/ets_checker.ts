@@ -40,7 +40,7 @@ import {
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
-  $$_BLOCK_INTERFACE,
+  DOLLAR_BLOCK_INTERFACE,
   COMPONENT_EXTEND_DECORATOR,
   COMPONENT_BUILDER_DECORATOR,
   ESMODULE,
@@ -1081,7 +1081,7 @@ function traverseBuild(node: ts.Node, index: number): void {
     }
     node = node.expression;
     if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-      ts.isIdentifier(node.expression) && !$$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+      ts.isIdentifier(node.expression) && !DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
       node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
         traverseBuild(item, indexBlock);
       });
@@ -1128,7 +1128,7 @@ function isPropertiesAddDoubleDollar(node: ts.Node): boolean {
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments && node.arguments.length) {
     return true;
   } else if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-    ts.isIdentifier(node.expression) && $$_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+    ts.isIdentifier(node.expression) && DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
     return true;
   } else {
     return false;
@@ -1152,14 +1152,20 @@ function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): v
               doubleDollarCollection(param.initializer);
             }
           });
-        }
-        if (STYLE_ADD_DOUBLE_DOLLAR.has(node.expression.getText()) && ts.isPropertyAccessExpression(item)) {
+        } else if (ts.isPropertyAccessExpression(item) && (handleComponentDollarBlock(node as ts.CallExpression, parentComponentName) ||
+          STYLE_ADD_DOUBLE_DOLLAR.has(node.expression.getText()))) {
           doubleDollarCollection(item);
         }
       });
     }
     node = node.expression;
   }
+}
+
+function handleComponentDollarBlock(node: ts.CallExpression, parentComponentName: string): boolean {
+  return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
+    DOLLAR_BLOCK_INTERFACE.has(parentComponentName) && PROPERTIES_ADD_DOUBLE_DOLLAR.has(parentComponentName) &&
+    PROPERTIES_ADD_DOUBLE_DOLLAR.get(parentComponentName).has(node.expression.escapedText.toString());
 }
 
 function doubleDollarCollection(item: ts.Node): void {
