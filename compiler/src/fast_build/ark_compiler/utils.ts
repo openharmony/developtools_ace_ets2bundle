@@ -28,8 +28,7 @@ import {
   EXTNAME_JSON,
   EXTNAME_CJS,
   EXTNAME_MJS,
-  TEMPORARY,
-  TRUE
+  TEMPORARY
 } from './common/ark_define';
 import {
   nodeLargeOrEqualTargetVersion,
@@ -68,7 +67,7 @@ export function isDebug(projectConfig: Object): boolean {
 }
 
 export function isBranchElimination(projectConfig: Object): boolean {
-  return projectConfig.branchElimination === undefined ? false : projectConfig.branchElimination.toLowerCase() === TRUE;
+  return projectConfig.branchElimination;
 }
 
 export function isMasterOrPrimary() {

@@ -182,7 +182,7 @@ class visibility$$Demo extends ViewPU {
             Column.create();
             Column.height('100%');
         }, Column);
-        comp.bind(this)(makeBuilderParameterProxy("comp", { vis: () => (this["__vis"] ? this["__vis"] : this["vis"]), data: () => (this["__data"] ? this["__data"] : this["data"]), width: () => (this["__w"] ? this["__w"] : this["w"]) }));
+        comp.bind(this)(makeBuilderParameterProxy("comp", { vis: () => (this["__vis"] ? this["__vis"] : this["vis"]), data: () => (this["__data"] ? this["__data"] : this["data"]), width: () => (this["__w"] ? this["__w"] : this["w"]) }), this);
         Column.pop();
     }
     rerender() {
