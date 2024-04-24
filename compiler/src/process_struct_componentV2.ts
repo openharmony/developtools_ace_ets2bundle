@@ -130,14 +130,32 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   log: LogInfo[]): ts.PropertyDeclaration {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
   if (structInfo.paramDecoratorMap.has(member.name.getText())) {
-    // @ts-ignore
-    member.initializer = undefined;
+    processParamProperty(member);
+    return member;
   }
   if (hasSomeDecorator(decorators, 'BuilderParam')) {
-    // @ts-ignore
-    member.modifiers = processBuilderParamProperty(member, log);
+    processBuilderParamProperty(member, log);
+    return member;
   }
   return member;
+}
+
+function processParamProperty(member: ts.PropertyDeclaration): void {
+  // @ts-ignore
+  member.initializer = undefined;
+  // @ts-ignore
+  let newModifiers: ts.Node[] = member.modifiers;
+  if (newModifiers) {
+    newModifiers = newModifiers.filter((item: ts.Node) => {
+      if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
+        item.expression.escapedText.toString() === constantDefine.REQUIRE) {
+        return false;
+      }
+      return true;
+    });
+  }
+  // @ts-ignore
+  member.modifiers = newModifiers;
 }
 
 function hasSomeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): boolean {
@@ -146,13 +164,7 @@ function hasSomeDecorator(decorators: readonly ts.Decorator[], decoratorName: st
   });
 }
 
-function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[]): ts.Modifier[] {
-  let newModifiers: ts.Modifier[] = ts.getModifiers(member) as ts.Modifier[];
-  if (newModifiers) {
-    newModifiers = newModifiers.filter((item) => {
-      return !ts.isDecorator(item);
-    });
-  }
+function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[]): void {
   if (judgeBuilderParamAssignedByBuilder(member)) {
     log.push({
       type: LogType.ERROR,
@@ -160,7 +172,8 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
       pos: member.getStart()
     });
   }
-  return newModifiers;
+  // @ts-ignore
+  member.modifiers = ts.getModifiers(member);
 }
 
 function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructInfo, log: LogInfo[],
