@@ -72,3 +72,6 @@ export const PKG_MODULES_OHPM_HYPIUM: string = 'pkg_modules/.ohpm/@ohos+hypium@1
 export const PKG_MODULES_ENTRY: string = 'pkg_modules@entry';
 export const PKG_MODULES_OHPM_HYPIUM_SHORT: string = 'pkg_modules/@ohos/hypium';
 export const MOCK_CONFIG_PATH: string = "openharmony/mockconfig";
+
+export const OBFUSCATION_RULE_TEMPLATE_PATH: string = `${PROJECT_ROOT}/obfuscation/keepDts/obfuscation-template.txt`;
+export const OBFUSCATION_RULE_PATH: string = `${PROJECT_ROOT}/obfuscation/keepDts/obfuscation.txt`;

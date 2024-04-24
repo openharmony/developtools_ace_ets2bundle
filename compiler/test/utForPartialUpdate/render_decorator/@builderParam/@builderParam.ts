@@ -150,8 +150,8 @@ class CustomContainer extends ViewPU {
             Text.create(this.header);
         }, Text);
         Text.pop();
-        this.content.bind(this)();
-        this.callContent.bind(this)();
+        this.content.bind(this)(this);
+        this.callContent.bind(this)(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.footer);
         }, Text);
@@ -197,7 +197,7 @@ class CustomContainer2 extends ViewPU {
             Text.create(this.header);
         }, Text);
         Text.pop();
-        this.content.bind(this)();
+        this.content.bind(this)(this);
         Column.pop();
     }
     rerender() {
@@ -294,7 +294,7 @@ class CustomContainerUser extends ViewPU {
                                     this.text = "changeHeader";
                                 });
                             }, Column);
-                            specificWithParam.bind(this)("111", "22");
+                            specificWithParam.bind(this)("111", "22", this);
                             Column.pop();
                         }
                     }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 56, col: 7 });
@@ -309,7 +309,7 @@ class CustomContainerUser extends ViewPU {
                                         this.text = "changeHeader";
                                     });
                                 }, Column);
-                                specificWithParam.bind(this)("111", "22");
+                                specificWithParam.bind(this)("111", "22", this);
                                 Column.pop();
                             }
                         };
@@ -365,7 +365,7 @@ class CustomContainerUser extends ViewPU {
                                     this.text = "changeHeader";
                                 });
                             }, Column);
-                            this.callSpecificParam.bind(this)("111", '222');
+                            this.callSpecificParam.bind(this)("111", '222', this);
                             Column.pop();
                         }
                     }, undefined, elmtId, () => { }, { page: "@builderParam.ets", line: 74, col: 9 });
@@ -380,7 +380,7 @@ class CustomContainerUser extends ViewPU {
                                         this.text = "changeHeader";
                                     });
                                 }, Column);
-                                this.callSpecificParam.bind(this)("111", '222');
+                                this.callSpecificParam.bind(this)("111", '222', this);
                                 Column.pop();
                             }
                         };

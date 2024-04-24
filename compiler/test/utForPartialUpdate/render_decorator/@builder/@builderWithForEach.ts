@@ -114,7 +114,7 @@ class Index extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
-        ComB.bind(this)(this.arr);
+        ComB.bind(this)(this.arr, this);
         Column.pop();
     }
     rerender() {
