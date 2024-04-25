@@ -31,17 +31,15 @@ export class SourceMapGenerator {
   private triggerEndSignal: Object;
   private throwArkTsCompilerError: Object;
   private newSourceMaps: Object = {};
-  private static logger: Object;
 
   constructor(rollupObject: Object) {
     this.rollupObject = rollupObject;
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
+    this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.sourceMapPath = this.getSourceMapSavePath();
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
-    this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
-    SourceMapGenerator.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
   }
 
   static initInstance(rollupObject: Object): SourceMapGenerator {
@@ -53,7 +51,7 @@ export class SourceMapGenerator {
 
   static getInstance(): SourceMapGenerator {
     if (!SourceMapGenerator.instance) {
-      SourceMapGenerator.logger.error('ArkTS:INTERNAL ERROR: SourceMapGenerator.instance is not init');
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: SourceMapGenerator.instance is not init');
     }
     return SourceMapGenerator.instance;
   }
@@ -64,21 +62,21 @@ export class SourceMapGenerator {
 
     const moduleInfo: Object = this.rollupObject.getModuleInfo(moduleId);
     if (!moduleInfo) {
-      SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo: ${moduleId}`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo: ${moduleId}`);
     }
     const metaInfo: Object = moduleInfo['meta'];
     if (!metaInfo) {
-      SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta': ${moduleId}`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta': ${moduleId}`);
     }
     const pkgPath = metaInfo['pkgPath'];
     if (!pkgPath) {
-      SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta.pkgPath': ${moduleId}`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta.pkgPath': ${moduleId}`);
     }
     if (!this.projectConfig.entryModuleName) {
-      SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get entryModuleName`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleName`);
     }
     if (!this.projectConfig.entryModuleVersion) {
-      SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
     }
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
 
@@ -109,7 +107,7 @@ export class SourceMapGenerator {
   private getSourceMapSavePath(): string {
     if (this.projectConfig.compileHar) {
       if (!this.projectConfig.sourceMapDir) {
-        SourceMapGenerator.logger.error(`ArkTS:INTERNAL ERROR: Failed to get sourceMapDir`);
+        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get sourceMapDir`);
       }
       return path.join(this.projectConfig.sourceMapDir, SOURCEMAPS);
     } else {

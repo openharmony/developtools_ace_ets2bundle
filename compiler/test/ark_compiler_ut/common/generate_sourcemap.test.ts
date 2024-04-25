@@ -15,7 +15,6 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import sinon from 'sinon';
 import path from 'path';
 
 import {
@@ -29,7 +28,6 @@ import {
   ENTRY_MODULE_NAME_DEFAULT,
   ENTRY_MODULE_VERSION_DEFAULT
 } from '../mock/rollup_mock/common';
-import { version } from 'webpack';
 
 const prefix = `${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}|`;
 let entryPkgInfo = `${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}`;

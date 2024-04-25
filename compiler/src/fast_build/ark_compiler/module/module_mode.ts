@@ -322,7 +322,7 @@ export class ModuleMode extends CommonMode {
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
-    let sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
