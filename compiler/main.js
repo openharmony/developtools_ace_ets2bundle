@@ -117,6 +117,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.useArkoala = false;
   projectConfig.resetBundleName = false;
   projectConfig.integratedHsp = false;
+  projectConfig.useTsHar = false;
 }
 
 function loadEntryObj(projectConfig) {
@@ -198,7 +199,8 @@ function buildManifest(manifest, aceConfigPath) {
     manifest.type = process.env.abilityType;
     if (moduleConfigJson && moduleConfigJson.app && moduleConfigJson.app.minAPIVersion) {
       if (moduleConfigJson.module && moduleConfigJson.module.metadata) {
-        partialUpdateController(moduleConfigJson.app.minAPIVersion, moduleConfigJson.module.metadata);
+        partialUpdateController(moduleConfigJson.app.minAPIVersion, moduleConfigJson.module.metadata,
+          moduleConfigJson.module.type);
         stageOptimization(moduleConfigJson.module.metadata);
       } else {
         partialUpdateController(moduleConfigJson.app.minAPIVersion);
@@ -805,6 +807,9 @@ function loadModuleInfo(projectConfig, envArgs) {
     }
     if (projectConfig.compileHar && buildJsonInfo.moduleName &&
       buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {
+      if (projectConfig.useTshar) {
+        projectConfig.processTs = true;
+      }
       projectConfig.moduleRootPath = buildJsonInfo.modulePathMap[buildJsonInfo.moduleName];
     }
   }
@@ -867,7 +872,7 @@ function getCleanConfig(workerFile) {
   return cleanPath;
 }
 
-function isPartialUpdate(metadata) {
+function isPartialUpdate(metadata, moduleType) {
   if (!Array.isArray(metadata) || !metadata.length) {
     return;
   }
@@ -904,6 +909,9 @@ function isPartialUpdate(metadata) {
       if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
         projectConfig.useArkoala = true;
       }
+      if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
+        projectConfig.useTsHar = true;
+      }
     }
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
       !partialUpdateConfig.executeArkTSLinter && !partialUpdateConfig.standardArkTSLinter &&
@@ -929,7 +937,7 @@ function applicationConfig() {
   }
 }
 
-function partialUpdateController(minAPIVersion, metadata = null) {
+function partialUpdateController(minAPIVersion, metadata = null, moduleType = '') {
   projectConfig.minAPIVersion = minAPIVersion;
   if (minAPIVersion >= 9) {
     partialUpdateConfig.partialUpdateMode = true;
@@ -939,7 +947,7 @@ function partialUpdateController(minAPIVersion, metadata = null) {
     partialUpdateConfig.optimizeComponent = false;
   }
   if (metadata) {
-    isPartialUpdate(metadata);
+    isPartialUpdate(metadata, moduleType);
   }
   if (aceBuildJson.projectRootPath) {
     applicationConfig();

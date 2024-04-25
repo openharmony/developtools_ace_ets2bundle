@@ -177,23 +177,23 @@ export function etsTransform() {
               filePath = mangleFilePath(filePath);
             }
 
-            const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            const cacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
               process.env.cachePath, projectConfig);
-            const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
+            const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
               projectConfig.buildPath, projectConfig, true);
             if (filePath.match(/\.e?ts$/)) {
-              setIncrementalFileInHar(jsCacheFilePath, jsBuildFilePath, allFilesInHar);
+              setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {
-              allFilesInHar.set(jsCacheFilePath, jsBuildFilePath);
+              allFilesInHar.set(cacheFilePath, buildFilePath);
             }
           }
         }
 
-        allFilesInHar.forEach((jsBuildFilePath, jsCacheFilePath) => {
+        allFilesInHar.forEach((buildFilePath, cacheFilePath) => {
           // if the ts or ets file code only contain interface, it doesn't have js file.
-          if (fs.existsSync(jsCacheFilePath)) {
-            const sourceCode: string = fs.readFileSync(jsCacheFilePath, 'utf-8');
-            writeFileSync(jsBuildFilePath, sourceCode);
+          if (fs.existsSync(cacheFilePath)) {
+            const sourceCode: string = fs.readFileSync(cacheFilePath, 'utf-8');
+            writeFileSync(buildFilePath, sourceCode);
           }
         });
       }
@@ -484,14 +484,15 @@ function isDir(filePath: string): boolean {
   }
 }
 
-function setIncrementalFileInHar(jsCacheFilePath: string, jsBuildFilePath: string, allFilesInHar: Map<string, string>): void {
-  if (jsCacheFilePath.match(/\.d.e?ts$/)) {
-    allFilesInHar.set(jsCacheFilePath, jsBuildFilePath);
+function setIncrementalFileInHar(cacheFilePath: string, buildFilePath: string, allFilesInHar: Map<string, string>): void {
+  if (cacheFilePath.match(/\.d.e?ts$/)) {
+    allFilesInHar.set(cacheFilePath, buildFilePath);
     return;
   }
-  allFilesInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
-    jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
-  allFilesInHar.set(jsCacheFilePath.replace(/\.e?ts$/, '.js'), jsBuildFilePath.replace(/\.e?ts$/, '.js'));
+  let extName = projectConfig.useTsHar ? '.ts' : '.js';
+  allFilesInHar.set(cacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
+    buildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
+  allFilesInHar.set(cacheFilePath.replace(/\.e?ts$/, extName), buildFilePath.replace(/\.e?ts$/, extName));
 }
 
 function checkRelateToConstEnum(id: string): boolean {
