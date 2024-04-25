@@ -39,6 +39,8 @@ import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build
 export const kitTransformLog: FileLog = new FileLog();
 
 const KIT_PREFIX = '@kit.';
+const TSNOCHECK = '// @ts-nocheck';
+const KEEPTS = '// @keepTs';
 
 /*
 * This API is the TSC Transformer for transforming `KitImport` into `OhosImport`
@@ -80,8 +82,18 @@ export function processKitImport(id: string): Function {
 
       KitInfo.init(node, context);
 
+      // When compile hap, it is used to determine whether there is a keepTsNode in the file.
+      let hasKeepTs: boolean = false;
+      // When compile ts har, it is used to determine whether tsNoCheckNode was added by ourselves.
+      let isGeneratedTsNoCheckNode: boolean = false;
+
+      let addNodeResult: Object = addNode(node, hasKeepTs, isGeneratedTsNoCheckNode);
+      node = addNodeResult.node;
+      hasKeepTs = addNodeResult.hasKeepTs;
+      isGeneratedTsNoCheckNode = addNodeResult.isGeneratedTsNoCheckNode;
+
       if (projectConfig.processTs === true) {
-        if (ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
+        if (ts.hasTsNoCheckOrTsIgnoreFlag(node) && !isGeneratedTsNoCheckNode && !hasKeepTs) {
           hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(node.fileName));
           // process KitImport transforming
           return ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
@@ -571,6 +583,33 @@ function getKitDefs(kitModuleRequest: string) {
 
 function trimSourceSuffix(source: string): string {
   return source.replace(/\.d.[e]?ts$/, '');
+}
+
+function checkHasKeepTs(node: ts.SourceFile): boolean {
+  const comments = ts.getTrailingCommentRanges(node.getFullText(), 0) || [];
+    if (comments.length === 0) {
+        return false;
+    }
+    const lastComment = comments[comments.length - 1];
+    return node.getFullText().substring(lastComment.pos, lastComment.end).trim() === KEEPTS;
+}
+
+function addNode(node: ts.SourceFile, hasKeepTs: boolean, isGeneratedTsNoCheckNode: boolean): Object{
+  // When compile ts har, add "// @keepTs" and "// @ts-nocheck" to each ets file.
+  if (projectConfig.useTsHar && KitInfo.currentFileType === FileType.ETS) {
+    hasKeepTs = true;
+    isGeneratedTsNoCheckNode = true;
+    const keepTsNode = ts.factory.createIdentifier(KEEPTS);
+    const tsNoCheckNode = ts.factory.createIdentifier(TSNOCHECK);
+    const updatedStatements = ts.factory.createNodeArray([keepTsNode, tsNoCheckNode, ...node.statements]);
+    node = ts.factory.updateSourceFile(node, updatedStatements);
+  }
+
+  // When compile hap, check whether there is "// @keepTs" in the file.
+  if (!projectConfig.complieHar) {
+    hasKeepTs = checkHasKeepTs(node);
+  }
+  return { node, hasKeepTs, isGeneratedTsNoCheckNode }
 }
 
 export function cleanUpKitImportObjects(): void {
