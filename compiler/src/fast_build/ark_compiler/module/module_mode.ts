@@ -311,11 +311,11 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string,
+  private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
     metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
-    const isPackageModules = isPackageModulesFile(filePath, this.projectConfig);
+    const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
-    filePath = this.handleObfuscatedFilePath(filePath, isPackageModules);
+    let filePath = this.handleObfuscatedFilePath(originalFilePath, isPackageModules);
     let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
@@ -348,7 +348,7 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = sourceMapGenerator.genKey(filePath);
+    sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));

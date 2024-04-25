@@ -20,6 +20,7 @@ import { EXTNAME_ETS, EXTNAME_JS, EXTNAME_TS, SOURCEMAPS, SOURCEMAPS_JSON, EXTNA
 import { changeFileExtension, isCommonJsPluginVirtualFile, isCurrentProjectFiles, isDebug, shouldETSOrTSFileTransformToJS } from "./utils";
 import { toUnixPath } from "../../utils";
 import { isFirstBuild } from "./module/module_hotreload_mode";
+import { mangleFilePath } from './common/ob_config_resolver';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -31,6 +32,7 @@ export class SourceMapGenerator {
   private triggerEndSignal: Object;
   private throwArkTsCompilerError: Object;
   private newSourceMaps: Object = {};
+  public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
     this.rollupObject = rollupObject;
@@ -56,7 +58,7 @@ export class SourceMapGenerator {
     return SourceMapGenerator.instance;
   }
 
-  private getPkgInfoByModuleId(moduleId: string): Object {
+  private getPkgInfoByModuleId(moduleId: string, shouldObfuscateFileName: boolean = false): Object {
     //rollup path concat char '\', but sometime param receive '/'
     moduleId = moduleId.replace(/\//g, path.sep);
 
@@ -79,7 +81,10 @@ export class SourceMapGenerator {
       this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
     }
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
-
+    let middlePath = this.getMiddleModuleId(moduleId.replace(pkgPath + path.sep, ''));
+    if (shouldObfuscateFileName) {
+      middlePath = mangleFilePath(middlePath);
+    }
     return {
       entry: {
         name: this.projectConfig.entryModuleName,
@@ -89,13 +94,13 @@ export class SourceMapGenerator {
         name: dependencyPkgInfo['pkgName'],
         version: dependencyPkgInfo['pkgVersion']
       } : undefined,
-      modulePath: toUnixPath(this.getMiddleModuleId(moduleId.replace(pkgPath + path.sep, '')))
+      modulePath: toUnixPath(middlePath)
     };
   }
 
   //generate sourcemap key, notice: moduleId is absolute path
-  public genKey(moduleId: string): string {
-    const pkgInfo = this.getPkgInfoByModuleId(moduleId);
+  public genKey(moduleId: string, shouldObfuscateFileName: boolean = false): string {
+    const pkgInfo = this.getPkgInfoByModuleId(moduleId, shouldObfuscateFileName);
     if (pkgInfo.dependency) {
       return `${pkgInfo.entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
     } else {
@@ -180,6 +185,10 @@ export class SourceMapGenerator {
       Object.keys(this.newSourceMaps).forEach(key => {
         cacheSourceMapObject[key] = this.newSourceMaps[key];
       });
+      // update the key for filename obfuscation
+      for (let [key, newKey] of this.sourceMapKeyMappingForObf) {
+        this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
+      }
     }
     return cacheSourceMapObject;
   }
@@ -262,5 +271,14 @@ export class SourceMapGenerator {
       this.instance.newSourceMaps = undefined;
       this.instance = undefined;
     }
+  }
+
+  private updateSourceMapKeyWithObf(specifySourceMap: Object, key: string, newKey: string): void {
+    specifySourceMap[newKey] = specifySourceMap[key];
+    delete specifySourceMap[key];
+  }
+
+  public saveKeyMappingForObfFileName(cachePath: string, obfFilePath: string): void {
+    this.sourceMapKeyMappingForObf.set(this.genKey(cachePath), this.genKey(obfFilePath, true));
   }
 }
