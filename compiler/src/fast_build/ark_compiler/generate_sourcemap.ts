@@ -185,10 +185,10 @@ export class SourceMapGenerator {
       Object.keys(this.newSourceMaps).forEach(key => {
         cacheSourceMapObject[key] = this.newSourceMaps[key];
       });
-      // update the key for filename obfuscation
-      for (let [key, newKey] of this.sourceMapKeyMappingForObf) {
-        this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
-      }
+    }
+    // update the key for filename obfuscation
+    for (let [key, newKey] of this.sourceMapKeyMappingForObf) {
+      this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
     }
     return cacheSourceMapObject;
   }
@@ -278,7 +278,7 @@ export class SourceMapGenerator {
     delete specifySourceMap[key];
   }
 
-  public saveKeyMappingForObfFileName(cachePath: string, obfFilePath: string): void {
-    this.sourceMapKeyMappingForObf.set(this.genKey(cachePath), this.genKey(obfFilePath, true));
+  public saveKeyMappingForObfFileName(originalFilePath: string): void {
+    this.sourceMapKeyMappingForObf.set(this.genKey(originalFilePath), this.genKey(originalFilePath, true));
   }
 }
