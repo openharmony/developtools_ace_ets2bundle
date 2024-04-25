@@ -522,10 +522,15 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     nameCacheObj[relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
-  tryMangleFileNameAndWriteFile(filePath, mixedInfo.content, projectConfig, originalFilePath);
+  const newFilePath: string =  tryMangleFileName(filePath, projectConfig, originalFilePath);
+  if (newFilePath !== filePath) {
+    sourceMapGenerator.saveKeyMappingForObfFileName(filePath, newFilePath);
+  }
+  mkdirsSync(path.dirname(filePath));
+  fs.writeFileSync(filePath, content ?? '');
 }
 
-export function tryMangleFileNameAndWriteFile(filePath: string, content: string, projectConfig: Object, originalFilePath: string): void {
+export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string): string {
   originalFilePath = toUnixPath(originalFilePath);
   let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
@@ -545,9 +550,7 @@ export function tryMangleFileNameAndWriteFile(filePath: string, content: string,
   } else if (!(/\.d\.e?ts$/).test(filePath)) {
     genFileInHar.sourceCachePath = filePath;
   }
-
-  mkdirsSync(path.dirname(filePath));
-  fs.writeFileSync(filePath, content ?? '');
+  return filePath;
 }
 
 export async function mangleDeclarationFileName(logger: Object, projectConfig: Object): Promise<void> {
