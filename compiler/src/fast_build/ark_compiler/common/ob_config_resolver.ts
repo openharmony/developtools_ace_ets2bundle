@@ -676,16 +676,24 @@ export function generateConsumerObConfigFile(obfuscationOptions: any, logger: an
 /**
  * Collect reserved file name configured in oh-package.json5 and module.json5.
  * @param ohPackagePath The 'main' and 'types' fileds in oh-package.json5 need to be reserved.
- * @param moduleJsonPath The 'srcEntry' filed in module.json5 needs to be reserved.
+ * @param projectConfig Several paths or file contents in projectconfig need to be reserved.
+ *   1: module.json's 'srcEntry' field
+ *   2: projectPath: /library/src/main/ets
+ *   3: cachePath: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release
+ *      target reserved path: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release/src/main/ets
+ *   4: aceModuleBuild/etsFortgz directory: /library/build/default/intermediates/loader_out/etsFortgz
+ *      If compile the hsp module, the declaration file will be written to the 'aceModuleBuild/etsFortgz' directory.
+ * @param modulePathMap packageName of local har package should be reserved as it is a fixed part of ohmUrl.
+ *   example: modulePathMap: { packageName: path }
  * @returns reservedFileNames
  */
-export function collectResevedFileNameInIDEConfig(ohPackagePath: string, moduleJsonPath: string,
-                projectPath: string, cachePath: string, modulePathMap: Object | undefined): string[] {
+export function collectResevedFileNameInIDEConfig(ohPackagePath: string, projectConfig: Object, modulePathMap: Object | undefined): string[] {
   const reservedFileNames: string[] = [];
+  const moduleJsonPath: string = projectConfig.aceModuleJsonPath;
+  const projectPath: string = projectConfig.projectPath;
+  const cachePath: string = projectConfig.cachePath;
 
   if (modulePathMap) {
-    //  modulePathMap: { packageName: path }
-    //  packageName of local har package should be reserved as it is a fixed part of ohmUrl.
     for (const key of Object.keys(modulePathMap)) {
       reservedFileNames.push(key);
     }
@@ -701,11 +709,11 @@ export function collectResevedFileNameInIDEConfig(ohPackagePath: string, moduleJ
     moduleJsonContent.module?.srcEntry && reservedFileNames.push(moduleJsonContent.module?.srcEntry);
   }
 
-  /* Get the reserved file name
-   * projectPath: /library/src/main/ets 
-   * cachePath: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release
-   * target reserved path: /library/build/default/cache/default/default@HarCompileArkTs/esmodules/release/src/main/ets
-   */
+  if (projectConfig.compileShared) {
+    reservedFileNames.push(projectConfig.aceModuleBuild);
+    reservedFileNames.push('etsFortgz');
+  }
+
   reservedFileNames.push(projectPath);
   reservedFileNames.push(cachePath);
   return reservedFileNames;
