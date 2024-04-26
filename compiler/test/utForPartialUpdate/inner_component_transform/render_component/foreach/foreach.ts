@@ -102,6 +102,25 @@ struct ParentView5 {
     }
   }
 }
+
+@Component
+struct ParentView6 {
+  @State arr: string[] = ['1', '2', '3'];
+  count: number = 0;
+  build() {
+    List() {
+      ForEach(this.arr,
+        item => {
+          Text(item)
+        },
+        item => item.toString()
+      )
+      .onMove((from: number, to: number)=>{
+        this.count += 1;
+      })
+    }
+  }
+}
 `
 exports.expectResult =
 `"use strict";
@@ -410,6 +429,66 @@ class ParentView5 extends ViewPU {
         }, List);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             ForEach.create();
+            const forEachItemGenFunction = _item => {
+                const item = _item;
+                this.observeComponentCreation2((elmtId, isInitialRender) => {
+                    Text.create(item);
+                }, Text);
+                Text.pop();
+            };
+            this.forEachUpdateFunction(elmtId, this.arr, forEachItemGenFunction, item => item.toString(), false, false);
+        }, ForEach);
+        ForEach.pop();
+        List.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+}
+class ParentView6 extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.__arr = new ObservedPropertyObjectPU(['1', '2', '3'], this, "arr");
+        this.count = 0;
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.arr !== undefined) {
+            this.arr = params.arr;
+        }
+        if (params.count !== undefined) {
+            this.count = params.count;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__arr.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__arr.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get arr() {
+        return this.__arr.get();
+    }
+    set arr(newValue) {
+        this.__arr.set(newValue);
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            List.create();
+        }, List);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            ForEach.create();
+            ForEach.onMove((from, to) => {
+                this.count += 1;
+            });
             const forEachItemGenFunction = _item => {
                 const item = _item;
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
