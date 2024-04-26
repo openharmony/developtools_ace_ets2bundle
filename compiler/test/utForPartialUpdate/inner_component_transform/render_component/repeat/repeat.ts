@@ -43,10 +43,13 @@ struct HomeComponent {
 @Component
 struct ChildComponent {
   @State arr: ClassA[] = [new ClassA('0'), new ClassA('1'), new ClassA('2')]
-
+  count: number = 0;
   build() {
     Column() {
       Repeat<ClassA>(this.arr)
+        .onMove((from: number, to: number)=>{
+          this.count += 1;
+        })
         .each((obj: RepeatItem<ClassA>) => {
           Text(obj.item.message)
         })
@@ -136,12 +139,16 @@ class ChildComponent extends ViewPU {
             this.paramsGenerator_ = paramsLambda;
         }
         this.__arr = new ObservedPropertyObjectPU([new ClassA('0'), new ClassA('1'), new ClassA('2')], this, "arr");
+        this.count = 0;
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
         if (params.arr !== undefined) {
             this.arr = params.arr;
+        }
+        if (params.count !== undefined) {
+            this.count = params.count;
         }
     }
     updateStateVars(params) {
@@ -166,7 +173,10 @@ class ChildComponent extends ViewPU {
             Column.height(500);
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Repeat(this.arr, this).each((obj) => {
+            Repeat(this.arr, this).onMove((from, to) => {
+                this.count += 1;
+            })
+                .each((obj) => {
                 this.observeComponentCreation2((elmtId, isInitialRender) => {
                     Text.create(obj.item.message);
                 }, Text);

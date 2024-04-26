@@ -116,6 +116,7 @@
         "ColorPickerDialog",
         "Column",
         "ColumnSplit",
+        "ContentSlot",
         "Counter",
         "DataPanel",
         "DatePicker",
