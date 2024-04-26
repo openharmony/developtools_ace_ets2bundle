@@ -203,6 +203,7 @@
         "Video",
         "Web",
         "WindowScene",
+        "WithTheme",
         "XComponent",
         "GridRow",
         "GridCol",
