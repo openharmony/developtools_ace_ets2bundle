@@ -320,7 +320,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], '', true, ts.DiagnosticCategory.Warning,
+    // TODO: the third param is to be opened
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], '', false, ts.DiagnosticCategory.Warning,
       CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
