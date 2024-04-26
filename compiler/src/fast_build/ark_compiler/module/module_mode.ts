@@ -649,7 +649,8 @@ export class ModuleMode extends CommonMode {
 
   private mergeProtoToAbc() {
     mkdirsSync(this.projectConfig.aceModuleBuild);
-    const cmd: string = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
+    const cmd: string = `"${this.arkConfig.mergeAbcPath}" --input "@${this.protoFilePath}" --outputFilePath "${
+      this.projectConfig.aceModuleBuild}" --output ${MODULES_ABC} --suffix protoBin`;
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
@@ -689,7 +690,8 @@ export class ModuleMode extends CommonMode {
       return;
     }
     mkdirsSync(path.dirname(this.npmEntriesProtoFilePath));
-    const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
+    const cmd: string = `"${this.arkConfig.js2abcPath}" --compile-npm-entries "${
+      this.npmEntriesInfoPath}" "${this.npmEntriesProtoFilePath}"`;
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {

@@ -32,8 +32,9 @@ export function genAbc() {
     buildStart() {
       this.share.arkProjectConfig = initArkProjectConfig(this.share);
       checkArkCompilerCacheInfo(this);
-      //init SourceMapGenerator
-      SourceMapGenerator.initInstance(this);
+      //Because calling the method of SourceMapGenerator may not retrieve the rollupObject
+      //it is necessary to assign the rollupObject to SourceMapGenerator in the early stages of build
+      SourceMapGenerator.init(this);
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,

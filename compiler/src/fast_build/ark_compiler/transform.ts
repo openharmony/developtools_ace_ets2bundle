@@ -70,8 +70,6 @@ export function transformForModule(code: string, id: string) {
 }
 
 function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, parentEvent: Object): void {
-  const sourceMapGenerator = SourceMapGenerator.getInstance();
-
   if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     return;
@@ -82,6 +80,7 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectCon
   sourcemap['sources'] = [relativeSourceFilePath];
   sourcemap['file'] = path.basename(relativeSourceFilePath);
   sourcemap.sourcesContent && delete sourcemap.sourcesContent;
+  const sourceMapGenerator = SourceMapGenerator.getInstance();
   sourceMapGenerator.fillSourceMapPackageInfo(sourceFilePath, sourcemap);
   sourceMapGenerator.updateSourceMap(sourceFilePath, sourcemap)
   stopEvent(eventAddSourceMapInfo);

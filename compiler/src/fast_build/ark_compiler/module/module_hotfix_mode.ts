@@ -18,6 +18,7 @@ import path from 'path';
 import { ModuleMode } from './module_mode';
 import { PATCH_SYMBOL_TABLE } from '../common/ark_define';
 import { getEs2abcFileThreadNumber } from '../utils';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
 export class ModuleHotfixMode extends ModuleMode {
   patch: boolean;
@@ -36,6 +37,7 @@ export class ModuleHotfixMode extends ModuleMode {
     this.inOldSymbolTablePath = this.projectConfig.inOldSymbolTablePath || this.projectConfig.projectRootPath;
     this.enableMap = this.projectConfig.enableMap || false;
     this.prepareForCompilation(rollupObject, parentEvent);
+    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
 
     this.generateEs2AbcCmdForHotfix();
     this.generateMergedAbcOfEs2Abc(parentEvent);
