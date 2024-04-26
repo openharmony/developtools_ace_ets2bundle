@@ -16,14 +16,28 @@
 import path from 'path';
 import fs from 'fs';
 import { createAndStartEvent, stopEvent } from "../../ark_utils";
-import { EXTNAME_ETS, EXTNAME_JS, EXTNAME_TS, SOURCEMAPS, SOURCEMAPS_JSON, EXTNAME_MJS, EXTNAME_CJS, GEN_ABC_PLUGIN_NAME } from "./common/ark_define";
-import { changeFileExtension, isCommonJsPluginVirtualFile, isCurrentProjectFiles, isDebug, shouldETSOrTSFileTransformToJS } from "./utils";
+import {
+  EXTNAME_ETS,
+  EXTNAME_JS,
+  EXTNAME_TS,
+  SOURCEMAPS,
+  SOURCEMAPS_JSON,
+  EXTNAME_MJS,
+  EXTNAME_CJS
+} from "./common/ark_define";
+import {
+  changeFileExtension,
+  isCommonJsPluginVirtualFile,
+  isCurrentProjectFiles,
+  isDebug,
+  shouldETSOrTSFileTransformToJS
+} from "./utils";
 import { toUnixPath } from "../../utils";
-import { isFirstBuild } from "./module/module_hotreload_mode";
 import { mangleFilePath } from './common/ob_config_resolver';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
+  private static rollupObject: Object;
   private rollupObject: Object;
   private projectConfig: Object;
   private sourceMapPath: string;
@@ -32,6 +46,7 @@ export class SourceMapGenerator {
   private triggerEndSignal: Object;
   private throwArkTsCompilerError: Object;
   private newSourceMaps: Object = {};
+  public keyCache: Map<string, string> = new Map();
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
@@ -44,44 +59,54 @@ export class SourceMapGenerator {
     this.triggerEndSignal = rollupObject.signal;
   }
 
-  static initInstance(rollupObject: Object): SourceMapGenerator {
-    if (!SourceMapGenerator.instance) {
-      SourceMapGenerator.instance = new SourceMapGenerator(rollupObject);
+  static init(rollupObject: Object): void {
+    SourceMapGenerator.rollupObject = rollupObject;
+    SourceMapGenerator.instance = new SourceMapGenerator(SourceMapGenerator.rollupObject);
+
+    //entryModuleName's data is packageName
+    if (!SourceMapGenerator.instance.projectConfig.entryModuleName) {
+      SourceMapGenerator.instance.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleName`);
     }
-    return SourceMapGenerator.instance;
+    if (!SourceMapGenerator.instance.projectConfig.entryModuleVersion) {
+      SourceMapGenerator.instance.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
+    }
   }
 
   static getInstance(): SourceMapGenerator {
     if (!SourceMapGenerator.instance) {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: SourceMapGenerator.instance is not init');
+      SourceMapGenerator.instance = new SourceMapGenerator(SourceMapGenerator.rollupObject);
     }
     return SourceMapGenerator.instance;
   }
 
+  //In window plateform, if receive path join by '/', should transform '/' to '\'
+  private getAdaptedModuleId(moduleId: string): string {
+    return moduleId.replace(/\//g, path.sep);
+  }
+
   private getPkgInfoByModuleId(moduleId: string, shouldObfuscateFileName: boolean = false): Object {
-    //rollup path concat char '\', but sometime param receive '/'
-    moduleId = moduleId.replace(/\//g, path.sep);
+    moduleId = this.getAdaptedModuleId(moduleId);
 
     const moduleInfo: Object = this.rollupObject.getModuleInfo(moduleId);
     if (!moduleInfo) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo: ${moduleId}`);
+      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo,\n` +
+        `moduleId: ${moduleId}`);
     }
     const metaInfo: Object = moduleInfo['meta'];
     if (!metaInfo) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta': ${moduleId}`);
+      this.throwArkTsCompilerError(
+        `ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta',\n` +
+        `moduleId: ${moduleId}`);
     }
     const pkgPath = metaInfo['pkgPath'];
     if (!pkgPath) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta.pkgPath': ${moduleId}`);
+      this.throwArkTsCompilerError(
+        `ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta.pkgPath',\n` +
+        `moduleId: ${moduleId}`);
     }
-    if (!this.projectConfig.entryModuleName) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleName`);
-    }
-    if (!this.projectConfig.entryModuleVersion) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
-    }
+
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
-    let middlePath = this.getMiddleModuleId(moduleId.replace(pkgPath + path.sep, ''));
+    let middlePath = this.getIntermediateModuleId(moduleId.replace(pkgPath + path.sep, ''));
     if (shouldObfuscateFileName) {
       middlePath = mangleFilePath(middlePath);
     }
@@ -100,15 +125,22 @@ export class SourceMapGenerator {
 
   //generate sourcemap key, notice: moduleId is absolute path
   public genKey(moduleId: string, shouldObfuscateFileName: boolean = false): string {
+    moduleId = this.getAdaptedModuleId(moduleId);
+
+    let key: string = this.keyCache.get(moduleId);
+    if (key) {
+      return key;
+    }
     const pkgInfo = this.getPkgInfoByModuleId(moduleId, shouldObfuscateFileName);
     if (pkgInfo.dependency) {
-      return `${pkgInfo.entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
+      key = `${pkgInfo.entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
     } else {
-      return `${pkgInfo.entry.name}|${pkgInfo.entry.name}|${pkgInfo.entry.version}|${pkgInfo.modulePath}`;
+      key = `${pkgInfo.entry.name}|${pkgInfo.entry.name}|${pkgInfo.entry.version}|${pkgInfo.modulePath}`;
     }
+    this.keyCache.set(moduleId, key);
+    return key;
   }
 
-  //if mode is har retrun ide provide, else get default
   private getSourceMapSavePath(): string {
     if (this.projectConfig.compileHar) {
       if (!this.projectConfig.sourceMapDir) {
@@ -120,15 +152,7 @@ export class SourceMapGenerator {
     }
   }
 
-  //build sourcemap object
   public buildModuleSourceMapInfo(parentEvent: Object): void {
-    //mode hotReload have a special judge
-    let isNotFirstHotreload = (this.projectConfig.watchMode === 'true')
-      && (this.projectConfig.hotReload) && (!isFirstBuild)
-    if (isNotFirstHotreload) {
-      return;
-    }
-
     if (this.projectConfig.widgetCompile) {
       return;
     }
@@ -222,21 +246,15 @@ export class SourceMapGenerator {
     specifySourceMap[this.genKey(moduleId)] = itemMap;
   }
 
-  public fillSourceMapPackageInfo(moduleId: string, map: Object) {
-    this.fillSpecifySourceMapPackageInfo(moduleId, map);
-  }
-
-  //fill specify sourcemap package info, allow receive param sourcemap
-  public fillSpecifySourceMapPackageInfo(moduleId: string, itemMap: Object) {
-    //fill package info
+  public fillSourceMapPackageInfo(moduleId: string, sourcemap: Object) {
     const pkgInfo = this.getPkgInfoByModuleId(moduleId);
-    itemMap['entry-package-info'] = `${pkgInfo.entry.name}|${pkgInfo.entry.version}`;
+    sourcemap['entry-package-info'] = `${pkgInfo.entry.name}|${pkgInfo.entry.version}`;
     if (pkgInfo.dependency) {
-      itemMap['package-info'] = `${pkgInfo.dependency.name}|${pkgInfo.dependency.version}`;
+      sourcemap['package-info'] = `${pkgInfo.dependency.name}|${pkgInfo.dependency.version}`;
     }
   }
 
-  private getMiddleModuleId(moduleId: string): string {
+  private getIntermediateModuleId(moduleId: string): string {
     let extName: string = "";
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
@@ -268,6 +286,7 @@ export class SourceMapGenerator {
 
   public static cleanSourceMapObject(): void {
     if (this.instance) {
+      this.instance.keyCache.clear();
       this.instance.newSourceMaps = undefined;
       this.instance = undefined;
     }
@@ -280,5 +299,13 @@ export class SourceMapGenerator {
 
   public saveKeyMappingForObfFileName(originalFilePath: string): void {
     this.sourceMapKeyMappingForObf.set(this.genKey(originalFilePath), this.genKey(originalFilePath, true));
+  }
+
+  //use by UT
+  static initInstance(rollupObject: Object): SourceMapGenerator {
+    if (!SourceMapGenerator.instance) {
+      SourceMapGenerator.init(rollupObject);
+    }
+    return SourceMapGenerator.getInstance();
   }
 }

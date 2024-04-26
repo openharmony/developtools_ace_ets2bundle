@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -68,7 +68,7 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(pkgInfo && pkgInfo.entry && pkgInfo.modulePath && pkgInfo.entry.name && pkgInfo.entry.version !== '' && pkgInfo.entry.version != undefined).to.be.true;
   });
 
-  mocha.it('1-4: test getPkgInfoByModuleId under reload', function () {
+  mocha.it('1-4: test getPkgInfoByModuleId under hotReload', function () {
     this.rollup.hotReload();
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
@@ -107,7 +107,7 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(genKey === expectKey).to.be.true;
   });
 
-  mocha.it('2-4: test genKey under reload', function () {
+  mocha.it('2-4: test genKey under hotReload', function () {
     this.rollup.hotReload();
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
@@ -147,7 +147,7 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(sourceMapData === sourceMapDataGet).to.be.true;
   });
 
-  mocha.it('3-4: test updateSourceMap under reload', function () {
+  mocha.it('3-4: test updateSourceMap under hotReload', function () {
     this.rollup.hotReload();
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
@@ -187,7 +187,7 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(sourceMapData['entry-package-info'] && sourceMapData['entry-package-info'] === entryPkgInfo).to.be.true;
   });
 
-  mocha.it('4-4: test fillSourceMapPackageInfo under reload', function () {
+  mocha.it('4-4: test fillSourceMapPackageInfo under hotReload', function () {
     this.rollup.hotReload();
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
 

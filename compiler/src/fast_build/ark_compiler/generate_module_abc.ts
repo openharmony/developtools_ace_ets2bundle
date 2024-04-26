@@ -38,10 +38,8 @@ export async function generateModuleAbc(error) {
   }
   if (this.share.projectConfig.compileMode === ESMODULE) {
     await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
-    //build sourcemap
-    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(hookEventFactory);
-
     if (this.share.projectConfig.compileHar) {
+      SourceMapGenerator.getInstance().buildModuleSourceMapInfo(hookEventFactory);
       // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
       return;
     }

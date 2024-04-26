@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,7 @@ import {
 } from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
 
-export let isFirstBuild: boolean = true;
+let isFirstBuild: boolean = true;
 
 export class ModuleHotreloadMode extends ModuleMode {
   symbolMapFilePath: string;
@@ -73,12 +73,14 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
+    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent);
   }
 
   private compileChangeListFiles(rollupObject: Object, parentEvent: Object): void {
     if (!fs.existsSync(this.projectConfig.changedFileList)) {
-      this.logger.debug(blue, `ArkTS: Cannot find file: ${this.projectConfig.changedFileList}, skip hot reload build`, reset);
+      this.logger.debug(blue, `ArkTS: Cannot find file: ${
+        this.projectConfig.changedFileList}, skip hot reload build`, reset);
       return;
     }
 
@@ -123,8 +125,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     let hotReloadSourceMap: Object = {};
     for (const file of fileList) {
       validateFilePathLength(file, this.logger);
-      sourceMapGenerator.fillSourceMapPackageInfo(file, sourceMapGenerator.getSourceMap(file));
-      sourceMapGenerator.updateSpecifySourceMap(hotReloadSourceMap, file, sourceMapGenerator.getSourceMap(file))
+      hotReloadSourceMap[sourceMapGenerator.genKey(file)] = sourceMapGenerator.getSourceMap(file);
     }
     const sourceMapFilePath: string = path.join(this.projectConfig.patchAbcPath, SOURCEMAPS);
     validateFilePathLength(sourceMapFilePath, this.logger);
