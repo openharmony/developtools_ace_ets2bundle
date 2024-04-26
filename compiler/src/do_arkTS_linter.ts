@@ -63,6 +63,10 @@ export interface ArkTSProgram {
 
 export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
 
+function getArkTSVersionString(arkTSVersion: ArkTSVersion): string {
+  return arkTSVersion === ArkTSVersion.ArkTS_1_0 ? 'ArkTS_1_0' : 'ArkTS_1_1';
+}
+
 export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinterMode,
   builderProgram: ArkTSProgram, reverseStrictProgram: ArkTSProgram,
   printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true,
@@ -75,10 +79,10 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
 
   if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
     diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, reverseStrictProgram,
-      /*srcFile*/ undefined, buildInfoWriteFile);
+      /*srcFile*/ undefined, buildInfoWriteFile, getArkTSVersionString(arkTSVersion));
   } else {
     diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, reverseStrictProgram,
-      /*srcFile*/ undefined, buildInfoWriteFile);
+      /*srcFile*/ undefined, buildInfoWriteFile, getArkTSVersionString(arkTSVersion));
   }
 
   removeOutputFile();
