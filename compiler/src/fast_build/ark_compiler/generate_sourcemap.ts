@@ -32,8 +32,14 @@ import {
   isDebug,
   shouldETSOrTSFileTransformToJS
 } from "./utils";
-import { toUnixPath } from "../../utils";
-import { mangleFilePath } from './common/ob_config_resolver';
+import { 
+  toUnixPath,
+  isPackageModulesFile
+} from "../../utils";
+import { 
+  mangleFilePath,
+  shouldObfuscateFileName
+} from './common/ob_config_resolver';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -193,7 +199,12 @@ export class SourceMapGenerator {
         if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
           continue;
         }
-        compileFileList.add(this.genKey(moduleId));
+        const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
+        if (shouldObfuscateFileName(isPackageModules, this.projectConfig)){
+          compileFileList.add(this.genKey(moduleId, true));
+        } else {
+          compileFileList.add(this.genKey(moduleId));
+        }
       }
 
       Object.keys(cacheSourceMapObject).forEach(key => {

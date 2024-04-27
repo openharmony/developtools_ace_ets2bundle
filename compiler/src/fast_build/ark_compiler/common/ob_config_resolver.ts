@@ -30,6 +30,7 @@ import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { isWindows, toUnixPath } from '../../../utils';
 import { allSourceFilePaths } from '../../../ets_checker';
 import { yellow } from './ark_define';
+import { isDebug } from '../utils';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -815,4 +816,42 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
     }
   }
   return keepFilesAndDependencies;
+}
+
+export function handleObfuscatedFilePath(filePath: string, isPackageModules: boolean, projectConfig: Object): string {
+  const isDebugMode = isDebug(projectConfig);
+  const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
+  if (isDebugMode || !hasObfuscationConfig) {
+    return filePath;
+  }
+  const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
+  const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
+  if (disableObfuscation || !enableFileNameObfuscation) {
+    return filePath;
+  }
+  // Do not obfuscate the file path in dir oh_modules.
+  if (!isPackageModules) {
+    return mangleFilePath(filePath);
+  }
+  // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
+  return toUnixPath(filePath);
+}
+
+export function shouldObfuscateFileName(isPackageModules: boolean, projectConfig: Object): boolean {
+  const isDebugMode = isDebug(projectConfig);
+  const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
+  if (isDebugMode || !hasObfuscationConfig) {
+    return false;
+  }
+  const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
+  const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
+  if (disableObfuscation || !enableFileNameObfuscation) {
+    return false;
+  }
+  // Do not obfuscate the file path in dir oh_modules.
+  if (!isPackageModules) {
+    return true;
+  }
+  // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
+  return false;
 }
