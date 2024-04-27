@@ -857,6 +857,13 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
   stateInitialization.set(name, componentSet.stateInit);
   provideInitialization.set(name, componentSet.provideInit);
   privateCollection.set(name, componentSet.privateCollection);
+  if (asComponentName) {
+    processStructComponentV2.getOrCreateStructInfo(asComponentName).updatePropsDecoratorsV1.push(
+      ...componentSet.states, ...componentSet.props, ...componentSet.links,
+      ...componentSet.provides, ...componentSet.objectLinks
+    );
+    return;
+  }
   processStructComponentV2.getOrCreateStructInfo(name).updatePropsDecoratorsV1.push(
     ...componentSet.states, ...componentSet.props, ...componentSet.links,
     ...componentSet.provides, ...componentSet.objectLinks
@@ -865,7 +872,9 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string): void {
-  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
+  const structInfo: StructInfo = asComponentName ?
+    processStructComponentV2.getOrCreateStructInfo(asComponentName) :
+    processStructComponentV2.getOrCreateStructInfo(name);
   if (isComponentV2(originNode)) {
     parseComponentV2InImportNode(originNode, name, originFile, structInfo);
     return;

@@ -115,6 +115,7 @@ import {
 } from './process_component_class';
 import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './process_struct_componentV2';
 import constantDefine from './constant_define';
+import createAstNodeUtils from './create_ast_node_utils';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -320,20 +321,21 @@ function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]
 }
 
 function parseChildProperties(childName: string, node: ts.CallExpression,
-  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[]) {
-  const childStructInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(childName);
+  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[]): void {
+  const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(node) ||
+    processStructComponentV2.getOrCreateStructInfo(childName);
   const paramDecoratorMap: Map<string, ParamDecoratorInfo> = childStructInfo.paramDecoratorMap;
   const updatePropsDecoratorsV2: string[] = [...childStructInfo.eventDecoratorSet, ...paramDecoratorMap.keys()];
   const parentStructInfo: StructInfo =
     processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
-  const childProps: string[] = [];
+  const forbiddenInitPropsV2: string[] = [...childStructInfo.localDecoratorSet,
+    ...childStructInfo.providerDecoratorSet, ...childStructInfo.consumerDecoratorSet];
   if (node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
       if (ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
-        childProps.push(itemName);
         validateChildProperty(item, itemName, childStructInfo, parentStructInfo, paramDecoratorMap,
-          childParam, updatePropsDecoratorsV2, propsAndObjectLinks, log, childName);
+          childParam, updatePropsDecoratorsV2, propsAndObjectLinks, log, childName, forbiddenInitPropsV2);
       }
     });
   }
@@ -341,9 +343,10 @@ function parseChildProperties(childName: string, node: ts.CallExpression,
 
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string, childStructInfo: StructInfo,
   parentStructInfo: StructInfo, paramDecoratorMap: Map<string, ParamDecoratorInfo>, childParam: ts.PropertyAssignment[],
-  updatePropsDecoratorsV2: string[], propsAndObjectLinks: string[], log: LogInfo[], childName: string): void {
+  updatePropsDecoratorsV2: string[], propsAndObjectLinks: string[], log: LogInfo[], childName: string,
+  forbiddenInitPropsV2: string[]): void {
   if (childStructInfo.isComponentV2) {
-    if (childStructInfo.localDecoratorSet.has(itemName)) {
+    if (forbiddenInitPropsV2.includes(itemName)) {
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the custom component '${childName}'` +
@@ -358,7 +361,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
     if (parentStructInfo.isComponentV1 && updatePropsDecoratorsV2.includes(itemName)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the @ComponentV2 component are not allowed to be assigned values here.`,
+        message: `Property '${itemName}' in the @ComponentV2 component '${childName}' are not allowed to be assigned values here.`,
         pos: item.getStart()
       });
     }
@@ -369,7 +372,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
     if (parentStructInfo.isComponentV2 && childStructInfo.updatePropsDecoratorsV1.includes(itemName)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${item}' in the @ComponentV1 component are not allowed to be assigned values here.`,
+        message: `Property '${itemName}' in the @Component component '${childName}' are not allowed to be assigned values here.`,
         pos: item.getStart()
       });
     }
@@ -378,7 +381,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
 
 function validateInitParam(childName: string, curChildProps: Set<string>,
   node: ts.CallExpression, log: LogInfo[]): void {
-  const childStructInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(childName);
+  const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(node) ||
+    processStructComponentV2.getOrCreateStructInfo(childName);
   const paramDecoratorMap: Map<string, ParamDecoratorInfo> = childStructInfo.paramDecoratorMap;
   if (childStructInfo.isComponentV2) {
     const needInitParam: string[] = [];
@@ -419,7 +423,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   const arrowBolck: ts.Statement[] = [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-      isBuilder, isRecycleComponent, componentAttrInfo)
+      isBuilder, isRecycleComponent, componentAttrInfo, log)
   ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
@@ -552,13 +556,13 @@ function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boole
 
 function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
   componentParameter: ts.ObjectLiteralExpression, name: string, isGlobalBuilder: boolean, isBuilder: boolean,
-  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo): ts.IfStatement {
+  isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[]): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
-      [ componentParamDetachment(newNode, isRecycleComponent),
+      [componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
         isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
-          createNewComponent(COMPONENT_CALL, name),
+          createNewComponent(COMPONENT_CALL, name, componentNode),
         assignComponentParams(componentNode, isBuilder),
         assignmentFunction(COMPONENT_CALL)
       ], true),
@@ -583,7 +587,100 @@ export function assignmentFunction(componeParamName: string): ts.ExpressionState
   ))
 }
 
-function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent: boolean): ts.VariableStatement {
+function traverseChildComponentArgs(childParam: ts.Expression[], name: string, log: LogInfo[],
+  componentNode: ts.CallExpression): void {
+  const objectLiteralIndex: number = 2;
+  if (childParam.length > objectLiteralIndex && ts.isObjectLiteralExpression(childParam[1]) &&
+    childParam[1].properties) {
+    childParam[1].properties.forEach((item: ts.PropertyAssignment) => {
+      if (item.name && ts.isIdentifier(item.name)) {
+        const itemName: string = item.name.escapedText.toString();
+        updatePropertyAssignment(childParam[1].properties, itemName, item, name, log, componentNode);
+      }
+    });
+  }
+}
+
+function updatePropertyAssignment(childParam: ts.PropertyAssignment[], itemName: string,
+  item: ts.PropertyAssignment, childName: string, log: LogInfo[], componentNode: ts.CallExpression): void {
+  if (isDoubleNonNullExpression(item.initializer)) {
+    if (isLeftHandExpression(item.initializer.expression.expression)) {
+      const result: Record<string, boolean> = { hasQuestionToken: false };
+      traverseExpressionNode(item.initializer.expression.expression, result);
+      if (result.hasQuestionToken) {
+        log.push({
+          type: LogType.ERROR,
+          message: `The optional character can not be used in the initial value of property '${itemName}'.`,
+          pos: item.getStart()
+        });
+        return;
+      }
+      const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(componentNode) ||
+        processStructComponentV2.getOrCreateStructInfo(childName);
+      if (childStructInfo.isComponentV2 && childStructInfo.paramDecoratorMap.has(itemName) &&
+        childStructInfo.eventDecoratorSet.has('$' + itemName)) {
+        const node = createUpdateTwoWayNode(itemName, item.initializer.expression.expression);
+        node.parent = item.parent;
+        childParam.push(node);
+        return;
+      }
+      log.push({
+        type: LogType.ERROR,
+        message: 'When the two-way binding syntax is used, ' +
+          `the variable '${itemName}' must be decorated with @Param, ` +
+          `and the @Event variable '$` + `${itemName}' ` + `must be defined in the ${childStructInfo.structName}.`,
+        pos: item.getStart()
+      });
+      return;
+    }
+    log.push({
+      type: LogType.ERROR,
+      message: 'When the two-way binding syntax is used, ' +
+        `the initial value of property '${itemName}' must be a variable.`,
+      pos: item.getStart()
+    });
+    return;
+  }
+}
+
+function createUpdateTwoWayNode(itemName: string, leftHandExpression: ts.Expression): ts.PropertyAssignment {
+  return ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier('$' + itemName),
+    ts.factory.createArrowFunction(undefined, undefined,
+      [createAstNodeUtils.createParameterDeclaration('value')], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock([
+        ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+          leftHandExpression, ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+          ts.factory.createIdentifier('value')
+        ))
+      ], false)
+    )
+  );
+}
+
+function isDoubleNonNullExpression(node: ts.Expression): boolean {
+  return node && ts.isNonNullExpression(node) && ts.isNonNullExpression(node.expression);
+}
+
+function isLeftHandExpression(node: ts.Expression): boolean {
+  return node && (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node));
+}
+
+function traverseExpressionNode(node: ts.Node, result: Record<string, boolean>): void {
+  if (ts.isOptionalChain(node) && !ts.isNonNullExpression(node) && node.questionDotToken) {
+    result.hasQuestionToken = true;
+  }
+  if (!result.hasQuestionToken) {
+    node.getChildren().forEach((item: ts.Node) => traverseExpressionNode(item, result));
+  }
+}
+
+function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent: boolean,
+  name: string, log: LogInfo[], componentNode: ts.CallExpression): ts.VariableStatement {
+  const paramsArray: ts.Expression[] = newNode.arguments.length ? newNode.arguments : [];
+  traverseChildComponentArgs(paramsArray, name, log, componentNode);
+  const updateNewNode = ts.factory.updateNewExpression(newNode, newNode.expression, newNode.typeArguments, paramsArray);
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
@@ -596,19 +693,21 @@ function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent:
           ts.factory.createToken(ts.SyntaxKind.QuestionToken),
           ts.factory.createIdentifier(RECYCLE_NODE),
           ts.factory.createToken(ts.SyntaxKind.ColonToken),
-          newNode) : newNode
+          newNode) : updateNewNode
       )],
       ts.NodeFlags.Let
     ));
 }
 
-function createNewComponent(componeParamName: string, name: string): ts.Statement {
+function createNewComponent(componeParamName: string, name: string,
+  componentNode: ts.CallExpression): ts.Statement {
+  const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(componentNode) ||
+    processStructComponentV2.getOrCreateStructInfo(name);
   return ts.factory.createExpressionStatement(
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(
-          processStructComponentV2.getOrCreateStructInfo(name).isComponentV2 ?
-            constantDefine.STRUCT_PARENT : BASE_COMPONENT_NAME_PU),
+          childStructInfo.isComponentV2 ? constantDefine.STRUCT_PARENT : BASE_COMPONENT_NAME_PU),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)
       ), undefined, [ts.factory.createIdentifier(componeParamName)]));
 }
