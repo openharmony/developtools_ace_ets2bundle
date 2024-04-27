@@ -57,7 +57,7 @@ import {
   isDebug
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
-import { mangleFilePath } from '../common/ob_config_resolver';
+import { handleObfuscatedFilePath } from '../common/ob_config_resolver';
 import {
   changeFileExtension,
   getEs2abcFileThreadNumber,
@@ -315,7 +315,7 @@ export class ModuleMode extends CommonMode {
     metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
     const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
-    let filePath = this.handleObfuscatedFilePath(originalFilePath, isPackageModules);
+    let filePath = handleObfuscatedFilePath(originalFilePath, isPackageModules, this.projectConfig);
     let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
@@ -323,6 +323,7 @@ export class ModuleMode extends CommonMode {
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+    sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
@@ -372,25 +373,6 @@ export class ModuleMode extends CommonMode {
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
-  }
-
-  private handleObfuscatedFilePath(filePath: string, isPackageModules: boolean): string {
-    const isDebugMode = isDebug(this.projectConfig);
-    const hasObfuscationConfig = this.projectConfig.obfuscationMergedObConfig;
-    if (isDebugMode || !hasObfuscationConfig) {
-      return filePath;
-    }
-    const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
-    const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
-    if (disableObfuscation || !enableFileNameObfuscation) {
-      return filePath;
-    }
-    // Do not obfuscate the file path in dir oh_modules.
-    if (!isPackageModules) {
-      return mangleFilePath(filePath);
-    }
-    // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
-    return toUnixPath(filePath);
   }
 
   private generateCompileFilesInfo() {
@@ -755,7 +737,7 @@ export class ModuleMode extends CommonMode {
         newKey = changeFileExtension(newKey, extName);
       }
       const isOhModules = key.startsWith('oh_modules');
-      newKey = this.handleObfuscatedFilePath(newKey, isOhModules);
+      newKey = handleObfuscatedFilePath(newKey, isOhModules, this.projectConfig);
       sourceMap[newKey] = sourceMap[key];
       delete sourceMap[key];
     });
