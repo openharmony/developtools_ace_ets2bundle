@@ -57,7 +57,10 @@ import {
   isDebug
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
-import { handleObfuscatedFilePath } from '../common/ob_config_resolver';
+import {
+  handleObfuscatedFilePath,
+  shouldObfuscateFileName
+} from '../common/ob_config_resolver';
 import {
   changeFileExtension,
   getEs2abcFileThreadNumber,
@@ -323,7 +326,9 @@ export class ModuleMode extends CommonMode {
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
-    sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+    if (shouldObfuscateFileName(isPackageModules, this.projectConfig)) {
+      sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+    }
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
