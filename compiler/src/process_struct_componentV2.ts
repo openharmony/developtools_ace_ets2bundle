@@ -60,6 +60,10 @@ export class StructInfo {
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorSet: Set<string> = new Set();
   localDecoratorSet: Set<string> = new Set();
+  providerDecoratorSet: Set<string> = new Set();
+  consumerDecoratorSet: Set<string> = new Set();
+  builderParamDecoratorSet: Set<string> = new Set();
+  regularSet: Set<string> = new Set();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -72,6 +76,18 @@ function getOrCreateStructInfo(key: string): StructInfo {
     structMapInEts.set(key, structInfo);
   }
   return structInfo;
+}
+
+/**
+ * import * as a from './common'
+ * a.struct()
+ */
+function getAliasStructInfo(node: ts.CallExpression): StructInfo {
+  let aliasStructInfo: StructInfo;
+  if (node.expression && structMapInEts.has(node.expression.getText())) {
+    aliasStructInfo = structMapInEts.get(node.expression.getText());
+  }
+  return aliasStructInfo;
 }
 
 function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
@@ -121,22 +137,24 @@ function traverseStructInfo(structInfo: StructInfo,
     addStatementsInConstructor.push(createInitParam(param[0], param[1].initializer));
     paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
   }
-  for (const eventName of structInfo.eventDecoratorSet) {
-    addStatementsInConstructor.push(updateEventNode(eventName));
-  }
 }
 
 function processComponentProperty(member: ts.PropertyDeclaration, structInfo: StructInfo,
   log: LogInfo[]): ts.PropertyDeclaration {
-  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
-  if (structInfo.paramDecoratorMap.has(member.name.getText())) {
+  const propName: string = member.name.getText();
+  if (structInfo.paramDecoratorMap.has(propName)) {
     processParamProperty(member);
     return member;
   }
-  if (hasSomeDecorator(decorators, 'BuilderParam')) {
-    processBuilderParamProperty(member, log);
+  if (structInfo.builderParamDecoratorSet.has(propName)) {
+    processBuilderParamProperty(member, log, propName);
     return member;
   }
+  let initFromParams: boolean = false;
+  if (structInfo.eventDecoratorSet.has(propName) || structInfo.regularSet.has(propName)) {
+    initFromParams = true;
+  }
+  setInitValue(member, propName, initFromParams);
   return member;
 }
 
@@ -158,13 +176,7 @@ function processParamProperty(member: ts.PropertyDeclaration): void {
   member.modifiers = newModifiers;
 }
 
-function hasSomeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): boolean {
-  return decorators.some((item: ts.Decorator) => {
-    return ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === decoratorName;
-  });
-}
-
-function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[]): void {
+function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[], propName: string): void {
   if (judgeBuilderParamAssignedByBuilder(member)) {
     log.push({
       type: LogType.ERROR,
@@ -174,6 +186,34 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
   }
   // @ts-ignore
   member.modifiers = ts.getModifiers(member);
+  setInitValue(member, propName, true);
+}
+
+function setInitValue(member: ts.PropertyDeclaration, propName: string, initFromParams: boolean) {
+  let initNode: ts.Expression = member.initializer ||
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED);
+  if (initFromParams) {
+    initNode = createInitNode(propName, initNode);
+  }
+  // @ts-ignore
+  member.initializer = initNode;
+}
+
+function createInitNode(propName: string, defaultValue: ts.Expression): ts.Expression {
+  return ts.factory.createConditionalExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createStringLiteral(propName),
+      ts.factory.createToken(ts.SyntaxKind.InKeyword),
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
+      ts.factory.createIdentifier(propName)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    defaultValue
+  );
 }
 
 function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructInfo, log: LogInfo[],
@@ -199,33 +239,34 @@ const decoratorsFunc: Record<string, Function> = {
   'Require': parseRequireDecorator,
   'Once': parseOnceDecorator,
   'Local': parseLocalDecorator,
-  'BuilderParam': parseBuilderParamDecorator
+  'BuilderParam': parseBuilderParamDecorator,
+  'Provider': parseProviderDecorator,
+  'Consumer': parseConsumerDecorator
 };
 
 function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: readonly ts.Decorator[],
   structInfo: StructInfo, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
   const propertyDecorator: PropertyDecorator = new PropertyDecorator();
-  let innerDecoratorCount: number = 0;
-  const innerDecorators: string[] = [...constantDefine.COMPONENT_MEMBER_DECORATOR_V2,
-    ...constantDefine.STRUCT_CLASS_MEMBER_DECORATOR];
-  const exludeDecorators: string[] = ['@Require', '@Once'];
+  let isRegular: boolean = true;
   for (let i = 0; i < decorators.length; i++) {
     const originalName: string = decorators[i].getText().replace(/\([^\(\)]*\)/, '');
     const name: string = originalName.replace('@', '').trim();
-    if (!exludeDecorators.includes(originalName) && innerDecorators.includes(originalName)) {
-      innerDecoratorCount++;
-    }
     if (decoratorsFunc[name]) {
       decoratorsFunc[name](propertyDecorator, member, structInfo);
     }
+    if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName)) {
+      isRegular = false;
+    }
   }
-  checkPropertyDecorator(propertyDecorator, innerDecoratorCount, member, log, sourceFileNode);
+  if (isRegular) {
+    structInfo.regularSet.add(member.name.getText());
+  }
+  checkPropertyDecorator(propertyDecorator, member, log, sourceFileNode);
 }
 
-function checkPropertyDecorator(propertyDecorator: PropertyDecorator, innerDecoratorCount: number,
+function checkPropertyDecorator(propertyDecorator: PropertyDecorator,
   member: ts.PropertyDeclaration, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
   if (log && sourceFileNode) {
-    checkDecoratorCount(innerDecoratorCount, member, log, sourceFileNode);
     checkParamDecorator(propertyDecorator, member, log, sourceFileNode);
   }
 }
@@ -267,6 +308,16 @@ function parseLocalDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
   structInfo.localDecoratorSet.add(member.name.getText());
 }
 
+function parseProviderDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+  structInfo: StructInfo): void {
+  structInfo.providerDecoratorSet.add(member.name.getText());
+}
+
+function parseConsumerDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+  structInfo: StructInfo): void {
+  structInfo.consumerDecoratorSet.add(member.name.getText());
+}
+
 function parseBuilderParamDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
   structInfo: StructInfo): void {
   let builderParamSet: Set<string> = builderParamObjectCollection.get(structInfo.structName);
@@ -275,14 +326,7 @@ function parseBuilderParamDecorator(propertyDecorator: PropertyDecorator, member
   }
   builderParamSet.add(member.name.getText());
   builderParamObjectCollection.set(structInfo.structName, builderParamSet);
-}
-
-function checkDecoratorCount(innerDecoratorCount: number, member: ts.PropertyDeclaration, log: LogInfo[],
-  sourceFileNode: ts.SourceFile): void {
-  if (innerDecoratorCount > 1) {
-    const message: string = 'The struct member variable can not be decorated by multiple built-in decorators.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode);
-  }
+  structInfo.builderParamDecoratorSet.add(member.name.getText());
 }
 
 function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration, log: LogInfo[],
@@ -377,19 +421,6 @@ function updateParamNode(propName: string): ts.IfStatement {
         ]))], true));
 }
 
-function updateEventNode(eventName: string): ts.IfStatement {
-  return ts.factory.createIfStatement(createParamBinaryNode(eventName),
-    ts.factory.createBlock([
-      ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
-        ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-          ts.factory.createIdentifier(eventName)),
-        ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
-          ts.factory.createIdentifier(eventName))
-      ))], true));
-}
-
 function createParamBinaryNode(propName: string): ts.BinaryExpression {
   return ts.factory.createBinaryExpression(
     ts.factory.createStringLiteral(propName),
@@ -423,5 +454,6 @@ export default {
   getOrCreateStructInfo: getOrCreateStructInfo,
   processStructComponentV2: processStructComponentV2,
   parseComponentProperty: parseComponentProperty,
-  resetStructMapInEts: resetStructMapInEts
+  resetStructMapInEts: resetStructMapInEts,
+  getAliasStructInfo: getAliasStructInfo
 };

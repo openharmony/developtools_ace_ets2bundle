@@ -295,7 +295,7 @@
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
         "type": "ERROR"
     },
-    "@Track": [
+    "@Trace": [
         {
             "message": "The '@Trace' decorator can only be used in 'class'.",
             "type": "ERROR"
@@ -365,13 +365,283 @@
             "type": "WARN"
         }
     ],
-    "Monitor": [
+    "@Monitor": [
         {
             "message": "The '@Monitor' can decorate only member method within a 'class' decorated with ObservedV2.",
             "type": "ERROR"
+        }
+    ],
+    "v2DecoratorInComponent": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
         },
         {
-            "message": "The '@Monitor' decorator can not be used together with other decorators.",
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Provider' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Consumer' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR"
+        }
+    ],
+    "v1DecoratorInComponentV2": [
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Link' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Provide' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Consume' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Watch' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Watch' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@StorageLink' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@StorageProp' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@LocalStorageLink' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@LocalStorageProp' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@ObjectLink' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR"
+        }
+    ],
+    "componentV2BothWithComponent": [
+        {
+            "message": "The struct 'componentV2BothWithComponent' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The struct 'componentV2BothWithComponent1' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The struct 'componentV2BothWithComponent2' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR"
+        }
+    ],
+    "mutiDecoratorInComponentV2": [
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        }
+    ],
+    "v2DecoratorInClass": [
+        {
+            "message": "The '@Local' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Param' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Param' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Once' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Once' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Event' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Provider' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Consumer' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        }
+    ],
+    "v2MemberDecorator": [
+        {
+            "message": "@Computed can only decorate 'GetAccessor'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "'@Local' can only decorate member property.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@Computed can only decorate 'GetAccessor'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@Monitor can only decorate method.",
+            "type": "ERROR"
+        }
+    ],
+    "param_require_once_check": [
+        {
+            "message": "When a variable decorated with @Param is not assigned a default value, it must also be decorated with @Require.",
+            "type": "ERROR"
+        },
+        {
+            "message": "In a struct decorated with @ComponentV2, @Require can only be used with @Param.",
+            "type": "ERROR"
+        },
+        {
+            "message": "In a struct decorated with @ComponentV2, @Require can only be used with @Param.",
+            "type": "ERROR"
+        },
+        {
+            "message": "When a variable decorated with @Once, it must also be decorated with @Param.",
+            "type": "ERROR"
+        },
+        {
+            "message": "When a variable decorated with @Once, it must also be decorated with @Param.",
+            "type": "ERROR"
+        }
+    ],
+    "v2DecoratorInitFromParent": [
+        {
+            "message": "Property 'param_value' must be initialized through the component constructor.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'local_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'provider_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'consumer_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "type": "ERROR"
+        }
+    ],
+    "createV1ComponentInV2": [
+        {
+            "message": "The regular property 'value' cannot be assigned to the @Link property 'link_value'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The regular property 'objectLink_value' cannot be assigned to the @ObjectLink property 'objectLink_value'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'state_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'prop_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'link_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'provide_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'objectLink_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        }
+    ],
+    "createV2ComponentInV1": [
+        {
+            "message": "Property 'param_value' in the @ComponentV2 component 'testChildV2' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'event' in the @ComponentV2 component 'testChildV2' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        }
+    ],
+    "validateParamTwoWayBind": [
+        {
+            "message": "When the two-way binding syntax is used, the variable 'value' must be decorated with @Param, and the @Event variable '$value' must be defined in the testParamChild1.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The optional character can not be used in the initial value of property 'paramValue'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The optional character can not be used in the initial value of property 'paramValue'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
+            "type": "ERROR"
+        },
+        {
+            "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
             "type": "ERROR"
         }
     ]
