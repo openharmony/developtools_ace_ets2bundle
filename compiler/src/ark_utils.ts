@@ -527,7 +527,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
   }
   mkdirsSync(path.dirname(newFilePath));
-  fs.writeFileSync(newFilePath, content ?? '');
+  fs.writeFileSync(newFilePath, mixedInfo.content ?? '');
 }
 
 export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string): string {
