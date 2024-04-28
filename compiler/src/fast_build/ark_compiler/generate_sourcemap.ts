@@ -362,10 +362,6 @@ export class SourceMapGenerator {
     this.sourceMapKeyMappingForObf.set(this.genKey(originalFilePath), this.genKey(originalFilePath, true));
   }
 
-  public ChecksourceMapKeyMappingValue(valueToCheck: string): boolean {
-    return Array.from(this.sourceMapKeyMappingForObf.values()).includes(valueToCheck);
-  }
-
   //use by UT
   static initInstance(rollupObject: Object): SourceMapGenerator {
     if (!SourceMapGenerator.instance) {
