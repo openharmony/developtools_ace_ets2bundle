@@ -324,10 +324,6 @@ export class ModuleMode extends CommonMode {
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
-    if (enableObfuscateFileName(isPackageModules, this.projectConfig) &&
-        !sourceMapGenerator.ChecksourceMapKeyMappingValue(sourceMapGenerator.genKey(originalFilePath, true))) {
-      sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
-    }
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
@@ -354,6 +350,9 @@ export class ModuleMode extends CommonMode {
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
     sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
+    if (enableObfuscateFileName(isPackageModules, this.projectConfig) && !sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
+      sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+    }
     // If the file name is obfuscated, the sourceFile needs to be updated.
     sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile;
     packageName = toUnixPath(packageName);
