@@ -176,8 +176,7 @@ function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger
 
   if (mergedObConfig.options.enableFileNameObfuscation) {
     const ohPackagePath = path.join(projectConfig.modulePath, 'oh-package.json5');
-    const reservedFileNamesInIDEconfig = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig.aceModuleJsonPath,
-      projectConfig.projectPath, projectConfig.cachePath, arkProjectConfig.modulePathMap);
+    const reservedFileNamesInIDEconfig = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, arkProjectConfig.modulePathMap);
     mergedObConfig.reservedFileNames.push(...reservedFileNamesInIDEconfig);
   }
   arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;

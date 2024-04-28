@@ -21,7 +21,8 @@ import path from "path";
 
 import {
   MergedConfig,
-  ObConfigResolver
+  ObConfigResolver,
+  collectResevedFileNameInIDEConfig
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -94,5 +95,34 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(reservedGlobalNames.includes('TestProperty')).to.be.true;
 
     this.rollup.clearCache();
+  });
+
+  mocha.it('1-1: test collectResevedFileNameInIDEConfig', function () {
+    const aceModuleJsonPath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/module.json');
+    const ohPackagePath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/oh-package.json5');
+    const projectConfig = {
+      aceModuleJsonPath: aceModuleJsonPath,
+      projectPath: '/mnt/application/entry/src/main/ets',
+      cachePath: '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release',
+      aceModuleBuild: '/mnt/application/entry/build/default/intermediates/loader_out',
+      compileShared: true
+    };
+    const modulePathMap = {
+      'entry': '/mnt/application/entry',
+      'harPackageName': '/mnt/application/harPackageName'
+    }
+    const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap);
+    const expectReservedFileNames = [
+      'entry',
+      'harPackageName',
+      './Index-oh-package.ets',
+      './Type-oh-package.ets',
+      '../../Index2.ets',
+      '/mnt/application/entry/build/default/intermediates/loader_out',
+      'etsFortgz',
+      '/mnt/application/entry/src/main/ets',
+      '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release'
+    ]
+    expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
   });
 });
