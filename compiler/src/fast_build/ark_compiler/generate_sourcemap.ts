@@ -228,10 +228,11 @@ export class SourceMapGenerator {
       }
 
       Object.keys(cacheSourceMapObject).forEach(key => {
+        let newkeyOrOldCachePath = key;
         if (!this.isNewSourceMap) {
-          key = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
+          newkeyOrOldCachePath = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
         }
-        if (!compileFileList.has(key)) {
+        if (!compileFileList.has(newkeyOrOldCachePath)) {
           unusedFiles.push(key);
         }
       });
