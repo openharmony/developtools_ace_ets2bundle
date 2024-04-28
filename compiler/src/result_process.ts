@@ -33,6 +33,7 @@ import { generateSourceFilesToTemporary } from './ark_utils';
 import { resetComponentCollection } from './validate_ui_syntax';
 import { abilityConfig, projectConfig } from '../main';
 import { logger } from './compile_info';
+import processStructComponentV2 from './process_struct_componentV2';
 
 module.exports = function resultProcess(source: string, map: any): void {
   process.env.compiler = BUILD_OFF;
@@ -42,6 +43,7 @@ module.exports = function resultProcess(source: string, map: any): void {
     propertyCollection.clear();
     linkCollection.clear();
     resetComponentCollection();
+    processStructComponentV2.resetStructMapInEts();
     if (transformLog && transformLog.errors.length) {
       emitLogInfo(this, getTransformLog(transformLog));
       resetLog();

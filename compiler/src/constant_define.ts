@@ -18,6 +18,7 @@ const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
 const MONITOR: string = 'Monitor';
 const COMPUTED: string = 'Computed';
 const REQUIRE: string = 'Require';
+const BUILDER_PARAM: string = 'BuilderParam';
 const MONITOR_DECORATOR: string = '@Monitor';
 const COMPUTED_DECORATOR: string = '@Computed';
 
@@ -54,5 +55,6 @@ export default {
   REQUIRE,
   MONITOR_DECORATOR,
   COMPUTED_DECORATOR,
-  DECORATOR_V2
+  DECORATOR_V2,
+  BUILDER_PARAM
 };
