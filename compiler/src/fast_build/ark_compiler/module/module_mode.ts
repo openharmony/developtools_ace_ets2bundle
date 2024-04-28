@@ -59,7 +59,7 @@ import {
 import { CommonMode } from '../common/common_mode';
 import {
   handleObfuscatedFilePath,
-  shouldObfuscateFileName
+  enableObfuscateFileName
 } from '../common/ob_config_resolver';
 import {
   changeFileExtension,
@@ -324,7 +324,8 @@ export class ModuleMode extends CommonMode {
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
-    if (shouldObfuscateFileName(isPackageModules, this.projectConfig)) {
+    if (enableObfuscateFileName(isPackageModules, this.projectConfig) &&
+        !sourceMapGenerator.ChecksourceMapKeyMappingValue(sourceMapGenerator.genKey(originalFilePath, true))) {
       sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
     }
 
@@ -354,7 +355,7 @@ export class ModuleMode extends CommonMode {
     recordName = toUnixPath(recordName);
     sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
     // If the file name is obfuscated, the sourceFile needs to be updated.
-    sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile; 
+    sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile;
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
