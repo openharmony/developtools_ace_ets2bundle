@@ -349,12 +349,21 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
-    if (enableObfuscateFileName(isPackageModules, this.projectConfig) && !sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
-      sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+    if (!sourceMapGenerator.isNewSourceMaps()) {
+      if (enableObfuscateFileName(isPackageModules, this.projectConfig)){
+        sourceFile = handleObfuscatedFilePath(originalFilePath, isPackageModules, this.projectConfig);
+      } else {
+        sourceFile = originalFilePath;
+      }
+    } else {
+      sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
+      if (enableObfuscateFileName(isPackageModules, this.projectConfig) && !sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
+        sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+      }
+      // If the file name is obfuscated, the sourceFile needs to be updated.
+      sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile;
     }
-    // If the file name is obfuscated, the sourceFile needs to be updated.
-    sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile;
+    
     packageName = toUnixPath(packageName);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
