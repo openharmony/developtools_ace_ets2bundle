@@ -64,6 +64,7 @@ export class StructInfo {
   consumerDecoratorSet: Set<string> = new Set();
   builderParamDecoratorSet: Set<string> = new Set();
   regularSet: Set<string> = new Set();
+  propertiesMap: Map<string, ts.Expression> = new Map();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -133,50 +134,76 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
 
 function traverseStructInfo(structInfo: StructInfo,
   addStatementsInConstructor: ts.Statement[], paramStatementsInStateVarsMethod: ts.Statement[]): void {
+  const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
+    ...structInfo.regularSet, ...structInfo.eventDecoratorSet];
+  for (const property of structInfo.propertiesMap) {
+    setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
+      needInitFromParams);
+  }
   for (const param of structInfo.paramDecoratorMap) {
-    addStatementsInConstructor.push(createInitParam(param[0], param[1].initializer));
     paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
   }
+}
+
+function setPropertyStatement(structInfo: StructInfo, addStatementsInConstructor: ts.Statement[],
+  propName: string, initializer: ts.Expression, needInitFromParams: string[]): void {
+  if (needInitFromParams.includes(propName)) {
+    addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, true));
+  } else if (structInfo.paramDecoratorMap.has(propName)) {
+    const paramProperty: ParamDecoratorInfo = structInfo.paramDecoratorMap.get(propName);
+    addStatementsInConstructor.push(createInitParam(propName, paramProperty.initializer));
+  } else {
+    addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, false));
+  }
+}
+
+function createPropertyAssignNode(propName: string, initializer: ts.Expression,
+  initFromParams: boolean): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createThis(),
+      ts.factory.createIdentifier(propName)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+    setInitValue(propName, initializer, initFromParams)
+  ));
 }
 
 function processComponentProperty(member: ts.PropertyDeclaration, structInfo: StructInfo,
   log: LogInfo[]): ts.PropertyDeclaration {
   const propName: string = member.name.getText();
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
   if (structInfo.paramDecoratorMap.has(propName)) {
-    processParamProperty(member);
-    return member;
+    return processParamProperty(member, decorators);
   }
   if (structInfo.builderParamDecoratorSet.has(propName)) {
-    processBuilderParamProperty(member, log, propName);
-    return member;
+    return processBuilderParamProperty(member, log, decorators);
   }
-  let initFromParams: boolean = false;
-  if (structInfo.eventDecoratorSet.has(propName) || structInfo.regularSet.has(propName)) {
-    initFromParams = true;
-  }
-  setInitValue(member, propName, initFromParams);
-  return member;
+  return ts.factory.updatePropertyDeclaration(member,
+    ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
+    member.name, member.questionToken, member.type, undefined);
 }
 
-function processParamProperty(member: ts.PropertyDeclaration): void {
-  // @ts-ignore
-  member.initializer = undefined;
-  // @ts-ignore
-  let newModifiers: ts.Node[] = member.modifiers;
-  if (newModifiers) {
-    newModifiers = newModifiers.filter((item: ts.Node) => {
-      if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
-        item.expression.escapedText.toString() === constantDefine.REQUIRE) {
-        return false;
-      }
-      return true;
-    });
-  }
-  // @ts-ignore
-  member.modifiers = newModifiers;
+function processParamProperty(member: ts.PropertyDeclaration,
+  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
+  const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.REQUIRE);
+  return ts.factory.updatePropertyDeclaration(member,
+    ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
+    member.name, member.questionToken, member.type, undefined);
 }
 
-function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[], propName: string): void {
+function removeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): readonly ts.Decorator[] {
+  return decorators.filter((item: ts.Node) => {
+    if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
+      item.expression.escapedText.toString() === decoratorName) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[],
+  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
   if (judgeBuilderParamAssignedByBuilder(member)) {
     log.push({
       type: LogType.ERROR,
@@ -184,19 +211,20 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
       pos: member.getStart()
     });
   }
-  // @ts-ignore
-  member.modifiers = ts.getModifiers(member);
-  setInitValue(member, propName, true);
+  const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.BUILDER_PARAM);
+  return ts.factory.updatePropertyDeclaration(member,
+    ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
+    member.name, member.questionToken, member.type, undefined);
 }
 
-function setInitValue(member: ts.PropertyDeclaration, propName: string, initFromParams: boolean) {
-  let initNode: ts.Expression = member.initializer ||
+function setInitValue(propName: string, initializer: ts.Expression,
+  initFromParams: boolean): ts.Expression {
+  let initNode: ts.Expression = initializer ||
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED);
   if (initFromParams) {
     initNode = createInitNode(propName, initNode);
   }
-  // @ts-ignore
-  member.initializer = initNode;
+  return initNode;
 }
 
 function createInitNode(propName: string, defaultValue: ts.Expression): ts.Expression {
@@ -221,6 +249,7 @@ function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructIn
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isPropertyDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
+      structInfo.propertiesMap.set(member.name.getText(), member.initializer);
       parsePropertyDecorator(member, decorators, structInfo, log, sourceFileNode);
     }
   });
