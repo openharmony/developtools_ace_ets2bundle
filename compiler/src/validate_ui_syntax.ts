@@ -225,9 +225,9 @@ function checkComponentDecorator(source: string, filePath: string,
     });
     if (process.env.compileTool === 'rollup') {
       if (result.entryCount > 0) {
-        storedFileInfo.wholeFileInfo[path.resolve(sourceFile.fileName)].hasEntry = true;
+        storedFileInfo.wholeFileInfo[filePath].hasEntry = true;
       } else {
-        storedFileInfo.wholeFileInfo[path.resolve(sourceFile.fileName)].hasEntry = false;
+        storedFileInfo.wholeFileInfo[filePath].hasEntry = false;
       }
     }
     validateEntryAndPreviewCount(result, fileQuery, sourceFile.fileName, projectConfig.isPreview,
