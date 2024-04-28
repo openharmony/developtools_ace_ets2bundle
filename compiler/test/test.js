@@ -44,6 +44,7 @@ const {
   projectConfig,
   resources
 } = require('../main');
+const processStructComponentV2 = require('../lib/process_struct_componentV2');
 
 projectConfig.projectPath = path.resolve(process.cwd());
 
@@ -59,6 +60,7 @@ function expectActual(name, filePath, checkError = false) {
   componentInfo.id = 0;
   componentCollection.customComponents.clear();
   resetComponentCollection();
+  processStructComponentV2.default.resetStructMapInEts();
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
   if (checkError) {
