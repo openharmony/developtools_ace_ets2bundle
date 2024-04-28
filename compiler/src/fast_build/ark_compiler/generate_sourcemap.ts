@@ -39,7 +39,7 @@ import {
 import {
   handleObfuscatedFilePath,
   mangleFilePath,
-  shouldObfuscateFileName
+  enableObfuscateFileName
 } from './common/ob_config_resolver';
 
 export class SourceMapGenerator {
@@ -142,7 +142,7 @@ export class SourceMapGenerator {
     moduleId = this.getAdaptedModuleId(moduleId);
 
     let key: string = this.keyCache.get(moduleId);
-    if (key) {
+    if (key && !shouldObfuscateFileName) {
       return key;
     }
     const pkgInfo = this.getPkgInfoByModuleId(moduleId, shouldObfuscateFileName);
@@ -151,7 +151,9 @@ export class SourceMapGenerator {
     } else {
       key = `${pkgInfo.entry.name}|${pkgInfo.entry.name}|${pkgInfo.entry.version}|${pkgInfo.modulePath}`;
     }
-    this.keyCache.set(moduleId, key);
+    if (key && !shouldObfuscateFileName) {
+      this.keyCache.set(moduleId, key);
+    }
     return key;
   }
 
@@ -211,7 +213,7 @@ export class SourceMapGenerator {
 
         if (this.isNewSourceMap) {
           const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
-          if (shouldObfuscateFileName(isPackageModules, this.projectConfig)){
+          if (enableObfuscateFileName(isPackageModules, this.projectConfig)){
             compileFileList.add(this.genKey(moduleId, true));
           } else {
             compileFileList.add(this.genKey(moduleId));
@@ -244,7 +246,9 @@ export class SourceMapGenerator {
     }
     // update the key for filename obfuscation
     for (let [key, newKey] of this.sourceMapKeyMappingForObf) {
-      this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
+      if(cacheSourceMapObject.hasOwnProperty(key) && key != newKey){
+        this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
+      }
     }
     return cacheSourceMapObject;
   }
@@ -356,6 +360,10 @@ export class SourceMapGenerator {
 
   public saveKeyMappingForObfFileName(originalFilePath: string): void {
     this.sourceMapKeyMappingForObf.set(this.genKey(originalFilePath), this.genKey(originalFilePath, true));
+  }
+
+  public ChecksourceMapKeyMappingValue(valueToCheck: string): boolean {
+    return Array.from(this.sourceMapKeyMappingForObf.values()).includes(valueToCheck);
   }
 
   //use by UT

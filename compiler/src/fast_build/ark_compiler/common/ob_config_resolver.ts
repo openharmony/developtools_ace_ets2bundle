@@ -837,7 +837,7 @@ export function handleObfuscatedFilePath(filePath: string, isPackageModules: boo
   return toUnixPath(filePath);
 }
 
-export function shouldObfuscateFileName(isPackageModules: boolean, projectConfig: Object): boolean {
+export function enableObfuscateFileName(isPackageModules: boolean, projectConfig: Object): boolean {
   const isDebugMode = isDebug(projectConfig);
   const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
   if (isDebugMode || !hasObfuscationConfig) {
