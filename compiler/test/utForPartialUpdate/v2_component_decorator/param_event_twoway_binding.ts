@@ -140,8 +140,8 @@ __decorate([
 class TestParam extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
         super(parent, elmtId, extraInfo);
-        this.$paramValue = "$paramValue" in params ? params.$paramValue : (value) => { };
         this.initParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam");
+        this.$paramValue = "$paramValue" in params ? params.$paramValue : (value) => { };
         this.initParam("paramValue1", (params && "paramValue1" in params) ? params.paramValue1 : undefined);
         this.finalizeConstruction();
     }
@@ -173,9 +173,9 @@ __decorate([
 class TestParam1 extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
         super(parent, elmtId, extraInfo);
+        this.initParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
         this.myEvent = "myEvent" in params ? params.myEvent : (newVal) => { };
         this.myEvent1 = "myEvent1" in params ? params.myEvent1 : undefined;
-        this.initParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
         this.finalizeConstruction();
     }
     initialRender() { }

@@ -669,12 +669,7 @@ function getClassNode(parentType: ts.Node, childClassResult: ClassDecoratorResul
   if (symbol && symbol.valueDeclaration) {
     if (ts.isClassDeclaration(symbol.valueDeclaration)) {
       validateInheritClassDecorator(symbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
-      return;
     }
-    // export default {a: b}
-    // @ts-ignore
-    getClassNode(symbol.valueDeclaration.initializer || symbol.valueDeclaration.name,
-      childClassResult, childClass, sourceFileNode, log);
   }
 }
 
