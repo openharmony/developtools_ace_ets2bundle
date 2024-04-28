@@ -224,7 +224,13 @@ export class SourceMapGenerator {
         // adapt compatibilty with hvigor
         moduleId = this.getIntermediateModuleId(
           toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath)));
-        compileFileList.add(moduleId);
+        
+        const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
+        if (enableObfuscateFileName(isPackageModules, this.projectConfig)) {
+          compileFileList.add(mangleFilePath(moduleId));
+        } else {
+          compileFileList.add(moduleId);
+        }
       }
 
       Object.keys(cacheSourceMapObject).forEach(key => {
