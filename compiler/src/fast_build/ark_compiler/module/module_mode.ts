@@ -130,7 +130,6 @@ export class ModuleMode extends CommonMode {
   moduleInfos: Map<String, ModuleInfo>;
   pkgEntryInfos: Map<String, PackageEntryInfo>;
   hashJsonObject: Object;
-  cacheSourceMapObject: Object;
   filesInfoPath: string;
   npmEntriesInfoPath: string;
   moduleAbcPath: string;
@@ -149,7 +148,6 @@ export class ModuleMode extends CommonMode {
     this.moduleInfos = new Map<String, ModuleInfo>();
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
     this.hashJsonObject = {};
-    this.cacheSourceMapObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
     const outPutABC: string = this.projectConfig.widgetCompile ? WIDGETS_ABC : MODULES_ABC;
@@ -726,25 +724,5 @@ export class ModuleMode extends CommonMode {
       });
       fs.unlinkSync(this.protoFilePath);
     }
-  }
-
-  private modifySourceMapKeyToCachePath(sourceMap: object): void {
-    const projectConfig: object = this.projectConfig;
-
-    // modify source map keys to keep IDE tools right
-    const relativeCachePath: string = toUnixPath(projectConfig.cachePath.replace(
-      projectConfig.projectRootPath + path.sep, ''));
-    Object.keys(sourceMap).forEach(key => {
-      let newKey: string = relativeCachePath + '/' + key;
-      if (!newKey.endsWith(EXTNAME_JS)) {
-        const moduleId: string = this.projectConfig.projectRootPath + path.sep + key;
-        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
-        newKey = changeFileExtension(newKey, extName);
-      }
-      const isOhModules = key.startsWith('oh_modules');
-      newKey = handleObfuscatedFilePath(newKey, isOhModules, this.projectConfig);
-      sourceMap[newKey] = sourceMap[key];
-      delete sourceMap[key];
-    });
   }
 }

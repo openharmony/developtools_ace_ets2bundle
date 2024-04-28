@@ -308,7 +308,7 @@ mocha.describe('test utils file api', function () {
     updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true) === updatedMap).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();
@@ -340,7 +340,7 @@ mocha.describe('test utils file api', function () {
     updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(updatedMap));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true) === updatedMap).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();
@@ -384,8 +384,8 @@ mocha.describe('test utils file api', function () {
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(sourceMap, updatedMap));
     const readSourceMap =
       JSON.parse(fs.readFileSync(`${this.rollup.share.projectConfig.projectTopDir}/${UPDATESOURCEMAP}`, 'utf-8'));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true).file === DYNAMICIMPORT_ETS).to.be.true;
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true).mappings === readSourceMap.mappings).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath).file === DYNAMICIMPORT_ETS).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath).mappings === readSourceMap.mappings).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();
@@ -417,7 +417,7 @@ mocha.describe('test utils file api', function () {
     updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true) === updatedMap).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();
@@ -449,7 +449,7 @@ mocha.describe('test utils file api', function () {
     updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true) === updatedMap).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();
@@ -481,7 +481,7 @@ mocha.describe('test utils file api', function () {
     updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
     sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
-    expect(sourceMapGenerator.getSourceMap(dynamicImportpath, true) === updatedMap).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
     // pop dynamicImportpath moduleInfo
     this.rollup.moduleInfos.pop();
     SourceMapGenerator.cleanSourceMapObject();

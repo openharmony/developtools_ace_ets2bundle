@@ -36,7 +36,8 @@ import {
   toUnixPath,
   isPackageModulesFile
 } from "../../utils";
-import { 
+import {
+  handleObfuscatedFilePath,
   mangleFilePath,
   shouldObfuscateFileName
 } from './common/ob_config_resolver';
@@ -44,19 +45,20 @@ import {
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
   private static rollupObject: Object;
-  private rollupObject: Object;
+
   private projectConfig: Object;
   private sourceMapPath: string;
   private cacheSourceMapPath: string;
   private triggerAsync: Object;
   private triggerEndSignal: Object;
   private throwArkTsCompilerError: Object;
-  private newSourceMaps: Object = {};
-  public keyCache: Map<string, string> = new Map();
+  private sourceMaps: Object = {};
+  private isNewSourceMap: boolean = true;
+  private keyCache: Map<string, string> = new Map();
+
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
-    this.rollupObject = rollupObject;
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.sourceMapPath = this.getSourceMapSavePath();
@@ -69,12 +71,10 @@ export class SourceMapGenerator {
     SourceMapGenerator.rollupObject = rollupObject;
     SourceMapGenerator.instance = new SourceMapGenerator(SourceMapGenerator.rollupObject);
 
-    //entryModuleName's data is packageName
-    if (!SourceMapGenerator.instance.projectConfig.entryModuleName) {
-      SourceMapGenerator.instance.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleName`);
-    }
-    if (!SourceMapGenerator.instance.projectConfig.entryModuleVersion) {
-      SourceMapGenerator.instance.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get entryModuleVersion`);
+    // adapt compatibility with hvigor
+    if (!SourceMapGenerator.instance.projectConfig.entryModuleName ||
+      !SourceMapGenerator.instance.projectConfig.entryModuleVersion) {
+        SourceMapGenerator.instance.isNewSourceMap = false;
     }
   }
 
@@ -93,7 +93,7 @@ export class SourceMapGenerator {
   private getPkgInfoByModuleId(moduleId: string, shouldObfuscateFileName: boolean = false): Object {
     moduleId = this.getAdaptedModuleId(moduleId);
 
-    const moduleInfo: Object = this.rollupObject.getModuleInfo(moduleId);
+    const moduleInfo: Object = SourceMapGenerator.rollupObject.getModuleInfo(moduleId);
     if (!moduleInfo) {
       this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo,\n` +
         `moduleId: ${moduleId}`);
@@ -129,6 +129,14 @@ export class SourceMapGenerator {
     };
   }
 
+  public setNewSoureMaps(isNewSourceMap: boolean): void {
+    this.isNewSourceMap = isNewSourceMap;
+  }
+
+  public isNewSourceMaps(): boolean {
+    return this.isNewSourceMap;
+  }
+
   //generate sourcemap key, notice: moduleId is absolute path
   public genKey(moduleId: string, shouldObfuscateFileName: boolean = false): string {
     moduleId = this.getAdaptedModuleId(moduleId);
@@ -148,14 +156,11 @@ export class SourceMapGenerator {
   }
 
   private getSourceMapSavePath(): string {
-    if (this.projectConfig.compileHar) {
-      if (!this.projectConfig.sourceMapDir) {
-        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get sourceMapDir`);
-      }
+    if (this.projectConfig.compileHar && this.projectConfig.sourceMapDir) {
       return path.join(this.projectConfig.sourceMapDir, SOURCEMAPS);
-    } else {
-      return isDebug(this.projectConfig) ? path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS) : path.join(this.projectConfig.cachePath, SOURCEMAPS);
     }
+    return isDebug(this.projectConfig) ? path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS) :
+      path.join(this.projectConfig.cachePath, SOURCEMAPS);
   }
 
   public buildModuleSourceMapInfo(parentEvent: Object): void {
@@ -164,7 +169,7 @@ export class SourceMapGenerator {
     }
 
     const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
-    let cacheSourceMapObject: Object = this.updateCachedSourceMaps();
+    const cacheSourceMapObject: Object = this.updateCachedSourceMaps();
     stopEvent(eventUpdateCachedSourceMaps);
 
     this.triggerAsync(() => {
@@ -184,30 +189,46 @@ export class SourceMapGenerator {
 
   //update cache sourcemap object
   public updateCachedSourceMaps(): Object {
+    if (!this.isNewSourceMap) {
+      this.modifySourceMapKeyToCachePath(this.sourceMaps);
+    }
+
     let cacheSourceMapObject: Object;
 
     if (!fs.existsSync(this.cacheSourceMapPath)) {
-      cacheSourceMapObject = this.newSourceMaps;
+      cacheSourceMapObject = this.sourceMaps;
     } else {
       cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
 
       // remove unused source files's sourceMap
       let unusedFiles = [];
       let compileFileList: Set<string> = new Set();
-      for (const moduleId of this.rollupObject.getModuleIds()) {
+      for (let moduleId of SourceMapGenerator.rollupObject.getModuleIds()) {
         // exclude .dts|.d.ets file
         if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
           continue;
         }
-        const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
-        if (shouldObfuscateFileName(isPackageModules, this.projectConfig)){
-          compileFileList.add(this.genKey(moduleId, true));
-        } else {
-          compileFileList.add(this.genKey(moduleId));
+
+        if (this.isNewSourceMap) {
+          const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
+          if (shouldObfuscateFileName(isPackageModules, this.projectConfig)){
+            compileFileList.add(this.genKey(moduleId, true));
+          } else {
+            compileFileList.add(this.genKey(moduleId));
+          }
+          continue;
         }
+
+        // adapt compatibilty with hvigor
+        moduleId = this.getIntermediateModuleId(
+          toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath)));
+        compileFileList.add(moduleId);
       }
 
       Object.keys(cacheSourceMapObject).forEach(key => {
+        if (!this.isNewSourceMap) {
+          key = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
+        }
         if (!compileFileList.has(key)) {
           unusedFiles.push(key);
         }
@@ -217,8 +238,8 @@ export class SourceMapGenerator {
       })
 
       // update sourceMap
-      Object.keys(this.newSourceMaps).forEach(key => {
-        cacheSourceMapObject[key] = this.newSourceMaps[key];
+      Object.keys(this.sourceMaps).forEach(key => {
+        cacheSourceMapObject[key] = this.sourceMaps[key];
       });
     }
     // update the key for filename obfuscation
@@ -229,16 +250,16 @@ export class SourceMapGenerator {
   }
 
   public getSourceMaps(): Object {
-    return this.newSourceMaps;
+    return this.sourceMaps;
   }
 
-  public getSourceMap(moduleId: string, doGenKey: boolean = true): Object {
-    return this.getSpecifySourceMap(this.newSourceMaps, moduleId, doGenKey);
+  public getSourceMap(moduleId: string): Object {
+    return this.getSpecifySourceMap(this.sourceMaps, moduleId);
   }
 
   //get specify sourcemap, allow receive param sourcemap
-  public getSpecifySourceMap(specifySourceMap: Object, moduleId: string, doGenKey: boolean = true): Object {
-    const key = doGenKey ? this.genKey(moduleId) : moduleId;
+  public getSpecifySourceMap(specifySourceMap: Object, moduleId: string): Object {
+    const key = this.isNewSourceMap ? this.genKey(moduleId) : moduleId;
     if (specifySourceMap && specifySourceMap[key]) {
       return specifySourceMap[key];
     }
@@ -246,18 +267,23 @@ export class SourceMapGenerator {
   }
 
   public updateSourceMap(moduleId: string, map: Object) {
-    if (!this.newSourceMaps) {
-      this.newSourceMaps = {};
+    if (!this.sourceMaps) {
+      this.sourceMaps = {};
     }
-    this.updateSpecifySourceMap(this.newSourceMaps, moduleId, map);
+    this.updateSpecifySourceMap(this.sourceMaps, moduleId, map);
   }
 
   //update specify sourcemap, allow receive param sourcemap
-  public updateSpecifySourceMap(specifySourceMap: Object, moduleId: string, itemMap: Object) {
-    specifySourceMap[this.genKey(moduleId)] = itemMap;
+  public updateSpecifySourceMap(specifySourceMap: Object, moduleId: string, sourceMap: Object) {
+    const key = this.isNewSourceMap ? this.genKey(moduleId) : moduleId;
+    specifySourceMap[key] = sourceMap;
   }
 
   public fillSourceMapPackageInfo(moduleId: string, sourcemap: Object) {
+    if (!this.isNewSourceMap) {
+      return;
+    }
+
     const pkgInfo = this.getPkgInfoByModuleId(moduleId);
     sourcemap['entry-package-info'] = `${pkgInfo.entry.name}|${pkgInfo.entry.version}`;
     if (pkgInfo.dependency) {
@@ -295,10 +321,30 @@ export class SourceMapGenerator {
     this.sourceMapPath = path;
   }
 
+  public modifySourceMapKeyToCachePath(sourceMap: object): void {
+    const projectConfig: object = this.projectConfig;
+
+    // modify source map keys to keep IDE tools right
+    const relativeCachePath: string = toUnixPath(projectConfig.cachePath.replace(
+      projectConfig.projectRootPath + path.sep, ''));
+    Object.keys(sourceMap).forEach(key => {
+      let newKey: string = relativeCachePath + '/' + key;
+      if (!newKey.endsWith(EXTNAME_JS)) {
+        const moduleId: string = this.projectConfig.projectRootPath + path.sep + key;
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
+        newKey = changeFileExtension(newKey, extName);
+      }
+      const isOhModules = key.startsWith('oh_modules');
+      newKey = handleObfuscatedFilePath(newKey, isOhModules, this.projectConfig);
+      sourceMap[newKey] = sourceMap[key];
+      delete sourceMap[key];
+    });
+  }
+
   public static cleanSourceMapObject(): void {
     if (this.instance) {
       this.instance.keyCache.clear();
-      this.instance.newSourceMaps = undefined;
+      this.instance.sourceMaps = undefined;
       this.instance = undefined;
     }
   }

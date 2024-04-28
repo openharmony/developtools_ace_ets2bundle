@@ -81,8 +81,9 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectCon
   sourcemap['file'] = path.basename(relativeSourceFilePath);
   sourcemap.sourcesContent && delete sourcemap.sourcesContent;
   const sourceMapGenerator = SourceMapGenerator.getInstance();
+  const key = sourceMapGenerator.isNewSourceMaps() ? sourceFilePath : relativeSourceFilePath;
   sourceMapGenerator.fillSourceMapPackageInfo(sourceFilePath, sourcemap);
-  sourceMapGenerator.updateSourceMap(sourceFilePath, sourcemap)
+  sourceMapGenerator.updateSourceMap(key, sourcemap);
   stopEvent(eventAddSourceMapInfo);
 }
 

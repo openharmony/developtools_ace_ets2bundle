@@ -436,9 +436,10 @@ export class ModuleSourceFile {
         hires: true
       });
       const sourceMapGenerator = SourceMapGenerator.getInstance();
-      const sourcemap = await updateSourceMap(sourceMapGenerator.getSourceMap(this.moduleId), updatedMap); 
+      const key = sourceMapGenerator.isNewSourceMaps() ? this.moduleId : relativeSourceFilePath;
+      const sourcemap = await updateSourceMap(sourceMapGenerator.getSourceMap(key), updatedMap);
       sourceMapGenerator.fillSourceMapPackageInfo(this.moduleId, sourcemap);
-      sourceMapGenerator.updateSourceMap(this.moduleId, sourcemap);
+      sourceMapGenerator.updateSourceMap(key, sourcemap);
     }
 
     this.source = code.toString();

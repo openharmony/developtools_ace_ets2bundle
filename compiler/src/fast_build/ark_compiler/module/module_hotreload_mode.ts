@@ -112,7 +112,9 @@ export class ModuleHotreloadMode extends ModuleMode {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
-    this.updateSourceMapFromFileList(changedFileListInAbsolutePath, parentEvent);
+    this.updateSourceMapFromFileList(
+      SourceMapGenerator.getInstance().isNewSourceMaps() ? changedFileListInAbsolutePath : changedFileList,
+      parentEvent);
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
@@ -122,10 +124,21 @@ export class ModuleHotreloadMode extends ModuleMode {
   private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
     const sourceMapGenerator = SourceMapGenerator.getInstance();
+    const relativeProjectPath: string = this.projectConfig.projectPath.slice(
+      this.projectConfig.projectRootPath.length + path.sep.length);
     let hotReloadSourceMap: Object = {};
     for (const file of fileList) {
-      validateFilePathLength(file, this.logger);
-      hotReloadSourceMap[sourceMapGenerator.genKey(file)] = sourceMapGenerator.getSourceMap(file);
+      if (sourceMapGenerator.isNewSourceMaps()) {
+        validateFilePathLength(file, this.logger);
+        hotReloadSourceMap[sourceMapGenerator.genKey(file)] = sourceMapGenerator.getSourceMap(file);
+      } else {
+        const sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
+        validateFilePathLength(sourceMapPath, this.logger);
+        hotReloadSourceMap[sourceMapPath] = sourceMapGenerator.getSourceMap(sourceMapPath);
+      }
+    }
+    if (!sourceMapGenerator.isNewSourceMaps()) {
+      sourceMapGenerator.modifySourceMapKeyToCachePath(hotReloadSourceMap);
     }
     const sourceMapFilePath: string = path.join(this.projectConfig.patchAbcPath, SOURCEMAPS);
     validateFilePathLength(sourceMapFilePath, this.logger);
