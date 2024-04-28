@@ -56,11 +56,6 @@ export enum ArkTSVersion {
   ArkTS_1_1,
 }
 
-export interface ArkTSProgram {
-  builderProgram: ts.BuilderProgram,
-  wasStrict: boolean
-}
-
 export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
 
 function getArkTSVersionString(arkTSVersion: ArkTSVersion): string {
@@ -68,8 +63,7 @@ function getArkTSVersionString(arkTSVersion: ArkTSVersion): string {
 }
 
 export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinterMode,
-  builderProgram: ArkTSProgram, reverseStrictProgram: ArkTSProgram,
-  printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true,
+  builderProgram: ts.BuilderProgram, printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true,
   buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
@@ -78,11 +72,11 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
   let diagnostics: ts.Diagnostic[] = [];
 
   if (arkTSVersion === ArkTSVersion.ArkTS_1_0) {
-    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, reverseStrictProgram,
-      /*srcFile*/ undefined, buildInfoWriteFile, getArkTSVersionString(arkTSVersion));
+    diagnostics = ts.ArkTSLinter_1_0.runArkTSLinter(builderProgram, /*srcFile*/ undefined, buildInfoWriteFile,
+      getArkTSVersionString(arkTSVersion));
   } else {
-    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, reverseStrictProgram,
-      /*srcFile*/ undefined, buildInfoWriteFile, getArkTSVersionString(arkTSVersion));
+    diagnostics = ts.ArkTSLinter_1_1.runArkTSLinter(builderProgram, /*srcFile*/ undefined, buildInfoWriteFile,
+      getArkTSVersionString(arkTSVersion));
   }
 
   removeOutputFile();
@@ -198,97 +192,4 @@ function printArkTSLinterFAQ(diagnostics: ts.Diagnostic[], printDiagnostic: Proc
     reportsDeprecated: undefined
   };
   printDiagnostic(arkTSFAQDiagnostic);
-}
-
-function setCompilerOptions(originProgram: ts.Program, wasStrict: boolean): ts.CompilerOptions {
-  const compilerOptions: ts.CompilerOptions = { ...originProgram.getCompilerOptions() };
-  const inversedOptions = getStrictOptions(wasStrict);
-
-  Object.assign(compilerOptions, inversedOptions);
-  compilerOptions.allowJs = true;
-  compilerOptions.checkJs = true;
-  compilerOptions.tsBuildInfoFile = path.resolve(projectConfig.cachePath, '..', ARKTS_LINTER_BUILD_INFO_SUFFIX);
-
-  return compilerOptions;
-}
-
-export function getReverseStrictBuilderProgram(rollupShareObject: any, originProgram: ts.Program,
-  wasStrict: boolean): ts.BuilderProgram {
-  let cacheKey: string = 'linter_service';
-  let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
-
-  let service: ts.LanguageService | undefined = cache?.service;
-  const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
-  const lastHash: string | undefined = cache?.pkgJsonFileHash;
-  // It's not supported to modify oh-package.json5 file under watch mode, so there is no need to rebuild here
-  const shouldRebuild: boolean | undefined = (process.env.watchMode === 'true') ?
-                                              false : (currentHash && lastHash && currentHash !== lastHash);
-  if (!service && process.env.watchMode === 'true') {
-    service = globalProgram.strictLanguageService;
-  }
-  if (!service || shouldRebuild) {
-    // Create language service for linter
-    // Revert strict options for linter program
-    const compilerOptions: ts.CompilerOptions = setCompilerOptions(originProgram, !wasStrict);
-    const servicesHost: ts.LanguageServiceHost = {
-      getScriptFileNames: () => [...originProgram.getRootFileNames()],
-      getScriptVersion: fileHashScriptVersion,
-      getScriptSnapshot: fileName => {
-        if (!fs.existsSync(fileName)) {
-          return undefined;
-        }
-        return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName).toString());
-      },
-      getCurrentDirectory: () => process.cwd(),
-      getCompilationSettings: () => compilerOptions,
-      getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
-      fileExists: ts.sys.fileExists,
-      readFile: ts.sys.readFile,
-      readDirectory: ts.sys.readDirectory,
-      resolveModuleNames: resolveModuleNames,
-      resolveTypeReferenceDirectives: resolveTypeReferenceDirectives,
-      directoryExists: ts.sys.directoryExists,
-      getDirectories: ts.sys.getDirectories,
-      getFileCheckedModuleInfo: (containFilePath: string) => {
-        return {
-          fileNeedCheck: true,
-          checkPayload: undefined,
-          currentFileName: containFilePath,
-        };
-      }
-    };
-
-    service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
-  }
-
-  service.updateRootFiles([...originProgram.getRootFileNames()]);
-  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
-  setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
-  if (process.env.watchMode === 'true') {
-    globalProgram.strictLanguageService = service;
-  }
-
-  return service.getBuilderProgram();
-}
-
-function getStrictOptions(strict = true): object {
-  return {
-    strictNullChecks: strict,
-    strictFunctionTypes: strict,
-    strictPropertyInitialization: strict,
-    noImplicitReturns: strict,
-  };
-}
-
-/**
- * Returns true if options were initially strict
- */
-export function wasOptionsStrict(compilerOptions: ts.CompilerOptions): boolean {
-  const strictOptions = getStrictOptions();
-  let wasStrict = false;
-  Object.keys(strictOptions).forEach(x => {
-    wasStrict = wasStrict || !!compilerOptions[x];
-  });
-  // wasStrict evaluates true if any of the strict options was set
-  return wasStrict;
 }
