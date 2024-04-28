@@ -805,7 +805,7 @@
             "name": "ContainerSpan",
             "type": "ContainerSpanAttribute",
             "instance": "ContainerSpanInstance"
-          },
+          }
         ]
       },
       "styles": {
