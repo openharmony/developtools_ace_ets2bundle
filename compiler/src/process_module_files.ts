@@ -59,8 +59,9 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
+    const key = sourceMapGenerator.isNewSourceMaps() ? node.fileName : relativeSourceFilePath;
     sourceMapGenerator.fillSourceMapPackageInfo(node.fileName, mixedInfo.sourceMapJson);
-    sourceMapGenerator.updateSourceMap(node.fileName, mixedInfo.sourceMapJson);
+    sourceMapGenerator.updateSourceMap(key, mixedInfo.sourceMapJson);
     sourceMaps = sourceMapGenerator.getSourceMaps();
   } else {
     webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;

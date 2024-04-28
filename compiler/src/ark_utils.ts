@@ -479,7 +479,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   if (relativeSourceFilePath.length > 0) {
-    previousStageSourceMap = sourceMapGenerator.getSpecifySourceMap(rollupNewSourceMaps, originalFilePath);
+    const key = sourceMapGenerator.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
+    previousStageSourceMap = sourceMapGenerator.getSpecifySourceMap(rollupNewSourceMaps, key) as sourceMap.RawSourceMap;
   }
 
   let historyNameCache = new Map<string, string>();
@@ -509,7 +510,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   if (mixedInfo.sourceMap && !isDeclaration) {
     mixedInfo.sourceMap.sources = [relativeSourceFilePath];
     sourceMapGenerator.fillSourceMapPackageInfo(originalFilePath, mixedInfo.sourceMap);
-    sourceMapGenerator.updateSpecifySourceMap(rollupNewSourceMaps, originalFilePath, mixedInfo.sourceMap)
+    const key = sourceMapGenerator.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
+    sourceMapGenerator.updateSpecifySourceMap(rollupNewSourceMaps, key, mixedInfo.sourceMap)
   }
 
   if (mixedInfo.nameCache && !isDeclaration) {

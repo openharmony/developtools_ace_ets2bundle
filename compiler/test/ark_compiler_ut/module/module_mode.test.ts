@@ -541,8 +541,9 @@ mocha.describe('test module_mode file api', function () {
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
 
     let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     let newSourceMaps = sourceMapGenerator.getSourceMaps();
@@ -562,20 +563,23 @@ mocha.describe('test module_mode file api', function () {
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), { FILE: '' });
 
     let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), { FILE: TEST });
     cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), { FILE: TEST, NEWFILE: NEWFILE });
     cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     let newSourceMaps = sourceMapGenerator.getSourceMaps();
@@ -595,8 +599,9 @@ mocha.describe('test module_mode file api', function () {
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
 
     let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     let newSourceMaps = sourceMapGenerator.getSourceMaps();
@@ -616,8 +621,9 @@ mocha.describe('test module_mode file api', function () {
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
 
     let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     let newSourceMaps = sourceMapGenerator.getSourceMaps();
@@ -636,8 +642,9 @@ mocha.describe('test module_mode file api', function () {
     sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), {});
 
     let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
     for (const key in cacheSourceMapObject) {
-      expect(sourceMapGenerator.getSourceMap(key, false) === cacheSourceMapObject[key]).to.be.true;
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
     let newSourceMaps = sourceMapGenerator.getSourceMaps();
