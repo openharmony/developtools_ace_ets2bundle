@@ -86,8 +86,7 @@ class HomeComponent extends ViewV2 {
                     let paramsLambda = () => {
                         return {
                             paramValue: this.local_value,
-                            paramValue1: "hello HomeComponent",
-                            $paramValue: value => { this.local_value = value; }
+                            paramValue1: "hello HomeComponent"
                         };
                     };
                     componentCall.paramsGenerator_ = paramsLambda;

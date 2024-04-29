@@ -588,21 +588,42 @@ export function assignmentFunction(componeParamName: string): ts.ExpressionState
 }
 
 function traverseChildComponentArgs(childParam: ts.Expression[], name: string, log: LogInfo[],
-  componentNode: ts.CallExpression): void {
+  componentNode: ts.CallExpression): ts.Expression[] {
   const objectLiteralIndex: number = 2;
   if (childParam.length > objectLiteralIndex && ts.isObjectLiteralExpression(childParam[1]) &&
     childParam[1].properties) {
+    const newProperties: ts.PropertyAssignment[] = [];
     childParam[1].properties.forEach((item: ts.PropertyAssignment) => {
       if (item.name && ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
-        updatePropertyAssignment(childParam[1].properties, itemName, item, name, log, componentNode);
+        updatePropertyAssignment(newProperties, itemName, item, name, log, componentNode);
       }
     });
+    if (newProperties.length) {
+      return getNewArgsForCustomComponent(childParam, newProperties);
+    }
   }
+  return childParam;
 }
 
-function updatePropertyAssignment(childParam: ts.PropertyAssignment[], itemName: string,
-  item: ts.PropertyAssignment, childName: string, log: LogInfo[], componentNode: ts.CallExpression): void {
+function getNewArgsForCustomComponent(childParam: ts.Expression[],
+  newProperties: ts.PropertyAssignment[]): ts.Expression[] {
+  const newArr: ts.Expression[] = [];
+  const newObjectLiteralNode: ts.ObjectLiteralExpression =
+    ts.factory.updateObjectLiteralExpression(childParam[1], [...childParam[1].properties, ...newProperties]);
+  childParam.forEach((item: ts.Expression, index: number) => {
+    if (index === 1) {
+      newArr.push(newObjectLiteralNode);
+    } else {
+      newArr.push(item);
+    }
+  });
+  return newArr;
+}
+
+function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
+  itemName: string, item: ts.PropertyAssignment, childName: string,
+  log: LogInfo[], componentNode: ts.CallExpression): void {
   if (isDoubleNonNullExpression(item.initializer)) {
     if (isLeftHandExpression(item.initializer.expression.expression)) {
       const result: Record<string, boolean> = { hasQuestionToken: false };
@@ -619,9 +640,7 @@ function updatePropertyAssignment(childParam: ts.PropertyAssignment[], itemName:
         processStructComponentV2.getOrCreateStructInfo(childName);
       if (childStructInfo.isComponentV2 && childStructInfo.paramDecoratorMap.has(itemName) &&
         childStructInfo.eventDecoratorSet.has('$' + itemName)) {
-        const node = createUpdateTwoWayNode(itemName, item.initializer.expression.expression);
-        node.parent = item.parent;
-        childParam.push(node);
+        newProperties.push(createUpdateTwoWayNode(itemName, item.initializer.expression.expression));
         return;
       }
       log.push({
@@ -679,8 +698,8 @@ function traverseExpressionNode(node: ts.Node, result: Record<string, boolean>):
 function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent: boolean,
   name: string, log: LogInfo[], componentNode: ts.CallExpression): ts.VariableStatement {
   const paramsArray: ts.Expression[] = newNode.arguments.length ? newNode.arguments : [];
-  traverseChildComponentArgs(paramsArray, name, log, componentNode);
-  const updateNewNode = ts.factory.updateNewExpression(newNode, newNode.expression, newNode.typeArguments, paramsArray);
+  const updateNewNode = ts.factory.updateNewExpression(newNode, newNode.expression,
+    newNode.typeArguments, traverseChildComponentArgs(paramsArray, name, log, componentNode));
   return ts.factory.createVariableStatement(
     undefined,
     ts.factory.createVariableDeclarationList(
