@@ -449,10 +449,10 @@ export class ObConfigResolver {
 
   // get absolute path
   private resolvePath(configPath: string, token: string){
-    const configDirectory = path.dirname(configPath);
     if (path.isAbsolute(token)) {
       return token;
     }
+    const configDirectory = path.dirname(configPath);
     return path.resolve(configDirectory, token);
   }
 
@@ -818,15 +818,22 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
   return keepFilesAndDependencies;
 }
 
-export function handleObfuscatedFilePath(filePath: string, isPackageModules: boolean, projectConfig: Object): string {
+export function enableObfuscatedFilePathConfig(isPackageModules: boolean, projectConfig: Object): boolean {
   const isDebugMode = isDebug(projectConfig);
   const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
   if (isDebugMode || !hasObfuscationConfig) {
-    return filePath;
+    return false;
   }
   const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
   const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
   if (disableObfuscation || !enableFileNameObfuscation) {
+    return false;
+  }
+  return true;
+}
+
+export function handleObfuscatedFilePath(filePath: string, isPackageModules: boolean, projectConfig: Object): string {
+  if (!enableObfuscatedFilePathConfig(isPackageModules, projectConfig)) {
     return filePath;
   }
   // Do not obfuscate the file path in dir oh_modules.
@@ -838,16 +845,10 @@ export function handleObfuscatedFilePath(filePath: string, isPackageModules: boo
 }
 
 export function enableObfuscateFileName(isPackageModules: boolean, projectConfig: Object): boolean {
-  const isDebugMode = isDebug(projectConfig);
-  const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
-  if (isDebugMode || !hasObfuscationConfig) {
+  if (!enableObfuscatedFilePathConfig(isPackageModules, projectConfig)) {
     return false;
   }
-  const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
-  const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
-  if (disableObfuscation || !enableFileNameObfuscation) {
-    return false;
-  }
+
   // Do not obfuscate the file path in dir oh_modules.
   if (!isPackageModules) {
     return true;
