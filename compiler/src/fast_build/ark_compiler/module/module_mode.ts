@@ -59,7 +59,8 @@ import {
 import { CommonMode } from '../common/common_mode';
 import {
   handleObfuscatedFilePath,
-  enableObfuscateFileName
+  enableObfuscateFileName,
+  enableObfuscatedFilePathConfig
 } from '../common/ob_config_resolver';
 import {
   changeFileExtension,
@@ -312,32 +313,37 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
-    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
-    const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
-    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+  private handleFileNameObfuscationInModuleInfo(sourceMapGenerator,isPackageModules: boolean, originalFilePath: string, filePath: string, sourceFile: string) {
+    if (!enableObfuscateFileName(isPackageModules, this.projectConfig)) {
+      return {filePath: filePath, sourceFile: sourceFile};
+    }
 
-    let filePath: string = "";
-    let sourceFile: string = "";
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
     filePath = handleObfuscatedFilePath(originalFilePath, isPackageModules, this.projectConfig);
-    sourceFile = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
+    sourceFile = filePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
 
     if (sourceMapGenerator.isNewSourceMaps()) {
       sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
-      if (enableObfuscateFileName(isPackageModules, this.projectConfig) && !sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
+      if (!sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
         sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
       }
       // If the file name is obfuscated, the sourceFile needs to be updated.
-      sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile) ?? sourceFile;
-    } else {
-      if (enableObfuscateFileName(isPackageModules, this.projectConfig)){
-        sourceFile = handleObfuscatedFilePath(originalFilePath, isPackageModules, this.projectConfig);
-      } else {
-        sourceFile = originalFilePath;
-      }
+      sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile);
     }
+    return {filePath: filePath, sourceFile: sourceFile};
+  }
 
+  private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
+    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+    const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
+    let filePath: string = originalFilePath;
+    let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
+    if (enableObfuscatedFilePathConfig(isPackageModules, this.projectConfig)) {
+     const filePathAndSourceFile = this.handleFileNameObfuscationInModuleInfo(sourceMapGenerator, isPackageModules, originalFilePath, filePath, sourceFile);
+     filePath = filePathAndSourceFile.filePath;
+     sourceFile = filePathAndSourceFile.sourceFile;
+    }
     let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
     let cacheFilePath: string =
@@ -369,6 +375,9 @@ export class ModuleMode extends CommonMode {
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
     packageName = toUnixPath(packageName);
+    if (!sourceMapGenerator.isNewSourceMaps()) {
+      sourceFile = cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+    }
     filePath = toUnixPath(filePath);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
