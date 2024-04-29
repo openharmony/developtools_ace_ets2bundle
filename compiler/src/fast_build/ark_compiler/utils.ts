@@ -66,6 +66,10 @@ export function isDebug(projectConfig: Object): boolean {
   return projectConfig.buildMode.toLowerCase() === DEBUG;
 }
 
+export function isBranchElimination(projectConfig: Object): boolean {
+  return projectConfig.branchElimination;
+}
+
 export function isMasterOrPrimary() {
   return ((nodeLargeOrEqualTargetVersion(16) && cluster.isPrimary) ||
     (!nodeLargeOrEqualTargetVersion(16) && cluster.isMaster));
