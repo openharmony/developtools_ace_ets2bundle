@@ -28,7 +28,8 @@ import {
   fastBuildLogger,
   emitBuildInfo,
   runArkTSLinter,
-  collectFileToIgnoreDiagnostics
+  collectFileToIgnoreDiagnostics,
+  targetESVersionChanged
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -122,6 +123,11 @@ export function etsChecker() {
         serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
       }
       setChecker();
+    },
+    shouldInvalidCache() {
+      // The generated js file might be different in some cases when we change the targetESVersion,
+      // so we need to regenerate them all when targetESVersion is changed.
+      return targetESVersionChanged;
     }
   };
 }

@@ -98,6 +98,7 @@ import {
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
+  targetESVersion?: ts.ScriptTarget;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -154,12 +155,12 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'module': ts.ModuleKind.CommonJS,
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
-    'target': convertConfigTarget(getTargetESVersion(compilerOptions.target)),
+    'target': convertConfigTarget(getTargetESVersion()),
     'baseUrl': basePath,
     'paths': {
       '*': allPath
     },
-    'lib': convertConfigLib(compilerOptions.lib),
+    'lib': convertConfigLib(getTargetESVersionLib()),
     'types': projectConfig.compilerTypes,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
@@ -203,7 +204,7 @@ function convertConfigLib(libs: string[]): string[] {
   if (converted) {
     return libs;
   }
-  return ts.convertCompilerOptionsFromJson({ 'lib': compilerOptions.lib }, '').options.lib;
+  return ts.convertCompilerOptionsFromJson({ 'lib': libs }, '').options.lib;
 }
 
 /**
@@ -339,6 +340,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   return getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
 }
 
+export let targetESVersionChanged: boolean = false;
+
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
   rollupShareObject?: any): ts.LanguageService {
   let cacheKey: string = 'service';
@@ -346,9 +349,19 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
 
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
-  const lastHash: string | undefined= cache?.pkgJsonFileHash;
-  const shouldRebuild: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
+  const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
+  const lastHash: string | undefined = cache?.pkgJsonFileHash;
+  const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
+  const hashDiffers: boolean | undefined  = currentHash && lastHash && currentHash !== lastHash;
+  const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
+  const shouldRebuild: boolean | undefined = hashDiffers || targetESVersionDiffers;
+
   if (!service || shouldRebuild) {
+    // If the targetESVersion is changed, we need to delete the build info cahce files
+    if (targetESVersionDiffers) {
+      deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
+      targetESVersionChanged = true;
+    }
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -356,9 +369,22 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service.updateRootFiles(updateRootFileNames);
   }
 
-  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash};
+  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash, targetESVersion: currentTargetESVersion};
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
+}
+
+function deleteBuildInfoCache(tsBuildInfoFilePath: string) {
+  // The file name of tsBuildInfoLinterFile is '.tsbuildinfo.linter', so we need to add '.linter' after tsBuildInfoFilePath
+  const tsBuildInfoLinterFilePath: string = tsBuildInfoFilePath + '.linter';
+  deleteFile(tsBuildInfoFilePath);
+  deleteFile(tsBuildInfoLinterFilePath);
+}
+
+function deleteFile(filePath: string) {
+  if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+  }
 }
 
 interface CacheFileName {
@@ -1375,7 +1401,7 @@ enum TargetESVersion {
   ES2021 = 'ES2021',
 }
 
-function getTargetESVersion(defaultESVersion : string | number): string | number {
+function getTargetESVersion(): TargetESVersion {
   const targetESVersion = projectConfig?.projectArkOption?.tscConfig?.targetESVersion;
   if (targetESVersion === 'ES2017') {
     return TargetESVersion.ES2017;
@@ -1385,7 +1411,31 @@ function getTargetESVersion(defaultESVersion : string | number): string | number
     const targetESVersionLogger = fastBuildLogger || logger;
     targetESVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid Target ES version\n');
   }
-  return defaultESVersion;
+  return TargetESVersion.ES2021;
+}
+
+interface TargetESVersionLib {
+  ES2017: string[],
+  ES2021: string[],
+}
+
+const targetESVersionLib: TargetESVersionLib = {
+  // When target is es2017, the lib is es2020.
+  ES2017: [ 'ES2020' ],
+  ES2021: [ 'ES2021' ],
+}
+
+function getTargetESVersionLib(): string[] {
+  const targetESVersion = projectConfig?.projectArkOption?.tscConfig?.targetESVersion;
+  if (targetESVersion === 'ES2017') {
+    return targetESVersionLib.ES2017;
+  } else if (targetESVersion === 'ES2021') {
+    return targetESVersionLib.ES2021;
+  } else if (targetESVersion !== undefined) {
+    const targetESVersionLogger = fastBuildLogger || logger;
+    targetESVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid Target ES version\n');
+  }
+  return targetESVersionLib.ES2021;
 }
 
 function initEtsStandaloneCheckerConfig(logger, config): void {
@@ -1460,4 +1510,5 @@ export function resetEtsCheck(): void {
   fileExistsCache.clear();
   dirExistsCache.clear();
   fileToIgnoreDiagnostics = undefined;
+  targetESVersionChanged = false;
 }
