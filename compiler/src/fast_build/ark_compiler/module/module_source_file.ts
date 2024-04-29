@@ -374,8 +374,9 @@ export class ModuleSourceFile {
 
   private processJsResourceRequest(): void {
     this.source = (this.source as string)
-      .replace(/\b__harDefaultBundleName__\b/gi, projectConfig.bundleName)
-      .replace(/\b__harDefaultModuleName__\b/gi, projectConfig.moduleName);
+      .replace(/\b__harDefaultBundleName__\b/gi, projectConfig.integratedHsp ? '' : projectConfig.bundleName)
+      .replace(/\b__harDefaultModuleName__\b/gi, projectConfig.moduleName)
+      .replace(/\b__harDefaultIntegratedHspType__\b/gi, projectConfig.integratedHsp ? 'true' : 'false');
   }
 
   private async processTransformedJsModuleRequest(rollupObject: Object): Promise<void> {
