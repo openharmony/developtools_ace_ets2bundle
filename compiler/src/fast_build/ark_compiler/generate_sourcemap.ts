@@ -253,9 +253,7 @@ export class SourceMapGenerator {
     }
     // update the key for filename obfuscation
     for (let [key, newKey] of this.sourceMapKeyMappingForObf) {
-      if(cacheSourceMapObject.hasOwnProperty(key) && key != newKey){
-        this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
-      }
+      this.updateSourceMapKeyWithObf(cacheSourceMapObject, key, newKey);
     }
     return cacheSourceMapObject;
   }
@@ -361,6 +359,9 @@ export class SourceMapGenerator {
   }
 
   private updateSourceMapKeyWithObf(specifySourceMap: Object, key: string, newKey: string): void {
+    if (!specifySourceMap.hasOwnProperty(key) || key === newKey) {
+      return;
+    }
     specifySourceMap[newKey] = specifySourceMap[key];
     delete specifySourceMap[key];
   }
