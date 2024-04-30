@@ -57,8 +57,11 @@ import {
   isDebug
 } from '../utils';
 import { CommonMode } from '../common/common_mode';
-import { mangleFilePath } from '../common/ob_config_resolver';
-import { newSourceMaps } from '../transform';
+import {
+  handleObfuscatedFilePath,
+  enableObfuscateFileName,
+  enableObfuscatedFilePathConfig
+} from '../common/ob_config_resolver';
 import {
   changeFileExtension,
   getEs2abcFileThreadNumber,
@@ -93,6 +96,7 @@ import {
 import {
   sharedModuleSet
 } from '../check_shared_module';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
 export class ModuleInfo {
   filePath: string;
@@ -127,7 +131,6 @@ export class ModuleMode extends CommonMode {
   moduleInfos: Map<String, ModuleInfo>;
   pkgEntryInfos: Map<String, PackageEntryInfo>;
   hashJsonObject: Object;
-  cacheSourceMapObject: Object;
   filesInfoPath: string;
   npmEntriesInfoPath: string;
   moduleAbcPath: string;
@@ -146,7 +149,6 @@ export class ModuleMode extends CommonMode {
     this.moduleInfos = new Map<String, ModuleInfo>();
     this.pkgEntryInfos = new Map<String, PackageEntryInfo>();
     this.hashJsonObject = {};
-    this.cacheSourceMapObject = {};
     this.filesInfoPath = path.join(this.projectConfig.cachePath, FILESINFO_TXT);
     this.npmEntriesInfoPath = path.join(this.projectConfig.cachePath, NPMENTRIES_TXT);
     const outPutABC: string = this.projectConfig.widgetCompile ? WIDGETS_ABC : MODULES_ABC;
@@ -311,17 +313,44 @@ export class ModuleMode extends CommonMode {
     }
   }
 
-  private addModuleInfoItem(filePath: string, isCommonJs: boolean, extName: string,
-    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
-    const isPackageModules = isPackageModulesFile(filePath, this.projectConfig);
+  private handleFileNameObfuscationInModuleInfo(sourceMapGenerator: SourceMapGenerator, isPackageModules: boolean, originalFilePath: string, filePath: string,
+    sourceFile: string) {
+    if (!enableObfuscateFileName(isPackageModules, this.projectConfig)) {
+      return {filePath: filePath, sourceFile: sourceFile};
+    }
+
     // if release mode, enable obfuscation, enable filename obfuscation -> call mangleFilePath()
-    filePath = this.handleObfuscatedFilePath(filePath, isPackageModules);
+    filePath = handleObfuscatedFilePath(originalFilePath, isPackageModules, this.projectConfig);
+    sourceFile = filePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+
+    if (sourceMapGenerator.isNewSourceMaps()) {
+      sourceFile = sourceMapGenerator.genKey(originalFilePath); // If the file name is obfuscated, meta info cannot be found.
+      if (!sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile)) {
+        sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+      }
+      // If the file name is obfuscated, the sourceFile needs to be updated.
+      sourceFile = sourceMapGenerator.sourceMapKeyMappingForObf.get(sourceFile);
+    }
+    return {filePath: filePath, sourceFile: sourceFile};
+  }
+
+  private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
+    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
+    const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
+    let filePath: string = originalFilePath;
+    let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
+    if (enableObfuscatedFilePathConfig(isPackageModules, this.projectConfig)) {
+     const filePathAndSourceFile = this.handleFileNameObfuscationInModuleInfo(sourceMapGenerator, isPackageModules, originalFilePath, filePath, sourceFile);
+     filePath = filePathAndSourceFile.filePath;
+     sourceFile = filePathAndSourceFile.sourceFile;
+    }
     let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
-    let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
+
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo['pkgName'];
       const pkgParams = {
@@ -346,70 +375,13 @@ export class ModuleMode extends CommonMode {
 
     cacheFilePath = toUnixPath(cacheFilePath);
     recordName = toUnixPath(recordName);
-    sourceFile = cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
     packageName = toUnixPath(packageName);
+    if (!sourceMapGenerator.isNewSourceMaps()) {
+      sourceFile = cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+    }
+    filePath = toUnixPath(filePath);
 
     moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
-  }
-
-  updateCachedSourceMaps(): void {
-    this.modifySourceMapKeyToCachePath(newSourceMaps);
-    if (!fs.existsSync(this.cacheSourceMapPath)) {
-      this.cacheSourceMapObject = newSourceMaps;
-      return;
-    }
-
-    this.cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
-
-    // remove unused source files's sourceMap
-    let unusedFiles = [];
-    let compileFileList: Set<string> = new Set();
-    this.moduleInfos.forEach((moduleInfo: ModuleInfo, moduleId: string) => {
-      const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
-      moduleId = toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath));
-      if (moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_TS)) {
-        moduleId = changeFileExtension(moduleId, extName);
-      }
-      compileFileList.add(moduleId);
-    })
-
-    Object.keys(this.cacheSourceMapObject).forEach(key => {
-      const sourceFileAbsolutePath: string = toUnixPath(path.join(this.projectConfig.projectRootPath, key));
-      if (!compileFileList.has(sourceFileAbsolutePath)) {
-        unusedFiles.push(key);
-      }
-    });
-    unusedFiles.forEach(file => {
-      delete this.cacheSourceMapObject[file];
-    })
-
-    // update sourceMap
-    Object.keys(newSourceMaps).forEach(key => {
-      this.cacheSourceMapObject[key] = newSourceMaps[key];
-    });
-  }
-
-  buildModuleSourceMapInfo(parentEvent: Object): void {
-    if (this.projectConfig.widgetCompile) {
-      return;
-    }
-
-    const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
-    this.updateCachedSourceMaps();
-    stopEvent(eventUpdateCachedSourceMaps);
-    this.triggerAsync(() => {
-      const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
-      fs.writeFile(this.sourceMapPath, JSON.stringify(this.cacheSourceMapObject, null, 2), 'utf-8', (err) => {
-        if (err) {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n` +
-            `File: ${this.sourceMapPath}\n` +
-            `Error message: ${err.message}`);
-        }
-        fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
-        stopEvent(eventWriteFile, true);
-        this.triggerEndSignal();
-      });
-    });
   }
 
   generateEs2AbcCmd() {
@@ -432,25 +404,6 @@ export class ModuleMode extends CommonMode {
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
-  }
-
-  private handleObfuscatedFilePath(filePath: string, isPackageModules: boolean): string {
-    const isDebugMode = isDebug(this.projectConfig);
-    const hasObfuscationConfig = this.projectConfig.obfuscationMergedObConfig;
-    if (isDebugMode || !hasObfuscationConfig) {
-      return filePath;
-    }
-    const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
-    const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
-    if (disableObfuscation || !enableFileNameObfuscation) {
-      return filePath;
-    }
-    // Do not obfuscate the file path in dir oh_modules.
-    if (!isPackageModules) {
-      return mangleFilePath(filePath);
-    }
-    // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
-    return toUnixPath(filePath);
   }
 
   private generateCompileFilesInfo() {
@@ -799,25 +752,5 @@ export class ModuleMode extends CommonMode {
       });
       fs.unlinkSync(this.protoFilePath);
     }
-  }
-
-  private modifySourceMapKeyToCachePath(sourceMap: object): void {
-    const projectConfig: object = this.projectConfig;
-
-    // modify source map keys to keep IDE tools right
-    const relativeCachePath: string = toUnixPath(projectConfig.cachePath.replace(
-      projectConfig.projectRootPath + path.sep, ''));
-    Object.keys(sourceMap).forEach(key => {
-      let newKey: string = relativeCachePath + '/' + key;
-      if (!newKey.endsWith(EXTNAME_JS)) {
-        const moduleId: string = this.projectConfig.projectRootPath + path.sep + key;
-        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
-        newKey = changeFileExtension(newKey, extName);
-      }
-      const isOhModules = key.startsWith('oh_modules');
-      newKey = this.handleObfuscatedFilePath(newKey, isOhModules);
-      sourceMap[newKey] = sourceMap[key];
-      delete sourceMap[key];
-    });
   }
 }

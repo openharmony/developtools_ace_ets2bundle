@@ -45,12 +45,15 @@ import {
   stopEvent
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
-import { newSourceMaps } from './transform';
-import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from '../../process_kit_import';
-import { cleanSourceMapObject } from './transform';
-import { cleanUpKitImportObjects } from '../../process_kit_import';
-import { cleanModuleMode } from './generate_module_abc';
-import { ModuleSourceFile } from './module/module_source_file';
+import { SourceMapGenerator } from './generate_sourcemap';
+
+export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
+export let compilingEtsOrTsFiles: string[] = [];
+
+export function cleanUpFilesList(): void {
+  hasTsNoCheckOrTsIgnoreFiles = [];
+  compilingEtsOrTsFiles = [];
+}
 
 export function needAotCompiler(projectConfig: Object): boolean {
   return projectConfig.compileMode === ESMODULE && (projectConfig.anBuildMode === AOT_FULL ||
@@ -123,7 +126,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     // compileShared: compile shared har of project
     filePath = genTemporaryPath(id,
       projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
-      projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz'): projectConfig.cachePath,
+      projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
       projectConfig, projectConfig.compileShared);
   } else {
     filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig);
@@ -157,7 +160,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, newSourceMaps, sourceFilePath);
+    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, SourceMapGenerator.getInstance().getSourceMaps(), sourceFilePath);
     return;
   }
   mkdirsSync(path.dirname(filePath));
@@ -165,7 +168,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
 }
 
 export function getEs2abcFileThreadNumber(): number {
-  const fileThreads : number = os.cpus().length < 16 ? os.cpus().length : 16;
+  const fileThreads: number = os.cpus().length < 16 ? os.cpus().length : 16;
   return fileThreads;
 }
 
@@ -228,7 +231,7 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
       return;
     }
     const originalPos =
-      originConsumer.originalPositionFor({line: mapping.originalLine, column: mapping.originalColumn});
+      originConsumer.originalPositionFor({ line: mapping.originalLine, column: mapping.originalColumn });
     if (originalPos.source == null) {
       return;
     }
@@ -240,14 +243,6 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
   updatedGenerator['_file'] = originMap.file;
   updatedGenerator['_mappings']['_array'] = newMappingList;
   return JSON.parse(updatedGenerator.toString());
-}
-
-export function cleanUpObjects(): void {
-  cleanSourceMapObject();
-  cleanUpUtilsObjects();
-  cleanUpKitImportObjects();
-  cleanModuleMode();
-  ModuleSourceFile.cleanUpObjects();
 }
 
 export const utUtils = {

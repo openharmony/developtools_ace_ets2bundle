@@ -66,9 +66,9 @@ import {
   utProcessArkConfig
 } from '../../lib/fast_build/ark_compiler/common/process_ark_config';
 import { ModuleSourceFile } from '../../lib/fast_build/ark_compiler/module/module_source_file';
-import { newSourceMaps } from '../../lib/fast_build/ark_compiler/transform';
 import { TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock/path_config';
 import { GEN_ABC_PLUGIN_NAME } from '../../lib/fast_build/ark_compiler/common/ark_define';
+import { SourceMapGenerator } from '../../lib/fast_build/ark_compiler/generate_sourcemap';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -302,6 +302,7 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('6-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
     const stub = sinon.stub(logger, 'error');
     const red: string = '\x1B[31m';
@@ -313,6 +314,7 @@ mocha.describe('test ark_utils file api', function () {
       `ArkTS:INTERNAL ERROR: Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')`
     )).to.be.true;
     stub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('7-1: test the error message of writeMinimizedSourceCode', async function () {

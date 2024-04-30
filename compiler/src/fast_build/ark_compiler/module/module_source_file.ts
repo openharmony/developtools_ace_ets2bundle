@@ -42,7 +42,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../ark_utils';
-import { newSourceMaps } from '../transform';
+import { SourceMapGenerator } from '../generate_sourcemap';
 import {
   MergedConfig,
   handleKeepFilesAndGetDependencies,
@@ -272,7 +272,8 @@ export class ModuleSourceFile {
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     if (compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions) {
-      writeObfuscationNameCache(sourceProjectConfig, sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
+      writeObfuscationNameCache(sourceProjectConfig, rollupObject.share.arkProjectConfig.entryPackageInfo,
+        sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
         sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache);
     }
     stopEvent(eventObfuscatedCode);
@@ -435,7 +436,11 @@ export class ModuleSourceFile {
         includeContent: false,
         hires: true
       });
-      newSourceMaps[relativeSourceFilePath] = await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
+      const sourceMapGenerator = SourceMapGenerator.getInstance();
+      const key = sourceMapGenerator.isNewSourceMaps() ? this.moduleId : relativeSourceFilePath;
+      const sourcemap = await updateSourceMap(sourceMapGenerator.getSourceMap(key), updatedMap);
+      sourceMapGenerator.fillSourceMapPackageInfo(this.moduleId, sourcemap);
+      sourceMapGenerator.updateSourceMap(key, sourcemap);
     }
 
     this.source = code.toString();

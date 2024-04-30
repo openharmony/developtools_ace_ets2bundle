@@ -16,6 +16,7 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
+import path from 'path';
 import fs from 'fs';
 import ts from 'typescript';
 
@@ -49,7 +50,7 @@ import {
 import projectConfig from '../utils/processProjectConfig';
 import { ModuleInfo as ModuleInfoMock } from '../mock/rollup_mock/module_info';
 import { scanFiles } from "../utils/utils";
-import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
+import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -68,6 +69,7 @@ mocha.describe('test module_source_file file api', function () {
 
   mocha.it('1-1-1: test getOhmUrl under build debug: systemOrLibOhmUrl is not undefined', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -106,10 +108,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-1-2: test getOhmUrl under build debug: filePath exist', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -149,10 +153,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-1-3: test getOhmUrl under build debug: harOhmUrl is not undefined', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -193,10 +199,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-2: test getOhmUrl under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -234,10 +242,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-3: test getOhmUrl under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -275,10 +285,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-4: test getOhmUrl under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -316,10 +328,12 @@ mocha.describe('test module_source_file file api', function () {
         }
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-1: test processJsModuleRequest under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -337,10 +351,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === EntryAbility_ts || moduleSource.source === Index_ets).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-2: test processJsModuleRequest under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -358,10 +374,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === EntryAbility_ts || moduleSource.source === Index_ets).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-3: test processJsModuleRequest under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -379,10 +397,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === EntryAbility_ts || moduleSource.source === Index_ets).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-4: test processJsModuleRequest under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -400,10 +420,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === EntryAbility_ts || moduleSource.source === Index_ets).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-1-1: test processTransformedJsModuleRequest under build debug: hasDynamicImport is false', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -423,10 +445,14 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-1-2: test processTransformedJsModuleRequest under build debug: hasDynamicImport is true', async function () {
     this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
+
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -454,10 +480,12 @@ mocha.describe('test module_source_file file api', function () {
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-2: test processTransformedJsModuleRequest under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -477,10 +505,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-3: test processTransformedJsModuleRequest under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -500,10 +530,12 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-4: test processTransformedJsModuleRequest under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const modeMock = new ModuleModeMock(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     this.moduleInfos = new Map<String, ModuleInfo>();
@@ -523,12 +555,14 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source === etsToJs || moduleSource.source === tsToJs).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-1: test processTransformedTsModuleRequest under build debug', function () {
     this.rollup.build();
     const modeMock = new ModuleModeMock(this.rollup);
     const allFiles = new Set<string>();
+    this.moduleInfos = new Map<String, ModuleInfo>();
     scanFiles(MODULE_TEST_PATH, allFiles);
     for (const moduleId of allFiles.values()) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
@@ -539,6 +573,7 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         this.rollup.moduleInfos.push(moduleInfo);
         const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
         modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
@@ -550,6 +585,7 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source.isDeclarationFile === false).to.be.true;
         expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
         expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
       }
     }
   });
@@ -568,6 +604,7 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         this.rollup.moduleInfos.push(moduleInfo);
         const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
         modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
@@ -579,6 +616,7 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source.isDeclarationFile === false).to.be.true;
         expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
         expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
       }
     }
   });
@@ -597,6 +635,7 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         this.rollup.moduleInfos.push(moduleInfo);
         const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
         modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
@@ -608,6 +647,7 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source.isDeclarationFile === false).to.be.true;
         expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
         expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
       }
     }
   });
@@ -626,6 +666,7 @@ mocha.describe('test module_source_file file api', function () {
         moduleInfo.setImportedIdMaps();
         this.rollup.moduleInfos.push(moduleInfo);
         const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
         modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
@@ -637,6 +678,7 @@ mocha.describe('test module_source_file file api', function () {
         expect(moduleSource.source.isDeclarationFile === false).to.be.true;
         expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
         expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
       }
     }
   });
