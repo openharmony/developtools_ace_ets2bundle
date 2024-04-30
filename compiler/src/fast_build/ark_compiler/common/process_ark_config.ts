@@ -158,6 +158,8 @@ export function initArkProjectConfig(share: Object): Object {
 
   // Hotreload attributes are initialized by arkui in main.js, just copy them.
   arkProjectConfig.hotReload = mainProjectConfig.hotReload;
+  arkProjectConfig.coldReload = mainProjectConfig.coldReload;
+  arkProjectConfig.isFirstBuild = mainProjectConfig.isFirstBuild;
   arkProjectConfig.patchAbcPath = mainProjectConfig.patchAbcPath;
   arkProjectConfig.changedFileList = mainProjectConfig.changedFileList;
 
