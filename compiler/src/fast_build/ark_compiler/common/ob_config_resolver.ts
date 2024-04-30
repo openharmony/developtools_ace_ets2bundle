@@ -678,10 +678,6 @@ export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: s
     fs.writeFileSync(defaultNameCachePath, writeContent);
   }
   if (printNameCache && printNameCache.length > 0) {
-    const printNameCacheDir = path.dirname(printNameCache);
-    if (!fs.existsSync(printNameCacheDir)) {
-      fs.mkdirSync(printNameCacheDir, {recursive: true});
-    }
     fs.writeFileSync(printNameCache, writeContent);
   }
 }
