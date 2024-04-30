@@ -626,7 +626,8 @@ export function readNameCache(nameCachePath: string, logger: any): void {
   }
 }
 
-export function getArkguardNameCache(entryPackageInfo: string, enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
+export function getArkguardNameCache(entryPackageInfo: string, enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean,
+  sdkVersion: string): string {
   let nameVersionInfo: string = entryPackageInfo;
   let writeContent: string = '';
   let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object,
