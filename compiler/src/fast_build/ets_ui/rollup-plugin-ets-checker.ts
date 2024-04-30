@@ -66,6 +66,7 @@ export function etsChecker() {
         configurePermission(this.share.projectConfig);
       }
       if (this.share.projectConfig.integratedHsp) {
+        projectConfig.integratedHsp = this.share.projectConfig.integratedHsp;
         projectConfig.resetBundleName = this.share.projectConfig.integratedHsp;
       }
       Object.assign(projectConfig, this.share.projectConfig);
