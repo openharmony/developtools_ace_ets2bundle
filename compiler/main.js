@@ -115,6 +115,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.optLazyForEach = false;
   projectConfig.useArkoala = false;
   projectConfig.resetBundleName = false;
+  projectConfig.integratedHsp = false;
 }
 
 function loadEntryObj(projectConfig) {

@@ -1546,12 +1546,20 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
               projectConfig.compileHar ? '' :
                 path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
             )
+          ),
+          context.factory.createPropertyAssignment(
+            context.factory.createIdentifier('integratedHsp'),
+            context.factory.createStringLiteral(integratedHspType())
           )
         ],
         false
       )
     ]
   ));
+}
+
+function integratedHspType(): string {
+  return projectConfig.integratedHsp ? 'true' : projectConfig.compileHar ? '__harDefaultIntegratedHspType__' : 'false';
 }
 
 export function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
