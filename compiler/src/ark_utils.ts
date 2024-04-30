@@ -500,8 +500,9 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     packageDir: string,
     projectRootPath: string,
     localPackageSet: Set<string>,
-    useNormalized: boolean
-  } = { packageDir, projectRootPath, localPackageSet, useNormalized };
+    useNormalized: boolean,
+    useTsHar: boolean
+  } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar: !!projectConfig.useTsHar };
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
       historyNameCache, originalFilePath, projectInfo);
