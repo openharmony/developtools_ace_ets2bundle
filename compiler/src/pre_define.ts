@@ -603,3 +603,4 @@ export const GET_SHARED: string = 'getShared';
 export const USE_SHARED_STORAGE: string = 'useSharedStorage';
 export const ARKTS_MODULE_PREFIX: string = '@arkts';
 export const ARKTS_MODULE_NAME: string = 'arkts';
+export const COLD_RELOAD_MODE: string = 'coldReload';
