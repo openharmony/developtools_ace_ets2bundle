@@ -257,6 +257,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation,
       mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
       mReservedToplevelNames: mergedObConfig.reservedGlobalNames,
+      mUniversalReservedProperties: mergedObConfig.universalReservedPropertyNames
     },
     mRemoveDeclarationComments: {
       mEnable: mergedObConfig.options.removeComments,
