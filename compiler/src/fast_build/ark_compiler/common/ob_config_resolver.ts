@@ -448,7 +448,7 @@ export class ObConfigResolver {
   }
 
   // get absolute path
-  private resolvePath(configPath: string, token: string){
+  private resolvePath(configPath: string, token: string) {
     if (path.isAbsolute(token)) {
       return token;
     }
@@ -678,8 +678,9 @@ export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: s
     fs.writeFileSync(defaultNameCachePath, writeContent);
   }
   if (printNameCache && printNameCache.length > 0) {
-    if (!fs.existsSync(path.dirname(printNameCache))) {
-      fs.mkdirSync(path.dirname(printNameCache), {recursive: true});
+    const printNameCacheDir = path.dirname(printNameCache);
+    if (!fs.existsSync(printNameCacheDir)) {
+      fs.mkdirSync(printNameCacheDir, {recursive: true});
     }
     fs.writeFileSync(printNameCache, writeContent);
   }

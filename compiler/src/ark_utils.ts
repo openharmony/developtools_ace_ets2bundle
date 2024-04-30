@@ -475,12 +475,12 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const projectRootPath = projectConfig.projectRootPath;
   const useNormalized = projectConfig.useNormalizedOHMUrl;
   const localPackageSet = projectConfig.localPackageSet;
-  const sourceMapGenerator = SourceMapGenerator.getInstance();
+  const sourceMapGeneratorInstance = SourceMapGenerator.getInstance();
 
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
+  const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
   if (relativeSourceFilePath.length > 0) {
-    const key = sourceMapGenerator.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
-    previousStageSourceMap = sourceMapGenerator.getSpecifySourceMap(rollupNewSourceMaps, key) as sourceMap.RawSourceMap;
+    previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
   }
 
   let historyNameCache = new Map<string, string>();
@@ -509,9 +509,8 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
   if (mixedInfo.sourceMap && !isDeclaration) {
     mixedInfo.sourceMap.sources = [relativeSourceFilePath];
-    sourceMapGenerator.fillSourceMapPackageInfo(originalFilePath, mixedInfo.sourceMap);
-    const key = sourceMapGenerator.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
-    sourceMapGenerator.updateSpecifySourceMap(rollupNewSourceMaps, key, mixedInfo.sourceMap)
+    sourceMapGeneratorInstance.fillSourceMapPackageInfo(originalFilePath, mixedInfo.sourceMap);
+    sourceMapGeneratorInstance.updateSpecifySourceMap(rollupNewSourceMaps, selectedFilePath, mixedInfo.sourceMap);
   }
 
   if (mixedInfo.nameCache && !isDeclaration) {
@@ -524,9 +523,9 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     nameCacheObj[relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
-  const newFilePath: string =  tryMangleFileName(filePath, projectConfig, originalFilePath);
+  const newFilePath: string = tryMangleFileName(filePath, projectConfig, originalFilePath);
   if (newFilePath !== filePath) {
-    sourceMapGenerator.saveKeyMappingForObfFileName(originalFilePath);
+    sourceMapGeneratorInstance.saveKeyMappingForObfFileName(originalFilePath);
   }
   mkdirsSync(path.dirname(newFilePath));
   fs.writeFileSync(newFilePath, mixedInfo.content ?? '');
