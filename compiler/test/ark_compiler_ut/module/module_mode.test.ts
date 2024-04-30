@@ -137,7 +137,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -166,8 +167,10 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -198,7 +201,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -229,7 +233,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -272,7 +277,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -315,7 +321,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -358,7 +365,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -401,7 +409,8 @@ mocha.describe('test module_mode file api', function () {
 
       expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
@@ -438,9 +447,10 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
@@ -474,9 +484,10 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
@@ -499,9 +510,10 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
@@ -524,9 +536,10 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
