@@ -72,6 +72,12 @@ enum OptionType {
   APPLY_NAMECACHE,
 }
 
+type SystemApiContent = {
+  ReservedNames?: string[],
+  ReservedPropertyNames?: string[],
+  ReservedGlobalNames?: string[]
+}
+
 function isFileExist(filePath: string): boolean {
   let exist = false;
   try {
@@ -141,6 +147,7 @@ export class MergedConfig {
   keepComments: string[] = [];
   keepSourceOfPaths: string[] = []; // The file path or folder path configured by the developer.
   universalReservedPropertyNames: RegExp[] = []; // Support reserved property names contain wildcards.
+  universalReservedGlobalNames: RegExp[] = []; // Support reserved global names contain wildcards.
   keepUniversalPaths: RegExp[] = []; // Support reserved paths contain wildcards.
   excludeUniversalPaths: RegExp[] = []; // Support excluded paths contain wildcards.
   excludePathSet: Set<string> = new Set();
@@ -236,15 +243,18 @@ export class ObConfigResolver {
       enableObfuscation = enableObfuscation && !dependencyConfigs.options.disableObfuscation;
     }
     const mergedConfigs: MergedConfig = this.getMergedConfigs(selfConfig, dependencyConfigs);
-    this.handleReservedPropertyArray(mergedConfigs);
+    this.handleReservedArray(mergedConfigs);
 
-    if (enableObfuscation && mergedConfigs.options.enablePropertyObfuscation) {
+    let needKeepSystemApi = enableObfuscation && (mergedConfigs.options.enablePropertyObfuscation || 
+      (mergedConfigs.options.enableExportObfuscation && mergedConfigs.options.enableToplevelObfuscation));
+
+    if (needKeepSystemApi) {
       const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, 'systemApiCache.json');
       if (isFileExist(systemApiCachePath)) {
-        this.getSystemApiConfigsByCache(selfConfig, systemApiCachePath);
+        this.getSystemApiConfigsByCache(mergedConfigs, systemApiCachePath);
       } else {
         performancePrinter?.iniPrinter?.startEvent('  Scan system api');
-        this.getSystemApiCache(selfConfig, systemApiCachePath);
+        this.getSystemApiCache(mergedConfigs, systemApiCachePath);
         performancePrinter?.iniPrinter?.endEvent('  Scan system api');
       }
     }
@@ -278,11 +288,17 @@ export class ObConfigResolver {
     this.handleConfigContent(fileContent, configs, path);
   }
 
-  private handleReservedPropertyArray(mergedConfigs: MergedConfig): void {
+  private handleReservedArray(mergedConfigs: MergedConfig): void {
     if (mergedConfigs.options.enablePropertyObfuscation && mergedConfigs.reservedPropertyNames) {
       const propertyReservedInfo: ReservedNameInfo = separateUniversalReservedItem(mergedConfigs.reservedPropertyNames);
       mergedConfigs.universalReservedPropertyNames = propertyReservedInfo.universalReservedArray;
       mergedConfigs.reservedPropertyNames = propertyReservedInfo.specificReservedArray;
+    }
+
+    if (mergedConfigs.options.enableToplevelObfuscation && mergedConfigs.reservedGlobalNames) {
+      const globalReservedInfo: ReservedNameInfo = separateUniversalReservedItem(mergedConfigs.reservedGlobalNames);
+      mergedConfigs.universalReservedGlobalNames = globalReservedInfo.universalReservedArray;
+      mergedConfigs.reservedGlobalNames = globalReservedInfo.specificReservedArray;
     }
   }
 
@@ -563,6 +579,7 @@ export class ObConfigResolver {
    */
   private getSystemApiCache(systemConfigs: MergedConfig, systemApiCachePath: string) {
     ApiExtractor.mPropertySet.clear();
+    ApiExtractor.mSystemExportSet.clear();
     const sdkApis: string[] = sortAndDeduplicateStringArr(this.sourceObConfig.sdkApis);
     for (let apiPath of sdkApis) {
       this.getSdkApiCache(apiPath);
@@ -571,18 +588,27 @@ export class ObConfigResolver {
         this.getUIApiCache(UIPath);
       }
     }
-    const savedNameAndPropertyList: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mPropertySet])
-    const systemApiContent = {
-      ReservedNames: savedNameAndPropertyList,
-      ReservedPropertyNames: savedNameAndPropertyList,
-    };
-    systemConfigs.reservedPropertyNames.push(...savedNameAndPropertyList);
-    systemConfigs.reservedNames.push(...savedNameAndPropertyList);
+    let systemApiContent: SystemApiContent = {};
+    
+    if (systemConfigs.options.enablePropertyObfuscation) {
+      const savedNameAndPropertyList: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mPropertySet])
+      systemApiContent.ReservedNames = savedNameAndPropertyList;
+      systemApiContent.ReservedPropertyNames = savedNameAndPropertyList;
+      systemConfigs.reservedPropertyNames.push(...savedNameAndPropertyList);
+      systemConfigs.reservedNames.push(...savedNameAndPropertyList);
+    }
+    if (systemConfigs.options.enableToplevelObfuscation && systemConfigs.options.enableExportObfuscation) {
+      const savedExportNames: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mSystemExportSet])
+      systemApiContent.ReservedGlobalNames = savedExportNames;
+      systemConfigs.reservedGlobalNames.push(...savedExportNames);
+    }
+
     if (!fs.existsSync(path.dirname(systemApiCachePath))) {
       fs.mkdirSync(path.dirname(systemApiCachePath), {recursive: true});
     }
     fs.writeFileSync(systemApiCachePath, JSON.stringify(systemApiContent, null, 2));
     ApiExtractor.mPropertySet.clear();
+    ApiExtractor.mSystemExportSet.clear();
   }
 
   private getSdkApiCache(sdkApiPath: string) {
@@ -618,12 +644,16 @@ export class ObConfigResolver {
   }
 
   private getSystemApiConfigsByCache(systemConfigs: MergedConfig, systemApiCachePath: string) {
-    let systemApiContent: { ReservedPropertyNames?: string[], ReservedNames?: string[] } = JSON.parse(fs.readFileSync(systemApiCachePath, 'utf-8'));
+    let systemApiContent: { ReservedPropertyNames?: string[], ReservedNames?: string[], ReservedGlobalNames?: string[] } =
+     JSON.parse(fs.readFileSync(systemApiCachePath, 'utf-8'));
     if (systemApiContent.ReservedPropertyNames) {
       systemConfigs.reservedPropertyNames = systemApiContent.ReservedPropertyNames;
     }
     if (systemApiContent.ReservedNames) {
       systemConfigs.reservedNames = systemApiContent.ReservedNames;
+    }
+    if (systemApiContent.ReservedGlobalNames) {
+      systemConfigs.reservedGlobalNames = systemApiContent.ReservedGlobalNames;
     }
   }
 
@@ -827,6 +857,7 @@ export function resetObfuscation(): void {
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
+  ApiExtractor.mSystemExportSet?.clear();
 }
 
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
