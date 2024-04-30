@@ -25,7 +25,6 @@ import {
   SYMBOLMAP
 } from '../common/ark_define';
 import { isJsonSourceFile } from '../utils';
-import { newSourceMaps } from '../transform';
 import {
   mkdirsSync,
   toUnixPath,
@@ -35,6 +34,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../ark_utils';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
 let isFirstBuild: boolean = true;
 
@@ -73,7 +73,7 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
-    this.buildModuleSourceMapInfo(parentEvent);
+    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent);
   }
 
@@ -112,7 +112,9 @@ export class ModuleHotreloadMode extends ModuleMode {
       mkdirsSync(this.projectConfig.patchAbcPath);
     }
 
-    this.updateSourceMapFromFileList(changedFileList, parentEvent);
+    this.updateSourceMapFromFileList(
+      SourceMapGenerator.getInstance().isNewSourceMaps() ? changedFileListInAbsolutePath : changedFileList,
+      parentEvent);
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
@@ -121,15 +123,23 @@ export class ModuleHotreloadMode extends ModuleMode {
 
   private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
+    const sourceMapGenerator = SourceMapGenerator.getInstance();
     const relativeProjectPath: string = this.projectConfig.projectPath.slice(
       this.projectConfig.projectRootPath.length + path.sep.length);
     let hotReloadSourceMap: Object = {};
     for (const file of fileList) {
-      const sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
-      validateFilePathLength(sourceMapPath, this.logger);
-      hotReloadSourceMap[sourceMapPath] = newSourceMaps[sourceMapPath];
+      if (sourceMapGenerator.isNewSourceMaps()) {
+        validateFilePathLength(file, this.logger);
+        hotReloadSourceMap[sourceMapGenerator.genKey(file)] = sourceMapGenerator.getSourceMap(file);
+      } else {
+        const sourceMapPath: string = toUnixPath(path.join(relativeProjectPath, file));
+        validateFilePathLength(sourceMapPath, this.logger);
+        hotReloadSourceMap[sourceMapPath] = sourceMapGenerator.getSourceMap(sourceMapPath);
+      }
     }
-    this.modifySourceMapKeyToCachePath(hotReloadSourceMap);
+    if (!sourceMapGenerator.isNewSourceMaps()) {
+      sourceMapGenerator.modifySourceMapKeyToCachePath(hotReloadSourceMap);
+    }
     const sourceMapFilePath: string = path.join(this.projectConfig.patchAbcPath, SOURCEMAPS);
     validateFilePathLength(sourceMapFilePath, this.logger);
     fs.writeFileSync(sourceMapFilePath,

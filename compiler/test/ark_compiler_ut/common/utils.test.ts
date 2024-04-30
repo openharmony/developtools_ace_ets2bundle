@@ -32,9 +32,12 @@ import {
   isJsSourceFile,
   isJsonSourceFile,
   utUtils,
-  updateSourceMap
+  updateSourceMap,
+  hasTsNoCheckOrTsIgnoreFiles,
+  compilingEtsOrTsFiles
 } from '../../../lib/fast_build/ark_compiler/utils';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
+import { ModuleInfo } from '../mock/rollup_mock/module_info';
 import {
   AOT_FULL,
   AOT_PARTIAL,
@@ -63,19 +66,16 @@ import {
   TEST_JSON
 } from '../mock/rollup_mock/path_config';
 import { scanFiles } from "../utils/utils";
-import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
+import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
 import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
 import {
-  hasTsNoCheckOrTsIgnoreFiles,
-  compilingEtsOrTsFiles
-} from '../../../lib/process_kit_import';
-import {
+  ENTRY_PACKAGE_INFO,
   FILE,
   SOURCE,
   DYNAMICIMPORT_ETS,
   UPDATESOURCEMAP
 } from '../mock/rollup_mock/common';
-import{
+import {
   moduleResolutionHostTest
 } from '../../../lib/ets_checker';
 import {
@@ -225,6 +225,7 @@ mocha.describe('test utils file api', function () {
 
   mocha.it('3-2: test writeFileContent under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const mockFileList: object = this.rollup.getModuleIds();
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_JS)) {
@@ -240,6 +241,7 @@ mocha.describe('test utils file api', function () {
         expect(readFilecontent === moduleSource.source).to.be.true;
       }
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-3: test writeFileContent under preview debug', function () {
@@ -283,6 +285,12 @@ mocha.describe('test utils file api', function () {
   mocha.it('4-1-1: test updateSourceMap under build debug: originMap is null', async function () {
     this.rollup.build();
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -297,17 +305,24 @@ mocha.describe('test utils file api', function () {
 
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] =
-      await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
-    expect(newSourceMaps[relativeSourceFilePath] === updatedMap).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
+
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-1-2: test updateSourceMap under build debug: newMap is null', async function () {
     this.rollup.build();
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -322,17 +337,24 @@ mocha.describe('test utils file api', function () {
 
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] = await updateSourceMap(updatedMap);
+    updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
 
-    expect(newSourceMaps[relativeSourceFilePath] === updatedMap).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(updatedMap));
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-1-3: test updateSourceMap under build debug: originMap and newMap is not null', async function () {
     this.rollup.build();
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -355,24 +377,29 @@ mocha.describe('test utils file api', function () {
       hires: true
     });
 
-    newSourceMaps[relativeSourceFilePath] = sourceMap;
-    delete newSourceMaps[relativeSourceFilePath].sourcesContent;
+    delete sourceMap.sourcesContent;
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] =
-      await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
+
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(sourceMap, updatedMap));
     const readSourceMap =
       JSON.parse(fs.readFileSync(`${this.rollup.share.projectConfig.projectTopDir}/${UPDATESOURCEMAP}`, 'utf-8'));
-    expect(newSourceMaps[relativeSourceFilePath].file === DYNAMICIMPORT_ETS).to.be.true;
-    expect(newSourceMaps[relativeSourceFilePath].mappings === readSourceMap.mappings).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath).file === DYNAMICIMPORT_ETS).to.be.true;
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath).mappings === readSourceMap.mappings).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-2: test updateSourceMap under build release', async function () {
     this.rollup.build(RELEASE);
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -387,17 +414,24 @@ mocha.describe('test utils file api', function () {
 
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] =
-      await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
-    expect(newSourceMaps[relativeSourceFilePath] === updatedMap).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
+
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-3: test updateSourceMap under preview debug', async function () {
     this.rollup.preview();
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -412,17 +446,24 @@ mocha.describe('test utils file api', function () {
 
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] =
-      await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
-    expect(newSourceMaps[relativeSourceFilePath] === updatedMap).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
+
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-4: test updateSourceMap under hot reload debug', async function () {
     this.rollup.hotReload();
     const dynamicImportpath = this.rollup.share.projectConfig.DynamicImportpath;
+    this.rollup.moduleInfos.push(new ModuleInfo(dynamicImportpath,
+      this.rollup.share.projectConfig.entryModuleName,
+      this.rollup.share.projectConfig.modulePath)
+    );
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+
     const relativeSourceFilePath =
       toUnixPath(dynamicImportpath.replace(this.rollup.share.projectConfig.projectTopDir + path.sep, ''));
     const code: string = fs.readFileSync(dynamicImportpath, 'utf-8');
@@ -437,12 +478,13 @@ mocha.describe('test utils file api', function () {
 
     updatedMap[SOURCE] = [relativeSourceFilePath];
     updatedMap[FILE] = path.basename(relativeSourceFilePath);
-    newSourceMaps[relativeSourceFilePath] =
-      await updateSourceMap(newSourceMaps[relativeSourceFilePath], updatedMap);
-    expect(newSourceMaps[relativeSourceFilePath] === updatedMap).to.be.true;
-    for (const key of Object.keys(newSourceMaps)) {
-      delete newSourceMaps[key];
-    }
+    updatedMap[ENTRY_PACKAGE_INFO] = 'entry|1.0.0';
+
+    sourceMapGenerator.updateSourceMap(dynamicImportpath, await updateSourceMap(undefined, updatedMap));
+    expect(sourceMapGenerator.getSourceMap(dynamicImportpath) === updatedMap).to.be.true;
+    // pop dynamicImportpath moduleInfo
+    this.rollup.moduleInfos.pop();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('5-1: test isAotMode under build debug', function () {

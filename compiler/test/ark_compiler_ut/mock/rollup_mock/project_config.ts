@@ -24,7 +24,8 @@ import {
   RESOURCE_TABLE_HASH_DEFAULT,
   DEVICE_TYPE,
   NODE_JS_PATH,
-  PORT_DEFAULT
+  PORT_DEFAULT,
+  ENTRY_MODULE_VERSION_DEFAULT
 } from "./common";
 import {
   ESMODULE,
@@ -62,6 +63,7 @@ class ProjectConfig {
   etsLoaderVersion: string = ETS_LOADER_VERSION;
   etsLoaderReleaseType: string = RELEASE;
   entryModuleName: string = ENTRY_MODULE_NAME_DEFAULT;
+  entryModuleVersion: string = ENTRY_MODULE_VERSION_DEFAULT;
   allModuleNameHash: string = MODULE_NAME_HASH_DEFAULT;
   resourceTableHash: string = RESOURCE_TABLE_HASH_DEFAULT;
   runtimeOS: string = RUNTIME_OS_OPENHARMONY;

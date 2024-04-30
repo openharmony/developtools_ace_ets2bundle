@@ -23,7 +23,7 @@ import childProcess from 'child_process';
 import cluster from 'cluster';
 
 import { toUnixPath } from '../../../lib/utils';
-import { newSourceMaps } from '../../../lib/fast_build/ark_compiler/transform';
+import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
 import { shouldETSOrTSFileTransformToJS } from '../../../lib/fast_build/ark_compiler/utils';
 import {
   RELEASE,
@@ -59,7 +59,8 @@ import {
   INDEX_TS_CACHE_PATH,
   ENTRYABILITY_SOURCE_PATH,
   ENTRYABILITY_JS_CACHE_PATH,
-  ENTRYABILITY_TS_CACHE_PATH
+  ENTRYABILITY_TS_CACHE_PATH,
+  ENTRY_MODULE_VERSION_DEFAULT
 } from '../mock/rollup_mock/common';
 import projectConfig from '../utils/processProjectConfig';
 import {
@@ -113,6 +114,7 @@ mocha.describe('test module_mode file api', function () {
 
   mocha.it('1-1: test collectModuleFileList under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     const fileList = this.rollup.getModuleIds();
     for (const filePath of fileList) {
@@ -133,15 +135,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-2: test collectModuleFileList under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     const fileList = this.rollup.getModuleIds();
     for (const filePath of fileList) {
@@ -162,14 +167,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-3: test collectModuleFileList under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     const fileList = this.rollup.getModuleIds();
     for (const filePath of fileList) {
@@ -190,15 +199,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-4: test collectModuleFileList under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     const fileList = this.rollup.getModuleIds();
     for (const filePath of fileList) {
@@ -219,15 +231,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size != 0).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-5: test collectModuleFileList useNormalizedOHMUrl under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {
       'entry': {
@@ -260,15 +275,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-6: test collectModuleFileList useNormalizedOHMUrl under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {
       'entry': {
@@ -301,15 +319,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-7: test collectModuleFileList useNormalizedOHMUrl under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {
       'entry': {
@@ -342,15 +363,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('1-8: test collectModuleFileList useNormalizedOHMUrl under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {
       'entry': {
@@ -383,15 +407,18 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_NORMALIZED_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_NORMALIZED_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
     expect(moduleMode.pkgEntryInfos.size == 7).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-1-1: test addModuleInfoItem under build debug: isPackageModulesFile`s return is true', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     this.rollup.share.projectConfig.modulePath = this.rollup.share.projectConfig.projectPath;
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.projectConfig.packageDir = ENTRY_MODULE_NAME_DEFAULT;
@@ -399,10 +426,12 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.moduleInfos.forEach(value => {
       expect(value.packageName === PKG_MODULES).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-1-2: test addModuleInfoItem under build debug: isPackageModulesFile`s return is false', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.moduleInfos.forEach(moduleInfo => {
@@ -418,23 +447,28 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-1-3: test addModuleInfoItem under build debug: extName is not null', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, EXTNAME_TS);
     moduleMode.moduleInfos.forEach(value => {
       expect(value.cacheFilePath.endsWith(EXTNAME_TS)).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-2: test addModuleInfoItem under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.moduleInfos.forEach(moduleInfo => {
@@ -450,14 +484,17 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-3: test addModuleInfoItem under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.moduleInfos.forEach(moduleInfo => {
@@ -473,14 +510,17 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('2-4: test addModuleInfoItem under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.moduleInfos.forEach(moduleInfo => {
@@ -496,220 +536,289 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.recordName.indexOf(ENTRYABILITY_JS_RECORDNAME) > 0 ||
         moduleInfo.recordName.indexOf(INDEX_ETS_RECORDNAME) > 0).to.be.true;
 
-      expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0 ||
-        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.sourceFile.indexOf(ENTRYABILITY_TS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
+        moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
     });
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-1-1: test updateCachedSourceMaps under build debug: cacheSourceMapPath not exist', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = '';
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = {};
-    newSourceMaps[INDEX_ETS_PATH_DEFAULT] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), {});
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
+
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-1-2: test updateCachedSourceMaps under build debug: compileFileList has not sourceFileAbsolutePath', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = EXPECT_SOURCEMAP_JSON;
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = { FILE: '' };
-    newSourceMaps[INDEX_ETS_PATH_DEFAULT] = { FILE: '' };
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), { FILE: '' });
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), { FILE: '' });
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = { FILE: TEST };
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), { FILE: TEST });
+    cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = { FILE: TEST, NEWFILE: NEWFILE };
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), { FILE: TEST, NEWFILE: NEWFILE });
+    cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
 
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-2: test updateCachedSourceMaps under build release', function () {
     this.rollup.build(RELEASE);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = '';
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = {};
-    newSourceMaps[INDEX_ETS_PATH_DEFAULT] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), {});
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
+
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-3: test updateCachedSourceMaps under preview debug', function () {
     this.rollup.preview();
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = '';
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = {};
-    newSourceMaps[INDEX_ETS_PATH_DEFAULT] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), {});
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
+
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-4: test updateCachedSourceMaps under hot reload debug', function () {
     this.rollup.hotReload();
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = '';
-    newSourceMaps[ENTRYABILITY_TS_PATH_DEFAULT] = {};
-    newSourceMaps[INDEX_ETS_PATH_DEFAULT] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    for (const key in moduleMode.cacheSourceMapObject) {
-      expect(newSourceMaps[key] === moduleMode.cacheSourceMapObject[key]).to.be.true;
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT), {});
+    sourceMapGenerator.updateSourceMap(path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT), {});
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
+    sourceMapGenerator.setNewSoureMaps(false);
+    for (const key in cacheSourceMapObject) {
+      expect(sourceMapGenerator.getSourceMap(key) === cacheSourceMapObject[key]).to.be.true;
     }
+
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('3-5: test updateCachedSourceMaps when ets(ts) file is transformed to js file', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.cacheSourceMapPath = '';
-    newSourceMaps[INDEX_SOURCE_PATH] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    let moduleId: string = moduleMode.projectConfig.projectRootPath + path.sep + INDEX_SOURCE_PATH;
+
+    let prefix = `${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}|`;
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId: string = path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT);
+    sourceMapGenerator.updateSourceMap(moduleId, {});
+
+    let cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
     if (shouldETSOrTSFileTransformToJS(moduleId, moduleMode.projectConfig)) {
-      expect(INDEX_JS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+      expect(prefix + INDEX_JS_PATH_DEFAULT.substring(1) in cacheSourceMapObject).to.be.true;
     } else {
-      expect(INDEX_TS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+      expect(prefix + INDEX_ETS_PATH_DEFAULT.substring(1) in cacheSourceMapObject).to.be.true;
     }
-    newSourceMaps[ENTRYABILITY_SOURCE_PATH] = {};
-    moduleMode.updateCachedSourceMapsMock();
-    moduleId = moduleMode.projectConfig.projectRootPath + path.sep + ENTRYABILITY_SOURCE_PATH;
+
+    moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
+    sourceMapGenerator.updateSourceMap(moduleId, {});
+    cacheSourceMapObject = sourceMapGenerator.updateCachedSourceMaps();
     if (shouldETSOrTSFileTransformToJS(moduleId, moduleMode.projectConfig)) {
-      expect(ENTRYABILITY_JS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+      expect(prefix + ENTRYABILITY_JS_PATH_DEFAULT.substring(1) in cacheSourceMapObject).to.be.true;
     } else {
-      expect(ENTRYABILITY_TS_CACHE_PATH in moduleMode.cacheSourceMapObject).to.be.true;
+      expect(prefix + ENTRYABILITY_JS_PATH_DEFAULT.substring(1) in cacheSourceMapObject).to.be.true;
     }
+
+    let newSourceMaps = sourceMapGenerator.getSourceMaps();
     for (const key of Object.keys(newSourceMaps)) {
       delete newSourceMaps[key];
     }
+    SourceMapGenerator.cleanSourceMapObject();
   })
 
   mocha.it('4-1: test generateCompileFilesInfo under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateCompileFilesInfoMock();
     expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-2: test generateCompileFilesInfo under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateCompileFilesInfoMock();
     expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-3: test generateCompileFilesInfo under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateCompileFilesInfoMock();
     expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('4-4: test generateCompileFilesInfo under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateCompileFilesInfoMock();
     expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('5-1: test generateNpmEntriesInfo under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateNpmEntriesInfoMock();
     expect(moduleMode.checkGenerateNpmEntriesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('5-2: test generateNpmEntriesInfo under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateNpmEntriesInfoMock();
     expect(moduleMode.checkGenerateNpmEntriesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('5-3: test generateNpmEntriesInfo under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateNpmEntriesInfoMock();
     expect(moduleMode.checkGenerateNpmEntriesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('5-4: test generateNpmEntriesInfo under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateNpmEntriesInfoMock();
     expect(moduleMode.checkGenerateNpmEntriesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('6-1: test generateAbcCacheFilesInfo under build debug', function () {
     this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('6-2: test generateAbcCacheFilesInfo under build release', function () {
     this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('6-3: test generateAbcCacheFilesInfo under preview debug', function () {
     this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('6-4: test generateAbcCacheFilesInfo under hot reload debug', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
-  });
+    SourceMapGenerator.cleanSourceMapObject();
+ });
 
   mocha.it('7-1: test getPackageEntryInfo under build debug', function () {
     this.rollup.build();
@@ -801,86 +910,102 @@ mocha.describe('test module_mode file api', function () {
 
   mocha.it('8-1: test buildModuleSourceMapInfo under build debug', async function () {
     this.rollup.build();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    moduleMode.buildModuleSourceMapInfoMock();
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(1000);
     expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-2: test buildModuleSourceMapInfo under build release', async function () {
     this.rollup.build(RELEASE);
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    moduleMode.buildModuleSourceMapInfoMock();
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(1000);
     expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-3: test buildModuleSourceMapInfo under preview debug', async function () {
     this.rollup.preview();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    moduleMode.buildModuleSourceMapInfoMock();
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(1000);
     expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-4: test buildModuleSourceMapInfo under hot reload debug', async function () {
     this.rollup.hotReload();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    moduleMode.buildModuleSourceMapInfoMock();
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(1000);
     expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-5: test the error message of buildModuleSourceMapInfo under build debug', async function () {
     this.rollup.build();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
-    moduleMode.sourceMapPath = '';
-    moduleMode.buildModuleSourceMapInfoMock();
+    sourceMapGenerator.setSourceMapPath('');
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
     stub.restore();
-    copyFileSyncStub.restore()
+    copyFileSyncStub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-6: test the error message of buildModuleSourceMapInfo under build release', async function () {
     this.rollup.build(RELEASE);
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
-    moduleMode.sourceMapPath = '';
-    moduleMode.buildModuleSourceMapInfoMock();
+    sourceMapGenerator.setSourceMapPath('');
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
     stub.restore();
-    copyFileSyncStub.restore()
+    copyFileSyncStub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-7: test the error message of buildModuleSourceMapInfo under preview debug', async function () {
     this.rollup.preview();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
-    moduleMode.sourceMapPath = '';
-    moduleMode.buildModuleSourceMapInfoMock();
+    sourceMapGenerator.setSourceMapPath('');
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
     stub.restore();
-    copyFileSyncStub.restore()
+    copyFileSyncStub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('8-8: test the error message of buildModuleSourceMapInfo under hot reload debug', async function () {
     this.rollup.hotReload();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
-    moduleMode.sourceMapPath = '';
-    moduleMode.buildModuleSourceMapInfoMock();
+    sourceMapGenerator.setSourceMapPath('');
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
     stub.restore();
-    copyFileSyncStub.restore()
+    copyFileSyncStub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 
   mocha.it('9-1: test getPkgModulesFilePkgName under build debug', function () {

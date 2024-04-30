@@ -30,6 +30,7 @@ import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { isWindows, toUnixPath } from '../../../utils';
 import { allSourceFilePaths } from '../../../ets_checker';
 import { yellow } from './ark_define';
+import { isDebug } from '../utils';
 
 /* ObConfig's properties:
  *   ruleOptions: {
@@ -426,14 +427,15 @@ export class ObConfigResolver {
           continue;
         }
         case OptionType.PRINT_NAMECACHE: {
-          configs.options.printNameCache = token;
+          configs.options.printNameCache = this.resolvePath(configPath, token);
           type = OptionType.NONE;
           continue;
         }
         case OptionType.APPLY_NAMECACHE: {
-          configs.options.applyNameCache = token;
+          const absNameCachePath: string = this.resolvePath(configPath, token);
+          this.determineNameCachePath(absNameCachePath, configPath);
+          configs.options.applyNameCache = absNameCachePath;
           type = OptionType.NONE;
-          this.determineNameCachePath(token, configPath);
           continue;
         }
         default:
@@ -443,6 +445,15 @@ export class ObConfigResolver {
 
     this.resolveDts(dtsFilePaths, configs);
     this.resolveKeepConfig(keepConfigs, configs, configPath);
+  }
+
+  // get absolute path
+  private resolvePath(configPath: string, token: string) {
+    if (path.isAbsolute(token)) {
+      return token;
+    }
+    const configDirectory = path.dirname(configPath);
+    return path.resolve(configDirectory, token);
   }
 
   // get names in .d.ts files and add them into reserved list
@@ -615,10 +626,14 @@ export function readNameCache(nameCachePath: string, logger: any): void {
   }
 }
 
-export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string): string {
+export function getArkguardNameCache(entryPackageInfo: string, enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean,
+  sdkVersion: string): string {
+  let nameVersionInfo: string = entryPackageInfo;
   let writeContent: string = '';
-  let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object } = nameCacheObj;
+  let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object,
+                             entryPackageInfo?: string } = nameCacheObj;
   nameCacheCollection.compileSdkVersion = sdkVersion;
+  nameCacheCollection.entryPackageInfo = nameVersionInfo;
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
@@ -647,10 +662,10 @@ function fillNameCache(table: Map<string, string>, nameCache: Map<string, string
   return;
 }
 
-export function writeObfuscationNameCache(projectConfig:any, obfuscationCacheDir?: string, printNameCache?: string): void {
+export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
-    writeContent = getArkguardNameCache(projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
+    writeContent = getArkguardNameCache(entryPackageInfo, projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
       projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation, projectConfig.etsLoaderVersion);
   } else {
     return;
@@ -807,4 +822,43 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
     }
   }
   return keepFilesAndDependencies;
+}
+
+export function enableObfuscatedFilePathConfig(isPackageModules: boolean, projectConfig: Object): boolean {
+  const isDebugMode = isDebug(projectConfig);
+  const hasObfuscationConfig = projectConfig.obfuscationMergedObConfig;
+  if (isDebugMode || !hasObfuscationConfig) {
+    return false;
+  }
+  const disableObfuscation = hasObfuscationConfig.options.disableObfuscation;
+  const enableFileNameObfuscation = hasObfuscationConfig.options.enableFileNameObfuscation;
+  if (disableObfuscation || !enableFileNameObfuscation) {
+    return false;
+  }
+  return true;
+}
+
+export function handleObfuscatedFilePath(filePath: string, isPackageModules: boolean, projectConfig: Object): string {
+  if (!enableObfuscatedFilePathConfig(isPackageModules, projectConfig)) {
+    return filePath;
+  }
+  // Do not obfuscate the file path in dir oh_modules.
+  if (!isPackageModules) {
+    return mangleFilePath(filePath);
+  }
+  // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
+  return toUnixPath(filePath);
+}
+
+export function enableObfuscateFileName(isPackageModules: boolean, projectConfig: Object): boolean {
+  if (!enableObfuscatedFilePathConfig(isPackageModules, projectConfig)) {
+    return false;
+  }
+
+  // Do not obfuscate the file path in dir oh_modules.
+  if (!isPackageModules) {
+    return true;
+  }
+  // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
+  return false;
 }

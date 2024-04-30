@@ -15,6 +15,7 @@
 
 import { ModuleMode } from './module_mode';
 import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
+import { SourceMapGenerator } from '../generate_sourcemap';
 
 export class ModuleBuildMode extends ModuleMode {
   constructor(rollupObject: Object) {
@@ -23,7 +24,7 @@ export class ModuleBuildMode extends ModuleMode {
 
   generateAbc(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
-    this.buildModuleSourceMapInfo(parentEvent);
+    SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.executeArkCompiler(parentEvent);
   }
 
