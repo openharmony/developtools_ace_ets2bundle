@@ -272,7 +272,7 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
   // Error code corresponding to message `Cannot find module xx or its corresponding type declarations`
   const errorCodeRequireRecheck: number = 2307;
 
-  if (cacheInfo && cacheInfo.error === true && cacheInfo.errorCodes.includes(errorCodeRequireRecheck)) {
+  if (cacheInfo && cacheInfo.error === true && cacheInfo.errorCodes && cacheInfo.errorCodes.includes(errorCodeRequireRecheck)) {
     // If this file had errors that require recheck in the last compilation,
     // mark the file as modified by modifying its hash value, thereby triggering tsc to recheck.
     fileContent += Date.now().toString();
