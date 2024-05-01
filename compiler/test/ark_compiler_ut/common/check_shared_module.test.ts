@@ -33,9 +33,8 @@ mocha.describe('test check_import_module file api', function() {
 
   mocha.it('1-1: test collect shared module from empty file', function() {
     let sourceFile: ts.SourceFile;
-    let log: LogInfo[];
     try {
-      collectSharedModule('', '', sourceFile, log);
+      collectSharedModule('', '', sourceFile);
     } catch (e) {
       expect(false).to.be.true;
     }
