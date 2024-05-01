@@ -357,7 +357,8 @@ export function processUISyntax(program: ts.Program, ut = false,
         if (hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
-                                      'Please use @Sendable in ts har.'
+                                      'Please use @Sendable in ts har. You can configure {"name": "UseTsHar", ' +
+                                      '"value": "true"} in the "metadata" in the module.json5 file in har.'
             transformLog.errors.push({
               type: LogType.WARN,
               message: warnMessage,

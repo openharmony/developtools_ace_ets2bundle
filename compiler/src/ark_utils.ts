@@ -477,6 +477,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const projectRootPath = projectConfig.projectRootPath;
   const useNormalized = projectConfig.useNormalizedOHMUrl;
   const localPackageSet = projectConfig.localPackageSet;
+  const useTsHar = projectConfig.useTsHar;
   const sourceMapGeneratorInstance = SourceMapGenerator.getInstance();
 
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
@@ -502,7 +503,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     localPackageSet: Set<string>,
     useNormalized: boolean,
     useTsHar: boolean
-  } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar: !!projectConfig.useTsHar };
+  } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
   try {
     mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
       historyNameCache, originalFilePath, projectInfo);
