@@ -184,7 +184,7 @@ export function validateUISyntax(source: string, content: string, filePath: stri
   }
 
   if (projectConfig.compileMode === ESMODULE) {
-    collectSharedModule(source, filePath, sourceFile, log);
+    collectSharedModule(source, filePath, sourceFile);
   }
 
   return log;
