@@ -807,7 +807,7 @@ function loadModuleInfo(projectConfig, envArgs) {
     }
     if (projectConfig.compileHar && buildJsonInfo.moduleName &&
       buildJsonInfo.modulePathMap[buildJsonInfo.moduleName]) {
-      if (projectConfig.useTshar) {
+      if (projectConfig.useTsHar) {
         projectConfig.processTs = true;
       }
       projectConfig.moduleRootPath = buildJsonInfo.modulePathMap[buildJsonInfo.moduleName];
