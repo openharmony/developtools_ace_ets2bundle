@@ -39,6 +39,7 @@ import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build
 export const kitTransformLog: FileLog = new FileLog();
 
 const KIT_PREFIX = '@kit.';
+const KEEPTS = '// @keepTs';
 
 /*
 * This API is the TSC Transformer for transforming `KitImport` into `OhosImport`
@@ -80,8 +81,14 @@ export function processKitImport(id: string): Function {
 
       KitInfo.init(node, context);
 
+      // When compile hap or hsp, it is used to determine whether there is a keepTsNode in the file.
+      let hasKeepTs: boolean = false;
+      if (!projectConfig.complieHar) {
+        hasKeepTs = checkHasKeepTs(node);
+      }
+
       if (projectConfig.processTs === true) {
-        if (ts.hasTsNoCheckOrTsIgnoreFlag(node)) {
+        if (ts.hasTsNoCheckOrTsIgnoreFlag(node) && !hasKeepTs) {
           hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(node.fileName));
           // process KitImport transforming
           return ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
@@ -571,6 +578,15 @@ function getKitDefs(kitModuleRequest: string) {
 
 function trimSourceSuffix(source: string): string {
   return source.replace(/\.d.[e]?ts$/, '');
+}
+
+function checkHasKeepTs(node: ts.SourceFile): boolean {
+  // Get the first comment in the file and determine whether it is "// @keepTs"
+  const comments = ts.getTrailingCommentRanges(node.getFullText(), 0) || [];
+  if (comments.length === 0) {
+    return false;
+  }
+  return node.getFullText().substring(comments[0].pos, comments[0].end).trim() === KEEPTS;
 }
 
 export function cleanUpKitImportObjects(): void {
