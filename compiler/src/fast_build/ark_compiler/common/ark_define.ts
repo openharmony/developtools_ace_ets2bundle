@@ -110,4 +110,4 @@ export const LANG_NAMESPACE = 'lang';
 export const ISENDABLE_TYPE = 'ISendable';
 
 export const USE_SHARED: string = 'use shared';
-export const USE_SHARED_COMMENT: string = '// use shared';
+export const USE_SHARED_COMMENT: string = '// "use shared"';
