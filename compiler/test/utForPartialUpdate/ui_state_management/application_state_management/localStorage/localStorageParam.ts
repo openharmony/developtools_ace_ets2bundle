@@ -280,10 +280,10 @@ class ComE extends ViewPU {
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {
-    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam" });
+    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", integratedHsp: "false" });
 }
 else if (storage && storage.routeName != undefined && storage.storage == undefined) {
-    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam" });
+    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", integratedHsp: "false" });
 }
 else if (storage && storage.routeName == undefined && storage.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
