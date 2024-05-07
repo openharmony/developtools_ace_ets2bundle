@@ -97,7 +97,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     this.rollup.clearCache();
   });
 
-  mocha.it('1-1: test collectResevedFileNameInIDEConfig', function () {
+  mocha.it('2-1: test collectResevedFileNameInIDEConfig', function () {
     const aceModuleJsonPath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/module.json');
     const ohPackagePath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/oh-package.json5');
     const projectConfig = {
@@ -124,5 +124,51 @@ mocha.describe('test obfuscate config resolver api', function () {
       '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release'
     ]
     expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
+  });
+
+  mocha.it('3-1: test resolveKeepConfig', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [ OBFUSCATION_RULE_PATH ]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const keepConfigs = [
+      './bundle',
+      './testdata/**/filename_obf',
+      '!./testdata/obfuscation/filename_obf',
+      './testdata/obfuscation/filename_obf/..',
+      './testdata/obfuscation/keep?ts',
+      './testdata/obfuscation/*',
+      './^',
+      '$',
+      '!./testdata/expect/*',
+    ];
+    let configs = {
+      keepSourceOfPaths: [],
+      keepUniversalPaths: [],
+      excludeUniversalPaths: [],
+      excludePathSet: new Set<string>()
+    };
+    const currentFilePath = __filename;
+    const configPath = path.dirname(currentFilePath);
+    const obResolver = new ObConfigResolver(this.rollup.share.projectConfig, console, true);
+    obResolver.resolveKeepConfig(keepConfigs, configs, configPath);
+    let excludePathArray = Array.from(configs.excludePathSet);
+    expect(configs.keepSourceOfPaths[0].includes('bundle')).to.be.true;
+    expect(configs.keepSourceOfPaths[1].includes('obfuscation')).to.be.true;
+    expect(configs.keepUniversalPaths[0].toString().includes('filename_obf')).to.be.true;
+    expect(configs.keepUniversalPaths[1].toString().includes('keep[^/]ts')).to.be.true;
+    expect(configs.keepUniversalPaths[2].toString().includes('[^/]*')).to.be.true;
+    expect(configs.excludeUniversalPaths[0].toString().includes('[^/]*')).to.be.true;
+    expect(excludePathArray[0].includes('filename_obf')).to.be.true;
   });
 });

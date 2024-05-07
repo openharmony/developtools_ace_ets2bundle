@@ -152,6 +152,11 @@ export class MergedConfig {
     this.reservedFileNames.push(...other.reservedFileNames);
     this.keepComments.push(...other.keepComments);
     this.keepSourceOfPaths.push(...other.keepSourceOfPaths);
+    this.keepUniversalPaths.push(...other.keepUniversalPaths);
+    this.excludeUniversalPaths.push(...other.excludeUniversalPaths);
+    other.excludePathSet.forEach((excludePath) => {
+      this.excludePathSet.add(excludePath);
+    });
   }
 
   sortAndDeduplicate() {
@@ -492,11 +497,12 @@ export class ObConfigResolver {
   }
 
   private resolveKeepConfig(keepConfigs: string[], configs: MergedConfig, configPath: string): void {
-    const specialRegex = /[\\\^\$\.\+\|\(\)\[\]\{\}]/;
+    const specialRegex = /[\\\^\$\+\|\(\)\[\]\{\}]/;
     for (let keepPath of keepConfigs) {
       // do not process elements containing special characters
-      // special characters: '\', '^', '$', '.', '+', '|', '[', ']', '{', '}'
+      // special characters: '\', '^', '$', '+', '|', '[', ']', '{', '}'
       if (specialRegex.test(keepPath)) {
+        this.logger.warn(yellow + 'ArkTS: The path contains invalid characters and will be skipped: ' + keepPath);
         continue;
       }
       let tempAbsPath: string;
@@ -850,10 +856,10 @@ function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>):
 }
 
 // Collect all keep files and then collect their dependency files.
-export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, projectRootPath: string,
-  arkObfuscator: ArkObfuscator) {
+export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>,
+  mergedObConfig: MergedConfig, projectRootPath: string, arkObfuscator: ArkObfuscator): Set<string> {
   if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0) {
-    return new Set();
+    return new Set<string>();
   }
   const keepPaths = mergedObConfig.keepSourceOfPaths;
   const excludePaths = mergedObConfig.excludePathSet;
