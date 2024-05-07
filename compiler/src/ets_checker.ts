@@ -352,7 +352,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
-  const hashDiffers: boolean | undefined  = currentHash && lastHash && currentHash !== lastHash;
+  const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
   const shouldRebuild: boolean | undefined = hashDiffers || targetESVersionDiffers;
 
@@ -374,14 +374,14 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   return service;
 }
 
-function deleteBuildInfoCache(tsBuildInfoFilePath: string) {
+function deleteBuildInfoCache(tsBuildInfoFilePath: string): void {
   // The file name of tsBuildInfoLinterFile is '.tsbuildinfo.linter', so we need to add '.linter' after tsBuildInfoFilePath
   const tsBuildInfoLinterFilePath: string = tsBuildInfoFilePath + '.linter';
   deleteFile(tsBuildInfoFilePath);
   deleteFile(tsBuildInfoLinterFilePath);
 }
 
-function deleteFile(filePath: string) {
+function deleteFile(filePath: string): void {
   if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
   }
@@ -1421,9 +1421,9 @@ interface TargetESVersionLib {
 
 const targetESVersionLib: TargetESVersionLib = {
   // When target is es2017, the lib is es2020.
-  ES2017: [ 'ES2020' ],
-  ES2021: [ 'ES2021' ],
-}
+  ES2017: ['ES2020'],
+  ES2021: ['ES2021'],
+};
 
 function getTargetESVersionLib(): string[] {
   const targetESVersion = projectConfig?.projectArkOption?.tscConfig?.targetESVersion;
