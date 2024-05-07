@@ -669,13 +669,30 @@ function getClassNode(parentType: ts.Node, childClassResult: ClassDecoratorResul
   if (symbol && symbol.valueDeclaration) {
     if (ts.isClassDeclaration(symbol.valueDeclaration)) {
       validateInheritClassDecorator(symbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
+      return;
     }
+    if (ts.isPropertyAssignment(symbol.valueDeclaration)) {
+      getClassNode(symbol.valueDeclaration.initializer, childClassResult, childClass, sourceFileNode, log);
+      return;
+    }
+    if (ts.isShorthandPropertyAssignment(symbol.valueDeclaration)) {
+      parseShorthandPropertyForClass(symbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
+      return;
+    }
+  }
+}
+
+function parseShorthandPropertyForClass(node: ts.ShorthandPropertyAssignment, childClassResult: ClassDecoratorResult,
+  childClass: ts.ClassDeclaration, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const shortSymbol: ts.Symbol = globalProgram.checker.getShorthandAssignmentValueSymbol(node);
+  if (shortSymbol && shortSymbol.valueDeclaration && ts.isClassDeclaration(shortSymbol.valueDeclaration)) {
+    validateInheritClassDecorator(shortSymbol.valueDeclaration, childClassResult, childClass, sourceFileNode, log);
   }
 }
 
 function getSymbolIfAliased(node: ts.Node): ts.Symbol {
   const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
-  if ((symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
+  if (symbol && (symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
     return globalProgram.checker.getAliasedSymbol(symbol);
   }
   return symbol;
