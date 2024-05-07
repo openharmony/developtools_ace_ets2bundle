@@ -467,10 +467,10 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
     const propertyName: string = node.name.getText();
     if (decorator.expression && ts.isCallExpression(decorator.expression) &&
       decorator.expression.arguments && decorator.expression.arguments.length === 1) {
-      const currentClassMethod: Set<string> = classMethodCollection.get(node.parent.name.getText());
+      const currentClassMethod: Set<string> = getClassMethod(node);
       const argument: ts.Node = decorator.expression.arguments[0];
       if (ts.isStringLiteral(argument)) {
-        if (currentClassMethod.has(argument.text)) {
+        if (currentClassMethod && currentClassMethod.has(argument.text)) {
           watchMap.set(propertyName, argument);
         } else {
           log.push({
@@ -493,6 +493,15 @@ function processWatch(node: ts.PropertyDeclaration, decorator: ts.Decorator,
       }
     }
   }
+}
+
+function getClassMethod(node: ts.PropertyDeclaration): Set<string> {
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  const filePath: string = sourceFile ? sourceFile.fileName : undefined;
+  if (filePath && classMethodCollection.get(filePath)) {
+    return classMethodCollection.get(filePath).get(node.parent.name.getText());
+  }
+  return new Set();
 }
 
 function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: string,
