@@ -36,7 +36,7 @@ import {
   stopEvent
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
-import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
+import { isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -67,7 +67,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
     sourceMaps = webpackNewSourceMaps;
   }
-  if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
+  if (!isDebug(projectConfig)) {
     const eventWriteObfuscatedSourceCode = createAndStartEvent(eventWriteFileSyncByNode, 'write obfuscated source code');
     await writeObfuscatedSourceCode({
         content: mixedInfo.content,

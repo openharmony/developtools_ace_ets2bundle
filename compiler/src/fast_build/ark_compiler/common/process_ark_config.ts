@@ -177,7 +177,7 @@ export function initArkProjectConfig(share: Object): Object {
   arkProjectConfig.compileMode = projectConfig.compileMode;
   arkProjectConfig.entryObj = mainProjectConfig.entryObj;
 
-  if (projectConfig.compileHar || !isDebug(projectConfig)) {
+  if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
     const logger: any = share.getLogger(OBFUSCATION_TOOL);
     performancePrinter?.iniPrinter?.startEvent(EventList.OBFUSCATION_INITIALIZATION);
