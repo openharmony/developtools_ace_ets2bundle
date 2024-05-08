@@ -340,11 +340,17 @@ export class ModuleMode extends CommonMode {
     const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
     let filePath: string = originalFilePath;
     let sourceFile: string = filePath.replace(this.projectConfig.projectRootPath + path.sep, '');
-    if (enableObfuscatedFilePathConfig(isPackageModules, this.projectConfig)) {
-     const filePathAndSourceFile = this.handleFileNameObfuscationInModuleInfo(sourceMapGenerator, isPackageModules, originalFilePath, filePath, sourceFile);
-     filePath = filePathAndSourceFile.filePath;
-     sourceFile = filePathAndSourceFile.sourceFile;
+    const isObfuscateEnabled: boolean = enableObfuscatedFilePathConfig(isPackageModules, this.projectConfig);
+    if (isObfuscateEnabled) {
+      const filePathAndSourceFile = this.handleFileNameObfuscationInModuleInfo(sourceMapGenerator, isPackageModules, originalFilePath, filePath, sourceFile);
+      filePath = filePathAndSourceFile.filePath;
+      sourceFile = filePathAndSourceFile.sourceFile;
+    } else {
+      if (sourceMapGenerator.isNewSourceMaps()) {
+        sourceFile = sourceMapGenerator.genKey(originalFilePath);
+      }
     }
+
     let moduleName: string = metaInfo['moduleName'];
     let recordName: string = '';
     let cacheFilePath: string =
