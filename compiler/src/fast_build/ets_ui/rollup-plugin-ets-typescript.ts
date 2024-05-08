@@ -298,7 +298,7 @@ async function transform(code: string, id: string) {
 
   const logger = this.share.getLogger('etsTransform');
 
-  if (projectConfig.compileMode !== "esmodule") {
+  if (projectConfig.compileMode !== 'esmodule') {
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
     compilerOptions['moduleResolution'] = 'nodenext';

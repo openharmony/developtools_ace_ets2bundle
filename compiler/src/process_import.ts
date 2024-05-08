@@ -160,7 +160,7 @@ function generateSourceFileAST(fileResolvePath: string, filePath: string): ts.So
 
 type structDecoratorResult = {
   hasRecycle: boolean
-}
+};
 
 const MODIFIER_LENGTH: number = 2;
 

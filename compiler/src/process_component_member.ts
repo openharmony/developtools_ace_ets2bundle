@@ -118,7 +118,7 @@ import { CUSTOM_BUILDER_METHOD } from './component_map';
 
 export type ControllerType = {
   hasController: boolean
-}
+};
 
 export const observedPropertyDecorators: Set<string> =
   new Set([COMPONENT_STATE_DECORATOR, COMPONENT_PROVIDE_DECORATOR]);

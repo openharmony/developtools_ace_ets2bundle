@@ -1059,11 +1059,11 @@ function collectionCustomizeStyles(node: ts.Node): void {
   if (ts.isSourceFile(node)) {
     node.statements.forEach((item: ts.Node) => {
       return collectionCustomizeStyles(item);
-    })
+    });
   } else if (ts.isStructDeclaration(node)) {
     node.members.forEach((item: ts.Node) => {
       return collectionCustomizeStyles(item);
-    })
+    });
   }
 }
 
@@ -1173,22 +1173,22 @@ function traverseBuild(node: ts.Node, index: number): void {
       }
     }
   } else if (ts.isIfStatement(node)) {
-    ifInner$$Attribute(node);
+    ifInnerDollarAttribute(node);
   }
 }
 
-function ifInner$$Attribute(node: ts.IfStatement): void {
+function ifInnerDollarAttribute(node: ts.IfStatement): void {
   if (node.thenStatement && ts.isBlock(node.thenStatement) && node.thenStatement.statements) {
     node.thenStatement.statements.forEach((item, indexIfBlock) => {
       traverseBuild(item, indexIfBlock);
     });
   }
   if (node.elseStatement) {
-    elseInner$$Attribute(node);
+    elseInnerDollarAttribute(node);
   }
 }
 
-function elseInner$$Attribute(node: ts.IfStatement): void {
+function elseInnerDollarAttribute(node: ts.IfStatement): void {
   if (ts.isIfStatement(node.elseStatement) && node.elseStatement.thenStatement && ts.isBlock(node.elseStatement.thenStatement)) {
     traverseBuild(node.elseStatement, 0);
   } else if (ts.isBlock(node.elseStatement) && node.elseStatement.statements) {
