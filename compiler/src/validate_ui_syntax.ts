@@ -1347,7 +1347,7 @@ export function sourceReplace(source: string, sourcePath: string): ReplaceResult
   content = preprocessNewExtend(content);
   // process @system.
   content = processSystemApi(content, false, sourcePath);
-  CollectImportNames(content, sourcePath);
+  collectImportNames(content, sourcePath);
 
   return {
     content: content,
@@ -1472,7 +1472,7 @@ function collectSourcemapNames(sourcePath: string, changedName: string, original
   }
 }
 
-export function CollectImportNames(content: string, sourcePath: string = null): void {
+export function collectImportNames(content: string, sourcePath: string = null): void {
   const REG_IMPORT_DECL: RegExp =
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
@@ -1504,7 +1504,7 @@ function processInnerModule(content: string, systemValueCollection: Set<string>)
   return content;
 }
 
-export function resetComponentCollection() {
+export function resetComponentCollection(): void {
   componentCollection.entryComponent = null;
   componentCollection.entryComponentPos = null;
   componentCollection.previewComponent = [];

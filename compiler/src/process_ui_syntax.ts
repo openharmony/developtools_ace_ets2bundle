@@ -1000,17 +1000,17 @@ function transformQuestionToken(node: ts.PropertyDeclaration): ts.PropertyDeclar
   let updatedTypeNode: ts.TypeNode = node.type;
 
   if (ts.isUnionTypeNode(updatedTypeNode)) {
-    if (!updatedTypeNode.types.find(type => type.kind == ts.SyntaxKind.UndefinedKeyword)) {
+    if (!updatedTypeNode.types.find(type => type.kind === ts.SyntaxKind.UndefinedKeyword)) {
       updatedTypeNode = ts.factory.createUnionTypeNode([
         ...updatedTypeNode.types,
         ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-      ])
+      ]);
     }
   } else {
     updatedTypeNode = ts.factory.createUnionTypeNode([
       updatedTypeNode,
       ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-    ])
+    ]);
   }
 
   return ts.factory.createPropertyDeclaration(
@@ -1018,8 +1018,8 @@ function transformQuestionToken(node: ts.PropertyDeclaration): ts.PropertyDeclar
     node.name,
     undefined,
     updatedTypeNode,
-    node.initializer? node.initializer : ts.factory.createIdentifier("undefined")
-  )
+    node.initializer ? node.initializer : ts.factory.createIdentifier('undefined')
+  );
 }
 
 function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
@@ -1039,7 +1039,7 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
       const propertyDecl: ts.PropertyDeclaration = member as ts.PropertyDeclaration;
       const updatedPropertyDecl: ts.PropertyDeclaration = transformQuestionToken(member);
       updatedMembers = ts.factory.createNodeArray(
-        updatedMembers.map(member => (member === propertyDecl? updatedPropertyDecl : member))
+        updatedMembers.map(member => (member === propertyDecl ? updatedPropertyDecl : member))
       );
     }
     if (ts.isConstructorDeclaration(member)) {
@@ -1711,7 +1711,7 @@ function createPreviewComponentFunction(name: string, context: ts.Transformation
 }
 
 function storePreviewComponents(name: string, entryOptionNode: ts.Expression, argsArr: ts.Expression[]):
-  (ts.ExpressionStatement|ts.VariableStatement|ts.IfStatement)[] {
+  (ts.ExpressionStatement | ts.VariableStatement | ts.IfStatement)[] {
   let isObject: boolean = false;
   let storageNode: ts.Expression;
   if (!entryOptionNode) {
@@ -1771,7 +1771,7 @@ function storePreviewComponents(name: string, entryOptionNode: ts.Expression, ar
 }
 
 function processObjectStorage(storageNode: ts.Expression, newArray: ts.Expression[], name: string,
-  newArgsArr: ts.Expression[]): (ts.ExpressionStatement|ts.VariableStatement)[] {
+  newArgsArr: ts.Expression[]): (ts.ExpressionStatement | ts.VariableStatement)[] {
   if (storageNode) {
     newArray.push(ts.factory.createIdentifier(STORAGE_NODE));
     componentCollection.previewComponent.forEach(componentName => {
@@ -1854,7 +1854,7 @@ function returnStorePreview(entryOptionNode: ts.Expression, hasStorage: boolean,
 
 function createPreviewElseBlock(name: string, context: ts.TransformationContext, cardRelativePath: string,
   localStorageName: string, entryOptionNode: ts.Expression, newExpressionParams: ts.Expression[],
-  argsArr: ts.Expression[]): (ts.ExpressionStatement | ts.IfStatement | ts.Block)[] {
+  argsArr: ts.Expression[]): (ts.ExpressionStatement | ts.IfStatement | ts.Block | ts.Statement)[] {
   if (name) {
     if (!partialUpdateConfig.partialUpdateMode) {
       return [context.factory.createExpressionStatement(context.factory.createCallExpression(

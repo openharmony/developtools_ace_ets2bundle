@@ -172,10 +172,10 @@ function checkPreview(node: ts.StructDeclaration): boolean {
 
 export type BuildCount = {
   count: number;
-}
+};
 type FreezeParamType = {
   componentFreezeParam: ts.Expression;
-}
+};
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, decoratorNode: readonly ts.Decorator[], log: LogInfo[],
   program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
