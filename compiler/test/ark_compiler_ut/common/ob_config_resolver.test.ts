@@ -271,75 +271,240 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(obOptions.removeLog).to.be.false;
   });
 
-  mocha.it('2-1: test collectResevedFileNameInIDEConfig', function () {
-    const aceModuleJsonPath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/module.json');
-    const ohPackagePath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/oh-package.json5');
-    const projectConfig = {
-      aceModuleJsonPath: aceModuleJsonPath,
-      projectPath: '/mnt/application/entry/src/main/ets',
-      cachePath: '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release',
-      aceModuleBuild: '/mnt/application/entry/build/default/intermediates/loader_out',
-      compileShared: true
-    };
-    const modulePathMap = {
-      'entry': '/mnt/application/entry',
-      'harPackageName': '/mnt/application/harPackageName'
-    }
-    const entryObj = {
-      'entryability/EntryAbility': 'D:\\enrty\\src\\main\\ets\\entryability\\EntryAbility.ets',
-      'pages/Index': 'D:\\entry\\src\\main\\ets\\pages\\Index.ets'
-    }
-    const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
-    const expectReservedFileNames = [
-      'entryability',
-      'EntryAbility',
-      'pages',
-      'Index',
-      '',
-      'mnt',
-      'application',
-      'entry',
-      '',
-      'mnt',
-      'application',
-      'harPackageName',
-      '.',
-      'Index-oh-package.ets',
-      '.',
-      'Type-oh-package.ets',
-      '..',
-      '..',
-      'Index2.ets',
-      '',
-      'mnt',
-      'application',
-      'entry',
-      'build',
-      'default',
-      'intermediates',
-      'loader_out',
-      'etsFortgz',
-      '',
-      'mnt',
-      'application',
-      'entry',
-      'src',
-      'main',
-      'ets',
-      '',
-      'mnt',
-      'application',
-      'entry',
-      'build',
-      'default',
-      'cache',
-      'default',
-      'default@HarCompileArkTs',
-      'esmodules',
-      'release'
-    ];
-    expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
-  });
+  describe('2: test collectResevedFileNameInIDEConfig', function() {
+    let aceModuleJsonPath = '';
+    let ohPackagePath = '';
+    let projectConfig = {};
+    let modulePathMap = {};
+    let entryObj = {};
+    mocha.before('init config', function () {
+      aceModuleJsonPath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/module.json');
+      ohPackagePath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/oh-package.json5');
+      projectConfig = {
+        aceModuleJsonPath: aceModuleJsonPath,
+        projectPath: '/mnt/application/entry/src/main/ets',
+        cachePath: '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release',
+        aceModuleBuild: '/mnt/application/entry/build/default/intermediates/loader_out',
+        compileShared: false,
+        compileHar: false,
+        byteCodeHar: false,
+      };
+      modulePathMap = {
+        'entry': '/mnt/application/entry',
+        'harPackageName': '/mnt/application/harPackageName'
+      };
+      entryObj = {
+        'entryability/EntryAbility': 'D:\\enrty\\src\\main\\ets\\entryability\\EntryAbility.ets',
+        'pages/Index': 'D:\\entry\\src\\main\\ets\\pages\\Index.ets'
+      };
+    });
+
+    mocha.it('2-1: test collectResevedFileNameInIDEConfig in hsp module', function () {
+      projectConfig.compileShared = true;
+      projectConfig.compileHar = false;
+      projectConfig.byteCodeHar = false;
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const expectReservedFileNames = [
+        'entryability',
+        'EntryAbility',
+        'pages',
+        'Index',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        '',
+        'mnt',
+        'application',
+        'harPackageName',
+        '.',
+        'Index-oh-package.ets',
+        '.',
+        'Type-oh-package.ets',
+        '..',
+        '..',
+        'Index2.ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'intermediates',
+        'loader_out',
+        'etsFortgz',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'src',
+        'main',
+        'ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'cache',
+        'default',
+        'default@HarCompileArkTs',
+        'esmodules',
+        'release'
+      ];
+      expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
+    });
+  
+    mocha.it('2-2: test collectResevedFileNameInIDEConfig in hap module', function () {
+      projectConfig.compileShared = false;
+      projectConfig.compileHar = false;
+      projectConfig.byteCodeHar = false;
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const expectReservedFileNames = [
+        'entryability',
+        'EntryAbility',
+        'pages',
+        'Index',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        '',
+        'mnt',
+        'application',
+        'harPackageName',
+        '.',
+        'Index-oh-package.ets',
+        '.',
+        'Type-oh-package.ets',
+        '..',
+        '..',
+        'Index2.ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'src',
+        'main',
+        'ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'cache',
+        'default',
+        'default@HarCompileArkTs',
+        'esmodules',
+        'release'
+      ];
+      expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
+    });
+  
+    mocha.it('2-3: test collectResevedFileNameInIDEConfig in source har module', function () {
+      projectConfig.compileShared = false;
+      projectConfig.compileHar = true;
+      projectConfig.byteCodeHar = false;
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const expectReservedFileNames = [
+        'entryability',
+        'EntryAbility',
+        'pages',
+        'Index',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        '',
+        'mnt',
+        'application',
+        'harPackageName',
+        '.',
+        'Index-oh-package.ets',
+        '.',
+        'Type-oh-package.ets',
+        '..',
+        '..',
+        'Index2.ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'src',
+        'main',
+        'ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'cache',
+        'default',
+        'default@HarCompileArkTs',
+        'esmodules',
+        'release'
+      ];
+      expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
+    });
+  
+    mocha.it('2-4: test collectResevedFileNameInIDEConfig in byte code har module', function () {
+      projectConfig.compileShared = false;
+      projectConfig.compileHar = true;
+      projectConfig.byteCodeHar = true;
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const expectReservedFileNames = [
+        'entryability',
+        'EntryAbility',
+        'pages',
+        'Index',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        '',
+        'mnt',
+        'application',
+        'harPackageName',
+        '.',
+        'Index-oh-package.ets',
+        '.',
+        'Type-oh-package.ets',
+        '..',
+        '..',
+        'Index2.ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'intermediates',
+        'loader_out',
+        'etsFortgz',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'src',
+        'main',
+        'ets',
+        '',
+        'mnt',
+        'application',
+        'entry',
+        'build',
+        'default',
+        'cache',
+        'default',
+        'default@HarCompileArkTs',
+        'esmodules',
+        'release'
+      ];
+      expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
+    });
+  })
 
   mocha.it('3-1: test resolveKeepConfig', function () {
     this.rollup.build(RELEASE);

@@ -840,7 +840,7 @@ export function collectResevedFileNameInIDEConfig(ohPackagePath: string, project
     moduleJsonContent.module?.srcEntry && FileUtils.collectPathReservedString(moduleJsonContent.module?.srcEntry, reservedFileNames);
   }
 
-  if (projectConfig.compileShared) {
+  if (projectConfig.compileShared || projectConfig.byteCodeHar) {
     FileUtils.collectPathReservedString(projectConfig.aceModuleBuild, reservedFileNames);
     reservedFileNames.push('etsFortgz');
   }
