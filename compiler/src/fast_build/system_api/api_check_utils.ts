@@ -29,7 +29,7 @@ import {
 import {
   LogType,
   LogInfo,
-  FileLog,
+  FileLog
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -51,7 +51,7 @@ import {
   ATOMICSERVICE_BUNDLE_TYPE,
   ATOMICSERVICE_TAG_CHECK_NAME,
   ATOMICSERVICE_TAG_CHECK_ERROER,
-  ATOMICSERVICE_TAG_CHECK_VERSION,
+  ATOMICSERVICE_TAG_CHECK_VERSION
 } from '../../pre_define';
 import {
   PERMISSION_TAG_CHECK_NAME,
@@ -68,10 +68,9 @@ import {
   CONSTANT_STEP_0,
   CONSTANT_STEP_1,
   CONSTANT_STEP_2,
-  CONSTANT_STEP_3,
+  CONSTANT_STEP_3
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
-
 
 /**
  * bundle info
@@ -181,7 +180,7 @@ export function getRealModulePath(apiDirs: string[], moduleName: string, exts: s
  */
 export function moduleRequestCallback(moduleRequest: string, _: string,
   moduleType: string, systemKey: string): string {
-  for (let config of extendSdkConfigs.values()) {
+  for (const config of extendSdkConfigs.values()) {
     if (config.prefix === '@arkui-x') {
       continue;
     }
@@ -219,7 +218,7 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: Fil
       return;
     }
     const type: ts.Type = checker.getTypeAtLocation(node);
-    let sourceFile: ts.SourceFile | undefined = undefined;
+    let sourceFile: ts.SourceFile | undefined;
     if (type && type.aliasSymbol && type.aliasSymbol.declarations && type.aliasSymbol.declarations.length > 0) {
       sourceFile = ts.getSourceFileOfNode(type.aliasSymbol.declarations[0]);
     } else if (type && type.symbol && type.symbol.declarations && type.symbol.declarations.length > 0) {
@@ -235,7 +234,7 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: Fil
       GLOBAL_DECLARE_WHITE_LIST.has(currentTypeName) &&
       ohosSystemModulePaths.includes(sourceFile.fileName.replace(/\//g, '\\'))) {
       transformLog.errors.push({
-        type: LogType.WARN,
+        type: LogType.ERROR,
         message: `Cannot find name '${currentTypeName}'.`,
         pos: node.getStart()
       });
@@ -298,7 +297,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   let byFileName: Map<string, ts.JsDocNodeCheckConfig> | undefined = jsDocNodeCheckConfigCache.get(fileName);
   if (byFileName === undefined) {
     byFileName = new Map<string, ts.JsDocNodeCheckConfig>();
-    jsDocNodeCheckConfigCache.set(fileName, byFileName)
+    jsDocNodeCheckConfigCache.set(fileName, byFileName);
   }
   let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
@@ -315,7 +314,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) ||
     isArkuiDependence(sourceFileName))) {
-    permissionsArray = projectConfig.requestPermissions
+    permissionsArray = projectConfig.requestPermissions;
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
@@ -325,15 +324,15 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
-      //TODO:fix error type in the feature
+      // TODO:fix error type in the feature
       if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
-        permissionsArray = projectConfig.requestPermissions
+        permissionsArray = projectConfig.requestPermissions;
         checkConfigArray.push(getJsDocNodeCheckConfigItem([TEST_TAG_CHECK_NAME], TEST_TAG_CHECK_ERROR, false,
           ts.DiagnosticCategory.Warning, '', false));
       }
     }
     checkConfigArray.push(getJsDocNodeCheckConfigItem([PERMISSION_TAG_CHECK_NAME], PERMISSION_TAG_CHECK_ERROR, false,
-      ts.DiagnosticCategory.Warning, '', false, undefined, checkPermissionValue))
+      ts.DiagnosticCategory.Warning, '', false, undefined, checkPermissionValue));
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, false,
@@ -347,12 +346,12 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning, '', false));
+        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Error, '', false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
         STAGE_TAG_CHECK_ERROR, false,
-        ts.DiagnosticCategory.Warning, '', false));
+        ts.DiagnosticCategory.Error, '', false));
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
@@ -365,7 +364,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     nodeNeedCheck: needCheckResult,
     checkConfig: checkConfigArray
   };
-  byFileName.set(sourceFileName, result)
+  byFileName.set(sourceFileName, result);
   return result;
 }
 
@@ -402,7 +401,7 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
   });
   if (hasSubDirPath) {
     const error: LogInfo = {
-      type: LogType.WARN,
+      type: LogType.ERROR,
       message: `Cannot find module '${moduleSpecifierStr}' or its corresponding type declarations.`,
       pos: moduleSpecifier.getStart()
     };
@@ -432,8 +431,10 @@ export function configureSyscapInfo(config: any): void {
     allSyscaps = allSyscaps.concat(value);
   });
   const intersectNoRepeatTwice = (arrs: Array<string[]>) => {
-    return arrs.reduce(function (prev: string[], cur: string[]) {
-      return Array.from(new Set(cur.filter((item: string) => { return prev.includes(item) })));
+    return arrs.reduce(function(prev: string[], cur: string[]) {
+      return Array.from(new Set(cur.filter((item: string) => {
+        return prev.includes(item);
+      })));
     });
   };
   let syscapIntersection: string[] = [];
@@ -536,7 +537,9 @@ export function configurePermission(config: any): void {
 }
 
 function getNameFromArray(array: Array<{ name: any, [key: string]: any }>): string[] {
-  return array.map((item: { name: any }) => { return String(item.name) })
+  return array.map((item: { name: any }) => {
+    return String(item.name);
+  });
 }
 
 /**
@@ -562,9 +565,9 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
 
 /**
  * custom condition check
- * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo 
- * @param { ts.JsDocTagInfo[] } jsDocs 
- * @returns 
+ * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo
+ * @param { ts.JsDocTagInfo[] } jsDocs
+ * @returns
  */
 export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocs: ts.JsDocTagInfo[]):
   ts.ConditionCheckResult {
