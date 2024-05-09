@@ -138,7 +138,7 @@ export let componentCollection: ComponentCollection = new ComponentCollection();
 
 export const observedClassCollection: Set<string> = new Set();
 export const enumCollection: Set<string> = new Set();
-export const classMethodCollection: Map<string, Set<string>> = new Map();
+export const classMethodCollection: Map<string, Map<string, Set<string>>> = new Map();
 export const dollarCollection: Set<string> = new Set();
 
 export const propertyCollection: Map<string, Set<string>> = new Map();
@@ -1179,9 +1179,24 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
         currentMethodCollection.add(item.name.getText());
       }
     });
-    classMethodCollection.set(node.name.getText(), currentMethodCollection);
+    collectCurrentClassMethod(node, currentMethodCollection);
   }
   isStaticViewCollection.set(node.name.getText(), isStatic);
+}
+
+function collectCurrentClassMethod(node: ts.StructDeclaration, currentMethodCollection: Set<string>): void {
+  const componentMethodCollection: Map<string, Set<string>> = new Map();
+  componentMethodCollection.set(node.name.getText(), currentMethodCollection);
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  const filePath: string = sourceFile ? sourceFile.fileName : undefined;
+  if (filePath) {
+    const pageMethodCollection: Map<string, Set<string>> = classMethodCollection.get(filePath);
+    if (!pageMethodCollection) {
+      classMethodCollection.set(filePath, componentMethodCollection);
+    } else if (!pageMethodCollection.get(node.name.getText())) {
+      pageMethodCollection.set(node.name.getText(), currentMethodCollection);
+    }
+  }
 }
 
 const FORBIDDEN_PUBLIC_ACCESS: string[] = [COMPONENT_STORAGE_PROP_DECORATOR,
