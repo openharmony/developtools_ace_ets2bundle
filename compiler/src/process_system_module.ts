@@ -15,7 +15,7 @@
 
 import {
   processSystemApi,
-  CollectImportNames
+  collectImportNames
 } from './validate_ui_syntax';
 import { systemModules } from '../main';
 
@@ -34,6 +34,6 @@ module.exports = function processSystemModule(source: string): string {
     return item;
   });
   source = processSystemApi(source, false, this.resourcePath, true);
-  CollectImportNames(source, this.resourcePath);
+  collectImportNames(source, this.resourcePath);
   return source;
 };

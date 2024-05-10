@@ -932,7 +932,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log) || propertyName;
       const parentPropertyKind = COMPONENT_NON_DECORATOR;
       if (!isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
-        if (isBuilder && judgeStructAssigned$$(node)) {
+        if (isBuilder && judgeStructAssignedDollar(node)) {
           log.push({
             type: LogType.WARN,
             message: `Unrecognized property '${parentPropertyName}', make sure it can be assigned to ` +
@@ -949,7 +949,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
   }
 }
 
-function judgeStructAssigned$$(node: ts.ObjectLiteralElementLike): boolean {
+function judgeStructAssignedDollar(node: ts.ObjectLiteralElementLike): boolean {
   return partialUpdateConfig.partialUpdateMode && node.initializer &&
     ts.isPropertyAccessExpression(node.initializer) &&
     node.initializer.expression && ts.isIdentifier(node.initializer.expression) &&

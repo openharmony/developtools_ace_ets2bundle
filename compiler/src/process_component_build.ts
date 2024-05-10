@@ -2496,7 +2496,7 @@ function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
   return ts.isIdentifier(node) && CUSTOM_BUILDER_PROPERTIES.has(node.escapedText.toString());
 }
 
-function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
+function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined, undefined,
     [ts.factory.createParameterDeclaration(
@@ -2517,10 +2517,10 @@ function createArrowFunctionFor$$($$varExp: ts.Expression): ts.ArrowFunction {
   );
 }
 
-function updateArgumentFor$$(argument): ts.Expression {
+function updateArgumentForDollar(argument): ts.Expression {
   if (ts.isElementAccessExpression(argument)) {
     return ts.factory.updateElementAccessExpression(
-      argument, updateArgumentFor$$(argument.expression), argument.argumentExpression);
+      argument, updateArgumentForDollar(argument.expression), argument.argumentExpression);
   } else if (ts.isIdentifier(argument)) {
     if (argument.getText() === $$_THIS) {
       return ts.factory.createThis();
@@ -2529,7 +2529,7 @@ function updateArgumentFor$$(argument): ts.Expression {
     }
   } else if (ts.isPropertyAccessExpression(argument)) {
     return ts.factory.updatePropertyAccessExpression(
-      argument, updateArgumentFor$$(argument.expression), argument.name);
+      argument, updateArgumentForDollar(argument.expression), argument.name);
   }
   return argument;
 }
@@ -2784,17 +2784,17 @@ function changeEtsComponentKind(node: ts.Node): ts.Node {
 function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
   identifierNode: ts.Identifier): void {
   if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length >= 2) {
-    const varExp: ts.Expression = updateArgumentFor$$(args[0]);
-    argumentsArr.push(generateObjectFor$$(varExp), ...args.slice(1));
+    const varExp: ts.Expression = updateArgumentForDollar(args[0]);
+    argumentsArr.push(generateObjectForDollar(varExp), ...args.slice(1));
   } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) && args.length === 1 &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 1) {
-    const varExp: ts.Expression = updateArgumentFor$$(args[0]);
-    argumentsArr.push(varExp, createArrowFunctionFor$$(varExp));
+    const varExp: ts.Expression = updateArgumentForDollar(args[0]);
+    argumentsArr.push(varExp, createArrowFunctionForDollar(varExp));
   }
 }
 
-function generateObjectFor$$(varExp: ts.Expression): ts.ObjectLiteralExpression {
+function generateObjectForDollar(varExp: ts.Expression): ts.ObjectLiteralExpression {
   return ts.factory.createObjectLiteralExpression(
     [
       ts.factory.createPropertyAssignment(
@@ -2803,7 +2803,7 @@ function generateObjectFor$$(varExp: ts.Expression): ts.ObjectLiteralExpression 
       ),
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier($$_CHANGE_EVENT),
-        createArrowFunctionFor$$(varExp)
+        createArrowFunctionForDollar(varExp)
       )
     ],
     false
@@ -3223,8 +3223,8 @@ function processDollarEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, na
       const properties: ts.PropertyAssignment[] = [];
       item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number) => {
         if (isHaveDoubleDollar(param, name)) {
-          const varExp: ts.Expression = updateArgumentFor$$(param.initializer);
-          properties.push(ts.factory.updatePropertyAssignment(param, param.name, generateObjectFor$$(varExp)));
+          const varExp: ts.Expression = updateArgumentForDollar(param.initializer);
+          properties.push(ts.factory.updatePropertyAssignment(param, param.name, generateObjectForDollar(varExp)));
         } else {
           properties.push(param);
         }

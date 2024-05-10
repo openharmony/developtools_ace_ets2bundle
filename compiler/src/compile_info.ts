@@ -109,7 +109,7 @@ export class ResultStates {
   private hotReloadIncrementalTime: hotReloadIncrementalTime = {
     hotReloadIncrementalStartTime: '',
     hotReloadIncrementalEndTime: ''
-  }
+  };
   private incrementalFileInHar: Map<string, string> = new Map();
 
   public apply(compiler: Compiler): void {
@@ -134,7 +134,7 @@ export class ResultStates {
             let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map','.js'));
             if (sourcemapNamesCollection && absPath) {
               let map: Map<string, string> = sourcemapNamesCollection.get(absPath);
-              if (map && map.size != 0) {
+              if (map && map.size !== 0) {
                 let names: Array<string> = Array.from(map).flat();
                 let sourcemapObj: any = JSON.parse(assets[key]._value);
                 sourcemapObj.nameMap = names;
