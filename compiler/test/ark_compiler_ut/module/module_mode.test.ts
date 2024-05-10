@@ -54,12 +54,6 @@ import {
   ENTRY_MODULE_NAME_DEFAULT,
   TEST,
   NEWFILE,
-  INDEX_SOURCE_PATH,
-  INDEX_JS_CACHE_PATH,
-  INDEX_TS_CACHE_PATH,
-  ENTRYABILITY_SOURCE_PATH,
-  ENTRYABILITY_JS_CACHE_PATH,
-  ENTRYABILITY_TS_CACHE_PATH,
   ENTRY_MODULE_VERSION_DEFAULT
 } from '../mock/rollup_mock/common';
 import projectConfig from '../utils/processProjectConfig';
@@ -540,6 +534,90 @@ mocha.describe('test module_mode file api', function () {
         moduleInfo.sourceFile.indexOf(ENTRYABILITY_JS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_JS_PATH_DEFAULT.substring(1)) > 0 ||
         moduleInfo.sourceFile.indexOf(INDEX_ETS_PATH_DEFAULT.substring(1)) > 0).to.be.true;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-5-1: test addModuleInfoItem under build debug: sourceFile equals sourcemap new key', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-5-2: test addModuleInfoItem under build release: sourceFile equals sourcemap new key', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-5-3: test addModuleInfoItem under preview debug: sourceFile equals sourcemap new key', function () {
+    this.rollup.preview();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-5-4: test addModuleInfoItem under hot reload debug: sourceFile equals sourcemap new key', function () {
+    this.rollup.hotReload();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    const moduleInfosAndSourceMap = ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-6-1: test addModuleInfoItem under build debug: sourceFile equals sourcemap old key', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-6-2: test addModuleInfoItem under build release: sourceFile equals sourcemap old key', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-6-3: test addModuleInfoItem under preview debug: sourceFile equals sourcemap old key', function () {
+    this.rollup.preview();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-6-4: test addModuleInfoItem under hot reload debug: sourceFile equals sourcemap old key', function () {
+    this.rollup.hotReload();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
+    moduleInfosAndSourceMap.moduleInfos.forEach(value => {
+      expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });

@@ -482,7 +482,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
 
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
   const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
-  if (relativeSourceFilePath.length > 0) {
+  if (relativeSourceFilePath.length > 0 && !isDeclaration) {
     previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
   }
 
@@ -528,7 +528,7 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   }
 
   const newFilePath: string = tryMangleFileName(filePath, projectConfig, originalFilePath);
-  if (newFilePath !== filePath) {
+  if (newFilePath !== filePath && !isDeclaration) {
     sourceMapGeneratorInstance.saveKeyMappingForObfFileName(originalFilePath);
   }
   mkdirsSync(path.dirname(newFilePath));
