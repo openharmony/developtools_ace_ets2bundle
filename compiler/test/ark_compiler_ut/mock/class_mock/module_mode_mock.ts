@@ -14,6 +14,7 @@
  */
 
 import fs from 'fs';
+import path from 'path';
 import {
   COMMONJS,
   ESM,
@@ -45,6 +46,30 @@ class ModuleModeMock extends ModuleMode {
         this.addModuleInfoItem(filePath, isCommonJs, extName, metaInfo, this.moduleInfos);
       }
     }
+  }
+
+  addSourceMapMock(rollupObject: object, sourceMapGenerator: SourceMapGenerator) {
+    for (const filePath of rollupObject.getModuleIds()) {
+      const isValidSuffix: boolean =
+        filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS);
+      if (!isValidSuffix)
+        continue;
+      if (sourceMapGenerator.isNewSourceMaps()) {
+        sourceMapGenerator.updateSourceMap(filePath, {});
+      } else {
+        const filePathCache: string = this.genFileCachePath(
+          filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath)
+        sourceMapGenerator.updateSourceMap(
+          filePathCache.replace(this.projectConfig.projectRootPath + path.sep, ''), {});
+      }
+    }
+  }
+
+  static getModuleInfosAndSourceMapMock(rollupObject: object, sourceMapGenerator: SourceMapGenerator) {
+    const moduleMode = new ModuleModeMock(rollupObject);
+    moduleMode.addSourceMapMock(rollupObject, sourceMapGenerator);
+    moduleMode.addModuleInfoItemMock(rollupObject, false, '');
+    return { moduleInfos: moduleMode.moduleInfos, sourceMap: sourceMapGenerator.getSourceMaps() };
   }
 
   generateCompileFilesInfoMock() {
