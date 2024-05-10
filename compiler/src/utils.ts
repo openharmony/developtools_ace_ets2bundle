@@ -219,8 +219,8 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
         pos: node.getStart()
       });
     }
-    return (decortorName === COMPONENT_EXTEND_DECORATOR && extendResult.Extend)
-      || (decortorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR && extendResult.AnimatableExtend);
+    return (decortorName === COMPONENT_EXTEND_DECORATOR && extendResult.Extend) ||
+      (decortorName === COMPONENT_ANIMATABLE_EXTEND_DECORATOR && extendResult.AnimatableExtend);
   }
   return false;
 }
@@ -498,7 +498,7 @@ export function maxFilePathLength(): number {
 
 export function validateFilePathLength(filePath: string, logger: Object): boolean {
   if (maxFilePathLength() < 0) {
-    logger.error(red, "Unknown OS platform", reset);
+    logger.error(red, 'Unknown OS platform', reset);
     process.exitCode = FAIL;
     return false;
   } else if (filePath.length > 0 && filePath.length <= maxFilePathLength()) {
@@ -506,11 +506,11 @@ export function validateFilePathLength(filePath: string, logger: Object): boolea
   } else if (filePath.length > maxFilePathLength()) {
     logger.error(red, `The length of ${filePath} exceeds the limitation of current platform, which is ` +
       `${maxFilePathLength()}. Please try moving the project folder to avoid deeply nested file path and try again`,
-      reset);
+    reset);
     process.exitCode = FAIL;
     return false;
   } else {
-    logger.error(red, "Validate file path failed", reset);
+    logger.error(red, 'Validate file path failed', reset);
     process.exitCode = FAIL;
     return false;
   }
@@ -521,7 +521,7 @@ export function validateFilePathLengths(filePaths: Array<string>, logger: any): 
     if (!validateFilePathLength(filePath, logger)) {
       return false;
     }
-  })
+  });
   return true;
 }
 
@@ -673,7 +673,7 @@ export function getAllComponentsOrModules(allFiles: Set<string>,
 export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclaration[]): string[] {
   const parameterNames: string[] = [];
   if (!partialUpdateConfig.builderCheck) {
-    if (is$$Parameter(parameters)) {
+    if (isDollarParameter(parameters)) {
       parameters[0].type.members.forEach((member) => {
         if (member.name && ts.isIdentifier(member.name)) {
           parameterNames.push(member.name.escapedText.toString());
@@ -690,7 +690,7 @@ export function getPossibleBuilderTypeParameter(parameters: ts.ParameterDeclarat
   return parameterNames;
 }
 
-function is$$Parameter(parameters: ts.ParameterDeclaration[]): boolean {
+function isDollarParameter(parameters: ts.ParameterDeclaration[]): boolean {
   return parameters.length === 1 && parameters[0].name && ts.isIdentifier(parameters[0].name) &&
     parameters[0].name.escapedText.toString() === $$ && parameters[0].type && ts.isTypeLiteralNode(parameters[0].type) &&
     parameters[0].type.members && parameters[0].type.members.length > 0;
@@ -912,8 +912,8 @@ export interface tsFileInfo {
 class TSFileInfo {
   fileInfo: tsFileInfo = {
     fileToResourceList: new Set()
-  }
-  newFileToResourceList: Set<string> = new Set()
+  };
+  newFileToResourceList: Set<string> = new Set();
   constructor(cacheInfo: fileInfo, etsFile?: boolean) {
     if (!etsFile) {
       this.fileInfo = cacheInfo || this.fileInfo;
@@ -926,7 +926,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
   fileInfo: fileInfo = {
     hasEntry: false,
     fileToResourceList: new Set()
-  }
+  };
   recycleComponents: Set<string> = new Set([]);
   compFromDETS: Set<string> = new Set();
   animatableExtendAttribute: Map<string, Set<string>> = new Map();
