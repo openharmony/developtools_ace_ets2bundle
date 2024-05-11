@@ -658,7 +658,7 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
   }
   let curPageDir: string = pagesDir;
   while (!fs.existsSync(fileResolvePath)) {
-    if (filePath.indexOf(projectConfig.packageDir) > -1) {
+    if (filePath.indexOf(projectConfig.packageDir) > -1 && /^(\.|\.\.)\//.test(filePath)) {
       fileResolvePath = path.join(curPageDir, filePath);
     } else {
       fileResolvePath = path.join(curPageDir, projectConfig.packageDir, filePath);
