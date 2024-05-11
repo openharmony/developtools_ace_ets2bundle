@@ -240,12 +240,14 @@ function checkComponentDecorator(source: string, filePath: string,
 function validateStructSpec(item: ts.StructDeclaration, result: DecoratorResult, log: LogInfo[],
   sourceFile: ts.SourceFile | null): void {
   if (item.name && ts.isIdentifier(item.name)) {
+    const componentName: string = item.name.getText();
+    componentCollection.customComponents.add(componentName);
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
     if (decorators && decorators.length) {
       checkDecorators(decorators, result, item.name, log, sourceFile, item);
     } else {
-      const message: string = `A struct should use decorator '@Component' or '@ComponentV2'.`;
-      addLog(LogType.WARN, message, item.getStart(), log, sourceFile);
+      const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
+      addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
     }
   } else {
     const message: string = `A struct must have a name.`;
@@ -309,16 +311,16 @@ interface DecoratorResult {
 
 function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorResult,
   component: ts.Identifier, log: LogInfo[], sourceFile: ts.SourceFile, node: ts.StructDeclaration): void {
-  let hasComponentDecorator: boolean = false;
   const componentName: string = component.getText();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentName);
+  let hasInnerComponentDecorator: boolean = false;
   decorators.forEach((element) => {
     let name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (element.expression && element.expression.expression && ts.isIdentifier(element.expression.expression)) {
       name = '@' + element.expression.expression.getText();
     }
     if (INNER_COMPONENT_DECORATORS.has(name)) {
-      componentCollection.customComponents.add(componentName);
+      hasInnerComponentDecorator = true;
       switch (name) {
         case COMPONENT_DECORATOR_ENTRY:
           checkEntryComponent(node, log, sourceFile);
@@ -332,21 +334,17 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
           componentCollection.previewComponent.push(componentName);
           break;
         case COMPONENT_DECORATOR_COMPONENT_V2:
-          hasComponentDecorator = true;
           structInfo.isComponentV2 = true;
           break;
         case COMPONENT_DECORATOR_COMPONENT:
-          hasComponentDecorator = true;
           structInfo.isComponentV1 = true;
           break;
         case COMPONENT_DECORATOR_CUSTOM_DIALOG:
           componentCollection.customDialogs.add(componentName);
-          hasComponentDecorator = true;
           structInfo.isCustomDialog = true;
           break;
         case COMPONENT_DECORATOR_REUSEABLE:
           storedFileInfo.getCurrentArkTsFile().recycleComponents.add(componentName);
-          hasComponentDecorator = true;
           structInfo.isReusable = true;
           break;
       }
@@ -354,7 +352,7 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
       validateInvalidStructDecorator(element, componentName, log, sourceFile);
     }
   });
-  validateStruct(hasComponentDecorator, componentName, component, log, sourceFile, structInfo);
+  validateStruct(hasInnerComponentDecorator, componentName, component, log, sourceFile, structInfo);
 }
 
 function validateInvalidStructDecorator(element: ts.Decorator, componentName: string, log: LogInfo[],
@@ -364,11 +362,11 @@ function validateInvalidStructDecorator(element: ts.Decorator, componentName: st
   addLog(LogType.WARN, message, pos, log, sourceFile);
 }
 
-function validateStruct(hasComponentDecorator: boolean, componentName: string, component: ts.Identifier,
+function validateStruct(hasInnerComponentDecorator: boolean, componentName: string, component: ts.Identifier,
   log: LogInfo[], sourceFile: ts.SourceFile, structInfo: StructInfo): void {
-  if (!hasComponentDecorator) {
-    const message: string = `The struct '${componentName}' should use decorator '@Component'.`;
-    addLog(LogType.WARN, message, component.pos, log, sourceFile);
+  if (!hasInnerComponentDecorator) {
+    const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   } else if (structInfo.isComponentV2 && (structInfo.isComponentV1 || structInfo.isReusable || structInfo.isCustomDialog) ) {
     const message: string = `The struct '${componentName}' can not be decorated with '@ComponentV2' ` +
       `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
@@ -437,10 +435,6 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery);
 }
 
-function propertyInitializeInEntry(fileQuery: string, name: string): boolean {
-  return fileQuery === '?entry' && name === componentCollection.entryComponent;
-}
-
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
   isComponentV2: boolean, fileQuery: string): void {
@@ -452,7 +446,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       processStructComponentV2.parseComponentProperty(node, structInfo, log, sourceFileNode);
       isComponentV2 = true;
     } else {
-      collectComponentProps(node, propertyInitializeInEntry(fileQuery, structName), structInfo);
+      collectComponentProps(node, structInfo);
     }
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
@@ -1093,10 +1087,9 @@ function isNonspecificChildIfStatement(node: ts.Node, specificChildSet: Set<stri
   return false;
 }
 
-function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
-  structInfo: StructInfo): void {
+function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInfo): void {
   const componentName: string = node.name.getText();
-  const componentSet: IComponentSet = getComponentSet(node, judgeInitializeInEntry, true);
+  const componentSet: IComponentSet = getComponentSet(node, true);
   propertyCollection.set(componentName, componentSet.properties);
   stateCollection.set(componentName, componentSet.states);
   linkCollection.set(componentName, componentSet.links);
@@ -1124,10 +1117,9 @@ function collectComponentProps(node: ts.StructDeclaration, judgeInitializeInEntr
   );
 }
 
-export function getComponentSet(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
-  uiCheck: boolean = false): IComponentSet {
+export function getComponentSet(node: ts.StructDeclaration, uiCheck: boolean = false): IComponentSet {
   const componentSet: IComponentSet = new IComponentSet();
-  traversalComponentProps(node, judgeInitializeInEntry, componentSet, uiCheck);
+  traversalComponentProps(node, componentSet, uiCheck);
   return componentSet;
 }
 
@@ -1140,8 +1132,8 @@ class RecordRequire {
   hasProvide: boolean = false;
 }
 
-function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEntry: boolean,
-  componentSet: IComponentSet, uiCheck: boolean = false): void {
+function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComponentSet,
+  uiCheck: boolean = false): void {
   let isStatic: boolean = true;
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
@@ -1162,7 +1154,7 @@ function traversalComponentProps(node: ts.StructDeclaration, judgeInitializeInEn
             const decoratorName: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
             if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
               dollarCollection.add('$' + propertyName);
-              collectionStates(decorators[i], judgeInitializeInEntry, decoratorName, propertyName,
+              collectionStates(decorators[i], decoratorName, propertyName,
                 componentSet, recordRequire);
               setPrivateCollection(componentSet, accessQualifierResult, propertyName, decoratorName);
               validateAccessQualifier(item, propertyName, decoratorName, accessQualifierResult,
@@ -1300,7 +1292,7 @@ function setInitValue(requirekey: string, initKey: string, name: string, compone
   }
 }
 
-function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, decorator: string, name: string,
+function collectionStates(node: ts.Decorator, decorator: string, name: string,
   componentSet: IComponentSet, recordRequire: RecordRequire): void {
   switch (decorator) {
     case COMPONENT_STATE_DECORATOR:
@@ -1331,9 +1323,6 @@ function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, d
       componentSet.objectLinks.add(name);
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
-      if (judgeInitializeInEntry) {
-        validateInitializeInEntry(node, name);
-      }
       recordRequire.hasBuilderParam = true;
       componentSet.builderParams.add(name);
       break;
@@ -1347,14 +1336,6 @@ function collectionStates(node: ts.Decorator, judgeInitializeInEntry: boolean, d
       recordRequire.hasRequire = true;
       break;
   }
-}
-
-function validateInitializeInEntry(node: ts.Decorator, name: string): void {
-  transformLog.errors.push({
-    type: LogType.WARN,
-    message: `'${name}' should be initialized in @Entry Component`,
-    pos: node.getStart()
-  });
 }
 
 function collectionlocalStorageParam(node: ts.Decorator, name: string,
