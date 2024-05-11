@@ -872,6 +872,7 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string): void {
+  componentCollection.customComponents.add(name);
   const structInfo: StructInfo = asComponentName ?
     processStructComponentV2.getOrCreateStructInfo(asComponentName) :
     processStructComponentV2.getOrCreateStructInfo(name);
@@ -900,7 +901,6 @@ function parseComponentInImportNode(originNode: ts.StructDeclaration, name: stri
 function parseComponentV2InImportNode(node: ts.StructDeclaration, name: string, originFile: string,
   structInfo: StructInfo): void {
   structInfo.isComponentV2 = true;
-  componentCollection.customComponents.add(name);
   const isDETS: boolean = originFile && /\.d\.ets$/.test(originFile);
   if (isDETS) {
     storedFileInfo.getCurrentArkTsFile().compFromDETS.add(name);

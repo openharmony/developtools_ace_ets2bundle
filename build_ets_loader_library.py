@@ -52,6 +52,8 @@ def parse_args():
         help='path component config file to output')
     parser.add_argument('--output-form-config-file',
         help='path form config file to output')
+    parser.add_argument('--output-build-config-file',
+        help='path form config file to output')
     parser.add_argument('--kit-configs-file-dir',
         help='path kit configs file')
     parser.add_argument('--build-kit-configs-file-js',
@@ -115,6 +117,7 @@ def main():
             options.output_declarations_dir,
             options.output_component_config_file,
             options.output_form_config_file,
+            options.output_build_config_file,
             options.output_kit_configs_dir]))
 
 if __name__ == '__main__':
