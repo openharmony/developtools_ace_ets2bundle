@@ -586,6 +586,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
       ));
     }
   }
+  return undefined;
 }
 
 function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
@@ -614,8 +615,8 @@ function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisEx
 
 function builderCallNode(node: ts.CallExpression): ts.Expression {
   let newNode: ts.Expression;
-  if (node.expression && ts.isPropertyAccessExpression(node.expression)
-  && node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
+  if (node.expression && ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
     newNode = ts.factory.createCallChain(
       ts.factory.createPropertyAccessChain(
         node.expression,
@@ -985,6 +986,7 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     }
     newStatements.push(debugNode);
   }
+  return undefined;
 }
 
 function processInnerCompStatements(innerCompStatements: ts.Statement[],
