@@ -274,6 +274,7 @@ function changeNodeFromCallToArrowDetermine(node: ts.CallExpression, builderBind
       )
     );
   }
+  return undefined;
 }
 
 function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
@@ -967,6 +968,7 @@ function isInitFromParent(node: ts.ObjectLiteralElementLike): boolean {
       return true;
     }
   }
+  return false;
 }
 
 function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
@@ -974,6 +976,7 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
     !matchStartWithDollar(node.initializer.getText())) {
     return true;
   }
+  return false;
 }
 
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
@@ -1030,6 +1033,7 @@ function getPropertyDecoratorKind(propertyName: string, customComponentName: str
       return item[0];
     }
   }
+  return undefined;
 }
 
 function createFindChildById(id: string, name: string, isBuilder: boolean = false): ts.VariableStatement {
