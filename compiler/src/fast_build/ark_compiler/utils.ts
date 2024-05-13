@@ -38,7 +38,7 @@ import {
   toUnixPath
 } from '../../utils';
 import {
-  tryMangleFileNameAndWriteFile,
+  tryMangleFileName,
   writeObfuscatedSourceCode,
   cleanUpUtilsObjects,
   createAndStartEvent,
@@ -142,7 +142,9 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
       await writeFileContent(id, filePath, content, projectConfig, logger);
       break;
     case EXTNAME_JSON:
-      tryMangleFileNameAndWriteFile(filePath, content, projectConfig, id);
+      const newFilePath: string = tryMangleFileName(filePath, projectConfig, id);
+      mkdirsSync(path.dirname(newFilePath));
+      fs.writeFileSync(newFilePath, content ?? '');
       break;
     default:
       break;
