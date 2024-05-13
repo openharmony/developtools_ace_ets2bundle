@@ -1518,7 +1518,7 @@ export function collectImportNames(content: string, sourcePath: string = null): 
     });
   }
 
-  if (sourcePath && sourcePath != null) {
+  if (sourcePath && sourcePath !== null) {
     const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
     if (!sourcemapNamesCollection.has(cleanSourcePath)) {
       sourcemapNamesCollection.set(cleanSourcePath, new Map());
