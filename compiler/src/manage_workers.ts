@@ -13,32 +13,32 @@
  * limitations under the License.
  */
 
-import * as path from "path";
-import cluster from "cluster";
-import process from "process";
+import * as path from 'path';
+import cluster from 'cluster';
+import process from 'process';
 import {
   ESMODULE,
   FAIL,
   GEN_ABC_SCRIPT,
   GEN_MODULE_ABC_SCRIPT,
   JSBUNDLE
-} from "./pre_define";
+} from './pre_define';
 
-if (process.env['arkEnvParams'] === undefined) {
+if (process.env.arkEnvParams === undefined) {
   process.exit(FAIL);
 }
 
 let arkEnvParams = JSON.parse(process.env.arkEnvParams);
-if (arkEnvParams['mode'] !== JSBUNDLE && arkEnvParams['mode'] !== ESMODULE) {
+if (arkEnvParams.mode !== JSBUNDLE && arkEnvParams.mode !== ESMODULE) {
   process.exit(FAIL);
 }
 
-if (arkEnvParams['workerNumber'] !== undefined &&
-  arkEnvParams['splittedData'] !== undefined &&
-  arkEnvParams['cmdPrefix'] !== undefined) {
-  let workerNumber: number = parseInt(arkEnvParams['workerNumber']);
-  let splittedData: any = JSON.parse(arkEnvParams['splittedData']);
-  let cmdPrefix: string = arkEnvParams['cmdPrefix'];
+if (arkEnvParams.workerNumber !== undefined &&
+  arkEnvParams.splittedData !== undefined &&
+  arkEnvParams.cmdPrefix !== undefined) {
+  let workerNumber: number = parseInt(arkEnvParams.workerNumber);
+  let splittedData: any = JSON.parse(arkEnvParams.splittedData);
+  let cmdPrefix: string = arkEnvParams.cmdPrefix;
 
   const clusterNewApiVersion: number = 16;
   const currentNodeVersion: number = parseInt(process.version.split('.')[0]);
@@ -46,7 +46,7 @@ if (arkEnvParams['workerNumber'] !== undefined &&
 
   if ((useNewApi && cluster.isPrimary) || (!useNewApi && cluster.isMaster)) {
     let genAbcScript: string = GEN_ABC_SCRIPT;
-    if (arkEnvParams['mode'] === ESMODULE) {
+    if (arkEnvParams.mode === ESMODULE) {
       genAbcScript = GEN_MODULE_ABC_SCRIPT;
     }
     if (useNewApi) {
@@ -64,16 +64,16 @@ if (arkEnvParams['workerNumber'] !== undefined &&
         'inputs': JSON.stringify(splittedData[i]),
         'cmd': cmdPrefix
       };
-      if (arkEnvParams['mode'] === ESMODULE) {
+      if (arkEnvParams.mode === ESMODULE) {
         let sn: number = i + 1;
         let workerFileName: string = `filesInfo_${sn}.txt`;
-        workerData['workerFileName'] = workerFileName;
-        workerData['cachePath'] = arkEnvParams['cachePath'];
+        workerData.workerFileName = workerFileName;
+        workerData.cachePath = arkEnvParams.cachePath;
       }
       cluster.fork(workerData);
     }
 
-    cluster.on("exit", (worker, code, signal) => {
+    cluster.on('exit', (worker, code, signal) => {
       if (code === FAIL) {
         process.exit(FAIL);
       }

@@ -17,7 +17,7 @@ import cluster from 'cluster';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import sourceMap from "source-map";
+import sourceMap from 'source-map';
 
 import {
   DEBUG,
@@ -100,7 +100,8 @@ export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: 
     return true;
   }
 
-  if (compilingEtsOrTsFiles.indexOf(filePath) !== -1) {  // file involves in compilation
+  if (compilingEtsOrTsFiles.indexOf(filePath) !== -1) {
+    // file involves in compilation
     const hasTsNoCheckOrTsIgnore = hasTsNoCheckOrTsIgnoreFiles.indexOf(filePath) !== -1;
     // Remove cacheFile whose extension is different the target file
     removeCacheFile(cacheFilePath, hasTsNoCheckOrTsIgnore ? EXTNAME_TS : EXTNAME_JS);
@@ -162,7 +163,8 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, SourceMapGenerator.getInstance().getSourceMaps(), sourceFilePath);
+    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath,
+      SourceMapGenerator.getInstance().getSourceMaps(), sourceFilePath);
     return;
   }
   mkdirsSync(path.dirname(filePath));
@@ -242,11 +244,11 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
     newMappingList.push(mapping);
   });
   const updatedGenerator: sourceMap.SourceMapGenerator = sourceMap.SourceMapGenerator.fromSourceMap(newConsumer);
-  updatedGenerator['_file'] = originMap.file;
-  updatedGenerator['_mappings']['_array'] = newMappingList;
+  updatedGenerator._file = originMap.file;
+  updatedGenerator._mappings._array = newMappingList;
   return JSON.parse(updatedGenerator.toString());
 }
 
 export const utUtils = {
   writeFileContent
-}
+};
