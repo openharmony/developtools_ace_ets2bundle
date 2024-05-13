@@ -74,7 +74,7 @@ export function processKitImport(id: string): Function {
         }
       }
       return node;
-    }
+    };
 
     return (node: ts.SourceFile) => {
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
@@ -102,7 +102,7 @@ export function processKitImport(id: string): Function {
       // process KitImport transforming
       return ts.visitEachChild(node, visitor, context);
     };
-  }
+  };
 }
 
 /*

@@ -43,6 +43,7 @@ export class OHMResolverPlugin {
         return resolver.doResolve(target, obj, null, resolveContext, callback);
       }
       callback();
+      return undefined;
     });
   }
 }

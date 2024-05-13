@@ -89,7 +89,7 @@ import {
 import {
   generateAot,
   FaultHandler
-} from './gen_aot'
+} from './gen_aot';
 
 let output: string;
 let isWin: boolean = false;
@@ -240,11 +240,13 @@ export class GenAbcPlugin {
         if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
           return;
         }
+        let newAssets: Object = {}
         Object.keys(compilation.assets).forEach(key => {
-          if (path.extname(key) === EXTNAME_JS || path.extname(key) === EXTNAME_JS_MAP) {
-            delete assets[key];
+          if (path.extname(key) !== EXTNAME_JS && path.extname(key) !== EXTNAME_JS_MAP) {
+            newAssets[key] = assets[key];
           }
         });
+        compilation.assets = newAssets;
       });
     });
 
@@ -256,7 +258,7 @@ export class GenAbcPlugin {
         // choose *.js
         if (output && path.extname(key) === EXTNAME_JS) {
           const newContent: string = compilation.assets[key].source();
-          const keyPath: string = key.replace(/\.js$/, ".temp.js");
+          const keyPath: string = key.replace(/\.js$/, '.temp.js');
           writeFileSync(newContent, output, keyPath, key);
         }
       });
@@ -270,9 +272,9 @@ export class GenAbcPlugin {
         return;
       }
       buildPathInfo = output;
-      if (isTs2Abc(projectConfig) || process.env.minPlatformVersion === "8") {
+      if (isTs2Abc(projectConfig) || process.env.minPlatformVersion === '8') {
         invokeWorkersToGenAbc();
-      } else if (isEs2Abc(projectConfig)){
+      } else if (isEs2Abc(projectConfig)) {
         generateAbcByEs2AbcOfBundleMode(intermediateJsBundle);
       } else {
         logger.error(red, `ArkTS:ERROR please set panda module`, reset);
@@ -299,7 +301,7 @@ function clearGlobalInfo() {
 
 function getEntryInfo(filePath: string, resourceResolveData: Object): string {
   if (!resourceResolveData.descriptionFilePath) {
-    return;
+    return '';
   }
 
   let isEntry: boolean = false;
@@ -370,7 +372,7 @@ function processNodeModulesFile(filePath: string, tempFilePath: string, buildFil
   const npmPkgName: string = toUnixPath(path.join(PACKAGES, buildNpmPkgPath)).replace(new RegExp(NODE_MODULES, 'g'), PACKAGES);
 
   const descriptionFileData: Object = module.resourceResolveData.descriptionFileData;
-  if (descriptionFileData && descriptionFileData['type'] && descriptionFileData['type'] === 'module') {
+  if (descriptionFileData && descriptionFileData.type && descriptionFileData.type === 'module') {
     const tempModuleInfo: ModuleInfo = new ModuleInfo(filePath, tempFilePath, buildFilePath, abcFilePath, npmPkgName, false);
     moduleInfos.push(tempModuleInfo);
     nodeModulesFile.push(tempFilePath);
@@ -451,7 +453,7 @@ function processJsModule(filePath: string, tempFilePath: string, buildFilePath: 
 }
 
 function processJsonModule(filePath: string, tempFilePath: string, buildFilePath: string, nodeModulesFile: Array<string>, module: Object): void {
-  const abcFilePath: string = "NA";
+  const abcFilePath: string = 'NA';
   if (isPackageModulesFile(filePath, projectConfig)) {
     processNodeModulesFile(filePath, tempFilePath, buildFilePath, abcFilePath, nodeModulesFile, module);
   } else {
@@ -461,7 +463,7 @@ function processJsonModule(filePath: string, tempFilePath: string, buildFilePath
   }
 }
 
-var cachedSourceMaps: Object;
+let cachedSourceMaps: Object;
 
 function updateCachedSourceMaps(): void {
   const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
@@ -493,7 +495,7 @@ function updateCachedModuleList(moduleList: Array<string>): void {
   const CACHED_SOURCEMAPS: string = path.join(process.env.cachePath, SOURCEMAPS_JSON);
   validateFilePathLength(CACHED_SOURCEMAPS, logger);
   let cachedJson: Object = {};
-  cachedJson["list"] = moduleList;
+  cachedJson.list = moduleList;
   fs.writeFile(CACHED_MODULELIST_FILE, JSON.stringify(cachedJson, null, 2), 'utf-8',
     (err) => {
       if (err) {
@@ -523,13 +525,16 @@ function writeSourceMaps(): void {
   );
 }
 
-function eliminateUnusedFiles(moduleList: Array<string>): void{
+function eliminateUnusedFiles(moduleList: Array<string>): void {
   let cachedModuleList: Array<string> = getCachedModuleList();
   if (cachedModuleList.length !== 0) {
-    const eliminateFiles: Array<string> = cachedModuleList.filter(m => !moduleList.includes(m));
-    eliminateFiles.forEach((file) => {
-      delete cachedSourceMaps[file];
+    let newCacheSourceMaps: Object = {};
+    cachedModuleList.forEach((file) => {
+      if (moduleList.includes(file)) {
+        newCacheSourceMaps[file] = cachedSourceMaps[file];
+      }
     });
+    cachedSourceMaps = newCacheSourceMaps;
   }
 }
 
@@ -602,8 +607,8 @@ function processEntryToGenAbc(entryInfos: Map<string, EntryInfo>): void {
   generateNpmEntriesInfo(entryInfos);
   const npmEntriesInfoPath: string = path.join(process.env.cachePath, NPMENTRIES_TXT);
   validateFilePathLength(npmEntriesInfoPath, logger);
-  let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
-  const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
+  let npmEntriesProtoFileName: string = 'npm_entries' + EXTNAME_PROTO_BIN;
+  const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, 'protos', 'npm_entries', npmEntriesProtoFileName);
   validateFilePathLength(npmEntriesProtoFilePath, logger);
   mkdirsSync(path.dirname(npmEntriesProtoFilePath));
   let js2Abc: string = path.join(arkDir, 'build', 'bin', 'js2abc');
@@ -628,7 +633,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
     mkDir(parent);
   }
-  let cacheOutputPath: string = "";
+  let cacheOutputPath: string = '';
   if (process.env.cachePath) {
     let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
     let abilityDir: string = buildDirArr[buildDirArr.length - 1];
@@ -644,7 +649,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   fs.writeFileSync(cacheOutputPath, inputString);
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize: number = fs.statSync(cacheOutputPath).size;
-    let sourceFile: string = output.replace(/\.temp\.js$/, "_.js");
+    let sourceFile: string = output.replace(/\.temp\.js$/, '_.js');
     if (!isDebug && projectConfig.projectRootPath) {
       sourceFile = toUnixPath(sourceFile.replace(projectConfig.projectRootPath + path.sep, ''));
     } else {
@@ -711,7 +716,7 @@ function invokeWorkersModuleToGenAbc(moduleInfos: Array<ModuleInfo>): void {
 
 export function initAbcEnv() : string[] {
   let args: string[] = [];
-  if (process.env.minPlatformVersion === "8") {
+  if (process.env.minPlatformVersion === '8') {
     process.env.panda = TS2ABC;
     let js2abc: string = path.join(arkDir, 'build', 'legacy_api8', 'src', 'index.js');
     if (isWin) {
@@ -746,7 +751,7 @@ export function initAbcEnv() : string[] {
     if (isDebug) {
       args.push('--debug');
     }
-  } else if (process.env.panda === ES2ABC  || process.env.panda === 'undefined' || process.env.panda === undefined) {
+  } else if (process.env.panda === ES2ABC || process.env.panda === 'undefined' || process.env.panda === undefined) {
     let es2abc: string = path.join(arkDir, 'build', 'bin', 'es2abc');
     if (isWin) {
       es2abc = path.join(arkDir, 'build-win', 'bin', 'es2abc.exe');
@@ -764,7 +769,7 @@ export function initAbcEnv() : string[] {
     if (projectConfig.compileMode === ESMODULE) {
       args.push('--merge-abc');
     }
-  }  else {
+  } else {
     logger.error(red, `ArkTS:ERROR please set panda module`, reset);
   }
 
@@ -905,7 +910,7 @@ function filterIntermediateModuleByHashJson(buildPath: string, moduleInfos: Arra
 function writeModuleHashJson(): void {
   for (let i = 0; i < filterModuleInfos.length; ++i) {
     const input: string = filterModuleInfos[i].tempFilePath;
-    let outputPath: string = genProtoFileName(filterModuleInfos[i].tempFilePath);;
+    let outputPath: string = genProtoFileName(filterModuleInfos[i].tempFilePath);
     if (!fs.existsSync(input) || !fs.existsSync(outputPath)) {
       logger.debug(red, `ArkTS:ERROR ${input} is lost`, reset);
       process.exitCode = FAIL;
@@ -998,7 +1003,7 @@ function genHashJsonPath(buildPath: string): string {
     let buildDirArr: string[] = projectConfig.buildPath.split(path.sep);
     let abilityDir: string = buildDirArr[buildDirArr.length - 1];
     let hashJsonPath: string = path.join(process.env.cachePath, TEMPORARY, abilityDir, hashFile);
-    validateFilePathLength(hashJsonPath, logger)
+    validateFilePathLength(hashJsonPath, logger);
     mkdirsSync(path.dirname(hashJsonPath));
     return hashJsonPath;
   } else if (buildPath.indexOf(ARK) >= 0) {
@@ -1039,9 +1044,9 @@ function checkNodeModules() {
 
 function copyFileCachePathToBuildPath() {
   for (let i = 0; i < intermediateJsBundle.length; ++i) {
-    const abcFile: string = intermediateJsBundle[i].path.replace(/\.temp\.js$/, ".abc");
+    const abcFile: string = intermediateJsBundle[i].path.replace(/\.temp\.js$/, '.abc');
     const cacheOutputPath: string = intermediateJsBundle[i].cacheOutputPath;
-    const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, ".abc");
+    const cacheAbcFilePath: string = intermediateJsBundle[i].cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     if (!fs.existsSync(cacheAbcFilePath)) {
       logger.debug(red, `ArkTS:ERROR ${cacheAbcFilePath} is lost`, reset);
       process.exitCode = FAIL;
@@ -1082,7 +1087,7 @@ function handleHotReloadChangedFiles() {
 
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
-  if (typeof(changedFileList) == "undefined" || changedFileList.length == 0) {
+  if (typeof(changedFileList) === "undefined" || changedFileList.length === 0) {
     return;
   }
 
@@ -1099,7 +1104,7 @@ function handleHotReloadChangedFiles() {
       return;
     }
     validateFilePathLength(tempFilePath, logger);
-    let buildFilePath: string = "";
+    let buildFilePath: string = '';
     tempFilePath = toUnixPath(tempFilePath);
 
     switch (path.extname(filePath)) {
@@ -1161,7 +1166,7 @@ function handleFinishModules(modules, callback) {
 }
 
 function copyModuleFileCachePathToBuildPath(): void {
-  protoFilePath = path.join(path.join(process.env.cachePath, "protos", PROTO_FILESINFO_TXT));
+  protoFilePath = path.join(path.join(process.env.cachePath, 'protos', PROTO_FILESINFO_TXT));
   validateFilePathLength(protoFilePath, logger);
   mkdirsSync(path.dirname(protoFilePath));
   let entriesInfo: string = '';
@@ -1174,8 +1179,8 @@ function copyModuleFileCachePathToBuildPath(): void {
     entriesInfo += `${toUnixPath(protoTempPath)}\n`;
   }
   if (entryInfos.size > 0) {
-    let npmEntriesProtoFileName: string = "npm_entries" + EXTNAME_PROTO_BIN;
-    const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, "protos", "npm_entries", npmEntriesProtoFileName);
+    let npmEntriesProtoFileName: string = 'npm_entries' + EXTNAME_PROTO_BIN;
+    const npmEntriesProtoFilePath: string = path.join(process.env.cachePath, 'protos', 'npm_entries', npmEntriesProtoFileName);
     entriesInfo += `${toUnixPath(npmEntriesProtoFilePath)}\n`;
   }
   fs.writeFileSync(protoFilePath, entriesInfo, 'utf-8');
@@ -1216,7 +1221,7 @@ function generateAbcByEs2AbcOfBundleMode(inputPaths: File[]) {
       const child = childProcess.exec(genAbcCmd);
       child.on('exit', (code: any) => {
         if (code === FAIL) {
-          logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
+          logger.debug(red, 'ArkTS:ERROR failed to execute es2abc', reset);
           process.exit(FAIL);
         }
         if (process.env.cachePath === undefined) {
@@ -1259,7 +1264,7 @@ function generateFileOfBundle(inputPaths: File[]): string {
     const recordName: string = 'null_recordName';
     const moduleType: string = 'script';
     const sourceFile: string = info.sourceFile;
-    const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
+    const abcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     filesInfo += `${cacheOutputPath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
   });
   fs.writeFileSync(filesInfoPath, filesInfo, 'utf-8');
@@ -1290,10 +1295,10 @@ function processWorkersOfPreviewMode(splittedData: any, cmdPrefix: string, worke
     'workerNumber': workerNumber.toString(),
   };
   if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
-    arkEnvParams['mode'] = JSBUNDLE;
+    arkEnvParams.mode = JSBUNDLE;
   } else if (projectConfig.compileMode === ESMODULE) {
-    arkEnvParams['cachePath'] = process.env.cachePath;
-    arkEnvParams['mode'] = ESMODULE;
+    arkEnvParams.cachePath = process.env.cachePath;
+    arkEnvParams.mode = ESMODULE;
   }
   processEnv.arkEnvParams = JSON.stringify(arkEnvParams);
 
@@ -1328,8 +1333,8 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
       if (projectConfig.compileMode === ESMODULE) {
         let sn: number = i + 1;
         let workerFileName: string = `filesInfo_${sn}.txt`;
-        workerData['workerFileName'] = workerFileName;
-        workerData['cachePath'] = process.env.cachePath;
+        workerData.workerFileName = workerFileName;
+        workerData.cachePath = process.env.cachePath;
       }
       cluster.fork(workerData);
     }
@@ -1346,7 +1351,7 @@ function processWorkersOfBuildMode(splittedData: any, cmdPrefix: string, workerN
         processExtraAsset();
         if (projectConfig.compileMode === ESMODULE &&
           (projectConfig.anBuildMode === AOT_FULL || projectConfig.anBuildMode === AOT_PARTIAL)) {
-          let faultHandler: FaultHandler = (error) => { logger.error(error); process.exit(FAIL); }
+          let faultHandler: FaultHandler = (error) => { logger.error(error); process.exit(FAIL); };
           let abcArgs: string[] = initAbcEnv();
           abcArgs.unshift(nodeJs);
           const appAbc: string = path.join(projectConfig.buildPath, MODULES_ABC);

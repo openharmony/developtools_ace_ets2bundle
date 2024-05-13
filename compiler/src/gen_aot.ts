@@ -88,7 +88,7 @@ export function checkAotConfig(compileMode: string, buildJsonInfo: any, faultHan
 
 export function generateAot(arkDir: string, appAbc: string,
                             projectConfig: any, logger: any, faultHandler: FaultHandler): void {
-  let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? "ark_aot_compiler.exe" : "ark_aot_compiler");
+  let aotCompiler: string = path.join(getBuildBinDir(arkDir), isWindows() ? 'ark_aot_compiler.exe' : 'ark_aot_compiler');
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
   if (!validateFilePathLengths([aotCompiler, appAbc, appAot], logger)) {
@@ -99,7 +99,7 @@ export function generateAot(arkDir: string, appAbc: string,
   }
   const singleCmdPrefix: string = `"${aotCompiler}" ` +
     `--aot-file="${appAot}" --compiler-target-triple=aarch64-unknown-linux-gnu `;
-  let singleCmd: string = "";
+  let singleCmd: string = '';
   if (projectConfig.anBuildMode === AOT_FULL) {
     singleCmd = singleCmdPrefix + ` "${appAbc}"`;
   } else if (projectConfig.anBuildMode === AOT_PARTIAL) {

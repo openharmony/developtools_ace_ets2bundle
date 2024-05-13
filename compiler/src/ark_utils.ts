@@ -70,7 +70,7 @@ const IDENTIFIER_CACHE: string = 'IdentifierCache';
 
 export const SRC_MAIN: string = 'src/main';
 
-export var newSourceMaps: Object = {};
+export let newSourceMaps: Object = {};
 export let nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table. 
@@ -391,7 +391,7 @@ function replaceHarDependency(item: string, moduleRequest: string, projectConfig
 
 function locateActualFilePathWithModuleRequest(absolutePath: string): string {
   if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isDirectory()) {
-    return absolutePath
+    return absolutePath;
   }
 
   const filePath: string = absolutePath + getExtensionIfUnfullySpecifiedFilepath(absolutePath);
@@ -411,8 +411,8 @@ function replaceRelativeDependency(item: string, moduleRequest: string, sourcePa
     // normalize the moduleRequest
     item = item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
       let normalizedModuleRequest: string = toUnixPath(path.normalize(moduleRequest));
-      if (moduleRequest.startsWith("./")) {
-        normalizedModuleRequest = "./" + normalizedModuleRequest;
+      if (moduleRequest.startsWith('./')) {
+        normalizedModuleRequest = './' + normalizedModuleRequest;
       }
       return quotation + normalizedModuleRequest + quotation;
     });
@@ -685,7 +685,7 @@ export function isOhModules(projectConfig: Object): boolean {
 }
 
 export function isEs2Abc(projectConfig: Object): boolean {
-  return projectConfig.pandaMode === ES2ABC || projectConfig.pandaMode === "undefined" ||
+  return projectConfig.pandaMode === ES2ABC || projectConfig.pandaMode === 'undefined' ||
     projectConfig.pandaMode === undefined;
 }
 
@@ -700,7 +700,7 @@ export function genProtoFileName(temporaryFile: string): string {
 export function genMergeProtoFileName(temporaryFile: string): string {
   let protoTempPathArr: string[] = temporaryFile.split(TEMPORARY);
   const sufStr: string = protoTempPathArr[protoTempPathArr.length - 1];
-  let protoBuildPath: string = path.join(process.env.cachePath, "protos", sufStr);
+  let protoBuildPath: string = path.join(process.env.cachePath, 'protos', sufStr);
 
   return protoBuildPath;
 }
