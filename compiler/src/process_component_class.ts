@@ -527,8 +527,10 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       localValue
     );
   }
+  return undefined;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
   log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
@@ -591,7 +593,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
           pos: node.getStart()
         });
       }
-      return;
+      return undefined;
     }
   }
   return updateItem;
