@@ -73,7 +73,7 @@ export class JsDocCheckService {
 
   private static validPermissionRecursion(permissionsQueue: string[], permissions: string[], calcValidResult: PermissionVaildCalcInfo): void {
     if (permissionsQueue.some(item => ['(', ')'].includes(item))) {
-      const groups: PermissionVaildCalcGroup[] = JsDocCheckService.groupWithParenthesis(permissionsQueue)
+      const groups: PermissionVaildCalcGroup[] = JsDocCheckService.groupWithParenthesis(permissionsQueue);
       const groupJoin: string[] = JsDocCheckService.getGroupItemPermission(groups, calcValidResult, permissions);
       JsDocCheckService.getPermissionVaildAtoms(groupJoin, calcValidResult, permissions ?? []);
     } else {
@@ -82,7 +82,7 @@ export class JsDocCheckService {
   }
 
   private static getSplitsArrayWithDesignatedCharAndStr(permission: string, designatedChar: string): string[] {
-    return permission.split(designatedChar).map(item => item.trim())
+    return permission.split(designatedChar).map(item => item.trim());
   }
 
   private static getGroupItemPermission(
@@ -199,7 +199,7 @@ export class JsDocCheckService {
       !JsDocCheckService.validPermissionItem(atomStacks[0], configPermissions)
     ) {
       calcValidResult.valid = false;
-      return true
+      return true;
     }
     calcValidResult.currentPermissionMatch = true;
     return false;
@@ -213,7 +213,7 @@ export class JsDocCheckService {
       !JsDocCheckService.validPermissionItem(atomStacks[0], configPermissions)
     ) {
       calcValidResult.valid = false;
-      return true
+      return true;
     }
     calcValidResult.currentPermissionMatch =
       JsDocCheckService.validPermissionItem(atomStacks[0], configPermissions);
