@@ -200,7 +200,6 @@ mocha.describe('test obfuscate config resolver api', function () {
     const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, undefined);
     
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-    console.log(mergedObConfig)
     expect(mergedObConfig.reservedPropertyNames.length == 8).to.be.true;
     expect(mergedObConfig.reservedPropertyNames.includes('TestClass')).to.be.true;
     expect(mergedObConfig.reservedPropertyNames.includes('para1')).to.be.true;
@@ -296,7 +295,6 @@ mocha.describe('test obfuscate config resolver api', function () {
     const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, undefined);
 
     const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-    console.log(mergedObConfig)
     expect(mergedObConfig.reservedNames.length == 0).to.be.true;
     expect(mergedObConfig.reservedPropertyNames.length == 0).to.be.true;
     expect(mergedObConfig.reservedGlobalNames.length == 3).to.be.true;

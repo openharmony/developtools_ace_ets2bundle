@@ -76,7 +76,7 @@ type SystemApiContent = {
   ReservedNames?: string[],
   ReservedPropertyNames?: string[],
   ReservedGlobalNames?: string[]
-}
+};
 
 function isFileExist(filePath: string): boolean {
   let exist = false;
@@ -89,7 +89,7 @@ function isFileExist(filePath: string): boolean {
 }
 
 function sortAndDeduplicateStringArr(arr: string[]) {
-  if (arr.length == 0) {
+  if (arr.length === 0) {
     return arr;
   }
 
@@ -99,7 +99,7 @@ function sortAndDeduplicateStringArr(arr: string[]) {
 
   let tmpArr: string[] = [arr[0]];
   for (let i = 1; i < arr.length; i++) {
-    if (arr[i] != arr[i - 1]) {
+    if (arr[i] !== arr[i - 1]) {
       tmpArr.push(arr[i]);
     }
   }
@@ -236,7 +236,7 @@ export class ObConfigResolver {
     let needDependencyConfigs: boolean = enableObfuscation || needConsumerConfigs;
 
     let dependencyConfigs: MergedConfig = new MergedConfig();
-    const dependencyMaxLength: number = Math.max(sourceObConfig.dependencies.libraries.length, sourceObConfig.dependencies.hars.length)
+    const dependencyMaxLength: number = Math.max(sourceObConfig.dependencies.libraries.length, sourceObConfig.dependencies.hars.length);
     if (needDependencyConfigs && dependencyMaxLength > 0) {
       dependencyConfigs = new MergedConfig();
       this.getDependencyConfigs(sourceObConfig, dependencyConfigs);
@@ -374,12 +374,7 @@ export class ObConfigResolver {
 
   private handleConfigContent(data: string, configs: MergedConfig, configPath: string) {
     data = this.removeComments(data);
-    const tokens = data.split(/[',', '\t', ' ', '\n', '\r\n']/).filter((item) => {
-      if (item !== '') {
-        return item;
-      }
-    });
-
+    const tokens = data.split(/[',', '\t', ' ', '\n', '\r\n']/).filter(item => item !== '');
     let type: OptionType = OptionType.NONE;
     let tokenType: OptionType;
     let dtsFilePaths: string[] = [];
@@ -486,7 +481,7 @@ export class ObConfigResolver {
   }
 
   // get absolute path
-  private resolvePath(configPath: string, token: string) {
+  private resolvePath(configPath: string, token: string): string {
     if (path.isAbsolute(token)) {
       return token;
     }
@@ -559,11 +554,11 @@ export class ObConfigResolver {
     const commentStart = '#';
     const commentEnd = '\n';
     let tmpStr = '';
-    var isInComments = false;
+    let isInComments = false;
     for (let i = 0; i < data.length; i++) {
       if (isInComments) {
-        isInComments = data[i] != commentEnd;
-      } else if (data[i] != commentStart) {
+        isInComments = data[i] !== commentEnd;
+      } else if (data[i] !== commentStart) {
         tmpStr += data[i];
       } else {
         isInComments = true;
@@ -583,7 +578,7 @@ export class ObConfigResolver {
     const sdkApis: string[] = sortAndDeduplicateStringArr(this.sourceObConfig.sdkApis);
     for (let apiPath of sdkApis) {
       this.getSdkApiCache(apiPath);
-      const UIPath: string =  path.join(apiPath,'../build-tools/ets-loader/lib/pre_define.js');
+      const UIPath: string = path.join(apiPath, '../build-tools/ets-loader/lib/pre_define.js');
       if (fs.existsSync(UIPath)) {
         this.getUIApiCache(UIPath);
       }
@@ -591,14 +586,14 @@ export class ObConfigResolver {
     let systemApiContent: SystemApiContent = {};
     
     if (systemConfigs.options.enablePropertyObfuscation) {
-      const savedNameAndPropertyList: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mPropertySet])
+      const savedNameAndPropertyList: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mPropertySet]);
       systemApiContent.ReservedNames = savedNameAndPropertyList;
       systemApiContent.ReservedPropertyNames = savedNameAndPropertyList;
       systemConfigs.reservedPropertyNames.push(...savedNameAndPropertyList);
       systemConfigs.reservedNames.push(...savedNameAndPropertyList);
     }
     if (systemConfigs.options.enableToplevelObfuscation && systemConfigs.options.enableExportObfuscation) {
-      const savedExportNames: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mSystemExportSet])
+      const savedExportNames: string[] = sortAndDeduplicateStringArr([...ApiExtractor.mSystemExportSet]);
       systemApiContent.ReservedGlobalNames = savedExportNames;
       systemConfigs.reservedGlobalNames.push(...savedExportNames);
     }
@@ -613,7 +608,7 @@ export class ObConfigResolver {
 
   private getSdkApiCache(sdkApiPath: string) {
     ApiExtractor.traverseApiFiles(sdkApiPath, ApiExtractor.ApiType.API);
-    const componentPath: string =  path.join(sdkApiPath,'../component');
+    const componentPath: string = path.join(sdkApiPath, '../component');
     if (fs.existsSync(componentPath)) {
       ApiExtractor.traverseApiFiles(componentPath, ApiExtractor.ApiType.COMPONENT);
     }
@@ -625,7 +620,7 @@ export class ObConfigResolver {
 
   private getDependencyConfigs(sourceObConfig: any, dependencyConfigs: MergedConfig): void {
     for (const lib of sourceObConfig.dependencies.libraries || []) {
-      if(lib.consumerRules && lib.consumerRules.length > 0) {
+      if (lib.consumerRules && lib.consumerRules.length > 0) {
         for (const path of lib.consumerRules) {
           const thisLibConfigs = new MergedConfig();
           this.getConfigByPath(path, dependencyConfigs);
@@ -773,7 +768,7 @@ function fillNameCache(table: Map<string, string>, nameCache: Map<string, string
   return;
 }
 
-export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
+export function writeObfuscationNameCache(projectConfig: Object, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
   let writeContent: string = '';
   if (projectConfig.arkObfuscator) {
     writeContent = getArkguardNameCache(entryPackageInfo, projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
@@ -795,7 +790,7 @@ export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: s
 
 export function generateConsumerObConfigFile(obfuscationOptions: any, logger: any) {
   const projectConfig = { obfuscationOptions, compileHar: true };
-  const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, logger);
+  const obConfig: ObConfigResolver = new ObConfigResolver(projectConfig, logger);
   obConfig.resolveObfuscationConfigs();
 }
 
