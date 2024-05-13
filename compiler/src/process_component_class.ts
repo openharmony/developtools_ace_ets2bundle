@@ -530,7 +530,6 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   return undefined;
 }
 
-// eslint-disable-next-line max-lines-per-function
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
   log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
