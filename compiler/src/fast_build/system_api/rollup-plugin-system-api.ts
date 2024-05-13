@@ -35,7 +35,7 @@ import {
   writeCollectionFile,
   getAllComponentsOrModules
 } from '../../utils';
-import { hasTsNoCheckOrTsIgnoreFiles } from "../ark_compiler/utils";
+import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const allFiles: Set<string> = new Set();
@@ -54,7 +54,7 @@ export function apiTransform() {
     transform(code: string, id: string) {
       const magicString = new MagicString(code);
       if (filter(id)) {
-        if (projectConfig.compileMode === "esmodule") {
+        if (projectConfig.compileMode === 'esmodule') {
           code = processSystemApiAndLibso(code, id, useOSFiles);
           hiresStatus = this.share.projectConfig.needCompleteSourcesMap || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
             true :
