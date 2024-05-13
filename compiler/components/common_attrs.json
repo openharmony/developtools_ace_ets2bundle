@@ -23,6 +23,6 @@
     "responseRegion", "alignRules", "chainMode", "onVisibleAreaChange",
     "borderImage", "hitTestBehavior", "clickEffect", "foregroundColor", "bindContentCover", "bindSheet", "useEffect",
     "onGestureJudgeBegin","monopolizeEvents","onTouchIntercept","onChildTouchTest","onSizeChange", "onWillDismiss",
-    "foregroundEffect", "backgroundEffect"
+    "foregroundEffect", "backgroundEffect", "focusBox", "focusScopeId", "focusScopePriority"
   ]
 }
