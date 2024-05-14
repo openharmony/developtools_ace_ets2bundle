@@ -71,7 +71,7 @@ const IDENTIFIER_CACHE: string = 'IdentifierCache';
 export const SRC_MAIN: string = 'src/main';
 
 export var newSourceMaps: Object = {};
-export var nameCacheObj: Object = {};
+export let nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table. 
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
