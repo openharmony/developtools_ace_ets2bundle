@@ -121,7 +121,7 @@ export class ModuleSourceFile {
   }
 
   static addNewMockConfig(key: string, src: string): void {
-    if (ModuleSourceFile.newMockConfigInfo.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(ModuleSourceFile.newMockConfigInfo, key)) {
       return;
     }
 
@@ -129,12 +129,12 @@ export class ModuleSourceFile {
   }
 
   static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: Object, importerFile: string): void {
-    if (!ModuleSourceFile.mockConfigInfo.hasOwnProperty(originKey)) {
+    if (!Object.prototype.hasOwnProperty.call(ModuleSourceFile.newMockConfigInfo, originKey)) {
       return;
     }
 
     let useNormalizedOHMUrl = false;
-    if (rollupObject.share.projectConfig.hasOwnProperty('useNormalizedOHMUrl')) {
+    if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
     let mockFile: string = ModuleSourceFile.mockConfigInfo[originKey].source;
@@ -303,11 +303,11 @@ export class ModuleSourceFile {
 
   private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined, importerFile: string): string | undefined {
     let useNormalizedOHMUrl = false;
-    if (rollupObject.share.projectConfig.hasOwnProperty('useNormalizedOHMUrl')) {
+    if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
     let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig, useNormalizedOHMUrl);
-    if (systemOrLibOhmUrl != undefined) {
+    if (systemOrLibOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
       }

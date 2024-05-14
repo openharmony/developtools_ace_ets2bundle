@@ -77,8 +77,8 @@ function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectCon
 
   const eventAddSourceMapInfo = createAndStartEvent(parentEvent, 'preserve source map for ts/ets files');
   const relativeSourceFilePath = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
-  sourcemap['sources'] = [relativeSourceFilePath];
-  sourcemap['file'] = path.basename(relativeSourceFilePath);
+  sourcemap.sources = [relativeSourceFilePath];
+  sourcemap.file = path.basename(relativeSourceFilePath);
   sourcemap.sourcesContent && delete sourcemap.sourcesContent;
   const sourceMapGenerator = SourceMapGenerator.getInstance();
   const key = sourceMapGenerator.isNewSourceMaps() ? sourceFilePath : relativeSourceFilePath;
