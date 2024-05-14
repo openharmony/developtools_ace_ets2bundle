@@ -19,10 +19,10 @@ import {
   ArkObfuscator,
   readProjectPropertiesByCollectedPaths,
   performancePrinter
-} from "arkguard"
+} from 'arkguard';
 import {
   EventList
-} from 'arkguard/lib/utils/PrinterUtils'
+} from 'arkguard/lib/utils/PrinterUtils';
 
 import {
   TS2ABC,
@@ -47,7 +47,7 @@ import { projectConfig as mainProjectConfig } from '../../../../main';
 import {
   ObConfigResolver,
   collectResevedFileNameInIDEConfig,
-  readNameCache,
+  readNameCache
 } from './ob_config_resolver';
 import type { MergedConfig } from './ob_config_resolver';
 export const printerConfig = {
@@ -58,7 +58,7 @@ export const printerConfig = {
   //Print sum up time of transform processes during obfuscation
   mSumPrinter: false,
   //Output path of printer
-  mOutputPath: "" 
+  mOutputPath: ''
 };
 
 type ArkConfig = {
@@ -163,13 +163,13 @@ export function initArkProjectConfig(share: Object): Object {
   arkProjectConfig.patchAbcPath = mainProjectConfig.patchAbcPath;
   arkProjectConfig.changedFileList = mainProjectConfig.changedFileList;
 
-  if(mainProjectConfig.es2abcCompileTsInAotMode || mainProjectConfig.es2abcCompileTsInNonAotMode) {
+  if (mainProjectConfig.es2abcCompileTsInAotMode || mainProjectConfig.es2abcCompileTsInNonAotMode) {
     arkProjectConfig.pandaMode = mainProjectConfig.pandaMode;
     arkProjectConfig.processTs = mainProjectConfig.processTs;
   }
   arkProjectConfig.compileMode = projectConfig.compileMode;
 
-  if (projectConfig.compileHar || !isDebug(projectConfig))  {
+  if (projectConfig.compileHar || !isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
     const logger: any = share.getLogger(OBFUSCATION_TOOL);
     performancePrinter?.iniPrinter?.startEvent(EventList.OBFUSCATION_INITIALIZATION);
@@ -180,7 +180,7 @@ export function initArkProjectConfig(share: Object): Object {
 }
 
 function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger: any): void {
-  const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, logger, true);
+  const obConfig: ObConfigResolver = new ObConfigResolver(projectConfig, logger, true);
   const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
   const isHarCompiled: boolean = projectConfig.compileHar;
   if (mergedObConfig.options.disableObfuscation) {
@@ -214,9 +214,9 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
       reserved: mergedObConfig.reservedNames,
       toplevel: mergedObConfig.options.enableToplevelObfuscation
     }
-  }
+  };
   const applyNameCache: string | undefined = mergedObConfig.options.applyNameCache;
-  if (applyNameCache &&  applyNameCache.length > 0) {
+  if (applyNameCache && applyNameCache.length > 0) {
     if (fs.existsSync(applyNameCache)) {
       minifyOptions.nameCache = JSON.parse(fs.readFileSync(applyNameCache, 'utf-8'));
     } else {
@@ -224,7 +224,7 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
     }
   } else {
     if (projectConfig.obfuscationOptions && projectConfig.obfuscationOptions.obfuscationCacheDir) {
-      const defaultNameCachePath: string = path.join(projectConfig.obfuscationOptions.obfuscationCacheDir,"nameCache.json");
+      const defaultNameCachePath: string = path.join(projectConfig.obfuscationOptions.obfuscationCacheDir, 'nameCache.json');
       if (fs.existsSync(defaultNameCachePath)) {
         minifyOptions.nameCache = JSON.parse(fs.readFileSync(defaultNameCachePath, 'utf-8'));
       } else {
@@ -274,13 +274,13 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
       mKeepSourceOfPaths: new Set(),
       mkeepFilesAndDependencies: new Set(),
     }
-  }
+  };
 
   arkguardConfig.mRenameFileName = {
     mEnable: mergedObConfig.options.enableFileNameObfuscation,
     mNameGeneratorType: 1,
     mReservedFileNames: mergedObConfig.reservedFileNames,
-  }
+  };
 
   const arkObfuscator: ArkObfuscator = new ArkObfuscator();
   arkObfuscator.init(arkguardConfig);
@@ -288,7 +288,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     readNameCache(mergedObConfig.options.applyNameCache, logger);
   } else {
     if (obfuscationCacheDir) {
-      const defaultNameCachePath: string = path.join(obfuscationCacheDir,"nameCache.json");
+      const defaultNameCachePath: string = path.join(obfuscationCacheDir, 'nameCache.json');
       if (fs.existsSync(defaultNameCachePath)) {
         readNameCache(defaultNameCachePath, logger);
       }
