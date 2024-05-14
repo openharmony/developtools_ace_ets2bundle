@@ -476,7 +476,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
 }
 
 function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isPropertyDeclaration || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
+  if (ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
     const exludeDecorators: string[] = ['@Require', '@Once'];
