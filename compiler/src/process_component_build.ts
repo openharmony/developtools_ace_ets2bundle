@@ -3248,7 +3248,7 @@ function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
   while (temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
     temp = temp.parent;
   }
-  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
+  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText?.toString() === COMPONENT_LAZYFOREACH) {
     return true;
   }
   return false;
