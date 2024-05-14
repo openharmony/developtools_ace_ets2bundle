@@ -301,13 +301,13 @@ async function transform(code: string, id: string) {
   if (projectConfig.compileMode !== 'esmodule') {
     const compilerOptions = ts.readConfigFile(
       path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
-    compilerOptions['moduleResolution'] = 'nodenext';
-    compilerOptions['module'] = 'es2020';
+    compilerOptions.moduleResolution = 'nodenext';
+    compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger);
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [ processUISyntax(null) ] }
+      transformers: { before: [processUISyntax(null)] }
     });
 
     resetCollection();
@@ -363,7 +363,7 @@ async function transform(code: string, id: string) {
     } else {
       emitResult.outputText = data;
     }
-  }
+  };
 
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;

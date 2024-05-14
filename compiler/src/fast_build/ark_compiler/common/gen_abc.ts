@@ -85,14 +85,14 @@ process.stderr.write = function(chunk) {
   return true;
 };
 
-if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined &&
-  process.env['mode'] !== undefined) {
-  if (process.env['mode'] === JSBUNDLE) {
-    genAbcByWorkersOfBundleMode(process.env['inputs'], process.env['cmd']);
+if (cluster.isWorker && process.env.inputs !== undefined && process.env.cmd !== undefined &&
+  process.env.mode !== undefined) {
+  if (process.env.mode === JSBUNDLE) {
+    genAbcByWorkersOfBundleMode(process.env.inputs, process.env.cmd);
     process.exit(SUCCESS);
-  } else if (process.env['mode'] === ESMODULE && process.env['workerFileName'] && process.env['cachePath']) {
-    genAbcByWorkersOfModuleMode(process.env['inputs'], process.env['cmd'], process.env['workerFileName'],
-      process.env['cachePath']);
+  } else if (process.env.mode === ESMODULE && process.env.workerFileName && process.env.cachePath) {
+    genAbcByWorkersOfModuleMode(process.env.inputs, process.env.cmd, process.env.workerFileName,
+      process.env.cachePath);
     process.exit(SUCCESS);
   } else {
     process.exit(FAIL);

@@ -140,7 +140,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       const child = childProcess.exec(genAbcCmd);
       child.on('exit', (code: any) => {
         if (code === 1) {
-          logger.debug(red, "ArkTS:ERROR failed to execute es2abc", reset);
+          logger.debug(red, 'ArkTS:ERROR failed to execute es2abc', reset);
           process.exit(FAIL);
         }
       });
@@ -153,7 +153,7 @@ export function generateMergedAbc(moduleInfos: Array<ModuleInfo>, entryInfos: Ma
       child.stderr.on('data', (data: any) => {
         if (projectConfig.patch) {
           let patchErr :string[] =
-            data.split(os.EOL).filter(line => line.includes("[Patch]") || line.includes("Error:"));
+            data.split(os.EOL).filter(line => line.includes('[Patch]') || line.includes('Error:'));
           logger.error(red, patchErr.join(os.EOL), reset);
         } else {
           logger.error(red, data.toString(), reset);

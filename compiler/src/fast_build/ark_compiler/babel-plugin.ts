@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-import { getBabelInputPlugin } from "@rollup/plugin-babel";
+import { getBabelInputPlugin } from '@rollup/plugin-babel';
 import {
     NODE_MODULES,
     OH_MODULES,
     OHPM
-} from "./common/ark_define";
+} from './common/ark_define';
 
 export const babelPlugin = (projectConfig: Object): Object => 
     getBabelInputPlugin({

@@ -237,12 +237,12 @@ export class ModuleMode extends CommonMode {
   }
 
   private getPackageEntryInfo(filePath: string, metaInfo: Object, pkgEntryInfos: Map<String, PackageEntryInfo>): void {
-    if (metaInfo['isLocalDependency']) {
+    if (metaInfo.isLocalDependency) {
       const hostModulesInfo: Object = metaInfo.hostModulesInfo;
-      const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo['moduleName']);
+      const pkgBuildPath: string = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, metaInfo.moduleName);
       hostModulesInfo.forEach(hostModuleInfo => {
-        const hostDependencyName: string = hostModuleInfo['hostDependencyName'];
-        const hostModuleName: string = hostModuleInfo['hostModuleName'];
+        const hostDependencyName: string = hostModuleInfo.hostDependencyName;
+        const hostModuleName: string = hostModuleInfo.hostModuleName;
         const pkgEntryPath: string = toUnixPath(path.join(`${PACKAGES}@${hostModuleName}`, hostDependencyName));
         if (!pkgEntryInfos.has(pkgEntryPath)) {
           pkgEntryInfos.set(pkgEntryPath, new PackageEntryInfo(pkgEntryPath, pkgBuildPath));
@@ -252,11 +252,11 @@ export class ModuleMode extends CommonMode {
       return;
     }
 
-    if (!metaInfo['pkgPath']) {
+    if (!metaInfo.pkgPath) {
       this.logger.debug("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ", filePath);
       return;
     }
-    const pkgPath: string = metaInfo['pkgPath'];
+    const pkgPath: string = metaInfo.pkgPath;
     let originPkgEntryPath: string = toUnixPath(filePath.replace(pkgPath, ''));
     if (originPkgEntryPath.startsWith('/')) {
       originPkgEntryPath = originPkgEntryPath.slice(1, originPkgEntryPath.length);
@@ -300,7 +300,7 @@ export class ModuleMode extends CommonMode {
       case EXTNAME_MJS:
       case EXTNAME_CJS: {
         const extName: string = (moduleId.endsWith(EXTNAME_MJS) || moduleId.endsWith(EXTNAME_CJS)) ? EXTNAME_JS : '';
-        const isCommonJS: boolean = metaInfo && metaInfo['commonjs'] && metaInfo['commonjs']['isCommonJS'];
+        const isCommonJS: boolean = metaInfo && metaInfo.commonjs && metaInfo.commonjs.isCommonJS;
         this.addModuleInfoItem(moduleId, isCommonJS, extName, metaInfo, moduleInfos);
         break;
       }
@@ -351,27 +351,27 @@ export class ModuleMode extends CommonMode {
       }
     }
 
-    let moduleName: string = metaInfo['moduleName'];
+    let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
     let cacheFilePath: string =
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
-      packageName = metaInfo['pkgName'];
+      packageName = metaInfo.pkgName;
       const pkgParams = {
         pkgName: packageName,
-        pkgPath: metaInfo['pkgPath'],
+        pkgPath: metaInfo.pkgPath,
         isRecordName: true
       };
       recordName = getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
-        packageName = this.getPkgModulesFilePkgName(metaInfo['pkgPath']);
+        packageName = this.getPkgModulesFilePkgName(metaInfo.pkgPath);
       } else {
         packageName =
-          metaInfo['isLocalDependency'] ? moduleName : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
+          metaInfo.isLocalDependency ? moduleName : getPackageInfo(this.projectConfig.aceModuleJsonPath)[1];
       }
     }
 
@@ -606,7 +606,7 @@ export class ModuleMode extends CommonMode {
         }
         this.triggerEndSignal();
       });
-      if (this.workerNumber == 0) {
+      if (this.workerNumber === 0) {
         // process aot for no source file changed.
         this.processAotIfNeeded();
       }
@@ -617,7 +617,7 @@ export class ModuleMode extends CommonMode {
     if (!needAotCompiler(this.projectConfig)) {
       return;
     }
-    let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); })
+    let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); });
     generateAot(this.arkConfig.arkRootPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
