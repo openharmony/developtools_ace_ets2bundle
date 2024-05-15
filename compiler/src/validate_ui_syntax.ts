@@ -465,7 +465,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
-    validateMethod(node, sourceFileNode, log);
+    validateFunction(node, sourceFileNode, log);
   }
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2);
@@ -481,16 +481,39 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
     const exludeDecorators: string[] = ['@Require', '@Once'];
+    const v1MethodDecorators: string[] = ['@Builder', '@Styles'];
+    const v1DecoratorMap: Map<string, number> = new Map<string, number>();
+    const v2DecoratorMap: Map<string, number> = new Map<string, number>();
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
       if (!exludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
         decoratorName === '@BuilderParam')) {
-        innerDecoratorCount++;
+        const count: number = v2DecoratorMap.get(decoratorName) || 0;
+        v2DecoratorMap.set(decoratorName, count + 1);
+        return;
+      }
+      if (v1MethodDecorators.includes(decoratorName)) {
+        const count: number = v1DecoratorMap.get(decoratorName) || 0;
+        v1DecoratorMap.set(decoratorName, count + 1);
+        return;
       }
     });
+    const v2DecoratorMapKeys: string[] = Array.from(v2DecoratorMap.keys());
+    const v2DecoratorMapValues: number[] = Array.from(v2DecoratorMap.values());
+    const v1DecoratorMapKeys: string[] = Array.from(v1DecoratorMap.keys());
+    const v1DecoratorMapValues: number[] = Array.from(v1DecoratorMap.values());
+    innerDecoratorCount = v2DecoratorMapKeys.length + v1DecoratorMapKeys.length;
     if (innerDecoratorCount > 1) {
       const message: string = 'The member property or method can not be decorated by multiple built-in decorators.';
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    }
+    const v2Duplicate: boolean = v2DecoratorMapValues.length &&
+      v2DecoratorMapValues.some((count: number) => count > 1);
+    const v1Duplicate: boolean = v1DecoratorMapValues.length &&
+      v1DecoratorMapValues.some((count: number) => count > 1);
+    const duplicateMessage: string = 'Duplicate decorators for method are not allowed.';
+    if (v2Duplicate || v1Duplicate) {
+      addLog(v1Duplicate ? LogType.WARN : LogType.ERROR, duplicateMessage, node.getStart(), log, sourceFileNode);
     }
   }
 }
@@ -529,50 +552,30 @@ function collectStyles(node: ts.FunctionLikeDeclarationBase): void {
   }
 }
 
-function validateMethod(node: ts.MethodDeclaration | ts.FunctionDeclaration,
+function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  const innerDecotators: string[] = ['AnimatableExtend', 'Builder', 'Extend', 'Styles', 'Concurrent'];
-  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  const decoratorMap: Map<string, number> = new Map<string, number>();
-  decorators.forEach((item: ts.Decorator) => {
-    const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '')
-      .replace(/^@/, '').trim();
-    if (innerDecotators.includes(decoratorName)) {
+  if (ts.isFunctionDeclaration(node)) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+    const decoratorMap: Map<string, number> = new Map<string, number>();
+    decorators.forEach((item: ts.Decorator) => {
+      const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '')
+        .replace(/^@/, '').trim();
       const count: number = decoratorMap.get(decoratorName) || 0;
       decoratorMap.set(decoratorName, count + 1);
+    });
+    const decoratorValues: number[] = Array.from(decoratorMap.values());
+    const hasDuplicate: boolean = decoratorValues.length &&
+      decoratorValues.some((count: number) => count > 1);
+    if (hasDuplicate) {
+      const message: string = 'Duplicate decorators for function are not allowed.';
+      addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
     }
-  });
-  const decoratorValues: number[] = Array.from(decoratorMap.values());
-  const hasDuplicate: boolean = decoratorValues.length &&
-    decoratorValues.some((count: number) => count > 1);
-  let isFuntion: boolean = false;
-  const decoratorKeys: string[] = Array.from(decoratorMap.keys());
-  if (ts.isFunctionDeclaration(node)) {
-    isFuntion = true;
-    checkFunctionDecorator(node, decoratorKeys, sourceFileNode, log);
-  } else {
-    checkMethodDecorator(node, decoratorKeys, sourceFileNode, log);
-  }
-  if (hasDuplicate) {
-    const message: string = `Duplicate decorators for ${isFuntion ? 'function' : 'method'} are not allowed.`;
-    addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
-  }
-}
-
-function checkFunctionDecorator(node: ts.FunctionDeclaration, decoratorKeys: string[],
-  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (decoratorKeys.length > 1) {
-    const message: string = 'A function can only be decorated by one of the ' +
-      `'AnimatableExtend, Builder, Extend, Styles and Concurrent'.`;
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
-  }
-}
-
-function checkMethodDecorator(node: ts.MethodDeclaration, decoratorKeys: string[],
-  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (decoratorKeys.length > 1 && decoratorKeys.includes('Builder') && decoratorKeys.includes('Styles')) {
-    const message: string = 'A method can not be decorated with both Builder and Styles at the same time.';
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    const decoratorKeys: string[] = Array.from(decoratorMap.keys());
+    if (decoratorKeys.length > 1) {
+      const message: string = 'A function can only be decorated by one of the ' +
+        `'AnimatableExtend, Builder, Extend, Styles and Concurrent'.`;
+      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    }
   }
 }
 

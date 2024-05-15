@@ -134,7 +134,8 @@ import {
   LogInfo,
   hasDecorator,
   getPossibleBuilderTypeParameter,
-  storedFileInfo
+  storedFileInfo,
+  removeDecorator
 } from './utils';
 import {
   partialUpdateConfig,
@@ -571,7 +572,8 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       }
       const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
-        ts.concatenateDecoratorsAndModifiers(customBuilder, modifiers), node.asteriskToken, node.name, node.questionToken, node.typeParameters,
+        ts.concatenateDecoratorsAndModifiers(removeDecorator(customBuilder, 'Builder'), modifiers),
+        node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         parameters, node.type, processComponentBlock(node.body, false, log, false, true));
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);

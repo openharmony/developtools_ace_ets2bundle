@@ -644,5 +644,69 @@
             "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
             "type": "ERROR"
         }
+    ],
+    "validateDifferentMethod": [
+        {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles and Concurrent'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles and Concurrent'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@Computed can only decorate 'GetAccessor'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        }
+    ],
+    "validateDuplicateMethod": [
+        {
+            "message": "Duplicate decorators for function are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for function are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "WARN"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Duplicate decorators for method are not allowed.",
+            "type": "ERROR"
+        }
     ]
 }
