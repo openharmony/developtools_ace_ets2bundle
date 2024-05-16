@@ -77,6 +77,15 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(pkgInfo && pkgInfo.entry && pkgInfo.modulePath && pkgInfo.entry.name && pkgInfo.entry.version !== '' && pkgInfo.entry.version != undefined).to.be.true;
   });
 
+  mocha.it('1-5: test getPkgInfoByModuleId with file name obfuscate', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
+    let pkgInfo = sourceMapGenerator.getPkgInfoByModuleId(moduleId, true);
+    expect(pkgInfo && pkgInfo.entry && pkgInfo.modulePath && pkgInfo.entry.name && pkgInfo.entry.version !== '' && pkgInfo.entry.version != undefined).to.be.true;
+    expect(pkgInfo.modulePath == 'src/main/a/b.js').to.be.true;
+  });
+
   mocha.it('2-1: test genKey under build debug', function () {
     this.rollup.build();
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
@@ -114,6 +123,15 @@ mocha.describe('test generate_sourcemap api', function () {
     let genKey = sourceMapGenerator.genKey(moduleId);
     let expectKey = prefix + ENTRYABILITY_JS_PATH_DEFAULT.substring(1);
 
+    expect(genKey === expectKey).to.be.true;
+  });
+
+  mocha.it('2-5: test genKey with file name obfuscate', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
+    let genKey = sourceMapGenerator.genKey(moduleId, true);
+    let expectKey = 'entry|entry|1.0.0|src/main/a/b.js';
     expect(genKey === expectKey).to.be.true;
   });
 

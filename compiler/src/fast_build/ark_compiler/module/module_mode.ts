@@ -316,6 +316,9 @@ export class ModuleMode extends CommonMode {
   private handleFileNameObfuscationInModuleInfo(sourceMapGenerator: SourceMapGenerator, isPackageModules: boolean, originalFilePath: string, filePath: string,
     sourceFile: string) {
     if (!enableObfuscateFileName(isPackageModules, this.projectConfig)) {
+      if (sourceMapGenerator.isNewSourceMaps()) {
+        sourceFile = sourceMapGenerator.genKey(originalFilePath);
+      }
       return {filePath: filePath, sourceFile: sourceFile};
     }
 
