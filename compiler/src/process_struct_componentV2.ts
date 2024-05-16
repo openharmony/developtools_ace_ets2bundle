@@ -18,7 +18,8 @@ import ts from 'typescript';
 import {
   LogInfo,
   LogType,
-  addLog
+  addLog,
+  removeDecorator
 } from './utils';
 import {
   COMPONENT_CONSTRUCTOR_PARENT,
@@ -190,16 +191,6 @@ function processParamProperty(member: ts.PropertyDeclaration,
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
     member.name, member.questionToken, member.type, undefined);
-}
-
-function removeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): readonly ts.Decorator[] {
-  return decorators.filter((item: ts.Node) => {
-    if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
-      item.expression.escapedText.toString() === decoratorName) {
-      return false;
-    }
-    return true;
-  });
 }
 
 function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[],

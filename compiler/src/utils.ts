@@ -1202,3 +1202,13 @@ export function setRollupCache(rollupShareObject: object, projectConfig: object,
     rollupShareObject.cacheStoreManager.mount(cacheStoreKey).setCache(cacheServiceKey, value);
   }
 }
+
+export function removeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): readonly ts.Decorator[] {
+  return decorators.filter((item: ts.Node) => {
+    if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
+      item.expression.escapedText.toString() === decoratorName) {
+      return false;
+    }
+    return true;
+  });
+}
