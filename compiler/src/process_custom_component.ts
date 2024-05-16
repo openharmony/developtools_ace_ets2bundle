@@ -589,6 +589,11 @@ export function assignmentFunction(componeParamName: string): ts.ExpressionState
 
 function traverseChildComponentArgs(childParam: ts.Expression[], name: string, log: LogInfo[],
   componentNode: ts.CallExpression): ts.Expression[] {
+  const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(componentNode) ||
+    processStructComponentV2.getOrCreateStructInfo(name);
+  if (!childStructInfo.isComponentV2) {
+    return childParam;
+  }
   const objectLiteralIndex: number = 2;
   if (childParam.length > objectLiteralIndex && ts.isObjectLiteralExpression(childParam[1]) &&
     childParam[1].properties) {
@@ -596,7 +601,7 @@ function traverseChildComponentArgs(childParam: ts.Expression[], name: string, l
     childParam[1].properties.forEach((item: ts.PropertyAssignment) => {
       if (item.name && ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
-        updatePropertyAssignment(newProperties, itemName, item, name, log, componentNode);
+        updatePropertyAssignment(newProperties, itemName, item, childStructInfo, log);
       }
     });
     if (newProperties.length) {
@@ -622,8 +627,7 @@ function getNewArgsForCustomComponent(childParam: ts.Expression[],
 }
 
 function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
-  itemName: string, item: ts.PropertyAssignment, childName: string,
-  log: LogInfo[], componentNode: ts.CallExpression): void {
+  itemName: string, item: ts.PropertyAssignment, childStructInfo: StructInfo, log: LogInfo[]): void {
   if (isDoubleNonNullExpression(item.initializer)) {
     if (isLeftHandExpression(item.initializer.expression.expression)) {
       const result: Record<string, boolean> = { hasQuestionToken: false };
@@ -636,9 +640,7 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
         });
         return;
       }
-      const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(componentNode) ||
-        processStructComponentV2.getOrCreateStructInfo(childName);
-      if (childStructInfo.isComponentV2 && childStructInfo.paramDecoratorMap.has(itemName) &&
+      if (childStructInfo.paramDecoratorMap.has(itemName) &&
         childStructInfo.eventDecoratorSet.has('$' + itemName)) {
         newProperties.push(createUpdateTwoWayNode(itemName, item.initializer.expression.expression));
         return;
