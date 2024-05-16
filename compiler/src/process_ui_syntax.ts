@@ -562,6 +562,7 @@ function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
     return ts.factory.updatePropertyAssignment(node, node.name,
       processCustomDialogControllerBuilder(parent, node.initializer, componentName));
   }
+  return undefined;
 }
 
 function processCustomDialogControllerBuilder(parent: ts.Expression,
@@ -897,6 +898,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
+  return undefined;
 }
 
 function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
@@ -1126,6 +1128,7 @@ function processExtendBody(node: ts.Node, componentName?: string): ts.Expression
         return ts.factory.createIdentifier(componentName);
       }
   }
+  return undefined;
 }
 
 export function collectExtend(collectionSet: Map<string, Set<string>>, component: string, attribute: string): void {
@@ -1891,6 +1894,7 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
         entryOptionNode, argsArr, true);
     }
   }
+  return undefined;
 }
 
 export function resetLog(): void {
