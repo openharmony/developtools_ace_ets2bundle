@@ -152,7 +152,8 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection
+  enumCollection,
+  getSymbolIfAliased
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -549,6 +550,8 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   if (node.expression && ts.isCallExpression(node.expression)) {
     let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
+    const builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[] = [];
+    callBuilderConversion(builderParamDispose, node.expression);
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
         node.expression,
@@ -561,7 +564,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ts.factory.createStringLiteral(name),
             traverseBuilderParams(node.expression.arguments[0], isBuilder)
           ]
-        ), storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()]
+        ), ...builderParamDispose]
       ));
     } else {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
@@ -572,16 +575,40 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
           storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ?
           [
             ...node.expression.arguments,
-            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()
+            ...builderParamDispose
           ] :
           [
             ...node.expression.arguments,
-            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis(),
+            ...builderParamDispose,
             ts.factory.createIdentifier(MY_IDS)
           ]
       ));
     }
   }
+}
+
+function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
+  node: ts.CallExpression): void {
+  if (storedFileInfo.processBuilder) {
+    builderParamDispose.push(parentConditionalExpression());
+  } else {
+    builderParamDispose.push(...handleBuilderParam(node));
+  }
+}
+
+function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisExpression)[] {
+  const callBuilderParameter: (ts.Identifier | ts.ThisExpression)[] = [];
+  if (globalProgram.checker && node.expression && getSymbolIfAliased(node.expression) && getSymbolIfAliased(node.expression).valueDeclaration) {
+    const valueDeclaration: ts.Node = getSymbolIfAliased(node.expression).valueDeclaration;
+    if (valueDeclaration.parameters && valueDeclaration.parameters.length) {
+      const paramNumberdiff: number = valueDeclaration.parameters.length - node.arguments.length;
+      for (let i = 0; i < paramNumberdiff; i++) {
+        callBuilderParameter.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
+      }
+    }
+  }
+  callBuilderParameter.push(ts.factory.createThis());
+  return callBuilderParameter;
 }
 
 function builderCallNode(node: ts.CallExpression): ts.Expression {
