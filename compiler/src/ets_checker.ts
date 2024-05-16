@@ -507,11 +507,21 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
+      addLocalPackageSet(moduleId, rollupObject);
     }
-    const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
-    const metaInfo: Object = moduleInfo['meta'];
-    if (metaInfo.pkgName && metaInfo.isLocalDependency) {
+  }
+}
+
+// collect the modulename or pkgname of all local modules. 
+export function addLocalPackageSet(moduleId: string, rollupObject: Object): void {
+  const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+  const metaInfo: Object = moduleInfo['meta'];
+  if (metaInfo.isLocalDependency) {
+    if (projectConfig.useNormalizedOHMUrl && metaInfo.pkgName) {
       localPackageSet.add(metaInfo.pkgName);
+    }
+    if (!projectConfig.useNormalizedOHMUrl && metaInfo.moduleName) {
+      localPackageSet.add(metaInfo.moduleName);
     }
   }
 }
