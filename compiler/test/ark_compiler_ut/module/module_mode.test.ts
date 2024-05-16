@@ -84,6 +84,9 @@ import {
   cpus
 } from "../utils/utils";
 import { AOT_FULL } from '../../../lib/pre_define';
+import {
+  ArkObfuscator
+} from 'arkguard';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -625,6 +628,156 @@ mocha.describe('test module_mode file api', function () {
     const moduleInfosAndSourceMap= ModuleModeMock.getModuleInfosAndSourceMapMock(this.rollup, sourceMapGenerator);
     moduleInfosAndSourceMap.moduleInfos.forEach(value => {
       expect(moduleInfosAndSourceMap.sourceMap[value.sourceFile]).to.exist;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-7-1: test addModuleInfoItem under build release with obfuscatedEnabled and isPackageModulesFile`s return is true', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(true);
+
+    this.rollup.share.projectConfig = {
+      buildMode: 'Release'
+    }
+    this.rollup.share.projectConfig.obfuscationMergedObConfig = {
+      options: {
+        enableFileNameObfuscation: true
+      }
+    };
+    this.rollup.share.projectConfig.modulePath = this.rollup.share.projectConfig.projectPath;
+    
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.projectConfig.packageDir = ENTRY_MODULE_NAME_DEFAULT;
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+
+    let index = 0;
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      if (index === 1) {
+        expect(moduleInfo.sourceFile == 'entry|entry|1.0.0|src/main/entryability/EntryAbility.js').to.be.true;
+        expect(moduleInfo.recordName == 'pkg_modules/src/main/pkg_modulesability/EntryAbility').to.be.true;
+        expect(moduleInfo.packageName === PKG_MODULES).to.be.true;
+        expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0).to.be.true;
+      }
+      if (index === 2) {
+        expect(moduleInfo.sourceFile == 'entry|entry|1.0.0|src/main/pages/Index.js').to.be.true;
+        expect(moduleInfo.recordName == 'pkg_modules/src/main/pages/Index').to.be.true;
+        expect(moduleInfo.packageName === PKG_MODULES).to.be.true;
+        expect(moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+      }
+      index++;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-7-2: test addModuleInfoItem under build release with obfuscatedEnabled and isPackageModulesFile`s return is true and old key', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+
+    this.rollup.share.projectConfig = {
+      buildMode: 'Release'
+    }
+    this.rollup.share.projectConfig.obfuscationMergedObConfig = {
+      options: {
+        enableFileNameObfuscation: true
+      }
+    };
+    this.rollup.share.projectConfig.modulePath = this.rollup.share.projectConfig.projectPath;
+
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.projectConfig.packageDir = ENTRY_MODULE_NAME_DEFAULT;
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+
+    let index = 0;
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      if (index === 1) {
+        expect(moduleInfo.sourceFile == 'entry/build/entry/src/main/entryability/EntryAbility.ts').to.be.true;
+        expect(moduleInfo.recordName == 'pkg_modules/src/main/pkg_modulesability/EntryAbility').to.be.true;
+        expect(moduleInfo.packageName === PKG_MODULES).to.be.true;
+        expect(moduleInfo.filePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.cacheFilePath.indexOf(ENTRYABILITY_TS_PATH_DEFAULT) > 0).to.be.true;
+      }
+      if (index === 2) {
+        expect(moduleInfo.sourceFile == 'entry/build/entry/src/main/pages/Index.ets').to.be.true;
+        expect(moduleInfo.recordName == 'pkg_modules/src/main/pages/Index').to.be.true;
+        expect(moduleInfo.packageName === PKG_MODULES).to.be.true;
+        expect(moduleInfo.filePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+        expect(moduleInfo.cacheFilePath.indexOf(INDEX_ETS_PATH_DEFAULT) > 0).to.be.true;
+      }
+      index++;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-7-3: test addModuleInfoItem under build release with obfuscatedEnabled and isPackageModulesFile`s return is false', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(true);
+
+    this.rollup.share.projectConfig = {
+      buildMode: 'Release'
+    }
+    this.rollup.share.projectConfig.obfuscationMergedObConfig = {
+      options: {
+        enableFileNameObfuscation: true
+      }
+    };
+
+    const arkguardConfig = {
+      mRenameFileName: {
+        mEnable: true,
+        mNameGeneratorType: 1,
+        mReservedFileNames: [
+          "entry",
+          "src",
+          "main"
+        ]
+      },
+      mPerformancePrinter: []
+    }
+
+    let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+    arkObfuscator.init(arkguardConfig);
+
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.packageName === 'entry').to.be.true;
+      expect(/.*entry\|entry\|1\.0\.0\|src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.sourceFile)).to.be.true;
+      expect(/.*\/entry\/src\/main\/[a-z]\/[a-z].*/.test(moduleInfo.recordName)).to.be.true;
+      expect(/.*\/src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.filePath)).to.be.true;
+      expect(/.*\/src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.cacheFilePath)).to.be.true;
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('2-7-4: test addModuleInfoItem under build release with obfuscatedEnabled and isPackageModulesFile`s return is false and old key', function () {
+    this.rollup.build(RELEASE);
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+
+    this.rollup.share.projectConfig = {
+      buildMode: 'Release'
+    }
+    this.rollup.share.projectConfig.obfuscationMergedObConfig = {
+      options: {
+        enableFileNameObfuscation: true
+      }
+    };
+
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+
+    moduleMode.moduleInfos.forEach(moduleInfo => {
+      expect(moduleInfo.packageName === 'entry').to.be.true;
+      expect(/.*\/src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.sourceFile)).to.be.true;
+      expect(/.*\/entry\/src\/main\/[a-z]\/[a-z].*/.test(moduleInfo.recordName)).to.be.true;
+      expect(/.*\/src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.filePath)).to.be.true;
+      expect(/.*\/src\/main\/[a-z]\/[a-z]\.(js|ts|ets).*/.test(moduleInfo.cacheFilePath)).to.be.true;
     });
     SourceMapGenerator.cleanSourceMapObject();
   });
