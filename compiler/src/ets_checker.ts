@@ -1079,9 +1079,8 @@ function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
         return false;
       }
     }
-  } else {
-    return false;
   }
+  return false;
 }
 function collectComponents(node: ts.SourceFile): void {
   // @ts-ignore
