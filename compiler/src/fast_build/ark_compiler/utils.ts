@@ -35,7 +35,8 @@ import {
   genTemporaryPath,
   mkdirsSync,
   validateFilePathLength,
-  toUnixPath
+  toUnixPath,
+  isPackageModulesFile
 } from '../../utils';
 import {
   tryMangleFileNameAndWriteFile,
@@ -46,6 +47,11 @@ import {
 } from '../../ark_utils';
 import { AOT_FULL, AOT_PARTIAL, AOT_TYPE } from '../../pre_define';
 import { SourceMapGenerator } from './generate_sourcemap';
+import {
+  handleObfuscatedFilePath,
+  enableObfuscateFileName,
+  enableObfuscatedFilePathConfig
+} from './common/ob_config_resolver';
 
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
@@ -107,8 +113,17 @@ export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: 
     return hasTsNoCheckOrTsIgnore;
   }
 
+  cacheFilePath = updateCacheFilePathIfEnableObuscatedFilePath(filePath, cacheFilePath, projectConfig);
   cacheFilePath = toUnixPath(changeFileExtension(cacheFilePath, EXTNAME_JS));
   return fs.existsSync(cacheFilePath);
+}
+
+function updateCacheFilePathIfEnableObuscatedFilePath(filePath: string, cacheFilePath: string, projectConfig: Object): string {
+  const isPackageModules = isPackageModulesFile(filePath, projectConfig);
+  if (enableObfuscatedFilePathConfig(isPackageModules, projectConfig) && enableObfuscateFileName(isPackageModules, projectConfig)) {
+    return handleObfuscatedFilePath(cacheFilePath, isPackageModules, projectConfig);
+  }
+  return cacheFilePath;
 }
 
 export async function writeFileContentToTempDir(id: string, content: string, projectConfig: Object,
