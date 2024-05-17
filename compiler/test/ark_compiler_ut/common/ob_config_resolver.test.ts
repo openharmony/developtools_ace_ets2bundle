@@ -47,8 +47,13 @@ mocha.describe('test obfuscate config resolver api', function () {
     }
   });
 
+  mocha.afterEach(() => {
+    if (fs.existsSync(`${OBFUSCATION_RULE_PATH}`)) {
+      fs.unlinkSync(`${OBFUSCATION_RULE_PATH}`);
+    }
+  });
+
   mocha.after(() => {
-    fs.unlinkSync(`${OBFUSCATION_RULE_PATH}`);
     delete this.rollup;
   });
 
@@ -95,6 +100,175 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(reservedGlobalNames.includes('TestProperty')).to.be.true;
 
     this.rollup.clearCache();
+  });
+
+  mocha.it('1-2: test resolveObfuscationConfigs: -enable-property-obfuscation', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enable-property-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    const obOptions: ObOptions = mergedObConfig.options;
+    for (const [optionName, optionValue] of Object.entries(obOptions)) {
+      if (optionName === 'enablePropertyObfuscation') {
+        expect(optionValue).to.be.true;
+      } else {
+        if (typeof optionValue === 'boolean') {
+          expect(optionValue).to.be.false;
+        } else if (typeof optionValue === 'string') {
+          expect(optionValue === '').to.be.true;
+        }
+      }
+    }
+  });
+
+  mocha.it('1-3: test resolveObfuscationConfigs: -enable-property-obfuscation -enable-export-obfuscation', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enable-property-obfuscation\n-enable-export-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    const obOptions: ObOptions = mergedObConfig.options;
+    for (const [optionName, optionValue] of Object.entries(obOptions)) {
+      if (optionName === 'enablePropertyObfuscation' || optionName === 'enableExportObfuscation') {
+        expect(optionValue).to.be.true;
+      } else {
+        if (typeof optionValue === 'boolean') {
+          expect(optionValue).to.be.false;
+        } else if (typeof optionValue === 'string') {
+          expect(optionValue === '').to.be.true;
+        }
+      }
+    }
+  });
+
+  mocha.it('1-3: test resolveObfuscationConfigs: -enable-property-obfuscation -enable-string-property-obfuscation', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enable-property-obfuscation\n-enable-string-property-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    const obOptions: ObOptions = mergedObConfig.options;
+    for (const [optionName, optionValue] of Object.entries(obOptions)) {
+      if (optionName === 'enablePropertyObfuscation' || optionName === 'enableStringPropertyObfuscation') {
+        expect(optionValue).to.be.true;
+      } else {
+        if (typeof optionValue === 'boolean') {
+          expect(optionValue).to.be.false;
+        } else if (typeof optionValue === 'string') {
+          expect(optionValue === '').to.be.true;
+        }
+      }
+    }
+  });
+
+  mocha.it('1-4: test resolveObfuscationConfigs: -enable-property-obfuscation -enable-toplevel-obfuscation', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enable-property-obfuscation\n-enable-toplevel-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    const obOptions: ObOptions = mergedObConfig.options;
+    for (const [optionName, optionValue] of Object.entries(obOptions)) {
+      if (optionName === 'enablePropertyObfuscation' || optionName === 'enableToplevelObfuscation') {
+        expect(optionValue).to.be.true;
+      } else {
+        if (typeof optionValue === 'boolean') {
+          expect(optionValue).to.be.false;
+        } else if (typeof optionValue === 'string') {
+          expect(optionValue === '').to.be.true;
+        }
+      }
+    }
+  });
+
+  mocha.it('1-5: test resolveObfuscationConfigs: enable all', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enable-property-obfuscation\n-enable-export-obfuscation\n-enable-filename-obfuscation\n'
+                                + '-enable-string-property-obfuscation\n-enable-toplevel-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    const obOptions: ObOptions = mergedObConfig.options;
+    expect(obOptions.disableObfuscation).to.be.false;
+    expect(obOptions.enablePropertyObfuscation).to.be.true;
+    expect(obOptions.enableStringPropertyObfuscation).to.be.true;
+    expect(obOptions.enableToplevelObfuscation).to.be.true;
+    expect(obOptions.enableFileNameObfuscation).to.be.true;
+    expect(obOptions.enableExportObfuscation).to.be.true;
+    expect(obOptions.removeComments).to.be.false;
+    expect(obOptions.compact).to.be.false;
+    expect(obOptions.removeLog).to.be.false;
   });
 
   mocha.it('2-1: test collectResevedFileNameInIDEConfig', function () {
