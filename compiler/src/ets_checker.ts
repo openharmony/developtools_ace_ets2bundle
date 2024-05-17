@@ -1462,7 +1462,7 @@ function initEtsStandaloneCheckerConfig(logger, config): void {
   Object.assign(projectConfig, config);
 }
 
-function resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode: string) {
+function resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode: string): void {
   resetProjectConfig();
   resetGlobalProgram();
   resetEtsCheck();

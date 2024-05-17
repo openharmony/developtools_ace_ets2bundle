@@ -250,7 +250,7 @@ export class ObConfigResolver {
     let needKeepSystemApi = enableObfuscation && (mergedConfigs.options.enablePropertyObfuscation || 
       (mergedConfigs.options.enableExportObfuscation && mergedConfigs.options.enableToplevelObfuscation));
 
-    if (needKeepSystemApi) {
+    if (needKeepSystemApi && sourceObConfig.obfuscationCacheDir) {
       const systemApiCachePath: string = path.join(sourceObConfig.obfuscationCacheDir, 'systemApiCache.json');
       if (isFileExist(systemApiCachePath)) {
         this.getSystemApiConfigsByCache(mergedConfigs, systemApiCachePath);
@@ -396,6 +396,7 @@ export class ObConfigResolver {
         }
         case OptionType.ENABLE_STRING_PROPERTY_OBFUSCATION: {
           configs.options.enableStringPropertyObfuscation = true;
+          continue;
         }
         case OptionType.ENABLE_TOPLEVEL_OBFUSCATION: {
           configs.options.enableToplevelObfuscation = true;
