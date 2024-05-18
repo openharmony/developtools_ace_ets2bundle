@@ -21,6 +21,19 @@
     "onTextSelectionChange",
     "onContentScroll",
     "selectionMenuHidden",
-    "enterKeyType"
+    "enterKeyType",
+    "textAlign",
+    "searchIcon",
+    "cancelButton",
+    "fontColor",
+    "caretStyle",
+    "customKeyboard",
+    "type",
+    "maxLength",
+    "fontFeature",
+    "selectedBackgroundColor",
+    "inputFilter",
+    "textIndent",
+    "onEditChange"
   ]
 }
