@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-const ts = require('typescript')
-const path = require('path')
-const fs = require('fs')
+const ts = require('typescript');
+const path = require('path');
+const fs = require('fs');
 
 const addTSInterfaceSet = ['ForEach', 'LazyForEach', 'TapGesture', 'LongPressGesture', 'LongPressGesture',
   'PanGesture', 'SwipeGesture', 'PinchGesture', 'RotationGesture', 'GestureGroup','PageTransitionEnter',
@@ -29,7 +29,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'Select', 'Shape', 'Sheet', 'Slider', 'Span', 'Stack', 'Stepper', 'StepperItem', 'Swiper',
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
   'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow', 'WaterFlow', 'FlowItem', 'ImageSpan',
-  'RootScene', 'Screen', 'WindowScene', "EffectComponent", "RichEditor"];
+  'RootScene', 'Screen', 'WindowScene', 'EffectComponent', 'RichEditor'];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
@@ -83,7 +83,7 @@ function generateTargetFile(filePath, output) {
 function processImportType(content) {
   return content.replace(/(import\s*\(("|'))(\.\.\/api\/[^("|')]*("|')\)\.)/g, (item, item1, item2, item3) => {
     return item1 + '../../' + item3;
-  })
+  });
 }
 
 function readFile(dir, fileDir) {
@@ -168,7 +168,7 @@ function processComponent(node, newStatements) {
     node = ts.factory.updateClassDeclaration(node, modifiers, node.name,
       node.typeParameters, [ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,
         [ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier('TS' + node.name.getText()),
-        undefined)])], node.members);
+          undefined)])], node.members);
   }
   newStatements.push(node);
 }
@@ -189,7 +189,7 @@ function validateComponentMembers(node, componentName) {
       }
     }
   }
-  return { isComponentName, extendNode }
+  return { isComponentName, extendNode };
 }
 
 function isVariable(node) {

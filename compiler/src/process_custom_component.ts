@@ -584,7 +584,7 @@ export function assignmentFunction(componeParamName: string): ts.ExpressionState
     ),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken),
     ts.factory.createIdentifier(COMPONENT_PARAMS_LAMBDA_FUNCTION)
-  ))
+  ));
 }
 
 function traverseChildComponentArgs(childParam: ts.Expression[], name: string, log: LogInfo[],

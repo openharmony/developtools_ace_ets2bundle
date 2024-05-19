@@ -124,9 +124,9 @@ function handlePluginConnect(ws) {
 }
 
 function handlePluginCommand(jsonData) {
-  pluginCommandChannelMessageHandlers[jsonData.command]
-    ? pluginCommandChannelMessageHandlers[jsonData.command](jsonData)
-    : pluginCommandChannelMessageHandlers['default'](jsonData);
+  pluginCommandChannelMessageHandlers[jsonData.command] ?
+    pluginCommandChannelMessageHandlers[jsonData.command](jsonData) :
+    pluginCommandChannelMessageHandlers['default'](jsonData);
 }
 
 function handlePluginCompileComponent(jsonData) {
