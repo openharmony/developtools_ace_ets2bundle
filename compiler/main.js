@@ -334,8 +334,8 @@ function getPages(configJson) {
         return pagesConfig.src;
       }
     } catch (e) {
-      throw Error("\x1B[31m" + `BUIDERROR: the ${modulePagePath} file format is invalid.` +
-        "\x1B[39m").message;
+      throw Error('\x1B[31m' + `BUIDERROR: the ${modulePagePath} file format is invalid.` +
+        '\x1B[39m').message;
     }
   }
   return pages;
@@ -473,8 +473,8 @@ function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntry) {
-        abilityPages.push(ability.srcEntry)
-        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry))
+        abilityPages.push(ability.srcEntry);
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
         abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
@@ -769,7 +769,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
 function hashProjectPath(projectPath) {
   const hash = crypto.createHash('sha256');
   hash.update(projectPath.toString());
-  process.env.hashProjectPath = "_" + hash.digest('hex');
+  process.env.hashProjectPath = '_' + hash.digest('hex');
   return process.env.hashProjectPath;
 }
 
@@ -789,7 +789,7 @@ function loadModuleInfo(projectConfig, envArgs) {
       }
       logger.error(error);
       process.exit(FAIL);
-    }
+    };
     projectConfig.es2abcCompileTsInAotMode = true;
     projectConfig.es2abcCompileTsInNonAotMode = false;
     const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
@@ -861,11 +861,11 @@ function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
 function addSDKBuildDependencies(config) {
   if (projectConfig.localPropertiesPath &&
     fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
-    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath);
   }
   if (projectConfig.projectProfilePath &&
     fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
-    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
+    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath);
   }
 }
 
