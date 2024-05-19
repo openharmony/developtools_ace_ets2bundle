@@ -228,7 +228,7 @@ function createLazyForEachBlockNode(newStatements: ts.Statement[]): ts.IfStateme
 
 export type BuilderParamsResult = {
   firstParam: ts.ParameterDeclaration;
-}
+};
 
 export function parseGlobalBuilderParams(parameters: ts.NodeArray<ts.ParameterDeclaration>,
   builderParamsResult: BuilderParamsResult) : void {
