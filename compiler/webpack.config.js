@@ -17,7 +17,7 @@ const path = require('path');
 const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const Webpack = require('webpack');
-const  { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { GenAbcPlugin } = require('./lib/gen_abc_plugin');
 const buildPipeServer = require('./server/build_pipe_server');
 
@@ -124,7 +124,7 @@ function initConfig(config) {
   setModuleJsonConfigRule(config);
   if (!projectConfig.xtsMode) {
     config.cache = {
-      type: "filesystem",
+      type: 'filesystem',
       cacheDirectory: path.resolve(projectConfig.cachePath, '.ets_cache',
         path.basename(projectConfig.projectPath))
     };
@@ -181,7 +181,7 @@ function setModuleJsonConfigRule(config) {
     use: [
       { loader: path.resolve(__dirname, 'lib/process_source_file.js') }
     ]
-  }
+  };
   config.module.rules.push(jsonRule);
 }
 
@@ -222,7 +222,7 @@ function setProjectConfig(envArgs) {
   if (envArgs.cachePath) {
     projectConfig.cachePath = envArgs.cachePath;
   }
-  if (envArgs.isPreview === "true") {
+  if (envArgs.isPreview === 'true') {
     projectConfig.isPreview = true;
   }
 }
@@ -346,7 +346,7 @@ function setOptimizationConfig(config, workerFile) {
           vendors: {
             test: /[\\/]node_modules[\\/]/,
             priority: -10,
-            name: "vendors",
+            name: 'vendors',
           },
           commons: {
             name: 'commons',
@@ -356,7 +356,7 @@ function setOptimizationConfig(config, workerFile) {
           }
         }
       }
-    }
+    };
   }
 }
 
@@ -375,7 +375,7 @@ function setGenAbcPlugin(env, config) {
     env.buildMode === 'debug'));
   if (env.buildMode === 'release') {
     config.output.path = path.join(projectConfig.cachePath, 'releaseAssets',
-      path.basename(projectConfig.buildPath))
+      path.basename(projectConfig.buildPath));
   }
 }
 
@@ -432,7 +432,7 @@ module.exports = (env, argv) => {
   setOptimizationConfig(config, workerFile);
   setCleanWebpackPlugin(workerFile, config);
 
-  if (env.isPreview !== "true") {
+  if (env.isPreview !== 'true') {
     loadWorker(projectConfig, workerFile);
     if (env.compilerType && env.compilerType === 'ark' && !projectConfig.compileHar) {
       setGenAbcPlugin(env, config);
@@ -477,4 +477,4 @@ module.exports = (env, argv) => {
   addSDKBuildDependencies(config);
   config.output.library = projectConfig.hashProjectPath;
   return config;
-}
+};
