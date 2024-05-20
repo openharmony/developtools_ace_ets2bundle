@@ -31,6 +31,9 @@ ets_loader_component_config_file =
 ets_loader_form_config_file =
     get_label_info(":build_ets_loader_library", "target_out_dir") +
     "/form_config.json"
+ets_loader_build_config_file =
+    get_label_info(":build_ets_loader_library", "target_out_dir") +
+    "/build_config.json"
 ets_sysResource = get_label_info(":build_ets_sysResource", "target_out_dir") +
                   "/sysResource.js"
 ets_loader_kit_configs_dir = get_label_info(":build_ets_loader_library",
@@ -51,6 +54,7 @@ action("build_ets_loader_library") {
     ets_loader_component_config_file,
     ets_loader_form_config_file,
     ets_loader_kit_configs_dir,
+    ets_loader_build_config_file,
   ]
 
   _ets_loader_dir = "compiler"
@@ -114,6 +118,8 @@ action("build_ets_loader_library") {
     rebase_path(ets_loader_component_config_file, root_build_dir),
     "--output-form-config-file",
     rebase_path(ets_loader_form_config_file, root_build_dir),
+    "--output-build-config-file",
+    rebase_path(ets_loader_build_config_file, root_build_dir),
     "--kit-configs-file-dir",
     rebase_path(_kit_configs_file_dir, root_build_dir),
     "--build-kit-configs-file-js",
@@ -177,7 +183,10 @@ ohos_copy("ets_loader") {
 
 ohos_copy("ets_loader_component_config") {
   deps = [ ":build_ets_loader_library" ]
-  sources = [ ets_loader_component_config_file ]
+  sources = [
+    ets_loader_build_config_file,
+    ets_loader_component_config_file,
+  ]
 
   outputs = [ target_out_dir + "/$target_name/{{source_file_part}}" ]
   module_source_dir = target_out_dir + "/$target_name"

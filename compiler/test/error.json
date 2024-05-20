@@ -180,8 +180,8 @@
         "type": "ERROR"
     },
     "notComponent": {
-        "message": "A struct should use decorator '@Component' or '@ComponentV2'.",
-        "type": "WARN"
+        "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
+        "type": "ERROR"
     },
     "notConcurrent": {
         "message": "The struct 'IndexDecorator' use invalid decorator.",
@@ -286,10 +286,6 @@
     "notMethodDeco": {
         "message": "'@State' can not decorate the method.",
         "type": "ERROR"
-    },
-    "BuilderParamNoInit": {
-        "message": "'closer' should be initialized in @Entry Component",
-        "type": "WARN"
     },
     "checkNonspecificParents": {
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
