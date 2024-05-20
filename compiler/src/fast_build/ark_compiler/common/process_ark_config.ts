@@ -72,6 +72,7 @@ type ArkConfig = {
   nodePath: string;
   isDebug: boolean;
   isBranchElimination: boolean;
+  optTryCatchFunc: boolean;
 };
 
 export function initArkConfig(projectConfig: Object): ArkConfig {
@@ -88,7 +89,8 @@ export function initArkConfig(projectConfig: Object): ArkConfig {
     aotCompilerPath: '',
     nodePath: '',
     isDebug: false,
-    isBranchElimination: false
+    isBranchElimination: false,
+    optTryCatchFunc: false
   };
   arkConfig.nodePath = 'node';
   if (projectConfig.nodeJs) {
@@ -96,6 +98,7 @@ export function initArkConfig(projectConfig: Object): ArkConfig {
   }
   arkConfig.isDebug = isDebug(projectConfig);
   arkConfig.isBranchElimination = isBranchElimination(projectConfig);
+  arkConfig.optTryCatchFunc = mainProjectConfig.optTryCatchFunc;
   arkConfig.arkRootPath = arkRootPath;
   processPlatformInfo(arkConfig);
   processCompatibleVersion(projectConfig, arkConfig);

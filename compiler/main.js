@@ -118,6 +118,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.resetBundleName = false;
   projectConfig.integratedHsp = false;
   projectConfig.useTsHar = false;
+  projectConfig.optTryCatchFunc = true;
   // All files which dependent on bytecode har, and should be added to compilation entries.
   projectConfig.otherCompileFiles = {};
 }
@@ -936,6 +937,9 @@ function isPartialUpdate(metadata, moduleType) {
       }
       if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
         projectConfig.useTsHar = true;
+      }
+      if (item.name === 'OptTryCatchFunc' && item.value === 'false') {
+        projectConfig.optTryCatchFunc = false;
       }
     }
     return !partialUpdateConfig.partialUpdateMode && !partialUpdateConfig.builderCheck &&
