@@ -595,6 +595,8 @@ function readPatchConfig() {
   if (aceBuildJson.patchConfig) {
     projectConfig.hotReload = process.env.watchMode === 'true' && !projectConfig.isPreview;
     projectConfig.coldReload = aceBuildJson.patchConfig.mode === COLD_RELOAD_MODE ? true : false;
+    // The "isFirstBuild" field indicates whether it is the first compilation of cold reload mode
+    // It is determined by hvigor and passed via env
     projectConfig.isFirstBuild = process.env.isFirstBuild === 'false' ? false : true;
     projectConfig.patchAbcPath = aceBuildJson.patchConfig.patchAbcPath;
     projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
@@ -1011,6 +1013,10 @@ function resetProjectConfig() {
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
   projectConfig.optLazyForEach = false;
+  projectConfig.coldReload = undefined;
+  projectConfig.isFirstBuild = undefined;
+  projectConfig.changedFileList = undefined;
+  projectConfig.patchAbcPath = undefined;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
