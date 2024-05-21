@@ -30,7 +30,7 @@ import { initArkConfig } from './process_ark_config';
 import {
   nodeLargeOrEqualTargetVersion,
   mkdirsSync,
-  validateFilePathLength,
+  validateFilePathLength
 } from '../../../utils';
 import {
   isEs2Abc,

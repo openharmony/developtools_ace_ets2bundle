@@ -145,6 +145,8 @@ export class ModuleMode extends CommonMode {
   symlinkMap: Object;
   useNormalizedOHMUrl: boolean;
   compileContextInfoPath: string;
+  abcPaths: string[] = [];
+  byteCodeHar: boolean;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -166,6 +168,17 @@ export class ModuleMode extends CommonMode {
     this.filterModuleInfos = new Map<String, ModuleInfo>();
     this.symlinkMap = rollupObject.share.symlinkMap;
     this.useNormalizedOHMUrl = this.isUsingNormalizedOHMUrl();
+    if (Object.prototype.hasOwnProperty.call(this.projectConfig, 'byteCodeHarInfo')) {
+      let byteCodeHarInfo = this.projectConfig.byteCodeHarInfo;
+      for (const packageName in byteCodeHarInfo) {
+          const abcPath = toUnixPath(byteCodeHarInfo[packageName].abcPath);
+          this.abcPaths.push(abcPath);
+      }
+    }
+    this.byteCodeHar = !!this.projectConfig.byteCodeHar;
+    if (this.useNormalizedOHMUrl) {
+      this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
+    }
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
@@ -189,8 +202,7 @@ export class ModuleMode extends CommonMode {
       compileEntries.push(recordName);
     }
     compileContextInfo.compileEntries = compileEntries;
-    compileContextInfo.projectRootPath = toUnixPath(this.projectConfig.projectRootPath);
-    if (Object.prototype.hasOwnProperty.call(this.projectConfig, 'pkgContextInfo')) {
+    if (!!this.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     let hspPkgNames: Array<string> = [];
@@ -209,9 +221,6 @@ export class ModuleMode extends CommonMode {
   prepareForCompilation(rollupObject: Object, parentEvent: Object): void {
     const eventPrepareForCompilation = createAndStartEvent(parentEvent, 'preparation for compilation');
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
-    if (this.useNormalizedOHMUrl) {
-      this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
-    }
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
   }
@@ -436,8 +445,10 @@ export class ModuleMode extends CommonMode {
   generateEs2AbcCmd() {
     const fileThreads = getEs2abcFileThreadNumber();
     this.cmdArgs.push(`"@${this.filesInfoPath}"`);
-    this.cmdArgs.push('--npm-module-entry-list');
-    this.cmdArgs.push(`"${this.npmEntriesInfoPath}"`);
+    if (!this.byteCodeHar){
+      this.cmdArgs.push('--npm-module-entry-list');
+      this.cmdArgs.push(`"${this.npmEntriesInfoPath}"`);
+    }
     this.cmdArgs.push('--output');
     this.cmdArgs.push(`"${this.moduleAbcPath}"`);
     this.cmdArgs.push('--file-threads');
@@ -451,6 +462,9 @@ export class ModuleMode extends CommonMode {
     if (this.compileContextInfoPath !== undefined) {
       this.cmdArgs.push(`--compile-context-info`);
       this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
+    }
+    if (this.abcPaths.length > 0 && !this.byteCodeHar){
+      this.cmdArgs.push('--enable-abc-input');
     }
   }
 
@@ -466,6 +480,10 @@ export class ModuleMode extends CommonMode {
       const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
       filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
+    });
+    this.abcPaths.forEach((abcPath) => {
+      // es2abc parses only the first data according to the file extension .abc
+      filesInfo += `${abcPath};;;;;\n`;
     });
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
@@ -496,7 +514,9 @@ export class ModuleMode extends CommonMode {
 
   private genDescriptionsForMergedEs2abc() {
     this.generateCompileFilesInfo();
-    this.generateNpmEntriesInfo();
+    if (!this.byteCodeHar) {
+      this.generateNpmEntriesInfo();
+    }
     this.generateAbcCacheFilesInfo();
   }
 

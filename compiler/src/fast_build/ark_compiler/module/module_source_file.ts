@@ -26,7 +26,6 @@ import {
   getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
   getOhmUrlByHspName,
-
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
   compileToolIsRollUp
@@ -252,11 +251,15 @@ export class ModuleSourceFile {
     performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
     performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
+    let byteCodeHar = false;
+    if (Object.prototype.hasOwnProperty.call(sourceProjectConfig, 'byteCodeHar')) {
+      byteCodeHar = sourceProjectConfig.byteCodeHar;
+    }
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
     for (const source of ModuleSourceFile.sourceFiles) {
-      if (!rollupObject.share.projectConfig.compileHar) {
+      if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
         await source.processModuleRequest(rollupObject, eventBuildModuleSourceFile);

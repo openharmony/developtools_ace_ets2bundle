@@ -167,7 +167,7 @@ export function etsTransform() {
     },
     afterBuildEnd() {
       // Copy the cache files in the compileArkTS directory to the loader_out directory
-      if (projectConfig.compileHar) {
+      if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allSourceFilePaths) {
           if (moduleInfoId && !moduleInfoId.match(new RegExp(projectConfig.packageDir)) &&
             !moduleInfoId.startsWith('\x00') &&
