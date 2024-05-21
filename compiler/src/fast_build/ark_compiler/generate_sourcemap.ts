@@ -158,7 +158,7 @@ export class SourceMapGenerator {
   }
 
   private getSourceMapSavePath(): string {
-    if (this.projectConfig.compileHar && this.projectConfig.sourceMapDir) {
+    if (this.projectConfig.compileHar && this.projectConfig.sourceMapDir && !this.projectConfig.byteCodeHar) {
       return path.join(this.projectConfig.sourceMapDir, SOURCEMAPS);
     }
     return isDebug(this.projectConfig) ? path.join(this.projectConfig.aceModuleBuild, SOURCEMAPS) :
