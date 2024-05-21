@@ -130,7 +130,6 @@ export class ResultStates {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
             assets[key]._value = assets[key]._value.toString().replace('.ts?entry', '.ts');
-
             let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map','.js'));
             if (sourcemapNamesCollection && absPath) {
               let map: Map<string, string> = sourcemapNamesCollection.get(absPath);
@@ -268,6 +267,7 @@ export class ResultStates {
             process.env.watchTs = 'end';
             return true;
           }
+          return false;
         });
       }
       if (shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
@@ -380,8 +380,8 @@ export class ResultStates {
   private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
     if (projectConfig.hotReload) {
       this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().getTime().toString();
-      console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime
-        +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime, reset);
+      console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime +
+        '\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime, reset);
     }
     if (resultInfo.length === 0) {
       console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);

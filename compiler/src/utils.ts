@@ -193,7 +193,7 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
     const extendResult = {
       Extend: false,
       AnimatableExtend: false
-    }
+    };
     for (let i = 0; i < decorators.length; i++) {
       const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
       if (log && EXTEND_DECORATORS.includes(decortorName)) {
