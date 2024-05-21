@@ -41,8 +41,10 @@ export async function generateModuleAbc(error) {
     await ModuleSourceFile.processModuleSourceFiles(this, hookEventFactory);
     if (this.share.projectConfig.compileHar) {
       SourceMapGenerator.getInstance().buildModuleSourceMapInfo(hookEventFactory);
-      // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't emit abc.
-      return;
+      // compileHar: compile har of project, which convert .ets to .d.ts and js
+      if (!this.share.projectConfig.byteCodeHar) {
+        return;
+      }
     }
     generateAbc(this, hookEventFactory);
   }

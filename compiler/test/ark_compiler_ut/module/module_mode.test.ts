@@ -76,7 +76,7 @@ import {
   FILE_THREADS,
   MERGE_ABC,
   CACHE_FILE,
-  TARGET_API_VERSION,
+  TARGET_API_VERSION
 } from '../mock/rollup_mock/path_config';
 import {
   scanFiles,
@@ -85,10 +85,17 @@ import {
 } from "../utils/utils";
 import { AOT_FULL } from '../../../lib/pre_define';
 
-function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string): void {
+function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
 
   expect(cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
+  if (!byteCodeHar) {
+    expect(cmdArgs[1] === OUTPUT).to.be.true;
+    expect(cmdArgs[2] === FILE_THREADS).to.be.true;
+    expect(cmdArgs[3] === `\"${fileThreads}\"`).to.be.true;
+    expect(cmdArgs[4] === MERGE_ABC).to.be.true;
+    expect(cmdArgs[5].indexOf(compatibleSdkVersion) > 0).to.be.true;
+  }
   expect(cmdArgs[1] === ENTRY_LIST).to.be.true;
   expect(cmdArgs[2] === OUTPUT).to.be.true;
   expect(cmdArgs[3] === FILE_THREADS).to.be.true;
@@ -818,6 +825,21 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
+  mocha.it('4-5: test generateCompileFilesInfo under exist abcPaths', function () {
+    this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.share.projectConfig.byteCodeHarInfo = {
+      'har': {
+        'abcPath': 'module.abc'
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+    moduleMode.generateCompileFilesInfoMock();
+    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
   mocha.it('5-1: test generateNpmEntriesInfo under build debug', function () {
     this.rollup.build();
     SourceMapGenerator.initInstance(this.rollup);
@@ -1137,6 +1159,7 @@ mocha.describe('test module_mode file api', function () {
     const compatibleSdkVersion = `${TARGET_API_VERSION}${this.rollup.share.projectConfig.compatibleSdkVersion}`;
     moduleMode.projectConfig.anBuildMode = AOT_FULL;
     moduleMode.generateEs2AbcCmd();
+    moduleMode.byteCodeHar = true;
 
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
     moduleMode.cmdArgs.splice(1, 1);
@@ -1146,7 +1169,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
 
   mocha.it('10-2: test generateEs2AbcCmd under build release', function () {
@@ -1155,6 +1178,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleHotreloadMode(this.rollup);
     const compatibleSdkVersion = `${TARGET_API_VERSION}${this.rollup.share.projectConfig.compatibleSdkVersion}`;
     moduleMode.generateEs2AbcCmd();
+    moduleMode.byteCodeHar = true;
 
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.false;
     expect(moduleMode.cmdArgs[1].indexOf(BUILD_INFO) > 0).to.be.true;
@@ -1163,7 +1187,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
 
   mocha.it('10-3: test generateEs2AbcCmd under preview debug', function () {
@@ -1172,6 +1196,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleHotreloadMode(this.rollup);
     const compatibleSdkVersion = `${TARGET_API_VERSION}${this.rollup.share.projectConfig.compatibleSdkVersion}`;
     moduleMode.generateEs2AbcCmd();
+    moduleMode.byteCodeHar = true;
 
     expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
     moduleMode.cmdArgs.splice(1, 1);
@@ -1181,7 +1206,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
 
   mocha.it('11-1: test addCacheFileArgs under build debug', function () {
@@ -1435,5 +1460,45 @@ mocha.describe('test module_mode file api', function () {
     expect(stub.calledWith('ArkTS:ERROR Failed to execute ts2abc')).to.be.true;
     clusterStub.restore();
     stub.restore();
+  });
+
+  mocha.it('18-1: test generateCompileContext under build debug', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-2: test generateCompileContext under build debug', function () {
+    this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-3: test generateCompileContext under build debug', function () {
+    this.rollup.preview();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-4: test generateCompileContext under build debug', function () {
+    this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
   });
 });

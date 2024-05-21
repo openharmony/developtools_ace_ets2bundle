@@ -17,6 +17,7 @@ import Cache from "./cache";
 import Share from "./share";
 import path from "path";
 import fs from "fs";
+
 import ModuleInfo from "./module_info";
 import {
   SDK_VERSION,
@@ -26,10 +27,11 @@ import {
   MODULE_NAME_HASH_DEFAULT
 } from "./common";
 import {
+  AN_BUILD_OUTPUT_PATH,
   DEFAULT_PROJECT,
   MODULE_ID_ROLLUP_PLACEHOLDER,
   NODE_MODULES_PATH,
-  AN_BUILD_OUTPUT_PATH
+  PROJECT_ROOT
 } from "./path_config";
 import { scanFiles } from "../../utils/utils";
 import { IArkProjectConfig } from "./project_config";
@@ -106,6 +108,16 @@ class RollUpPluginMock {
 
   public useNormalizedOHMUrl() {
     this.share.projectConfig.useNormalizedOHMUrl = true;
+  }
+
+  public mockCompileContextInfo() {
+    this.share.projectConfig.mockCompileContextInfo();
+    for(let entry in this.share.projectConfig.entryObj) {
+      let filePath: string = this.share.projectConfig.entryObj[entry];
+      let moduleInfo: ModuleInfo = new ModuleInfo(filePath, 'entry', `${PROJECT_ROOT}/entry`);
+      moduleInfo.meta.pkgName = 'entry';
+      this.moduleInfos.push(moduleInfo);
+    }
   }
 
   private doBuild(testcase: string) {

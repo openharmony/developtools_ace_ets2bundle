@@ -23,6 +23,7 @@ import {
 } from '../common/ark_define';
 import {
   getNormalizedOhmUrlByFilepath,
+  getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
   getOhmUrlByHspName,
   getOhmUrlBySystemApiOrLibRequest,
@@ -250,11 +251,15 @@ export class ModuleSourceFile {
     performancePrinter?.iniPrinter?.endEvent('Scan source files');
 
     performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
+    let byteCodeHar = false;
+    if (Object.prototype.hasOwnProperty.call(sourceProjectConfig, 'byteCodeHar')) {
+      byteCodeHar = sourceProjectConfig.byteCodeHar;
+    }
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
     for (const source of ModuleSourceFile.sourceFiles) {
-      if (!rollupObject.share.projectConfig.compileHar) {
+      if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
         await source.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
@@ -320,6 +325,14 @@ export class ModuleSourceFile {
         ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
       }
       return hspOhmurl;
+    }
+    const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig,
+      ModuleSourceFile.logger, useNormalizedOHMUrl);
+    if (byteCodeHarOhmurl !== undefined) {
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
+      }
+      return byteCodeHarOhmurl;
     }
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);

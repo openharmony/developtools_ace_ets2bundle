@@ -39,7 +39,8 @@ import {
 import {
   isLinux,
   isMac,
-  isWindows
+  isWindows,
+  toUnixPath
 } from '../../../utils';
 import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
@@ -136,6 +137,9 @@ export function initArkProjectConfig(share: Object): Object {
     if (buildJsonInfo.dynamicImportLibInfo) {
       arkProjectConfig.dynamicImportLibInfo = buildJsonInfo.dynamicImportLibInfo;
     }
+    if (buildJsonInfo.byteCodeHarInfo) {
+      arkProjectConfig.byteCodeHarInfo = buildJsonInfo.byteCodeHarInfo;
+    }
   }
   if (projectConfig.aceManifestPath && fs.existsSync(projectConfig.aceManifestPath)) {
     const manifestJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceManifestPath).toString());
@@ -168,6 +172,7 @@ export function initArkProjectConfig(share: Object): Object {
     arkProjectConfig.processTs = mainProjectConfig.processTs;
   }
   arkProjectConfig.compileMode = projectConfig.compileMode;
+  arkProjectConfig.entryObj = mainProjectConfig.entryObj;
 
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;

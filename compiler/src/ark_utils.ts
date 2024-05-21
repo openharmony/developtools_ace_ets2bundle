@@ -322,11 +322,11 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
 }
 
 function removeSuffix(filePath: string) {
-  const SUFFIX_REG = /\.(?:d\.)?e?ts$/;
+  const SUFFIX_REG = /\.(?:d\.)?(ets|ts|mjs|cjs|js)$/;
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
-export function getNormalizedOhmUrlByHspName(aliasName: string, projectConfig: Object,
+export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig: Object,
   logger?: Object, filePath?: string) {
   let pkgName: string = aliasName;
   const aliasPkgNameMap: Map<string, string> = projectConfig.dependencyAliasMap;
@@ -349,6 +349,21 @@ export function getNormalizedOhmUrlByHspName(aliasName: string, projectConfig: O
   return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
+export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, logger?: Object,
+  useNormalizedOHMUrl: boolean = false): string | undefined {
+  if (projectConfig.byteCodeHarInfo) {
+    if (Object.prototype.hasOwnProperty.call(projectConfig.byteCodeHarInfo, moduleRequest)) {
+      return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
+    }
+    for (const byteCodeHarName in projectConfig.byteCodeHarInfo) {
+      if (moduleRequest.startsWith(byteCodeHarName + '/')) {
+        return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
+      }
+    }
+  }
+  return undefined;
+}
+
 export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object, logger?: Object,
   useNormalizedOHMUrl: boolean = false): string | undefined {
   // The harNameOhmMap store the ohmurl with the alias of hsp package .
@@ -356,7 +371,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
     // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
     if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
       if (useNormalizedOHMUrl) {
-        return getNormalizedOhmUrlByHspName(moduleRequest, projectConfig);
+        return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
       }
       return projectConfig.harNameOhmMap[moduleRequest];
     }
@@ -364,7 +379,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
     for (const hspName in projectConfig.harNameOhmMap) {
       if (moduleRequest.startsWith(hspName + '/')) {
         if (useNormalizedOHMUrl) {
-          return getNormalizedOhmUrlByHspName(hspName, projectConfig, logger, moduleRequest);
+          return getNormalizedOhmUrlByAliasName(hspName, projectConfig, logger, moduleRequest);
         }
         const idx: number = projectConfig.harNameOhmMap[hspName].split('/', 2).join('/').length;
         const hspOhmName: string = projectConfig.harNameOhmMap[hspName].substring(0, idx);
