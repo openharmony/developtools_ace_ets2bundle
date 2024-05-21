@@ -33,6 +33,7 @@ export const AOT_PROFILE_SUFFIX: string = '.ap';
 export const NPM_ENTRIES_PROTO_BIN: string = 'npm_entries.protoBin';
 export const PACKAGE_JSON: string = 'package.json';
 export const FAKE_JS: string = 'fake.js';
+export const COMPILE_CONTEXT_INFO_JSON: string = 'compileContextInfo.json';
 
 export const ESMODULE: string = 'esmodule';
 export const JSBUNDLE: string = 'jsbundle';
