@@ -1021,7 +1021,7 @@ mocha.describe('generate ohmUrl', function () {
       'bytecode_har': {
         'packageName': 'bytecode_har',
         'bundleName': '',
-        'moduleName': 'bytecode_har',
+        'moduleName': '',
         'version': '1.0.0',
         'entryPath': 'Index.ets',
         'isSO': false
@@ -1046,8 +1046,8 @@ mocha.describe('generate ohmUrl', function () {
     const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
     const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
       importerFile);
-    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&bytecode_har&&bytecode_har/Index&1.0.0';
-    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&bytecode_har&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
+    const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/Index&1.0.0';
+    const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
   });

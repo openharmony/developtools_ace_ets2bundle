@@ -322,7 +322,7 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
 }
 
 function removeSuffix(filePath: string) {
-  const SUFFIX_REG = /\.(?:d\.)?e?ts$/;
+  const SUFFIX_REG = /\.(?:d\.)?(ets|ts|mjs|cjs|js)$/;
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 

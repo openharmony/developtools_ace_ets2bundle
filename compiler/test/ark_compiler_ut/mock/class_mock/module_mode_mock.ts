@@ -91,7 +91,6 @@ class ModuleModeMock extends ModuleMode {
   }
 
   checkGenerateCompileContextInfo(rollupObject: object): boolean {
-    let mockfilesInfo: string = '';
     const cacheCompileContextInfo = fs.readFileSync(this.compileContextInfoPath, 'utf-8');
 
     let compileContextInfo: Object = {};
@@ -110,7 +109,6 @@ class ModuleModeMock extends ModuleMode {
       compileEntries.push(recordName);
     }
     compileContextInfo.compileEntries = compileEntries;
-    compileContextInfo.projectRootPath = toUnixPath(rollupObject.share.projectConfig.projectRootPath);
     if (Object.prototype.hasOwnProperty.call(rollupObject.share.projectConfig, 'pkgContextInfo')) {
       compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;
     }
@@ -138,6 +136,9 @@ class ModuleModeMock extends ModuleMode {
       mockfilesInfo +=
         `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
+    });
+    this.abcPaths.forEach((abcPath) => {
+      mockfilesInfo += `${abcPath};;;;;\n`;
     });
     if (filesInfo === mockfilesInfo) {
       return true;

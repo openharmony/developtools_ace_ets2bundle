@@ -113,7 +113,7 @@ class ProjectConfig {
   pkgContextInfo: object;
   useNormalizedOHMUrl: boolean = false;
   dependencyAliasMap: Map<string, string>;
-  abcPaths: string[] = [];
+  byteCodeHarInfo: object;
   entryObj: object;
   harNameOhmMap: object;
 

@@ -36,11 +36,11 @@ import {
   isDebug, 
   isBranchElimination 
 } from '../utils';
-import { toUnixPath } from "../../../utils"
 import {
   isLinux,
   isMac,
-  isWindows
+  isWindows,
+  toUnixPath
 } from '../../../utils';
 import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
@@ -136,6 +136,9 @@ export function initArkProjectConfig(share: Object): Object {
     }
     if (buildJsonInfo.dynamicImportLibInfo) {
       arkProjectConfig.dynamicImportLibInfo = buildJsonInfo.dynamicImportLibInfo;
+    }
+    if (buildJsonInfo.byteCodeHarInfo) {
+      arkProjectConfig.byteCodeHarInfo = buildJsonInfo.byteCodeHarInfo;
     }
   }
   if (projectConfig.aceManifestPath && fs.existsSync(projectConfig.aceManifestPath)) {
