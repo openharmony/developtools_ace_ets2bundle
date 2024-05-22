@@ -127,7 +127,8 @@ import {
   ATTRIBUTE_ATTRIBUTE_MODIFIER,
   ATTRIBUTE_CONTENT_MODIFIER,
   ATTRIBUTE_MENUITEM_CONTENT_MODIFIER,
-  TITLE
+  TITLE,
+  PUV2_VIEW_BASE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1730,9 +1731,13 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
       ...forEachComponent.arguments]));
 }
 
-export function parentConditionalExpression(): ts.ConditionalExpression {
+export function parentConditionalExpression(builderInnerComponent: boolean = false): ts.ConditionalExpression {
   return ts.factory.createConditionalExpression(
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+    projectConfig.minAPIVersion >= 12 && builderInnerComponent ? ts.factory.createBinaryExpression(
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+      ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
+      ts.factory.createIdentifier(PUV2_VIEW_BASE)) :
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.ColonToken),
