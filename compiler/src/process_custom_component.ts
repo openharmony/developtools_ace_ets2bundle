@@ -359,7 +359,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
     if (paramDecoratorMap.has(itemName)) {
       childParam.push(item);
     }
-    if (parentStructInfo.isComponentV1 && updatePropsDecoratorsV2.includes(itemName)) {
+    if (!parentStructInfo.isComponentV2 && updatePropsDecoratorsV2.includes(itemName)) {
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the @ComponentV2 component '${childName}' are not allowed to be assigned values here.`,
