@@ -163,8 +163,9 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
-    await writeObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath,
-      SourceMapGenerator.getInstance().getSourceMaps(), sourceFilePath);
+    await writeObfuscatedSourceCode({content: content, buildFilePath: filePath,
+      relativeSourceFilePath: relativeSourceFilePath, originSourceFilePath: sourceFilePath},
+      logger, projectConfig, SourceMapGenerator.getInstance().getSourceMaps());
     return;
   }
   mkdirsSync(path.dirname(filePath));
