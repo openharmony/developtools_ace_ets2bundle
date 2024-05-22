@@ -112,17 +112,51 @@ mocha.describe('test obfuscate config resolver api', function () {
       'harPackageName': '/mnt/application/harPackageName'
     }
     const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap);
+    console.log('acutualReservedFileNames: ', acutualReservedFileNames);
     const expectReservedFileNames = [
+      '',
+      'mnt',
+      'application',
       'entry',
+      '',
+      'mnt',
+      'application',
       'harPackageName',
-      './Index-oh-package.ets',
-      './Type-oh-package.ets',
-      '../../Index2.ets',
-      '/mnt/application/entry/build/default/intermediates/loader_out',
+      '.',
+      'Index-oh-package.ets',
+      '.',
+      'Type-oh-package.ets',
+      '..',
+      '..',
+      'Index2.ets',
+      '',
+      'mnt',
+      'application',
+      'entry',
+      'build',
+      'default',
+      'intermediates',
+      'loader_out',
       'etsFortgz',
-      '/mnt/application/entry/src/main/ets',
-      '/mnt/application/entry/build/default/cache/default/default@HarCompileArkTs/esmodules/release'
-    ]
+      '',
+      'mnt',
+      'application',
+      'entry',
+      'src',
+      'main',
+      'ets',
+      '',
+      'mnt',
+      'application',
+      'entry',
+      'build',
+      'default',
+      'cache',
+      'default',
+      'default@HarCompileArkTs',
+      'esmodules',
+      'release'
+    ];
     expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
   });
 

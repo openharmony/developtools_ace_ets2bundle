@@ -515,7 +515,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
 // collect the modulename or pkgname of all local modules. 
 export function addLocalPackageSet(moduleId: string, rollupObject: Object): void {
   const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
-  const metaInfo: Object = moduleInfo['meta'];
+  const metaInfo: Object = moduleInfo.meta;
   if (metaInfo.isLocalDependency) {
     if (projectConfig.useNormalizedOHMUrl && metaInfo.pkgName) {
       localPackageSet.add(metaInfo.pkgName);
