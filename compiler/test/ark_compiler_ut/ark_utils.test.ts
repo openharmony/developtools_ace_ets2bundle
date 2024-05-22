@@ -309,7 +309,9 @@ mocha.describe('test ark_utils file api', function () {
     const stub = sinon.stub(logger, 'error');
     const red: string = '\x1B[31m';
     try {
-      await writeArkguardObfuscatedSourceCode(undefined, '', logger, this.rollup.share.projectConfig, '', {}, '');
+      await writeArkguardObfuscatedSourceCode(
+        {content: undefined, buildFilePath: '', relativeSourceFilePath: '', originSourceFilePath: ''},
+        logger, this.rollup.share.projectConfig, {});
     } catch (e) {
     }
     expect(stub.calledWith(red,
