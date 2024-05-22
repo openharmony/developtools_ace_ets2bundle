@@ -493,16 +493,18 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
     return;
   }
 
-  moduleInfo.originSourceFilePath = toUnixPath(moduleInfo.originSourceFilePath);
-  let genFileInHar: GeneratedFileInHar = harFilesRecord.get(moduleInfo.originSourceFilePath);
+  if (moduleInfo.originSourceFilePath) {
+    const originSourceFilePath = toUnixPath(moduleInfo.originSourceFilePath);
+    let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originSourceFilePath);
 
-  if (!genFileInHar) {
-    genFileInHar = { sourcePath: moduleInfo.originSourceFilePath };
+    if (!genFileInHar) {
+      genFileInHar = { sourcePath: originSourceFilePath };
+    }
+    if (!genFileInHar.sourceCachePath) {
+      genFileInHar.sourceCachePath = toUnixPath(moduleInfo.buildFilePath);
+    }
+    harFilesRecord.set(originSourceFilePath, genFileInHar);
   }
-  if (!genFileInHar.sourceCachePath) {
-    genFileInHar.sourceCachePath = toUnixPath(moduleInfo.buildFilePath);
-  }
-  harFilesRecord.set(moduleInfo.originSourceFilePath, genFileInHar);
 
   fs.writeFileSync(moduleInfo.buildFilePath, moduleInfo.content);
 }
