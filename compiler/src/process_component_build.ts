@@ -1735,10 +1735,16 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
 
 export function parentConditionalExpression(builderInnerComponent: boolean = false): ts.ConditionalExpression {
   return ts.factory.createConditionalExpression(
-    projectConfig.minAPIVersion >= 12 && builderInnerComponent ? ts.factory.createBinaryExpression(
-      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-      ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
-      ts.factory.createIdentifier(PUV2_VIEW_BASE)) :
+    builderInnerComponent ? ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(ts.factory.createIdentifier(PUV2_VIEW_BASE)),
+        ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+        ts.factory.createStringLiteral(COMPONENT_IF_UNDEFINED)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createBinaryExpression(
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
+        ts.factory.createIdentifier(PUV2_VIEW_BASE))) :
       ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
