@@ -2794,7 +2794,7 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
-    param.initializer.getText().startsWith($$);
+    param.initializer.getText().match(/^(?!\$\$\.)\$\$(.|\n)+/) !== null;
 }
 
 function loopEtscomponent(node: any, isStylesAttr: boolean): ts.Node {
