@@ -16,9 +16,8 @@
 import fs from 'fs';
 import path from 'path';
 import JSON5 from 'json5';
-import * as ts from 'typescript';
+import type * as ts from 'typescript';
 import {
-  ArkObfuscator,
   ApiExtractor,
   renamePropertyModule,
   getMapFromJson,
@@ -27,6 +26,9 @@ import {
   separateUniversalReservedItem,
   containWildcards,
   wildcardTransformer
+} from 'arkguard';
+import type {
+  ArkObfuscator,
 } from 'arkguard';
 import type { ReservedNameInfo } from 'arkguard';
 import { nameCacheObj } from '../../../ark_utils';

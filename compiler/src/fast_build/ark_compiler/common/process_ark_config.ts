@@ -253,7 +253,7 @@ function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any
     mDisableHilog: false,
     mDisableConsole: mergedObConfig.options.removeLog,
     mSimplify: false,
-    mRemoveComments: true, 
+    mRemoveComments: true,
     mNameObfuscation: {
       mEnable: true,
       mNameGeneratorType: 1,
