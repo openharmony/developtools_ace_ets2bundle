@@ -164,7 +164,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
     await writeObfuscatedSourceCode({content: content, buildFilePath: filePath,
-      relativeSourceFilePath: relativeSourceFilePath, originSourceFilePath: sourceFilePath},
+      relativeSourceFilePath: relativeSourceFilePath, originSourceFilePath: sourceFilePath, rollupModuleId: sourceFilePath},
       logger, projectConfig, SourceMapGenerator.getInstance().getSourceMaps());
     return;
   }
