@@ -230,11 +230,18 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: Fil
     const sourceBaseName: string = path.basename(sourceFile.fileName);
     if (isArkuiDependence(sourceFile.fileName) &&
       sourceBaseName !== 'common_ts_ets_api.d.ts' &&
-      sourceBaseName !== 'global.d.ts' ||
-      GLOBAL_DECLARE_WHITE_LIST.has(currentTypeName) &&
+      sourceBaseName !== 'global.d.ts'
+    ) {
+      // TODO: change to error
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `Cannot find name '${currentTypeName}'.`,
+        pos: node.getStart()
+      });
+    } else if (GLOBAL_DECLARE_WHITE_LIST.has(currentTypeName) &&
       ohosSystemModulePaths.includes(sourceFile.fileName.replace(/\//g, '\\'))) {
       transformLog.errors.push({
-        type: LogType.ERROR,
+        type: LogType.WARN,
         message: `Cannot find name '${currentTypeName}'.`,
         pos: node.getStart()
       });
@@ -400,8 +407,9 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
     return filePath === moduleSpecifierStr;
   });
   if (hasSubDirPath) {
+    // TODO: change to error
     const error: LogInfo = {
-      type: LogType.ERROR,
+      type: LogType.WARN,
       message: `Cannot find module '${moduleSpecifierStr}' or its corresponding type declarations.`,
       pos: moduleSpecifier.getStart()
     };
