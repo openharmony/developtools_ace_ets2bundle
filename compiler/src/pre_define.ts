@@ -204,6 +204,9 @@ export const COMPONENT_UPDATE_ELMT_ID: string = 'updateElmtId';
 export const UPDATE_RECYCLE_ELMT_ID: string = 'updateRecycleElmtId';
 export const OLD_ELMT_ID: string = 'oldElmtId';
 export const NEW_ELMT_ID: string = 'newElmtId';
+export const NAVIGATION: string = 'Navigation';
+export const NAV_DESTINATION: string = 'NavDestination';
+export const CREATE_ROUTER_COMPONENT_COLLECT: Set<string> = new Set([NAVIGATION, NAV_DESTINATION]);
 
 export const COMPONENT_CONSTRUCTOR_UPDATE_PARAMS: string = 'updateWithValueParams';
 export const COMPONENT_CONSTRUCTOR_DELETE_PARAMS: string = 'aboutToBeDeleted';
