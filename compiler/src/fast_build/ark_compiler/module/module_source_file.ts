@@ -82,6 +82,8 @@ export class ModuleSourceFile {
   private static mockConfigInfo: Object = {};
   private static mockFiles: string[] = [];
   private static newMockConfigInfo: Object = {};
+  private static transformedHarOrHspMockConfigInfo: Object = {};
+  private static mockConfigKeyToModuleInfo: Object = {};
   private static needProcessMock: boolean = false;
 
   constructor(moduleId: string, source: string | ts.SourceFile) {
@@ -105,6 +107,7 @@ export class ModuleSourceFile {
     //   "packageName": "name of mock package",
     //   "etsSourceRootPath": "path of ets source root",
     //   "mockConfigPath": "path of mock configuration file"
+    //   "mockConfigKey2ModuleInfo": "moduleInfo of mock-config key"
     // }
     ModuleSourceFile.needProcessMock = (rollupObject.share.projectConfig.mockParams &&
                                         rollupObject.share.projectConfig.mockParams.etsSourceRootPath &&
@@ -112,25 +115,64 @@ export class ModuleSourceFile {
   }
 
   static collectMockConfigInfo(rollupObject: Object): void {
+    if (!!rollupObject.share.projectConfig.mockParams.mockConfigKey2ModuleInfo) {
+      ModuleSourceFile.mockConfigKeyToModuleInfo = rollupObject.share.projectConfig.mockParams.mockConfigKey2ModuleInfo;
+    }
     ModuleSourceFile.mockConfigInfo = require('json5').parse(
       fs.readFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, 'utf-8'));
     for (let mockedTarget in ModuleSourceFile.mockConfigInfo) {
       if (ModuleSourceFile.mockConfigInfo[mockedTarget].source) {
         ModuleSourceFile.mockFiles.push(ModuleSourceFile.mockConfigInfo[mockedTarget].source);
+        if (ModuleSourceFile.mockConfigKeyToModuleInfo && ModuleSourceFile.mockConfigKeyToModuleInfo[mockedTarget]) {
+          ModuleSourceFile.generateTransformedMockInfo(ModuleSourceFile.mockConfigKeyToModuleInfo[mockedTarget],
+            ModuleSourceFile.mockConfigInfo[mockedTarget].source, mockedTarget, rollupObject);
+        }
       }
     }
   }
 
-  static addNewMockConfig(key: string, src: string): void {
-    if (Object.prototype.hasOwnProperty.call(ModuleSourceFile.newMockConfigInfo, key)) {
+  static addMockConfig(mockConfigInfo: Object, key: string, src: string): void {
+    if (Object.prototype.hasOwnProperty.call(mockConfigInfo, key)) {
       return;
     }
 
-    ModuleSourceFile.newMockConfigInfo[key] = {'source': src};
+    mockConfigInfo[key] = {'source': src};
   }
 
-  static generateNewMockInfoByOrignMockConfig(originKey: string, transKey: string, rollupObject: Object, importerFile: string): void {
-    if (!Object.prototype.hasOwnProperty.call(ModuleSourceFile.newMockConfigInfo, originKey)) {
+  static generateTransformedMockInfo(mockModuleInfo: Object, src: string, originKey: string, rollupObject: Object): void {
+    let useNormalizedOHMUrl: boolean = false;
+    if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
+      useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
+    }
+    let transformedMockTarget: string | undefined = getOhmUrlByHspName(originKey, ModuleSourceFile.projectConfig,
+                                                                       ModuleSourceFile.logger, useNormalizedOHMUrl);
+    if (transformedMockTarget !== undefined) {
+      ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
+      return;
+    }
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    if (mockModuleInfo.filePath) {
+      if (useNormalizedOHMUrl) {
+        transformedMockTarget = ModuleSourceFile.spliceNormalizedOhmurl(mockModuleInfo, mockModuleInfo.filePath, undefined);
+        ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
+        return;
+      }
+      transformedMockTarget = getOhmUrlByFilepath(mockModuleInfo.filePath, ModuleSourceFile.projectConfig,
+                                                  ModuleSourceFile.logger, originKey);
+      transformedMockTarget = transformedMockTarget.startsWith(PACKAGES) ? `@package:${transformedMockTarget}` :
+                              `@bundle:${transformedMockTarget}`;
+      ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
+      return;
+    } else {
+      ModuleSourceFile.logger.error(red, 'ArkTS:INTERNAL ERROR: Failed to convert the key in mock-config to ohmurl, ' +
+                                    'because the file path corresponding to the key in mock-config is empty.', reset);
+    }
+  }
+
+  static generateNewMockInfo(originKey: string, transKey: string, rollupObject: Object, importerFile?: string): void {
+    if (!Object.prototype.hasOwnProperty.call(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transKey) &&
+      !Object.prototype.hasOwnProperty.call(ModuleSourceFile.mockConfigInfo, originKey)) {
       return;
     }
 
@@ -138,7 +180,9 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let mockFile: string = ModuleSourceFile.mockConfigInfo[originKey].source;
+    let mockFile: string = ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey] ?
+      ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey].source :
+      ModuleSourceFile.mockConfigInfo[originKey].source;
     let mockFilePath: string = `${toUnixPath(rollupObject.share.projectConfig.modulePath)}/${mockFile}`;
     let mockFileOhmUrl: string = '';
     if (useNormalizedOHMUrl) {
@@ -156,7 +200,7 @@ export class ModuleSourceFile {
     }
 
     // record mock target mapping for incremental compilation
-    ModuleSourceFile.addNewMockConfig(transKey, mockFileOhmUrl);
+    ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, transKey, mockFileOhmUrl);
   }
 
   static isMockFile(file: string, rollupObject: Object): boolean {
@@ -199,6 +243,17 @@ export class ModuleSourceFile {
       fs.copyFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, userDefinedMockConfigCache);
       return;
     }
+    // During incremental compilation, only at this point is the mocked file imported.
+    // At this time, the newMockConfigInfo does not match the mockConfig in the cache,
+    // so the mockConfig in the cache needs to be updated.
+    const cachedTransformedMockConfigInfo: Object =
+      require('json5').parse(fs.readFileSync(transformedMockConfigCache, 'utf-8'));
+    if (JSON.stringify(ModuleSourceFile.newMockConfigInfo) !== JSON.stringify(cachedTransformedMockConfigInfo)) {
+      fs.writeFileSync(transformedMockConfig, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
+      fs.copyFileSync(transformedMockConfig, transformedMockConfigCache);
+      return;
+    }
+
     // if mock-config.json5 is not modified, use the cached mock config mapping file
     fs.copyFileSync(transformedMockConfigCache, transformedMockConfig);
   }
@@ -305,7 +360,8 @@ export class ModuleSourceFile {
     }
   }
 
-  private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined, importerFile: string): string | undefined {
+  private getOhmUrl(rollupObject: Object, moduleRequest: string, filePath: string | undefined,
+    importerFile?: string): string | undefined {
     let useNormalizedOHMUrl = false;
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
@@ -313,7 +369,7 @@ export class ModuleSourceFile {
     let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig, useNormalizedOHMUrl);
     if (systemOrLibOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
       }
       return systemOrLibOhmUrl;
     }
@@ -321,7 +377,7 @@ export class ModuleSourceFile {
       ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (hspOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, hspOhmurl, rollupObject, importerFile);
       }
       return hspOhmurl;
     }
@@ -329,7 +385,7 @@ export class ModuleSourceFile {
       ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (byteCodeHarOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, hspOhmurl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, hspOhmurl, rollupObject, importerFile);
       }
       return byteCodeHarOhmurl;
     }
@@ -346,19 +402,19 @@ export class ModuleSourceFile {
       }
       if (ModuleSourceFile.needProcessMock) {
         // processing cases of har or lib mock targets
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(moduleRequest, res, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, res, rollupObject, importerFile);
         // processing cases of user-defined mock targets
         let mockedTarget: string = toUnixPath(filePath).
             replace(toUnixPath(rollupObject.share.projectConfig.modulePath), '').
             replace(`/${rollupObject.share.projectConfig.mockParams.etsSourceRootPath}/`, '');
-        ModuleSourceFile.generateNewMockInfoByOrignMockConfig(mockedTarget, res, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(mockedTarget, res, rollupObject, importerFile);
       }
       return res;
     }
     return undefined;
   }
 
-  private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile: string): string {
+  private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
     const pkgParams = {
       pkgName: moduleInfo['meta']['pkgName'],
       pkgPath: moduleInfo['meta']['pkgPath'],
@@ -478,7 +534,7 @@ export class ModuleSourceFile {
             // the import module are added with ".origin" at the end of the ohm url in every mock file.
             const realOhmUrl: string = isMockFile ? `${ohmUrl}${ORIGIN_EXTENTION}` : ohmUrl;
             if (isMockFile) {
-              ModuleSourceFile.addNewMockConfig(realOhmUrl, ohmUrl);
+              ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, realOhmUrl, ohmUrl);
             }
             const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
             if (ts.isImportDeclaration(node)) {
@@ -555,6 +611,8 @@ export class ModuleSourceFile {
     ModuleSourceFile.mockConfigInfo = {};
     ModuleSourceFile.mockFiles = [];
     ModuleSourceFile.newMockConfigInfo = {};
+    ModuleSourceFile.transformedHarOrHspMockConfigInfo = {};
+    ModuleSourceFile.mockConfigKeyToModuleInfo = {};
     ModuleSourceFile.needProcessMock = false;
   }
 }
