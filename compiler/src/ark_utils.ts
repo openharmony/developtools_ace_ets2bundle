@@ -281,7 +281,7 @@ export function getBuildModeInLowerCase(projectConfig: Object): string {
 }
 
 /**
- * This Api only used by wepack compiling process - js-loader
+ * This Api only used by webpack compiling process - js-loader
  * @param sourcePath The path in build cache dir
  * @param sourceCode The intermediate js source code
  */
@@ -689,7 +689,7 @@ export function getPackageInfo(configFile: string): Array<string> {
 }
 
 /**
- * This Api only used by wepack compiling process - result_process
+ * This Api only used by webpack compiling process - result_process
  * @param sourcePath The path in build cache dir
  * @param sourceContent The intermediate js source code
  */
