@@ -279,8 +279,7 @@ export class ModuleSourceFile {
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     if (compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions) {
-      writeObfuscationNameCache(sourceProjectConfig, rollupObject.share.arkProjectConfig.entryPackageInfo,
-        sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
+      writeObfuscationNameCache(sourceProjectConfig, sourceProjectConfig.entryPackageInfo, sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
         sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache);
     }
     stopEvent(eventObfuscatedCode);
