@@ -72,7 +72,7 @@ export class SourceMapGenerator {
     SourceMapGenerator.instance = new SourceMapGenerator(SourceMapGenerator.rollupObject);
 
     // adapt compatibility with hvigor
-    if (!SourceMapGenerator.instance.projectConfig.entryModuleName ||
+    if (!SourceMapGenerator.instance.projectConfig.entryPackageName ||
       !SourceMapGenerator.instance.projectConfig.entryModuleVersion) {
         SourceMapGenerator.instance.isNewSourceMap = false;
     }
@@ -118,7 +118,7 @@ export class SourceMapGenerator {
     }
     return {
       entry: {
-        name: this.projectConfig.entryModuleName,
+        name: this.projectConfig.entryPackageName,
         version: this.projectConfig.entryModuleVersion
       },
       dependency: dependencyPkgInfo ? {
