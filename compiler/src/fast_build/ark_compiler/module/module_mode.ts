@@ -185,8 +185,12 @@ export class ModuleMode extends CommonMode {
     let compileContextInfoPath: string = path.join(this.projectConfig.cachePath, COMPILE_CONTEXT_INFO_JSON);;
     let compileContextInfo: Object = {};
     let compileEntries: Array<string> = [];
-    for (const key in this.projectConfig.entryObj) {
-      let moduleId: string = this.projectConfig.entryObj[key];
+    let entryObj: Object = this.projectConfig.entryObj;
+    if (!!this.projectConfig.widgetCompile) {
+      entryObj = this.projectConfig.cardEntryObj;
+    }
+    for (const key in entryObj) {
+      let moduleId: string = entryObj[key];
       let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
       if (moduleInfo === undefined) {
         this.logger.error(red, `ArkTS:INTERNAL ERROR: cannot find module info with ${moduleId}`, reset);
