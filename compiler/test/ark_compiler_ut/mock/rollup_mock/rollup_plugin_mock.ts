@@ -112,8 +112,12 @@ class RollUpPluginMock {
 
   public mockCompileContextInfo() {
     this.share.projectConfig.mockCompileContextInfo();
-    for(let entry in this.share.projectConfig.entryObj) {
-      let filePath: string = this.share.projectConfig.entryObj[entry];
+    let entryObj: object = this.share.projectConfig.entryObj;
+    if (!!this.share.projectConfig.widgetCompile) {
+      entryObj = this.share.projectConfig.cardEntryObj
+    }
+    for(let entry in entryObj) {
+      let filePath: string = entryObj[entry];
       let moduleInfo: ModuleInfo = new ModuleInfo(filePath, 'entry', `${PROJECT_ROOT}/entry`);
       moduleInfo.meta.pkgName = 'entry';
       this.moduleInfos.push(moduleInfo);
@@ -191,7 +195,7 @@ class RollUpPluginMock {
     return this.share.allFiles ? this.share.allFiles.values() : undefined;
   }
 
-  public getModuleInfo(id: string) {
+  public getModuleInfo(id: string): ModuleInfo | undefined {
     for (let i = 0; i < this.moduleInfos.length - 1; i++) {
       return this.moduleInfos.find(item => item.id === id);
     }

@@ -1625,7 +1625,7 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
-  mocha.it('18-2: test generateCompileContext under build debug', function () {
+  mocha.it('18-2: test generateCompileContext under build release', function () {
     this.rollup.build(RELEASE);
     SourceMapGenerator.initInstance(this.rollup);
     this.rollup.mockCompileContextInfo();
@@ -1635,7 +1635,7 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
-  mocha.it('18-3: test generateCompileContext under build debug', function () {
+  mocha.it('18-3: test generateCompileContext under build preview', function () {
     this.rollup.preview();
     SourceMapGenerator.initInstance(this.rollup);
     this.rollup.mockCompileContextInfo();
@@ -1645,8 +1645,51 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
-  mocha.it('18-4: test generateCompileContext under build debug', function () {
+  mocha.it('18-4: test generateCompileContext under build hotReload', function () {
     this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+  mocha.it('18-5: test generateCompileContext widget compile under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.widgetCompile = true;
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-6: test generateCompileContext widget compile under build release', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.widgetCompile = true;
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-7: test generateCompileContext widget compile under build preview', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.widgetCompile = true;
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-8: test generateCompileContext widget compile under build hotReload', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.widgetCompile = true;
     SourceMapGenerator.initInstance(this.rollup);
     this.rollup.mockCompileContextInfo();
     const moduleMode = new ModuleModeMock(this.rollup);

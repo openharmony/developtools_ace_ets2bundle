@@ -95,8 +95,12 @@ class ModuleModeMock extends ModuleMode {
 
     let compileContextInfo: Object = {};
     let compileEntries: Array<string> = [];
-    for (const key in rollupObject.share.projectConfig.entryObj) {
-      let moduleId: string = rollupObject.share.projectConfig.entryObj[key];
+    let entryObj: Object = this.projectConfig.entryObj;
+    if (!!this.projectConfig.widgetCompile) {
+      entryObj = this.projectConfig.cardEntryObj;
+    }
+    for (const key in entryObj) {
+      let moduleId: string = entryObj[key];
       let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
       let metaInfo: Object = moduleInfo.meta;
       const pkgParams = {
