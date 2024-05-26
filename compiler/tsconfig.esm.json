@@ -212,7 +212,6 @@
         "PasteButton",
         "SaveButton",
         "UIExtensionComponent",
-        "IsolatedComponent",
         "RichEditor",
         "Component3D",
         "ContainerSpan"
@@ -759,11 +758,6 @@
             "name": "UIExtensionComponent",
             "type": "UIExtensionComponentAttribute",
             "instance": "UIExtensionComponentInstance"
-          },
-          {
-            "name": "IsolatedComponent",
-            "type": "IsolatedComponentAttribute",
-            "instance": "IsolatedComponentInstance"
           },
           {
             "name": "RichEditor",
