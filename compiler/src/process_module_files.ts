@@ -40,7 +40,8 @@ import { isAotMode, isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, parentEvent?: Object, logger?: Object): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, moduleId?: string,
+  parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
   const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig);
@@ -59,8 +60,8 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
-    const key = sourceMapGenerator.isNewSourceMaps() ? node.fileName : relativeSourceFilePath;
-    sourceMapGenerator.fillSourceMapPackageInfo(node.fileName, mixedInfo.sourceMapJson);
+    const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeSourceFilePath;
+    sourceMapGenerator.fillSourceMapPackageInfo(moduleId!, mixedInfo.sourceMapJson);
     sourceMapGenerator.updateSourceMap(key, mixedInfo.sourceMapJson);
     sourceMaps = sourceMapGenerator.getSourceMaps();
   } else {
@@ -69,7 +70,13 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   }
   if (projectConfig.compileHar || (!isDebug(projectConfig) && isAotMode(projectConfig))) {
     const eventWriteObfuscatedSourceCode = createAndStartEvent(eventWriteFileSyncByNode, 'write obfuscated source code');
-    await writeObfuscatedSourceCode(mixedInfo.content, temporaryFile, logger, projectConfig, relativeSourceFilePath, sourceMaps, node.fileName);
+    await writeObfuscatedSourceCode({
+        content: mixedInfo.content,
+        buildFilePath: temporaryFile,
+        relativeSourceFilePath: relativeSourceFilePath,
+        originSourceFilePath: node.fileName,
+        rollupModuleId: moduleId ? moduleId : undefined
+      }, logger, projectConfig, sourceMaps);
     stopEvent(eventWriteObfuscatedSourceCode);
     return;
   }
