@@ -326,7 +326,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     // TODO: the third param is to be opened
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME], '', false, ts.DiagnosticCategory.Warning,
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
+      SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage), false, ts.DiagnosticCategory.Warning,
       CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
@@ -415,12 +416,25 @@ export function validateModuleSpecifier(moduleSpecifier: ts.Expression, log: Log
   }
 }
 
+interface SystemConfig {
+  deviceTypesMessage: string,
+  deviceTypes: string[],
+  runtimeOS: string,
+  externalApiPaths: string[],
+  syscapIntersectionSet: Set<string>,
+  syscapUnionSet: Set<string>
+}
+
+interface SyscapConfig {
+  SysCaps: string[]
+}
+
 /**
  * configure syscapInfo to this.share.projectConfig
  *
  * @param config this.share.projectConfig
  */
-export function configureSyscapInfo(config: any): void {
+export function configureSyscapInfo(config: SystemConfig): void {
   config.deviceTypesMessage = config.deviceTypes.join(',');
   const deviceDir: string = path.resolve(__dirname, '../../../../../api/device-define/');
   const deviceInfoMap: Map<string, string[]> = new Map();
@@ -437,7 +451,7 @@ export function configureSyscapInfo(config: any): void {
     allSyscaps = allSyscaps.concat(value);
   });
   const intersectNoRepeatTwice = (arrs: Array<string[]>) => {
-    return arrs.reduce(function(prev: string[], cur: string[]) {
+    return arrs.reduce(function (prev: string[], cur: string[]) {
       return Array.from(new Set(cur.filter((item: string) => {
         return prev.includes(item);
       })));
@@ -461,11 +475,11 @@ function collectOhSyscapInfos(deviceType: string, deviceDir: string, deviceInfoM
     syscapFilePath = path.resolve(deviceDir, deviceType + '.json');
   }
   if (fs.existsSync(syscapFilePath)) {
-    const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+    const content: SyscapConfig = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
     if (deviceInfoMap.get(deviceType)) {
-      deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+      deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
     } else {
-      deviceInfoMap.set(deviceType, content['SysCaps']);
+      deviceInfoMap.set(deviceType, content.SysCaps);
     }
   }
 }
@@ -490,11 +504,11 @@ function collectExternalSyscapInfos(
         if (fileName.startsWith(deviceType)) {
           syscapFilePath = path.resolve(externalDeviceDir, fileName);
           if (fs.existsSync(syscapFilePath)) {
-            const content: object = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
+            const content: SyscapConfig = JSON.parse(fs.readFileSync(syscapFilePath, 'utf-8'));
             if (deviceInfoMap.get(deviceType)) {
-              deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content['SysCaps']));
+              deviceInfoMap.set(deviceType, deviceInfoMap.get(deviceType).concat(content.SysCaps));
             } else {
-              deviceInfoMap.set(deviceType, content['SysCaps']);
+              deviceInfoMap.set(deviceType, content.SysCaps);
             }
           }
         }
@@ -521,17 +535,23 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
   return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
 }
 
-interface configPermission {
-  requestPermissions: Array<{ name: any, [key: string]: any }>;
-  definePermissions: Array<{ name: any, [key: string]: any }>;
+interface ConfigPermission {
+  requestPermissions: Array<{ name: string }>;
+  definePermissions: Array<{ name: string }>;
+}
+
+interface PermissionsConfig {
+  permission: ConfigPermission,
+  requestPermissions: string[],
+  definePermissions: string[],
 }
 /**
  * configure permissionInfo to this.share.projectConfig
  *
  * @param config this.share.projectConfig
  */
-export function configurePermission(config: any): void {
-  const permission: configPermission = config.permission;
+export function configurePermission(config: PermissionsConfig): void {
+  const permission: ConfigPermission = config.permission;
   config.requestPermissions = [];
   config.definePermissions = [];
   if (permission.requestPermissions) {
@@ -542,8 +562,8 @@ export function configurePermission(config: any): void {
   }
 }
 
-function getNameFromArray(array: Array<{ name: any, [key: string]: any }>): string[] {
-  return array.map((item: { name: any }) => {
+function getNameFromArray(array: Array<{ name: string }>): string[] {
+  return array.map((item: { name: string }) => {
     return String(item.name);
   });
 }
