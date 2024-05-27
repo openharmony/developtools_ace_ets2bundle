@@ -28,8 +28,8 @@ import {
   fastBuildLogger,
   emitBuildInfo,
   runArkTSLinter,
-  collectFileToIgnoreDiagnostics,
-  targetESVersionChanged
+  targetESVersionChanged,
+  collectFileToIgnoreDiagnostics
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
