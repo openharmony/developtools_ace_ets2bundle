@@ -391,7 +391,7 @@ class MyComponent extends ViewPU {
                 this.ifElseBranchUpdateFunction(0, () => {
                     if (!If.canRetake('id14')) {
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
-                            __Common__.create();
+                            __Common__.create(true);
                             __Common__.id('id14');
                         }, __Common__);
                         {
