@@ -808,17 +808,25 @@ export function generateConsumerObConfigFile(obfuscationOptions: any, logger: an
  *   example: modulePathMap: { packageName: path }
  * @returns reservedFileNames
  */
-export function collectResevedFileNameInIDEConfig(ohPackagePath: string, projectConfig: Object, modulePathMap: Object | undefined): string[] {
+export function collectResevedFileNameInIDEConfig(ohPackagePath: string, projectConfig: Object,
+  modulePathMap: Object | undefined, entryObject: Object | undefined): string[] {
   const reservedFileNames: string[] = [];
   const moduleJsonPath: string = projectConfig.aceModuleJsonPath;
   const projectPath: string = projectConfig.projectPath;
   const cachePath: string = projectConfig.cachePath;
 
+  if (entryObject) {
+    const entryFiles = Object.keys(entryObject);
+    entryFiles.forEach(val => {
+      FileUtils.collectPathReservedString(val, reservedFileNames);
+    });
+  }
+
   if (modulePathMap) {
     const modulePaths = Object.values(modulePathMap);
     modulePaths.forEach(val => {
       FileUtils.collectPathReservedString(val, reservedFileNames);
-    })
+    });
   }
   if (fs.existsSync(ohPackagePath)) {
     const ohPackageContent = JSON5.parse(fs.readFileSync(ohPackagePath, 'utf-8'));
