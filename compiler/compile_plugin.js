@@ -46,14 +46,14 @@ exports.sdkPlugins = (projectConfig) => {
     ];
 };
 exports.sdkPluginsMap = {
-    "watchChangeFiles": 0,
-    "etsChecker": 1,
-    "visualTransform": 2,
-    "etsTransform": 3,
-    "apiTransform": 4,
-    "genAbc": 5,
-    "terserPlugin": 6,
-    "babelPlugin": 7,
+    'watchChangeFiles': 0,
+    'etsChecker': 1,
+    'visualTransform': 2,
+    'etsTransform': 3,
+    'apiTransform': 4,
+    'genAbc': 5,
+    'terserPlugin': 6,
+    'babelPlugin': 7,
 };
 
 exports.resolveFileExtensions = [];

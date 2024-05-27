@@ -2719,7 +2719,7 @@ function isGestureType(node: ts.Identifier): boolean {
   return GESTURE_TYPE_NAMES.has(node.escapedText.toString());
 }
 
-function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>) {
+function filterRegularAttrNode(argumentsNode: ts.NodeArray<ts.Expression>): boolean {
   return argumentsNode.every((argument: ts.Expression) => {
     return isRegularAttrNode(argument);
   });
