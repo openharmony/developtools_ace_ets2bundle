@@ -280,6 +280,11 @@ export function getBuildModeInLowerCase(projectConfig: Object): string {
   return (compileToolIsRollUp() ? projectConfig.buildMode : projectConfig.buildArkMode).toLowerCase();
 }
 
+/**
+ * This Api only used by webpack compiling process - js-loader
+ * @param sourcePath The path in build cache dir
+ * @param sourceCode The intermediate js source code
+ */
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
   const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
   if (filePath.length === 0) {
@@ -292,7 +297,8 @@ export function writeFileSyncByString(sourcePath: string, sourceCode: string, pr
       fs.writeFileSync(filePath, sourceCode);
       return;
     }
-    writeObfuscatedSourceCode(sourceCode, filePath, logger, projectConfig);
+    writeObfuscatedSourceCode({content: sourceCode, buildFilePath: filePath, relativeSourceFilePath: ''},
+      logger, projectConfig);
   }
   if (/\.json$/.test(sourcePath)) {
     fs.writeFileSync(filePath, sourceCode);
@@ -438,41 +444,64 @@ function replaceRelativeDependency(item: string, moduleRequest: string, sourcePa
   return item;
 }
 
-export async function writeObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, sourcePath?: string): Promise<void> {
-  if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
-    MemoryUtils.tryGC();
-    performancePrinter?.filesPrinter?.startEvent(filePath);
-    await writeArkguardObfuscatedSourceCode(content, filePath, logger, projectConfig, relativeSourceFilePath, rollupNewSourceMaps, sourcePath);
-    performancePrinter?.filesPrinter?.endEvent(filePath, undefined, true);
-    MemoryUtils.tryGC();
-    return;
-  }
-  mkdirsSync(path.dirname(filePath));
-  if (!compileToolIsRollUp()) {
-    await writeMinimizedSourceCode(content, filePath, logger, projectConfig.compileHar);
-    return;
-  }
-
-  sourcePath = toUnixPath(sourcePath);
-  let genFileInHar: GeneratedFileInHar = harFilesRecord.get(sourcePath);
-
-  if (!genFileInHar) {
-    genFileInHar = { sourcePath: sourcePath };
-  }
-  if (!genFileInHar.sourceCachePath) {
-    genFileInHar.sourceCachePath = toUnixPath(filePath);
-  }
-  harFilesRecord.set(sourcePath, genFileInHar);
-
-  fs.writeFileSync(filePath, content);
+interface ModuleInfo {
+  content: string,
+  /**
+   * the path in build cache dir
+   */
+  buildFilePath: string,
+  /**
+   * the `originSourceFilePath` relative to project root dir.
+   */
+  relativeSourceFilePath: string,
+  /**
+   * the origin source file path will be set with rollup moduleId when obfuscate intermediate js source code,
+   * whereas be set with tsc node.fileName when obfuscate intermediate ts source code.
+   */
+  originSourceFilePath?: string,
+  rollupModuleId?: string
 }
 
+export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+  projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
+  if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
+    MemoryUtils.tryGC();
+    performancePrinter?.filesPrinter?.startEvent(moduleInfo.buildFilePath);
+    await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
+    performancePrinter?.filesPrinter?.endEvent(moduleInfo.buildFilePath, undefined, true);
+    MemoryUtils.tryGC();
+    return;
+  }
+  mkdirsSync(path.dirname(moduleInfo.buildFilePath));
+  if (!compileToolIsRollUp()) {
+    await writeMinimizedSourceCode(moduleInfo.content, moduleInfo.buildFilePath, logger, projectConfig.compileHar);
+    return;
+  }
 
-export async function writeArkguardObfuscatedSourceCode(content: string, filePath: string, logger: Object, projectConfig: Object,
-  relativeSourceFilePath: string = '', rollupNewSourceMaps: Object = {}, originalFilePath: string): Promise<void> {
+  if (moduleInfo.originSourceFilePath) {
+    const originSourceFilePath = toUnixPath(moduleInfo.originSourceFilePath);
+    let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originSourceFilePath);
+
+    if (!genFileInHar) {
+      genFileInHar = { sourcePath: originSourceFilePath };
+    }
+    if (!genFileInHar.sourceCachePath) {
+      genFileInHar.sourceCachePath = toUnixPath(moduleInfo.buildFilePath);
+    }
+    harFilesRecord.set(originSourceFilePath, genFileInHar);
+  }
+
+  fs.writeFileSync(moduleInfo.buildFilePath, moduleInfo.content);
+}
+
+/**
+ * This Api only be used by rollup compiling process & only be
+ * exported for unit test.
+ */
+export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+  projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
-  const isDeclaration = (/\.d\.e?ts$/).test(filePath);
+  const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
   const packageDir = projectConfig.packageDir;
   const projectRootPath = projectConfig.projectRootPath;
   const useNormalized = projectConfig.useNormalizedOHMUrl;
@@ -481,16 +510,16 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
   const sourceMapGeneratorInstance = SourceMapGenerator.getInstance();
 
   let previousStageSourceMap: sourceMap.RawSourceMap | undefined = undefined;
-  const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? originalFilePath : relativeSourceFilePath;
-  if (relativeSourceFilePath.length > 0 && !isDeclaration) {
+  if (moduleInfo.relativeSourceFilePath.length > 0 && !isDeclaration) {
+    const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? moduleInfo.rollupModuleId! : moduleInfo.relativeSourceFilePath;
     previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
   }
 
   let historyNameCache = new Map<string, string>();
   if (nameCacheObj) {
-    let namecachePath = relativeSourceFilePath;
+    let namecachePath = moduleInfo.relativeSourceFilePath;
     if (isDeclaration) {
-      namecachePath = harFilesRecord.get(originalFilePath).sourceCachePath;
+      namecachePath = harFilesRecord.get(moduleInfo.originSourceFilePath).sourceCachePath;
     }
     let identifierCache = nameCacheObj[namecachePath]?.[IDENTIFIER_CACHE];
     deleteLineInfoForNameString(historyNameCache, identifierCache);
@@ -505,31 +534,32 @@ export async function writeArkguardObfuscatedSourceCode(content: string, filePat
     useTsHar: boolean
   } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
   try {
-    mixedInfo = await arkObfuscator.obfuscate(content, filePath, previousStageSourceMap,
-      historyNameCache, originalFilePath, projectInfo);
+    mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, moduleInfo.buildFilePath, previousStageSourceMap,
+      historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
   } catch (err) {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${relativeSourceFilePath}' with arkguard. ${err}`);
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`);
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
-    mixedInfo.sourceMap.sources = [relativeSourceFilePath];
-    sourceMapGeneratorInstance.fillSourceMapPackageInfo(originalFilePath, mixedInfo.sourceMap);
+    const selectedFilePath = sourceMapGeneratorInstance.isNewSourceMaps() ? moduleInfo.rollupModuleId! : moduleInfo.relativeSourceFilePath;
+    mixedInfo.sourceMap.sources = [moduleInfo.relativeSourceFilePath];
+    sourceMapGeneratorInstance.fillSourceMapPackageInfo(moduleInfo.rollupModuleId!, mixedInfo.sourceMap);
     sourceMapGeneratorInstance.updateSpecifySourceMap(rollupNewSourceMaps, selectedFilePath, mixedInfo.sourceMap);
   }
 
   if (mixedInfo.nameCache && !isDeclaration) {
-    let obfName: string = relativeSourceFilePath;
-    let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
+    let obfName: string = moduleInfo.relativeSourceFilePath;
+    let isOhModule = isPackageModulesFile(moduleInfo.originSourceFilePath, projectConfig);
     if (projectConfig.obfuscationMergedObConfig?.options.enableFileNameObfuscation && !isOhModule) {
-      obfName = mangleFilePath(relativeSourceFilePath);
+      obfName = mangleFilePath(moduleInfo.relativeSourceFilePath);
     }
     mixedInfo.nameCache["obfName"] = obfName;
-    nameCacheObj[relativeSourceFilePath] = mixedInfo.nameCache;
+    nameCacheObj[moduleInfo.relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
-  const newFilePath: string = tryMangleFileName(filePath, projectConfig, originalFilePath);
-  if (newFilePath !== filePath && !isDeclaration) {
-    sourceMapGeneratorInstance.saveKeyMappingForObfFileName(originalFilePath);
+  const newFilePath: string = tryMangleFileName(moduleInfo.buildFilePath, projectConfig, moduleInfo.originSourceFilePath);
+  if (newFilePath !== moduleInfo.buildFilePath && !isDeclaration) {
+    sourceMapGeneratorInstance.saveKeyMappingForObfFileName(moduleInfo.rollupModuleId!);
   }
   mkdirsSync(path.dirname(newFilePath));
   fs.writeFileSync(newFilePath, mixedInfo.content ?? '');
@@ -562,8 +592,12 @@ export async function mangleDeclarationFileName(logger: Object, projectConfig: O
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
       let relativeSourceFilePath = toUnixPath(genFilesInHar.originalDeclarationCachePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
-      await writeObfuscatedSourceCode(genFilesInHar.originalDeclarationContent, genFilesInHar.originalDeclarationCachePath, logger, projectConfig,
-        relativeSourceFilePath, {}, sourcePath);
+      await writeObfuscatedSourceCode({
+          content: genFilesInHar.originalDeclarationContent,
+          buildFilePath: genFilesInHar.originalDeclarationCachePath,
+          relativeSourceFilePath: relativeSourceFilePath,
+          originSourceFilePath: sourcePath
+        }, logger, projectConfig, {});
     }
   }
 }
@@ -639,6 +673,11 @@ export function getPackageInfo(configFile: string): Array<string> {
   return [bundleName, moduleName];
 }
 
+/**
+ * This Api only used by webpack compiling process - result_process
+ * @param sourcePath The path in build cache dir
+ * @param sourceContent The intermediate js source code
+ */
 export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: Object,
   projectConfig: Object, logger: Object): void {
   let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig);
@@ -667,7 +706,8 @@ export function generateSourceFilesToTemporary(sourcePath: string, sourceContent
     return;
   }
 
-  writeObfuscatedSourceCode(sourceContent, jsFilePath, logger, projectConfig);
+  writeObfuscatedSourceCode({content: sourceContent, buildFilePath: jsFilePath, relativeSourceFilePath: ''},
+    logger, projectConfig);
 }
 
 export function genAbcFileName(temporaryFile: string): string {
