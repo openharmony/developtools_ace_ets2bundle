@@ -97,12 +97,15 @@ struct MyComponent {
       if (err) {
         return console.error('ERROR: Failed to write manifest.json.');
       }
+      return undefined;
     });
     fs.writeFile(indexPath, index, (err) => {
       if (err) {
         return console.error('ERROR: Failed to write index.ets.');
       }
+      return undefined;
     });
+    return undefined;
   });
   return undefined;
 }

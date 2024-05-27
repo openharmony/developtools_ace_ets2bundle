@@ -130,7 +130,7 @@ export class ResultStates {
           if (/\.map$/.test(key.toString()) && assets[key]._value) {
             assets[key]._value = assets[key]._value.toString().replace('.ets?entry', '.ets');
             assets[key]._value = assets[key]._value.toString().replace('.ts?entry', '.ts');
-            let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map','.js'));
+            let absPath: string = path.resolve(projectConfig.projectPath, key.toString().replace('.js.map', '.js'));
             if (sourcemapNamesCollection && absPath) {
               let map: Map<string, string> = sourcemapNamesCollection.get(absPath);
               if (map && map.size !== 0) {
