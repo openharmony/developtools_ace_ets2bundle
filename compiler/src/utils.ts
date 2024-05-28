@@ -788,9 +788,9 @@ export class ProcessFileInfo {
     }
   }
 
-  judgeShouldHaveEntryFiles(entryFileWithoutEntryDecorator: string[]): void {
+  judgeShouldHaveEntryFiles(entryFileWithoutEntryDecorator: Set<string>): void {
     this.shouldHaveEntry = Object.values(projectConfig.entryObj as string[]).filter((item) => {
-      return !entryFileWithoutEntryDecorator.includes(item.toLowerCase()) && item.match(/(?<!\.d)\.(ets)$/);
+      return !entryFileWithoutEntryDecorator.has(item.toLowerCase()) && item.match(/(?<!\.d)\.(ets)$/);
     });
   }
 

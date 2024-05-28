@@ -63,7 +63,7 @@ const resources = {
   sys: {}
 };
 const systemModules = [];
-const abilityPagesFullPath = [];
+const abilityPagesFullPath = new Set();
 let globalModulePaths = [];
 let sdkConfigs = [];
 let defaultSdkConfigs = [];
@@ -118,6 +118,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.resetBundleName = false;
   projectConfig.integratedHsp = false;
   projectConfig.useTsHar = false;
+  // All files which dependent on bytecode har, and should be added to compilation entries.
+  projectConfig.otherCompileFiles = {};
 }
 
 function loadEntryObj(projectConfig) {
@@ -298,7 +300,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
   if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isFile()) {
     const entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
-    abilityPagesFullPath.push(path.resolve(mainEntryPath).toLowerCase());
+    abilityPagesFullPath.add(path.resolve(mainEntryPath).toLowerCase());
   } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + `BUIDERROR: not find entry file in ${rootPackageJsonPath}.` + '\u001b[39m').message;
   }
@@ -358,7 +360,7 @@ function setIntentEntryPages(projectConfig) {
     const entryKey = path.relative(projectConfig.projectPath, pages).replace(/\.(ets|ts|js)$/, '');
     projectConfig.entryObj[entryKey] = pages;
     if (/\.ets$/.test(pages)) {
-      abilityPagesFullPath.push(path.resolve(pages).toLowerCase());
+      abilityPagesFullPath.add(path.resolve(pages).toLowerCase());
     }
   });
 }
@@ -384,7 +386,7 @@ function setTestRunnerFile(projectConfig, isStageBased) {
       testRunnerFiles.forEach((item) => {
         if (/\.(ts|js|ets)$/.test(item)) {
           if (/\.ets$/.test(item)) {
-            abilityPagesFullPath.push(path.resolve(item).toLowerCase());
+            abilityPagesFullPath.add(path.resolve(item).toLowerCase());
           }
           const relativePath = path.relative(testRunnerPath, item).replace(/\.(ts|js|ets)$/, '');
           if (isStageBased) {
@@ -453,10 +455,10 @@ function readAbilityEntrance(moduleJson) {
     const moduleSrcEntry = moduleJson.module.srcEntry;
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
-      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
-      abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
@@ -474,10 +476,10 @@ function setEntrance(abilityConfig, abilityPages) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
-        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
+        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
+        abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
   }
@@ -545,7 +547,7 @@ function loadWorker(projectConfig, workerFileEntry) {
           const relativePath = path.relative(workerPath, item)
             .replace(/\.(ts|js|ets)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
-          abilityPagesFullPath.push(path.resolve(item).toLowerCase());
+          abilityPagesFullPath.add(path.resolve(item).toLowerCase());
         }
       });
     }
@@ -564,6 +566,15 @@ function loadBuildJson() {
   }
   // add intent framework entry file
   projectConfig.intentEntry = aceBuildJson.compileEntry || [];
+  if (!!aceBuildJson.otherCompileFiles) {
+    aceBuildJson.otherCompileFiles.forEach(pages => {
+      const entryKey = path.relative(projectConfig.projectPath, pages).replace(/\.(ets|ts|js|mjs|cjs)$/, '');
+      projectConfig.otherCompileFiles[entryKey] = pages;
+      if (/\.ets$/.test(pages)) {
+        abilityPagesFullPath.add(path.resolve(pages).toLowerCase());
+      }
+    });
+  }
 }
 
 function initBuildInfo() {
@@ -594,7 +605,7 @@ function readWorkerFile() {
           ).message;
         } else {
           workerFileEntry[workerKey] = worker;
-          abilityPagesFullPath.push(path.resolve(workerFileEntry[workerKey]).toLowerCase());
+          abilityPagesFullPath.add(path.resolve(workerFileEntry[workerKey]).toLowerCase());
         }
       }
     });
@@ -993,7 +1004,7 @@ function resetMain() {
   resetAbilityConfig();
   resetProjectConfig();
   resources.app = {};
-  abilityPagesFullPath.length = 0;
+  abilityPagesFullPath.clear();
   aceBuildJson = {};
   resetGlobalProgram();
   partialUpdateConfig.builderCheck = true;
@@ -1039,6 +1050,7 @@ function resetProjectConfig() {
       projectConfig[key] = undefined;
     }
   }
+  projectConfig.otherCompileFiles = {};
 }
 
 function resetGlobalProgram() {
