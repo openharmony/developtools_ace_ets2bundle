@@ -50,7 +50,7 @@ const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../tsconfig.json'),
   ts.sys.readFile
 ).config.compilerOptions;
-compilerOptions['sourceMap'] = false;
+compilerOptions.sourceMap = false;
 
 let hasVisual: boolean = false;
 let hasSearched: boolean = false;
@@ -187,8 +187,8 @@ function insertAboutToAppear(statement: ts.Statement, build: ts.MethodDeclaratio
     return content;
   }
   for (const member of statement.members) {
-    const hasAboutToAppear: boolean = member.kind && member.kind === ts.SyntaxKind.MethodDeclaration
-      && member.name && member.name.getText() === 'aboutToAppear';
+    const hasAboutToAppear: boolean = member.kind && member.kind === ts.SyntaxKind.MethodDeclaration &&
+      member.name && member.name.getText() === 'aboutToAppear';
     if (hasAboutToAppear) {
       return insertVisualCodeAfterPos(member.body, '\n' + visualContent.aboutToAppear, content,
         oriContent);
@@ -285,7 +285,7 @@ function generateSourceMapForNewAndOriEtsFile(resourcePath: string, content: str
   }
   fs.writeFile(path.resolve(visualMapDirPath, visualMapName), sourcemap.toString(), (err) => {
     if (err) {
-      return console.error(red, 'ERROR: Failed to write visual.js.map', reset);
+      console.error(red, 'ERROR: Failed to write visual.js.map', reset);
     }
   });
 }
