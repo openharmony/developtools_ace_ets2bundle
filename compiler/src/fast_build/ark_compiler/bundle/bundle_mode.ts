@@ -172,7 +172,8 @@ export class BundleMode extends CommonMode {
       `"@${filesInfoPath}"`,
       '--file-threads',
       `"${fileThreads}"`,
-      `"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`
+      `"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`,
+      '--opt-try-catch-func=false'
     );
   }
 
