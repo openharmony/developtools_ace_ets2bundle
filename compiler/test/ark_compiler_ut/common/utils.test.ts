@@ -34,7 +34,8 @@ import {
   utUtils,
   updateSourceMap,
   hasTsNoCheckOrTsIgnoreFiles,
-  compilingEtsOrTsFiles
+  compilingEtsOrTsFiles,
+  cleanUpFilesList
 } from '../../../lib/fast_build/ark_compiler/utils';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModuleInfo } from '../mock/rollup_mock/module_info';
@@ -82,6 +83,9 @@ import {
   getRollupCache,
   setRollupCache
 } from '../../../lib/utils';
+import {
+  ArkObfuscator
+} from 'arkguard';
 
 mocha.describe('test utils file api', function () {
   mocha.before(function () {
@@ -201,6 +205,57 @@ mocha.describe('test utils file api', function () {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
         expect(shouldETSOrTSFileTransformToJS(filePath, this.rollup.share.arkProjectConfig) === true).to.be.true;
       }
+    }
+  });
+
+  mocha.it('2-5: test shouldETSOrTSFileTransformToJS under build release and enable obuscate file name', function () {
+    this.rollup.build(RELEASE);
+    this.mockfileList = this.rollup.getModuleIds();
+    this.rollup.share.arkProjectConfig.cachePath = this.rollup.share.projectConfig.cachePath;
+
+    this.rollup.share.projectConfig = {
+      buildMode: 'Release'
+    }
+    this.rollup.share.projectConfig.obfuscationMergedObConfig = {
+      options: {
+        enableFileNameObfuscation: true
+      }
+    };
+    this.rollup.share.arkProjectConfig.processTs = true;
+    const projectConfig: Object = Object.assign(this.rollup.share.arkProjectConfig, this.rollup.share.projectConfig);
+
+    const currentDir = path.dirname(__dirname);
+    const testMainDir = path.join(currentDir, "../../test/ark_compiler_ut/testdata/testcase_def/entry/build/entry/src/main");
+    let reservedFileNamesDirectories = testMainDir.split("/").filter(directory => directory !== "");
+    reservedFileNamesDirectories = reservedFileNamesDirectories.concat(["pages", "entryability"]);
+
+    const arkguardConfig = {
+      mRenameFileName: {
+        mEnable: true,
+        mNameGeneratorType: 1,
+        mReservedFileNames: reservedFileNamesDirectories
+      },
+      mPerformancePrinter: []
+    }
+
+    let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+    arkObfuscator.init(arkguardConfig);
+
+    let index = 0
+    for (const filePath of this.mockfileList) {
+      cleanUpFilesList();
+      if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
+        if (index == 0) {
+          const directory = path.dirname(filePath);
+          const tempPath = path.join(directory, "../../../build/entry/src/main/entryability")
+          const bFilePath = path.join(tempPath, 'b.js');
+          fs.writeFileSync(bFilePath, 'console.log("b.js created");');
+          expect(bFilePath !== filePath).to.be.true;
+          expect(shouldETSOrTSFileTransformToJS(filePath, projectConfig) === true).to.be.true;
+          fs.unlinkSync(bFilePath);
+        }
+      }
+      index++;
     }
   });
 

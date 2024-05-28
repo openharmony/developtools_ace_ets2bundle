@@ -739,14 +739,13 @@ export function readNameCache(nameCachePath: string, logger: any): void {
   }
 }
 
-export function getArkguardNameCache(entryPackageInfo: string, enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean,
-  sdkVersion: string): string {
-  let nameVersionInfo: string = entryPackageInfo;
+export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableFileNameObfuscation: boolean, sdkVersion: string,
+  entryPackageInfo: string): string {
   let writeContent: string = '';
   let nameCacheCollection: { compileSdkVersion?: string, PropertyCache?: Object, FileNameCache?: Object,
                              entryPackageInfo?: string } = nameCacheObj;
   nameCacheCollection.compileSdkVersion = sdkVersion;
-  nameCacheCollection.entryPackageInfo = nameVersionInfo;
+  nameCacheCollection.entryPackageInfo = entryPackageInfo;
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
@@ -775,14 +774,13 @@ function fillNameCache(table: Map<string, string>, nameCache: Map<string, string
   return;
 }
 
-export function writeObfuscationNameCache(projectConfig:any, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
-  let writeContent: string = '';
-  if (projectConfig.arkObfuscator) {
-    writeContent = getArkguardNameCache(entryPackageInfo, projectConfig.obfuscationMergedObConfig.options.enablePropertyObfuscation,
-      projectConfig.obfuscationMergedObConfig.options.enableFileNameObfuscation, projectConfig.etsLoaderVersion);
-  } else {
+export function writeObfuscationNameCache(projectConfig: Object, entryPackageInfo: string, obfuscationCacheDir?: string, printNameCache?: string): void {
+  if (!projectConfig.arkObfuscator) {
     return;
   }
+  let options = projectConfig.obfuscationMergedObConfig.options;
+  let writeContent = getArkguardNameCache(options.enablePropertyObfuscation, options.enableFileNameObfuscation, projectConfig.etsLoaderVersion,
+    entryPackageInfo);
   if (obfuscationCacheDir && obfuscationCacheDir.length > 0) {
     const defaultNameCachePath: string = path.join(obfuscationCacheDir, 'nameCache.json');
     if (!fs.existsSync(path.dirname(defaultNameCachePath))) {
