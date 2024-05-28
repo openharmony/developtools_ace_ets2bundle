@@ -73,7 +73,7 @@ export const SRC_MAIN: string = 'src/main';
 export let newSourceMaps: Object = {};
 export let nameCacheObj: Object = {};
 export const packageCollection: Map<string, Array<string>> = new Map();
-// Splicing ohmurl or record name based on filePath and context information table. 
+// Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
   const { pkgName, pkgPath, isRecordName } = pkgParams;
@@ -568,7 +568,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     if (projectConfig.obfuscationMergedObConfig?.options.enableFileNameObfuscation && !isOhModule) {
       obfName = mangleFilePath(moduleInfo.relativeSourceFilePath);
     }
-    mixedInfo.nameCache["obfName"] = obfName;
+    mixedInfo.nameCache.obfName = obfName;
     nameCacheObj[moduleInfo.relativeSourceFilePath] = mixedInfo.nameCache;
   }
 
