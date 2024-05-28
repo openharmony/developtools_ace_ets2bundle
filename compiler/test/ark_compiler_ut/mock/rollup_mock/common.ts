@@ -18,6 +18,7 @@ export const SDK_VERSION_MOCK: number = 1;
 export const ETS_LOADER_VERSION: string = '4.1.2.3';
 
 export const BUNDLE_NAME_DEFAULT: string = 'com.example.app';
+export const ENTRY_PACKAGE_NAME_DEFAULT: string = 'entry';
 export const ENTRY_MODULE_NAME_DEFAULT: string = 'entry';
 export const ENTRY_MODULE_VERSION_DEFAULT: string = '1.0.0';
 

@@ -25,12 +25,12 @@ import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generat
 import {
   ENTRYABILITY_JS_PATH_DEFAULT,
   ENTRYABILITY_TS_PATH_DEFAULT,
-  ENTRY_MODULE_NAME_DEFAULT,
+  ENTRY_PACKAGE_NAME_DEFAULT,
   ENTRY_MODULE_VERSION_DEFAULT
 } from '../mock/rollup_mock/common';
 
-const prefix = `${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}|`;
-let entryPkgInfo = `${ENTRY_MODULE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}`;
+const prefix = `${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}|`;
+let entryPkgInfo = `${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}`;
 
 mocha.describe('test generate_sourcemap api', function () {
   mocha.before(function () {

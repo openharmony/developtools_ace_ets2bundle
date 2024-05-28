@@ -19,6 +19,7 @@ import {
   BUNDLE_NAME_DEFAULT,
   ETS_LOADER_VERSION,
   ENTRY_MODULE_NAME_DEFAULT,
+  ENTRY_PACKAGE_NAME_DEFAULT,
   RUNTIME_OS_OPENHARMONY,
   MODULE_NAME_HASH_DEFAULT,
   RESOURCE_TABLE_HASH_DEFAULT,
@@ -64,6 +65,7 @@ class ProjectConfig {
   etsLoaderVersion: string = ETS_LOADER_VERSION;
   etsLoaderReleaseType: string = RELEASE;
   entryModuleName: string = ENTRY_MODULE_NAME_DEFAULT;
+  entryPackageName: string = ENTRY_PACKAGE_NAME_DEFAULT;
   entryModuleVersion: string = ENTRY_MODULE_VERSION_DEFAULT;
   allModuleNameHash: string = MODULE_NAME_HASH_DEFAULT;
   resourceTableHash: string = RESOURCE_TABLE_HASH_DEFAULT;
