@@ -512,7 +512,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
   }
 }
 
-// collect the modulename or pkgname of all local modules. 
+// collect the modulename or pkgname of all local modules.
 export function addLocalPackageSet(moduleId: string, rollupObject: Object): void {
   const moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
   const metaInfo: Object = moduleInfo.meta;
@@ -599,7 +599,7 @@ function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set
   }
 
   fileToThrowDiagnostics.add(unixFilePath);
-  if (path.extname(file) === EXTNAME_JS ||
+  if ((/\.(c|m)?js$/).test(file) ||
     !cache[normalizedFilePath] || cache[normalizedFilePath].children.length === 0) {
     return;
   }
@@ -613,12 +613,15 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     return;
   }
 
-  // With arkts linter enabled, `allowJs` option is set to true, resulting JavaScript-referenced files are included
-  // in the program and checking process, potentially introducing new errors. For instance, in scenarios where
-  // an ets file imports js file imports ts file, it’s necessary to filter out errors from ts files.
+  // With arkts linter enabled, `allowJs` option is set to true, resulting JavaScript files themselves and
+  // JavaScript-referenced files are included in the tsc program and checking process,
+  // potentially introducing new errors. For instance, in scenarios where an ets file imports js file imports ts file,
+  // it’s necessary to filter out errors from ts files.
   let fileToThrowDiagnostics: Set<string> = new Set<string>();
   rootFileNames.forEach(file => {
-    collectFileToThrowDiagnostics(file, fileToThrowDiagnostics);
+    if (!(/\.(c|m)?js$/).test(file)) {
+      collectFileToThrowDiagnostics(file, fileToThrowDiagnostics);
+    }
   });
 
   fileToIgnoreDiagnostics = new Set<string>();
