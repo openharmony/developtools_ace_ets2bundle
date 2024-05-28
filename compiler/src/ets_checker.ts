@@ -1063,7 +1063,8 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
 
 function collectionCustomizeStyles(node: ts.Node): void {
   if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
-    isStylesDecorator(node, COMPONENT_STYLES_DECORATOR) && node.name && ts.isIdentifier(node.name)) {
+    (isUIDecorator(node, COMPONENT_STYLES_DECORATOR) || isUIDecorator(node, COMPONENT_EXTEND_DECORATOR)) &&
+    node.name && ts.isIdentifier(node.name)) {
     BUILDIN_STYLE_NAMES.add(node.name.escapedText.toString());
   }
   if (ts.isSourceFile(node)) {
@@ -1077,7 +1078,7 @@ function collectionCustomizeStyles(node: ts.Node): void {
   }
 }
 
-function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+function isUIDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
   ts.StructDeclaration | ts.ClassDeclaration, decortorName: string): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
