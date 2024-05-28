@@ -29,7 +29,7 @@ export function initConfig() {
     readAppResource(process.env.appResource);
   }
   return {
-    entryObj: projectConfig.entryObj,
+    entryObj: Object.assign({}, projectConfig.entryObj, projectConfig.otherCompileFiles),
     cardEntryObj: projectConfig.cardEntryObj,
     workerFile: workerFile,
     globalModulePaths: globalModulePaths
