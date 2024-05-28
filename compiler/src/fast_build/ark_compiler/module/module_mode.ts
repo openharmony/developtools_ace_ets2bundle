@@ -466,8 +466,11 @@ export class ModuleMode extends CommonMode {
       this.cmdArgs.push(`--compile-context-info`);
       this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
     }
-    if (this.abcPaths.length > 0 && !this.byteCodeHar){
+    if (this.abcPaths.length > 0 && !this.byteCodeHar) {
       this.cmdArgs.push('--enable-abc-input');
+    }
+    if (!this.arkConfig.optTryCatchFunc) {
+      this.cmdArgs.push('--opt-try-catch-func=false');
     }
   }
 
