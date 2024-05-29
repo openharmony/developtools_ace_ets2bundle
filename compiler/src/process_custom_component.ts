@@ -138,7 +138,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
       componentNode, name, isBuilder, isGlobalBuilder);
     let argumentsArray: ts.PropertyAssignment[];
-    const componentAttrInfo: ComponentAttrInfo = { reuseId: null };
+    const componentAttrInfo: ComponentAttrInfo = { reuseId: null, hasIdAttr: false, attrCount: 0 };
     if (isHasChild(componentNode)) {
       // @ts-ignore
       argumentsArray = componentNode.arguments[0].properties.slice();
@@ -172,6 +172,9 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         bindComponentAttr(node, ts.factory.createIdentifier(COMPONENT_COMMON), commomComponentNode,
           log, true, false, immutableStatements, false, componentAttrInfo);
         needCommon = commomComponentNode.length > 1 || immutableStatements.length > 0;
+        if (componentAttrInfo.hasIdAttr && componentAttrInfo.attrCount === 1) {
+          commomComponentNode[0] = createCommonIdAttrNode();
+        }
         if (needCommon) {
           newStatements.push(createComponentCreationStatement(componentAttributes(COMPONENT_COMMON),
             commomComponentNode, COMPONENT_COMMON, isGlobalBuilder, false, undefined, immutableStatements,
@@ -202,6 +205,14 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
         ifRetakeId(newStatements.slice(judgeIdStart), idName));
     }
   }
+}
+
+function createCommonIdAttrNode(): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
+      ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION),
+      // @ts-ignore
+      [ts.factory.createTrue()]));
 }
 
 export function isRecycle(componentName: string): boolean {
