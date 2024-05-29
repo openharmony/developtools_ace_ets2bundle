@@ -30,6 +30,7 @@ import {
   isEs2Abc,
   writeArkguardObfuscatedSourceCode,
   writeMinimizedSourceCode,
+  tryMangleFileName
 } from '../../lib/ark_utils';
 import {
   DEBUG,
@@ -69,6 +70,7 @@ import { ModuleSourceFile } from '../../lib/fast_build/ark_compiler/module/modul
 import { TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock/path_config';
 import { GEN_ABC_PLUGIN_NAME } from '../../lib/fast_build/ark_compiler/common/ark_define';
 import { SourceMapGenerator } from '../../lib/fast_build/ark_compiler/generate_sourcemap';
+import { ArkObfuscator } from 'arkguard';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -333,5 +335,78 @@ mocha.describe('test ark_utils file api', function () {
       'ArkTS:INTERNAL ERROR: Failed to obfuscate source code for ', reset
     )).to.be.true;
     stub.restore();
+  });
+
+  mocha.it('8-1: test tryMangleFileName when obfuscation is disabled', async function () {
+    const filePath = '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release/src/main/ets/entryability/EntryAbility.ts';
+    const originalFilePath = '/mnt/application/entry/src/main/ets/entryability/EntryAbility.ets';
+    const projectConfig = {
+      projectRootPath: '/mnt/application',
+      packageDir: 'oh_modules',
+      modulePathMap: {
+        entry: '/mnt/application/entry'
+      },
+      obfuscationMergedObConfig: {
+        options: {
+          enableFileNameObfuscation: false
+        }
+      }
+    }
+    const result = tryMangleFileName(filePath, projectConfig, originalFilePath);
+    expect(result === filePath).to.be.true;
+  });
+
+  mocha.it('8-2: test tryMangleFileName when obfuscation is enabled', async function () {
+    const filePath = '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release/src/main/ets/entryability/EntryAbility.ts';
+    const originalFilePath = '/mnt/application/entry/src/main/ets/entryability/EntryAbility.ets';
+    const newFilePath = '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release/src/main/ets/a/b.ts';
+    const projectConfig = {
+      projectRootPath: '/mnt/application',
+      packageDir: 'oh_modules',
+      modulePathMap: {
+        entry: '/mnt/application/entry'
+      },
+      obfuscationMergedObConfig: {
+        options: {
+          enableFileNameObfuscation: true
+        }
+      }
+    }
+
+    const printerConfig = {
+      //Print obfuscation time&memory usage of all files and obfuscation processes
+      mFilesPrinter: false,
+      //Print time&memory usage of a single file obfuscation in transform processes
+      mSingleFilePrinter: false,
+      //Print sum up time of transform processes during obfuscation
+      mSumPrinter: false,
+      //Output path of printer
+      mOutputPath: "" 
+    }
+
+    const arkguardConfig = {
+      mRenameFileName: {
+        mEnable: true,
+        mNameGeneratorType: 1,
+        mReservedFileNames: [
+          'entry',
+          '/mnt/application/entry/src/main/ets',
+          '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release'
+        ],
+      },
+      mPerformancePrinter: printerConfig
+    }
+
+    let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+    arkObfuscator.init(arkguardConfig);
+    const content = `function foo() {}`
+    const obfuscateResult = arkObfuscator.obfuscate(content, filePath, undefined);
+    obfuscateResult.then(result => {
+      const afterObfuscateFilePath = result.filePath;
+      expect(afterObfuscateFilePath === newFilePath).to.be.true;
+    })
+
+    const result = tryMangleFileName(filePath, projectConfig, originalFilePath);
+    expect(result === newFilePath).to.be.true;
   });
 });
