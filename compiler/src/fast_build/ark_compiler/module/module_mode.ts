@@ -405,7 +405,7 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push('--merge-abc');
     this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
     if (this.projectConfig.transformLib) {
-      this.cmdArgs.push(`--transformLib`);
+      this.cmdArgs.push(`--transform-lib`);
       this.cmdArgs.push(`"${this.projectConfig.transformLib}"`);
     }
   }
