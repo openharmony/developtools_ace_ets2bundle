@@ -176,6 +176,7 @@ export function initArkProjectConfig(share: Object): Object {
   }
   arkProjectConfig.compileMode = projectConfig.compileMode;
   arkProjectConfig.entryObj = mainProjectConfig.entryObj;
+  arkProjectConfig.cardEntryObj = mainProjectConfig.cardEntryObj;
 
   if (projectConfig.compileHar || !isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
