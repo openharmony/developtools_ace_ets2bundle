@@ -2072,7 +2072,9 @@ interface AnimationInfo {
 }
 
 export interface ComponentAttrInfo {
-  reuseId: ts.Node
+  reuseId: ts.Node,
+  hasIdAttr: boolean,
+  attrCount: number,
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
@@ -2161,8 +2163,14 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, isRecycleComponent: boolean,
   componentAttrInfo: ComponentAttrInfo): void {
-  if (componentAttrInfo && attr.escapedText.toString() === RECYCLE_REUSE_ID) {
-    componentAttrInfo.reuseId = node.arguments[0];
+  if (componentAttrInfo) {
+    const attrName: string = attr.escapedText.toString();
+    if (attrName === RECYCLE_REUSE_ID) {
+      componentAttrInfo.reuseId = node.arguments[0];
+    } else if (attrName === ATTRIBUTE_ID) {
+      componentAttrInfo.hasIdAttr = true;
+    }
+    componentAttrInfo.attrCount++;
   }
 }
 

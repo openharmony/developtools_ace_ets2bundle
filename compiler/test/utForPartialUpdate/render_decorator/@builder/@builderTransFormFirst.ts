@@ -158,7 +158,7 @@ function testIfIdComponent(value, parent = null) {
             (parent ? parent : this).ifElseBranchUpdateFunction(0, () => {
                 if (!If.canRetake('id14')) {
                     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
-                        __Common__.create();
+                        __Common__.create(true);
                         __Common__.id('id14');
                     }, __Common__);
                     {
