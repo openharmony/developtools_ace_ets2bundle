@@ -147,6 +147,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   }
   const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
+  checkAkTsVersion();
   Object.assign(compilerOptions, {
     'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
     'checkJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined,
@@ -169,7 +170,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipArkTSStaticBlocksCheck': partialUpdateConfig.skipArkTSStaticBlocksCheck,
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
-    'tsBuildInfoFile': buildInfoPath
+    'tsBuildInfoFile': buildInfoPath,
+    'tsImportSendableEnable': tsImportSendable 
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -181,6 +183,15 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
+}
+
+function checkAkTsVersion(): void {
+  const etsCheckerLogger = fastBuildLogger || logger;
+  if (getArkTSVersion() === ArkTSVersion.ArkTS_1_0 && tsImportSendable) {
+    const logMessage: string = 'ArkTS: ArkTSVersion1.0 does not support tsImportSendable in any condition';
+    etsCheckerLogger.error('\u001b[31m' + logMessage);
+    tsImportSendable = false;
+  }
 }
 
 // Change target to enum's value，e.g: "es2021" => ts.ScriptTarget.ES2021
@@ -425,10 +436,12 @@ export let fastBuildLogger = null;
 export const checkerResult: CheckerResult = { count: 0 };
 export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
+let tsImportSendable: boolean = false;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
+  tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
     if (projectConfig.hotReload) {
       rootFileNames.forEach(fileName => {
@@ -1335,7 +1348,7 @@ export function runArkTSLinter(): void {
 }
 
 function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
-  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isInSDK(diagnostic))) {
+  if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isEtsDeclFileInSdk(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
     printDiagnostic(diagnostic);
@@ -1343,6 +1356,10 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
     return;
   }
   printDiagnostic(diagnostic);
+}
+
+function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {
+  return isInSDK(diagnostics) && (diagnostics.file !== undefined) && diagnostics.file.fileName.endsWith(".ets");
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
