@@ -41,7 +41,19 @@ function createFinalizeConstruction(): ts.Statement {
   ));
 }
 
+function createImportNodeForModuleInfo(): ts.ImportDeclaration {
+  return ts.factory.createImportDeclaration(
+    undefined, ts.factory.createImportClause(false, undefined,
+      ts.factory.createNamedImports([ts.factory.createImportSpecifier(
+        false, undefined, ts.factory.createIdentifier('__MODULE_NAME__')
+      ), ts.factory.createImportSpecifier(false, undefined,
+        ts.factory.createIdentifier('__BUNDLE_NAME__'))])
+    ), ts.factory.createStringLiteral('ModuleInfo'), undefined
+  );
+}
+
 export default {
   createParameterDeclaration: createParameterDeclaration,
-  createFinalizeConstruction: createFinalizeConstruction
+  createFinalizeConstruction: createFinalizeConstruction,
+  createImportNodeForModuleInfo: createImportNodeForModuleInfo
 };
