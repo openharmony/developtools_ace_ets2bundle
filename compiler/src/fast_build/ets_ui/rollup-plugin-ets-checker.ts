@@ -97,7 +97,7 @@ export function etsChecker() {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
       }
       if (process.env.watchMode === 'true') {
-        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime);
+        !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
         startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
