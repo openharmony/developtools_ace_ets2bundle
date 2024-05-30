@@ -150,6 +150,7 @@ import {
 } from './fast_build/system_api/api_check_utils';
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
+import createAstNodeUtils from './create_ast_node_utils';
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -164,6 +165,7 @@ export function processUISyntax(program: ts.Program, ut = false,
     contextGlobal = context;
     let pagesDir: string;
     let pageFile: string;
+    let hasUseResource: boolean = false;
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
@@ -179,6 +181,8 @@ export function processUISyntax(program: ts.Program, ut = false,
           path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
+          node = ts.factory.updateSourceFile(node,
+            insertImportModuleNode(Array.from(node.statements), hasUseResource));
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
             if (process.env.compileTool !== 'rollup') {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
@@ -205,6 +209,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           statements.unshift(checkFinalizeConstruction());
         }
         createNavigationInit(resourceFileName, statements);
+        insertImportModuleNode(statements, hasUseResource);
         node = ts.factory.updateSourceFile(node, statements);
         INTERFACE_NODE_SET.clear();
         if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
@@ -331,6 +336,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           }
         }
       } else if (isResource(node)) {
+        hasUseResource = true;
         node = processResourceData(node as ts.CallExpression);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
@@ -375,6 +381,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (ts.isImportDeclaration(node)) {
         validateModuleSpecifier(node.moduleSpecifier, transformLog.errors);
       } else if (isResource(node)) {
+        hasUseResource = true;
         node = processResourceData(node as ts.CallExpression);
       } else if (ts.isTypeReferenceNode(node)) {
         checkTypeReference(node, transformLog);
@@ -702,29 +709,44 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
   }
-
-  let moduleName: string;
-  if (resourceModuleName && isResourceModule) {
-    moduleName = resourceModuleName.replace(/^\[|\]$/g, '');
-  }
-
-  if (!resourceModuleName && isResourceModule) {
-    moduleName = projectConfig.moduleName;
-  }
-
+  const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
+  const moduleNameNode: ts.Expression = createResourceModuleNode(resourceModuleName, isResourceModule, isByteCodeHar);
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      ts.factory.createStringLiteral(projectConfig.resetBundleName ? '' : projectConfig.bundleName)
+      projectConfig.resetBundleName ? ts.factory.createStringLiteral('') :
+        createBundleOrModuleNode(isByteCodeHar, 'bundleName')
     ));
   }
-
-  if (projectConfig.moduleName || projectConfig.moduleName === '' || moduleName || moduleName === '') {
+  if (projectConfig.moduleName || projectConfig.moduleName === '' || moduleNameNode) {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_MODULE),
-      ts.factory.createStringLiteral(isResourceModule ? moduleName : projectConfig.moduleName)
+      isResourceModule ? moduleNameNode : createBundleOrModuleNode(isByteCodeHar, 'moduleName')
     ));
   }
+}
+
+function createResourceModuleNode(resourceModuleName: string, isResourceModule: boolean,
+  isByteCodeHar: boolean): ts.Expression {
+  if (isResourceModule) {
+    if (resourceModuleName) {
+      const moduleName: string = resourceModuleName.replace(/^\[|\]$/g, '');
+      return ts.factory.createStringLiteral(moduleName);
+    }
+    if (isByteCodeHar) {
+      return ts.factory.createIdentifier('__MODULE_NAME__');
+    }
+    return projectConfig.moduleName ? ts.factory.createStringLiteral(projectConfig.moduleName) : undefined;
+  }
+  return undefined;
+}
+
+function createBundleOrModuleNode(isByteCodeHar: boolean, type: string): ts.Expression {
+  if (isByteCodeHar) {
+    return ts.factory.createIdentifier(type === 'bundleName' ? '__BUNDLE_NAME__' : '__MODULE_NAME__');
+  }
+  return ts.factory.createStringLiteral(type === 'bundleName' ? projectConfig.bundleName :
+    projectConfig.moduleName);
 }
 
 function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number): ts.ObjectLiteralExpression {
@@ -1948,4 +1970,11 @@ function createSharedStorageWithRoute(context: ts.TransformationContext, name: s
   ];
   return loadDocumentWithRoute(context, name, newArray, argsArr, false, shouldCreateAccsessRecording,
     false, entryOptionNode, cardRelativePath);
+}
+
+function insertImportModuleNode(statements: ts.Statement[], hasUseResource: boolean): ts.Statement[] {
+  if (projectConfig.compileHar && projectConfig.byteCodeHar && hasUseResource) {
+    statements.unshift(createAstNodeUtils.createImportNodeForModuleInfo());
+  }
+  return statements;
 }
