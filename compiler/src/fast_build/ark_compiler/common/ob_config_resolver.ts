@@ -820,28 +820,29 @@ export function collectResevedFileNameInIDEConfig(ohPackagePath: string, project
   const cachePath: string = projectConfig.cachePath;
 
   if (modulePathMap) {
-    for (const key of Object.keys(modulePathMap)) {
-      reservedFileNames.push(key);
-    }
+    const modulePaths = Object.values(modulePathMap);
+    modulePaths.forEach(val => {
+      FileUtils.collectPathReservedString(val, reservedFileNames);
+    })
   }
   if (fs.existsSync(ohPackagePath)) {
     const ohPackageContent = JSON5.parse(fs.readFileSync(ohPackagePath, 'utf-8'));
-    ohPackageContent.main && reservedFileNames.push(toUnixPath(ohPackageContent.main));
-    ohPackageContent.types && reservedFileNames.push(toUnixPath(ohPackageContent.types));
+    ohPackageContent.main && FileUtils.collectPathReservedString(ohPackageContent.main, reservedFileNames);
+    ohPackageContent.types && FileUtils.collectPathReservedString(ohPackageContent.types, reservedFileNames);
   }
 
   if (fs.existsSync(moduleJsonPath)) {
     const moduleJsonContent = JSON5.parse(fs.readFileSync(moduleJsonPath, 'utf-8'));
-    moduleJsonContent.module?.srcEntry && reservedFileNames.push(toUnixPath(moduleJsonContent.module?.srcEntry));
+    moduleJsonContent.module?.srcEntry && FileUtils.collectPathReservedString(moduleJsonContent.module?.srcEntry, reservedFileNames);
   }
 
   if (projectConfig.compileShared) {
-    reservedFileNames.push(toUnixPath(projectConfig.aceModuleBuild));
+    FileUtils.collectPathReservedString(projectConfig.aceModuleBuild, reservedFileNames);
     reservedFileNames.push('etsFortgz');
   }
 
-  reservedFileNames.push(toUnixPath(projectPath));
-  reservedFileNames.push(toUnixPath(cachePath));
+  FileUtils.collectPathReservedString(projectPath, reservedFileNames);
+  FileUtils.collectPathReservedString(cachePath, reservedFileNames);
   return reservedFileNames;
 }
 
