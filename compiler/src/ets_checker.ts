@@ -559,7 +559,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
           if ((/\.d\.e?ts$/).test(moduleFile)) {
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
               projectConfig);
-          } else {
+          } else if ((/\.e?ts$/).test(moduleFile)) {
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
             if (sourcefile) {
