@@ -390,8 +390,19 @@ mocha.describe('test ark_utils file api', function () {
         mNameGeneratorType: 1,
         mReservedFileNames: [
           'entry',
-          '/mnt/application/entry/src/main/ets',
-          '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release'
+          'mnt',
+          'application',
+          'entry',
+          'src',
+          'main',
+          'ets',
+          'build',
+          'default',
+          'cache',
+          'default',
+          'default@CompileArkTS',
+          'esmodule',
+          'release'
         ],
       },
       mPerformancePrinter: printerConfig
