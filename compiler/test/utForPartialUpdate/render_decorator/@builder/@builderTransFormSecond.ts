@@ -160,7 +160,7 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40, col: 5 });
+                let componentCall = new TestBuilderChild(typeof PUV2ViewBase !== "undefined" && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -179,7 +179,7 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41, col: 5 });
+                let componentCall = new TestBuilderChild(typeof PUV2ViewBase !== "undefined" && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
