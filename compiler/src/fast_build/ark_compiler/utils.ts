@@ -174,8 +174,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
 
-  // In compile har mode, the code needs to be obfuscated and compressed.
-  if (projectConfig.compileHar || !isDebug(projectConfig)) {
+  if (!isDebug(projectConfig)) {
     const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
       + '/', '');
     await writeObfuscatedSourceCode({content: content, buildFilePath: filePath,
