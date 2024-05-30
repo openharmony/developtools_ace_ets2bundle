@@ -61,7 +61,7 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
-                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
+                        let componentCall = new ComA(typeof PUV2ViewBase !== "undefined" && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
                         ViewPU.create(componentCall);
                         let paramsLambda = () => {
                             return {};

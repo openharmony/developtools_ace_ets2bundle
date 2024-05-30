@@ -127,7 +127,8 @@ import {
   ATTRIBUTE_ATTRIBUTE_MODIFIER,
   ATTRIBUTE_CONTENT_MODIFIER,
   ATTRIBUTE_MENUITEM_CONTENT_MODIFIER,
-  TITLE
+  TITLE,
+  PUV2_VIEW_BASE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -152,7 +153,8 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection
+  enumCollection,
+  getSymbolIfAliased
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -549,6 +551,8 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   if (node.expression && ts.isCallExpression(node.expression)) {
     let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
+    const builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[] = [];
+    callBuilderConversion(builderParamDispose, node.expression);
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
         node.expression,
@@ -561,7 +565,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ts.factory.createStringLiteral(name),
             traverseBuilderParams(node.expression.arguments[0], isBuilder)
           ]
-        ), storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()]
+        ), ...builderParamDispose]
       ));
     } else {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
@@ -572,16 +576,40 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
           storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ?
           [
             ...node.expression.arguments,
-            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis()
+            ...builderParamDispose
           ] :
           [
             ...node.expression.arguments,
-            storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis(),
+            ...builderParamDispose,
             ts.factory.createIdentifier(MY_IDS)
           ]
       ));
     }
   }
+}
+
+function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
+  node: ts.CallExpression): void {
+  if (storedFileInfo.processBuilder) {
+    builderParamDispose.push(parentConditionalExpression());
+  } else {
+    builderParamDispose.push(...handleBuilderParam(node));
+  }
+}
+
+function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisExpression)[] {
+  const callBuilderParameter: (ts.Identifier | ts.ThisExpression)[] = [];
+  if (globalProgram.checker && node.expression && getSymbolIfAliased(node.expression) && getSymbolIfAliased(node.expression).valueDeclaration) {
+    const valueDeclaration: ts.Node = getSymbolIfAliased(node.expression).valueDeclaration;
+    if (valueDeclaration.parameters && valueDeclaration.parameters.length) {
+      const paramNumberdiff: number = valueDeclaration.parameters.length - node.arguments.length;
+      for (let i = 0; i < paramNumberdiff; i++) {
+        callBuilderParameter.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
+      }
+    }
+  }
+  callBuilderParameter.push(ts.factory.createThis());
+  return callBuilderParameter;
 }
 
 function builderCallNode(node: ts.CallExpression): ts.Expression {
@@ -1703,9 +1731,19 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
       ...forEachComponent.arguments]));
 }
 
-export function parentConditionalExpression(): ts.ConditionalExpression {
+export function parentConditionalExpression(builderInnerComponent: boolean = false): ts.ConditionalExpression {
   return ts.factory.createConditionalExpression(
-    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+    builderInnerComponent ? ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(ts.factory.createIdentifier(PUV2_VIEW_BASE)),
+        ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+        ts.factory.createStringLiteral(COMPONENT_IF_UNDEFINED)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createBinaryExpression(
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
+        ts.factory.createIdentifier(PUV2_VIEW_BASE))) :
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.ColonToken),

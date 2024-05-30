@@ -173,6 +173,7 @@ export const FOREACH_LAZYFOREACH: Set<string> = new Set([
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
+export const PUV2_VIEW_BASE: string = 'PUV2ViewBase';
 export const COMPONENT_CONSTRUCTOR_PARAMS: string = 'params';
 export const COMPONENT_PARAMS_FUNCTION: string = 'paramsGenerator_';
 export const COMPONENT_PARAMS_LAMBDA_FUNCTION: string = 'paramsLambda';
