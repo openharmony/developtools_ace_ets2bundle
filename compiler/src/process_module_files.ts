@@ -40,14 +40,14 @@ import { isDebug } from './fast_build/ark_compiler/utils';
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, metaInfo: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
-  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig);
+  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig, metaInfo);
   const sourceMapGenerator = SourceMapGenerator.getInstance();
   stopEvent(eventGenContentAndSourceMapInfo);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
-    projectConfig);
+    projectConfig, metaInfo, logger);
   if (temporaryFile.length === 0) {
     return;
   }
@@ -84,7 +84,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   stopEvent(eventWriteFileSyncByNode);
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object): Object {
+function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object, metaInfo: Object): Object {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
@@ -114,7 +114,11 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object):
     ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
   printer.writeFile(node, writer, sourceMapGenerator);
   const sourceMapJson: ts.RawSourceMap = sourceMapGenerator.toJSON();
-  sourceMapJson.sources = [toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
+  sourceMapJson.sources = [
+    toUnixPath(fileName).startsWith(toUnixPath(projectConfig.projectRootPath)) ?
+    toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '') :
+    toUnixPath(fileName).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '')
+  ];
   let content: string = writer.getText();
   if (process.env.compileTool !== 'rollup') {
     content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);

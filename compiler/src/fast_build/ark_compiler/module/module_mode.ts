@@ -414,7 +414,7 @@ export class ModuleMode extends CommonMode {
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
     let cacheFilePath: string =
-      this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+      this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
@@ -695,8 +695,10 @@ export class ModuleMode extends CommonMode {
     generateAot(this.arkConfig.arkRootPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
-  private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string): string {
-    const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectRootPath), '');
+  private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string, metaInfo: Object): string {
+    const sufStr: string = toUnixPath(filePath).startsWith(toUnixPath(projectRootPath)) ?
+    toUnixPath(filePath).replace(toUnixPath(projectRootPath) + '/', '') :
+    toUnixPath(filePath).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '')
     const output: string = path.join(cachePath, sufStr);
     return output;
   }

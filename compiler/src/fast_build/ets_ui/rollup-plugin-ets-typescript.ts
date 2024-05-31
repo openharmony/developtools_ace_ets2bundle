@@ -179,9 +179,9 @@ export function etsTransform() {
             }
 
             const cacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              process.env.cachePath, projectConfig);
+              process.env.cachePath, projectConfig, undefined, undefined);
             const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              projectConfig.buildPath, projectConfig, true);
+              projectConfig.buildPath, projectConfig, undefined, undefined, true);
             if (filePath.match(/\.e?ts$/)) {
               setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {
@@ -377,6 +377,7 @@ async function transform(code: string, id: string) {
 
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
+  const metaInfo: Object = this.getModuleInfo(id).meta;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
@@ -388,7 +389,7 @@ async function transform(code: string, id: string) {
       {
         before: [
           processUISyntax(null, false, compilationTime),
-          processKitImport(id)
+          processKitImport(id, metaInfo)
         ]
       }
     );
