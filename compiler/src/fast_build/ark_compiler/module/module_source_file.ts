@@ -354,9 +354,9 @@ export class ModuleSourceFile {
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      await writeFileSyncByNode(<ts.SourceFile>this.source, ModuleSourceFile.projectConfig, this.moduleId, parentEvent, ModuleSourceFile.logger);
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.moduleId, parentEvent, ModuleSourceFile.logger);
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string>this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent);
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent);
     }
   }
 
@@ -430,7 +430,7 @@ export class ModuleSourceFile {
     const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
     const importMap: Object = moduleInfo.importedIdMaps;
     const REG_DEPENDENCY: RegExp = /(?:import|from)(?:\s*)['"]([^'"]+)['"]|(?:import)(?:\s*)\(['"]([^'"]+)['"]\)/g;
-    this.source = (<string>this.source).replace(REG_DEPENDENCY, (item, staticModuleRequest, dynamicModuleRequest) => {
+    this.source = (<string> this.source).replace(REG_DEPENDENCY, (item, staticModuleRequest, dynamicModuleRequest) => {
       const moduleRequest: string = staticModuleRequest || dynamicModuleRequest;
       const ohmUrl: string | undefined = this.getOhmUrl(rollupObject, moduleRequest, importMap[moduleRequest], this.moduleId);
       if (ohmUrl !== undefined) {
@@ -453,7 +453,7 @@ export class ModuleSourceFile {
   private async processTransformedJsModuleRequest(rollupObject: Object): Promise<void> {
     const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
     const importMap: Object = moduleInfo.importedIdMaps;
-    const code: MagicString = new MagicString(<string>this.source);
+    const code: MagicString = new MagicString(<string> this.source);
     // The data collected by moduleNodeMap represents the node dataset of related types.
     // The data is processed based on the AST collected during the transform stage.
     const moduleNodeMap: Map<string, any> =
@@ -562,7 +562,7 @@ export class ModuleSourceFile {
     };
 
     const result: ts.TransformationResult<ts.SourceFile> =
-      ts.transform(<ts.SourceFile>this.source!, [moduleNodeTransformer]);
+      ts.transform(<ts.SourceFile> this.source!, [moduleNodeTransformer]);
 
     this.source = result.transformed[0];
   }
