@@ -34,7 +34,7 @@ import type { ReservedNameInfo } from 'arkguard';
 import { nameCacheObj } from '../../../ark_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { isWindows, toUnixPath } from '../../../utils';
-import { allSourceFilePaths } from '../../../ets_checker';
+import { allSourceFilePaths, localPackageSet } from '../../../ets_checker';
 import { yellow } from './ark_define';
 import { isDebug } from '../utils';
 
@@ -867,6 +867,7 @@ export function resetObfuscation(): void {
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
   ApiExtractor.mSystemExportSet?.clear();
+  localPackageSet?.clear();
 }
 
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
