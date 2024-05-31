@@ -28,9 +28,9 @@ const reset: string = '\u001b[39m';
 function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
   const inputPaths: any = JSON.parse(jsonInput);
   for (let i = 0; i < inputPaths.length; ++i) {
-    const input: string = inputPaths[i].path.replace(/\.temp\.js$/, "_.js");
+    const input: string = inputPaths[i].path.replace(/\.temp\.js$/, '_.js');
     const cacheOutputPath: string = inputPaths[i].cacheOutputPath;
-    const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, ".abc");
+    const cacheAbcFilePath: string = cacheOutputPath.replace(/\.temp\.js$/, '.abc');
     const sourceFile: string = inputPaths[i].sourceFile;
     const singleCmd: string = `${cmd} "${cacheOutputPath}" -o "${cacheAbcFilePath}" --source-file "${sourceFile}"`;
     logger.debug('gen abc cmd is: ', singleCmd, ' ,file size is:', inputPaths[i].size, ' byte');
@@ -47,8 +47,8 @@ function js2abcByWorkers(jsonInput: string, cmd: string): Promise<void> {
 
 logger.debug('worker data is: ', JSON.stringify(process.env));
 logger.debug('gen_abc isWorker is: ', cluster.isWorker);
-if (cluster.isWorker && process.env['inputs'] !== undefined && process.env['cmd'] !== undefined) {
+if (cluster.isWorker && process.env.inputs !== undefined && process.env.cmd !== undefined) {
   logger.debug('==>worker #', cluster.worker.id, 'started!');
-  js2abcByWorkers(process.env['inputs'], process.env['cmd']);
+  js2abcByWorkers(process.env.inputs, process.env.cmd);
   process.exit(SUCCESS);
 }
