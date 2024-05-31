@@ -111,9 +111,16 @@ mocha.describe('test obfuscate config resolver api', function () {
       'entry': '/mnt/application/entry',
       'harPackageName': '/mnt/application/harPackageName'
     }
-    const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap);
-    console.log('acutualReservedFileNames: ', acutualReservedFileNames);
+    const entryObj = {
+      'entryability/EntryAbility': 'D:\\enrty\\src\\main\\ets\\entryability\\EntryAbility.ets',
+      'pages/Index': 'D:\\entry\\src\\main\\ets\\pages\\Index.ets'
+    }
+    const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
     const expectReservedFileNames = [
+      'entryability',
+      'EntryAbility',
+      'pages',
+      'Index',
       '',
       'mnt',
       'application',
