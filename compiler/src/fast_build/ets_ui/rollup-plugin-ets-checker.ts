@@ -89,9 +89,7 @@ export function etsChecker() {
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
       const resolveModulePaths: string[] = [];
-      Object.values(projectConfig.entryObj).forEach((fileName: string) => {
-        rootFileNames.push(path.resolve(fileName));
-      });
+      rootFileNamesCollect(rootFileNames);
       if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
@@ -133,3 +131,9 @@ export function etsChecker() {
   };
 }
 
+function rootFileNamesCollect(rootFileNames: string[]): void {
+  const entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
+  entryFiles.forEach((fileName: string) => {
+    rootFileNames.push(path.resolve(fileName));
+  });
+}
