@@ -1420,7 +1420,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
       ts.factory.createBlock([...newTabContentChildren], true))];
     if (name === NAV_DESTINATION) {
-      navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION ,COMPONENT_CREATE_FUNCTION));
+      navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION));
     }
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
@@ -1435,7 +1435,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
         ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
-        name === NAV_DESTINATION ? navigationCreateParam(NAV_DESTINATION ,COMPONENT_CREATE_FUNCTION) : []));
+        name === NAV_DESTINATION ? navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION) : []));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
@@ -3297,7 +3297,7 @@ function processDollarEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, na
 }
 
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
-  argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false, aa: boolean = false): ts.CallExpression {
+  argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
     const compName: string = node.escapedText.toString();
     const type: string = attrNode.escapedText.toString();
   if (argumentsArr && argumentsArr.length) {
@@ -3334,7 +3334,7 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
       ),
     undefined,
     argumentsArr
-  )
+  );
 }
 
 function navigationCreateParam(compName: string, type: string,
