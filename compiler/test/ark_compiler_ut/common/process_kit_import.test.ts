@@ -62,6 +62,7 @@ const KIT_STAR_EXPORT_CODE_EXPECT: string =
 'export * from "@ohos.multimedia.audio";\n' +
 'export * from "@ohos.multimedia.audioHaptic";\n'+
 'export * from "@ohos.multimedia.systemSoundManager";\n'+
+'export * from "@ohos.multimedia.AVVolumePanel";\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
 const KIT_IMPORT_ERROR_CODE: string =

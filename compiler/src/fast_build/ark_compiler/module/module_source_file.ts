@@ -249,13 +249,24 @@ export class ModuleSourceFile {
     const cachedTransformedMockConfigInfo: Object =
       require('json5').parse(fs.readFileSync(transformedMockConfigCache, 'utf-8'));
     if (JSON.stringify(ModuleSourceFile.newMockConfigInfo) !== JSON.stringify(cachedTransformedMockConfigInfo)) {
-      fs.writeFileSync(transformedMockConfig, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
-      fs.copyFileSync(transformedMockConfig, transformedMockConfigCache);
+      ModuleSourceFile.updataCachedTransformedMockConfigInfo(ModuleSourceFile.newMockConfigInfo, cachedTransformedMockConfigInfo,
+        transformedMockConfigCache, transformedMockConfig);
       return;
     }
 
     // if mock-config.json5 is not modified, use the cached mock config mapping file
     fs.copyFileSync(transformedMockConfigCache, transformedMockConfig);
+  }
+
+  static updataCachedTransformedMockConfigInfo(newMockConfig: Object, cachedTransMockConfigInfo: Object,
+    transMockConfigCachePath: string, transMockConfigPath: string) {
+    for (const key in newMockConfig) {
+      if (!Object.prototype.hasOwnProperty.call(cachedTransMockConfigInfo, key)) {
+        cachedTransMockConfigInfo[key] = newMockConfig[key];
+      }
+    }
+    fs.writeFileSync(transMockConfigPath, JSON.stringify(cachedTransMockConfigInfo));
+    fs.copyFileSync(transMockConfigPath, transMockConfigCachePath);
   }
 
   static removePotentialMockConfigCache(rollupObject: Object): void {
