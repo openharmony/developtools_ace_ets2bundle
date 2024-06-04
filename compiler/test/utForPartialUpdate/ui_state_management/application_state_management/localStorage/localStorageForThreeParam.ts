@@ -90,10 +90,10 @@ class LocalStorageComponent extends ViewPU {
     }
 }
 if (temp && temp.routeName != undefined && temp.storage != undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", integratedHsp: "false" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false" });
 }
 else if (temp && temp.routeName != undefined && temp.storage == undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", integratedHsp: "false" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false" });
 }
 else if (temp && temp.routeName == undefined && temp.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
