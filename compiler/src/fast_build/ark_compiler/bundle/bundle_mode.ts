@@ -95,7 +95,7 @@ export class BundleMode extends CommonMode {
         } else if (rollupBundleFileSet[fileName].type === 'chunk') {
           rollupBundleSourceCode = rollupBundleFileSet[fileName].code;
         } else {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to retrieve source code ` +
+          this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to retrieve source code ' +
             `for ${fileName} from rollup file set.`);
         }
         fs.writeFileSync(cacheOutputPath, rollupBundleSourceCode, 'utf-8');
@@ -129,7 +129,7 @@ export class BundleMode extends CommonMode {
       if (!fs.existsSync(cacheFilePath)) {
         this.throwArkTsCompilerError(
           `ArkTS:INTERNAL ERROR: Failed to get bundle cached abc from ${cacheFilePath} in incremental build.` +
-          `Please try to rebuild the project.`);
+          'Please try to rebuild the project.');
       }
       if (fs.existsSync(cacheAbcFilePath)) {
         const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -156,7 +156,7 @@ export class BundleMode extends CommonMode {
       const splittedBundles: any[] = this.getSplittedBundles();
       this.invokeTs2AbcWorkersToGenAbc(splittedBundles);
     } else {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
     }
   }
 
@@ -206,9 +206,9 @@ export class BundleMode extends CommonMode {
       const child = this.triggerAsync(() => {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
-      child.on('close', (code: any) => {
+      child.on('close', (code: number) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc.\n` +
+          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.\n' +
             `genAbcCmd: ${genAbcCmd}`);
         }
         this.afterCompilationProcess();

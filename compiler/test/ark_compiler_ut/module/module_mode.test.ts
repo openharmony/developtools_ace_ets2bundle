@@ -1511,12 +1511,43 @@ mocha.describe('test module_mode file api', function () {
     let parentEvent = undefined;
     moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
     await sleep(1000);
-    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc\n')).to.be.true;
+    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc.\nError Message: ')).to.be.true;
     triggerAsyncStub.restore();
     stub.restore();
   });
 
-  mocha.it('13-2: test the error message of generateMergedAbcOfEs2Abc handle error', function () {
+  mocha.it('13-2: test the error message of generateMergedAbcOfEs2Abc throw error(Failed to startup es2abc)', async function () {
+    this.rollup.build();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const child = {
+      on: sinon.stub(),
+      stderr: {
+        on: sinon.stub(),
+      },
+    };
+    const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').callsFake((callback) => {
+      callback();
+      return child;
+    });
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    let errorEventCallback;
+    child.on.callsFake((event, callback) => {
+      if (event === 'error') {
+        errorEventCallback = callback;
+      }
+    });
+    let parentEvent = undefined;
+    moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
+    if (errorEventCallback) {
+      errorEventCallback(new Error('test error'));
+    }
+    await sleep(100);
+    expect(stub.calledWith('Error: test error')).to.be.true;
+    triggerAsyncStub.restore();
+    stub.restore();
+  });
+
+  mocha.it('13-3: test the error message of generateMergedAbcOfEs2Abc handle error', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
     const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').throws(new Error('Execution failed'));
@@ -1526,7 +1557,7 @@ mocha.describe('test module_mode file api', function () {
       moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
     } catch (e) {
     }
-    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc. Error message: ')).to.be.true;
+    expect(stub.calledWith('ArkTS:ERROR Failed to execute es2abc.\nError message: Error: Execution failed\n')).to.be.true;
     triggerAsyncStub.restore();
     stub.restore();
   });
