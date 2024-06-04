@@ -31,6 +31,7 @@ import {
   EXTNAME_TS,
   EXTNAME_TXT,
   FAIL,
+  SUCCESS,
   FILESINFO,
   FILESINFO_TXT,
   MAX_WORKER_NUMBER,
@@ -181,11 +182,11 @@ export class ModuleMode extends CommonMode {
         continue;
       }
       const moduleInfo: Object = module.getModuleInfo(moduleId);
-      if (moduleInfo['meta']['isNodeEntryFile'] && !this.useNormalizedOHMUrl) {
-        this.getPackageEntryInfo(moduleId, moduleInfo['meta'], pkgEntryInfos);
+      if (moduleInfo.meta.isNodeEntryFile && !this.useNormalizedOHMUrl) {
+        this.getPackageEntryInfo(moduleId, moduleInfo.meta, pkgEntryInfos);
       }
 
-      this.processModuleInfos(moduleId, moduleInfos, moduleInfo['meta']);
+      this.processModuleInfos(moduleId, moduleInfos, moduleInfo.meta);
     }
     if (!this.useNormalizedOHMUrl) {
       this.getDynamicImportEntryInfo(pkgEntryInfos);
@@ -195,7 +196,7 @@ export class ModuleMode extends CommonMode {
     this.pkgEntryInfos = pkgEntryInfos;
   }
 
-  private isUsingNormalizedOHMUrl() {
+  private isUsingNormalizedOHMUrl(): boolean {
     return !!this.projectConfig.useNormalizedOHMUrl;
   }
 
@@ -470,9 +471,10 @@ export class ModuleMode extends CommonMode {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('close', (code: any) => {
-        if (code === FAIL) {
-          this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc\n` +
-            `genAbcCmd: ${genAbcCmd}`);
+        if (code !== SUCCESS) {
+          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.\n' +
+            `Error Message: ${errMsg}\n` +
+            `The execution command of es2abc is: ${genAbcCmd}`);
         }
         stopEvent(eventGenAbc, true);
         this.triggerEndSignal();
@@ -488,13 +490,8 @@ export class ModuleMode extends CommonMode {
         errMsg += data.toString();
       });
 
-      child.stderr.on('end', (data: any) => {
-        if (errMsg !== undefined && errMsg.length > 0) {
-          this.logger.error(red, errMsg, reset);
-        }
-      });
     } catch (e) {
-      this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc. Error message: ' + e.toString());
+      this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc.\nError message: ${e.toString()}\n`);
     }
   }
 
@@ -520,7 +517,7 @@ export class ModuleMode extends CommonMode {
         if (!fs.existsSync(cacheFilePath)) {
           this.throwArkTsCompilerError(
             `ArkTS:INTERNAL ERROR: Failed to get module cache abc from ${cacheFilePath} in incremental build.` +
-            `Please try to rebuild the project.`);
+            'Please try to rebuild the project.');
         }
         if (fs.existsSync(cacheProtoFilePath)) {
           const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -584,7 +581,7 @@ export class ModuleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute ts2abc.`);
+            this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc.');
           });
         });
       }
@@ -717,7 +714,7 @@ export class ModuleMode extends CommonMode {
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      this.throwArkTsCompilerError(`ArkTS:ERROR failed to generate npm proto file to abc. Error message: ` + e.toString());
+      this.throwArkTsCompilerError('ArkTS:ERROR failed to generate npm proto file to abc. Error message: ' + e.toString());
     }
   }
 

@@ -20,7 +20,8 @@ import sinon from 'sinon';
 import {
   getOhmUrlByFilepath,
   getOhmUrlByHspName,
-  getOhmUrlBySystemApiOrLibRequest
+  getOhmUrlBySystemApiOrLibRequest,
+  getNormalizedOhmUrlByFilepath
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -172,10 +173,10 @@ mocha.describe('generate ohmUrl', function () {
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
     const loggerStub = sinon.stub(logger, 'error');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
-    expect(loggerStub.calledWith(red,
-      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
-    `Please check whether the module which ${filePath} belongs to is correctly configured ` +
-    `and the corresponding file name is correct(including case-sensitivity)`, reset)).to.be.true;
+    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
+      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
     loggerStub.restore();
   });
 
@@ -191,10 +192,10 @@ mocha.describe('generate ohmUrl', function () {
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
     const loggerStub = sinon.stub(logger, 'error');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
-    expect(loggerStub.calledWith(red,
-      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
-      `Please check whether the module which ${filePath} belongs to is correctly configured ` +
-      `and the corresponding file name is correct(including case-sensitivity)`, reset)).to.be.true;
+    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
+      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
     loggerStub.restore();
   });
 
@@ -869,6 +870,34 @@ mocha.describe('generate ohmUrl', function () {
       '@normalized:N&&com.test.testHsp&@ohos/Test/src/main/ets/utils/Calc&2.3.1';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('the error message of getNormalizedOhmUrlByFilepath', function () {
+    this.rollup.build();
+    const pkgParams = {
+      pkgName: 'json5',
+      pkgPath: `${projectConfig.projectRootPath}/entry/oh_modules/json5`,
+      isRecordName: false
+    };
+    projectConfig.pkgContextInfo = {
+      'json5': undefined
+    };
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
+    const loggerStub = sinon.stub(logger, 'error');
+    try {
+      getNormalizedOhmUrlByFilepath(filePath, projectConfig, logger, pkgParams, importerFile);
+    } catch (e) {
+    }
+    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
+      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
+    loggerStub.restore();
   });
 
   mocha.it('transform mockConfigInfo', function () {
