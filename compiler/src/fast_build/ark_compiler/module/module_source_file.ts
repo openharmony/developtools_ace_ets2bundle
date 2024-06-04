@@ -259,7 +259,7 @@ export class ModuleSourceFile {
   }
 
   static updataCachedTransformedMockConfigInfo(newMockConfig: Object, cachedTransMockConfigInfo: Object,
-    transMockConfigCachePath: string, transMockConfigPath: string) {
+    transMockConfigCachePath: string, transMockConfigPath: string): void {
     for (const key in newMockConfig) {
       if (!Object.prototype.hasOwnProperty.call(cachedTransMockConfigInfo, key)) {
         cachedTransMockConfigInfo[key] = newMockConfig[key];
