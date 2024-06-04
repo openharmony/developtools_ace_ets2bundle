@@ -1069,21 +1069,22 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
     if (ts.isConstructorDeclaration(member)) {
       hasConstructor = true;
       const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
-
-      const statementArray: ts.Statement[] = [
-        ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
-        ...constructor.body.statements
-      ];
-
-      const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
-        constructor,
-        constructor.modifiers,
-        constructor.parameters,
-        ts.factory.updateBlock(constructor.body, statementArray));
-
-      updatedMembers = ts.factory.createNodeArray(
-        updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
-      );
+      if (constructor.body !== undefined) {
+        const statementArray: ts.Statement[] = [
+          ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
+          ...constructor.body.statements
+        ];
+  
+        const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
+          constructor,
+          constructor.modifiers,
+          constructor.parameters,
+          ts.factory.updateBlock(constructor.body, statementArray));
+  
+        updatedMembers = ts.factory.createNodeArray(
+          updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
+        );
+      }
     }
   }
 
