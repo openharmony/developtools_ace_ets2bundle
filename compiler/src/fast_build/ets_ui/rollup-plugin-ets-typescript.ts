@@ -18,6 +18,7 @@ import path from 'path';
 import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import MagicString from 'magic-string';
+import nodeEvents from 'node:events';
 
 import {
   LogInfo,
@@ -335,12 +336,21 @@ async function transform(code: string, id: string) {
       storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
       storedFileInfo.isFirstBuild = false;
     }
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
       tsProgram = storedFileInfo.newTsProgram;
     } else {
-      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+      await CreateProgramMoment.block(id); 
+      if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
+        tsProgram = storedFileInfo.newTsProgram;
+      } else {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+        tsProgram = ts.createProgram(CreateProgramMoment.getRoots(id), etsCheckerCompilerOptions, compilerHost);
+        storedFileInfo.newTsProgram = tsProgram;
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+      }
     }
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+   
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
@@ -506,3 +516,76 @@ function checkRelateToConstEnum(id: string): boolean {
   }
   return tsProgram.isFileUpdateInConstEnumCache(targetSourceFile);
 }
+
+class CreateProgramMoment {
+  static transCount: number = 0;
+  static awaitCount: number = 0;
+  static moduleParsedCount: number = 0;
+  static promise: Promise<void> = undefined;
+  static emitter = undefined;
+  static roots: string[] = [];
+
+  static init(): void {
+    if (CreateProgramMoment.promise) {
+      return;
+    }
+    CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
+    CreateProgramMoment.promise = new Promise<void>(resolve => {
+      CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
+        if (CreateProgramMoment.awaitCount + CreateProgramMoment.moduleParsedCount === CreateProgramMoment.transCount) {
+          resolve();
+        }
+      });
+    });
+  }
+
+  static getPlugin() {
+    return {
+      name: 'createProgramPlugin',
+      transform: {
+        order: 'pre',
+        handler(): void {
+          CreateProgramMoment.transCount++;
+        }
+      },
+      moduleParsed(): void {
+        CreateProgramMoment.moduleParsedCount++;
+        CreateProgramMoment.emitter?.emit('checkPrefCreateProgramId');
+      },
+      cleanUp(): void {
+        CreateProgramMoment.reset();
+      }
+    };
+  }
+
+  static async block(id: string): Promise<void> {
+    CreateProgramMoment.init();
+    CreateProgramMoment.awaitCount++;
+    CreateProgramMoment.roots.push(id);
+    CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
+    return CreateProgramMoment.promise;
+  }
+
+  static reset(): void {
+    CreateProgramMoment.transCount = 0;
+    CreateProgramMoment.awaitCount = 0;
+    CreateProgramMoment.moduleParsedCount = 0;
+    CreateProgramMoment.promise = undefined;
+    CreateProgramMoment.emitter = undefined;
+    CreateProgramMoment.roots = [];
+  }
+
+  static getRoots(id: string): string[] {
+    const res = [];
+    CreateProgramMoment.roots.forEach(id => res.push(id));
+    CreateProgramMoment.promise = undefined;
+    CreateProgramMoment.emitter = undefined;
+    CreateProgramMoment.roots = [];
+    if (res.length === 0) {
+      return [id];
+    }
+    return res;
+  }
+}
+
+exports.createProgramPlugin = CreateProgramMoment.getPlugin;
