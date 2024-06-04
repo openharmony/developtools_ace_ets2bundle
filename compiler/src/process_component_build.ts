@@ -3354,7 +3354,7 @@ function navigationCreateParam(compName: string, type: string,
           ts.factory.createIdentifier(PAGE_PATH),
           ts.factory.createStringLiteral(
             projectConfig.compileHar ? '' :
-              path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+              path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
           )
       )
       ],
