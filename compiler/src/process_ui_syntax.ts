@@ -75,7 +75,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
-  FUNCTION
+  FUNCTION,
+  PAGE_FULL_PATH
 } from './pre_define';
 import {
   componentInfo,
@@ -1565,13 +1566,8 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
             context.factory.createIdentifier(RESOURCE_NAME_MODULE),
             context.factory.createStringLiteral(projectConfig.moduleName || '')
           ),
-          context.factory.createPropertyAssignment(
-            context.factory.createIdentifier(PAGE_PATH),
-            context.factory.createStringLiteral(
-              projectConfig.compileHar ? '' :
-                path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
-            )
-          ),
+          routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath),
+          routerOrNavPathWrite(context, PAGE_FULL_PATH, projectConfig.projectRootPath),
           context.factory.createPropertyAssignment(
             context.factory.createIdentifier('integratedHsp'),
             context.factory.createStringLiteral(integratedHspType())
@@ -1581,6 +1577,16 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
       )
     ]
   ));
+}
+
+function routerOrNavPathWrite(context: ts.TransformationContext, keyName: string, projectPath: string): ts.PropertyAssignment {
+  return context.factory.createPropertyAssignment(
+    context.factory.createIdentifier(keyName),
+    context.factory.createStringLiteral(
+      projectConfig.compileHar ? '' :
+        path.relative(projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+    )
+  );
 }
 
 function integratedHspType(): string {
