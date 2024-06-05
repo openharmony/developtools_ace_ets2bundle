@@ -921,7 +921,8 @@ export function validateBuildMethodCount(buildCount: BuildCount, parentComponent
   if (buildCount.count !== 1) {
     log.push({
       type: LogType.ERROR,
-      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.`,
+      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.` +
+      "Solutions:>A structurally modified page must have at least one and no more than one'build' method.",
       pos: parentComponentName.getStart()
     });
   }
