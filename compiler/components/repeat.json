@@ -3,6 +3,9 @@
   "attrs": [
     "each",
     "key",
-    "onMove"
+    "onMove",
+    "template",
+    "templateId",
+    "virtualScroll"
   ]
 }

@@ -85,6 +85,7 @@ import {
   COMPONENT_INITIAL_RENDER_FUNCTION,
   COMPONENT_REPEAT,
   REPEAT_EACH,
+  REPEAT_TEMPLATE,
   LIST_ITEM,
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
@@ -939,16 +940,31 @@ function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpr
       recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition), node.name);
   } else {
     let repeatPropArgs: ts.ArrowFunction[] = node.arguments;
-    if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
-      node.expression.name.getText() === REPEAT_EACH && node.arguments && node.arguments.length) {
-      repeatPropArgs = [ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
-        repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
-        processComponentBlock(repeatPropArgs[0].body, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
-    }
+    storedFileInfo.processRepeat = true;
+    repeatPropArgs = processRepeatPropWithChild(node, repeatPropArgs, log, isBuilder, isGlobalBuilder, isTransition);
+    storedFileInfo.processRepeat = false;
     return ts.factory.updateCallExpression(node,
-      recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition) as ts.PropertyAccessExpression,
-      undefined, repeatPropArgs);
+      recurseRepeatExpression(node.expression as ts.PropertyAccessExpression, log, isBuilder,
+        isGlobalBuilder, isTransition) as ts.PropertyAccessExpression, undefined, repeatPropArgs);
   }
+}
+
+function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.ArrowFunction[],
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.ArrowFunction[] {
+  if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
+    node.expression.name.getText() === REPEAT_EACH && repeatPropArgs.length > 0) {
+    // transfer args for each property
+    return [ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
+      repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
+      processComponentBlock(repeatPropArgs[0].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
+  } else if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
+    node.expression.name.getText() === REPEAT_TEMPLATE && repeatPropArgs.length > 1) {
+    // transfer args for template property
+    return [repeatPropArgs[0], ts.factory.updateArrowFunction(repeatPropArgs[1], repeatPropArgs[1].modifiers, repeatPropArgs[1].typeParameters,
+      repeatPropArgs[1].parameters, repeatPropArgs[1].type, repeatPropArgs[1].equalsGreaterThanToken,
+      processComponentBlock(repeatPropArgs[1].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
+  }
+  return repeatPropArgs;
 }
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
@@ -1219,6 +1235,9 @@ function checkLazyCreate(node: ts.ExpressionStatement, nameResult: NameResult): 
   if (nameResult.name === LIST_ITEM) {
     if (nameResult.arguments.length && ts.isStringLiteral(nameResult.arguments[0]) &&
       nameResult.arguments[0].text === 'false') {
+      return false;
+    }
+    if (storedFileInfo.processRepeat) {
       return false;
     }
     if (isLazyForEachChild(node)) {
