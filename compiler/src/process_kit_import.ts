@@ -25,6 +25,7 @@ import { projectConfig } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
+import { compilerOptions } from './ets_checker';
 
 /*
 * basic implementation logic:
@@ -134,6 +135,7 @@ class SpecificerInfo {
   private renamed: boolean;
 
   private originElement: TSspecifier | undefined;
+  private tsImportSendableEnable : boolean = compilerOptions.tsImportSendableEnable;
 
   constructor(localName: string, importName: string, symbol: KitSymbol, originElement: TSspecifier | undefined) {
     this.localName = localName;
@@ -166,7 +168,7 @@ class SpecificerInfo {
   }
 
   validateImportingETSDeclarationSymbol() {
-    if (KitInfo.isTSFile() && /.d.ets$/.test(this.symbol.source)) {
+    if (!this.tsImportSendableEnable && KitInfo.isTSFile() && /.d.ets$/.test(this.symbol.source)) {
       kitTransformLog.errors.push({
         type: LogType.ERROR,
         message: `Identifier '${this.importName}' comes from '${this.symbol.source}' ` +
