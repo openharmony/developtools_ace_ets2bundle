@@ -799,29 +799,40 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
       storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
     }
-    if (!isResourceModule && !resources[resourceData[0]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource source '${resourceData[0]}'.`,
-        pos: pos
-      });
-    } else if (!isResourceModule && !resources[resourceData[0]][resourceData[1]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource type '${resourceData[1]}'.`,
-        pos: pos
-      });
-    } else if (!isResourceModule && !resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource name '${resourceData[2]}'.`,
-        pos: pos
-      });
+    if (isResourceModule && /^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
+      const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
+      resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst);
+    } else if (!isResourceModule) {
+      resourceCheck(resourceData, resources, pos, log, false, resourceData[0]);
     } else {
       return true;
     }
   }
   return false;
+}
+
+function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isResourceModule: boolean,
+  resourceDataFirst: string): void {
+  const logType: LogType = isResourceModule ? LogType.WARN : LogType.ERROR;
+  if (!resources[resourceDataFirst]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource source '${resourceDataFirst}'.`,
+      pos: pos
+    });
+  } else if (!resources[resourceDataFirst][resourceData[1]]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource type '${resourceData[1]}'.`,
+      pos: pos
+    });
+  } else if (!resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource name '${resourceData[2]}'.`,
+      pos: pos
+    });
+  }
 }
 
 function isWorker(node: ts.Node): boolean {

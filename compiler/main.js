@@ -114,6 +114,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
   projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
   projectConfig.optLazyForEach = false;
+  projectConfig.hspResourcesMap = false;
   projectConfig.useArkoala = false;
   projectConfig.resetBundleName = false;
   projectConfig.integratedHsp = false;
@@ -726,7 +727,26 @@ function collectExternalModules(sdkPaths) {
   }
 }
 
+function readHspResource() {
+  if (aceBuildJson.hspResourcesMap) {
+    projectConfig.hspResourcesMap = true;
+    for (const hspName in aceBuildJson.hspResourcesMap) {
+      if (fs.existsSync(aceBuildJson.hspResourcesMap[hspName])) {
+        const resourceMap = new Map();
+        const hspResourceCollect = resources[hspName] = {};
+        const hspResource = fs.readFileSync(aceBuildJson.hspResourcesMap[hspName], 'utf-8');
+        const resourceArr = hspResource.split(/\n/);
+        processResourceArr(resourceArr, resourceMap, aceBuildJson.hspResourcesMap[hspName]);
+        for (const [key, value] of resourceMap) {
+          hspResourceCollect[key] = value;
+        }
+      }
+    }
+  }
+}
+
 function readAppResource(filePath) {
+  readHspResource();
   if (fs.existsSync(filePath)) {
     const appResource = fs.readFileSync(filePath, 'utf-8');
     const resourceArr = appResource.split(/\n/);
@@ -1025,6 +1045,7 @@ function resetProjectConfig() {
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
   projectConfig.optLazyForEach = false;
+  projectConfig.hspResourcesMap = false;
   projectConfig.coldReload = undefined;
   projectConfig.isFirstBuild = undefined;
   projectConfig.changedFileList = undefined;
