@@ -17,7 +17,7 @@ import path from 'path';
 
 process.env.compileTool = 'rollup';
 
-const projectConfig: any = {};
+const projectConfig: Object = {};
 
 projectConfig.aceModuleJsonPath = path.resolve(__dirname, '../../../test/ark_compiler_ut/config/module.json');
 projectConfig.modulePathMap = {
@@ -30,5 +30,6 @@ projectConfig.harNameOhmMap = {
   "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
 };
 projectConfig.cachePath = '../../test/ark_compiler_ut/cache/';
+projectConfig.pkgContextInfo = {};
 
 export default projectConfig;

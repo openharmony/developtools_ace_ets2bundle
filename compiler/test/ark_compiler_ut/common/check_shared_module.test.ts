@@ -22,7 +22,7 @@ import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { collectSharedModule } from '../../../lib/fast_build/ark_compiler/check_shared_module';
 import { LogInfo } from '../../../lib/utils';
 
-mocha.describe('test check_import_module file api', function() {
+mocha.describe('test check_shared_module file api', function() {
   mocha.before(function() {
     this.rollup = new RollUpPluginMock();
   });
