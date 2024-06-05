@@ -930,6 +930,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
   recycleComponents: Set<string> = new Set([]);
   compFromDETS: Set<string> = new Set();
   animatableExtendAttribute: Map<string, Set<string>> = new Map();
+  pkgName: string;
 
   constructor(cacheInfo?: fileInfo) {
     super(cacheInfo, true);
