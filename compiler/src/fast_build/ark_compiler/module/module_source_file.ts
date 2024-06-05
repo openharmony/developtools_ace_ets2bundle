@@ -324,7 +324,9 @@ export class ModuleSourceFile {
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
+    const moduleIdMetaInfoMap = new Map<string, string>();
     for (const source of ModuleSourceFile.sourceFiles) {
+      moduleIdMetaInfoMap.set(source.moduleId, source.metaInfo.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
@@ -337,7 +339,7 @@ export class ModuleSourceFile {
     }
 
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
+      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, moduleIdMetaInfoMap);
     }
     performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
     performancePrinter?.timeSumPrinter?.print('Sum up time cost of processes');

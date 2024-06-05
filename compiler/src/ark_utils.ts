@@ -59,7 +59,7 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
@@ -603,10 +603,13 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
   return filePath;
 }
 
-export async function mangleDeclarationFileName(logger: Object, projectConfig: Object): Promise<void> {
+export async function mangleDeclarationFileName(logger: Object, projectConfig: Object,
+  moduleIdMetaInfoMap: Map<string, string>): Promise<void> {
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
-      let relativeSourceFilePath = toUnixPath(genFilesInHar.originalDeclarationCachePath).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+      let filePath = genFilesInHar.originalDeclarationCachePath;
+      let relativeSourceFilePath = getRelativeSourcePath(filePath,
+         projectConfig.projectRootPath, moduleIdMetaInfoMap.get(filePath));
       await writeObfuscatedSourceCode({
           content: genFilesInHar.originalDeclarationContent,
           buildFilePath: genFilesInHar.originalDeclarationCachePath,

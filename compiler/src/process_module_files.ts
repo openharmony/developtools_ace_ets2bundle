@@ -37,6 +37,7 @@ import {
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
 import { isDebug } from './fast_build/ark_compiler/utils';
+import { getRelativeSourcePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -56,15 +57,15 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
   temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+  let relativeFilePath = getRelativeSourcePath(node.fileName, projectConfig.projectRootPath, metaInfo.belongProjectPath);
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
-    const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeSourceFilePath;
+    const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeFilePath;
     sourceMapGenerator.fillSourceMapPackageInfo(moduleId!, mixedInfo.sourceMapJson);
     sourceMapGenerator.updateSourceMap(key, mixedInfo.sourceMapJson);
     sourceMaps = sourceMapGenerator.getSourceMaps();
   } else {
-    webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
+    webpackNewSourceMaps[relativeFilePath] = mixedInfo.sourceMapJson;
     sourceMaps = webpackNewSourceMaps;
   }
   if (!isDebug(projectConfig)) {
@@ -72,7 +73,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     await writeObfuscatedSourceCode({
         content: mixedInfo.content,
         buildFilePath: temporaryFile,
-        relativeSourceFilePath: relativeSourceFilePath,
+        relativeSourceFilePath: relativeFilePath,
         originSourceFilePath: node.fileName,
         rollupModuleId: moduleId ? moduleId : undefined
       }, logger, projectConfig, sourceMaps);
