@@ -362,7 +362,7 @@ async function transform(code: string, id: string) {
     }
     storedFileInfo.reUseProgram = true;
   }
-
+  setPkgNameForFile(this.getModuleInfo(id));
   startTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
   validateEts(code, id, this.getModuleInfo(id).isEntry, logger, targetSourceFile);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.validateEtsTime : undefined);
@@ -411,6 +411,12 @@ async function transform(code: string, id: string) {
     // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in some cases
     map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap()
   };
+}
+
+function setPkgNameForFile(moduleInfo: Object): void {
+  if (moduleInfo && moduleInfo.meta && moduleInfo.meta.pkgName) {
+    storedFileInfo.getCurrentArkTsFile().pkgName = moduleInfo.meta.pkgName;
+  }
 }
 
 function validateEts(code: string, id: string, isEntry: boolean, logger: any, sourceFile: ts.SourceFile) {
