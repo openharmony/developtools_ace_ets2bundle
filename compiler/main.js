@@ -378,7 +378,7 @@ function setTestRunnerFile(projectConfig, isStageBased) {
   TEST_RUNNER_DIR_SET.forEach((dir) => {
     const projectPath = isStageBased ? projectConfig.projectPath : projectConfig.projectPath.substring(0, index + 1);
     const testRunnerPath = path.resolve(projectPath, dir);
-    if (fs.existsSync(testRunnerPath)) {
+    if (fs.existsSync(testRunnerPath) && folderExistsCaseSensitive(testRunnerPath)) {
       const testRunnerFiles = [];
       readFile(testRunnerPath, testRunnerFiles);
       testRunnerFiles.forEach((item) => {
@@ -397,6 +397,18 @@ function setTestRunnerFile(projectConfig, isStageBased) {
       });
     }
   });
+}
+
+function folderExistsCaseSensitive(folderPath) {
+  try {
+    const folders = fs.readdirSync(path.dirname(folderPath), { withFileTypes: true })
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name);
+    const targetFolderName = path.basename(folderPath);
+    return folders.includes(targetFolderName);
+  } catch (error) {
+    return false;
+  }
 }
 
 function setFaTestRunnerFile(projectConfig) {
