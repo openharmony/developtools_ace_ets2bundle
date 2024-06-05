@@ -249,27 +249,18 @@ class ChildComponent2 extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Repeat(this.arr, this).each((obj) => {
                 {
-                    const itemCreation = (elmtId, isInitialRender) => {
-                        ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
-                        itemCreation2(elmtId, isInitialRender);
-                        if (!isInitialRender) {
-                            ListItem.pop();
-                        }
-                        ViewStackProcessor.StopGetAccessRecording();
-                    };
                     const itemCreation2 = (elmtId, isInitialRender) => {
-                        ListItem.create(deepRenderFunction, true);
+                        ListItem.create(() => { }, false);
                     };
-                    const deepRenderFunction = (elmtId, isInitialRender) => {
-                        itemCreation(elmtId, isInitialRender);
+                    const observedDeepRender = () => {
+                        this.observeComponentCreation2(itemCreation2, ListItem);
                         this.observeComponentCreation2((elmtId, isInitialRender) => {
                             Text.create(obj.item.message);
                         }, Text);
                         Text.pop();
                         ListItem.pop();
                     };
-                    this.observeComponentCreation2(itemCreation2, ListItem);
-                    ListItem.pop();
+                    observedDeepRender();
                 }
             }).render(isInitialRender);
         }, Repeat);
