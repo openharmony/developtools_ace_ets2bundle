@@ -527,6 +527,7 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       localValue
     );
   }
+  return undefined;
 }
 
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
@@ -591,7 +592,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
           pos: node.getStart()
         });
       }
-      return;
+      return undefined;
     }
   }
   return updateItem;
