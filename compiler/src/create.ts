@@ -104,6 +104,7 @@ struct MyComponent {
       }
     });
   });
+  return undefined;
 }
 
 createProject(name);
