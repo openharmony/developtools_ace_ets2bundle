@@ -94,10 +94,10 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   // ---> @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
   let pkgInfo = projectConfig.pkgContextInfo[pkgName];
   if (pkgInfo === undefined) {
-    logger.error(red,
-      `ArkTS:ERROR Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}". ` +
-      `Please check whether the module which ${filePath} belongs to is correctly configured ` +
-      `and the corresponding file name is correct(including case-sensitivity)`, reset);
+    logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
+      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      '> Check the corresponding file name is correct(including case-sensitivity).', reset);
   }
   let recordName = `${pkgInfo.bundleName}&${pkgName}${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
@@ -186,10 +186,10 @@ function processPackageDir(params: Object): string {
         }
       }
 
-      logger.error(red,
-        `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
-        `Please check whether the module which ${originalFilePath} belongs to is correctly configured ` +
-        `and the corresponding file name is correct(including case-sensitivity)`, reset);
+      logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+        `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
+        `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
+        '> Check the corresponding file name is correct(including case-sensitivity).', reset);
       return originalFilePath;
     }
 
@@ -219,10 +219,10 @@ function processPackageDir(params: Object): string {
     }
   }
 
-  logger.error(red,
-    `ArkTS:ERROR Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}". ` +
-    `Please check whether the module which ${originalFilePath} belongs to is correctly configured ` +
-    `and the corresponding file name is correct(including case-sensitivity)`, reset);
+  logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+    `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
+    `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
+    '> Check the corresponding file name is correct(including case-sensitivity).', reset);
   return originalFilePath;
 }
 
