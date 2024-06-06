@@ -986,13 +986,22 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     const debugNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(
       createFunction(ts.factory.createIdentifier(nameResult.name),
         ts.factory.createIdentifier(COMPONENT_DEBUGLINE_FUNCTION),
-        ts.factory.createNodeArray([ts.factory.createStringLiteral(debugInfo)])));
+        createDebugLineArgs(debugInfo)));
     if (getNode) {
       return debugNode;
     }
     newStatements.push(debugNode);
   }
   return undefined;
+}
+
+function createDebugLineArgs(debugInfo: string): ts.NodeArray {
+  const argsArr: ts.Node[] = [ts.factory.createStringLiteral(debugInfo)];
+  const pkgName: string = storedFileInfo.getCurrentArkTsFile().pkgName;
+  if (pkgName) {
+    argsArr.push(ts.factory.createStringLiteral(pkgName));
+  }
+  return ts.factory.createNodeArray(argsArr);
 }
 
 function processInnerCompStatements(innerCompStatements: ts.Statement[],
