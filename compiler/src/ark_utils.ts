@@ -186,7 +186,7 @@ function processPackageDir(params: Object): string {
         }
       }
 
-      logger.error(red,'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+      logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
         `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
         `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
         '> Check the corresponding file name is correct(including case-sensitivity).', reset);
@@ -219,7 +219,7 @@ function processPackageDir(params: Object): string {
     }
   }
 
-  logger.error(red,'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
+  logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
     `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
     `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
     '> Check the corresponding file name is correct(including case-sensitivity).', reset);
