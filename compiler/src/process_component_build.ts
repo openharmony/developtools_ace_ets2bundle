@@ -598,6 +598,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
 function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
   node: ts.CallExpression): void {
   if (storedFileInfo.processBuilder) {
+    builderParamDispose.push(...handleBuilderParam(node));
     builderParamDispose.push(parentConditionalExpression());
   } else {
     builderParamDispose.push(...handleBuilderParam(node));
@@ -615,7 +616,9 @@ function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisEx
       }
     }
   }
-  callBuilderParameter.push(ts.factory.createThis());
+  if (!storedFileInfo.processBuilder) {
+    callBuilderParameter.push(ts.factory.createThis());
+  }
   return callBuilderParameter;
 }
 
