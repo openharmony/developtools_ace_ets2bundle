@@ -825,18 +825,16 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     }
     if (isResourceModule && /^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
       const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
-      resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst);
+      return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst);
     } else if (!isResourceModule) {
-      resourceCheck(resourceData, resources, pos, log, false, resourceData[0]);
-    } else {
-      return true;
+      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0]);
     }
   }
   return false;
 }
 
 function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isResourceModule: boolean,
-  resourceDataFirst: string): void {
+  resourceDataFirst: string): boolean {
   const logType: LogType = isResourceModule ? LogType.WARN : LogType.ERROR;
   if (!resources[resourceDataFirst]) {
     log.push({
@@ -856,7 +854,10 @@ function resourceCheck(resourceData: string[], resources: object, pos: number, l
       message: `Unknown resource name '${resourceData[2]}'.`,
       pos: pos
     });
+  } else {
+    return true;
   }
+  return false;
 }
 
 function isWorker(node: ts.Node): boolean {
