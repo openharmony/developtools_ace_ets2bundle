@@ -16,7 +16,8 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import fs from "fs";
+import fs from 'fs';
+import path from 'path';
 
 import {
   OBFUSCATION_TOOL,
@@ -43,12 +44,14 @@ import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
   initArkConfig,
   initArkProjectConfig,
-  utProcessArkConfig
+  utProcessArkConfig,
+  readProjectAndLibsSource
 } from '../../../lib/fast_build/ark_compiler/common/process_ark_config';
 import {
   ObConfigResolver,
   MergedConfig
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
+import { ArkObfuscator } from 'arkguard';
 
 mocha.describe('test process_ark_config file api', function () {
   mocha.before(function () {
@@ -326,5 +329,90 @@ mocha.describe('test process_ark_config file api', function () {
     utProcessArkConfig.processCompatibleVersion(this.rollup.share.projectConfig, arkConfig);
     expect(this.rollup.share.projectConfig.pandaMode === TS2ABC).to.be.true;
     expect(arkConfig.ts2abcPath.indexOf(ARKCONFIG_TS2ABC_PATH) > 0).to.be.true;
+  });
+
+  mocha.describe('5: test readProjectAndLibsSource api', function () {
+    let mergedObConfig: MergedConfig = {};
+    let keepFilesAndDependencies: Set<string> = new Set();
+    const targetFile: string = path.join(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation/third_package/oh_modules/Index.ts');
+    const allFiles: Set<string> = new Set([targetFile]);
+    let arkguardConfig: Object = {};
+    const languageWhiteListNum = 7900;
+    mocha.before(function () {
+      this.rollup = new RollUpPluginMock();
+      mergedObConfig = {
+        options: {
+          disableObfuscation: false,
+          enablePropertyObfuscation: false,
+          enableStringPropertyObfuscation: false,
+          enableToplevelObfuscation: false,
+          enableFileNameObfuscation: false,
+          enableExportObfuscation: true,
+          removeComments: false,
+          compact:false,
+          removeLog:  false,
+          printNameCache: '',
+          applyNameCache: ''
+        }
+      };
+      arkguardConfig = {
+        mNameObfuscation: {
+          mEnable: true,
+          mNameGeneratorType: 1,
+          mRenameProperties: false,
+          mReservedProperties: [],
+          mTopLevel: true,
+          mReservedToplevelNames:[],
+        },
+        mExportObfuscation: true,
+        mPerformancePrinter: []
+      };
+    });
+
+    mocha.it('5-1: test readProjectAndLibsSource with export obfuscation', function () {
+      let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+      arkObfuscator.init(arkguardConfig);
+      readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedToplevelNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedProperties.length > languageWhiteListNum).to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+    });
+
+    mocha.it('5-2: test readProjectAndLibsSource with export & toplevel obfuscation', function () {
+      let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+      mergedObConfig.options.enableToplevelObfuscation = true;
+      arkObfuscator.init(arkguardConfig);
+      readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedToplevelNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedProperties.length > languageWhiteListNum).to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+    });
+
+    mocha.it('5-3: test readProjectAndLibsSource with property obfuscation', function () {
+      arkguardConfig.mNameObfuscation.mRenameProperties = true;
+      arkguardConfig.mExportObfuscation = false;
+      let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+      arkObfuscator.init(arkguardConfig);
+      mergedObConfig.options.enableToplevelObfuscation = false;
+      mergedObConfig.options.enablePropertyObfuscation = true;
+      readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedToplevelNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedProperties.length > languageWhiteListNum).to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+    });
+
+    mocha.it('5-4: test readProjectAndLibsSource with export & property & toplevel obfuscation', function () {
+      arkguardConfig.mNameObfuscation.mRenameProperties = true;
+      arkguardConfig.mExportObfuscation = true;
+      arkguardConfig.mNameObfuscation.mTopLevel = true;
+      let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+      arkObfuscator.init(arkguardConfig);
+      mergedObConfig.options.enableToplevelObfuscation = true;
+      mergedObConfig.options.enablePropertyObfuscation = true;
+      readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedToplevelNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedProperties.length > languageWhiteListNum).to.be.true;
+      expect(arkObfuscator.customProfiles.mNameObfuscation.mReservedNames.toString() === 'foo1,foo2,ts,foo5,foo6').to.be.true;
+    });
   });
 });
