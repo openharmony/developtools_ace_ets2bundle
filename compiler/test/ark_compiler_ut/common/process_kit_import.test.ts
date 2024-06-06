@@ -102,6 +102,11 @@ const KIT_USED_VALUE_IMPROT_CODE_EXPECT: string =
 'appAccount.createAppAccountManager();\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
+const KIT_EMPTY_IMPORT_CODE: string =
+'import { appAccount } from "@kit.BasicServicesKit";\n' +
+'import "@kit.ArkUI";\n' +
+'appAccount.createAppAccountManager();';
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -151,7 +156,6 @@ mocha.describe('process Kit Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
-    console.error(result.outputText);
     expect(result.outputText == KIT_USED_TYPE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
@@ -170,7 +174,6 @@ mocha.describe('process Kit Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
-    console.error(result.outputText);
     expect(result.outputText == KIT_USED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
@@ -204,6 +207,19 @@ mocha.describe('process Kit Imports tests', function () {
     kitInfo.newSpecificerInfo('', 'test', undefined)
     const hasError = kitTransformLog.errors.some(error =>
       error.message.includes("'test' is not exported from Kit")
+    );
+    expect(hasError).to.be.true;
+  });
+
+  mocha.it('the error message of empty import', function () {
+    ts.transpileModule(KIT_EMPTY_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes("Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI', " +
+      "Please specify imported symbols explicitly.")
     );
     expect(hasError).to.be.true;
   });
