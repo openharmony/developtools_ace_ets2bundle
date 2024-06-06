@@ -1109,7 +1109,8 @@ function validatePropertyDefaultValue(propertyName: ts.Identifier, decorator: st
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.`,
+    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.` +
+    "Solutions:>Please initialize the rules according to the decorator.",
     pos: propertyName.getStart()
   });
 }
