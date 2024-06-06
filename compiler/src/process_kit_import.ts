@@ -80,7 +80,7 @@ export function processKitImport(id: string): Function {
     return (node: ts.SourceFile) => {
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
 
-      KitInfo.init(node, context);
+      KitInfo.init(node, context, id);
 
       // When compile hap or hsp, it is used to determine whether there is a keepTsNode in the file.
       let hasKeepTs: boolean = false;
@@ -209,10 +209,10 @@ export class KitInfo {
     this.kitNodeModifier = ts.canHaveDecorators(this.kitNode) ? ts.getModifiers(this.kitNode) : undefined;
   }
 
-  static init(node: ts.SourceFile, context: ts.TransformationContext): void {
+  static init(node: ts.SourceFile, context: ts.TransformationContext, moduleId: string): void {
     // @ts-ignore
     this.tsEmitResolver = context.getEmitResolver();
-    this.currentSourcefile = node.fileName;
+    this.currentSourcefile = moduleId;
     if (/\.ts$/.test(node.fileName)) {
       this.setFileType(FileType.TS);
     } else {
