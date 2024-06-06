@@ -28,7 +28,7 @@ import {
 let disableCache: boolean = false;
 export function checkArkCompilerCacheInfo(rollupObject: Object): void {
   disableCache = false;
-  const metaInfo: string = getMetaInfo(rollupObject.share.projectConfig);
+  const metaInfo: string = getMetaInfo(rollupObject.share.projectConfig, rollupObject.share.arkProjectConfig);
   const lastMetaInfo: string = rollupObject.cache.get(ARK_COMPILER_META_INFO);
   if (!lastMetaInfo || metaInfo !== lastMetaInfo || isMockConfigModified(rollupObject)) {
     rollupObject.cache.set(IS_CACHE_INVALID, true);
@@ -37,7 +37,7 @@ export function checkArkCompilerCacheInfo(rollupObject: Object): void {
   rollupObject.cache.set(ARK_COMPILER_META_INFO, metaInfo);
 }
 
-function getMetaInfo(projectConfig: Object): string {
+function getMetaInfo(projectConfig: Object, arkProjectConfig: Object): string {
   let metaInfoArr: string[] = [];
   // user selects the compiled API version information
   const compileSdkVersion: string = projectConfig.compileSdkVersion ?
@@ -54,6 +54,11 @@ function getMetaInfo(projectConfig: Object): string {
   const sdkReleaseType: string = projectConfig.etsLoaderReleaseType ?
     projectConfig.etsLoaderReleaseType : 'null_sdkReleaseType';
   metaInfoArr.push(compileSdkVersion, compatibleSdkVersion, runtimeOS, sdkPath, sdkVersion, sdkReleaseType);
+
+  if (projectConfig.compileHar) {
+    const useTsHar: string = arkProjectConfig.useTsHar;
+    metaInfoArr.push(useTsHar);
+  }
 
   if (projectConfig.compileMode === ESMODULE) {
     const bundleName: string = projectConfig.bundleName ? projectConfig.bundleName : 'null_bundleName';
