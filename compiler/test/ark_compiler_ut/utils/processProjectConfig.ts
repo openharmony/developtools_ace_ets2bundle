@@ -29,6 +29,7 @@ projectConfig.packageDir = 'oh_modules';
 projectConfig.harNameOhmMap = {
   "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
 };
+projectConfig.hspNameOhmMap = {};
 projectConfig.cachePath = '../../test/ark_compiler_ut/cache/';
 projectConfig.pkgContextInfo = {};
 

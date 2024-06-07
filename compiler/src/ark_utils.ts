@@ -355,8 +355,8 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
   return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
-export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, logger?: Object,
-  useNormalizedOHMUrl: boolean = false): string | undefined {
+export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, logger?: Object):
+  string | undefined {
   if (projectConfig.byteCodeHarInfo) {
     if (Object.prototype.hasOwnProperty.call(projectConfig.byteCodeHarInfo, moduleRequest)) {
       return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
@@ -370,29 +370,31 @@ export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Obj
   return undefined;
 }
 
-export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object, logger?: Object,
+export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig: Object, logger?: Object,
   useNormalizedOHMUrl: boolean = false): string | undefined {
-  // The harNameOhmMap store the ohmurl with the alias of hsp package .
-  if (projectConfig.harNameOhmMap) {
-    // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
-    if (projectConfig.harNameOhmMap.hasOwnProperty(moduleRequest)) {
+  // The externalPkgMap store the ohmurl with the alias of hsp package and the hars depended on bytecode har.
+  let externalPkgMap: Object = Object.assign({}, projectConfig.hspNameOhmMap, projectConfig.harNameOhmMap);
+  if (Object.keys(externalPkgMap).length !== 0) {
+    if (Object.prototype.hasOwnProperty.call(externalPkgMap, moduleRequest)) {
       if (useNormalizedOHMUrl) {
         return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
       }
-      return projectConfig.harNameOhmMap[moduleRequest];
+      // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
+      return externalPkgMap[moduleRequest];
     }
-    // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
-    for (const hspName in projectConfig.harNameOhmMap) {
-      if (moduleRequest.startsWith(hspName + '/')) {
+
+    for (const externalPkgName in externalPkgMap) {
+      if (moduleRequest.startsWith(externalPkgName + '/')) {
         if (useNormalizedOHMUrl) {
-          return getNormalizedOhmUrlByAliasName(hspName, projectConfig, logger, moduleRequest);
+          return getNormalizedOhmUrlByAliasName(externalPkgName, projectConfig, logger, moduleRequest);
         }
-        const idx: number = projectConfig.harNameOhmMap[hspName].split('/', 2).join('/').length;
-        const hspOhmName: string = projectConfig.harNameOhmMap[hspName].substring(0, idx);
-        if (moduleRequest.indexOf(hspName + '/' + SRC_MAIN) === 0) {
-          return moduleRequest.replace(hspName + '/' + SRC_MAIN, hspOhmName);
+        // case2: "@ohos/lib/src/main/ets/pages/page1" ---> "@bundle:bundleName/lib/ets/pages/page1"
+        const idx: number = externalPkgMap[externalPkgName].split('/', 2).join('/').length;
+        const ohmName: string = externalPkgMap[externalPkgName].substring(0, idx);
+        if (moduleRequest.indexOf(externalPkgName + '/' + SRC_MAIN) === 0) {
+          return moduleRequest.replace(externalPkgName + '/' + SRC_MAIN, ohmName);
         } else {
-          return moduleRequest.replace(hspName, hspOhmName);
+          return moduleRequest.replace(externalPkgName, ohmName);
         }
       }
     }
@@ -401,7 +403,7 @@ export function getOhmUrlByHspName(moduleRequest: string, projectConfig: Object,
 }
 
 function replaceHarDependency(item: string, moduleRequest: string, projectConfig: Object): string {
-  const hspOhmUrl: string | undefined = getOhmUrlByHspName(moduleRequest, projectConfig);
+  const hspOhmUrl: string | undefined = getOhmUrlByExternalPackage(moduleRequest, projectConfig);
   if (hspOhmUrl !== undefined) {
     return item.replace(/(['"])(?:\S+)['"]/, (_, quotation) => {
       return quotation + hspOhmUrl + quotation;
