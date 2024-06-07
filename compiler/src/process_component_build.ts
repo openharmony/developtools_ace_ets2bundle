@@ -133,7 +133,10 @@ import {
   RESOURCE_NAME_MODULE,
   NAV_DESTINATION,
   NAVIGATION,
-  CREATE_ROUTER_COMPONENT_COLLECT
+  CREATE_ROUTER_COMPONENT_COLLECT,
+  BASE_COMPONENT_NAME_PU,
+  PROTO,
+  NATIVE_VIEW_PARTIAL_UPDATE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1751,11 +1754,15 @@ export function parentConditionalExpression(builderInnerComponent: boolean = fal
   return ts.factory.createConditionalExpression(
     builderInnerComponent ? ts.factory.createBinaryExpression(
       ts.factory.createBinaryExpression(
-        ts.factory.createTypeOfExpression(ts.factory.createIdentifier(PUV2_VIEW_BASE)),
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createIdentifier(PROTO)
+        ),
         ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-        ts.factory.createStringLiteral(COMPONENT_IF_UNDEFINED)
+        ts.factory.createIdentifier(NATIVE_VIEW_PARTIAL_UPDATE)
       ),
-      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createBinaryExpression(
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
         ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
         ts.factory.createIdentifier(PUV2_VIEW_BASE))) :
