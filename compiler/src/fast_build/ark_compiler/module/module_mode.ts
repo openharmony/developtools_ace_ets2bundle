@@ -82,7 +82,7 @@ import {
   getPackageInfo,
   getNormalizedOhmUrlByFilepath,
   getOhmUrlByFilepath,
-  getOhmUrlByHspName,
+  getOhmUrlByExternalPackage,
   isTs2Abc,
   isEs2Abc,
   createAndStartEvent,
@@ -211,7 +211,7 @@ export class ModuleMode extends CommonMode {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     let hspPkgNames: Array<string> = [];
-    for (const hspName in this.projectConfig.harNameOhmMap) {
+    for (const hspName in this.projectConfig.hspNameOhmMap) {
       let hspPkgName: string = hspName;
       if (this.projectConfig.dependencyAliasMap.has(hspName)) {
         hspPkgName = this.projectConfig.dependencyAliasMap.get(hspName);
@@ -273,7 +273,7 @@ export class ModuleMode extends CommonMode {
           this.updatePkgEntryInfos(pkgEntryInfos, pkgName, ohmurl);
           continue;
         }
-        let hspOhmurl: string | undefined = getOhmUrlByHspName(pkgName, this.projectConfig, this.logger,
+        let hspOhmurl: string | undefined = getOhmUrlByExternalPackage(pkgName, this.projectConfig, this.logger,
           this.useNormalizedOHMUrl);
         if (hspOhmurl !== undefined) {
           hspOhmurl = hspOhmurl.replace(/^@(\w+):(.*)/, '@$1.$2');
