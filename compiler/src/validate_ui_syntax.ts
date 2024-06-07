@@ -283,9 +283,8 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     !abilityPagesFullPath.has(path.resolve(fileName).toLowerCase())) {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' ` +
-        `decorator.` +
-        "Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
+      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' decorator.` +
+        `Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.`,
       fileName: fileName
     });
   }
