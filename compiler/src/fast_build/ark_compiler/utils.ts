@@ -50,7 +50,8 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import {
   handleObfuscatedFilePath,
   enableObfuscateFileName,
-  enableObfuscatedFilePathConfig
+  enableObfuscatedFilePathConfig,
+  getRelativeSourcePath
 } from './common/ob_config_resolver';
 
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
@@ -155,7 +156,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     case EXTNAME_JS:
     case EXTNAME_MJS:
     case EXTNAME_CJS:
-      await writeFileContent(id, filePath, content, projectConfig, logger);
+      await writeFileContent(id, filePath, content, projectConfig, logger, metaInfo);
       break;
     case EXTNAME_JSON:
       const newFilePath: string = tryMangleFileName(filePath, projectConfig, id);
@@ -169,14 +170,14 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
 }
 
 async function writeFileContent(sourceFilePath: string, filePath: string, content: string,
-  projectConfig: Object, logger: Object): Promise<void> {
+  projectConfig: Object, logger: Object, metaInfo?: Object): Promise<void> {
   if (!isSpecifiedExt(sourceFilePath, EXTNAME_JS)) {
     filePath = changeFileExtension(filePath, EXTNAME_JS);
   }
 
   if (!isDebug(projectConfig)) {
-    const relativeSourceFilePath: string = toUnixPath(sourceFilePath).replace(toUnixPath(projectConfig.projectRootPath)
-      + '/', '');
+    const relativeSourceFilePath: string = getRelativeSourcePath(sourceFilePath, projectConfig.projectRootPath,
+      metaInfo.belongProjectPath);
     await writeObfuscatedSourceCode({content: content, buildFilePath: filePath,
       relativeSourceFilePath: relativeSourceFilePath, originSourceFilePath: sourceFilePath, rollupModuleId: sourceFilePath},
       logger, projectConfig, SourceMapGenerator.getInstance().getSourceMaps());

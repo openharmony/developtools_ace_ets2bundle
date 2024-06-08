@@ -22,7 +22,8 @@ import path from "path";
 import {
   MergedConfig,
   ObConfigResolver,
-  collectResevedFileNameInIDEConfig
+  collectResevedFileNameInIDEConfig,
+  getRelativeSourcePath
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -694,5 +695,37 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(systemApiContent.ReservedGlobalNames.includes('ns')).to.be.true;
 
     fs.unlinkSync(systemApiPath);
+  });
+
+  mocha.it('5-1: test getRelativeSourcePath: filePath starts with projectRootPath', function () {
+    const filePath = 'C:/projects/my-project/src/file.ts';
+    const projectRootPath = 'C:/projects/my-project';
+    const belongProjectPath = undefined;
+    const relativePath = getRelativeSourcePath(filePath, projectRootPath, belongProjectPath);
+    expect(relativePath).to.equal('src/file.ts');
+  });
+
+  mocha.it('5-2: test getRelativeSourcePath: filePath starts with belongProjectPath', function () {
+    const filePath = 'C:/projects/another-project/src/file.ts';
+    const projectRootPath = 'C:/projects/my-project';
+    const belongProjectPath = 'C:/projects/another-project';
+    const relativePath = getRelativeSourcePath(filePath, projectRootPath, belongProjectPath);
+    expect(relativePath).to.equal('src/file.ts');
+  });
+
+  mocha.it('5-3: test getRelativeSourcePath: undefined projectRootPath', function () {
+    const filePath = 'C:/projects/another-project/src/file.ts';
+    const projectRootPath = undefined;
+    const belongProjectPath = 'C:/projects/another-project';
+    const relativePath = getRelativeSourcePath(filePath, projectRootPath, belongProjectPath);
+    expect(relativePath).to.equal('src/file.ts');
+  });
+
+  mocha.it('5-4: test getRelativeSourcePath: undefined belongProjectPath ', function () {
+    const filePath = 'C:/projects/my-project/src/file.ts';
+    const projectRootPath = 'C:/projects/my-project';
+    const belongProjectPath = undefined;
+    const relativePath = getRelativeSourcePath(filePath, projectRootPath, belongProjectPath);
+    expect(relativePath).to.equal('src/file.ts');
   });
 });
