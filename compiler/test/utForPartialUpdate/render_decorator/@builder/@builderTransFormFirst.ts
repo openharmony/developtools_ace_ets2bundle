@@ -164,7 +164,7 @@ function testIfIdComponent(value, parent = null) {
                     {
                         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
                             if (isInitialRender) {
-                                let componentCall = new TestBuilderChild(typeof PUV2ViewBase !== "undefined" && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormFirst.ets", line: 37, col: 7 });
+                                let componentCall = new TestBuilderChild(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormFirst.ets", line: 37, col: 7 });
                                 ViewPU.create(componentCall);
                                 let paramsLambda = () => {
                                     return {};
