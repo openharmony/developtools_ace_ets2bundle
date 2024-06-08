@@ -38,7 +38,9 @@ import {
   BuildCount,
   addRerenderFunc,
   validateBuildMethodCount,
-  getEntryNameFunction
+  getEntryNameFunction,
+  FreezeParamType,
+  decoratorAssignParams
 } from './process_component_class';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
 import {
@@ -107,10 +109,13 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   const structInfo: StructInfo = getOrCreateStructInfo(structName);
   const addStatementsInConstructor: ts.Statement[] = [];
   const paramStatementsInStateVarsMethod: ts.Statement[] = [];
+  const structDecorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const freezeParam: FreezeParamType = { componentFreezeParam: undefined };
+  decoratorAssignParams(structDecorators, context, freezeParam);
   traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod);
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isConstructorDeclaration(member)) {
-      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor);
+      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, freezeParam);
       return;
     } else if (ts.isPropertyDeclaration(member)) {
       newMembers.push(processComponentProperty(member, structInfo, log));
@@ -367,14 +372,16 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
 }
 
 function processStructConstructorV2(members: ts.NodeArray<ts.ClassElement>, newMembers: ts.ClassElement[],
-  paramStatements: ts.Statement[]): void {
+  paramStatements: ts.Statement[], freezeParam: FreezeParamType): void {
+  const freezeParamNode: ts.Expression = freezeParam.componentFreezeParam ?
+    freezeParam.componentFreezeParam : undefined;
   const constructorIndex: number = members.findIndex((item: ts.ClassElement) => {
     return ts.isConstructorDeclaration(item);
   });
   if (constructorIndex !== -1) {
     const constructorNode: ts.ConstructorDeclaration = members[constructorIndex] as ts.ConstructorDeclaration;
     newMembers.splice(constructorIndex, 0, ts.factory.updateConstructorDeclaration(constructorNode, ts.getModifiers(constructorNode),
-      createConstructorParams(), updateConstructorBody(constructorNode.body, paramStatements)));
+      createConstructorParams(), updateConstructorBody(constructorNode.body, paramStatements, freezeParamNode)));
   }
 }
 
@@ -387,12 +394,13 @@ function createConstructorParams(): ts.ParameterDeclaration[] {
   });
 }
 
-function updateConstructorBody(node: ts.Block, paramStatements: ts.Statement[]): ts.Block {
+function updateConstructorBody(node: ts.Block, paramStatements: ts.Statement[],
+  freezeParamNode: ts.Expression): ts.Block {
   const body: ts.Statement[] = [createSuperV2()];
   if (node.statements) {
     body.push(...node.statements);
   }
-  body.push(...paramStatements, createAstNodeUtils.createFinalizeConstruction());
+  body.push(...paramStatements, createAstNodeUtils.createFinalizeConstruction(freezeParamNode));
   return ts.factory.createBlock(body, true);
 }
 
