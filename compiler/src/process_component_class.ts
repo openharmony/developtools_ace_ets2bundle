@@ -174,7 +174,7 @@ function checkPreview(node: ts.StructDeclaration): boolean {
 export type BuildCount = {
   count: number;
 };
-type FreezeParamType = {
+export type FreezeParamType = {
   componentFreezeParam: ts.Expression;
 };
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
@@ -266,7 +266,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   return newMembers;
 }
 
-function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
+export function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
   creezeParam: FreezeParamType): boolean {
   if (decoratorNode && Array.isArray(decoratorNode) && decoratorNode.length) {
     return decoratorNode.some((item: ts.Decorator) => {
