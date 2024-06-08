@@ -102,7 +102,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new AAA(typeof PUV2ViewBase !== "undefined" && parent instanceof PUV2ViewBase ? parent : this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
+                    let componentCall = new AAA(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

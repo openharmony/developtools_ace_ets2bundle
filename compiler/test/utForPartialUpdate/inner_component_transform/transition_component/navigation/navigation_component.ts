@@ -69,7 +69,7 @@ class Index extends ViewPU {
         }, Navigation);
         Navigation.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Navigation.create({ moduleName: "", pagePath: "navigation_component" });
+            Navigation.create(new NavPathStack(), { moduleName: "", pagePath: "navigation_component" });
             Navigation.title('Main');
         }, Navigation);
         Navigation.pop();
