@@ -337,7 +337,7 @@ class MyComponent extends ViewPU {
             Row.padding(10);
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Navigation.create({ moduleName: "", pagePath: "@builder" });
+            Navigation.create(new NavPathStack(), { moduleName: "", pagePath: "@builder" });
             Navigation.title({ builder: noParam.bind(this) });
             Navigation.menus({ builder: this.textBuilder.bind(this) });
             Navigation.toolBar({ items: [
