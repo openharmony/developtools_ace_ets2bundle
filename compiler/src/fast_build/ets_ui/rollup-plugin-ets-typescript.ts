@@ -340,7 +340,8 @@ async function transform(code: string, id: string) {
     if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
       tsProgram = storedFileInfo.newTsProgram;
     } else {
-      await CreateProgramMoment.block(id); 
+      await CreateProgramMoment.block(id);
+      CreateProgramMoment.release(id);
       if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
         tsProgram = storedFileInfo.newTsProgram;
       } else {
@@ -524,13 +525,19 @@ function checkRelateToConstEnum(id: string): boolean {
   return tsProgram.isFileUpdateInConstEnumCache(targetSourceFile);
 }
 
+interface moduleInfoType {
+  id: string;
+};
+interface optionsType {
+  id: string;
+};
 class CreateProgramMoment {
-  static transCount: number = 0;
-  static awaitCount: number = 0;
-  static moduleParsedCount: number = 0;
+  static transFileCollect: Set<string> = new Set();
+  static awaitFileCollect: Set<string> = new Set();
+  static moduleParsedFileCollect: Set<string> = new Set();
   static promise: Promise<void> = undefined;
   static emitter = undefined;
-  static roots: string[] = [];
+  static roots: Set<string> = new Set();
 
   static init(): void {
     if (CreateProgramMoment.promise) {
@@ -539,7 +546,8 @@ class CreateProgramMoment {
     CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
     CreateProgramMoment.promise = new Promise<void>(resolve => {
       CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
-        if (CreateProgramMoment.awaitCount + CreateProgramMoment.moduleParsedCount === CreateProgramMoment.transCount) {
+        if (CreateProgramMoment.awaitFileCollect.size + CreateProgramMoment.moduleParsedFileCollect.size ===
+          CreateProgramMoment.transFileCollect.size) {
           resolve();
         }
       });
@@ -551,12 +559,17 @@ class CreateProgramMoment {
       name: 'createProgramPlugin',
       transform: {
         order: 'pre',
-        handler(): void {
-          CreateProgramMoment.transCount++;
+        handler(code: string, id: string): void {
+          CreateProgramMoment.transFileCollect.add(id);
         }
       },
-      moduleParsed(): void {
-        CreateProgramMoment.moduleParsedCount++;
+
+      shouldInvalidCache(options: optionsType) {
+        CreateProgramMoment.transFileCollect.add(options.id);
+      },
+
+      moduleParsed(moduleInfo: moduleInfoType): void {
+        CreateProgramMoment.moduleParsedFileCollect.add(moduleInfo.id);
         CreateProgramMoment.emitter?.emit('checkPrefCreateProgramId');
       },
       cleanUp(): void {
@@ -567,27 +580,31 @@ class CreateProgramMoment {
 
   static async block(id: string): Promise<void> {
     CreateProgramMoment.init();
-    CreateProgramMoment.awaitCount++;
-    CreateProgramMoment.roots.push(id);
+    CreateProgramMoment.awaitFileCollect.add(id);
+    CreateProgramMoment.roots.add(id);
     CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
     return CreateProgramMoment.promise;
   }
 
+  static release(id: string): void {
+    CreateProgramMoment.awaitFileCollect.delete(id);
+  }
+
   static reset(): void {
-    CreateProgramMoment.transCount = 0;
-    CreateProgramMoment.awaitCount = 0;
-    CreateProgramMoment.moduleParsedCount = 0;
+    CreateProgramMoment.transFileCollect.clear();
+    CreateProgramMoment.awaitFileCollect.clear();
+    CreateProgramMoment.moduleParsedFileCollect.clear();
     CreateProgramMoment.promise = undefined;
     CreateProgramMoment.emitter = undefined;
-    CreateProgramMoment.roots = [];
+    CreateProgramMoment.roots.clear();
   }
 
   static getRoots(id: string): string[] {
-    const res = [];
+    const res: string[] = [];
     CreateProgramMoment.roots.forEach(id => res.push(id));
     CreateProgramMoment.promise = undefined;
     CreateProgramMoment.emitter = undefined;
-    CreateProgramMoment.roots = [];
+    CreateProgramMoment.roots.clear();
     if (res.length === 0) {
       return [id];
     }
