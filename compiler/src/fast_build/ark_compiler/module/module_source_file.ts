@@ -25,7 +25,7 @@ import {
   getNormalizedOhmUrlByFilepath,
   getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
-  getOhmUrlByHspName,
+  getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
   compileToolIsRollUp
@@ -146,7 +146,7 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let transformedMockTarget: string | undefined = getOhmUrlByHspName(originKey, ModuleSourceFile.projectConfig,
+    let transformedMockTarget: string | undefined = getOhmUrlByExternalPackage(originKey, ModuleSourceFile.projectConfig,
                                                                        ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (transformedMockTarget !== undefined) {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
@@ -388,7 +388,7 @@ export class ModuleSourceFile {
       }
       return systemOrLibOhmUrl;
     }
-    const hspOhmurl: string | undefined = getOhmUrlByHspName(moduleRequest, ModuleSourceFile.projectConfig,
+    const hspOhmurl: string | undefined = getOhmUrlByExternalPackage(moduleRequest, ModuleSourceFile.projectConfig,
       ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (hspOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
