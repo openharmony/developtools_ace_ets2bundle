@@ -118,6 +118,7 @@ class ProjectConfig {
   byteCodeHarInfo: object;
   entryObj: object;
   harNameOhmMap: object;
+  hspNameOhmMap: object;
   cardEntryObj: object;
   widgetCompile: boolean;
 
@@ -129,6 +130,8 @@ class ProjectConfig {
     this.supportChunks = true;
     this.compileHar = false;
     this.compileShared = false;
+    this.harNameOhmMap = {};
+    this.hspNameOhmMap = {};
   }
 
   public scan(testcase: string) {

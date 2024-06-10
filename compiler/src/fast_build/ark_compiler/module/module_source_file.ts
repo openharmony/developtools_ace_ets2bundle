@@ -25,7 +25,7 @@ import {
   getNormalizedOhmUrlByFilepath,
   getOhmUrlByByteCodeHar,
   getOhmUrlByFilepath,
-  getOhmUrlByHspName,
+  getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
   mangleDeclarationFileName,
   compileToolIsRollUp
@@ -76,6 +76,7 @@ export class ModuleSourceFile {
   private static sourceFiles: ModuleSourceFile[] = [];
   private moduleId: string;
   private source: string | ts.SourceFile;
+  private metaInfo: Object;
   private isSourceNode: boolean = false;
   private static projectConfig: Object;
   private static logger: Object;
@@ -86,9 +87,10 @@ export class ModuleSourceFile {
   private static mockConfigKeyToModuleInfo: Object = {};
   private static needProcessMock: boolean = false;
 
-  constructor(moduleId: string, source: string | ts.SourceFile) {
+  constructor(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
     this.moduleId = moduleId;
     this.source = source;
+    this.metaInfo = metaInfo;
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
     }
@@ -144,7 +146,7 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let transformedMockTarget: string | undefined = getOhmUrlByHspName(originKey, ModuleSourceFile.projectConfig,
+    let transformedMockTarget: string | undefined = getOhmUrlByExternalPackage(originKey, ModuleSourceFile.projectConfig,
                                                                        ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (transformedMockTarget !== undefined) {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
@@ -283,8 +285,8 @@ export class ModuleSourceFile {
     }
   }
 
-  static newSourceFile(moduleId: string, source: string | ts.SourceFile) {
-    ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source));
+  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
+    ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
   }
 
   static getSourceFiles(): ModuleSourceFile[] {
@@ -324,7 +326,9 @@ export class ModuleSourceFile {
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
+    const moduleIdMetaInfoMap = new Map<string, string>();
     for (const source of ModuleSourceFile.sourceFiles) {
+      moduleIdMetaInfoMap.set(source.moduleId, source.metaInfo.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
@@ -337,7 +341,7 @@ export class ModuleSourceFile {
     }
 
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig);
+      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, moduleIdMetaInfoMap);
     }
     performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
     performancePrinter?.timeSumPrinter?.print('Sum up time cost of processes');
@@ -365,9 +369,9 @@ export class ModuleSourceFile {
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.moduleId, parentEvent, ModuleSourceFile.logger);
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo, this.moduleId, parentEvent, ModuleSourceFile.logger);
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent);
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent, this.metaInfo);
     }
   }
 
@@ -384,7 +388,7 @@ export class ModuleSourceFile {
       }
       return systemOrLibOhmUrl;
     }
-    const hspOhmurl: string | undefined = getOhmUrlByHspName(moduleRequest, ModuleSourceFile.projectConfig,
+    const hspOhmurl: string | undefined = getOhmUrlByExternalPackage(moduleRequest, ModuleSourceFile.projectConfig,
       ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (hspOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
@@ -509,8 +513,9 @@ export class ModuleSourceFile {
 
     if (hasDynamicImport) {
       // update sourceMap
-      const relativeSourceFilePath: string =
-        toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, ''));
+      const relativeSourceFilePath: string = this.moduleId.startsWith(ModuleSourceFile.projectConfig.projectRootPath) ?
+        toUnixPath(this.moduleId.replace(ModuleSourceFile.projectConfig.projectRootPath + path.sep, '')) :
+        toUnixPath(this.moduleId.replace(this.metaInfo.belongProjectPath, ''));
       const updatedMap: Object = code.generateMap({
         source: relativeSourceFilePath,
         file: `${path.basename(this.moduleId)}`,

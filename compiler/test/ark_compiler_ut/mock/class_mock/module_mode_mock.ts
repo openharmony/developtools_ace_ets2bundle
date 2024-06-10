@@ -117,7 +117,7 @@ class ModuleModeMock extends ModuleMode {
       compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;
     }
     let hspPkgNames: Array<string> = [];
-    for (const hspName in rollupObject.share.projectConfig.harNameOhmMap) {
+    for (const hspName in rollupObject.share.projectConfig.hspNameOhmMap) {
       let hspPkgName: string = hspName;
       if (rollupObject.share.projectConfig.dependencyAliasMap.has(hspName)) {
         hspPkgName = rollupObject.share.projectConfig.dependencyAliasMap.get(hspName);

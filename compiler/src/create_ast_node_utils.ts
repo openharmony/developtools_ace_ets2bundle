@@ -30,14 +30,18 @@ function createParameterDeclaration(name: string): ts.ParameterDeclaration {
     ts.factory.createIdentifier(name), undefined, undefined, initializer);
 }
 
-function createFinalizeConstruction(): ts.Statement {
+function createFinalizeConstruction(freezeParamNode: ts.Expression): ts.Statement {
+  const params: ts.Expression[] = [];
+  if (freezeParamNode) {
+    params.push(freezeParamNode);
+  }
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(),
       ts.factory.createIdentifier(FINALIZE_CONSTRUCTION)
     ),
     undefined,
-    []
+    params
   ));
 }
 

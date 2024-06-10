@@ -336,13 +336,24 @@ export function genLoaderOutPathOfHar(filePath: string, cachePath: string, build
 }
 
 export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
-  projectConfig: Object, buildInHar: boolean = false): string {
+  projectConfig: Object, metaInfo: Object, logger: Object, buildInHar: boolean = false): string {
   filePath = toUnixPath(filePath).replace(/\.[cm]js$/, EXTNAME_JS);
   projectPath = toUnixPath(projectPath);
 
   if (process.env.compileTool === 'rollup') {
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
     const projectRootPath: string = toUnixPath(buildInHar ? projectPath : projectConfig.projectRootPath);
-    const relativeFilePath: string = filePath.replace(projectRootPath, '');
+    let relativeFilePath: string = '';
+    if (filePath.startsWith(projectRootPath)) {
+      relativeFilePath = filePath.replace(projectRootPath, '');
+    } else if (metaInfo.belongProjectPath) {
+      relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
+    } else {
+      logger.error(red, 'ARKTS:INTERNAL ERROR\n' + 
+        `Error Message: Failed to generate the cache path corresponding to file ${filePath}.\n` +
+        'Because the file belongs to a module outside the project and has no project information.', reset);
+    }
     const output: string = path.join(buildPath, relativeFilePath);
     return output;
   }
@@ -412,7 +423,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
   let jsFilePath: string = genTemporaryPath(sourcePath,
     projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared || projectConfig.byteCodeHar ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
-    projectConfig, projectConfig.compileShared);
+    projectConfig, undefined, undefined, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {

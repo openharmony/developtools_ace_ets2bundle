@@ -82,7 +82,7 @@ import {
   getPackageInfo,
   getNormalizedOhmUrlByFilepath,
   getOhmUrlByFilepath,
-  getOhmUrlByHspName,
+  getOhmUrlByExternalPackage,
   isTs2Abc,
   isEs2Abc,
   createAndStartEvent,
@@ -211,7 +211,7 @@ export class ModuleMode extends CommonMode {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     let hspPkgNames: Array<string> = [];
-    for (const hspName in this.projectConfig.harNameOhmMap) {
+    for (const hspName in this.projectConfig.hspNameOhmMap) {
       let hspPkgName: string = hspName;
       if (this.projectConfig.dependencyAliasMap.has(hspName)) {
         hspPkgName = this.projectConfig.dependencyAliasMap.get(hspName);
@@ -273,7 +273,7 @@ export class ModuleMode extends CommonMode {
           this.updatePkgEntryInfos(pkgEntryInfos, pkgName, ohmurl);
           continue;
         }
-        let hspOhmurl: string | undefined = getOhmUrlByHspName(pkgName, this.projectConfig, this.logger,
+        let hspOhmurl: string | undefined = getOhmUrlByExternalPackage(pkgName, this.projectConfig, this.logger,
           this.useNormalizedOHMUrl);
         if (hspOhmurl !== undefined) {
           hspOhmurl = hspOhmurl.replace(/^@(\w+):(.*)/, '@$1.$2');
@@ -414,7 +414,7 @@ export class ModuleMode extends CommonMode {
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
     let cacheFilePath: string =
-      this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath);
+      this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
@@ -695,8 +695,10 @@ export class ModuleMode extends CommonMode {
     generateAot(this.arkConfig.arkRootPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
-  private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string): string {
-    const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectRootPath), '');
+  private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string, metaInfo: Object): string {
+    const sufStr: string = toUnixPath(filePath).startsWith(toUnixPath(projectRootPath)) ?
+    toUnixPath(filePath).replace(toUnixPath(projectRootPath) + '/', '') :
+    toUnixPath(filePath).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '')
     const output: string = path.join(cachePath, sufStr);
     return output;
   }

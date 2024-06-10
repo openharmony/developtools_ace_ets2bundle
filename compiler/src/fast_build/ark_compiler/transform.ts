@@ -45,10 +45,11 @@ export function transformForModule(code: string, id: string) {
   const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'transform');
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
   if (this.share.projectConfig.compileMode === ESMODULE) {
+    const metaInfo: Object = this.getModuleInfo(id).meta;
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig)) {
-      preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, eventTransformForModule);
-      ModuleSourceFile.newSourceFile(id, code);
+      preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo);
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
@@ -57,26 +58,28 @@ export function transformForModule(code: string, id: string) {
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
           code = transformedResult.code;
-          preserveSourceMap(id, transformedResult.map, projectConfig, eventTransformForModule);
+          preserveSourceMap(id, transformedResult.map, projectConfig, metaInfo, eventTransformForModule);
         } else {
           // preserve sourceMap of js file without transforming
-          preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, eventTransformForModule);
+          preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
         }
       }
-      ModuleSourceFile.newSourceFile(id, code);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo);
     }
   }
   stopEvent(eventTransformForModule);
 }
 
-function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, parentEvent: Object): void {
+function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, metaInfo: Object, parentEvent: Object): void {
   if (isCommonJsPluginVirtualFile(sourceFilePath)) {
     // skip automatic generated files like 'jsfile.js?commonjs-exports'
     return;
   }
 
   const eventAddSourceMapInfo = createAndStartEvent(parentEvent, 'preserve source map for ts/ets files');
-  const relativeSourceFilePath = toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, ''));
+  const relativeSourceFilePath = sourceFilePath.startsWith(projectConfig.projectRootPath)?
+    toUnixPath(sourceFilePath.replace(projectConfig.projectRootPath + path.sep, '')) :
+    toUnixPath(sourceFilePath.replace(metaInfo.belongProjectPath + path.sep, ''));
   sourcemap.sources = [relativeSourceFilePath];
   sourcemap.file = path.basename(relativeSourceFilePath);
   sourcemap.sourcesContent && delete sourcemap.sourcesContent;
