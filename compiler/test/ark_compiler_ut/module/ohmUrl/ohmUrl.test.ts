@@ -19,7 +19,7 @@ import sinon from 'sinon';
 
 import {
   getOhmUrlByFilepath,
-  getOhmUrlByHspName,
+  getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
   getNormalizedOhmUrlByFilepath
 } from '../../../../lib/ark_utils';
@@ -109,9 +109,9 @@ mocha.describe('generate ohmUrl', function () {
     const sharedLibraryPackageName: string = "@ohos/sharedLibrary";
     const sharedLibraryPage: string = "@ohos/sharedLibrary/src/main/ets/pages/page1";
     const errorSharedLibrary: string = "@ohos/staticLibrary";
-    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByHspName(sharedLibraryPackageName, projectConfig);
-    const sharedLibraryPageOhmUrl: string = getOhmUrlByHspName(sharedLibraryPage, projectConfig);
-    const errorSharedLibraryOhmUrl = getOhmUrlByHspName(errorSharedLibrary, projectConfig);
+    const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageName, projectConfig);
+    const sharedLibraryPageOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPage, projectConfig);
+    const errorSharedLibraryOhmUrl = getOhmUrlByExternalPackage(errorSharedLibrary, projectConfig);
     const expectedSharedLibraryOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
     const expectedSharedLibraryPageOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/pages/page1";
     const expectedErrorSharedLibraryOhmUrl = undefined;

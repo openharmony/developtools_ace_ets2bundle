@@ -859,6 +859,8 @@ export function resetObfuscation(): void {
   renamePropertyModule.globalMangledTable?.clear();
   renamePropertyModule.historyMangledTable?.clear();
   renamePropertyModule.globalSwappedMangledTable?.clear();
+  renamePropertyModule.newlyOccupiedMangledProps?.clear();
+  renamePropertyModule.mangledPropsInNameCache?.clear();
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
@@ -983,4 +985,28 @@ export function enableObfuscateFileName(isPackageModules: boolean, projectConfig
   }
   // When open the config 'enableFileNameObfuscation', keeping all paths in unix format.
   return false;
+}
+
+/**
+ * Get the relative path relative to the project based on the file's associated project
+ */
+export function getRelativeSourcePath(filePath: string, projectRootPath: string, belongProjectPath: string | undefined): string {
+  filePath = toUnixPath(filePath);
+  
+  if (projectRootPath) {
+    projectRootPath = toUnixPath(projectRootPath);
+  }
+
+  if (belongProjectPath) {
+    belongProjectPath = toUnixPath(belongProjectPath);
+  }
+
+  let relativeFilePath: string = filePath;
+  if (projectRootPath && filePath.startsWith(projectRootPath)) {
+    relativeFilePath = filePath.replace(projectRootPath + '/', '');
+  } else if (belongProjectPath) {
+    relativeFilePath = filePath.replace(belongProjectPath + '/', '');
+  }
+  
+  return relativeFilePath;
 }

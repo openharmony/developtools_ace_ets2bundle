@@ -37,17 +37,18 @@ import {
 } from './ark_utils';
 import { processSystemApi } from './validate_ui_syntax';
 import { isDebug } from './fast_build/ark_compiler/utils';
+import { getRelativeSourcePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, metaInfo: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
-  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig);
+  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig, metaInfo);
   const sourceMapGenerator = SourceMapGenerator.getInstance();
   stopEvent(eventGenContentAndSourceMapInfo);
   let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
-    projectConfig);
+    projectConfig, metaInfo, logger);
   if (temporaryFile.length === 0) {
     return;
   }
@@ -56,15 +57,15 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
   temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  let relativeSourceFilePath = toUnixPath(node.fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '');
+  let relativeFilePath = getRelativeSourcePath(node.fileName, projectConfig.projectRootPath, metaInfo.belongProjectPath);
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
-    const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeSourceFilePath;
+    const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeFilePath;
     sourceMapGenerator.fillSourceMapPackageInfo(moduleId!, mixedInfo.sourceMapJson);
     sourceMapGenerator.updateSourceMap(key, mixedInfo.sourceMapJson);
     sourceMaps = sourceMapGenerator.getSourceMaps();
   } else {
-    webpackNewSourceMaps[relativeSourceFilePath] = mixedInfo.sourceMapJson;
+    webpackNewSourceMaps[relativeFilePath] = mixedInfo.sourceMapJson;
     sourceMaps = webpackNewSourceMaps;
   }
   if (!isDebug(projectConfig)) {
@@ -72,7 +73,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     await writeObfuscatedSourceCode({
         content: mixedInfo.content,
         buildFilePath: temporaryFile,
-        relativeSourceFilePath: relativeSourceFilePath,
+        relativeSourceFilePath: relativeFilePath,
         originSourceFilePath: node.fileName,
         rollupModuleId: moduleId ? moduleId : undefined
       }, logger, projectConfig, sourceMaps);
@@ -84,7 +85,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   stopEvent(eventWriteFileSyncByNode);
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object): Object {
+function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object, metaInfo: Object): Object {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
@@ -114,7 +115,11 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object):
     ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
   printer.writeFile(node, writer, sourceMapGenerator);
   const sourceMapJson: ts.RawSourceMap = sourceMapGenerator.toJSON();
-  sourceMapJson.sources = [toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '')];
+  sourceMapJson.sources = [
+    toUnixPath(fileName).startsWith(toUnixPath(projectConfig.projectRootPath)) ?
+    toUnixPath(fileName).replace(toUnixPath(projectConfig.projectRootPath) + '/', '') :
+    toUnixPath(fileName).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '')
+  ];
   let content: string = writer.getText();
   if (process.env.compileTool !== 'rollup') {
     content = transformModuleSpecifier(fileName, processSystemApi(content, true), projectConfig);
