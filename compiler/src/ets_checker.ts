@@ -171,7 +171,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
     'tsBuildInfoFile': buildInfoPath,
-    'tsImportSendableEnable': tsImportSendable 
+    'tsImportSendableEnable': tsImportSendable
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -612,6 +612,8 @@ function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set
   }
 
   fileToThrowDiagnostics.add(unixFilePath);
+  // Although the cache object filters JavaScript files when collecting dependency relationships, we still include the
+  // filtering of JavaScript files here to avoid potential omissions.
   if ((/\.(c|m)?js$/).test(file) ||
     !cache[normalizedFilePath] || cache[normalizedFilePath].children.length === 0) {
     return;
@@ -637,9 +639,16 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     }
   });
 
+  let resolvedTypeReferenceDirectivesFiles: Set<string> = new Set<string>();
+  globalProgram.program.getResolvedTypeReferenceDirectives().forEach((elem: ts.ResolvedTypeReferenceDirective) => {
+    elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
+  })
+
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
-    sourceFile.fileName && fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
+    sourceFile.fileName &&
+    !isInSDK(sourceFile.fileName) && !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
+    fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
   });
 
   fileToThrowDiagnostics.forEach(file => {
@@ -1362,7 +1371,10 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
 }
 
 function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {
-  return isInSDK(diagnostics) && (diagnostics.file !== undefined) && diagnostics.file.fileName.endsWith(".ets");
+  if (diagnostics.file?.fileName === undefined) {
+    return false;
+  }
+  return isInSDK(diagnostics.file.fileName) && diagnostics.file.fileName.endsWith(".ets");
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
@@ -1370,8 +1382,7 @@ function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
     ((diagnostics.file.fileName.indexOf('/oh_modules/') !== -1) || diagnostics.file.fileName.indexOf('\\oh_modules\\') !== -1);
 }
 
-function isInSDK(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file?.fileName;
+function isInSDK(fileName: string | undefined): boolean {
   if (projectConfig.etsLoaderPath === undefined || fileName === undefined) {
     return false;
   }
