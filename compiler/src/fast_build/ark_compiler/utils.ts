@@ -177,7 +177,7 @@ async function writeFileContent(sourceFilePath: string, filePath: string, conten
 
   if (!isDebug(projectConfig)) {
     const relativeSourceFilePath: string = getRelativeSourcePath(sourceFilePath, projectConfig.projectRootPath,
-      metaInfo.belongProjectPath);
+      metaInfo?.belongProjectPath);
     await writeObfuscatedSourceCode({content: content, buildFilePath: filePath,
       relativeSourceFilePath: relativeSourceFilePath, originSourceFilePath: sourceFilePath, rollupModuleId: sourceFilePath},
       logger, projectConfig, SourceMapGenerator.getInstance().getSourceMaps());

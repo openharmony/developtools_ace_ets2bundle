@@ -57,7 +57,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
   temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  let relativeFilePath = getRelativeSourcePath(node.fileName, projectConfig.projectRootPath, metaInfo.belongProjectPath);
+  let relativeFilePath = getRelativeSourcePath(node.fileName, projectConfig.projectRootPath, metaInfo?.belongProjectPath);
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
     const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeFilePath;
