@@ -328,7 +328,7 @@ export class ModuleSourceFile {
     sourceProjectConfig.localPackageSet = localPackageSet;
     const moduleIdMetaInfoMap = new Map<string, string>();
     for (const source of ModuleSourceFile.sourceFiles) {
-      moduleIdMetaInfoMap.set(source.moduleId, source.metaInfo.belongProjectPath);
+      moduleIdMetaInfoMap.set(source.moduleId, source.metaInfo?.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
