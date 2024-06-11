@@ -209,7 +209,7 @@ function transformResourceNode(newSource, log) {
 
 function processResourceNode(node, log) {
   if (isResource(node)) {
-    return processResourceData(node, {isAcceleratePreview: true, log: log});
+    return processResourceData(node, '', {isAcceleratePreview: true, log: log});
   } else if (isAnimateToOrImmediately(node)) {
     return processAnimateToOrImmediately(node);
   } else {
