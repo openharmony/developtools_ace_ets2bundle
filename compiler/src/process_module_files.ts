@@ -44,20 +44,18 @@ export const SRC_MAIN: string = 'src/main';
 export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, metaInfo: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
-  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, projectConfig, metaInfo);
+  const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, moduleId, projectConfig, metaInfo);
   const sourceMapGenerator = SourceMapGenerator.getInstance();
   stopEvent(eventGenContentAndSourceMapInfo);
-  let temporaryFile: string = genTemporaryPath(node.fileName, projectConfig.projectPath, process.env.cachePath,
+  let temporaryFile: string = genTemporaryPath(moduleId ? moduleId : node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig, metaInfo, logger);
   if (temporaryFile.length === 0) {
     return;
   }
-  let temporarySourceMapFile: string = '';
   if (temporaryFile.endsWith(EXTNAME_ETS)) {
     temporaryFile = temporaryFile.replace(/\.ets$/, EXTNAME_TS);
   }
-  temporarySourceMapFile = genSourceMapFileName(temporaryFile);
-  let relativeFilePath = getRelativeSourcePath(node.fileName, projectConfig.projectRootPath, metaInfo?.belongProjectPath);
+  let relativeFilePath = getRelativeSourcePath(moduleId ? moduleId : node.fileName, projectConfig.projectRootPath, metaInfo?.belongProjectPath);
   let sourceMaps: Object;
   if (process.env.compileTool === 'rollup') {
     const key = sourceMapGenerator.isNewSourceMaps() ? moduleId! : relativeFilePath;
@@ -85,7 +83,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   stopEvent(eventWriteFileSyncByNode);
 }
 
-function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object, metaInfo: Object): Object {
+function genContentAndSourceMapInfo(node: ts.SourceFile, moduleId: string | undefined, projectConfig: Object, metaInfo: Object): Object {
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const options: ts.CompilerOptions = {
     sourceMap: true
@@ -99,7 +97,7 @@ function genContentAndSourceMapInfo(node: ts.SourceFile, projectConfig: Object, 
     extendedDiagnostics: false
   };
   const host: ts.CompilerHost = ts.createCompilerHost(options);
-  const fileName: string = node.fileName;
+  const fileName: string = moduleId ? moduleId : node.fileName;
   // @ts-ignore
   const sourceMapGenerator: ts.SourceMapGenerator = ts.createSourceMapGenerator(
     host,
