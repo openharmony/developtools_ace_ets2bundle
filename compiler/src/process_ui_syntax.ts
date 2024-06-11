@@ -158,7 +158,7 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  compilationTime: CompilationTimeStatistics = null): Function {
+  compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
   let entryNodeKey: ts.Expression;
   let hasStruct: boolean = false;
   return (context: ts.TransformationContext) => {
@@ -332,7 +332,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           }
         }
       } else if (isResource(node)) {
-        node = processResourceData(node as ts.CallExpression);
+        node = processResourceData(node as ts.CallExpression, filePath);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
       } else if (isAnimateToOrImmediately(node)) {
@@ -376,7 +376,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (ts.isImportDeclaration(node)) {
         validateModuleSpecifier(node.moduleSpecifier, transformLog.errors);
       } else if (isResource(node)) {
-        node = processResourceData(node as ts.CallExpression);
+        node = processResourceData(node as ts.CallExpression, filePath);
       } else if (ts.isTypeReferenceNode(node)) {
         checkTypeReference(node, transformLog);
       }
@@ -627,7 +627,7 @@ export function isAnimateToOrImmediately(node: ts.Node): boolean {
     ATTRIBUTE_ANIMATETO_SET.has(node.expression.escapedText.toString());
 }
 
-export function processResourceData(node: ts.CallExpression,
+export function processResourceData(node: ts.CallExpression, filePath: string,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
@@ -640,7 +640,7 @@ export function processResourceData(node: ts.CallExpression,
         return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false);
       }
     } else {
-      return getResourceDataNode(node, previewLog, resourceData, isResourceModule);
+      return getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath);
     }
   } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
@@ -662,9 +662,9 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
 }
 
 function getResourceDataNode(node: ts.CallExpression,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, resourceData: string[], isResourceModule: boolean): ts.Node {
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, resourceData: string[], isResourceModule: boolean, filePath: string): ts.Node {
   let resourceValue: number;
-  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule)) {
+  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule, filePath)) {
     let resourceType: number = RESOURCE_TYPE[resourceData[1]];
     if (resourceType === undefined && !previewLog.isAcceleratePreview) {
       transformLog.errors.push({
@@ -781,16 +781,16 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean): boolean {
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean, filePath: string): boolean {
   if (previewLog.isAcceleratePreview) {
-    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule);
+    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath);
   } else {
-    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule);
+    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath);
   }
 }
 
 function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[], isAcceleratePreview: boolean,
-  isResourceModule: boolean): boolean {
+  isResourceModule: boolean, filePath: string): boolean {
   if (resourceData.length !== 3) {
     log.push({
       type: LogType.ERROR,
@@ -799,7 +799,7 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     });
   } else {
     if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
-      storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
+      storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(filePath));
     }
     if (isResourceModule && /^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
       const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();

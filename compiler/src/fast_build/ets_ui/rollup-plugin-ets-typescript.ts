@@ -388,7 +388,7 @@ async function transform(code: string, id: string) {
     tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
       {
         before: [
-          processUISyntax(null, false, compilationTime),
+          processUISyntax(null, false, compilationTime, id),
           processKitImport(id)
         ]
       }
