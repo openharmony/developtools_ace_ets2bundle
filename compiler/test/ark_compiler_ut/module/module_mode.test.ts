@@ -1261,6 +1261,17 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
+  mocha.it('8-9: test merge bytecode source map of buildModuleSourceMapInfo under build debug', async function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.mockBytecodeHarInfo();
+    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
+    await sleep(1000);
+    expect(moduleMode.checkModuleSourceMapInfoMock() === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
   mocha.it('9-1: test getPkgModulesFilePkgName under build debug', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.packageDir = OH_MODULES;

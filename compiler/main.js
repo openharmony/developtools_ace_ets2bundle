@@ -577,6 +577,9 @@ function loadBuildJson() {
       }
     });
   }
+  if (!!aceBuildJson.byteCodeHar) { 
+    projectConfig.useTsHar = true;
+  }
 }
 
 function initBuildInfo() {
