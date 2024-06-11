@@ -887,7 +887,9 @@ export class ProcessFileInfo {
   }
 
   collectResourceInFile(resource: string, file: string) {
-    this.wholeFileInfo[file].newFileToResourceList.add(resource);
+    if (this.wholeFileInfo[file]) {
+      this.wholeFileInfo[file].newFileToResourceList.add(resource);
+    }
   }
 
   clearCollectedInfo(cache) {
