@@ -89,11 +89,9 @@ export abstract class CommonMode {
       validateFilePathLength(es2abc, this.logger);
 
       args = ['"' + es2abc + '"'];
+      // compile options added here affect both bundle mode and module mode
       if (this.arkConfig.isDebug) {
         args.push('--debug-info');
-      }
-      if (this.arkConfig.isBranchElimination) {
-        args.push('--branch-elimination');
       }
     } else {
       this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
