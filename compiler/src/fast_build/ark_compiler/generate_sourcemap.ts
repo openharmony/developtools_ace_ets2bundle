@@ -20,10 +20,13 @@ import {
   EXTNAME_ETS,
   EXTNAME_JS,
   EXTNAME_TS,
+  EXTNAME_MJS,
+  EXTNAME_CJS,
+  GEN_ABC_PLUGIN_NAME,
   SOURCEMAPS,
   SOURCEMAPS_JSON,
-  EXTNAME_MJS,
-  EXTNAME_CJS
+  yellow,
+  reset
 } from "./common/ark_define";
 import {
   changeFileExtension,
@@ -55,6 +58,7 @@ export class SourceMapGenerator {
   private sourceMaps: Object = {};
   private isNewSourceMap: boolean = true;
   private keyCache: Map<string, string> = new Map();
+  private logger: Object;
 
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
@@ -65,6 +69,7 @@ export class SourceMapGenerator {
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
+    this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
   }
 
   static init(rollupObject: Object): void {
@@ -171,6 +176,20 @@ export class SourceMapGenerator {
     }
 
     const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
+    if (isDebug(this.projectConfig) && !this.projectConfig.byteCodeHar && !!this.projectConfig.byteCodeHarInfo) {
+      // Merge bytecode har source maps to hap/hsp.
+      for (const packageName in this.projectConfig.byteCodeHarInfo) {
+        const sourceMapsPath = this.projectConfig.byteCodeHarInfo[packageName].sourceMapsPath;
+        if (!sourceMapsPath) {
+          if (!!this.logger) {
+            this.logger.warn(yellow, `ArkTS:WARN Property 'sourceMapsPath' not found in '${packageName}'.`, reset);
+          }
+          continue;
+        }
+        const bytecodeHarSourceMap = JSON.parse(fs.readFileSync(toUnixPath(sourceMapsPath)).toString())
+        Object.assign(this.sourceMaps, bytecodeHarSourceMap);
+      }
+    }
     const cacheSourceMapObject: Object = this.updateCachedSourceMaps();
     stopEvent(eventUpdateCachedSourceMaps);
 

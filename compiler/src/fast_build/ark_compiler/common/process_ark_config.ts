@@ -134,7 +134,7 @@ export function initArkProjectConfig(share: Object): Object {
 
     if (projectConfig.compileMode === ESMODULE) {
       arkProjectConfig.nodeModulesPath = buildJsonInfo.nodeModulesPath;
-      // harNameOhmMap stores har packages that are dependent on bytecode har when compile bytecode har.
+      // harNameOhmMap stores har packages that are dependent for bytecode har when compile bytecode har.
       arkProjectConfig.harNameOhmMap = buildJsonInfo.harNameOhmMap;
       arkProjectConfig.hspNameOhmMap = buildJsonInfo.hspNameOhmMap;
       projectConfig.packageDir = buildJsonInfo.packageManagerType === 'ohpm' ? OH_MODULES : NODE_MODULES;
