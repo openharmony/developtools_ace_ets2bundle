@@ -1528,6 +1528,9 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 export function resetEtsCheck(): void {
   cache = {};
   props = [];
+  if (languageService) {
+    languageService.getProgram().releaseTypeChecker();
+  }
   languageService = null;
   allResolvedModules.clear();
   checkerResult.count = 0;
