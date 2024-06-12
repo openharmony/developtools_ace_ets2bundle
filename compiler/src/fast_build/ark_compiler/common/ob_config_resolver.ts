@@ -863,6 +863,8 @@ export function resetObfuscation(): void {
   renamePropertyModule.globalMangledTable?.clear();
   renamePropertyModule.historyMangledTable?.clear();
   renamePropertyModule.globalSwappedMangledTable?.clear();
+  renamePropertyModule.newlyOccupiedMangledProps?.clear();
+  renamePropertyModule.mangledPropsInNameCache?.clear();
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();
