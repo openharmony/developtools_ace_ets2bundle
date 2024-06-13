@@ -628,6 +628,14 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     return;
   }
 
+  // In watch mode, the `beforeBuild` phase will clear the parent and children fields in the cache. For files that have
+  // not been modified, the information needs to be restored using the `resolvedModuleNames` variable.
+  if (process.env.watchMode === 'true') {
+    for (let file of Object.keys(resolvedModulesCache)) {
+      createOrUpdateCache(resolvedModulesCache[file], file);
+    }
+  }
+
   // With arkts linter enabled, `allowJs` option is set to true, resulting JavaScript files themselves and
   // JavaScript-referenced files are included in the tsc program and checking process,
   // potentially introducing new errors. For instance, in scenarios where an ets file imports js file imports ts file,
