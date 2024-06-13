@@ -215,7 +215,8 @@
         "IsolatedComponent",
         "RichEditor",
         "Component3D",
-        "ContainerSpan"
+        "ContainerSpan",
+        "ArcSwiper"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -779,6 +780,11 @@
             "name": "ContainerSpan",
             "type": "ContainerSpanAttribute",
             "instance": "ContainerSpanInstance"
+          },
+          {
+            "name": "ArcSwiper",
+            "type": "ArcSwiperAttribute",
+            "instance": "ArcSwiperInstance"
           }
         ]
       },
