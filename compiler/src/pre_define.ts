@@ -151,6 +151,7 @@ export const COMPONENT_FOREACH: string = 'ForEach';
 export const COMPONENT_LAZYFOREACH: string = 'LazyForEach';
 export const COMPONENT_REPEAT: string = 'Repeat';
 export const REPEAT_EACH: string = 'each';
+export const REPEAT_TEMPLATE: string = 'template';
 export const IS_RENDERING_IN_PROGRESS: string = 'isRenderingInProgress';
 export const FOREACH_OBSERVED_OBJECT: string = 'ObservedObject';
 export const FOREACH_GET_RAW_OBJECT: string = 'GetRawObject';

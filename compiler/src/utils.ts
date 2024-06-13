@@ -747,6 +747,7 @@ export class ProcessFileInfo {
   isFirstBuild: boolean = true;
   processForEach: number = 0;
   processLazyForEach: number = 0;
+  processRepeat: boolean = false;
   isAsPageImport: boolean = false;
   overallObjectLinkCollection: Map<string, Set<string>> = new Map();
   overallLinkCollection: Map<string, Set<string>> = new Map();
