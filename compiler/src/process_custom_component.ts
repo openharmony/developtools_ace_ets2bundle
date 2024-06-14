@@ -82,7 +82,8 @@ import {
   curPropMap,
   createViewCreate,
   createCustomComponentNewExpression,
-  isLocalStorageParameter
+  isLocalStorageParameter,
+  isBasicType
 } from './process_component_member';
 import {
   LogType,
@@ -104,7 +105,8 @@ import {
 } from './process_component_build';
 import {
   partialUpdateConfig,
-  projectConfig
+  projectConfig,
+  globalProgram
 } from '../main';
 import {
   GLOBAL_CUSTOM_BUILDER_METHOD
@@ -332,63 +334,187 @@ function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]
   return childParam;
 }
 
+class ChildAndParentComponentInfo {
+  childStructInfo: StructInfo;
+  parentStructInfo: StructInfo;
+  paramDecoratorMap: Map<string, ParamDecoratorInfo>;
+  updatePropsDecoratorsV2: string[];
+  propsAndObjectLinks: string[];
+  childName: string;
+  forbiddenInitPropsV2: string[];
+  updatePropsForV1Parent: string[];
+  updatePropsForV2Parent: string[];
+  constructor(childName: string, childNode: ts.CallExpression, propsAndObjectLinks: string[]) {
+    this.childName = childName;
+    this.propsAndObjectLinks = propsAndObjectLinks;
+    this.childStructInfo = processStructComponentV2.getAliasStructInfo(childNode) ||
+      processStructComponentV2.getOrCreateStructInfo(childName);
+    this.paramDecoratorMap = this.childStructInfo.paramDecoratorMap;
+    this.updatePropsDecoratorsV2 = [...this.childStructInfo.eventDecoratorSet, ...this.paramDecoratorMap.keys()];
+    this.parentStructInfo =
+      processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
+    this.forbiddenInitPropsV2 = [...this.childStructInfo.localDecoratorSet,
+      ...this.childStructInfo.providerDecoratorSet, ...this.childStructInfo.consumerDecoratorSet,
+      ...this.childStructInfo.regularSet];
+    this.updatePropsForV1Parent = getUpdatePropsForV1Parent();
+    this.updatePropsForV2Parent = [...this.parentStructInfo.localDecoratorSet,
+      ...this.parentStructInfo.paramDecoratorMap.keys(), ...this.parentStructInfo.providerDecoratorSet,
+      ...this.parentStructInfo.consumerDecoratorSet];
+  }
+}
+
+function getUpdatePropsForV1Parent(): string[] {
+  const propertiesMapArr: Array<Map<string, Set<string>>> = [
+    stateCollection, linkCollection, propCollection,
+    provideCollection, consumeCollection, objectLinkCollection,
+    storagePropCollection, storageLinkCollection
+  ];
+  const updatePropsForParent: string[] = [];
+  if (componentCollection.currentClassName) {
+    const localStorageSet: Set<string> = new Set();
+    getLocalStorageCollection(componentCollection.currentClassName, localStorageSet);
+    updatePropsForParent.push(...localStorageSet);
+    propertiesMapArr.forEach((item: Map<string, Set<string>>) => {
+      const value: Set<string> = item.get(componentCollection.currentClassName);
+      if (value) {
+        updatePropsForParent.push(...value);
+      }
+    });
+  }
+  return updatePropsForParent;
+}
+
 function parseChildProperties(childName: string, node: ts.CallExpression,
   childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[]): void {
-  const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(node) ||
-    processStructComponentV2.getOrCreateStructInfo(childName);
-  const paramDecoratorMap: Map<string, ParamDecoratorInfo> = childStructInfo.paramDecoratorMap;
-  const updatePropsDecoratorsV2: string[] = [...childStructInfo.eventDecoratorSet, ...paramDecoratorMap.keys()];
-  const parentStructInfo: StructInfo =
-    processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
-  const forbiddenInitPropsV2: string[] = [...childStructInfo.localDecoratorSet,
-    ...childStructInfo.providerDecoratorSet, ...childStructInfo.consumerDecoratorSet];
+  const childAndParentComponentInfo: ChildAndParentComponentInfo =
+    new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
   if (node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
       if (ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
-        validateChildProperty(item, itemName, childStructInfo, parentStructInfo, paramDecoratorMap,
-          childParam, updatePropsDecoratorsV2, propsAndObjectLinks, log, childName, forbiddenInitPropsV2);
+        validateChildProperty(item, itemName, childParam, log, childAndParentComponentInfo);
       }
     });
   }
 }
 
-function validateChildProperty(item: ts.PropertyAssignment, itemName: string, childStructInfo: StructInfo,
-  parentStructInfo: StructInfo, paramDecoratorMap: Map<string, ParamDecoratorInfo>, childParam: ts.PropertyAssignment[],
-  updatePropsDecoratorsV2: string[], propsAndObjectLinks: string[], log: LogInfo[], childName: string,
-  forbiddenInitPropsV2: string[]): void {
-  if (childStructInfo.isComponentV2) {
-    if (forbiddenInitPropsV2.includes(itemName)) {
+function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
+  childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
+  if (info.childStructInfo.isComponentV2) {
+    if (info.forbiddenInitPropsV2.includes(itemName)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the custom component '${childName}'` +
+        message: `Property '${itemName}' in the custom component '${info.childName}'` +
           ` cannot initialize here (forbidden to specify).`,
         pos: item.getStart()
       });
       return;
     }
-    if (paramDecoratorMap.has(itemName)) {
+    if (info.paramDecoratorMap.has(itemName)) {
       childParam.push(item);
     }
-    if (!parentStructInfo.isComponentV2 && updatePropsDecoratorsV2.includes(itemName)) {
+    if (isForbiddenAssignToComponentV2(item, itemName, info)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the @ComponentV2 component '${childName}' are not allowed to be assigned values here.`,
+        message: `Property '${itemName}' in the @ComponentV2 component '${info.childName}' are not allowed to be assigned values here.`,
         pos: item.getStart()
       });
     }
   } else {
-    if (propsAndObjectLinks.includes(itemName)) {
+    if (info.propsAndObjectLinks.includes(itemName)) {
       childParam.push(item);
     }
-    if (parentStructInfo.isComponentV2 && childStructInfo.updatePropsDecoratorsV1.includes(itemName)) {
+    if (isForbiddenAssignToComponentV1(item, itemName, info)) {
       log.push({
         type: LogType.ERROR,
-        message: `Property '${itemName}' in the @Component component '${childName}' are not allowed to be assigned values here.`,
+        message: `Property '${itemName}' in the @Component component '${info.childName}' are not allowed to be assigned values here.`,
         pos: item.getStart()
       });
     }
   }
+}
+
+function isForbiddenAssignToComponentV1(item: ts.PropertyAssignment, itemName: string,
+  info: ChildAndParentComponentInfo): boolean {
+  if (info.parentStructInfo.isComponentV2 && info.childStructInfo.updatePropsDecoratorsV1.includes(itemName) &&
+    isObervedProperty(item.initializer, info, false) && globalProgram.checker) {
+    const type: ts.Type = globalProgram.checker.getTypeAtLocation(item.initializer);
+    return isForbiddenTypeToComponentV1(type);
+  }
+  return false;
+}
+
+function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
+  // @ts-ignore
+  if (type.types && type.types.length) {
+    // @ts-ignore
+    return !type.types.some((item: ts.Type) => {
+      return !isForbiddenTypeToComponentV1(item);
+    });
+  }
+  const allowedTypes: string[] = ['Set', 'Map', 'Date', 'Array'];
+  const name: string = type?.getSymbol()?.getName();
+  if (name && allowedTypes.includes(name)) {
+    return true;
+  }
+  return false;
+}
+
+function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: string,
+  info: ChildAndParentComponentInfo): boolean {
+  if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
+    isObervedProperty(item.initializer, info) && globalProgram.checker) {
+    const type: ts.Type = globalProgram.checker.getTypeAtLocation(item.initializer);
+    return !isAllowedTypeToComponentV2(type);
+  }
+  return false;
+}
+
+function isObervedProperty(value: ts.Expression, info: ChildAndParentComponentInfo,
+  isV1Parent: boolean = true): boolean {
+  if (ts.isPropertyAccessExpression(value) && value.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(value.name)) {
+    const propertyName: string = value.name.escapedText.toString();
+    return isV1Parent ? info.updatePropsForV1Parent.includes(propertyName) :
+      info.updatePropsForV2Parent.includes(propertyName);
+  }
+  return false;
+}
+
+function isAllowedTypeToComponentV2(type: ts.Type): boolean {
+  if (type) {
+    // @ts-ignore
+    if (type.types && type.types.length) {
+      // @ts-ignore
+      return type.types.some((item: ts.Type) => {
+        return isAllowedTypeToComponentV2(item);
+      });
+    }
+    // string|number|boolean|enum|null|undefined
+    if (isAllowedTypeForBasic(type.flags)) {
+      return true;
+    }
+    // Anonymous function | Function
+    if (isAllowedTypeForFunction(type)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
+  if (isBasicType(flags) || (flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))) {
+    return true;
+  }
+  return false;
+}
+
+function isAllowedTypeForFunction(type: ts.Type): boolean {
+  if ((type.flags & ts.TypeFlags.Object) &&
+    (type.getCallSignatures().length || globalProgram.checker.typeToString(type) === 'Function')) {
+    return true;
+  }
+  return false;
 }
 
 function validateInitParam(childName: string, curChildProps: Set<string>,
@@ -908,6 +1034,13 @@ function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<s
 function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string,
   log: LogInfo[], isBuilder: boolean): void {
   validateForbiddenToInitViaParam(node, customComponentName, log);
+  if (componentCollection.currentClassName) {
+    const parentStructInfo: StructInfo =
+      processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
+    if (parentStructInfo.isComponentV2) {
+      return;
+    }
+  }
   checkFromParentToChild(node, customComponentName, log, isBuilder);
 }
 
