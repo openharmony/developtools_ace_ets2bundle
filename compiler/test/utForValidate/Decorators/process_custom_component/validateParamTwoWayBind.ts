@@ -46,7 +46,7 @@ struct validateParamTwoWayBind {
 
 @ComponentV2
 struct testParamChild1 {
-  value: string = "hello"
+  @Param value: string = "hello"
   build() {}
 }
 

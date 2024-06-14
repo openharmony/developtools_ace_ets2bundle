@@ -141,7 +141,7 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
 function traverseStructInfo(structInfo: StructInfo,
   addStatementsInConstructor: ts.Statement[], paramStatementsInStateVarsMethod: ts.Statement[]): void {
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
-    ...structInfo.regularSet, ...structInfo.eventDecoratorSet];
+    ...structInfo.eventDecoratorSet];
   for (const property of structInfo.propertiesMap) {
     setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
       needInitFromParams);

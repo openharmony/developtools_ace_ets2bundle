@@ -567,6 +567,10 @@
             "type": "ERROR"
         },
         {
+            "message": "Property 'regular_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "type": "ERROR"
+        },
+        {
             "message": "Property 'local_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
             "type": "ERROR"
         },
@@ -576,46 +580,6 @@
         },
         {
             "message": "Property 'consumer_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
-            "type": "ERROR"
-        }
-    ],
-    "createV1ComponentInV2": [
-        {
-            "message": "The regular property 'value' cannot be assigned to the @Link property 'link_value'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The regular property 'objectLink_value' cannot be assigned to the @ObjectLink property 'objectLink_value'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'state_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'prop_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'link_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'provide_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'objectLink_value' in the @Component component 'testChildV1' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        }
-    ],
-    "createV2ComponentInV1": [
-        {
-            "message": "Property 'param_value' in the @ComponentV2 component 'testChildV2' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'event' in the @ComponentV2 component 'testChildV2' are not allowed to be assigned values here.",
             "type": "ERROR"
         }
     ],
@@ -704,5 +668,8 @@
             "message": "Duplicate decorators for method are not allowed.",
             "type": "ERROR"
         }
-    ]
+    ],
+    "v1ToV2Component.ts": [],
+    "v1ToV2ComponentValidate": [],
+    "v2ToV1ComponentValidate": []
 }
