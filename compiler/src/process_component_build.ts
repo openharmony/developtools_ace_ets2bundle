@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -86,6 +86,7 @@ import {
   COMPONENT_REPEAT,
   REPEAT_EACH,
   LIST_ITEM,
+  ARC_LIST_ITEM,
   IFELSEBRANCHUPDATEFUNCTION,
   CARD_ENABLE_COMPONENTS,
   CARD_LOG_TYPE_COMPONENTS,
@@ -1216,7 +1217,7 @@ function createItemBlock(
 }
 
 function checkLazyCreate(node: ts.ExpressionStatement, nameResult: NameResult): boolean {
-  if (nameResult.name === LIST_ITEM) {
+  if (nameResult.name === LIST_ITEM || nameResult.name === ARC_LIST_ITEM) {
     if (nameResult.arguments.length && ts.isStringLiteral(nameResult.arguments[0]) &&
       nameResult.arguments[0].text === 'false') {
       return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -299,6 +299,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
   ['ListItem', new Set(['swipeAction'])],
+  ['ArcListItem', new Set(['swipeAction'])],
   ['MenuItem', new Set([COMPONENT_CREATE_FUNCTION])],
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
@@ -358,6 +359,7 @@ export const DATE: string = 'date';
 export const GRID_ITEM: string = 'GridItem';
 export const LIST_ITEM: string = 'ListItem';
 export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
+export const ARC_LIST_ITEM: string = 'ArcListItem';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
@@ -488,7 +490,7 @@ export const ITEMCREATION: string = 'itemCreation';
 export const ITEMCREATION2: string = 'itemCreation2';
 export const OBSERVEDSHALLOWRENDER: string = 'observedShallowRender';
 export const OBSERVEDDEEPRENDER: string = 'observedDeepRender';
-export const ItemComponents: string[] = ['ListItem', 'GridItem'];
+export const ItemComponents: string[] = ['ListItem', 'GridItem', 'ArcListItem'];
 export const FOREACHITEMGENFUNCTION: string = 'forEachItemGenFunction';
 export const __LAZYFOREACHITEMGENFUNCTION: string = '__lazyForEachItemGenFunction';
 export const _ITEM: string = '_item';
