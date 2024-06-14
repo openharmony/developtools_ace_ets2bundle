@@ -76,7 +76,7 @@ class PageOne extends ViewPU {
         }, NavDestination);
         NavDestination.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            NavDestination.create({ moduleName: "", pagePath: "navDestination_component" });
+            NavDestination.create(() => { }, { moduleName: "", pagePath: "navDestination_component" });
         }, NavDestination);
         NavDestination.pop();
         Row.pop();

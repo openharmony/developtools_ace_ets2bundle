@@ -137,7 +137,8 @@ import {
   CREATE_ROUTER_COMPONENT_COLLECT,
   BASE_COMPONENT_NAME_PU,
   PROTO,
-  NATIVE_VIEW_PARTIAL_UPDATE
+  NATIVE_VIEW_PARTIAL_UPDATE,
+  NAV_PATH_STACK
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1450,11 +1451,12 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     const newTabContentChildren: ts.Statement[] = [];
     processComponentChild(TabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
       false, parent, undefined, isGlobalBuilder, false, builderParamsResult);
-    const navDestinationCallback: (ts.ArrowFunction | ts.ObjectLiteralExpression)[] = [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+    const navDestinationCallback: (ts.ArrowFunction | ts.NewExpression | ts.ObjectLiteralExpression)[] =
+      [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
       ts.factory.createBlock([...newTabContentChildren], true))];
     if (name === NAV_DESTINATION) {
-      navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION));
+      navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION, COMPONENT_CREATE_FUNCTION, undefined, true));
     }
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
@@ -3376,13 +3378,31 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
 }
 
 function navigationCreateParam(compName: string, type: string,
-  argumentsArr: ts.NodeArray<ts.Expression> = undefined): ts.ObjectLiteralExpression[] | [] {
-  const navigationOrNavDestination: ts.ObjectLiteralExpression[] = [];
+  argumentsArr: ts.NodeArray<ts.Expression> = undefined, isNavDestinationCallback: boolean = false):
+  (ts.ObjectLiteralExpression | ts.NewExpression | ts.ArrowFunction)[] | [] {
+  const navigationOrNavDestination: (ts.ObjectLiteralExpression | ts.NewExpression | ts.ArrowFunction)[] = [];
+  const isCreate: boolean = type === COMPONENT_CREATE_FUNCTION;
+  const partialUpdateMode: boolean = partialUpdateConfig.partialUpdateMode;
   if (argumentsArr && argumentsArr.length) {
     // @ts-ignore
     navigationOrNavDestination.push(...argumentsArr);
+  } else if (partialUpdateMode && isCreate) {
+    if (compName === NAVIGATION) {
+      navigationOrNavDestination.push(ts.factory.createNewExpression(
+        ts.factory.createIdentifier(NAV_PATH_STACK), undefined, []
+      ));
+    } else if (compName === NAV_DESTINATION && !isNavDestinationCallback) {
+      navigationOrNavDestination.push(ts.factory.createArrowFunction(
+        undefined, undefined, [], undefined,
+        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+        ts.factory.createBlock(
+          [],
+          false
+        )
+      ));
+    } 
   }
-  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
+  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       [ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier(RESOURCE_NAME_MODULE),
