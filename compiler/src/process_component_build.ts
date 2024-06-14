@@ -959,17 +959,23 @@ function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpr
 function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.ArrowFunction[],
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.ArrowFunction[] {
   if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
-    node.expression.name.getText() === REPEAT_EACH && repeatPropArgs.length > 0) {
+    node.expression.name.getText() === REPEAT_EACH && repeatPropArgs.length > 0 && repeatPropArgs[0].body) {
     // transfer args for each property
-    return [ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
-      repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
-      processComponentBlock(repeatPropArgs[0].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
+    return [
+      ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
+        repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
+        processComponentBlock(repeatPropArgs[0].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+      ...repeatPropArgs.slice(1)
+    ];
   } else if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
-    node.expression.name.getText() === REPEAT_TEMPLATE && repeatPropArgs.length > 1) {
+    node.expression.name.getText() === REPEAT_TEMPLATE && repeatPropArgs.length > 1 && repeatPropArgs[1].body) {
     // transfer args for template property
-    return [repeatPropArgs[0], ts.factory.updateArrowFunction(repeatPropArgs[1], repeatPropArgs[1].modifiers, repeatPropArgs[1].typeParameters,
-      repeatPropArgs[1].parameters, repeatPropArgs[1].type, repeatPropArgs[1].equalsGreaterThanToken,
-      processComponentBlock(repeatPropArgs[1].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder))];
+    return [
+      repeatPropArgs[0], ts.factory.updateArrowFunction(repeatPropArgs[1], repeatPropArgs[1].modifiers, repeatPropArgs[1].typeParameters,
+        repeatPropArgs[1].parameters, repeatPropArgs[1].type, repeatPropArgs[1].equalsGreaterThanToken,
+        processComponentBlock(repeatPropArgs[1].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+      ...repeatPropArgs.slice(2)
+    ];
   }
   return repeatPropArgs;
 }
