@@ -1,10 +1,10 @@
 {
     "@linkInitialize": {
-        "message": "The @Link property 'link' cannot be specified a default value.",
+        "message": "The @Link property 'link' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
         "type": "ERROR"
     },
     "@objectLinkInitialize": {
-        "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.",
+        "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
         "type": "ERROR"
     },
     "rootContainerCheck": {
@@ -70,7 +70,7 @@
         "type": "ERROR"
     },
     "validateBuildMethodCount": {
-        "message": "struct 'Index' must be at least or at most one 'build' method.",
+        "message": "struct 'Index' must be at least or at most one 'build' method.Solutions:>A structurally modified page must have at least one and no more than one'build' method.",
         "type": "ERROR"
     },
     "validateHasController": {
@@ -94,7 +94,7 @@
         "type": "ERROR"
     },
     "validatePropertyDefaultValue": {
-        "message": "The @Link property 'message' cannot be specified a default value.",
+        "message": "The @Link property 'message' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
         "type": "ERROR"
     },
     "validatePropertyNonType": {
@@ -280,7 +280,7 @@
         "type": "ERROR"
     },
     "OneEntry": {
-        "message": "A page configured in 'undefined' must have one and only one '@Entry' decorator.",
+        "message": "A page configured in 'undefined or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
         "type": "ERROR"
     },
     "notMethodDeco": {
