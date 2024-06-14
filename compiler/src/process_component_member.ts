@@ -1049,7 +1049,7 @@ function getDeclarationType(typeNode: ts.TypeNode, checker: ts.TypeChecker, log:
   return false;
 }
 
-function isBasicType(flags: number): boolean {
+export function isBasicType(flags: number): boolean {
   if (flags & (4 | /* String */ 8 | /* Number */ 16 | /* Boolean */ 32 | /* Enum */ 64 | /* BigInt */
     128 | /* StringLiteral */ 256 | /* NumberLiteral */ 512 /* BooleanLiteral */| 1024 /* EnumLiteral */|
     2048 /* BigIntLiteral */)) {
