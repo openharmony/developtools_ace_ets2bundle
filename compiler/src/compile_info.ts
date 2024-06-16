@@ -267,6 +267,7 @@ export class ResultStates {
             process.env.watchTs = 'end';
             return true;
           }
+          return false;
         });
       }
       if (shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
@@ -379,8 +380,8 @@ export class ResultStates {
   private printSuccessInfo(blue: string, reset: string, resultInfo: string): void {
     if (projectConfig.hotReload) {
       this.hotReloadIncrementalTime.hotReloadIncrementalEndTime = new Date().getTime().toString();
-      console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime
-        +'\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime, reset);
+      console.info(blue, 'Incremental build start: ' + this.hotReloadIncrementalTime.hotReloadIncrementalStartTime +
+        '\n' + 'Incremental build end: ' + this.hotReloadIncrementalTime.hotReloadIncrementalEndTime, reset);
     }
     if (resultInfo.length === 0) {
       console.info(blue, 'COMPILE RESULT:SUCCESS ', reset);

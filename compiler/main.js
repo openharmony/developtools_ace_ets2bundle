@@ -114,6 +114,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.enableDebugLine = projectConfig.enableDebugLine || process.env.enableDebugLine || false;
   projectConfig.bundleType = projectConfig.bundleType || process.env.bundleType || '';
   projectConfig.optLazyForEach = false;
+  projectConfig.hspResourcesMap = false;
   projectConfig.useArkoala = false;
   projectConfig.resetBundleName = false;
   projectConfig.integratedHsp = false;
@@ -334,8 +335,8 @@ function getPages(configJson) {
         return pagesConfig.src;
       }
     } catch (e) {
-      throw Error("\x1B[31m" + `BUIDERROR: the ${modulePagePath} file format is invalid.` +
-        "\x1B[39m").message;
+      throw Error('\x1B[31m' + `BUIDERROR: the ${modulePagePath} file format is invalid.` +
+        '\x1B[39m').message;
     }
   }
   return pages;
@@ -473,8 +474,8 @@ function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
       if (ability.srcEntry) {
-        abilityPages.push(ability.srcEntry)
-        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry))
+        abilityPages.push(ability.srcEntry);
+        abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
         abilityPagesFullPath.push(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
@@ -726,7 +727,26 @@ function collectExternalModules(sdkPaths) {
   }
 }
 
+function readHspResource() {
+  if (aceBuildJson.hspResourcesMap) {
+    projectConfig.hspResourcesMap = true;
+    for (const hspName in aceBuildJson.hspResourcesMap) {
+      if (fs.existsSync(aceBuildJson.hspResourcesMap[hspName])) {
+        const resourceMap = new Map();
+        const hspResourceCollect = resources[hspName] = {};
+        const hspResource = fs.readFileSync(aceBuildJson.hspResourcesMap[hspName], 'utf-8');
+        const resourceArr = hspResource.split(/\n/);
+        processResourceArr(resourceArr, resourceMap, aceBuildJson.hspResourcesMap[hspName]);
+        for (const [key, value] of resourceMap) {
+          hspResourceCollect[key] = value;
+        }
+      }
+    }
+  }
+}
+
 function readAppResource(filePath) {
+  readHspResource();
   if (fs.existsSync(filePath)) {
     const appResource = fs.readFileSync(filePath, 'utf-8');
     const resourceArr = appResource.split(/\n/);
@@ -771,7 +791,7 @@ function processResourceArr(resourceArr, resourceMap, filePath) {
 function hashProjectPath(projectPath) {
   const hash = crypto.createHash('sha256');
   hash.update(projectPath.toString());
-  process.env.hashProjectPath = "_" + hash.digest('hex');
+  process.env.hashProjectPath = '_' + hash.digest('hex');
   return process.env.hashProjectPath;
 }
 
@@ -791,7 +811,7 @@ function loadModuleInfo(projectConfig, envArgs) {
       }
       logger.error(error);
       process.exit(FAIL);
-    }
+    };
     projectConfig.es2abcCompileTsInAotMode = true;
     projectConfig.es2abcCompileTsInNonAotMode = false;
     const compileMode = process.env.compileTool === 'rollup' ? projectConfig.compileMode : buildJsonInfo.compileMode;
@@ -863,11 +883,11 @@ function saveAppResourcePath(appResourcePath, appResourcePathSavePath) {
 function addSDKBuildDependencies(config) {
   if (projectConfig.localPropertiesPath &&
     fs.existsSync(projectConfig.localPropertiesPath) && config.cache) {
-    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath)
+    config.cache.buildDependencies.config.push(projectConfig.localPropertiesPath);
   }
   if (projectConfig.projectProfilePath &&
     fs.existsSync(projectConfig.projectProfilePath) && config.cache) {
-    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath)
+    config.cache.buildDependencies.config.push(projectConfig.projectProfilePath);
   }
 }
 
@@ -1025,6 +1045,7 @@ function resetProjectConfig() {
   projectConfig.cardEntryObj = {};
   projectConfig.compilerTypes = [];
   projectConfig.optLazyForEach = false;
+  projectConfig.hspResourcesMap = false;
   projectConfig.coldReload = undefined;
   projectConfig.isFirstBuild = undefined;
   projectConfig.changedFileList = undefined;

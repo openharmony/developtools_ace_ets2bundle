@@ -281,8 +281,8 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     !abilityPagesFullPath.includes(path.resolve(fileName).toLowerCase())) {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in '${projectConfig.pagesJsonFileName}' must have one and only one '@Entry' ` +
-        `decorator.`,
+      message: `A page configured in '${projectConfig.pagesJsonFileName} or build-profile.json5' must have one and only one '@Entry' decorator.` +
+        `Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.`,
       fileName: fileName
     });
   }
@@ -476,7 +476,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
 }
 
 function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  if (ts.isPropertyDeclaration || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
+  if (ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
     const exludeDecorators: string[] = ['@Require', '@Once'];
@@ -1518,7 +1518,7 @@ export function collectImportNames(content: string, sourcePath: string = null): 
     });
   }
 
-  if (sourcePath && sourcePath != null) {
+  if (sourcePath && sourcePath !== null) {
     const cleanSourcePath: string = sourcePath.replace('.ets', '.js').replace('.ts', '.js');
     if (!sourcemapNamesCollection.has(cleanSourcePath)) {
       sourcemapNamesCollection.set(cleanSourcePath, new Map());
