@@ -193,9 +193,9 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
     const extendResult = {
       Extend: false,
       AnimatableExtend: false
-    }
+    };
     for (let i = 0; i < decorators.length; i++) {
-      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').trim();
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
       if (log && EXTEND_DECORATORS.includes(decortorName)) {
         if (originalDecortor === COMPONENT_EXTEND_DECORATOR) {
           extendResult.Extend = true;
@@ -876,7 +876,9 @@ export class ProcessFileInfo {
   }
 
   collectResourceInFile(resource: string, file: string) {
-    this.wholeFileInfo[file].newFileToResourceList.add(resource);
+    if (this.wholeFileInfo[file]) {
+      this.wholeFileInfo[file].newFileToResourceList.add(resource);
+    }
   }
 
   clearCollectedInfo(cache) {

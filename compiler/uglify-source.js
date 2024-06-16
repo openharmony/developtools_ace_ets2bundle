@@ -13,32 +13,32 @@
  * limitations under the License.
  */
 
-const fs = require('fs')
-const path = require('path')
-const uglifyJS = require('uglify-js')
+const fs = require('fs');
+const path = require('path');
+const uglifyJS = require('uglify-js');
 
-readCode(process.argv[2])
+readCode(process.argv[2]);
 
 function readCode(inputPath) {
   if (fs.existsSync(inputPath)) {
-    const files = fs.readdirSync(inputPath)
+    const files = fs.readdirSync(inputPath);
     files.forEach(function(file) {
-      const filePath = path.join(inputPath, file)
+      const filePath = path.join(inputPath, file);
       if (fs.existsSync(filePath)) {
-        const fileStat = fs.statSync(filePath)
+        const fileStat = fs.statSync(filePath);
         if (fileStat.isFile()) {
-          const code = fs.readFileSync(filePath, 'utf-8')
-          uglifyCode(code,filePath)
+          const code = fs.readFileSync(filePath, 'utf-8');
+          uglifyCode(code, filePath);
         }
         if (fileStat.isDirectory()) {
-          readCode(filePath)
+          readCode(filePath);
         }
       }
-    })
+    });
   }
 }
 
 function uglifyCode(code, outPath) {
-  const uglifyCode = uglifyJS.minify(code).code
-  fs.writeFileSync(outPath, uglifyCode)
+  const uglifyCode = uglifyJS.minify(code).code;
+  fs.writeFileSync(outPath, uglifyCode);
 }

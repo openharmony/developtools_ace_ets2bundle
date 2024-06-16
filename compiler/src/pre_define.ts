@@ -204,6 +204,9 @@ export const COMPONENT_UPDATE_ELMT_ID: string = 'updateElmtId';
 export const UPDATE_RECYCLE_ELMT_ID: string = 'updateRecycleElmtId';
 export const OLD_ELMT_ID: string = 'oldElmtId';
 export const NEW_ELMT_ID: string = 'newElmtId';
+export const NAVIGATION: string = 'Navigation';
+export const NAV_DESTINATION: string = 'NavDestination';
+export const CREATE_ROUTER_COMPONENT_COLLECT: Set<string> = new Set([NAVIGATION, NAV_DESTINATION]);
 
 export const COMPONENT_CONSTRUCTOR_UPDATE_PARAMS: string = 'updateWithValueParams';
 export const COMPONENT_CONSTRUCTOR_DELETE_PARAMS: string = 'aboutToBeDeleted';
@@ -500,6 +503,8 @@ export const GRID_COMPONENT: string = 'Grid';
 export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
 export const BASE_COMPONENT_NAME_PU: string = 'ViewPU';
+export const PROTO: string = '__proto__';
+export const NATIVE_VIEW_PARTIAL_UPDATE: string = 'NativeViewPartialUpdate';
 export const GLOBAL_THIS: string = 'globalThis';
 export const OBSERVED_PROPERTY_SIMPLE_PU: string = 'ObservedPropertySimplePU';
 export const OBSERVED_PROPERTY_OBJECT_PU: string = 'ObservedPropertyObjectPU';
@@ -552,6 +557,7 @@ export const STORAGE: string = 'storage';
 export const REGISTER_NAMED_ROUTE: string = 'registerNamedRoute';
 export const ROUTE_NAME: string = 'routeName';
 export const PAGE_PATH: string = 'pagePath';
+export const PAGE_FULL_PATH: string = 'pageFullPath';
 
 export const CAN_RETAKE: string = 'canRetake';
 export const DECORATOR_SUFFIX: string = '@';

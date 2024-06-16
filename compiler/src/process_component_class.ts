@@ -527,6 +527,7 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
       localValue
     );
   }
+  return undefined;
 }
 
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
@@ -591,7 +592,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
           pos: node.getStart()
         });
       }
-      return;
+      return undefined;
     }
   }
   return updateItem;
@@ -918,7 +919,8 @@ export function validateBuildMethodCount(buildCount: BuildCount, parentComponent
   if (buildCount.count !== 1) {
     log.push({
       type: LogType.ERROR,
-      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.`,
+      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.` +
+        `Solutions:>A structurally modified page must have at least one and no more than one'build' method.`,
       pos: parentComponentName.getStart()
     });
   }

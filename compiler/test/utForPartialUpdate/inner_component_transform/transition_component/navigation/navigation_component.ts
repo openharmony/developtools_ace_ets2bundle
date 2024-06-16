@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,36 +14,42 @@
  */
 
 exports.source = `
-let route = 'pages/Index';
-
-@Entry({
-  routeName: route
-})
+@Entry
 @Component
-struct LocalStorageComponent {
-    build() {
-        Column() {
-        }
-        .height(500)
+struct Index {
+  pageStack: NavPathStack = new NavPathStack()
+
+  build() {
+    Row() {
+      Navigation(this.pageStack) {
+      }
+      .title('Main')
+      Navigation() {}
+      .title('Main')
     }
+  }
 }
 `
+
 exports.expectResult =
 `"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-let route = 'pages/Index';
-class LocalStorageComponent extends ViewPU {
+class Index extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
+        this.pageStack = new NavPathStack();
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
+        if (params.pageStack !== undefined) {
+            this.pageStack = params.pageStack;
+        }
     }
     updateStateVars(params) {
     }
@@ -55,17 +61,25 @@ class LocalStorageComponent extends ViewPU {
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.height(500);
-        }, Column);
-        Column.pop();
+            Row.create();
+        }, Row);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Navigation.create(this.pageStack, { moduleName: "", pagePath: "navigation_component" });
+            Navigation.title('Main');
+        }, Navigation);
+        Navigation.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Navigation.create({ moduleName: "", pagePath: "navigation_component" });
+            Navigation.title('Main');
+        }, Navigation);
+        Navigation.pop();
+        Row.pop();
     }
     rerender() {
         this.updateDirtyElements();
     }
 }
-{
-    let routeNameNode = route;
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}), routeNameNode, { bundleName: "", moduleName: "", pagePath: "localStorageForRoute", pageFullPath: "localStorageForRoute", integratedHsp: "false" });
-}
+ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
+loadDocument(new Index(undefined, {}));
+ViewStackProcessor.StopGetAccessRecording();
 `

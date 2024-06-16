@@ -167,7 +167,7 @@ const MODIFIER_LENGTH: number = 2;
 function visitAllNode(node: ts.Node, sourceFile: ts.SourceFile, defaultNameFromParent: string,
   asNameFromParent: Map<string, string>, pagesDir: string, log: LogInfo[], entryCollection: Set<string>,
   exportCollection: Set<string>, defaultCollection: Set<string>, asExportCollection: Map<string, string>,
-  pathCollection: Set<string>, fileResolvePath: string, isDETS: boolean) {
+  pathCollection: Set<string>, fileResolvePath: string, isDETS: boolean): void {
   if (isObservedClass(node)) {
     collectSpecialFunctionNode(node as ts.ClassDeclaration, asNameFromParent, defaultNameFromParent, defaultCollection,
       asExportCollection, observedClassCollection);
@@ -611,6 +611,7 @@ function isPackageJsonEntry(filePath: string): boolean {
       return true;
     }
   }
+  return false;
 }
 
 function entryExist(filePath: string, entry: string): boolean {

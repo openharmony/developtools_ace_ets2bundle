@@ -332,6 +332,7 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
           ts.factory.createToken(ts.SyntaxKind.EqualsToken),
           ts.factory.createIdentifier(SET_CONTROLLER_CTR)))], true));
   }
+  return undefined;
 }
 
 function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.PropertyDeclaration,
@@ -763,6 +764,7 @@ function updateSynchedPropertyNesedObject(nameIdentifier: ts.Identifier,
   } else {
     validateNonObservedClassType(nameIdentifier, decoractor, log);
   }
+  return undefined;
 }
 
 function updateConsumeProperty(node: ts.PropertyDeclaration,
@@ -1107,7 +1109,8 @@ function validatePropertyDefaultValue(propertyName: ts.Identifier, decorator: st
   log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
-    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.`,
+    message: `The ${decorator} property '${propertyName.getText()}' cannot be specified a default value.` +
+      'Solutions:>Please initialize the rules according to the decorator.',
     pos: propertyName.getStart()
   });
 }

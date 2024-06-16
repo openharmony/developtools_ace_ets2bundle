@@ -75,7 +75,8 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
-  FUNCTION
+  FUNCTION,
+  PAGE_FULL_PATH
 } from './pre_define';
 import {
   componentInfo,
@@ -157,7 +158,7 @@ export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
 
 export function processUISyntax(program: ts.Program, ut = false,
-  compilationTime: CompilationTimeStatistics = null): Function {
+  compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
   let entryNodeKey: ts.Expression;
   let hasStruct: boolean = false;
   return (context: ts.TransformationContext) => {
@@ -331,7 +332,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           }
         }
       } else if (isResource(node)) {
-        node = processResourceData(node as ts.CallExpression);
+        node = processResourceData(node as ts.CallExpression, filePath);
       } else if (isWorker(node)) {
         node = processWorker(node as ts.NewExpression);
       } else if (isAnimateToOrImmediately(node)) {
@@ -358,7 +359,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           if (projectConfig.compileHar && !projectConfig.useTsHar) {
             let warnMessage: string = 'If you use @Sendable in js har, an exception will occur during runtime.\n' +
                                       'Please use @Sendable in ts har. You can configure {"name": "UseTsHar", ' +
-                                      '"value": "true"} in the "metadata" in the module.json5 file in har.'
+                                      '"value": "true"} in the "metadata" in the module.json5 file in har.';
             transformLog.errors.push({
               type: LogType.WARN,
               message: warnMessage,
@@ -375,7 +376,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (ts.isImportDeclaration(node)) {
         validateModuleSpecifier(node.moduleSpecifier, transformLog.errors);
       } else if (isResource(node)) {
-        node = processResourceData(node as ts.CallExpression);
+        node = processResourceData(node as ts.CallExpression, filePath);
       } else if (ts.isTypeReferenceNode(node)) {
         checkTypeReference(node, transformLog);
       }
@@ -562,6 +563,7 @@ function processCustomDialogControllerPropertyAssignment(parent: ts.Expression,
     return ts.factory.updatePropertyAssignment(node, node.name,
       processCustomDialogControllerBuilder(parent, node.initializer, componentName));
   }
+  return undefined;
 }
 
 function processCustomDialogControllerBuilder(parent: ts.Expression,
@@ -625,7 +627,7 @@ export function isAnimateToOrImmediately(node: ts.Node): boolean {
     ATTRIBUTE_ANIMATETO_SET.has(node.expression.escapedText.toString());
 }
 
-export function processResourceData(node: ts.CallExpression,
+export function processResourceData(node: ts.CallExpression, filePath: string,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
   if (ts.isStringLiteral(node.arguments[0])) {
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
@@ -638,7 +640,7 @@ export function processResourceData(node: ts.CallExpression,
         return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false);
       }
     } else {
-      return getResourceDataNode(node, previewLog, resourceData, isResourceModule);
+      return getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath);
     }
   } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
@@ -660,9 +662,9 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
 }
 
 function getResourceDataNode(node: ts.CallExpression,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, resourceData: string[], isResourceModule: boolean): ts.Node {
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, resourceData: string[], isResourceModule: boolean, filePath: string): ts.Node {
   let resourceValue: number;
-  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule)) {
+  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule, filePath)) {
     let resourceType: number = RESOURCE_TYPE[resourceData[1]];
     if (resourceType === undefined && !previewLog.isAcceleratePreview) {
       transformLog.errors.push({
@@ -779,16 +781,16 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean): boolean {
+  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean, filePath: string): boolean {
   if (previewLog.isAcceleratePreview) {
-    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule);
+    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath);
   } else {
-    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule);
+    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath);
   }
 }
 
 function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[], isAcceleratePreview: boolean,
-  isResourceModule: boolean): boolean {
+  isResourceModule: boolean, filePath: string): boolean {
   if (resourceData.length !== 3) {
     log.push({
       type: LogType.ERROR,
@@ -797,29 +799,41 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     });
   } else {
     if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
-      storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(resourceFileName));
+      storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(filePath));
     }
-    if (!isResourceModule && !resources[resourceData[0]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource source '${resourceData[0]}'.`,
-        pos: pos
-      });
-    } else if (!isResourceModule && !resources[resourceData[0]][resourceData[1]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource type '${resourceData[1]}'.`,
-        pos: pos
-      });
-    } else if (!isResourceModule && !resources[resourceData[0]][resourceData[1]][resourceData[2]]) {
-      log.push({
-        type: LogType.ERROR,
-        message: `Unknown resource name '${resourceData[2]}'.`,
-        pos: pos
-      });
-    } else {
-      return true;
+    if (isResourceModule && /^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
+      const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
+      return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst);
+    } else if (!isResourceModule) {
+      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0]);
     }
+  }
+  return false;
+}
+
+function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isResourceModule: boolean,
+  resourceDataFirst: string): boolean {
+  const logType: LogType = isResourceModule ? LogType.WARN : LogType.ERROR;
+  if (!resources[resourceDataFirst]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource source '${resourceDataFirst}'.`,
+      pos: pos
+    });
+  } else if (!resources[resourceDataFirst][resourceData[1]]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource type '${resourceData[1]}'.`,
+      pos: pos
+    });
+  } else if (!resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
+    log.push({
+      type: logType,
+      message: `Unknown resource name '${resourceData[2]}'.`,
+      pos: pos
+    });
+  } else {
+    return true;
   }
   return false;
 }
@@ -897,6 +911,7 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
   }
+  return undefined;
 }
 
 function createAnimatableParameterNode(): ts.ParameterDeclaration[] {
@@ -1045,21 +1060,22 @@ function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
     if (ts.isConstructorDeclaration(member)) {
       hasConstructor = true;
       const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
-
-      const statementArray: ts.Statement[] = [
-        ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
-        ...constructor.body.statements
-      ];
-
-      const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
-        constructor,
-        constructor.modifiers,
-        constructor.parameters,
-        ts.factory.updateBlock(constructor.body, statementArray));
-
-      updatedMembers = ts.factory.createNodeArray(
-        updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
-      );
+      if (constructor.body !== undefined) {
+        const statementArray: ts.Statement[] = [
+          ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
+          ...constructor.body.statements
+        ];
+  
+        const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
+          constructor,
+          constructor.modifiers,
+          constructor.parameters,
+          ts.factory.updateBlock(constructor.body, statementArray));
+  
+        updatedMembers = ts.factory.createNodeArray(
+          updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
+        );
+      }
     }
   }
 
@@ -1126,6 +1142,7 @@ function processExtendBody(node: ts.Node, componentName?: string): ts.Expression
         return ts.factory.createIdentifier(componentName);
       }
   }
+  return undefined;
 }
 
 export function collectExtend(collectionSet: Map<string, Set<string>>, component: string, attribute: string): void {
@@ -1550,13 +1567,8 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
             context.factory.createIdentifier(RESOURCE_NAME_MODULE),
             context.factory.createStringLiteral(projectConfig.moduleName || '')
           ),
-          context.factory.createPropertyAssignment(
-            context.factory.createIdentifier(PAGE_PATH),
-            context.factory.createStringLiteral(
-              projectConfig.compileHar ? '' :
-                path.relative(projectConfig.projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
-            )
-          ),
+          routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath),
+          routerOrNavPathWrite(context, PAGE_FULL_PATH, projectConfig.projectRootPath),
           context.factory.createPropertyAssignment(
             context.factory.createIdentifier('integratedHsp'),
             context.factory.createStringLiteral(integratedHspType())
@@ -1566,6 +1578,16 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
       )
     ]
   ));
+}
+
+function routerOrNavPathWrite(context: ts.TransformationContext, keyName: string, projectPath: string): ts.PropertyAssignment {
+  return context.factory.createPropertyAssignment(
+    context.factory.createIdentifier(keyName),
+    context.factory.createStringLiteral(
+      projectConfig.compileHar ? '' :
+        path.relative(projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+    )
+  );
 }
 
 function integratedHspType(): string {
@@ -1891,6 +1913,7 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
         entryOptionNode, argsArr, true);
     }
   }
+  return undefined;
 }
 
 export function resetLog(): void {

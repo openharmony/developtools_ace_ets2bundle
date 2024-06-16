@@ -18,6 +18,7 @@ import path from 'path';
 import fs from 'fs';
 import { createFilter } from '@rollup/pluginutils';
 import MagicString from 'magic-string';
+import nodeEvents from 'node:events';
 
 import {
   LogInfo,
@@ -335,12 +336,22 @@ async function transform(code: string, id: string) {
       storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
       storedFileInfo.isFirstBuild = false;
     }
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
     if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
       tsProgram = storedFileInfo.newTsProgram;
     } else {
-      tsProgram = ts.createProgram([id], etsCheckerCompilerOptions, compilerHost);
+      await CreateProgramMoment.block(id);
+      CreateProgramMoment.release(id);
+      if (storedFileInfo.newTsProgram && storedFileInfo.newTsProgram.getSourceFile(id)) {
+        tsProgram = storedFileInfo.newTsProgram;
+      } else {
+        startTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+        tsProgram = ts.createProgram(CreateProgramMoment.getRoots(id), etsCheckerCompilerOptions, compilerHost);
+        storedFileInfo.newTsProgram = tsProgram;
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+      }
     }
-    stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
+   
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
@@ -377,7 +388,7 @@ async function transform(code: string, id: string) {
     tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
       {
         before: [
-          processUISyntax(null, false, compilationTime),
+          processUISyntax(null, false, compilationTime, id),
           processKitImport(id)
         ]
       }
@@ -506,3 +517,92 @@ function checkRelateToConstEnum(id: string): boolean {
   }
   return tsProgram.isFileUpdateInConstEnumCache(targetSourceFile);
 }
+
+interface moduleInfoType {
+  id: string;
+};
+interface optionsType {
+  id: string;
+};
+class CreateProgramMoment {
+  static transFileCollect: Set<string> = new Set();
+  static awaitFileCollect: Set<string> = new Set();
+  static moduleParsedFileCollect: Set<string> = new Set();
+  static promise: Promise<void> = undefined;
+  static emitter = undefined;
+  static roots: Set<string> = new Set();
+
+  static init(): void {
+    if (CreateProgramMoment.promise) {
+      return;
+    }
+    CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
+    CreateProgramMoment.promise = new Promise<void>(resolve => {
+      CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
+        if (CreateProgramMoment.awaitFileCollect.size + CreateProgramMoment.moduleParsedFileCollect.size ===
+          CreateProgramMoment.transFileCollect.size) {
+          resolve();
+        }
+      });
+    });
+  }
+
+  static getPlugin() {
+    return {
+      name: 'createProgramPlugin',
+      transform: {
+        order: 'pre',
+        handler(code: string, id: string): void {
+          CreateProgramMoment.transFileCollect.add(id);
+        }
+      },
+
+      shouldInvalidCache(options: optionsType) {
+        CreateProgramMoment.transFileCollect.add(options.id);
+      },
+
+      moduleParsed(moduleInfo: moduleInfoType): void {
+        CreateProgramMoment.moduleParsedFileCollect.add(moduleInfo.id);
+        CreateProgramMoment.emitter?.emit('checkPrefCreateProgramId');
+      },
+      cleanUp(): void {
+        CreateProgramMoment.reset();
+      }
+    };
+  }
+
+  static async block(id: string): Promise<void> {
+    CreateProgramMoment.init();
+    CreateProgramMoment.awaitFileCollect.add(id);
+    CreateProgramMoment.roots.add(id);
+    CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
+    return CreateProgramMoment.promise;
+  }
+
+  static release(id: string): void {
+    CreateProgramMoment.awaitFileCollect.delete(id);
+  }
+
+  static reset(): void {
+    CreateProgramMoment.transFileCollect.clear();
+    CreateProgramMoment.awaitFileCollect.clear();
+    CreateProgramMoment.moduleParsedFileCollect.clear();
+    CreateProgramMoment.promise = undefined;
+    CreateProgramMoment.emitter = undefined;
+    CreateProgramMoment.roots.clear();
+  }
+
+  static getRoots(id: string): string[] {
+    const res: string[] = [];
+    CreateProgramMoment.roots.forEach(id => res.push(id));
+    CreateProgramMoment.promise = undefined;
+    CreateProgramMoment.emitter = undefined;
+    CreateProgramMoment.roots.clear();
+    if (res.length === 0) {
+      return [id];
+    }
+    return res;
+  }
+}
+
+exports.createProgramPlugin = CreateProgramMoment.getPlugin;

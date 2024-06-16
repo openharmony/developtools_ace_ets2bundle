@@ -192,6 +192,7 @@ mocha.describe('test obfuscate config resolver api', function () {
       './^',
       '$',
       '!./testdata/expect/*',
+      './.ohpm/(*)'
     ];
     let configs = {
       keepSourceOfPaths: [],
@@ -209,6 +210,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(configs.keepUniversalPaths[0].toString().includes('filename_obf')).to.be.true;
     expect(configs.keepUniversalPaths[1].toString().includes('keep[^/]ts')).to.be.true;
     expect(configs.keepUniversalPaths[2].toString().includes('[^/]*')).to.be.true;
+    expect(configs.keepUniversalPaths[3].toString().includes('.ohpm')).to.be.true;
     expect(configs.excludeUniversalPaths[0].toString().includes('[^/]*')).to.be.true;
     expect(excludePathArray[0].includes('filename_obf')).to.be.true;
   });

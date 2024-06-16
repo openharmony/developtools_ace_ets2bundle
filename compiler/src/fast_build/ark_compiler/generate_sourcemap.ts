@@ -44,7 +44,7 @@ import {
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
-  private static rollupObject: Object;
+  private static rollupObject: Object | undefined;
 
   private projectConfig: Object;
   private sourceMapPath: string;
@@ -355,6 +355,9 @@ export class SourceMapGenerator {
       this.instance.keyCache.clear();
       this.instance.sourceMaps = undefined;
       this.instance = undefined;
+    }
+    if (this.rollupObject) {
+      this.rollupObject = undefined;
     }
   }
 

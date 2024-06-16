@@ -515,21 +515,14 @@ export class ObConfigResolver {
   }
 
   private resolveKeepConfig(keepConfigs: string[], configs: MergedConfig, configPath: string): void {
-    const specialRegex = /[\\\^\$\+\|\(\)\[\]\{\}]/;
     for (let keepPath of keepConfigs) {
-      // do not process elements containing special characters
-      // special characters: '\', '^', '$', '+', '|', '[', ']', '{', '}'
-      if (specialRegex.test(keepPath)) {
-        this.logger.warn(yellow + 'ArkTS: The path contains invalid characters and will be skipped: ' + keepPath);
-        continue;
-      }
       let tempAbsPath: string;
       const isExclude: boolean = keepPath.startsWith('!');
       // 1: remove '!'
       tempAbsPath = FileUtils.getAbsPathBaseConfigPath(configPath, isExclude ? keepPath.substring(1) : keepPath);
 
+      // contains '*', '?'
       if (containWildcards(tempAbsPath)) {
-        // contains '*', '?'
         const regexPattern = wildcardTransformer(tempAbsPath, true);
         const regexOperator = new RegExp(`^${regexPattern}$`);
         if (isExclude) {
@@ -863,6 +856,8 @@ export function resetObfuscation(): void {
   renamePropertyModule.globalMangledTable?.clear();
   renamePropertyModule.historyMangledTable?.clear();
   renamePropertyModule.globalSwappedMangledTable?.clear();
+  renamePropertyModule.newlyOccupiedMangledProps?.clear();
+  renamePropertyModule.mangledPropsInNameCache?.clear();
   renameFileNameModule.globalFileNameMangledTable?.clear();
   renameFileNameModule.historyFileNameMangledTable?.clear();
   ApiExtractor.mPropertySet?.clear();

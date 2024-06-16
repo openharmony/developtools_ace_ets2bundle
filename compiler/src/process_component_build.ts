@@ -128,7 +128,15 @@ import {
   ATTRIBUTE_CONTENT_MODIFIER,
   ATTRIBUTE_MENUITEM_CONTENT_MODIFIER,
   TITLE,
-  PUV2_VIEW_BASE
+  PUV2_VIEW_BASE,
+  PAGE_PATH,
+  RESOURCE_NAME_MODULE,
+  NAV_DESTINATION,
+  NAVIGATION,
+  CREATE_ROUTER_COMPONENT_COLLECT,
+  BASE_COMPONENT_NAME_PU,
+  PROTO,
+  NATIVE_VIEW_PARTIAL_UPDATE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -176,7 +184,8 @@ import {
   transformLog,
   contextGlobal,
   validatorCard,
-  builderTypeParameter
+  builderTypeParameter,
+  resourceFileName
 } from './process_ui_syntax';
 import { regularCollection } from './validate_ui_syntax';
 
@@ -230,7 +239,7 @@ function createLazyForEachBlockNode(newStatements: ts.Statement[]): ts.IfStateme
 
 export type BuilderParamsResult = {
   firstParam: ts.ParameterDeclaration;
-}
+};
 
 export function parseGlobalBuilderParams(parameters: ts.NodeArray<ts.ParameterDeclaration>,
   builderParamsResult: BuilderParamsResult) : void {
@@ -586,11 +595,13 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
       ));
     }
   }
+  return undefined;
 }
 
 function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
   node: ts.CallExpression): void {
   if (storedFileInfo.processBuilder) {
+    builderParamDispose.push(...handleBuilderParam(node));
     builderParamDispose.push(parentConditionalExpression());
   } else {
     builderParamDispose.push(...handleBuilderParam(node));
@@ -608,14 +619,16 @@ function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisEx
       }
     }
   }
-  callBuilderParameter.push(ts.factory.createThis());
+  if (!storedFileInfo.processBuilder) {
+    callBuilderParameter.push(ts.factory.createThis());
+  }
   return callBuilderParameter;
 }
 
 function builderCallNode(node: ts.CallExpression): ts.Expression {
   let newNode: ts.Expression;
-  if (node.expression && ts.isPropertyAccessExpression(node.expression)
-  && node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
+  if (node.expression && ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
     newNode = ts.factory.createCallChain(
       ts.factory.createPropertyAccessChain(
         node.expression,
@@ -985,6 +998,7 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     }
     newStatements.push(debugNode);
   }
+  return undefined;
 }
 
 function processInnerCompStatements(innerCompStatements: ts.Statement[],
@@ -1408,12 +1422,16 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
     const newTabContentChildren: ts.Statement[] = [];
     processComponentChild(TabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
       false, parent, undefined, isGlobalBuilder, false, builderParamsResult);
+    const navDestinationCallback: (ts.ArrowFunction | ts.ObjectLiteralExpression)[] = [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock([...newTabContentChildren], true))];
+    if (name === NAV_DESTINATION) {
+      navDestinationCallback.push(...navigationCreateParam(NAV_DESTINATION ,COMPONENT_CREATE_FUNCTION));
+    }
     tabContentCreation = ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(name), ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)),
-      undefined, [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
-        ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-        ts.factory.createBlock([...newTabContentChildren], true))]));
+      undefined, navDestinationCallback));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
@@ -1422,7 +1440,8 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   } else {
     tabContentCreation = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
-        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined, []));
+        ts.factory.createIdentifier(COMPONENT_CREATE_FUNCTION)), undefined,
+        name === NAV_DESTINATION ? navigationCreateParam(NAV_DESTINATION ,COMPONENT_CREATE_FUNCTION) : []));
     bindComponentAttr(node, ts.factory.createIdentifier(name), tabAttrs, log, true, false, immutableStatements);
     processInnerCompStatements(
       innerCompStatements, [tabContentCreation, ...tabAttrs], node, isGlobalBuilder, false,
@@ -1735,11 +1754,15 @@ export function parentConditionalExpression(builderInnerComponent: boolean = fal
   return ts.factory.createConditionalExpression(
     builderInnerComponent ? ts.factory.createBinaryExpression(
       ts.factory.createBinaryExpression(
-        ts.factory.createTypeOfExpression(ts.factory.createIdentifier(PUV2_VIEW_BASE)),
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createIdentifier(PROTO)
+        ),
         ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-        ts.factory.createStringLiteral(COMPONENT_IF_UNDEFINED)
+        ts.factory.createIdentifier(NATIVE_VIEW_PARTIAL_UPDATE)
       ),
-      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken), ts.factory.createBinaryExpression(
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
         ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
         ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
         ts.factory.createIdentifier(PUV2_VIEW_BASE))) :
@@ -2794,7 +2817,7 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
-    param.initializer.getText().startsWith($$);
+    param.initializer.getText().match(/^(?!\$\$\.)\$\$(.|\n)+/) !== null;
 }
 
 function loopEtscomponent(node: any, isStylesAttr: boolean): ts.Node {
@@ -3248,7 +3271,7 @@ function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
   while (temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
     temp = temp.parent;
   }
-  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText.toString() === COMPONENT_LAZYFOREACH) {
+  if (temp && temp.expression && (temp.expression as ts.Identifier).escapedText?.toString() === COMPONENT_LAZYFOREACH) {
     return true;
   }
   return false;
@@ -3276,10 +3299,10 @@ function processDollarEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, na
 }
 
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
-  argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
-  if (argumentsArr && argumentsArr.length) {
+  argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false, aa: boolean = false): ts.CallExpression {
     const compName: string = node.escapedText.toString();
     const type: string = attrNode.escapedText.toString();
+  if (argumentsArr && argumentsArr.length) {
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
       argumentsArr = processDollarEtsComponent(argumentsArr, compName);
@@ -3287,9 +3310,13 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);
     }
+    if (compName === NAVIGATION && type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
+      // @ts-ignore
+      argumentsArr = navigationCreateParam(compName, type, argumentsArr);
+    }
   } else {
     // @ts-ignore
-    argumentsArr = [];
+    argumentsArr = navigationCreateParam(compName, type);
   }
   return ts.factory.createCallExpression(
     isAttributeModifier ? ts.factory.createCallExpression(
@@ -3302,13 +3329,41 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
       ),
       undefined,
       [ts.factory.createThis()]
-    ) : ts.factory.createPropertyAccessExpression(
-      node,
-      attrNode
-    ),
+    ) : 
+      ts.factory.createPropertyAccessExpression(
+        node,
+        attrNode
+      ),
     undefined,
     argumentsArr
-  );
+  )
+}
+
+function navigationCreateParam(compName: string, type: string,
+  argumentsArr: ts.NodeArray<ts.Expression> = undefined): ts.ObjectLiteralExpression[] | [] {
+  const navigationOrNavDestination: ts.ObjectLiteralExpression[] = [];
+  if (argumentsArr && argumentsArr.length) {
+    // @ts-ignore
+    navigationOrNavDestination.push(...argumentsArr);
+  }
+  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && type === COMPONENT_CREATE_FUNCTION && partialUpdateConfig.partialUpdateMode) {
+    navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
+      [ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(RESOURCE_NAME_MODULE),
+        ts.factory.createStringLiteral(projectConfig.moduleName || '')
+      ),
+        ts.factory.createPropertyAssignment(
+          ts.factory.createIdentifier(PAGE_PATH),
+          ts.factory.createStringLiteral(
+            projectConfig.compileHar ? '' :
+              path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+          )
+      )
+      ],
+      false
+    ));
+  }
+  return navigationOrNavDestination;
 }
 
 function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier): boolean {

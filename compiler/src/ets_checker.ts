@@ -171,7 +171,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
     'tsBuildInfoFile': buildInfoPath,
-    'tsImportSendableEnable': tsImportSendable 
+    'tsImportSendableEnable': tsImportSendable
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -612,6 +612,8 @@ function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set
   }
 
   fileToThrowDiagnostics.add(unixFilePath);
+  // Although the cache object filters JavaScript files when collecting dependency relationships, we still include the
+  // filtering of JavaScript files here to avoid potential omissions.
   if ((/\.(c|m)?js$/).test(file) ||
     !cache[normalizedFilePath] || cache[normalizedFilePath].children.length === 0) {
     return;
@@ -626,6 +628,14 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     return;
   }
 
+  // In watch mode, the `beforeBuild` phase will clear the parent and children fields in the cache. For files that have
+  // not been modified, the information needs to be restored using the `resolvedModuleNames` variable.
+  if (process.env.watchMode === 'true') {
+    for (let file of Object.keys(resolvedModulesCache)) {
+      createOrUpdateCache(resolvedModulesCache[file], file);
+    }
+  }
+
   // With arkts linter enabled, `allowJs` option is set to true, resulting JavaScript files themselves and
   // JavaScript-referenced files are included in the tsc program and checking process,
   // potentially introducing new errors. For instance, in scenarios where an ets file imports js file imports ts file,
@@ -637,9 +647,16 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     }
   });
 
+  let resolvedTypeReferenceDirectivesFiles: Set<string> = new Set<string>();
+  globalProgram.program.getResolvedTypeReferenceDirectives().forEach((elem: ts.ResolvedTypeReferenceDirective) => {
+    elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
+  })
+
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
-    sourceFile.fileName && fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
+    sourceFile.fileName &&
+    !isInSDK(sourceFile.fileName) && !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
+    fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
   });
 
   fileToThrowDiagnostics.forEach(file => {
@@ -1079,7 +1096,8 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
 
 function collectionCustomizeStyles(node: ts.Node): void {
   if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
-    isStylesDecorator(node, COMPONENT_STYLES_DECORATOR) && node.name && ts.isIdentifier(node.name)) {
+    (isUIDecorator(node, COMPONENT_STYLES_DECORATOR) || isUIDecorator(node, COMPONENT_EXTEND_DECORATOR)) &&
+    node.name && ts.isIdentifier(node.name)) {
     BUILDIN_STYLE_NAMES.add(node.name.escapedText.toString());
   }
   if (ts.isSourceFile(node)) {
@@ -1093,7 +1111,7 @@ function collectionCustomizeStyles(node: ts.Node): void {
   }
 }
 
-function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+function isUIDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
   ts.StructDeclaration | ts.ClassDeclaration, decortorName: string): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
@@ -1105,9 +1123,8 @@ function isStylesDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
         return false;
       }
     }
-  } else {
-    return false;
   }
+  return false;
 }
 function collectComponents(node: ts.SourceFile): void {
   // @ts-ignore
@@ -1362,7 +1379,10 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
 }
 
 function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {
-  return isInSDK(diagnostics) && (diagnostics.file !== undefined) && diagnostics.file.fileName.endsWith(".ets");
+  if (diagnostics.file?.fileName === undefined) {
+    return false;
+  }
+  return isInSDK(diagnostics.file.fileName) && diagnostics.file.fileName.endsWith(".ets");
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
@@ -1370,8 +1390,7 @@ function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {
     ((diagnostics.file.fileName.indexOf('/oh_modules/') !== -1) || diagnostics.file.fileName.indexOf('\\oh_modules\\') !== -1);
 }
 
-function isInSDK(diagnostics: ts.Diagnostic): boolean {
-  const fileName = diagnostics.file?.fileName;
+function isInSDK(fileName: string | undefined): boolean {
   if (projectConfig.etsLoaderPath === undefined || fileName === undefined) {
     return false;
   }
@@ -1528,6 +1547,9 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 export function resetEtsCheck(): void {
   cache = {};
   props = [];
+  if (languageService) {
+    languageService.getProgram().releaseTypeChecker();
+  }
   languageService = null;
   allResolvedModules.clear();
   checkerResult.count = 0;

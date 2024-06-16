@@ -80,7 +80,7 @@ export function processKitImport(id: string): Function {
     return (node: ts.SourceFile) => {
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
 
-      KitInfo.init(node, context);
+      KitInfo.init(node, context, id);
 
       // When compile hap or hsp, it is used to determine whether there is a keepTsNode in the file.
       let hasKeepTs: boolean = false;
@@ -209,10 +209,10 @@ export class KitInfo {
     this.kitNodeModifier = ts.canHaveDecorators(this.kitNode) ? ts.getModifiers(this.kitNode) : undefined;
   }
 
-  static init(node: ts.SourceFile, context: ts.TransformationContext): void {
+  static init(node: ts.SourceFile, context: ts.TransformationContext, moduleId: string): void {
     // @ts-ignore
     this.tsEmitResolver = context.getEmitResolver();
-    this.currentSourcefile = node.fileName;
+    this.currentSourcefile = moduleId;
     if (/\.ts$/.test(node.fileName)) {
       this.setFileType(FileType.TS);
     } else {
@@ -291,6 +291,12 @@ export class KitInfo {
   }
 
   static processImportDecl(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
+    if (!kitNode.importClause) {
+      // e.g. import "@kit.xxx"
+      this.currentKitInfo = new EmptyImportKitInfo(kitNode, symbols);
+      return;
+    }
+
     if (kitNode.importClause!.namedBindings) {
       const namedBindings: ts.NamedImportBindings = kitNode.importClause.namedBindings;
       if (ts.isNamespaceImport(namedBindings)) {
@@ -334,10 +340,11 @@ export class KitInfo {
     this.currentKitName = kitName;
 
     // do not handle an empty import
-    if (ts.isImportDeclaration(kitNode) && kitNode.importClause) {
+    if (ts.isImportDeclaration(kitNode)) {
       // case 1: import { ... } from '@kit.xxx'
       // case 2: import * as ns from '@kit.xxx'
       // case 3: import defalutValue from '@kit.xxx'
+      // case 4: import '@kit.xxx'
       this.processImportDecl(kitNode, symbols);
     }
 
@@ -476,6 +483,29 @@ class ImportSpecifierKitInfo extends KitInfo {
 
       this.clearSpecifierKitInfo();
     });
+  }
+}
+
+class EmptyImportKitInfo extends KitInfo {
+  constructor(kitNode: ts.ImportDeclaration, symbols: Record<string, KitSymbol>) {
+    super(kitNode, symbols);
+
+    /*
+     * Side-effect import can not be used by Kit since Kit actually has no spcific implementation.
+     * In general, a Kit may be imported in a Side-effect import statement by mistake. So we
+     * illustrate explicitly that Kit can not in Side-effect import to avoid misunderstanding
+     * of runtime's behavior.
+     */
+    kitTransformLog.errors.push({
+      type: LogType.ERROR,
+      message: `Can not use empty import(side-effect import) statement with Kit ` +
+               `'${(kitNode.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '')}', ` +
+               `Please specify imported symbols explicitly.`,
+      pos: kitNode.getStart()
+    });
+  }
+
+  transform(): void {
   }
 }
 
