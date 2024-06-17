@@ -74,6 +74,7 @@ class ProjectConfig {
 
   watchMode: string;
   isPreview: boolean;
+  isLocalTest: boolean;
   buildMode: string;
   localPropertiesPath: string;
   aceProfilePath: string;
@@ -125,6 +126,7 @@ class ProjectConfig {
   constructor(buildMode: string) {
     this.watchMode = 'false';
     this.isPreview = false;
+    this.isLocalTest = false;
     this.buildMode = buildMode;
     this.needCoverageInsert = false;
     this.supportChunks = true;
@@ -200,7 +202,7 @@ class ProjectConfig {
 
   private initPath(proPath: string) {
     // build and preview
-    let mode = this.isPreview ? 'preview' : 'build';
+    let mode = this.isPreview ? 'preview' : this.isLocalTest ? '.test' : 'build';
     this.localPropertiesPath = `${proPath}/local.properties`;
     this.aceProfilePath = `${proPath}/${this.entryModuleName}/${mode}/res/default/resources/base/profile`;
     this.etsLoaderPath = `/${this.runtimeOS}/Sdk/${this.compileSdkVersion}/ets/build-tools/app`;
