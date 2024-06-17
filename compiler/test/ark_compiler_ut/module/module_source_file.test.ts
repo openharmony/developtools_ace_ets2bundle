@@ -682,4 +682,136 @@ mocha.describe('test module_source_file file api', function () {
       }
     }
   });
+
+  mocha.it('5-1: test setProcessMock under LocalTest mode', function () {
+    this.rollup.share.projectConfig.isPreview = true;
+    this.rollup.share.projectConfig.isOhosTest = true;
+    this.rollup.share.projectConfig.isLocalTest = true;
+    this.rollup.share.projectConfig.mockParams = {
+      decorator: "@MockSetup",
+      packageName: "@ohos/hamock",
+      etsSourceRootPath: "src/main",
+      mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
+    }
+    ModuleSourceFile.setProcessMock(this.rollup);
+    expect(ModuleSourceFile.needProcessMock).to.be.true;
+  });
+
+  mocha.it('5-2: test collectMockConfigInfo under LocalTest mode', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    this.rollup.share.projectConfig.mockParams = {
+      decorator: "@MockSetup",
+      packageName: "@ohos/hamock",
+      etsSourceRootPath: "src/main",
+      mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
+    }
+    ModuleSourceFile.collectMockConfigInfo(this.rollup);
+    let EXPECT_MOCKFILES = [
+      "src/mock/ohos/I18nMock.ts",
+      "src/mock/ohos/bluetooth.mock.ts",
+      "src/mock/module/calc.mock.ts",
+      "src/mock/module/bigInt.mock.ts",
+      "src/mock/native/libentry.mock.ts"
+    ];
+    expect(ModuleSourceFile.mockFiles).to.deep.equal(EXPECT_MOCKFILES);
+  });
+
+  mocha.it('5-3: test addMockConfig under LocalTest mode', function () {
+    ModuleSourceFile.newMockConfigInfo = {
+      "@ohos:i18n": {
+        "source": "@bundle:com.example.demo/entry/src/mock/ohos/I18nMock"
+      },
+      "@ohos:bluetooth": {
+        "source": "@bundle:com.example.demo/entry/src/mock/ohos/bluetooth.mock"
+      },
+      "@bundle:com.example.demo/entry/ets/calc": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/calc.mock"
+      },
+      "@bundle:/testProjectRootPath/oh_modules/lib/dist/index.js": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/bigInt.mock"
+      },
+      "@app:UtTestApplication/entry/entry": {
+        "source": "@bundle:com.example.demo/entry/src/mock/native/libentry.mock"
+      }
+    };
+
+    ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, "@ohos:i18n", "@bundle:com.example.demo/entry/src/mock/I18nMock");
+    expect(ModuleSourceFile.newMockConfigInfo).to.deep.equal(ModuleSourceFile.newMockConfigInfo);
+  });
+
+  mocha.it('5-4: test generateNewMockInfo under LocalTest mode', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    ModuleSourceFile.mockConfigInfo = {
+      "@ohos:i18n": {
+        "source": "src/mock/ohos/I18nMock.ts"
+      },
+    }
+    let originKey = "@ohos.i18n";
+    let transKey = "@ohos:i18n";
+    let importerFile = this.rollup.share.projectConfig.aceModuleRoot + '/mock/ohos/I18nMock.ts';
+    ModuleSourceFile.generateNewMockInfo(originKey, transKey, this.rollup, importerFile);
+    let EXPECT_NEW_MOCK_INFO = {
+      "@ohos:i18n": {
+        "source": "@bundle:com.example.demo/entry/src/mock/ohos/I18nMock"
+      },
+      "@ohos:bluetooth": {
+        "source": "@bundle:com.example.demo/entry/src/mock/ohos/bluetooth.mock"
+      },
+      "@bundle:com.example.demo/entry/ets/calc": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/calc.mock"
+      },
+      "@bundle:/testProjectRootPath/oh_modules/lib/dist/index.js": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/bigInt.mock"
+      },
+      "@app:UtTestApplication/entry/entry": {
+        "source": "@bundle:com.example.demo/entry/src/mock/native/libentry.mock"
+      }
+    };
+    expect(ModuleSourceFile.newMockConfigInfo).to.deep.equal(EXPECT_NEW_MOCK_INFO);
+  });
+
+
+  mocha.it('5-5: test isMockFile under LocalTest mode', function () {
+    ModuleSourceFile.needProcessMock = true;
+    ModuleSourceFile.mockFiles = ["src/mock/ohos/I18nMock.ts"];
+    let file = this.rollup.share.projectConfig.aceModuleRoot +'/mock/ohos/I18nMock.ts';
+    expect(ModuleSourceFile.isMockFile(file, this.rollup)).to.be.true;
+    ModuleSourceFile.needProcessMock = false;
+  });
+
+  mocha.it('5-6: test generateMockConfigFile under LocalTest mode', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    ModuleSourceFile.newMockConfigInfo = {
+      "@ohos:i18n": {
+        "source": "@bundle:com.example.demo/entry/src/mock/I18nMock"
+      },
+      "@ohos:bluetooth": {
+        "source": "@bundle:com.example.demo/entry/src/mock/ohos/bluetooth.mock"
+      },
+      "@bundle:com.example.demo/entry/ets/calc": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/calc.mock"
+      },
+      "@bundle:/testProjectRootPath/oh_modules/lib/dist/index.js": {
+        "source": "@bundle:com.example.demo/entry/src/mock/module/bigInt.mock"
+      },
+      "@app:UtTestApplication/entry/entry": {
+        "source": "@bundle:com.example.demo/entry/src/mock/native/libentry.mock"
+      }
+    }
+    this.rollup.share.projectConfig.mockParams = {
+      decorator: "@MockSetup",
+      packageName: "@ohos/hamock",
+      etsSourceRootPath: "src/main",
+      mockConfigPath: this.rollup.share.projectConfig.aceModuleRoot + '/mock/mock-config.json5',
+    }
+    ModuleSourceFile.generateMockConfigFile(this.rollup);
+    let EXPECT_MOCK_CONFIG_FILE = path.resolve(this.rollup.share.projectConfig.aceModuleJsonPath, `../mock-config.json`);
+    expect(fs.existsSync(EXPECT_MOCK_CONFIG_FILE)).to.be.true;
+    let EXPECT_MOCK_CONFIG_CONTENT = JSON.stringify(ModuleSourceFile.newMockConfigInfo);
+    let ACTUAL_MOCK_CONFIG_CONTENT = JSON.stringify(require(EXPECT_MOCK_CONFIG_FILE));
+    expect(EXPECT_MOCK_CONFIG_CONTENT).to.equal(ACTUAL_MOCK_CONFIG_CONTENT);
+    fs.unlinkSync(this.rollup.share.projectConfig.cachePath + '/mock-config.json');
+    fs.unlinkSync(this.rollup.share.projectConfig.cachePath + '/mock-config.json5');
+  });
+
 });

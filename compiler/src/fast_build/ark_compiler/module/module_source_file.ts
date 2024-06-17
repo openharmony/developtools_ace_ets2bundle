@@ -97,8 +97,8 @@ export class ModuleSourceFile {
   }
 
   static setProcessMock(rollupObject: Object): void {
-    // only processing mock-config.json5 in preview or OhosTest mode
-    if (!(rollupObject.share.projectConfig.isPreview || rollupObject.share.projectConfig.isOhosTest)) {
+    // only processing mock-config.json5 in preview, OhosTest, or LocalTest mode
+    if (!(rollupObject.share.projectConfig.isPreview || rollupObject.share.projectConfig.isOhosTest || rollupObject.share.projectConfig.isLocalTest)) {
       ModuleSourceFile.needProcessMock = false;
       return;
     }
