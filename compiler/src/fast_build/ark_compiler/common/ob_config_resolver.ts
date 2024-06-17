@@ -921,7 +921,7 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
     }
 
     keepFilesAndDependencies.add(filePath);
-    const resolvedModules = resolvedModulesCache[path.resolve(filePath)];
+    const resolvedModules = resolvedModulesCache.get(path.resolve(filePath));
     if (!resolvedModules) {
       continue;
     }
