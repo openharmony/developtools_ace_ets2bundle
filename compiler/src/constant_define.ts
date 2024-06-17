@@ -19,6 +19,7 @@ const MONITOR: string = 'Monitor';
 const COMPUTED: string = 'Computed';
 const REQUIRE: string = 'Require';
 const BUILDER_PARAM: string = 'BuilderParam';
+const DECORATOR_BUILDER_PARAM: string = '@BuilderParam';
 const MONITOR_DECORATOR: string = '@Monitor';
 const COMPUTED_DECORATOR: string = '@Computed';
 
@@ -56,5 +57,6 @@ export default {
   MONITOR_DECORATOR,
   COMPUTED_DECORATOR,
   DECORATOR_V2,
-  BUILDER_PARAM
+  BUILDER_PARAM,
+  DECORATOR_BUILDER_PARAM
 };
