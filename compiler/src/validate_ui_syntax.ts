@@ -63,7 +63,9 @@ import {
   MIN_OBSERVED,
   COMPONENT_NON_DECORATOR,
   COMPONENT_DECORATOR_COMPONENT_V2,
-  OBSERVED
+  OBSERVED,
+  SENDABLE,
+  TYPE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -432,12 +434,12 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false);
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean, fileQuery: string): void {
+  isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     const structName: string = node.name.escapedText.toString();
@@ -451,7 +453,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
-    isObservedClass = parseClassDecorator(node, sourceFileNode, log);
+    [isObservedV1Class, isObservedClass, isSendableClass] = parseClassDecorator(node, sourceFileNode, log);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
     methodDecoratorCollect(node);
@@ -462,12 +464,15 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     validateFunction(node, sourceFileNode, log);
   }
   checkDecoratorCount(node, sourceFileNode, log);
-  checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2);
-  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames,
-    log, structContext, classContext, isObservedClass, isComponentV2, fileQuery));
+  checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
+    isObservedV1Class, isSendableClass);
+  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log,
+    structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass));
   structContext = false;
   classContext = false;
   isObservedClass = false;
+  isObservedV1Class = false;
+  isSendableClass = false;
 }
 
 function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
@@ -575,13 +580,14 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean): void {
+  isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
     validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
-    validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass);
+    validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
+      isObservedV1Class, isSendableClass);
     return;
   }
   if (ts.isDecorator(node)) {
@@ -611,12 +617,13 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
   }
 }
 
-const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
-const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR,
+const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED, TYPE];
+const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, TYPE,
   constantDefine.MONITOR, constantDefine.COMPUTED];
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
-  classContext: boolean, decoratorName: string, isObservedClass: boolean): void {
+  classContext: boolean, decoratorName: string, isObservedClass: boolean, isObservedV1Class: boolean,
+  isSendableClass: boolean): void {
   if (!classContext && classDecorators.includes(decoratorName)) {
     const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
@@ -625,12 +632,12 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
     const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
-    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode);
+    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass);
   }
 }
 
 function validateMemberInClass(isObservedClass: boolean, decoratorName: string, node: ts.Identifier,
-  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
       const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with ObservedV2.`;
@@ -638,11 +645,31 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
     }
     return;
   }
+  if (decoratorName === TYPE) {
+    validType(sourceFileNode, node, log, decoratorName, isObservedV1Class, isSendableClass);
+    return;
+  }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
     const message: string = `The '@${decoratorName}' can decorate only member ${info} within a 'class' decorated with ObservedV2.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
     return;
+  }
+}
+
+function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[], decoratorName: string,
+  isObservedV1Class: boolean, isSendableClass: boolean): void {
+  if (isSendableClass) {
+    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Sendable.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  }
+  if (isObservedV1Class) {
+    const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Observed.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+  }
+  if (ts.isDecorator(node.parent) && !ts.isPropertyDeclaration(node.parent.parent)) {
+    const message: string = `The '@${decoratorName}' can decorate only member variables in a 'class'.`;
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
 }
 
@@ -657,16 +684,17 @@ function isPropertyForTrace(node: ts.Identifier, decoratorName: string): boolean
 class ClassDecoratorResult {
   hasObserved: boolean = false;
   hasObservedV2: boolean = false;
+  hasSendable: boolean = false;
 }
 
 function parseClassDecorator(node: ts.ClassDeclaration, sourceFileNode: ts.SourceFile,
-  log: LogInfo[]): boolean {
+  log: LogInfo[]): [boolean, boolean, boolean] {
   const classResult: ClassDecoratorResult = getClassDecoratorResult(node);
   validateMutilObserved(node, classResult, sourceFileNode, log);
   if (classResult.hasObserved || classResult.hasObservedV2) {
     parseInheritClass(node, classResult, sourceFileNode, log);
   }
-  return classResult.hasObservedV2;
+  return [classResult.hasObserved, classResult.hasObservedV2, classResult.hasSendable];
 }
 
 function getClassDecoratorResult(node: ts.ClassDeclaration): ClassDecoratorResult {
@@ -682,6 +710,8 @@ function getClassDecoratorResult(node: ts.ClassDeclaration): ClassDecoratorResul
         case OBSERVED:
           classResult.hasObserved = true;
           break;
+        case SENDABLE:
+          classResult.hasSendable = true;
       }
     }
   });
