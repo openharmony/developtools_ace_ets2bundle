@@ -301,6 +301,28 @@
             "type": "ERROR"
         }
     ],
+    "@Type": [
+        {
+            "message": "The '@Type' decorator can only be used in 'class'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Type' decorator can not be used in a 'class' decorated with Sendable.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Type' can decorate only member variables in a 'class'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Type' decorator can not be used in a 'class' decorated with Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@Type' can decorate only member variables in a 'class'.",
+            "type": "ERROR"
+        }
+    ],
     "validate_track_observed": [
         {
             "message": "The struct 'child' use invalid decorator.",
