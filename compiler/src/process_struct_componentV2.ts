@@ -274,12 +274,13 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
   const propertyDecorator: PropertyDecorator = new PropertyDecorator();
   let isRegular: boolean = true;
   for (let i = 0; i < decorators.length; i++) {
-    const originalName: string = decorators[i].getText().replace(/\([^\(\)]*\)/, '');
+    const originalName: string = decorators[i].getText().replace(/\([^\(\)]*\)/, '').trim();
     const name: string = originalName.replace('@', '').trim();
     if (decoratorsFunc[name]) {
       decoratorsFunc[name](propertyDecorator, member, structInfo);
     }
-    if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName)) {
+    if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName) ||
+      originalName === constantDefine.DECORATOR_BUILDER_PARAM) {
       isRegular = false;
     }
   }
