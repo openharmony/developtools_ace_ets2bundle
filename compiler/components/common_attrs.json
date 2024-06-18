@@ -24,6 +24,6 @@
     "borderImage", "hitTestBehavior", "clickEffect", "foregroundColor", "bindContentCover", "bindSheet", "useEffect",
     "onGestureJudgeBegin","monopolizeEvents","onTouchIntercept","onChildTouchTest","onSizeChange", "onWillDismiss",
     "foregroundEffect", "backgroundEffect", "focusBox", "focusScopeId", "focusScopePriority",
-    "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith"
+    "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith", "backgroundImageResizable"
   ]
 }
