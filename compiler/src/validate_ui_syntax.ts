@@ -672,7 +672,7 @@ function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogI
     const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Observed.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
-  if (ts.isDecorator(node.parent) && !ts.isPropertyDeclaration(node.parent.parent)) {
+  if (ts.isDecorator(node.parent?.parent) && !ts.isPropertyDeclaration(node.parent?.parent?.parent)) {
     const message: string = `The '@${decoratorName}' can decorate only member variables in a 'class'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   }
