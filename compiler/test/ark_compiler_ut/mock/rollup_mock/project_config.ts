@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-import { PROJECT_ROOT } from "./path_config";
+import { 
+  DEFAULT_PROJECT,
+  PROJECT_ROOT
+} from "./path_config";
 import {
   SDK_VERSION,
   BUNDLE_NAME_DEFAULT,
@@ -196,6 +199,15 @@ class ProjectConfig {
     this.dependencyAliasMap = new Map([
       ['hspAlias', 'hsp']
     ]);
+  }
+
+  public mockBytecodeHarInfo() {
+    this.byteCodeHarInfo = {
+      "har": {
+        "abcPath": "",
+        "sourceMapsPath": `${PROJECT_ROOT}/${DEFAULT_PROJECT}/bytecodeHarSourceMap.json`,
+      }
+    }
   }
 
   private initPath(proPath: string) {
