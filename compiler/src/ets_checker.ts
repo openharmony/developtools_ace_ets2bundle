@@ -648,9 +648,10 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   });
 
   let resolvedTypeReferenceDirectivesFiles: Set<string> = new Set<string>();
-  globalProgram.program.getResolvedTypeReferenceDirectives().forEach((elem: ts.ResolvedTypeReferenceDirective) => {
-    elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
-  })
+  globalProgram.program.getResolvedTypeReferenceDirectives().forEach(
+    (elem: ts.ResolvedTypeReferenceDirective | undefined) => {
+      elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
+  });
 
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
