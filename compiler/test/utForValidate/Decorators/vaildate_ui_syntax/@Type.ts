@@ -14,10 +14,16 @@
  */
 
 exports.source = `
+import { Type } from '@ohos.arkui.StateManagement';
+
+class A {
+  p: number = 1;
+}
+
 @Entry
 @Component
 struct AddLog {
-  @Type log: string = 'Hello Word!';
+  @Type(A) log: string = 'Hello Word!';
 
   build() {
     Row() {
@@ -34,16 +40,16 @@ struct AddLog {
 
 @Sendable
 class C1 {
-  @Type onChange() {}
+  @Type(A) onChange() {}
 }
 
 @Observed
 class C2 {
-  @Type p: number = 1;
+  @Type(A) p: A = new A;
 }
 
 @ObservedV2
 class C3 {
-  @Type onChange() {}
+  @Type(A) onChange() {}
 }
 `
