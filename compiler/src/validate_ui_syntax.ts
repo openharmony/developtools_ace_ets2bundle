@@ -591,12 +591,12 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
     return;
   }
   if (ts.isDecorator(node)) {
-    validateSingleDecorator(node, sourceFileNode, log);
+    validateSingleDecorator(node, sourceFileNode, log, isComponentV2);
   }
 }
 
 function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFile,
-  log: LogInfo[]): void {
+  log: LogInfo[], isComponentV2: boolean): void {
   const decoratorName: string = node.getText().replace(/\([^\(\)]*\)/, '');
   if (decoratorName === constantDefine.COMPUTED_DECORATOR && node.parent && !ts.isGetAccessor(node.parent)) {
     const message: string = `@Computed can only decorate 'GetAccessor'.`;
@@ -609,12 +609,17 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
     return;
   }
-  if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(decoratorName) && node.parent &&
+  if (isMemberForComponentV2(decoratorName, isComponentV2) && node.parent &&
     !ts.isPropertyDeclaration(node.parent)) {
     const message: string = `'${decoratorName}' can only decorate member property.`;
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
     return;
   }
+}
+
+function isMemberForComponentV2(decoratorName: string, isComponentV2: boolean): boolean {
+  return constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(decoratorName) ||
+    (isComponentV2 && decoratorName === '@BuilderParam');
 }
 
 const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED, TYPE];
