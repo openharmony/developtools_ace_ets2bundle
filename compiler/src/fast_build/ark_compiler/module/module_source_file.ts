@@ -388,19 +388,19 @@ export class ModuleSourceFile {
       }
       return systemOrLibOhmUrl;
     }
-    const hspOhmurl: string | undefined = getOhmUrlByExternalPackage(moduleRequest, ModuleSourceFile.projectConfig,
-      ModuleSourceFile.logger, useNormalizedOHMUrl);
-    if (hspOhmurl !== undefined) {
+    const externalPkgOhmurl: string | undefined = getOhmUrlByExternalPackage(moduleRequest,
+      ModuleSourceFile.projectConfig, ModuleSourceFile.logger, useNormalizedOHMUrl);
+    if (externalPkgOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfo(moduleRequest, hspOhmurl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, externalPkgOhmurl, rollupObject, importerFile);
       }
-      return hspOhmurl;
+      return externalPkgOhmurl;
     }
     const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig,
       ModuleSourceFile.logger, useNormalizedOHMUrl);
     if (byteCodeHarOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
-        ModuleSourceFile.generateNewMockInfo(moduleRequest, hspOhmurl, rollupObject, importerFile);
+        ModuleSourceFile.generateNewMockInfo(moduleRequest, byteCodeHarOhmurl, rollupObject, importerFile);
       }
       return byteCodeHarOhmurl;
     }
