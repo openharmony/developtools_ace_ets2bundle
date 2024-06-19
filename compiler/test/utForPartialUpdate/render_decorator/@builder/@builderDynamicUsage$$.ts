@@ -168,7 +168,7 @@ class VideoPlayer extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
-        this.bottomController.bind(this)(makeBuilderParameterProxy("bottomController", { playedTime: () => (this["__currentPlayedTime"] ? this["__currentPlayedTime"] : this["currentPlayedTime"]), totalTime: () => (this["__totalTime"] ? this["__totalTime"] : this["totalTime"]), playedTimeNumber: () => (this["__currentPlayedTimeNumber"] ? this["__currentPlayedTimeNumber"] : this["currentPlayedTimeNumber"]) }), this);
+        this.bottomController.bind(this)(makeBuilderParameterProxy("bottomController", { playedTime: () => (this["__currentPlayedTime"] ? this["__currentPlayedTime"] : this["currentPlayedTime"]), totalTime: () => (this["__totalTime"] ? this["__totalTime"] : this["totalTime"]), playedTimeNumber: () => (this["__currentPlayedTimeNumber"] ? this["__currentPlayedTimeNumber"] : this["currentPlayedTimeNumber"]) }));
         Column.pop();
     }
     rerender() {
