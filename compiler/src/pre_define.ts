@@ -177,7 +177,6 @@ export const FOREACH_LAZYFOREACH: Set<string> = new Set([
 
 export const COMPONENT_CONSTRUCTOR_ID: string = 'compilerAssignedUniqueChildId';
 export const COMPONENT_CONSTRUCTOR_PARENT: string = 'parent';
-export const PUV2_VIEW_BASE: string = 'PUV2ViewBase';
 export const COMPONENT_CONSTRUCTOR_PARAMS: string = 'params';
 export const COMPONENT_PARAMS_FUNCTION: string = 'paramsGenerator_';
 export const COMPONENT_PARAMS_LAMBDA_FUNCTION: string = 'paramsLambda';
@@ -508,8 +507,6 @@ export const GRID_COMPONENT: string = 'Grid';
 export const GRIDITEM_COMPONENT: string = 'GridItem';
 export const WILLUSEPROXY: string = 'willUseProxy';
 export const BASE_COMPONENT_NAME_PU: string = 'ViewPU';
-export const PROTO: string = '__proto__';
-export const NATIVE_VIEW_PARTIAL_UPDATE: string = 'NativeViewPartialUpdate';
 export const GLOBAL_THIS: string = 'globalThis';
 export const OBSERVED_PROPERTY_SIMPLE_PU: string = 'ObservedPropertySimplePU';
 export const OBSERVED_PROPERTY_OBJECT_PU: string = 'ObservedPropertyObjectPU';
