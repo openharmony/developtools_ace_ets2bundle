@@ -129,15 +129,11 @@ import {
   ATTRIBUTE_CONTENT_MODIFIER,
   ATTRIBUTE_MENUITEM_CONTENT_MODIFIER,
   TITLE,
-  PUV2_VIEW_BASE,
   PAGE_PATH,
   RESOURCE_NAME_MODULE,
   NAV_DESTINATION,
   NAVIGATION,
   CREATE_ROUTER_COMPONENT_COLLECT,
-  BASE_COMPONENT_NAME_PU,
-  PROTO,
-  NATIVE_VIEW_PARTIAL_UPDATE,
   NAV_PATH_STACK,
   IS_USER_CREATE_STACK
 } from './pre_define';
@@ -164,8 +160,7 @@ import {
   componentCollection,
   builderParamObjectCollection,
   checkAllNode,
-  enumCollection,
-  getSymbolIfAliased
+  enumCollection
 } from './validate_ui_syntax';
 import {
   processCustomComponent,
@@ -563,8 +558,6 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   if (node.expression && ts.isCallExpression(node.expression)) {
     let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
-    const builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[] = [];
-    callBuilderConversion(builderParamDispose, node.expression);
     if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
         node.expression,
@@ -577,7 +570,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ts.factory.createStringLiteral(name),
             traverseBuilderParams(node.expression.arguments[0], isBuilder)
           ]
-        ), ...builderParamDispose]
+        )]
       ));
     } else {
       return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
@@ -585,47 +578,12 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
         newNode,
         undefined,
         !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
-          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ?
-          [
-            ...node.expression.arguments,
-            ...builderParamDispose
-          ] :
-          [
-            ...node.expression.arguments,
-            ...builderParamDispose,
-            ts.factory.createIdentifier(MY_IDS)
-          ]
+          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
+          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
       ));
     }
   }
   return undefined;
-}
-
-function callBuilderConversion(builderParamDispose: (ts.ConditionalExpression | ts.Identifier | ts.ThisExpression)[],
-  node: ts.CallExpression): void {
-  if (storedFileInfo.processBuilder) {
-    builderParamDispose.push(...handleBuilderParam(node));
-    builderParamDispose.push(parentConditionalExpression());
-  } else {
-    builderParamDispose.push(...handleBuilderParam(node));
-  }
-}
-
-function handleBuilderParam(node: ts.CallExpression): (ts.Identifier | ts.ThisExpression)[] {
-  const callBuilderParameter: (ts.Identifier | ts.ThisExpression)[] = [];
-  if (globalProgram.checker && node.expression && getSymbolIfAliased(node.expression) && getSymbolIfAliased(node.expression).valueDeclaration) {
-    const valueDeclaration: ts.Node = getSymbolIfAliased(node.expression).valueDeclaration;
-    if (valueDeclaration.parameters && valueDeclaration.parameters.length) {
-      const paramNumberdiff: number = valueDeclaration.parameters.length - node.arguments.length;
-      for (let i = 0; i < paramNumberdiff; i++) {
-        callBuilderParameter.push(ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED));
-      }
-    }
-  }
-  if (!storedFileInfo.processBuilder) {
-    callBuilderParameter.push(ts.factory.createThis());
-  }
-  return callBuilderParameter;
 }
 
 function builderCallNode(node: ts.CallExpression): ts.Expression {
@@ -1787,23 +1745,9 @@ function addForEachId(node: ts.ExpressionStatement, isGlobalBuilder: boolean = f
       ...forEachComponent.arguments]));
 }
 
-export function parentConditionalExpression(builderInnerComponent: boolean = false): ts.ConditionalExpression {
+export function parentConditionalExpression(): ts.ConditionalExpression {
   return ts.factory.createConditionalExpression(
-    builderInnerComponent ? ts.factory.createBinaryExpression(
-      ts.factory.createBinaryExpression(
-        ts.factory.createPropertyAccessExpression(
-          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
-          ts.factory.createIdentifier(PROTO)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-        ts.factory.createIdentifier(NATIVE_VIEW_PARTIAL_UPDATE)
-      ),
-      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-      ts.factory.createBinaryExpression(
-        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
-        ts.factory.createToken(ts.SyntaxKind.InstanceOfKeyword),
-        ts.factory.createIdentifier(PUV2_VIEW_BASE))) :
-      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+    ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.QuestionToken),
     ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
     ts.factory.createToken(ts.SyntaxKind.ColonToken),
