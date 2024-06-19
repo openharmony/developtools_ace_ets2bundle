@@ -848,7 +848,7 @@ function parseShorthandPropertyForClass(node: ts.ShorthandPropertyAssignment, ch
   }
 }
 
-export function getSymbolIfAliased(node: ts.Node): ts.Symbol {
+function getSymbolIfAliased(node: ts.Node): ts.Symbol {
   const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
   if (symbol && (symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
     return globalProgram.checker.getAliasedSymbol(symbol);
