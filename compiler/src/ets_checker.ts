@@ -99,6 +99,7 @@ export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
   targetESVersion?: ts.ScriptTarget;
+  preTsImportSendable?: boolean;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -365,11 +366,12 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
-  const shouldRebuild: boolean | undefined = hashDiffers || targetESVersionDiffers;
+  const tsImportSendableDiff: boolean | undefined = cache?.preTsImportSendable !== tsImportSendable;
+  const shouldRebuild: boolean | undefined = hashDiffers || targetESVersionDiffers || tsImportSendableDiff;
 
   if (!service || shouldRebuild) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
-    if (targetESVersionDiffers) {
+    if (targetESVersionDiffers || tsImportSendableDiff) {
       deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
       targetESVersionChanged = true;
     }
@@ -380,7 +382,12 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service.updateRootFiles(updateRootFileNames);
   }
 
-  const newCache: LanguageServiceCache = {service: service, pkgJsonFileHash: currentHash, targetESVersion: currentTargetESVersion};
+  const newCache: LanguageServiceCache = {
+    service: service,
+    pkgJsonFileHash: currentHash,
+    targetESVersion: currentTargetESVersion,
+    preTsImportSendable: tsImportSendable
+  };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
 }
