@@ -337,6 +337,7 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
   }
   if (obfOptions.enableExportObfuscation && projectAndLibs.libExportNames) {
     arkObfuscator.addReservedNames(projectAndLibs.libExportNames);
+    arkObfuscator.addReservedToplevelNames(projectAndLibs.libExportNames);
   }
 }
 
