@@ -138,7 +138,7 @@
         "type": "WARN"
     },
     "validateForbiddenToInitViaParam": {
-        "message": "Property 'message' in the custom component 'Child' cannot initialize here (forbidden to specify).",
+        "message": "Property 'message' in the custom component 'Child' cannot be initialized here (forbidden to specify).",
         "type": "ERROR"
     },
     "validateMandatoryToInitViaParam": {
@@ -589,19 +589,19 @@
             "type": "ERROR"
         },
         {
-            "message": "Property 'regular_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "message": "Property 'regular_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
             "type": "ERROR"
         },
         {
-            "message": "Property 'local_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "message": "Property 'local_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
             "type": "ERROR"
         },
         {
-            "message": "Property 'provider_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "message": "Property 'provider_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
             "type": "ERROR"
         },
         {
-            "message": "Property 'consumer_value' in the custom component 'testChild' cannot initialize here (forbidden to specify).",
+            "message": "Property 'consumer_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
             "type": "ERROR"
         }
     ],
@@ -688,6 +688,32 @@
         },
         {
             "message": "Duplicate decorators for method are not allowed.",
+            "type": "ERROR"
+        }
+    ],
+    "v2ToV1Link": [
+        {
+            "message": "Property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'link_value' in the custom component 'V1' is missing (mandatory to specify).",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
             "type": "ERROR"
         }
     ],
