@@ -183,7 +183,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private generateCompileContextInfo(rollupObject: Object): string {
-    let compileContextInfoPath: string = path.join(this.projectConfig.cachePath, COMPILE_CONTEXT_INFO_JSON);;
+    let compileContextInfoPath: string = path.join(this.projectConfig.cachePath, COMPILE_CONTEXT_INFO_JSON);
     let compileContextInfo: Object = {};
     let compileEntries: Array<string> = [];
     let entryObj: Object = this.projectConfig.entryObj;
@@ -453,7 +453,7 @@ export class ModuleMode extends CommonMode {
   generateEs2AbcCmd() {
     const fileThreads = getEs2abcFileThreadNumber();
     this.cmdArgs.push(`"@${this.filesInfoPath}"`);
-    if (!this.byteCodeHar){
+    if (!this.byteCodeHar) {
       this.cmdArgs.push('--npm-module-entry-list');
       this.cmdArgs.push(`"${this.npmEntriesInfoPath}"`);
     }

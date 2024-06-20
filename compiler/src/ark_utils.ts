@@ -327,13 +327,13 @@ export function transformModuleSpecifier(sourcePath: string, sourceCode: string,
   });
 }
 
-function removeSuffix(filePath: string) {
+function removeSuffix(filePath: string): string {
   const SUFFIX_REG = /\.(?:d\.)?(ets|ts|mjs|cjs|js)$/;
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
 export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig: Object,
-  logger?: Object, filePath?: string) {
+  logger?: Object, filePath?: string): string {
   let pkgName: string = aliasName;
   const aliasPkgNameMap: Map<string, string> = projectConfig.dependencyAliasMap;
   if (aliasPkgNameMap.has(aliasName)) {

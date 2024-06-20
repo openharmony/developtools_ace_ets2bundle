@@ -176,19 +176,19 @@ export class SourceMapGenerator {
     }
 
     const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
+    // If hap/hsp depends on bytecode har under debug mode, the source map of bytecode har need to be merged with
+    // source map of hap/hsp.
     if (isDebug(this.projectConfig) && !this.projectConfig.byteCodeHar && !!this.projectConfig.byteCodeHarInfo) {
-      // Merge bytecode har source maps to hap/hsp.
-      for (const packageName in this.projectConfig.byteCodeHarInfo) {
+      Object.keys(this.projectConfig.byteCodeHarInfo).forEach((packageName) => {
         const sourceMapsPath = this.projectConfig.byteCodeHarInfo[packageName].sourceMapsPath;
-        if (!sourceMapsPath) {
-          if (!!this.logger) {
-            this.logger.warn(yellow, `ArkTS:WARN Property 'sourceMapsPath' not found in '${packageName}'.`, reset);
-          }
-          continue;
+        if (!sourceMapsPath && !!this.logger && !!this.logger.warn) {
+          this.logger.warn(yellow, `ArkTS:WARN Property 'sourceMapsPath' not found in '${packageName}'.`, reset);
         }
-        const bytecodeHarSourceMap = JSON.parse(fs.readFileSync(toUnixPath(sourceMapsPath)).toString())
-        Object.assign(this.sourceMaps, bytecodeHarSourceMap);
-      }
+        if (!!sourceMapsPath) {
+          const bytecodeHarSourceMap = JSON.parse(fs.readFileSync(toUnixPath(sourceMapsPath)).toString());
+          Object.assign(this.sourceMaps, bytecodeHarSourceMap);
+        }
+      });
     }
     const cacheSourceMapObject: Object = this.updateCachedSourceMaps();
     stopEvent(eventUpdateCachedSourceMaps);
