@@ -12,6 +12,10 @@
           "emitParameters" : false
         },
         {
+          "name":"Reusable",
+          "emitParameters" : false
+        },
+        {
           "name":"CustomDialog",
           "emitParameters" : false
         },
