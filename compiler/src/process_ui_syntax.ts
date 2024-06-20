@@ -152,6 +152,7 @@ import {
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
 import createAstNodeUtils from './create_ast_node_utils';
+import { processSendableClass } from './process_sendable'
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -372,7 +373,7 @@ export function processUISyntax(program: ts.Program, ut = false,
               pos: node.getStart()
             });
           }
-          node = processClassSendable(node);
+          node = processSendableClass(node);
         }
       }
       return ts.visitEachChild(node, processAllNodes, context);
@@ -1034,92 +1035,6 @@ function processConcurrent(node: ts.FunctionDeclaration): ts.FunctionDeclaration
     return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken, node.name,
       node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
   }
-  return node;
-}
-
-function transformQuestionToken(node: ts.PropertyDeclaration): ts.PropertyDeclaration {
-  let updatedTypeNode: ts.TypeNode = node.type;
-
-  if (ts.isUnionTypeNode(updatedTypeNode)) {
-    if (!updatedTypeNode.types.find(type => type.kind === ts.SyntaxKind.UndefinedKeyword)) {
-      updatedTypeNode = ts.factory.createUnionTypeNode([
-        ...updatedTypeNode.types,
-        ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-      ]);
-    }
-  } else {
-    updatedTypeNode = ts.factory.createUnionTypeNode([
-      updatedTypeNode,
-      ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-    ]);
-  }
-
-  return ts.factory.createPropertyDeclaration(
-    node.modifiers,
-    node.name,
-    undefined,
-    updatedTypeNode,
-    node.initializer ? node.initializer : ts.factory.createIdentifier('undefined')
-  );
-}
-
-function processClassSendable(node: ts.ClassDeclaration): ts.ClassDeclaration {
-  let hasConstructor = false;
-  let updatedMembers: ts.NodeArray<ts.ClassElement> = node.members;
-  let updatedModifiers: ts.NodeArray<ts.ModifierLike> = node.modifiers;
-
-  updatedModifiers = ts.factory.createNodeArray(
-    updatedModifiers.filter(decorator => {
-      const originalDecortor: string = decorator.getText().replace(/\(.*\)$/, '').trim();
-      return originalDecortor !== COMPONENT_SENDABLE_DECORATOR;
-    })
-  );
-
-  for (const member of node.members) {
-    if (ts.isPropertyDeclaration(member) && member.questionToken) {
-      const propertyDecl: ts.PropertyDeclaration = member as ts.PropertyDeclaration;
-      const updatedPropertyDecl: ts.PropertyDeclaration = transformQuestionToken(member);
-      updatedMembers = ts.factory.createNodeArray(
-        updatedMembers.map(member => (member === propertyDecl ? updatedPropertyDecl : member))
-      );
-    }
-    if (ts.isConstructorDeclaration(member)) {
-      hasConstructor = true;
-      const constructor: ts.ConstructorDeclaration = member as ts.ConstructorDeclaration;
-      if (constructor.body !== undefined) {
-        const statementArray: ts.Statement[] = [
-          ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
-          ...constructor.body.statements
-        ];
-  
-        const updatedConstructor: ts.ConstructorDeclaration = ts.factory.updateConstructorDeclaration(
-          constructor,
-          constructor.modifiers,
-          constructor.parameters,
-          ts.factory.updateBlock(constructor.body, statementArray));
-  
-        updatedMembers = ts.factory.createNodeArray(
-          updatedMembers.map(member => (member === constructor ? updatedConstructor : member))
-        );
-      }
-    }
-  }
-
-  if (!hasConstructor) {
-    const constructor: ts.ConstructorDeclaration = ts.factory.createConstructorDeclaration(
-      undefined,
-      [],
-      ts.factory.createBlock(
-        [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable'))],
-        true
-      )
-    );
-    updatedMembers = ts.factory.createNodeArray([constructor, ...(updatedMembers || [])]);
-  }
-
-  node = ts.factory.updateClassDeclaration(node, updatedModifiers, node.name, node.typeParameters,
-    node.heritageClauses, updatedMembers);
-
   return node;
 }
 
