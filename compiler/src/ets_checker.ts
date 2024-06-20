@@ -638,8 +638,8 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   // In watch mode, the `beforeBuild` phase will clear the parent and children fields in the cache. For files that have
   // not been modified, the information needs to be restored using the `resolvedModuleNames` variable.
   if (process.env.watchMode === 'true') {
-    for (let file of Object.keys(resolvedModulesCache)) {
-      createOrUpdateCache(resolvedModulesCache[file], file);
+    for (let [file, resolvedModules] of resolvedModulesCache) {
+      createOrUpdateCache(resolvedModules, file);
     }
   }
 
@@ -856,9 +856,9 @@ export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Ma
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   startTimeStatisticsLocation(resolveModuleNamesTime);
   const resolvedModules: ts.ResolvedModuleFull[] = [];
+  const cacheFileContent: ts.ResolvedModuleFull[] = resolvedModulesCache.get(path.resolve(containingFile));
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
-    !(resolvedModulesCache[path.resolve(containingFile)] &&
-      resolvedModulesCache[path.resolve(containingFile)].length === moduleNames.length)) {
+    !(cacheFileContent && cacheFileContent.length === moduleNames.length)) {
     for (const moduleName of moduleNames) {
       const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost);
       if (result.resolvedModule) {
@@ -956,12 +956,12 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
     if (!projectConfig.xtsMode) {
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
-    resolvedModulesCache[path.resolve(containingFile)] = resolvedModules;
+    resolvedModulesCache.set(path.resolve(containingFile), resolvedModules);
     stopTimeStatisticsLocation(resolveModuleNamesTime);
     return resolvedModules;
   }
   stopTimeStatisticsLocation(resolveModuleNamesTime);
-  return resolvedModulesCache[path.resolve(containingFile)];
+  return resolvedModulesCache.get(path.resolve(containingFile));
 }
 
 export interface ResolveModuleInfo {
