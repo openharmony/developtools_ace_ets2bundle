@@ -1276,9 +1276,10 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
   provideInitialization.set(componentName, componentSet.provideInit);
   privateCollection.set(componentName, componentSet.privateCollection);
   structInfo.updatePropsDecoratorsV1.push(
-    ...componentSet.states, ...componentSet.props, ...componentSet.links,
+    ...componentSet.states, ...componentSet.props,
     ...componentSet.provides, ...componentSet.objectLinks
   );
+  structInfo.linkDecoratorsV1.push(...componentSet.links);
 }
 
 export function getComponentSet(node: ts.StructDeclaration, uiCheck: boolean = false): IComponentSet {
