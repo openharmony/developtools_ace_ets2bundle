@@ -823,32 +823,36 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
       storedFileInfo.collectResourceInFile(resourceData[1] + '_' + resourceData[2], path.resolve(filePath));
     }
-    if (isResourceModule && /^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
-      const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
-      return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst);
-    } else if (!isResourceModule) {
-      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0]);
+    if (isResourceModule) {
+      if (/^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
+        const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
+        return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst, false);
+      } else {
+        return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], true);
+      }
+    } else {
+      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], false);
     }
   }
   return false;
 }
 
-function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isResourceModule: boolean,
-  resourceDataFirst: string): boolean {
-  const logType: LogType = isResourceModule ? LogType.WARN : LogType.ERROR;
-  if (!resources[resourceDataFirst]) {
+function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isHspResourceModule: boolean,
+  resourceDataFirst: string, faOrNoHspResourcesMap: boolean): boolean {
+  const logType: LogType = isHspResourceModule ? LogType.WARN : LogType.ERROR;
+  if (!faOrNoHspResourcesMap && !resources[resourceDataFirst]) {
     log.push({
       type: logType,
       message: `Unknown resource source '${resourceDataFirst}'.`,
       pos: pos
     });
-  } else if (!resources[resourceDataFirst][resourceData[1]]) {
+  } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]]) {
     log.push({
       type: logType,
       message: `Unknown resource type '${resourceData[1]}'.`,
       pos: pos
     });
-  } else if (!resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
+  } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
     log.push({
       type: logType,
       message: `Unknown resource name '${resourceData[2]}'.`,
