@@ -475,6 +475,83 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   isSendableClass = false;
 }
 
+const v1ComponentDecorators: string[] = [
+  'State', 'Prop', 'Link', 'Provide', 'Consume',
+  'StorageLink', 'StorageProp', 'LocalStorageLink', 'LocalStorageProp'
+];
+const v2ComponentDecorators: string[] = [
+  'Local', 'Param', 'Event', 'Provider', 'Consumer'
+];
+function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Identifier,
+  decoratorName: string, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (structContext) {
+    const isV1Decorator: boolean = v1ComponentDecorators.includes(decoratorName);
+    const isV2Decorator: boolean = v2ComponentDecorators.includes(decoratorName);
+    if (!isV1Decorator && !isV2Decorator) {
+      return;
+    }
+    const classResult: ClassDecoratorResult = new ClassDecoratorResult();
+    const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
+    if (propertyNode && propertyNode.type && globalProgram.checker) {
+      validatePropertyType(propertyNode.type, classResult);
+    }
+    let message: string;
+    if (isV1Decorator && classResult.hasObservedV2) {
+      message = `The type of the @${decoratorName} property can not be a class decorated with @ObservedV2.`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode);
+      return;
+    }
+    if (isV2Decorator && classResult.hasObserved) {
+      message = `The type of the @${decoratorName} property can not be a class decorated with @Observed.`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode);
+      return;
+    }
+  }
+}
+
+function getPropertyNodeByDecorator(decoratorNode: ts.Identifier): ts.PropertyDeclaration {
+  if (ts.isDecorator(decoratorNode.parent) && ts.isPropertyDeclaration(decoratorNode.parent.parent)) {
+    return decoratorNode.parent.parent;
+  }
+  if (ts.isCallExpression(decoratorNode.parent) && ts.isDecorator(decoratorNode.parent.parent) &&
+    ts.isPropertyDeclaration(decoratorNode.parent.parent.parent)) {
+    return decoratorNode.parent.parent.parent;
+  }
+  return undefined;
+}
+
+function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResult): void {
+  if (ts.isUnionTypeNode(node) && node.types && node.types.length) {
+    node.types.forEach((item: ts.TypeNode) => {
+      validatePropertyType(item, classResult);
+    });
+  }
+  if (ts.isTypeReferenceNode(node)) {
+    const typeNode: ts.Type = globalProgram.checker.getTypeAtLocation(node);
+    parsePropertyType(typeNode, classResult);
+  }
+}
+
+function parsePropertyType(type: ts.Type, classResult: ClassDecoratorResult): void {
+  // @ts-ignore
+  if (type && type.types && type.types.length) {
+    // @ts-ignore
+    type.types.forEach((item: ts.Type) => {
+      parsePropertyType(item, classResult);
+    });
+  }
+  if (type && type.symbol && type.symbol.valueDeclaration &&
+    ts.isClassDeclaration(type.symbol.valueDeclaration)) {
+    const result: ClassDecoratorResult = getClassDecoratorResult(type.symbol.valueDeclaration);
+    if (result.hasObserved) {
+      classResult.hasObserved = result.hasObserved;
+    }
+    if (result.hasObservedV2) {
+      classResult.hasObservedV2 = result.hasObservedV2;
+    }
+  }
+}
+
 function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   if (ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isMethodDeclaration(node)) {
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
@@ -588,6 +665,7 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
       isObservedV1Class, isSendableClass);
+    validatePropertyInStruct(structContext, node, decoratorName, sourceFileNode, log);
     return;
   }
   if (ts.isDecorator(node)) {
