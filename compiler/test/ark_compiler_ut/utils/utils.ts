@@ -39,6 +39,9 @@ export function scanFiles(filepath: string, fileList: Set<string>) {
     if (stat.isDirectory()) {
       scanFiles(child, fileList);
     } else {
+      if (child.includes("mock")) {
+        return;
+      }
       fileList.add(child);
     }
   });
