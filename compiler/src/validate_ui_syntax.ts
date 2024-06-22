@@ -572,7 +572,7 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
     const decoratorKeys: string[] = Array.from(decoratorMap.keys());
     if (decoratorKeys.length > 1) {
       const message: string = 'A function can only be decorated by one of the ' +
-        `'AnimatableExtend, Builder, Extend, Styles and Concurrent'.`;
+        `'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.`;
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
     }
   }
@@ -631,10 +631,6 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
   isSendableClass: boolean): void {
   if (!classContext && classDecorators.includes(decoratorName)) {
     const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
-  } else if ('@' + decoratorName === COMPONENT_SENDABLE_DECORATOR &&
-      (!node.parent || !node.parent.parent || !ts.isClassDeclaration(node.parent.parent))) {
-    const message: string = 'The \'@Sendable\' decorator can only be added to \'class\'.';
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
     validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass);
