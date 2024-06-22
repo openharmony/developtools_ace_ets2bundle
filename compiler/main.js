@@ -1033,7 +1033,6 @@ function resetMain() {
   resources.app = {};
   abilityPagesFullPath.clear();
   aceBuildJson = {};
-  resetGlobalProgram();
   partialUpdateConfig.builderCheck = true;
   globalModulePaths = [];
   sdkConfigs = [];
