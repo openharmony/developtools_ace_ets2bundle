@@ -112,3 +112,19 @@ export function processSendableClass(node: ts.ClassDeclaration): ts.ClassDeclara
 
   return node;
 }
+
+export function processSendableFunction(node: ts.FunctionDeclaration): ts.FunctionDeclaration {
+  if (node.body) {
+    const statementArray: ts.Statement[] =
+      [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable')),
+        ...node.body.statements];
+    return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken, node.name,
+      node.typeParameters, node.parameters, node.type, ts.factory.updateBlock(node.body, statementArray));
+  }
+  return ts.factory.createFunctionDeclaration(undefined, node.asteriskToken, node.name,
+    node.typeParameters, node.parameters, node.type, node.body);
+}
+
+export function processSendableType(node: ts.TypeAliasDeclaration): ts.TypeAliasDeclaration {
+  return ts.factory.createTypeAliasDeclaration(undefined, node.name, node.typeParameters, node.type);
+}

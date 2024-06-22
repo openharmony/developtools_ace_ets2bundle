@@ -629,11 +629,11 @@
     ],
     "validateDifferentMethod": [
         {
-            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles and Concurrent'.",
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
             "type": "ERROR"
         },
         {
-            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles and Concurrent'.",
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
             "type": "ERROR"
         },
         {
