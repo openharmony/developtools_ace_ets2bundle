@@ -293,6 +293,12 @@ export const fileHashScriptVersion: (fileName: string) => string = (fileName: st
   return createHash(fileContent);
 };
 
+// Reuse the last language service when dependency in oh-package.json5 changes to enhance performance in incremental building.
+// Setting this to false will create a new language service on dependency changes, like a full rebuild.
+const reuseLanguageServiceForDepChange: boolean = true;
+// When dependency changes and reusing the last language service, enable this flag to recheck code dependent on those dependencies.
+export let needReCheckForChangedDepUsers: boolean = false;
+
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): ts.LanguageService {
   setCompilerOptions(resolveModulePaths);
@@ -342,6 +348,10 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       dollarCollection.clear();
       extendCollection.clear();
       this.uiProps.length = 0;
+    },
+    // TSC will re-do resolution if this callback return true.
+    hasInvalidatedResolutions: (filePath: string): boolean => {
+      return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
     }
   };
 
@@ -365,9 +375,14 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
+  const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
+    (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
   const tsImportSendableDiff: boolean | undefined = cache?.preTsImportSendable !== tsImportSendable;
-  const shouldRebuild: boolean | undefined = hashDiffers || targetESVersionDiffers || tsImportSendableDiff;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff;
+  if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
+    needReCheckForChangedDepUsers = true;
+  }
 
   if (!service || shouldRebuild) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
@@ -1554,6 +1569,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 export function resetEtsCheck(): void {
   cache = {};
   props = [];
+  needReCheckForChangedDepUsers = false;
   if (globalProgram.program) {
     globalProgram.program.releaseTypeChecker();
   } else if (languageService) {
