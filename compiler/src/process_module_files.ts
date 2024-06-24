@@ -47,6 +47,17 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
   const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, moduleId, projectConfig, metaInfo);
   const sourceMapGenerator = SourceMapGenerator.getInstance();
   stopEvent(eventGenContentAndSourceMapInfo);
+
+  /**
+   * In the following situation:
+   * A typescript source file whose name is 'Test.ts', which is used via `import xxx for 'test'` in another source file.
+
+   * The value of "node.fileName" consists of "test.ts", which does not correspond with the source file's actual name and would lead to a compilation error.
+   * The value of moduleId is same as the actual file name, so it would be used here for locating the target source file.
+
+   * Note: current realization is related to the moduleId mechanism in the rollup framework, which is needed to be reconsidered to improve the code robustness.
+   * In the current realization, when moduleId mechanism is changed, there would be a compilation error.
+   */
   let temporaryFile: string = genTemporaryPath(moduleId ? moduleId : node.fileName, projectConfig.projectPath, process.env.cachePath,
     projectConfig, metaInfo, logger);
   if (temporaryFile.length === 0) {
