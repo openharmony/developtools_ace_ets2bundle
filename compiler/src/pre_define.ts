@@ -563,6 +563,7 @@ export const REGISTER_NAMED_ROUTE: string = 'registerNamedRoute';
 export const ROUTE_NAME: string = 'routeName';
 export const PAGE_PATH: string = 'pagePath';
 export const PAGE_FULL_PATH: string = 'pageFullPath';
+export const IS_USER_CREATE_STACK: string = 'isUserCreateStack';
 
 export const CAN_RETAKE: string = 'canRetake';
 export const DECORATOR_SUFFIX: string = '@';
