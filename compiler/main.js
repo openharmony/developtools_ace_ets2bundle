@@ -75,6 +75,7 @@ let allModulesPaths = [];
 
 function initProjectConfig(projectConfig) {
   projectConfig.entryObj = {};
+  projectConfig.entryArrayForObf = []; // Only used for arkguard
   projectConfig.cardObj = {};
   projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
     path.join(process.cwd(), 'sample');
@@ -143,6 +144,7 @@ function loadEntryObj(projectConfig) {
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
+    setEntryArrayForObf(staticPreviewPage);
   } else if (abilityConfig.abilityType === 'page') {
     if (fs.existsSync(projectConfig.manifestFilePath)) {
       const jsonString = fs.readFileSync(projectConfig.manifestFilePath).toString();
@@ -167,6 +169,8 @@ function loadEntryObj(projectConfig) {
           const fileName = path.resolve(projectConfig.projectPath, sourcePath + '.ets');
           if (fs.existsSync(fileName)) {
             projectConfig.entryObj['./' + sourcePath] = fileName + '?entry';
+            // Collect the file paths in main_pages.json
+            setEntryArrayForObf(sourcePath);
           } else {
             throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
               .message;
@@ -302,6 +306,7 @@ function getEntryPath(entryPath, rootPackageJsonPath) {
   if (fs.existsSync(mainEntryPath) && fs.statSync(mainEntryPath).isFile()) {
     const entryKey = path.relative(projectConfig.projectPath, mainEntryPath);
     projectConfig.entryObj[entryKey] = mainEntryPath;
+    setEntryArrayForObf(entryKey);
     abilityPagesFullPath.add(path.resolve(mainEntryPath).toLowerCase());
   } else if (projectConfig.compileHar) {
     throw Error('\u001b[31m' + `BUIDERROR: not find entry file in ${rootPackageJsonPath}.` + '\u001b[39m').message;
@@ -355,6 +360,7 @@ function setEntryFile(projectConfig) {
     throw Error(`\u001b[31m ERROR: missing ${entryFilePath.replace(/\\/g, '/')}. \u001b[39m`).message;
   }
   projectConfig.entryObj[`./${entryFileName}`] = entryFilePath + '?entry';
+  setEntryArrayForObf(entryFileName);
 }
 
 function setIntentEntryPages(projectConfig) {
@@ -396,11 +402,18 @@ function setTestRunnerFile(projectConfig, isStageBased) {
           } else {
             projectConfig.entryObj[`../${dir}/${relativePath}`] = item;
           }
+          setEntryArrayForObf(dir, relativePath);
           abilityConfig.testRunnerFile.push(item);
         }
       });
     }
   });
+}
+
+// entryPath: the filename of the entry file and the name of the outer directory.
+// The directory should be placed before the filename, and the filename must be the last argument.
+function setEntryArrayForObf(...entryPath) {
+  projectConfig.entryArrayForObf?.push(entryPath.join('/'));
 }
 
 function folderExistsCaseSensitive(folderPath) {
@@ -442,6 +455,7 @@ function setAbilityFile(projectConfig, abilityPages) {
     if (fs.existsSync(projectAbilityPath)) {
       abilityConfig.projectAbilityPath.push(projectAbilityPath);
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
+      setEntryArrayForObf(entryPageKey);
     } else {
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
@@ -521,6 +535,7 @@ function readCardForm(form) {
     const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
     if (cardPath && fs.existsSync(cardPath)) {
       projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
+      setEntryArrayForObf(sourcePath)
       projectConfig.cardEntryObj['../' + sourcePath] = cardPath;
       projectConfig.cardObj[cardPath] = sourcePath.replace(/^\.\//, '');
     }
@@ -539,6 +554,10 @@ function getAbilityFullPath(projectPath, abilityPath) {
 function loadWorker(projectConfig, workerFileEntry) {
   if (workerFileEntry) {
     projectConfig.entryObj = Object.assign(projectConfig.entryObj, workerFileEntry);
+    const keys = Object.keys(workerFileEntry);
+    for (const key of keys) {
+      setEntryArrayForObf(key);
+    }
   } else {
     const workerPath = path.resolve(projectConfig.projectPath, WORKERS_DIR);
     if (fs.existsSync(workerPath)) {
@@ -549,6 +568,7 @@ function loadWorker(projectConfig, workerFileEntry) {
           const relativePath = path.relative(workerPath, item)
             .replace(/\.(ts|js|ets)$/, '').replace(/\\/g, '/');
           projectConfig.entryObj[`./${WORKERS_DIR}/` + relativePath] = item;
+          setEntryArrayForObf(WORKERS_DIR, relativePath);
           abilityPagesFullPath.add(path.resolve(item).toLowerCase());
         }
       });
@@ -1053,6 +1073,7 @@ function resetAbilityConfig() {
 
 function resetProjectConfig() {
   projectConfig.entryObj = {};
+  projectConfig.entryArrayForObf = [];
   projectConfig.cardObj = {};
   projectConfig.compileHar = false;
   projectConfig.compileShared = false;
@@ -1121,3 +1142,4 @@ exports.ohosSystemModuleSubDirPaths = ohosSystemModuleSubDirPaths;
 exports.allModulesPaths = allModulesPaths;
 exports.resetProjectConfig = resetProjectConfig;
 exports.resetGlobalProgram = resetGlobalProgram;
+exports.setEntryArrayForObf = setEntryArrayForObf;

@@ -277,7 +277,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     let ohPackagePath = '';
     let projectConfig = {};
     let modulePathMap = {};
-    let entryObj = {};
+    let entryArray = [];
     mocha.before('init config', function () {
       aceModuleJsonPath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/module.json');
       ohPackagePath = path.join(OBFUSCATE_TESTDATA_DIR, 'filename_obf/oh-package.json5');
@@ -294,17 +294,17 @@ mocha.describe('test obfuscate config resolver api', function () {
         'entry': '/mnt/application/entry',
         'harPackageName': '/mnt/application/harPackageName'
       };
-      entryObj = {
-        'entryability/EntryAbility': 'D:\\enrty\\src\\main\\ets\\entryability\\EntryAbility.ets',
-        'pages/Index': 'D:\\entry\\src\\main\\ets\\pages\\Index.ets'
-      };
+      entryArray = [
+        'entryability/EntryAbility',
+        'pages/Index'
+      ];
     });
 
     mocha.it('2-1: test collectResevedFileNameInIDEConfig in hsp module', function () {
       projectConfig.compileShared = true;
       projectConfig.compileHar = false;
       projectConfig.byteCodeHar = false;
-      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryArray);
       const expectReservedFileNames = [
         'entryability',
         'EntryAbility',
@@ -360,7 +360,7 @@ mocha.describe('test obfuscate config resolver api', function () {
       projectConfig.compileShared = false;
       projectConfig.compileHar = false;
       projectConfig.byteCodeHar = false;
-      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryArray);
       const expectReservedFileNames = [
         'entryability',
         'EntryAbility',
@@ -407,7 +407,7 @@ mocha.describe('test obfuscate config resolver api', function () {
       projectConfig.compileShared = false;
       projectConfig.compileHar = true;
       projectConfig.byteCodeHar = false;
-      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryArray);
       const expectReservedFileNames = [
         'entryability',
         'EntryAbility',
@@ -454,7 +454,7 @@ mocha.describe('test obfuscate config resolver api', function () {
       projectConfig.compileShared = false;
       projectConfig.compileHar = true;
       projectConfig.byteCodeHar = true;
-      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryObj);
+      const acutualReservedFileNames: string[] = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig, modulePathMap, entryArray);
       const expectReservedFileNames = [
         'entryability',
         'EntryAbility',
