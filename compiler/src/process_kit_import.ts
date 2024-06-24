@@ -19,7 +19,10 @@ import path from 'path';
 
 import {
   FileLog,
-  LogType
+  LogType,
+  startTimeStatisticsLocation,
+  stopTimeStatisticsLocation,
+  CompilationTimeStatistics
 } from './utils';
 import { projectConfig } from '../main';
 import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source_file';
@@ -52,7 +55,8 @@ const KEEPTS = '// @keepTs';
 *      import ErrorCode from '@ohos.ability.errorCode'
 *    ```
 */
-export function processKitImport(id: string, metaInfo: Object): Function {
+export function processKitImport(id: string, metaInfo: Object,
+  compilationTime: CompilationTimeStatistics): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -78,6 +82,7 @@ export function processKitImport(id: string, metaInfo: Object): Function {
     };
 
     return (node: ts.SourceFile) => {
+      startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
 
       KitInfo.init(node, context, id);
@@ -92,16 +97,22 @@ export function processKitImport(id: string, metaInfo: Object): Function {
         if (ts.hasTsNoCheckOrTsIgnoreFlag(node) && !hasKeepTs) {
           hasTsNoCheckOrTsIgnoreFiles.push(path.normalize(node.fileName));
           // process KitImport transforming
-          return ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
+          const processedNode: ts.SourceFile =
+            ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
+          stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
+          return processedNode;
         }
         // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
         const processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return node; // this node not used for [writeFile]
       }
       // process KitImport transforming
-      return ts.visitEachChild(node, visitor, context);
+      const processedNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
+      return processedNode;
     };
   };
 }

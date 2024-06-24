@@ -390,7 +390,7 @@ async function transform(code: string, id: string) {
       {
         before: [
           processUISyntax(null, false, compilationTime, id),
-          processKitImport(id, metaInfo)
+          processKitImport(id, metaInfo, compilationTime)
         ]
       }
     );

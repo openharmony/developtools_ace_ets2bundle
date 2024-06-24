@@ -1062,6 +1062,7 @@ export class CompilationTimeStatistics {
   noSourceFileRebuildProgramTime: CompileEvent;
   etsTransformBuildStartTime: CompileEvent;
   etsTransformLoadTime: CompileEvent;
+  processKitImportTime: CompileEvent;
   constructor(share: Record<string, any>, pluginName: string, hookName: string) {
     if (share && share.getHookEventFactory) {
       if (pluginName === 'etsChecker' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
@@ -1078,6 +1079,7 @@ export class CompilationTimeStatistics {
         this.validateEtsTime = this.hookEventFactory.createEvent('validateEts');
         this.tsProgramEmitTime = this.hookEventFactory.createEvent('tsProgramEmit');
         this.noSourceFileRebuildProgramTime = this.hookEventFactory.createEvent('noSourceFileRebuildProgram');
+        this.processKitImportTime = this.hookEventFactory.createEvent('processKitImport');
       } else if (pluginName === 'etsTransform' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
         this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
         this.etsTransformBuildStartTime = this.hookEventFactory.createEvent('etsTransformBuildStart');
