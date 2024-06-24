@@ -803,16 +803,15 @@ export function generateConsumerObConfigFile(obfuscationOptions: any, logger: an
  * @returns reservedFileNames
  */
 export function collectResevedFileNameInIDEConfig(ohPackagePath: string, projectConfig: Object,
-  modulePathMap: Object | undefined, entryObject: Object | undefined): string[] {
+  modulePathMap: Object | undefined, entryArray: Array | undefined): string[] {
   const reservedFileNames: string[] = [];
   const moduleJsonPath: string = projectConfig.aceModuleJsonPath;
   const projectPath: string = projectConfig.projectPath;
   const cachePath: string = projectConfig.cachePath;
 
-  if (entryObject) {
-    const entryFiles = Object.keys(entryObject);
-    entryFiles.forEach(val => {
-      FileUtils.collectPathReservedString(val, reservedFileNames);
+  if (entryArray) {
+    entryArray.forEach(element => {
+      FileUtils.collectPathReservedString(element, reservedFileNames);
     });
   }
 
