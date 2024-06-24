@@ -693,6 +693,5 @@
     ],
     "v1ToV2Component.ts": [],
     "v1ToV2ComponentValidate": [],
-    "v2ToV1ComponentValidate": [],
-    "property_observe_validate": []
+    "v2ToV1ComponentValidate": []
 }
