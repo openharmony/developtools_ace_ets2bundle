@@ -64,12 +64,12 @@ class Index extends ViewPU {
             Row.create();
         }, Row);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Navigation.create(this.pageStack, { moduleName: "", pagePath: "navigation_component" });
+            Navigation.create(this.pageStack, { moduleName: "", pagePath: "navigation_component", isUserCreateStack: true });
             Navigation.title('Main');
         }, Navigation);
         Navigation.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Navigation.create(new NavPathStack(), { moduleName: "", pagePath: "navigation_component" });
+            Navigation.create(new NavPathStack(), { moduleName: "", pagePath: "navigation_component", isUserCreateStack: false });
             Navigation.title('Main');
         }, Navigation);
         Navigation.pop();

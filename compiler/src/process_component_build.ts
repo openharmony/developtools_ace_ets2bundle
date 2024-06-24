@@ -138,7 +138,8 @@ import {
   BASE_COMPONENT_NAME_PU,
   PROTO,
   NATIVE_VIEW_PARTIAL_UPDATE,
-  NAV_PATH_STACK
+  NAV_PATH_STACK,
+  IS_USER_CREATE_STACK
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -3389,11 +3390,13 @@ function navigationCreateParam(compName: string, type: string,
   const navigationOrNavDestination: (ts.ObjectLiteralExpression | ts.NewExpression | ts.ArrowFunction)[] = [];
   const isCreate: boolean = type === COMPONENT_CREATE_FUNCTION;
   const partialUpdateMode: boolean = partialUpdateConfig.partialUpdateMode;
+  let isHaveParam: boolean = true;
   if (argumentsArr && argumentsArr.length) {
     // @ts-ignore
     navigationOrNavDestination.push(...argumentsArr);
   } else if (partialUpdateMode && isCreate) {
     if (compName === NAVIGATION) {
+      isHaveParam = false;
       navigationOrNavDestination.push(ts.factory.createNewExpression(
         ts.factory.createIdentifier(NAV_PATH_STACK), undefined, []
       ));
@@ -3410,22 +3413,33 @@ function navigationCreateParam(compName: string, type: string,
   }
   if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
-      [ts.factory.createPropertyAssignment(
-        ts.factory.createIdentifier(RESOURCE_NAME_MODULE),
-        ts.factory.createStringLiteral(projectConfig.moduleName || '')
-      ),
-        ts.factory.createPropertyAssignment(
-          ts.factory.createIdentifier(PAGE_PATH),
-          ts.factory.createStringLiteral(
-            projectConfig.compileHar ? '' :
-              path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
-          )
-      )
-      ],
+      navigationOrNavDestinationCreateContent(compName, isHaveParam),
       false
     ));
   }
   return navigationOrNavDestination;
+}
+
+function navigationOrNavDestinationCreateContent(compName: string, isHaveParam: boolean): ts.PropertyAssignment[] {
+  const navigationOrNavDestinationContent: ts.PropertyAssignment[] = [];
+  navigationOrNavDestinationContent.push(ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier(RESOURCE_NAME_MODULE),
+    ts.factory.createStringLiteral(projectConfig.moduleName || '')
+  ),
+    ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(PAGE_PATH),
+      ts.factory.createStringLiteral(
+        projectConfig.compileHar ? '' :
+          path.relative(projectConfig.projectRootPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
+      )
+  ));
+  if (compName === NAVIGATION) {
+    navigationOrNavDestinationContent.push(ts.factory.createPropertyAssignment(
+      ts.factory.createIdentifier(IS_USER_CREATE_STACK),
+      isHaveParam ? ts.factory.createTrue() : ts.factory.createFalse()
+    ));
+  }
+  return navigationOrNavDestinationContent;
 }
 
 function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier): boolean {
