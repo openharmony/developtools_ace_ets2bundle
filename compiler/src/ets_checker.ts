@@ -1512,7 +1512,6 @@ function initEtsStandaloneCheckerConfig(logger, config): void {
 
 function resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode: string): void {
   resetProjectConfig();
-  resetGlobalProgram();
   resetEtsCheck();
   fastBuildLogger = beforeInitFastBuildLogger;
   process.env.compileMode = beforeInitCompileMode;
@@ -1555,9 +1554,12 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
 export function resetEtsCheck(): void {
   cache = {};
   props = [];
-  if (languageService) {
+  if (globalProgram.program) {
+    globalProgram.program.releaseTypeChecker();
+  } else if (languageService) {
     languageService.getProgram().releaseTypeChecker();
   }
+  resetGlobalProgram();
   languageService = null;
   allResolvedModules.clear();
   checkerResult.count = 0;
