@@ -94,7 +94,8 @@ import { updateConstructor } from './process_component_constructor';
 import {
   LogType,
   LogInfo,
-  componentInfo
+  componentInfo,
+  storedFileInfo
 } from './utils';
 import {
   createReference,
@@ -859,7 +860,7 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
           ts.factory.createStringLiteral(componentInfo.id.toString()),
         isBuilder ? parentConditionalExpression() : ts.factory.createThis());
       } else {
-        argumentsArray.unshift(isGlobalBuilder ? parentConditionalExpression() : ts.factory.createThis());
+        argumentsArray.unshift(storedFileInfo.processBuilder ? parentConditionalExpression() : ts.factory.createThis());
         argumentsArray.push(isCutomDialog ? ts.factory.createPrefixUnaryExpression(
           ts.SyntaxKind.MinusToken,
           ts.factory.createNumericLiteral('1')) : ts.factory.createIdentifier(ELMTID),

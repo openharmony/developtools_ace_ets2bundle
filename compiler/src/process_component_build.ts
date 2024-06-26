@@ -186,6 +186,7 @@ import {
   resourceFileName
 } from './process_ui_syntax';
 import { regularCollection } from './validate_ui_syntax';
+import { contStactPushOrPop } from './process_component_class';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -198,9 +199,14 @@ export function processComponentBuild(node: ts.MethodDeclaration,
   }
   if (node.body && node.body.statements && node.body.statements.length &&
     validateRootNode(node, log)) {
+    const componentBlock: ts.Block = processComponentBlock(node.body, false, log);
     newNode = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
       node.asteriskToken, renderNode, node.questionToken, node.typeParameters, node.parameters,
-      node.type, processComponentBlock(node.body, false, log));
+      node.type, componentBlock);
+    if (partialUpdateConfig.partialUpdateMode) {
+      componentBlock.statements.unshift(contStactPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
+      componentBlock.statements.push(contStactPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), [])); 
+    }
   } else {
     newNode = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
       node.asteriskToken, renderNode, node.questionToken, node.typeParameters, node.parameters,
