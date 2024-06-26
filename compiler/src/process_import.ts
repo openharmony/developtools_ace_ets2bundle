@@ -804,10 +804,36 @@ function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, ex
       originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
     } catch (e) {
       if (usedSymbol[1] && usedSymbol[1].declarations) {
-        originNode = usedSymbol[1].declarations[0];
+        for (let i = 0; i < usedSymbol[1].declarations.length; i++) {
+          originNode = usedSymbol[1].declarations[i];
+          exportAllManage(originNode, usedNode, pageFile);
+        }
       }
     }
     processImportNode(originNode, usedNode, true, usedSymbol[0], pageFile);
+  }
+}
+
+// export * from 'xxx';
+function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageFile: string): void {
+  let exportOriginNode: ts.Node;
+  if (!originNode.exportClause && originNode.moduleSpecifier && ts.isStringLiteral(originNode.moduleSpecifier)) {
+    const exportSymbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(originNode.moduleSpecifier);
+    if (exportSymbol && exportSymbol.declarations) {
+      exportOriginNode = exportSymbol.declarations[0];
+    } else {
+      exportOriginNode = null;
+    }
+    if (exportOriginNode) {
+      if (ts.isSourceFile(exportOriginNode) && exportSymbol.escapedName) {
+        const escapedName: string = exportSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
+        if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
+          exportSymbol.exports && exportSymbol.exports instanceof Map) {
+          getIntegrationNodeInfo(originNode, usedNode, exportSymbol.exports, pageFile);
+          return;
+        }
+      }
+    }
   }
 }
 
