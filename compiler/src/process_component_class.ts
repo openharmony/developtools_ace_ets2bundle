@@ -92,7 +92,11 @@ import {
   PROTOTYPE,
   REFLECT,
   CREATE_SET_METHOD,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  CONTEXT_STACK,
+  COMPONENT_IF_UNDEFINED,
+  COMPONENT_POP_FUNCTION,
+  PUSH
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -143,7 +147,8 @@ import {
 } from '../main';
 import {
   builderTypeParameter,
-  initializeMYIDS
+  initializeMYIDS,
+  globalBuilderParamAssignment
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 
@@ -567,15 +572,21 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       INNER_CUSTOM_BUILDER_METHOD.add(name);
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       const parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
-      parameters.push(createParentParameter());
+      if (!partialUpdateConfig.partialUpdateMode) {
+        parameters.push(createParentParameter());
+      }
       if (projectConfig.optLazyForEach) {
         parameters.push(initializeMYIDS());
       }
       const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+      const componentBlock: ts.Block = processComponentBlock(node.body, false, log, false, true);
+      if (partialUpdateConfig.partialUpdateMode) {
+        componentBlock.statements.unshift(globalBuilderParamAssignment());
+      }
       const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
         ts.concatenateDecoratorsAndModifiers(removeDecorator(customBuilder, 'Builder'), modifiers),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters,
-        parameters, node.type, processComponentBlock(node.body, false, log, false, true));
+        parameters, node.type, componentBlock);
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
       storedFileInfo.processBuilder = false;
@@ -897,6 +908,8 @@ export function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaratio
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
+  statements.unshift(contStactPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
+  statements.push(contStactPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), []));
   return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
     ts.factory.createBlock(statements, true));
@@ -1080,4 +1093,57 @@ export function checkFinalizeConstruction(): ts.Statement {
           ]
         ))
       ], true), undefined);
+}
+
+export function checkContStact(): ts.Statement {
+  return ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+        ts.factory.createIdentifier(CONTEXT_STACK)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)
+    ),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(REFLECT),
+          ts.factory.createIdentifier(CREATE_SET_METHOD)
+        ),
+        undefined,
+        [
+          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createStringLiteral(CONTEXT_STACK),
+          ts.factory.createArrayLiteralExpression(
+            [],
+            false
+          )
+        ]
+      ))],
+      true
+    ),
+    undefined
+  );
+}
+
+export function contStactPushOrPop(pushOrPop: ts.Identifier, param: ts.ThisExpression[] | []): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+      ts.factory.createIdentifier(CONTEXT_STACK)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createIdentifier(CONTEXT_STACK)
+        ),
+        pushOrPop
+      ),
+      undefined,
+      param
+    )
+  ));
 }

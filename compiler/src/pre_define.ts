@@ -224,6 +224,7 @@ export const CREATE_CONSTRUCTOR_GET_FUNCTION: string = 'Get';
 export const CREATE_CONSTRUCTOR_DELETE_FUNCTION: string = 'delete';
 export const ABOUT_TO_BE_DELETE_FUNCTION_ID: string = 'id';
 export const COMPONENT_WATCH_FUNCTION: string = 'declareWatch';
+export const CONTEXT_STACK: string = 'contextStack';
 
 export const CREATE_STATE_METHOD: string = 'createState';
 export const CREATE_PROP_METHOD: string = 'createProp';
@@ -590,6 +591,7 @@ export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
 export const WRAPBUILDER_BUILDERPROP: string = 'builder';
+export const LENGTH: string = 'length';
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';

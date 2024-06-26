@@ -76,7 +76,10 @@ import {
   WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
   FUNCTION,
-  PAGE_FULL_PATH
+  PAGE_FULL_PATH,
+  LENGTH,
+  BASE_COMPONENT_NAME_PU,
+  CONTEXT_STACK
 } from './pre_define';
 import {
   componentInfo,
@@ -108,7 +111,8 @@ import {
   processComponentClass,
   createParentParameter,
   processBuildMember,
-  checkFinalizeConstruction
+  checkFinalizeConstruction,
+  checkContStact
 } from './process_component_class';
 import processImport, {
   processImportModule
@@ -208,7 +212,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           statements.unshift(item);
         });
         if (partialUpdateConfig.partialUpdateMode && hasStruct) {
-          statements.unshift(checkFinalizeConstruction());
+          statements.unshift(checkFinalizeConstruction(), checkContStact());
         }
         createNavigationInit(resourceFileName, statements);
         insertImportModuleNode(statements, hasUseResource);
@@ -291,17 +295,23 @@ export function processUISyntax(program: ts.Program, ut = false,
           builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
           const parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
-          parameters.push(createParentParameter());
+          if (!partialUpdateConfig.partialUpdateMode) {
+            parameters.push(createParentParameter());  
+          }
           if (projectConfig.optLazyForEach) {
             parameters.push(initializeMYIDS());
           }
           storedFileInfo.builderLikeCollection = CUSTOM_BUILDER_METHOD;
           const builderParamsResult: BuilderParamsResult = { firstParam: null };
           parseGlobalBuilderParams(node.parameters, builderParamsResult);
+          const componentBlock: ts.Block = processComponentBlock(node.body, false, transformLog.errors, false, true,
+            node.name.getText(), undefined, true, builderParamsResult, true);
+          if (partialUpdateConfig.partialUpdateMode) {
+            componentBlock.statements.unshift(globalBuilderParamAssignment());
+          }
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
-            processComponentBlock(node.body, false, transformLog.errors, false, true,
-              node.name.getText(), undefined, true, builderParamsResult, true));
+            componentBlock);
           builderParamsResult.firstParam = null;
           // @ts-ignore
           if (node && node.illegalDecorators) {
@@ -403,6 +413,47 @@ export function processUISyntax(program: ts.Program, ut = false,
       return ts.visitEachChild(node, visitor, context);
     }
   };
+}
+
+export function globalBuilderParamAssignment(): ts.VariableStatement {
+  const contextStackCondition: ts.PropertyAccessExpression = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+    ts.factory.createIdentifier(CONTEXT_STACK)
+  );
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARENT),
+        undefined,
+        undefined,
+        ts.factory.createConditionalExpression(
+          ts.factory.createBinaryExpression(
+            contextStackCondition,
+            ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+            ts.factory.createPropertyAccessExpression(
+              contextStackCondition,
+              ts.factory.createIdentifier(LENGTH)
+            )
+          ),
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createElementAccessExpression(
+            contextStackCondition,
+            ts.factory.createBinaryExpression(
+              ts.factory.createPropertyAccessExpression(
+                contextStackCondition,
+                ts.factory.createIdentifier(LENGTH)
+              ),
+              ts.factory.createToken(ts.SyntaxKind.MinusToken),
+              ts.factory.createNumericLiteral("1")
+            )
+          ),
+          ts.factory.createToken(ts.SyntaxKind.ColonToken),
+          ts.factory.createNull()
+        )
+      )],
+      ts.NodeFlags.Const
+    ));
 }
 
 function createNavigationInit(fileName: string, statements: ts.Statement[]): void {
