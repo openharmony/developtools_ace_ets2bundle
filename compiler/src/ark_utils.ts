@@ -19,8 +19,12 @@ import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
 import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils } from 'arkguard';
-
-import { OH_MODULES } from './fast_build/ark_compiler/common/ark_define';
+import {
+  OH_MODULES,
+  SEPARATOR_AT,
+  SEPARATOR_BITWISE_AND,
+  SEPARATOR_SLASH
+} from './fast_build/ark_compiler/common/ark_define';
 import {
   ARKTS_MODULE_NAME,
   PACKAGES,
@@ -227,7 +231,7 @@ function processPackageDir(params: Object): string {
 }
 
 
-export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object,
+export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object, importerFile?: string,
   useNormalizedOHMUrl: boolean = false): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
@@ -256,6 +260,10 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
   if (REG_LIB_SO.test(moduleRequest.trim())) {
     if (useNormalizedOHMUrl) {
       const pkgInfo = config.pkgContextInfo[moduleRequest];
+      if (pkgInfo === undefined) {
+        this.logger.error(red, `ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package '${moduleRequest}' ` +
+          `which being imported by ${importerFile}'`, reset);
+      }
       const isSo = pkgInfo.isSO ? 'Y' : 'N';
       return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
     }
@@ -845,4 +853,21 @@ export function stopEvent(event: Object, syncFlag = false): void {
 
 export function compileToolIsRollUp(): boolean {
   return process.env.compileTool === 'rollup';
+}
+
+export function transformOhmurlToRecordName(ohmurl: string): string {
+  // @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
+  // ----> <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
+  return ohmurl.split(SEPARATOR_BITWISE_AND).slice(2).join(SEPARATOR_BITWISE_AND);
+}
+
+export function transformOhmurlToPkgName(ohmurl: string): string {
+  let normalizedPath: string = ohmurl.split(SEPARATOR_BITWISE_AND)[3];
+  let paths: Array<string> = normalizedPath.split(SEPARATOR_SLASH);
+  if (normalizedPath.startsWith(SEPARATOR_AT)){
+    // Spec: If the normalized import path starts with '@', the package name is before the second '/' in the normalized
+    // import path, like:  @aaa/bbb/ccc/ddd ---> package name is @aaa/bbb
+    return paths.slice(0, 2).join(SEPARATOR_SLASH);
+  }
+  return paths[0];
 }
