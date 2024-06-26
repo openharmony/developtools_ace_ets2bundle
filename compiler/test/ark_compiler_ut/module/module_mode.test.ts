@@ -1739,4 +1739,22 @@ mocha.describe('test module_mode file api', function () {
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
+
+  mocha.it('18-9: test generateCompileContext has router map entries', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    this.rollup.share.projectConfig.arkRouterMap = [
+      {
+        'ohmurl': '@normalized:N&&&har/src/main/ets/calc&'
+      },
+      {
+        'ohmurl': '@normalized:N&&com.har.test&har/src/main/ets/test&1.0.0'
+      }
+    ];
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 });

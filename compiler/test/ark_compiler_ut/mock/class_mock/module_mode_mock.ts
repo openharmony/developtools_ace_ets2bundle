@@ -27,7 +27,11 @@ import {
   ModuleMode,
   PackageEntryInfo
 } from '../../../../lib/fast_build/ark_compiler/module/module_mode';
-import { getNormalizedOhmUrlByFilepath } from '../../../../lib/ark_utils';
+import {
+  getNormalizedOhmUrlByFilepath,
+  transformOhmurlToPkgName,
+  transformOhmurlToRecordName
+} from '../../../../lib/ark_utils';
 import { changeFileExtension } from '../../../../lib/fast_build/ark_compiler/utils';
 import { toUnixPath } from '../../../../lib/utils';
 import { META } from '../rollup_mock/common';
@@ -94,9 +98,18 @@ class ModuleModeMock extends ModuleMode {
     const cacheCompileContextInfo = fs.readFileSync(this.compileContextInfoPath, 'utf-8');
 
     let compileContextInfo: Object = {};
-    let compileEntries: Array<string> = [];
+    let hspPkgNames: Array<string> = [];
+    for (const hspName in rollupObject.share.projectConfig.hspNameOhmMap) {
+      let hspPkgName: string = hspName;
+      if (rollupObject.share.projectConfig.dependencyAliasMap.has(hspName)) {
+        hspPkgName = rollupObject.share.projectConfig.dependencyAliasMap.get(hspName);
+      }
+      hspPkgNames.push(toUnixPath(hspPkgName));
+    }
+    compileContextInfo.hspPkgNames = hspPkgNames;
+    let compileEntries: Set<string> = new Set();
     let entryObj: Object = this.projectConfig.entryObj;
-    if (!!this.projectConfig.widgetCompile) {
+    if (this.projectConfig.widgetCompile) {
       entryObj = this.projectConfig.cardEntryObj;
     }
     for (const key in entryObj) {
@@ -110,21 +123,21 @@ class ModuleModeMock extends ModuleMode {
       };
       let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, rollupObject.share.projectConfig,
         rollupObject.share.logger, pkgParams, undefined);
-      compileEntries.push(recordName);
+      compileEntries.add(recordName);
     }
-    compileContextInfo.compileEntries = compileEntries;
+    this.projectConfig.arkRouterMap.forEach((router) => {
+      if (router.ohmurl) {
+        let pkgName: string = transformOhmurlToPkgName(router.ohmurl);
+        if (!hspPkgNames.includes(pkgName)) {
+          let recordName: string = transformOhmurlToRecordName(router.ohmurl);
+          compileEntries.add(recordName);
+        }
+      }
+    });
+    compileContextInfo.compileEntries = Array.from(compileEntries);
     if (Object.prototype.hasOwnProperty.call(rollupObject.share.projectConfig, 'pkgContextInfo')) {
       compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;
     }
-    let hspPkgNames: Array<string> = [];
-    for (const hspName in rollupObject.share.projectConfig.hspNameOhmMap) {
-      let hspPkgName: string = hspName;
-      if (rollupObject.share.projectConfig.dependencyAliasMap.has(hspName)) {
-        hspPkgName = rollupObject.share.projectConfig.dependencyAliasMap.get(hspName);
-      }
-      hspPkgNames.push(toUnixPath(hspPkgName));
-    }
-    compileContextInfo.hspPkgNames = hspPkgNames;
     if (JSON.stringify(compileContextInfo) === cacheCompileContextInfo) {
       return true;
     }

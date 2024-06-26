@@ -86,7 +86,9 @@ import {
   isTs2Abc,
   isEs2Abc,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  transformOhmurlToPkgName,
+  transformOhmurlToRecordName
 } from '../../../ark_utils';
 import {
   generateAot,
@@ -185,7 +187,16 @@ export class ModuleMode extends CommonMode {
   private generateCompileContextInfo(rollupObject: Object): string {
     let compileContextInfoPath: string = path.join(this.projectConfig.cachePath, COMPILE_CONTEXT_INFO_JSON);
     let compileContextInfo: Object = {};
-    let compileEntries: Array<string> = [];
+    let hspPkgNames: Array<string> = [];
+    for (const hspAliasName in this.projectConfig.hspNameOhmMap) {
+      let hspPkgName: string = hspAliasName;
+      if (this.projectConfig.dependencyAliasMap.has(hspAliasName)) {
+        hspPkgName = this.projectConfig.dependencyAliasMap.get(hspAliasName);
+      }
+      hspPkgNames.push(toUnixPath(hspPkgName));
+    }
+    compileContextInfo.hspPkgNames = hspPkgNames;
+    let compileEntries: Set<string> = new Set();
     let entryObj: Object = this.projectConfig.entryObj;
     if (!!this.projectConfig.widgetCompile) {
       entryObj = this.projectConfig.cardEntryObj;
@@ -204,23 +215,30 @@ export class ModuleMode extends CommonMode {
       };
       let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
         undefined);
-      compileEntries.push(recordName);
+      compileEntries.add(recordName);
     }
-    compileContextInfo.compileEntries = compileEntries;
+    if (this.projectConfig.arkRouterMap) {
+      // Collect router map entries to es2abc
+      this.collectRouterMapEntries(compileEntries, hspPkgNames)
+    }
+    compileContextInfo.compileEntries = Array.from(compileEntries);
     if (!!this.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
-    let hspPkgNames: Array<string> = [];
-    for (const hspName in this.projectConfig.hspNameOhmMap) {
-      let hspPkgName: string = hspName;
-      if (this.projectConfig.dependencyAliasMap.has(hspName)) {
-        hspPkgName = this.projectConfig.dependencyAliasMap.get(hspName);
-      }
-      hspPkgNames.push(toUnixPath(hspPkgName));
-    }
-    compileContextInfo.hspPkgNames = hspPkgNames;
     fs.writeFileSync(compileContextInfoPath, JSON.stringify(compileContextInfo), 'utf-8');
     return compileContextInfoPath;
+  }
+
+  private collectRouterMapEntries(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
+    this.projectConfig.arkRouterMap.forEach((router) => {
+      if (router.ohmurl) {
+        let pkgName: string = transformOhmurlToPkgName(router.ohmurl);
+        if (!hspPkgNames.includes(pkgName)) {
+          let recordName: string = transformOhmurlToRecordName(router.ohmurl);
+          compileEntries.add(recordName);
+        }
+      }
+    });
   }
 
   prepareForCompilation(rollupObject: Object, parentEvent: Object): void {

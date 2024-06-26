@@ -117,6 +117,7 @@ export function initArkProjectConfig(share: Object): Object {
     arkProjectConfig.projectRootPath = buildJsonInfo.projectRootPath;
     arkProjectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     arkProjectConfig.isOhosTest = buildJsonInfo.isOhosTest;
+    arkProjectConfig.arkRouterMap = buildJsonInfo.routerMap;
     if (buildJsonInfo.patchConfig) {
       arkProjectConfig.oldMapFilePath = buildJsonInfo.patchConfig.oldMapFilePath;
     }
