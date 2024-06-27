@@ -772,7 +772,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
   const name: string = nameIdentifier.getText();
   let propertyOrAliasName: string;
   const propertyAndStringKey: [string?, boolean?, ts.Node?, boolean?] = [];
-  if (isSingleKey(node)) {
+  if (isSingleKey(node, true)) {
     propertyAndStringKey.push(...getDecoratorKey(node));
     propertyOrAliasName = propertyAndStringKey[0];
   } else {
@@ -950,7 +950,7 @@ function addAddProvidedVar(node: ts.PropertyDeclaration, name: ts.Identifier,
   if (decoratorName === COMPONENT_PROVIDE_DECORATOR) {
     let parameterName: string;
     const parameterNameAndStringKey: [string?, boolean?, ts.Node?, boolean?] = [];
-    if (isSingleKey(node)) {
+    if (isSingleKey(node, true)) {
       parameterNameAndStringKey.push(...getDecoratorKey(node, true));
       parameterName = parameterNameAndStringKey[0];
       updateState.push(createAddProvidedVar(parameterName, name, parameterNameAndStringKey[1], parameterNameAndStringKey[2],
@@ -1077,15 +1077,16 @@ function judgmentTypedeclaration(type: ts.TypeNode): boolean {
   return ts.isTypeReferenceNode(type) && type.typeName && ts.isIdentifier(type.typeName);
 }
 
-export function isSingleKey(node: ts.PropertyDeclaration): boolean {
+export function isSingleKey(node: ts.PropertyDeclaration, isOptionalKey: boolean = false): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  if (ts.isCallExpression(decorators[0].expression) &&
-    decorators[0].expression.arguments &&
-    decorators[0].expression.arguments.length === 1) {
-    return true;
-  } else {
-    return false;
-  }
+  const optionalKeyDecorator: Set<string> = new Set(['Provide', 'Consume']);
+  return decorators.some((item: ts.Decorator) => {
+    return ts.isCallExpression(item.expression) &&
+      item.expression.arguments &&
+      item.expression.arguments.length === 1 &&
+      ts.isIdentifier(item.expression.expression) &&
+      (!isOptionalKey || optionalKeyDecorator.has(item.expression.expression.escapedText.toString()));
+  });
 }
 
 function validateMultiDecorators(name: ts.Identifier, log: LogInfo[]): void {
