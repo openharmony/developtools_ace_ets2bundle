@@ -148,7 +148,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   }
   const suffix: string = projectConfig.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX : TS_BUILD_INFO_SUFFIX;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
-  checkAkTsVersion();
+  checkArkTSVersion();
   Object.assign(compilerOptions, {
     'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
     'checkJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined,
@@ -186,7 +186,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
 }
 
-function checkAkTsVersion(): void {
+function checkArkTSVersion(): void {
   const etsCheckerLogger = fastBuildLogger || logger;
   if (getArkTSVersion() === ArkTSVersion.ArkTS_1_0 && tsImportSendable) {
     const logMessage: string = 'ArkTS: ArkTSVersion1.0 does not support tsImportSendable in any condition';
