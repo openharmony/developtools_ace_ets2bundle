@@ -172,7 +172,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     // options incremental && tsBuildInfoFile are required for applying incremental ability of typescript
     'incremental': true,
     'tsBuildInfoFile': buildInfoPath,
-    'tsImportSendableEnable': tsImportSendable
+    'tsImportSendableEnable': tsImportSendable,
+    'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
