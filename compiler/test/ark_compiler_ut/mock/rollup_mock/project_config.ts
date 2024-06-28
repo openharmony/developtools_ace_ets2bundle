@@ -125,6 +125,7 @@ class ProjectConfig {
   hspNameOhmMap: object;
   cardEntryObj: object;
   widgetCompile: boolean;
+  arkRouterMap: Array<object>;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -137,6 +138,7 @@ class ProjectConfig {
     this.compileShared = false;
     this.harNameOhmMap = {};
     this.hspNameOhmMap = {};
+    this.arkRouterMap = [];
   }
 
   public scan(testcase: string) {
@@ -160,13 +162,13 @@ class ProjectConfig {
   public mockCompileContextInfo() {
     this.entryObj = {
       'entryAbility/EntryAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryability/EntryAbility.ets`,
-      'page/Intex': `${PROJECT_ROOT}\\entry\\src\\main\\ets\\page\\Index.ets`,
+      'page/Intex': `${PROJECT_ROOT}/entry/src/main/ets/page/Index.ets`,
       'entryformability/EntryFormAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryformability/EntryFormAbility.ets`,
-      'ets/widget/page/WidgetCard': `${PROJECT_ROOT}\\entry\\src\\main\\ets\\widget\\page\\WidgetCard.ets`
+      'ets/widget/page/WidgetCard': `${PROJECT_ROOT}/entry/src/main/ets/widget/page/WidgetCard.ets`
     }
     this.cardEntryObj = {
       'entryformability/EntryFormAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryformability/EntryFormAbility.ets`,
-      'ets/widget/page/WidgetCard': `${PROJECT_ROOT}\\entry\\src\\main\\ets\\widget\\page\\WidgetCard.ets`
+      'ets/widget/page/WidgetCard': `${PROJECT_ROOT}/entry/src/main/ets/widget/page/WidgetCard.ets`
     }
     this.projectRootPath = PROJECT_ROOT;
     this.pkgContextInfo = {
