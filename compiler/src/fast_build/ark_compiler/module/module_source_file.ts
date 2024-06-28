@@ -381,7 +381,8 @@ export class ModuleSourceFile {
     if (!!rollupObject.share.projectConfig.useNormalizedOHMUrl) {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
-    let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig, useNormalizedOHMUrl);
+    let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig,
+      importerFile, useNormalizedOHMUrl);
     if (systemOrLibOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
