@@ -751,6 +751,7 @@ export class ProcessFileInfo {
   isAsPageImport: boolean = false;
   overallObjectLinkCollection: Map<string, Set<string>> = new Map();
   overallLinkCollection: Map<string, Set<string>> = new Map();
+  overallBuilderParamCollection: Map<string, Set<string>> = new Map();
   lazyForEachInfo: {
     forEachParameters: ts.ParameterDeclaration,
     isDependItem: boolean

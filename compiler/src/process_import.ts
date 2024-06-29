@@ -511,6 +511,12 @@ function setDependencies(component: string, asComponentName: string, linkArray: 
   if (!propCollection.get(component)) {
     propCollection.set(component, propArray);
   }
+  if (asComponentName) {
+    storedFileInfo.overallBuilderParamCollection.set(asComponentName, builderParamArray);
+  } else if (!asComponentName && component && projectConfig.compileMode === 'esmodule' &&
+    process.env.compileTool === 'rollup') {
+    storedFileInfo.overallBuilderParamCollection.set(component, builderParamArray);
+  }
   builderParamObjectCollection.set(component, builderParamArray);
   componentCollection.customComponents.add(component);
   if (isDETS) {
