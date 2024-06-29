@@ -864,7 +864,7 @@ export function transformOhmurlToRecordName(ohmurl: string): string {
 export function transformOhmurlToPkgName(ohmurl: string): string {
   let normalizedPath: string = ohmurl.split(SEPARATOR_BITWISE_AND)[3];
   let paths: Array<string> = normalizedPath.split(SEPARATOR_SLASH);
-  if (normalizedPath.startsWith(SEPARATOR_AT)){
+  if (normalizedPath.startsWith(SEPARATOR_AT)) {
     // Spec: If the normalized import path starts with '@', the package name is before the second '/' in the normalized
     // import path, like:  @aaa/bbb/ccc/ddd ---> package name is @aaa/bbb
     return paths.slice(0, 2).join(SEPARATOR_SLASH);

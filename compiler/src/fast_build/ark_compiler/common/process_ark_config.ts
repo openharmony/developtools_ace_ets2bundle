@@ -118,6 +118,9 @@ export function initArkProjectConfig(share: Object): Object {
     arkProjectConfig.modulePathMap = buildJsonInfo.modulePathMap;
     arkProjectConfig.isOhosTest = buildJsonInfo.isOhosTest;
     arkProjectConfig.arkRouterMap = buildJsonInfo.routerMap;
+    // Collect bytecode har's declaration files entries include dynamic import and workers, use
+    // by es2abc for dependency resolution.
+    arkProjectConfig.declarationEntry = buildJsonInfo.declarationEntry;
     if (buildJsonInfo.patchConfig) {
       arkProjectConfig.oldMapFilePath = buildJsonInfo.patchConfig.oldMapFilePath;
     }
