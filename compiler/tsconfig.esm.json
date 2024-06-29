@@ -105,7 +105,6 @@
       "components": [
         "AbilityComponent",
         "AlphabetIndexer",
-        "ArcAlphabetIndexer",
         "Animator",
         "Badge",
         "Blank",
@@ -217,7 +216,8 @@
         "RichEditor",
         "Component3D",
         "ContainerSpan",
-        "ArcSwiper"
+        "ArcSwiper",
+        "ArcAlphabetIndexer"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -231,11 +231,6 @@
             "name": "AlphabetIndexer",
             "type": "AlphabetIndexerAttribute",
             "instance": "AlphabetIndexerInstance"
-          },
-          {
-            "name": "ArcAlphabetIndexer",
-            "type": "ArcAlphabetIndexerAttribute",
-            "instance": "ArcAlphabetIndexerInstance"
           },
           {
             "name": "Animator",
@@ -791,6 +786,11 @@
             "name": "ArcSwiper",
             "type": "ArcSwiperAttribute",
             "instance": "ArcSwiperInstance"
+          },
+          {
+            "name": "ArcAlphabetIndexer",
+            "type": "ArcAlphabetIndexerAttribute",
+            "instance": "ArcAlphabetIndexerInstance"
           }
         ]
       },
