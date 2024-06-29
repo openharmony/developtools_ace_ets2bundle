@@ -747,10 +747,16 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
   // @ts-ignore
   if (node.expression.expression && ts.isIdentifier(node.expression.expression)) {
     name = node.expression.expression.escapedText.toString();
+  } else if (node.expression.expression && ts.isPropertyAccessExpression(node.expression.expression)) {
+    name = node.expression.expression.getText();
   }
   if (builderParamObjectCollection.get(name) &&
     builderParamObjectCollection.get(name).size === 1) {
-    return processBlockToExpression(node, nextNode, log, name);
+    return processBlockToExpression(node, nextNode, log, name, false);
+  } else if (storedFileInfo.overallBuilderParamCollection &&
+    storedFileInfo.overallBuilderParamCollection.get(name).size === 1
+  ) {
+    return processBlockToExpression(node, nextNode, log, name, true);
   } else {
     log.push({
       type: LogType.ERROR,
@@ -763,8 +769,9 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
 }
 
 function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Block,
-  log: LogInfo[], name: string): ts.ExpressionStatement {
-  const childParam: string = [...builderParamObjectCollection.get(name)].slice(-1)[0];
+  log: LogInfo[], name: string, isPropertyAccessExpressionNode: boolean): ts.ExpressionStatement {
+  const childParam: string = isPropertyAccessExpressionNode ?  [...storedFileInfo.overallBuilderParamCollection.get(name)].slice(-1)[0] :
+    [...builderParamObjectCollection.get(name)].slice(-1)[0];
   const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
   const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
     [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
