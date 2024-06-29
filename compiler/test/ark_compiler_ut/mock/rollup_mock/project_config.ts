@@ -126,6 +126,7 @@ class ProjectConfig {
   cardEntryObj: object;
   widgetCompile: boolean;
   arkRouterMap: Array<object>;
+  declarationEntry: Array<string>;
 
   constructor(buildMode: string) {
     this.watchMode = 'false';
@@ -139,6 +140,7 @@ class ProjectConfig {
     this.harNameOhmMap = {};
     this.hspNameOhmMap = {};
     this.arkRouterMap = [];
+    this.declarationEntry = [];
   }
 
   public scan(testcase: string) {

@@ -125,15 +125,7 @@ class ModuleModeMock extends ModuleMode {
         rollupObject.share.logger, pkgParams, undefined);
       compileEntries.add(recordName);
     }
-    this.projectConfig.arkRouterMap.forEach((router) => {
-      if (router.ohmurl) {
-        let pkgName: string = transformOhmurlToPkgName(router.ohmurl);
-        if (!hspPkgNames.includes(pkgName)) {
-          let recordName: string = transformOhmurlToRecordName(router.ohmurl);
-          compileEntries.add(recordName);
-        }
-      }
-    });
+    this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
     if (Object.prototype.hasOwnProperty.call(rollupObject.share.projectConfig, 'pkgContextInfo')) {
       compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;

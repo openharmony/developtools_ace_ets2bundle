@@ -217,16 +217,32 @@ export class ModuleMode extends CommonMode {
         undefined);
       compileEntries.add(recordName);
     }
-    if (this.projectConfig.arkRouterMap) {
-      // Collect router map entries to es2abc
-      this.collectRouterMapEntries(compileEntries, hspPkgNames)
-    }
+    this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
     if (!!this.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     fs.writeFileSync(compileContextInfoPath, JSON.stringify(compileContextInfo), 'utf-8');
     return compileContextInfoPath;
+  }
+
+  private collectDeclarationFilesEntry(compileEntries: Set<string>, hspPkgNames: Array<string>) {
+    if (this.projectConfig.arkRouterMap) {
+      // Collect bytecode har's declaration files entries in router map, use
+      // by es2abc for dependency resolution.
+      this.collectRouterMapEntries(compileEntries, hspPkgNames);
+    }
+    if (this.projectConfig.declarationEntry) {
+      // Collect bytecode har's declaration files entries include dynamic import and workers, use
+      // by es2abc for dependency resolution.
+      this.projectConfig.declarationEntry.forEach((ohmurl) => {
+        let pkgName: string = transformOhmurlToPkgName(ohmurl);
+        if (!hspPkgNames.includes(pkgName)) {
+          let recordName: string = transformOhmurlToRecordName(ohmurl);
+          compileEntries.add(recordName);
+        }
+      });
+    }
   }
 
   private collectRouterMapEntries(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
