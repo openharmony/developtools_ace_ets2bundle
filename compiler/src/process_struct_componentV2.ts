@@ -60,6 +60,7 @@ export class StructInfo {
   isReusable: boolean = false;
   structName: string = '';
   updatePropsDecoratorsV1: string[] = [];
+  linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorSet: Set<string> = new Set();
   localDecoratorSet: Set<string> = new Set();
