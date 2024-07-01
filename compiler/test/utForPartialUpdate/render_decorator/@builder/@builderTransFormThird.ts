@@ -160,7 +160,7 @@ function testInnerComponent(value, parent = null) {
         (parent ? parent : this).observeRecycleComponentCreation("TestBuilderReusable", (elmtId, isInitialRender, recycleNode = null) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
-                let componentCall = recycleNode ? recycleNode : new TestBuilderReusable(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 38, col: 5 });
+                let componentCall = recycleNode ? recycleNode : new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 38, col: 5 });
                 ViewPU.createRecycle(componentCall, recycleNode !== null, "TestBuilderReusable", () => {
                     if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                         recycleNode.aboutToReuseInternal();
@@ -195,7 +195,7 @@ function testInnerComponent(value, parent = null) {
         (parent ? parent : this).observeRecycleComponentCreation("TestBuilderReusable", (elmtId, isInitialRender, recycleNode = null) => {
             ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
             if (isInitialRender) {
-                let componentCall = recycleNode ? recycleNode : new TestBuilderReusable(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 39, col: 5 });
+                let componentCall = recycleNode ? recycleNode : new TestBuilderReusable(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormThird.ets", line: 39, col: 5 });
                 ViewPU.createRecycle(componentCall, recycleNode !== null, "TestBuilderReusable", () => {
                     if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                         recycleNode.aboutToReuseInternal();

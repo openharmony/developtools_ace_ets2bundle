@@ -126,7 +126,7 @@ class FeedComponent extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        this.createView.bind(this)(this);
+        this.createView.bind(this)();
     }
     rerender() {
         this.updateDirtyElements();
