@@ -885,16 +885,21 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
   provideInitialization.set(name, componentSet.provideInit);
   privateCollection.set(name, componentSet.privateCollection);
   if (asComponentName) {
-    processStructComponentV2.getOrCreateStructInfo(asComponentName).updatePropsDecoratorsV1.push(
-      ...componentSet.states, ...componentSet.props, ...componentSet.links,
+    const asComponentNameStructInfo: StructInfo =
+      processStructComponentV2.getOrCreateStructInfo(asComponentName);
+    asComponentNameStructInfo.updatePropsDecoratorsV1.push(
+      ...componentSet.states, ...componentSet.props,
       ...componentSet.provides, ...componentSet.objectLinks
     );
+    asComponentNameStructInfo.linkDecoratorsV1.push(...componentSet.links);
     return;
   }
-  processStructComponentV2.getOrCreateStructInfo(name).updatePropsDecoratorsV1.push(
-    ...componentSet.states, ...componentSet.props, ...componentSet.links,
+  const nameStructInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
+  nameStructInfo.updatePropsDecoratorsV1.push(
+    ...componentSet.states, ...componentSet.props,
     ...componentSet.provides, ...componentSet.objectLinks
   );
+  nameStructInfo.linkDecoratorsV1.push(...componentSet.links);
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,

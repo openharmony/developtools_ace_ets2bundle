@@ -351,8 +351,9 @@ class ChildAndParentComponentInfo {
       processStructComponentV2.getOrCreateStructInfo(childName);
     this.paramDecoratorMap = this.childStructInfo.paramDecoratorMap;
     this.updatePropsDecoratorsV2 = [...this.childStructInfo.eventDecoratorSet, ...this.paramDecoratorMap.keys()];
-    this.parentStructInfo =
-      processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
+    this.parentStructInfo = componentCollection.currentClassName ?
+      processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName) :
+      new StructInfo();
     this.forbiddenInitPropsV2 = [...this.childStructInfo.localDecoratorSet,
       ...this.childStructInfo.providerDecoratorSet, ...this.childStructInfo.consumerDecoratorSet,
       ...this.childStructInfo.regularSet];
@@ -405,7 +406,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the custom component '${info.childName}'` +
-          ` cannot initialize here (forbidden to specify).`,
+          ` cannot be initialized here (forbidden to specify).`,
         pos: item.getStart()
       });
       return;
@@ -518,7 +519,7 @@ function isAllowedTypeForFunction(type: ts.Type): boolean {
 }
 
 function validateInitParam(childName: string, curChildProps: Set<string>,
-  node: ts.CallExpression, log: LogInfo[]): void {
+  node: ts.CallExpression, log: LogInfo[], parentStructInfo: StructInfo): void {
   const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(node) ||
     processStructComponentV2.getOrCreateStructInfo(childName);
   const paramDecoratorMap: Map<string, ParamDecoratorInfo> = childStructInfo.paramDecoratorMap;
@@ -537,6 +538,12 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
           pos: node.getStart()
         });
       }
+    });
+  } else if (parentStructInfo.isComponentV2 && childStructInfo.linkDecoratorsV1.length) {
+    log.push({
+      type: LogType.ERROR,
+      message: 'The @ComponentV2 struct must not contain any @Component with an @Link decorated variable',
+      pos: node.getStart()
     });
   }
 }
@@ -969,9 +976,12 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
       }
     });
   }
+  const parentStructInfo: StructInfo = componentCollection.currentClassName ?
+    processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName) :
+    new StructInfo();
   validateInitDecorator(node, name, curChildProps, log);
-  validateMandatoryToInitViaParam(node, name, curChildProps, log);
-  validateInitParam(name, curChildProps, node, log);
+  validateMandatoryToInitViaParam(node, name, curChildProps, log, parentStructInfo);
+  validateInitParam(name, curChildProps, node, log, parentStructInfo);
 }
 
 function getCustomComponentNode(node: ts.ExpressionStatement): ts.CallExpression {
@@ -1268,24 +1278,29 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
     log.push({
       type: LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
-        ` cannot initialize here (forbidden to specify).`,
+        ` cannot be initialized here (forbidden to specify).`,
       pos: node.name.getStart()
     });
   }
 }
 
 function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponentName: string,
-  curChildProps: Set<string>, log: LogInfo[]): void {
+  curChildProps: Set<string>, log: LogInfo[], parentStructInfo: StructInfo): void {
   let mandatoryToInitViaParamSet: Set<string>;
   if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' && node.expression) {
-    mandatoryToInitViaParamSet = new Set([
-      ...getCollectionSet(node.expression.getText(), storedFileInfo.overallLinkCollection),
-      ...getCollectionSet(node.expression.getText(), storedFileInfo.overallObjectLinkCollection)]);
+    const overAll: string[] = [
+      ...getCollectionSet(node.expression.getText(), storedFileInfo.overallObjectLinkCollection)];
+    if (!parentStructInfo.isComponentV2) {
+      overAll.unshift(...getCollectionSet(node.expression.getText(), storedFileInfo.overallLinkCollection));
+    }
+    mandatoryToInitViaParamSet = new Set(overAll);
     customComponentName = node.expression.getText();
   } else {
-    mandatoryToInitViaParamSet = new Set([
-      ...getCollectionSet(customComponentName, linkCollection),
-      ...getCollectionSet(customComponentName, objectLinkCollection)]);
+    const arr: string[] = [...getCollectionSet(customComponentName, objectLinkCollection)];
+    if (!parentStructInfo.isComponentV2) {
+      arr.unshift(...getCollectionSet(customComponentName, linkCollection));
+    }
+    mandatoryToInitViaParamSet = new Set(arr);
   }
   mandatoryToInitViaParamSet.forEach(item => {
     if (item && !curChildProps.has(item)) {
