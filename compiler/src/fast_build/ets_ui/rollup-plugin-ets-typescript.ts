@@ -179,9 +179,9 @@ export function etsTransform() {
             }
 
             const cacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              process.env.cachePath, projectConfig, undefined, undefined);
+              process.env.cachePath, projectConfig.projectRootPath, projectConfig, undefined, undefined);
             const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              projectConfig.buildPath, projectConfig, undefined, undefined, true);
+              projectConfig.buildPath, projectConfig.projectRootPath, projectConfig, undefined, undefined, true);
             if (filePath.match(/\.e?ts$/)) {
               setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {

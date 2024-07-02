@@ -102,6 +102,7 @@ class ProjectConfig {
   compileShared: boolean;
   moduleRootPath: object;
   buildPath: string;
+  rootPathSet: Object;
 
   deviceType?: string;
   checkEntry?: string;

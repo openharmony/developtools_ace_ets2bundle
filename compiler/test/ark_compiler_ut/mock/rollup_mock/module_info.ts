@@ -13,7 +13,10 @@
 * limitations under the License.
 */
 
-import { MODULE_ID_ROLLUP_PLACEHOLDER } from '../rollup_mock/path_config';
+import {
+  MODULE_ID_ROLLUP_PLACEHOLDER,
+  PROJECT_ROOT
+} from '../rollup_mock/path_config';
 
 class Meta {
   hostModulesInfo: Array<object>;
@@ -23,15 +26,17 @@ class Meta {
   isNodeEntryFile: boolean;
   pkgPath: string;
   dependencyPkgInfo: Object;
+  belongProjectPath: string;
 
-  constructor(entryModuleName: string, modulePath: string, packageName: string) {
+  constructor(entryModuleName: string, modulePath: string) {
     this.hostModulesInfo = [];
     this.moduleName = entryModuleName;
-    this.pkgName = packageName;
+    this.pkgName = '';
     this.isLocalDependency = true;
     this.isNodeEntryFile = false;
     this.pkgPath = modulePath;
     this.dependencyPkgInfo = undefined;
+    this.belongProjectPath = PROJECT_ROOT;
   }
 };
 

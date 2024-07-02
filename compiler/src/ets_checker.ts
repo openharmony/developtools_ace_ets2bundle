@@ -461,7 +461,7 @@ export const warnCheckerResult: WarnCheckerResult = { count: 0 };
 export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 export function serviceChecker(rootFileNames: string[], newLogger: Object = null, resolveModulePaths: string[] = null,
-  compilationTime: CompilationTimeStatistics = null, rollupShareObject?: any): void {
+  compilationTime: CompilationTimeStatistics = null, rollupShareObject?: Object): void {
   fastBuildLogger = newLogger;
   let cacheFile: string = null;
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
@@ -504,7 +504,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
-    processBuildHap(cacheFile, rootFileNames, compilationTime);
+    processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
   }
 }
 // collect the compiled files of tsc and rollup for obfuscation scanning.
@@ -566,7 +566,8 @@ export function emitBuildInfo(): void {
   globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
 }
 
-function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics): void {
+function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics,
+  rollupShareObject: Object): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
@@ -589,12 +590,13 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
     let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean): void => {
       emit = text;
     };
+    const rootPathSet: Object = rollupShareObject?.projectConfig.rootPathSet;
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
       if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {
           if ((/\.d\.e?ts$/).test(moduleFile)) {
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
-              projectConfig);
+              projectConfig, rootPathSet);
           } else if ((/\.e?ts$/).test(moduleFile)) {
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
@@ -602,7 +604,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
               globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true);
             }
             if (emit) {
-              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig);
+              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, rootPathSet);
             }
           }
         } catch (err) { }

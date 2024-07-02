@@ -37,7 +37,8 @@ import {
 } from "./utils";
 import { 
   toUnixPath,
-  isPackageModulesFile
+  isPackageModulesFile,
+  getProjectRootPath
 } from "../../utils";
 import {
   handleObfuscatedFilePath,
@@ -241,8 +242,9 @@ export class SourceMapGenerator {
         }
 
         // adapt compatibilty with hvigor
+        const projectRootPath = getProjectRootPath(moduleId, this.projectConfig, this.projectConfig?.rootPathSet);
         moduleId = this.getIntermediateModuleId(
-          toUnixPath(moduleId).replace(toUnixPath(this.projectConfig.projectRootPath), toUnixPath(this.projectConfig.cachePath)));
+          toUnixPath(moduleId).replace(toUnixPath(projectRootPath), toUnixPath(this.projectConfig.cachePath)));
         
         const isPackageModules = isPackageModulesFile(moduleId, this.projectConfig);
         if (enableObfuscateFileName(isPackageModules, this.projectConfig)) {

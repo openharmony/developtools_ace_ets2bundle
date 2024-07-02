@@ -335,7 +335,8 @@ export function genLoaderOutPathOfHar(filePath: string, cachePath: string, build
   return output;
 }
 
-export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string,
+// projectRootPath: When compiling har or hsp, the project path of the module file outside the project.
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, projectRootPath: string,
   projectConfig: Object, metaInfo: Object, logger: Object, buildInHar: boolean = false): string {
   filePath = toUnixPath(filePath).replace(/\.[cm]js$/, EXTNAME_JS);
   projectPath = toUnixPath(projectPath);
@@ -343,11 +344,11 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
   if (process.env.compileTool === 'rollup') {
     const red: string = '\u001b[31m';
     const reset: string = '\u001b[39m';
-    const projectRootPath: string = toUnixPath(buildInHar ? projectPath : projectConfig.projectRootPath);
+    projectRootPath = toUnixPath(buildInHar ? projectPath : projectRootPath);
     let relativeFilePath: string = '';
     if (filePath.startsWith(projectRootPath)) {
       relativeFilePath = filePath.replace(projectRootPath, '');
-    } else if (metaInfo.belongProjectPath) {
+    } else if (metaInfo && metaInfo.belongProjectPath) {
       relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
     } else {
       logger.error(red, 'ARKTS:INTERNAL ERROR\n' + 
@@ -418,12 +419,14 @@ export interface GeneratedFileInHar {
 
 export const harFilesRecord: Map<string, GeneratedFileInHar> = new Map();
 
-export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string, projectConfig: any) {
+export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string,
+  projectConfig: Object, rootPathSet?: Object) {
+  const projectRootPath: string = getProjectRootPath(sourcePath, projectConfig, rootPathSet) ;
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
-    projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
+    projectConfig.compileShared ? projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared || projectConfig.byteCodeHar ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
-    projectConfig, undefined, undefined, projectConfig.compileShared);
+    projectRootPath, projectConfig, undefined, undefined, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
@@ -432,7 +435,11 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
     // collect the declaration files for obfuscation
     if (projectConfig.compileMode === ESMODULE && (/\.d\.e?ts$/).test(jsFilePath)) {
       sourcePath = toUnixPath(sourcePath);
-      const genFilesInHar: GeneratedFileInHar = { sourcePath: sourcePath, originalDeclarationCachePath: jsFilePath, originalDeclarationContent: sourceContent };
+      const genFilesInHar: GeneratedFileInHar = {
+        sourcePath: sourcePath,
+        originalDeclarationCachePath: jsFilePath,
+        originalDeclarationContent: sourceContent
+      };
       harFilesRecord.set(sourcePath, genFilesInHar);
       return;
     } else {
@@ -1230,3 +1237,14 @@ export function removeDecorator(decorators: readonly ts.Decorator[], decoratorNa
     return true;
   });
 }
+
+export function getProjectRootPath(filePath: string, projectConfig: Object, rootPathSet: Object): string {
+  if (rootPathSet) {
+    for (const rootPath of rootPathSet) {
+      if (toUnixPath(filePath).indexOf(toUnixPath(rootPath)) !== -1) {
+        return rootPath;
+      }
+    }
+  }
+  return projectConfig.projectRootPath;
+} 

@@ -18,6 +18,7 @@ import mocha from 'mocha';
 import fs from "fs";
 import path from "path";
 import MagicString from 'magic-string';
+import sinon from 'sinon';
 
 import {
   needAotCompiler,
@@ -52,19 +53,23 @@ import {
   EXTNAME_ETS,
   EXTNAME_JSON,
   RELEASE,
-  DEBUG
+  DEBUG,
+  GEN_ABC_PLUGIN_NAME
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import ModuleSourceFileMock from '../mock/class_mock/module_source_files_mock';
 import {
   genTemporaryPath,
-  toUnixPath
+  toUnixPath,
+  getProjectRootPath
 } from '../../../lib/utils';
 import projectConfig from '../utils/processProjectConfig';
 import {
   TEST_TS,
   TEST_JS,
   TEST_ETS,
-  TEST_JSON
+  TEST_JSON,
+  PROJECT_ROOT,
+  DEFAULT_PROJECT
 } from '../mock/rollup_mock/path_config';
 import { scanFiles } from "../utils/utils";
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
@@ -265,10 +270,12 @@ mocha.describe('test utils file api', function () {
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_JS)) {
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        const moduleSource = new ModuleSourceFileMock(moduleId, code);
+        const metaInfo: Object = this.rollup.getModuleInfo(moduleId).meta;
+        const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
+          moduleSource.metaInfo, moduleSource.logger);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -285,10 +292,12 @@ mocha.describe('test utils file api', function () {
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_JS)) {
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        const moduleSource = new ModuleSourceFileMock(moduleId, code);
+        const metaInfo: Object = this.rollup.getModuleInfo(moduleId).meta;
+        const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
+          moduleSource.metaInfo, moduleSource.logger);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -305,10 +314,12 @@ mocha.describe('test utils file api', function () {
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_JS)) {
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        const moduleSource = new ModuleSourceFileMock(moduleId, code);
+        const metaInfo: Object = this.rollup.getModuleInfo(moduleId).meta;
+        const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
+          moduleSource.metaInfo, moduleSource.logger);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -324,10 +335,12 @@ mocha.describe('test utils file api', function () {
     for (const moduleId of mockFileList) {
       if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS) || moduleId.endsWith(EXTNAME_JS)) {
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        const moduleSource = new ModuleSourceFileMock(moduleId, code);
+        const metaInfo: Object = this.rollup.getModuleInfo(moduleId).meta;
+        const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
+          moduleSource.metaInfo, moduleSource.logger);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -1252,4 +1265,64 @@ mocha.describe('test utils file api', function () {
     expect(getRollupCache(this.rollup.share, projectConfig, cacheKeyNotExist)).to.be.equal(undefined);
   });
 
+  mocha.it('16-1: test genTemporaryPath adapt external modules', function () {
+    this.rollup.build();
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        belongProjectPath: '/testHar'
+      }
+    };
+    this.rollup.moduleInfos.push(moduleInfo);
+    const projectConfig = this.rollup.share.projectConfig;
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const metaInfo = this.rollup.getModuleInfo(filePath).meta;
+    const cacheFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.cachePath,
+      projectConfig.projectRootPath, projectConfig, metaInfo, logger);
+    const expectCacheFilePath = `${projectConfig.cachePath}/har/src/main/ets/utils/Calc.ets`;
+    expect(cacheFilePath === expectCacheFilePath).to.be.true;
+  });
+
+  mocha.it('16-2: test genTemporaryPath error message', function () {
+    this.rollup.build();
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    const moduleInfo = {
+      id: filePath,
+      meta: {
+        belongProjectPath: undefined
+      }
+    };
+    this.rollup.moduleInfos.push(moduleInfo);
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const projectConfig = this.rollup.share.projectConfig;
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const loggerStub = sinon.stub(logger, 'error');
+    const metaInfo = this.rollup.getModuleInfo(filePath).meta;
+    genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.cachePath,
+      projectConfig.projectRootPath, projectConfig, metaInfo, logger);
+    expect(loggerStub.calledWith(red, 'ARKTS:INTERNAL ERROR\n' + 
+      `Error Message: Failed to generate the cache path corresponding to file ${filePath}.\n` +
+      'Because the file belongs to a module outside the project and has no project information.', reset)).to.be.true;
+    loggerStub.restore();
+  });
+
+  mocha.it('17-1: test getProjectRootPath adapt external modules', function () {
+    this.rollup.build();
+    const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
+    this.rollup.share.projectConfig.rootPathSet = ['/testHar', `${PROJECT_ROOT}/${DEFAULT_PROJECT}`];
+    const projectConfig = this.rollup.share.projectConfig;
+    const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
+    const expectProjectConfig: string = '/testHar';
+    expect(projectRootPath === expectProjectConfig).to.be.true;
+  });
+
+  mocha.it('17-2: test getProjectRootPath under build', function () {
+    this.rollup.build();
+    const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/src/main/ets/utils/Calc.ets`;
+    const projectConfig = this.rollup.share.projectConfig;
+    const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
+    expect(projectRootPath === projectConfig.projectRootPath).to.be.true;
+  });
 });

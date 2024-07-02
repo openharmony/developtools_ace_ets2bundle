@@ -482,9 +482,9 @@ function handleFinishModules(modules, callback) {
         const filePath: string = module.resourceResolveData.path;
         if (!filePath.match(/node_modules/)) {
           const jsCacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath, process.env.cachePath,
-            projectConfig, undefined, undefined);
+            projectConfig.projectRootPath, projectConfig, undefined, undefined);
           const jsBuildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-            projectConfig.buildPath, projectConfig, undefined, undefined, true);
+            projectConfig.buildPath, projectConfig.projectRootPath, projectConfig, undefined, undefined, true);
           if (filePath.match(/\.e?ts$/)) {
             this.incrementalFileInHar.set(jsCacheFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'),
               jsBuildFilePath.replace(/\.ets$/, '.d.ets').replace(/\.ts$/, '.d.ts'));
