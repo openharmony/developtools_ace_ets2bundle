@@ -464,8 +464,8 @@ function isForbiddenTypeToComponentV1(type: ts.Type): boolean {
 function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: string,
   info: ChildAndParentComponentInfo): boolean {
   if (!info.parentStructInfo.isComponentV2 && info.updatePropsDecoratorsV2.includes(itemName) &&
-    isObervedProperty(item.initializer, info) && globalProgram.checker) {
-    const type: ts.Type = globalProgram.checker.getTypeAtLocation(item.initializer);
+    isObervedProperty(item.initializer, info) && globalProgram.strictChecker) {
+    const type: ts.Type = globalProgram.strictChecker.getTypeAtLocation(item.initializer);
     return !isAllowedTypeToComponentV2(type);
   }
   return false;

@@ -963,6 +963,7 @@ class SpecialArkTSFileInfo extends TSFileInfo {
 export function setChecker(): void {
   if (globalProgram.program) {
     globalProgram.checker = globalProgram.program.getTypeChecker();
+    globalProgram.strictChecker = globalProgram.program.getLinterTypeChecker();
   } else if (globalProgram.watchProgram) {
     globalProgram.checker = globalProgram.watchProgram.getCurrentProgram().getProgram().getTypeChecker();
   }
