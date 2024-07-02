@@ -495,24 +495,12 @@ function isAllowedTypeToComponentV2(type: ts.Type): boolean {
     if (isAllowedTypeForBasic(type.flags)) {
       return true;
     }
-    // Anonymous function | Function
-    if (isAllowedTypeForFunction(type)) {
-      return true;
-    }
   }
   return false;
 }
 
 function isAllowedTypeForBasic(flags: ts.TypeFlags): boolean {
   if (isBasicType(flags) || (flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined))) {
-    return true;
-  }
-  return false;
-}
-
-function isAllowedTypeForFunction(type: ts.Type): boolean {
-  if ((type.flags & ts.TypeFlags.Object) &&
-    (type.getCallSignatures().length || globalProgram.checker.typeToString(type) === 'Function')) {
     return true;
   }
   return false;
