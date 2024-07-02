@@ -1029,7 +1029,9 @@ export function createWatchCompilerHost(rootFileNames: string[],
       hotReloadSupportFiles.add(fileName);
     });
   }
-  setCompilerOptions(resolveModulePaths);
+  if (!(isPipe && process.env.compileTool === 'rollup')) {
+    setCompilerOptions(resolveModulePaths);
+  }
   // Change the buildInfo file path, or it will cover the buildInfo file created before.
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', WATCH_COMPILER_BUILD_INFO_SUFFIX);
   const watchCompilerOptions = {...compilerOptions, tsBuildInfoFile: buildInfoPath};
