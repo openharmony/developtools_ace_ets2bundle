@@ -216,7 +216,8 @@
         "RichEditor",
         "Component3D",
         "ContainerSpan",
-        "ArcSwiper"
+        "ArcSwiper",
+        "ArcAlphabetIndexer"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -785,6 +786,11 @@
             "name": "ArcSwiper",
             "type": "ArcSwiperAttribute",
             "instance": "ArcSwiperInstance"
+          },
+          {
+            "name": "ArcAlphabetIndexer",
+            "type": "ArcAlphabetIndexerAttribute",
+            "instance": "ArcAlphabetIndexerInstance"
           }
         ]
       },
