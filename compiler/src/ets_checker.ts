@@ -678,8 +678,11 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
 
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
+    // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
+    // like: hypium library
     sourceFile.fileName &&
-    !isInSDK(sourceFile.fileName) && !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
+    (!isInSDK(sourceFile.fileName) || (/\.(c|m)?js$/).test(sourceFile.fileName)) &&
+    !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
     fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
   });
 
