@@ -328,7 +328,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       ts.DiagnosticCategory.Warning, '', false));
     // TODO: the third param is to be opened
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSCAP_TAG_CHECK_NAME],
-      SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage), false, ts.DiagnosticCategory.Warning,
+      SYSCAP_TAG_CHECK_WARNING, false, ts.DiagnosticCategory.Warning,
       CANIUSE_FUNCTION_NAME, false, undefined, checkSyscapAbility));
     if (projectConfig.projectRootPath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
