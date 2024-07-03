@@ -102,7 +102,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new AAA(this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
+                    let componentCall = new AAA(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -140,7 +140,7 @@ class Index extends ViewPU {
                 }
             }, { name: "CCC" });
         }
-        this.AAA.bind(this)();
+        this.AAA.bind(this)(this);
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
@@ -189,7 +189,7 @@ class AAA extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.AAA.bind(this)();
+        this.AAA.bind(this)(this);
         Row.pop();
     }
     rerender() {
@@ -221,7 +221,7 @@ class BBB extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.BBB.bind(this)();
+        this.BBB.bind(this)(this);
         Row.pop();
     }
     rerender() {
@@ -257,7 +257,7 @@ class CCC extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.CCC.bind(this)();
+        this.CCC.bind(this)(this);
         Row.pop();
     }
     rerender() {
