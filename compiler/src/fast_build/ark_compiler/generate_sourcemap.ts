@@ -117,7 +117,7 @@ export class SourceMapGenerator {
     }
 
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
-    let middlePath = this.getIntermediateModuleId(moduleId.replace(pkgPath + path.sep, ''));
+    let middlePath = this.getIntermediateModuleId(moduleId).replace(pkgPath + path.sep, '');
     if (shouldObfuscateFileName) {
       middlePath = mangleFilePath(middlePath);
     }
