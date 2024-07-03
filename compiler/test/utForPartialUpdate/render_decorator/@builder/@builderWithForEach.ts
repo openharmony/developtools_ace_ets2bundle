@@ -61,7 +61,7 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
-                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
+                        let componentCall = new ComA(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
                         ViewPU.create(componentCall);
                         let paramsLambda = () => {
                             return {};
@@ -114,7 +114,7 @@ class Index extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
-        ComB.bind(this)(this.arr);
+        ComB.bind(this)(this.arr, this);
         Column.pop();
     }
     rerender() {

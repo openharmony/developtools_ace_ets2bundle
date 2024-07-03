@@ -198,12 +198,12 @@ class ImportTest extends ViewPU {
             Text.fontSize(50);
         }, Text);
         Text.pop();
-        ImportNestAll_1.tExtend.bind(this)(20);
+        ImportNestAll_1.tExtend.bind(this)(20, this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.testText2);
         }, Text);
         Text.pop();
-        ImportNestAll_1.tStyles.bind(this)();
+        ImportNestAll_1.tStyles.bind(this)(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.testText3);
         }, Button);
