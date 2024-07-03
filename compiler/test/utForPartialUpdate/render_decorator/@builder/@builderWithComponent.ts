@@ -51,7 +51,7 @@ function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
             if (isInitialRender) {
-                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4, col: 3 });
+                let componentCall = new child(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4, col: 3 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -87,7 +87,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11, col: 5 });
+                    let componentCall = new child(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -104,8 +104,8 @@ class Index extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        myBuilder.bind(this)();
-        this.Builder1.bind(this)();
+        myBuilder.bind(this)(this);
+        this.Builder1.bind(this)(this);
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {

@@ -156,11 +156,11 @@ function testInnerComponent(value, parent = null) {
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
         Column.create();
     }, Column);
-    commonBuilder.bind(this)();
+    commonBuilder.bind(this)(parent ? parent : this);
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40, col: 5 });
+                let componentCall = new TestBuilderChild(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -179,7 +179,7 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41, col: 5 });
+                let componentCall = new TestBuilderChild(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};

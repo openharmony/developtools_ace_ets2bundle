@@ -75,7 +75,7 @@ function comp($$, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, $$ = __$$__) => {
             if (isInitialRender) {
-                let componentCall = new Child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderVisilibity$$.ets", line: 11, col: 5 });
+                let componentCall = new Child(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderVisilibity$$.ets", line: 11, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -182,7 +182,7 @@ class visibility$$Demo extends ViewPU {
             Column.create();
             Column.height('100%');
         }, Column);
-        comp.bind(this)(makeBuilderParameterProxy("comp", { vis: () => (this["__vis"] ? this["__vis"] : this["vis"]), data: () => (this["__data"] ? this["__data"] : this["data"]), width: () => (this["__w"] ? this["__w"] : this["w"]) }));
+        comp.bind(this)(makeBuilderParameterProxy("comp", { vis: () => (this["__vis"] ? this["__vis"] : this["vis"]), data: () => (this["__data"] ? this["__data"] : this["data"]), width: () => (this["__w"] ? this["__w"] : this["w"]) }), this);
         Column.pop();
     }
     rerender() {
