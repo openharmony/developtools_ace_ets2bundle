@@ -1,4 +1,4 @@
 {
     "name": "CheckboxGroup",
-    "attrs": ["selectAll","selectedColor","onChange"]
+    "attrs": ["selectAll","selectedColor","onChange","unselectedColor","mark","checkboxShape"]
 }

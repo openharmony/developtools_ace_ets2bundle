@@ -2,6 +2,7 @@
   "name":"Select",
   "attrs":["selected", "value", "font", "fontColor", "selectedOptionBgColor", "selectedOptionFont",
     "selectedOptionFontColor", "optionBgColor", "optionFont", "optionFontColor", "onSelect", "menuAlign",
-    "optionWidth","optionHeight","controlSize"
+    "optionWidth", "optionHeight", "controlSize", "menuItemContentModifier", "divider","menuBackgroundColor",
+    "menuBackgroundBlurStyle"
   ]
 }
