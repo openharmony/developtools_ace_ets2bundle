@@ -226,7 +226,7 @@ export class ModuleMode extends CommonMode {
     return compileContextInfoPath;
   }
 
-  private collectDeclarationFilesEntry(compileEntries: Set<string>, hspPkgNames: Array<string>) {
+  private collectDeclarationFilesEntry(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
     if (this.projectConfig.arkRouterMap) {
       // Collect bytecode har's declaration files entries in router map, use
       // by es2abc for dependency resolution.
