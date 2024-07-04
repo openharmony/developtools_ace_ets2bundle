@@ -1694,6 +1694,7 @@ export function resetComponentCollection(): void {
   linkCollection.clear();
   storedFileInfo.overallLinkCollection.clear();
   storedFileInfo.overallObjectLinkCollection.clear();
+  storedFileInfo.overallBuilderParamCollection.clear();
   regularInitialization.clear();
   stateInitialization.clear();
   provideInitialization.clear();
