@@ -78,6 +78,58 @@
         {
           "name": "Sendable",
           "emitParameters" : false
+        },
+        {
+          "name": "Track",
+          "emitDecorators": false
+        },
+        {
+          "name": "ComponentV2",
+          "emitDecorators": false
+        },
+        {
+          "name": "ObservedV2",
+          "emitDecorators": false
+        },
+        {
+          "name": "Trace",
+          "emitDecorators": false
+        },
+        {
+          "name": "Local",
+          "emitDecorators" : false
+        },
+        {
+          "name": "Param",
+          "emitDecorators" : false
+        },
+        {
+          "name": "Once",
+          "emitDecorators" : false
+        },
+        {
+          "name": "Event",
+          "emitDecorators" : false
+        },
+        {
+          "name": "Monitor",
+          "emitDecorators" : true
+        },
+        {
+          "name": "Provider",
+          "emitDecorators" : true
+        },
+        {
+          "name": "Consumer",
+          "emitDecorators" : true
+        },
+        {
+          "name": "Computed",
+          "emitDecorators" : false
+        },
+        {
+          "name": "Type",
+          "emitDecorators" : true
         }
       ],
       "propertyDecorators": [
