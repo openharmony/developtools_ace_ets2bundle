@@ -64,6 +64,10 @@
           "emitParameters" : false
         },
         {
+          "name":"LocalBuilder",
+          "emitParameters" : false
+        },
+        {
           "name":"BuilderParam",
           "emitParameters" : false
         },

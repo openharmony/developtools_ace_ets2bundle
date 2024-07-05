@@ -96,7 +96,9 @@ import {
   CONTEXT_STACK,
   COMPONENT_IF_UNDEFINED,
   COMPONENT_POP_FUNCTION,
-  PUSH
+  PUSH,
+  PUV2_VIEW_BASE,
+  COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -535,12 +537,19 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   }
   return undefined;
 }
-
+interface builderConditionType {
+  isBuilder: boolean,
+  isLocalBuilder: boolean
+}
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
   log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
+  const builderCondition: builderConditionType = {
+    isBuilder: false,
+    isLocalBuilder: false
+  }
   if (builderParamObjectCollection.get(componentCollection.currentClassName)) {
     storedFileInfo.builderLikeCollection =
       new Set([...builderParamObjectCollection.get(componentCollection.currentClassName), ...CUSTOM_BUILDER_METHOD]);
@@ -565,7 +574,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       updateItem = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
-    } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
+    } else if (isBuilderOrLocalBuilder(node, builderCondition, customBuilder)) {
       storedFileInfo.processBuilder = true;
       storedFileInfo.processGlobalBuilder = false;
       CUSTOM_BUILDER_METHOD.add(name);
@@ -580,15 +589,18 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       }
       const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
       const componentBlock: ts.Block = processComponentBlock(node.body, false, log, false, true);
-      if (partialUpdateConfig.partialUpdateMode) {
+      if (partialUpdateConfig.partialUpdateMode && builderCondition.isLocalBuilder) {
         componentBlock.statements.unshift(globalBuilderParamAssignment());
       }
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
+      let builderNode: ts.MethodDeclaration | ts.PropertyDeclaration = ts.factory.updateMethodDeclaration(node,
         ts.concatenateDecoratorsAndModifiers(removeDecorator(customBuilder, 'Builder'), modifiers),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters,
         parameters, node.type, componentBlock);
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
+      if (builderCondition.isLocalBuilder) {
+        updateItem = localBuilderNode(node, componentBlock);
+      }
       storedFileInfo.processBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
@@ -609,6 +621,38 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
     }
   }
   return updateItem;
+}
+
+function isBuilderOrLocalBuilder(node: ts.MethodDeclaration, builderCondition: builderConditionType, customBuilder: ts.Decorator[]): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
+      if ([COMPONENT_LOCAL_BUILDER_DECORATOR, COMPONENT_BUILDER_DECORATOR].includes(originalDecortor)) {
+        if (originalDecortor === COMPONENT_BUILDER_DECORATOR) {
+          builderCondition.isBuilder = true;
+          if (customBuilder) {
+            customBuilder.push(...decorators.slice(i + 1), ...decorators.slice(0, i));
+          }
+        } else {
+          builderCondition.isLocalBuilder = true;
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function localBuilderNode(node: ts.MethodDeclaration, componentBlock: ts.Block): ts.PropertyDeclaration {
+  return ts.factory.createPropertyDeclaration(
+    undefined, node.name, undefined, undefined,
+    ts.factory.createArrowFunction(
+      undefined, undefined, [], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      componentBlock
+    )
+  );
 }
 
 export function createParentParameter(): ts.ParameterDeclaration {
@@ -1099,7 +1143,7 @@ export function checkContStact(): ts.Statement {
   return ts.factory.createIfStatement(
     ts.factory.createBinaryExpression(
       ts.factory.createPropertyAccessExpression(
-        ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+        ts.factory.createIdentifier(PUV2_VIEW_BASE),
         ts.factory.createIdentifier(CONTEXT_STACK)
       ),
       ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
@@ -1113,7 +1157,7 @@ export function checkContStact(): ts.Statement {
         ),
         undefined,
         [
-          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createIdentifier(PUV2_VIEW_BASE),
           ts.factory.createStringLiteral(CONTEXT_STACK),
           ts.factory.createArrayLiteralExpression(
             [],
@@ -1130,14 +1174,14 @@ export function checkContStact(): ts.Statement {
 export function contStactPushOrPop(pushOrPop: ts.Identifier, param: ts.ThisExpression[] | []): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     ts.factory.createPropertyAccessExpression(
-      ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+      ts.factory.createIdentifier(PUV2_VIEW_BASE),
       ts.factory.createIdentifier(CONTEXT_STACK)
     ),
     ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
         ts.factory.createPropertyAccessExpression(
-          ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+          ts.factory.createIdentifier(PUV2_VIEW_BASE),
           ts.factory.createIdentifier(CONTEXT_STACK)
         ),
         pushOrPop

@@ -65,7 +65,8 @@ import {
   COMPONENT_DECORATOR_COMPONENT_V2,
   OBSERVED,
   SENDABLE,
-  TYPE
+  TYPE,
+  COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -557,7 +558,7 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
     const exludeDecorators: string[] = ['@Require', '@Once'];
-    const v1MethodDecorators: string[] = ['@Builder', '@Styles'];
+    const v1MethodDecorators: string[] = ['@Builder', '@Styles', COMPONENT_LOCAL_BUILDER_DECORATOR];
     const v1DecoratorMap: Map<string, number> = new Map<string, number>();
     const v2DecoratorMap: Map<string, number> = new Map<string, number>();
     decorators.forEach((item: ts.Decorator) => {
@@ -681,9 +682,10 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
     return;
   }
-  if (decoratorName === constantDefine.MONITOR_DECORATOR && node.parent &&
+  const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR];
+  if (partialDecoratorCollection.includes(decoratorName) && node.parent &&
     !ts.isMethodDeclaration(node.parent)) {
-    const message: string = '@Monitor can only decorate method.';
+    const message: string = `'${decoratorName}' can only decorate method.`;
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
     return;
   }
