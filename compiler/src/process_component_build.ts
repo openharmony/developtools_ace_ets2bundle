@@ -753,7 +753,8 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
   if (builderParamObjectCollection.get(name) &&
     builderParamObjectCollection.get(name).size === 1) {
     return processBlockToExpression(node, nextNode, log, name, false);
-  } else if (storedFileInfo.overallBuilderParamCollection &&
+  } else if (projectConfig.compileMode === 'esmodule' && process.env.compileTool === 'rollup' &&
+    storedFileInfo.overallBuilderParamCollection.get(name) &&
     storedFileInfo.overallBuilderParamCollection.get(name).size === 1
   ) {
     return processBlockToExpression(node, nextNode, log, name, true);
