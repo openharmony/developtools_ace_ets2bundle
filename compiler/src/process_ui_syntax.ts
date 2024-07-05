@@ -78,7 +78,7 @@ import {
   FUNCTION,
   PAGE_FULL_PATH,
   LENGTH,
-  BASE_COMPONENT_NAME_PU,
+  PUV2_VIEW_BASE,
   CONTEXT_STACK
 } from './pre_define';
 import {
@@ -306,9 +306,6 @@ export function processUISyntax(program: ts.Program, ut = false,
           parseGlobalBuilderParams(node.parameters, builderParamsResult);
           const componentBlock: ts.Block = processComponentBlock(node.body, false, transformLog.errors, false, true,
             node.name.getText(), undefined, true, builderParamsResult, true);
-          if (partialUpdateConfig.partialUpdateMode) {
-            componentBlock.statements.unshift(globalBuilderParamAssignment());
-          }
           node = ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node),
             node.asteriskToken, node.name, node.typeParameters, parameters, node.type,
             componentBlock);
@@ -417,7 +414,7 @@ export function processUISyntax(program: ts.Program, ut = false,
 
 export function globalBuilderParamAssignment(): ts.VariableStatement {
   const contextStackCondition: ts.PropertyAccessExpression = ts.factory.createPropertyAccessExpression(
-    ts.factory.createIdentifier(BASE_COMPONENT_NAME_PU),
+    ts.factory.createIdentifier(PUV2_VIEW_BASE),
     ts.factory.createIdentifier(CONTEXT_STACK)
   );
   return ts.factory.createVariableStatement(
