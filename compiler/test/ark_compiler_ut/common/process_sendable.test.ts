@@ -18,7 +18,12 @@ import mocha from 'mocha';
 import * as ts from 'typescript';
 import path from 'path';
 import { hasDecorator } from '../../../lib/utils';
-import { processSendableClass } from '../../../lib/process_sendable';
+import { hasArkDecorator } from '../../../lib/fast_build/ark_compiler/utils';
+import {
+  processSendableClass,
+  processSendableFunction,
+  processSendableType
+} from '../../../lib/process_sendable';
 import { COMPONENT_SENDABLE_DECORATOR } from '../../../lib/pre_define';
 
 const SENDABLE_WITHOUT_CONSTRUCTOR_CODE: string =
@@ -53,6 +58,39 @@ const SENDABLE_WITH_CONSTRUCTOR_CODE_EXPECT: string =
 '}\n' +
 '//# sourceMappingURL=sendableTest.js.map'
 
+const SENDABLE_FUNCTION_WITH_BODY: string = 
+`
+@Sendable
+function sendableFunction() {}
+`
+
+const SENDABLE_FUNCTION_WITH_BODY_EXPECT: string = 
+`"use strict";
+function sendableFunction() {
+    "use sendable";
+}
+//# sourceMappingURL=sendableTest.js.map`
+
+const SENDABLE_FUNCTION_WITHOUT_BODY: string = 
+`
+@Sendable
+function sendableFunction()
+`
+
+const SENDABLE_FUNCTION_WITHOUT_BODY_EXPECT: string = 
+`"use strict";
+//# sourceMappingURL=sendableTest.js.map`
+
+const SENDABLE_TYPE: string = 
+`
+@Sendable
+type SendableFunctionType = () => void
+`
+
+const SENDABLE_TYPE_EXPECT: string = 
+`"use strict";
+//# sourceMappingURL=sendableTest.js.map`
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 
@@ -61,6 +99,12 @@ function processSendable(): Function {
     const visitor: ts.Visitor = node => {
       if (ts.isClassDeclaration(node) && hasDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
         return processSendableClass(node);
+      }
+      if (ts.isFunctionDeclaration(node) && hasArkDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
+        return processSendableFunction(node);
+      }
+      if (ts.isTypeAliasDeclaration(node) && hasArkDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
+        return processSendableType(node);
       }
       return node;
     };
@@ -71,26 +115,45 @@ function processSendable(): Function {
   }
 }
 
-mocha.describe('process sendable class without constrcutor tests', function () {
-  mocha.it('process sendable decorator', function () {
+mocha.describe('process sendable decorator', function () {
+  mocha.it('1-1: process sendable class without constrcutor tests', function () {
     const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITHOUT_CONSTRUCTOR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "sendableTest.ts",
       transformers: { before: [ processSendable() ] }
     });
-    console.log(result.outputText);
     expect(result.outputText == SENDABLE_WITHOUT_CONSTRUCTOR_CODE_EXPECT).to.be.true;
   });
-})
-
-mocha.describe('process sendable class with constrcutor tests', function () {
-  mocha.it('process sendable decorator', function () {
+  mocha.it('1-2: process sendable class with constrcutor tests', function () {
     const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITH_CONSTRUCTOR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "sendableTest.ts",
       transformers: { before: [ processSendable() ] }
     });
-    console.log(result.outputText);
     expect(result.outputText == SENDABLE_WITH_CONSTRUCTOR_CODE_EXPECT).to.be.true;
+  });
+  mocha.it('2-1: process sendable function with body tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_FUNCTION_WITH_BODY, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_FUNCTION_WITH_BODY_EXPECT).to.be.true;
+  });
+  mocha.it('2-2: process sendable function without body tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_FUNCTION_WITHOUT_BODY, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_FUNCTION_WITHOUT_BODY_EXPECT).to.be.true;
+  });
+  mocha.it('3-1: process sendable type tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_TYPE, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_TYPE_EXPECT).to.be.true;
   });
 })

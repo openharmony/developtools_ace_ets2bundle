@@ -145,6 +145,7 @@ import {
   assignmentFunction
 } from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
+import { hasArkDecorator } from './fast_build/ark_compiler/utils';
 import {
   checkTypeReference,
   validateModuleSpecifier
@@ -152,7 +153,11 @@ import {
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
 import createAstNodeUtils from './create_ast_node_utils';
-import { processSendableClass } from './process_sendable'
+import {
+  processSendableClass,
+  processSendableFunction,
+  processSendableType
+} from './process_sendable'
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -329,6 +334,12 @@ export function processUISyntax(program: ts.Program, ut = false,
             // @ts-ignore
             node.illegalDecorators = undefined;
           }
+        } else if (hasArkDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
+          // ark compiler's feature
+          node = processSendableFunction(node);
+          if (node && node.illegalDecorators) {
+            node.illegalDecorators = undefined;
+          }
         } else if (hasDecorator(node, COMPONENT_ANIMATABLE_EXTEND_DECORATOR, null, transformLog.errors)) {
           node = processExtend(node, transformLog.errors, COMPONENT_ANIMATABLE_EXTEND_DECORATOR);
           // @ts-ignore
@@ -374,6 +385,11 @@ export function processUISyntax(program: ts.Program, ut = false,
             });
           }
           node = processSendableClass(node);
+        }
+      } else if (ts.isTypeAliasDeclaration(node) && hasArkDecorator(node, COMPONENT_SENDABLE_DECORATOR)) {
+        node = processSendableType(node);
+        if (node && node.illegalDecorators) {
+          node.illegalDecorators = undefined;
         }
       }
       return ts.visitEachChild(node, processAllNodes, context);
