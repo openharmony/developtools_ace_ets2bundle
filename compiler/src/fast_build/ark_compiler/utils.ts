@@ -16,6 +16,7 @@
 import cluster from 'cluster';
 import fs from 'fs';
 import path from 'path';
+import ts from 'typescript';
 import os from 'os';
 import sourceMap from 'source-map';
 
@@ -271,6 +272,17 @@ export async function updateSourceMap(originMap: sourceMap.RawSourceMap, newMap:
   updatedGenerator._file = originMap.file;
   updatedGenerator._mappings._array = newMappingList;
   return JSON.parse(updatedGenerator.toString());
+}
+
+export function hasArkDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration |
+  ts.StructDeclaration | ts.ClassDeclaration | ts.TypeAliasDeclaration, decortorName: string): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
+      return originalDecortor === decortorName;
+    }
+  }
 }
 
 export const utUtils = {
