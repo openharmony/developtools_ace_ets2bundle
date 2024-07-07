@@ -82,7 +82,8 @@ import {
 } from '../../component_map';
 import {
   kitTransformLog,
-  processKitImport
+  processKitImport,
+  resetKitImportLog
 } from '../../process_kit_import';
 import { resetProcessComponentMember } from '../../process_component_member';
 import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_config_resolver';
@@ -406,6 +407,7 @@ async function transform(code: string, id: string) {
     !projectConfig.ignoreWarning) {
     emitLogInfo(logger, [...getTransformLog(kitTransformLog), ...getTransformLog(transformLog)], true, id);
     resetLog();
+    resetKitImportLog();
   }
 
   return {
