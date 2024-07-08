@@ -354,12 +354,14 @@ async function transform(code: string, id: string) {
    
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
+    globalProgram.strictChecker = tsProgram.getLinterTypeChecker();
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
     collectAllFiles(tsProgram);
   } else {
     if (!storedFileInfo.reUseProgram) {
       globalProgram.checker = globalProgram.program.getTypeChecker();
+      globalProgram.strictChecker = globalProgram.program.getLinterTypeChecker();
     }
     storedFileInfo.reUseProgram = true;
   }
