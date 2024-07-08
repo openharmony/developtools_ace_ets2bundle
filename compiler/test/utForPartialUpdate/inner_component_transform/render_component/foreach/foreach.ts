@@ -127,6 +127,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 class ParentView extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -159,6 +162,7 @@ class ParentView extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -175,9 +179,12 @@ class ParentView extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView1 extends ViewPU {
@@ -212,6 +219,7 @@ class ParentView1 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -228,9 +236,12 @@ class ParentView1 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView2 extends ViewPU {
@@ -265,6 +276,7 @@ class ParentView2 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -281,9 +293,12 @@ class ParentView2 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView3 extends ViewPU {
@@ -318,6 +333,7 @@ class ParentView3 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -334,9 +350,12 @@ class ParentView3 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView4 extends ViewPU {
@@ -371,6 +390,7 @@ class ParentView4 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -387,9 +407,12 @@ class ParentView4 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView5 extends ViewPU {
@@ -424,6 +447,7 @@ class ParentView5 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -440,9 +464,12 @@ class ParentView5 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ParentView6 extends ViewPU {
@@ -481,6 +508,7 @@ class ParentView6 extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             List.create();
         }, List);
@@ -500,9 +528,12 @@ class ParentView6 extends ViewPU {
         }, ForEach);
         ForEach.pop();
         List.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

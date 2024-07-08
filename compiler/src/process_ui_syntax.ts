@@ -112,7 +112,7 @@ import {
   createParentParameter,
   processBuildMember,
   checkFinalizeConstruction,
-  checkContStact
+  checkContextStack
 } from './process_component_class';
 import processImport, {
   processImportModule
@@ -212,7 +212,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           statements.unshift(item);
         });
         if (partialUpdateConfig.partialUpdateMode && hasStruct) {
-          statements.unshift(checkFinalizeConstruction(), checkContStact());
+          statements.unshift(checkFinalizeConstruction(), checkContextStack());
         }
         createNavigationInit(resourceFileName, statements);
         insertImportModuleNode(statements, hasUseResource);
@@ -295,9 +295,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
           const parameters: ts.NodeArray<ts.ParameterDeclaration> =
             ts.factory.createNodeArray(Array.from(node.parameters));
-          if (!partialUpdateConfig.partialUpdateMode) {
-            parameters.push(createParentParameter());  
-          }
+          parameters.push(createParentParameter());
           if (projectConfig.optLazyForEach) {
             parameters.push(initializeMYIDS());
           }

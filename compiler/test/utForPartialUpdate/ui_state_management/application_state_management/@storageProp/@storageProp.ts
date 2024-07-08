@@ -52,6 +52,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 let varA = AppStorage.Link('varA');
 let envLang = AppStorage.Prop('languageCode');
 class MyComponent extends ViewPU {
@@ -99,6 +102,7 @@ class MyComponent extends ViewPU {
         this.label = (this.lang === 'zh') ? '数' : 'Count';
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create({ space: 20 });
         }, Row);
@@ -123,9 +127,12 @@ class MyComponent extends ViewPU {
         }, Button);
         Button.pop();
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

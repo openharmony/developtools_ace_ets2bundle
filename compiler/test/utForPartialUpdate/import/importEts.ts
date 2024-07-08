@@ -130,6 +130,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 const LinkComponent_1 = __importStar(require("./test/pages/LinkComponent"));
 const DefaultComponent_1 = __importDefault(require("./test/pages/DefaultComponent"));
 const AMDComponentDefault = require("./test/pages/AMDComponent");
@@ -202,6 +205,7 @@ class ImportTest extends ViewPU {
         this.__myState4.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -402,9 +406,12 @@ class ImportTest extends ViewPU {
             }, { name: "LinkComponent3" });
         }
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
