@@ -741,6 +741,7 @@ export class ProcessFileInfo {
   transformCacheFiles: { [fileName: string]: CacheFile } = {};
   processBuilder: boolean = false;
   processGlobalBuilder: boolean = false;
+  processLocalBuilder: boolean = false;
   builderLikeCollection: Set<string> = new Set();
   newTsProgram: ts.Program;
   changeFiles: string[] = [];
