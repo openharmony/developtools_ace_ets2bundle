@@ -56,6 +56,7 @@ import {
   toUnixPath,
   validateFilePathLength,
   harFilesRecord,
+  getProjectRootPath
 } from './utils';
 import type { GeneratedFileInHar } from './utils';
 import {
@@ -125,7 +126,7 @@ export function getOhmUrlByFilepath(filePath: string, projectConfig: Object, log
   const bundleName: string = packageInfo[0];
   const moduleName: string = packageInfo[1];
   const moduleRootPath: string = toUnixPath(projectConfig.modulePathMap[moduleName]);
-  const projectRootPath: string = toUnixPath(projectConfig.projectRootPath);
+  const projectRootPath: string = toUnixPath(getProjectRootPath(filePath, projectConfig, projectConfig?.rootPathSet));
   // case1: /entry/src/main/ets/xxx/yyy     ---> @bundle:<bundleName>/entry/ets/xxx/yyy
   // case2: /entry/src/ohosTest/ets/xxx/yyy ---> @bundle:<bundleName>/entry_test@entry/ets/xxx/yyy
   // case3: /node_modules/xxx/yyy           ---> @package:pkg_modules/xxx/yyy
@@ -294,7 +295,8 @@ export function getBuildModeInLowerCase(projectConfig: Object): string {
  * @param sourceCode The intermediate js source code
  */
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
-  const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig, undefined, logger);
+  const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath,
+    projectConfig.projectRootPath, projectConfig, undefined, logger);
   if (filePath.length === 0) {
     return;
   }
@@ -708,7 +710,8 @@ export function getPackageInfo(configFile: string): Array<string> {
  */
 export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: Object,
   projectConfig: Object, logger: Object): void {
-    let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath, projectConfig, undefined, logger);
+    let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath,
+      projectConfig.projectRootPath, projectConfig, undefined, logger);
   if (jsFilePath.length === 0) {
     return;
   }
