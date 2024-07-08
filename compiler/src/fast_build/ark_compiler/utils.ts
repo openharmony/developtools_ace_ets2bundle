@@ -37,7 +37,8 @@ import {
   mkdirsSync,
   validateFilePathLength,
   toUnixPath,
-  isPackageModulesFile
+  isPackageModulesFile,
+  getProjectRootPath
 } from '../../utils';
 import {
   tryMangleFileName,
@@ -100,7 +101,8 @@ function removeCacheFile(cacheFilePath: string, ext: string): void {
 }
 
 export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: Object): boolean {
-  const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectConfig.projectRootPath), '');
+  const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig?.rootPathSet)
+  const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectRootPath), '');
   let cacheFilePath: string = path.join(projectConfig.cachePath, sufStr);
 
   if (!projectConfig.processTs) {
@@ -145,9 +147,10 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
     filePath = genTemporaryPath(id,
       projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
       projectConfig.compileShared ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
-      projectConfig, metaInfo, logger, projectConfig.compileShared);
+      projectConfig.projectRootPath, projectConfig, metaInfo, logger, projectConfig.compileShared);
   } else {
-    filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, projectConfig, metaInfo, logger);
+    filePath = genTemporaryPath(id, projectConfig.projectPath, projectConfig.cachePath, 
+      projectConfig.projectRootPath, projectConfig, metaInfo, logger);
   }
 
   const eventWriteFileContent = createAndStartEvent(parentEvent, 'write file content');
