@@ -108,6 +108,14 @@ const KIT_EMPTY_IMPORT_CODE: string =
 'import "@kit.ArkUI";\n' +
 'appAccount.createAppAccountManager();';
 
+const KIT_LAZY_IMPORT_CODE: string =
+'import { test } from "./test";\n' +
+'import lazy { appAccount } from "@kit.BasicServicesKit";\n' +
+'import lazy { lang } from "@kit.ArkTS";\n' +
+'type ISendable = lang.ISendable;\n' +
+'test;\n' +
+'appAccount.createAppAccountManager();';
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
@@ -223,5 +231,23 @@ mocha.describe('process Kit Imports tests', function () {
       "Please specify imported symbols explicitly.")
     );
     expect(hasError).to.be.true;
+  });
+
+  mocha.it('the error message of lazy import', function () {
+    ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes("Can not use lazy import statement with Kit '@kit.BasicServicesKit', " +
+        "Please remove the lazy keyword.")
+    );
+    const hasError1 = kitTransformLog.errors.some(error =>
+      error.message.includes("Can not use lazy import statement with Kit '@kit.ArkTS', " +
+        "Please remove the lazy keyword.")
+    );
+    expect(hasError).to.be.true;
+    expect(hasError1).to.be.true;
   });
 });
