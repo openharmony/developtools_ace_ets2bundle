@@ -48,6 +48,7 @@ import {
   MergedConfig,
   handleKeepFilesAndGetDependencies,
   writeObfuscationNameCache,
+  writeUnobfuscationContent,
   handleUniversalPathInObf
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
@@ -348,9 +349,15 @@ export class ModuleSourceFile {
     performancePrinter?.timeSumPrinter?.summarizeEventDuration();
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
-    if (compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions) {
+    const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
+    const isWidgetCompile = sourceProjectConfig.widgetCompile;
+    if (needToWriteCache) {
       writeObfuscationNameCache(sourceProjectConfig, sourceProjectConfig.entryPackageInfo, sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
         sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache);
+    }
+    if (needToWriteCache && !isWidgetCompile) {
+      // Do not print unobfuscation names and whitelists when widget compiles
+      writeUnobfuscationContent(sourceProjectConfig);
     }
     stopEvent(eventObfuscatedCode);
 

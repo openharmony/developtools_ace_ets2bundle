@@ -47,6 +47,7 @@ import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 import type { MergedConfig } from './ob_config_resolver';
+import type { ReseverdSetForArkguard } from 'arkguard';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -233,8 +234,7 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
     return;
   }
   const obfOptions = mergedObConfig.options;
-  let projectAndLibs: {projectAndLibsReservedProperties: string[]; libExportNames: string[]};
-  projectAndLibs = readProjectPropertiesByCollectedPaths(allFiles,
+  let projectAndLibs: ReseverdSetForArkguard = readProjectPropertiesByCollectedPaths(allFiles,
     {
       mNameObfuscation: {
         mEnable: true,
@@ -248,12 +248,11 @@ export function readProjectAndLibsSource(allFiles: Set<string>, mergedObConfig: 
         mkeepFilesAndDependencies: keepFilesAndDependencies,
       }
     }, isHarCompiled);
-  if (obfOptions.enablePropertyObfuscation && projectAndLibs.projectAndLibsReservedProperties) {
-    arkObfuscator.addReservedProperties(projectAndLibs.projectAndLibsReservedProperties);
+  if (obfOptions.enablePropertyObfuscation) {
+    arkObfuscator.addReservedSetForPropertyObf(projectAndLibs);
   }
-  if (obfOptions.enableExportObfuscation && projectAndLibs.libExportNames) {
-    arkObfuscator.addReservedNames(projectAndLibs.libExportNames);
-    arkObfuscator.addReservedToplevelNames(projectAndLibs.libExportNames);
+  if (obfOptions.enableExportObfuscation) {
+    arkObfuscator.addReservedSetForDefaultObf(projectAndLibs);
   }
 }
 
