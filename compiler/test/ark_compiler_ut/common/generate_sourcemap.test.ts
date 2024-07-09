@@ -14,6 +14,7 @@
  */
 
 import { expect } from 'chai';
+import fs from 'fs';
 import mocha from 'mocha';
 import path from 'path';
 
@@ -26,7 +27,9 @@ import {
   ENTRYABILITY_JS_PATH_DEFAULT,
   ENTRYABILITY_TS_PATH_DEFAULT,
   ENTRY_PACKAGE_NAME_DEFAULT,
-  ENTRY_MODULE_VERSION_DEFAULT
+  ENTRY_MODULE_VERSION_DEFAULT,
+  INDEX_ETS_PATH_DEFAULT,
+  INDEX_JS_CACHE_PATH
 } from '../mock/rollup_mock/common';
 import {
   compilingEtsOrTsFiles,
@@ -254,6 +257,7 @@ mocha.describe('test generate_sourcemap api', function () {
 
   mocha.it('5-2: test genKey under build release: arkProjectConfig.processTs is true', function () {
     this.rollup.build(RELEASE);
+    this.rollup.share.arkProjectConfig.processTs = true;
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
     compilingEtsOrTsFiles.push(moduleId);
@@ -267,6 +271,7 @@ mocha.describe('test generate_sourcemap api', function () {
 
   mocha.it('5-3: test genKey under preview: arkProjectConfig.processTs is true', function () {
     this.rollup.preview();
+    this.rollup.share.arkProjectConfig.processTs = true;
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
     compilingEtsOrTsFiles.push(moduleId);
@@ -280,6 +285,7 @@ mocha.describe('test generate_sourcemap api', function () {
 
   mocha.it('5-4: test genKey under hotReload: arkProjectConfig.processTs is true', function () {
     this.rollup.hotReload();
+    this.rollup.share.arkProjectConfig.processTs = true;
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     let moduleId = path.join(this.rollup.share.projectConfig.modulePath, ENTRYABILITY_TS_PATH_DEFAULT);
     compilingEtsOrTsFiles.push(moduleId);
@@ -288,6 +294,106 @@ mocha.describe('test generate_sourcemap api', function () {
     cleanUpFilesList();
     let expectKey = prefix + ENTRYABILITY_JS_PATH_DEFAULT.substring(1);
     expect(genKey === expectKey).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('6-1: test updateCachedSourceMaps under build debug: arkProjectConfig.processTs is true', function () {
+    this.rollup.build();
+    this.rollup.share.arkProjectConfig.processTs = true;
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT);
+    compilingEtsOrTsFiles.push(moduleId);
+    hasTsNoCheckOrTsIgnoreFiles.push(moduleId);
+    const indexCachePath = this.rollup.share.projectConfig.projectRootPath + '/' + INDEX_JS_CACHE_PATH;
+    if (fs.existsSync(indexCachePath)) {
+      fs.rmSync(indexCachePath);
+    }
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.isNewSourceMap = false;
+    const rootPath = this.rollup.share.projectConfig.projectRootPath + '/cache/';
+    const sourceMapEdit = JSON.parse(fs.readFileSync(rootPath + 'source_map_edit.json').toString());
+    const sourceMapExpect = JSON.parse(fs.readFileSync(rootPath + 'source_map_expect.json').toString());
+    sourceMapGenerator.cacheSourceMapPath = rootPath + 'source_map_cache.json';
+    sourceMapGenerator.sourceMaps = sourceMapEdit;
+    const sourceMapResult = sourceMapGenerator.updateCachedSourceMaps();
+    expect(Object.keys(sourceMapResult).length == Object.keys(sourceMapExpect).length).to.be.true;
+    Object.keys(sourceMapResult).forEach(key => {
+      expect(sourceMapExpect).to.include.keys(key);
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('6-2: test updateCachedSourceMaps under build release: arkProjectConfig.processTs is true', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.arkProjectConfig.processTs = true;
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT);
+    compilingEtsOrTsFiles.push(moduleId);
+    hasTsNoCheckOrTsIgnoreFiles.push(moduleId);
+    const indexCachePath = this.rollup.share.projectConfig.projectRootPath + '/' + INDEX_JS_CACHE_PATH;
+    if (fs.existsSync(indexCachePath)) {
+      fs.rmSync(indexCachePath);
+    }
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.isNewSourceMap = false;
+    const rootPath = this.rollup.share.projectConfig.projectRootPath + '/cache/';
+    const sourceMapEdit = JSON.parse(fs.readFileSync(rootPath + 'source_map_edit.json').toString());
+    const sourceMapExpect = JSON.parse(fs.readFileSync(rootPath + 'source_map_expect.json').toString());
+    sourceMapGenerator.cacheSourceMapPath = rootPath + 'source_map_cache.json';
+    sourceMapGenerator.sourceMaps = sourceMapEdit;
+    const sourceMapResult = sourceMapGenerator.updateCachedSourceMaps();
+    expect(Object.keys(sourceMapResult).length == Object.keys(sourceMapExpect).length).to.be.true;
+    Object.keys(sourceMapResult).forEach(key => {
+      expect(sourceMapExpect).to.include.keys(key);
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('6-3: test updateCachedSourceMaps under preview: arkProjectConfig.processTs is true', function () {
+    this.rollup.preview();
+    this.rollup.share.arkProjectConfig.processTs = true;
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT);
+    compilingEtsOrTsFiles.push(moduleId);
+    hasTsNoCheckOrTsIgnoreFiles.push(moduleId);
+    const indexCachePath = this.rollup.share.projectConfig.projectRootPath + '/' + INDEX_JS_CACHE_PATH;
+    if (fs.existsSync(indexCachePath)) {
+      fs.rmSync(indexCachePath);
+    }
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.isNewSourceMap = false;
+    const rootPath = this.rollup.share.projectConfig.projectRootPath + '/cache/';
+    const sourceMapEdit = JSON.parse(fs.readFileSync(rootPath + 'source_map_edit.json').toString());
+    const sourceMapExpect = JSON.parse(fs.readFileSync(rootPath + 'source_map_expect_preview.json').toString());
+    sourceMapGenerator.cacheSourceMapPath = rootPath + 'source_map_cache_preview.json';
+    sourceMapGenerator.sourceMaps = sourceMapEdit;
+    const sourceMapResult = sourceMapGenerator.updateCachedSourceMaps();
+    expect(Object.keys(sourceMapResult).length == Object.keys(sourceMapExpect).length).to.be.true;
+    Object.keys(sourceMapResult).forEach(key => {
+      expect(sourceMapExpect).to.include.keys(key);
+    });
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('6-4: test updateCachedSourceMaps under hotReload: arkProjectConfig.processTs is true', function () {
+    this.rollup.hotReload();
+    this.rollup.share.arkProjectConfig.processTs = true;
+    let moduleId = path.join(this.rollup.share.projectConfig.modulePath, INDEX_ETS_PATH_DEFAULT);
+    compilingEtsOrTsFiles.push(moduleId);
+    hasTsNoCheckOrTsIgnoreFiles.push(moduleId);
+    const indexCachePath = this.rollup.share.projectConfig.projectRootPath + '/' + INDEX_JS_CACHE_PATH;
+    if (fs.existsSync(indexCachePath)) {
+      fs.rmSync(indexCachePath);
+    }
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.isNewSourceMap = false;
+    const rootPath = this.rollup.share.projectConfig.projectRootPath + '/cache/';
+    const sourceMapEdit = JSON.parse(fs.readFileSync(rootPath + 'source_map_edit.json').toString());
+    const sourceMapExpect = JSON.parse(fs.readFileSync(rootPath + 'source_map_expect.json').toString());
+    sourceMapGenerator.cacheSourceMapPath = rootPath + 'source_map_cache.json';
+    sourceMapGenerator.sourceMaps = sourceMapEdit;
+    const sourceMapResult = sourceMapGenerator.updateCachedSourceMaps();
+    expect(Object.keys(sourceMapResult).length == Object.keys(sourceMapExpect).length).to.be.true;
+    Object.keys(sourceMapResult).forEach(key => {
+      expect(sourceMapExpect).to.include.keys(key);
+    });
     SourceMapGenerator.cleanSourceMapObject();
   });
 
