@@ -84,6 +84,7 @@ export function processKitImport(id: string, metaInfo: Object,
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
+      InterceptLazyImportWithKitImport(node);
 
       KitInfo.init(node, context, id);
 
@@ -115,6 +116,27 @@ export function processKitImport(id: string, metaInfo: Object,
       return processedNode;
     };
   };
+}
+
+/**
+ *  Kit does not support lazy-import yet, e.g.: import lazy {xxx} from '@kit.yyy'
+ */ 
+function InterceptLazyImportWithKitImport(node: ts.SourceFile): void {
+  if (node && node.statements) {
+    node.statements.forEach((statement) => {
+      if (ts.isImportDeclaration(statement) && statement.moduleSpecifier) {
+        const moduleRequest: string = (statement.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '');
+        if (moduleRequest.startsWith(KIT_PREFIX) && statement.importClause && statement.importClause.isLazy) {
+          kitTransformLog.errors.push({
+            type: LogType.ERROR,
+            message: `Can not use lazy import statement with Kit '${moduleRequest}', ` +
+              "Please remove the lazy keyword.",
+            pos: statement.getStart()
+          });
+        }
+      }
+    })
+  }
 }
 
 /*
@@ -630,6 +652,10 @@ function checkHasKeepTs(node: ts.SourceFile): boolean {
     return false;
   }
   return node.getFullText().substring(comments[0].pos, comments[0].end).trim() === KEEPTS;
+}
+
+export function resetKitImportLog(): void {
+  kitTransformLog.cleanUp();
 }
 
 export function cleanUpKitImportObjects(): void {
