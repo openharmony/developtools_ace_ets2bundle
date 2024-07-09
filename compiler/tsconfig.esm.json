@@ -81,55 +81,55 @@
         },
         {
           "name": "Track",
-          "emitDecorators": false
+          "emitParameters": false
         },
         {
           "name": "ComponentV2",
-          "emitDecorators": false
+          "emitParameters": true
         },
         {
           "name": "ObservedV2",
-          "emitDecorators": false
+          "emitParameters": false
         },
         {
           "name": "Trace",
-          "emitDecorators": false
+          "emitParameters": false
         },
         {
           "name": "Local",
-          "emitDecorators" : false
+          "emitParameters" : false
         },
         {
           "name": "Param",
-          "emitDecorators" : false
+          "emitParameters" : false
         },
         {
           "name": "Once",
-          "emitDecorators" : false
+          "emitParameters" : false
         },
         {
           "name": "Event",
-          "emitDecorators" : false
+          "emitParameters" : false
         },
         {
           "name": "Monitor",
-          "emitDecorators" : true
+          "emitParameters" : true
         },
         {
           "name": "Provider",
-          "emitDecorators" : true
+          "emitParameters" : true
         },
         {
           "name": "Consumer",
-          "emitDecorators" : true
+          "emitParameters" : true
         },
         {
           "name": "Computed",
-          "emitDecorators" : false
+          "emitParameters" : false
         },
         {
           "name": "Type",
-          "emitDecorators" : true
+          "emitParameters" : true
         }
       ],
       "propertyDecorators": [
