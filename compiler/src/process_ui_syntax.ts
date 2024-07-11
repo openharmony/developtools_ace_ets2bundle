@@ -176,10 +176,10 @@ export function processUISyntax(program: ts.Program, ut = false,
     return (node: ts.SourceFile) => {
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
-      pageFile = node.fileName;
+      pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
-        storedFileInfo.transformCacheFiles[node.fileName] = {
-          mtimeMs: fs.existsSync(node.fileName) ? fs.statSync(node.fileName).mtimeMs : 0,
+        storedFileInfo.transformCacheFiles[pageFile] = {
+          mtimeMs: fs.existsSync(pageFile) ? fs.statSync(pageFile).mtimeMs : 0,
           children: []
         };
         transformLog.sourceFile = node;
