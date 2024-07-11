@@ -769,7 +769,8 @@ export class ProcessFileInfo {
   routerInfo: Map<string, Array<RouterInfo>> = new Map();
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
-    resourceToFileCacheInfo: { [resource: string]: Set<string> }) {
+    resourceToFileCacheInfo: { [resource: string]: Set<string> },
+    cacheFile: { [fileName: string]: CacheFile }) {
     if (this.buildStart) {
       for (const element in resourceToFileCacheInfo) {
         this.resourceToFile[element] = new Set(resourceToFileCacheInfo[element]);
@@ -778,6 +779,9 @@ export class ProcessFileInfo {
     }
     if (this.resourceTableChanged) {
       this.compareResourceDiff();
+    }
+    if (cacheFile) {
+      this.transformCacheFiles = cacheFile;
     }
   }
 

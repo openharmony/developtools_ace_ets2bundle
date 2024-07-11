@@ -746,15 +746,21 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
   }
 }
 
+interface PageInfo {
+  pageFile: string;
+  setChildOnce: boolean;
+}
+
 export function processImportModule(node: ts.ImportDeclaration, pageFile: string, log: LogInfo[]): void {
   let importSymbol: ts.Symbol;
   let realSymbol: ts.Symbol;
   let originNode: ts.Node;
+  const pageInfo: PageInfo = { pageFile: pageFile, setChildOnce: false };
   validateModuleSpecifier(node.moduleSpecifier, log);
 
   // import xxx from 'xxx'
   if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageFile);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageInfo);
   }
 
   // import {xxx} from 'xxx'
@@ -763,7 +769,7 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     node.importClause.namedBindings.elements) {
     node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
       if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
-        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageFile);
+        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo);
       }
     });
   }
@@ -773,12 +779,12 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
     ts.isIdentifier(node.importClause.namedBindings.name)) {
     storedFileInfo.isAsPageImport = true;
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageFile);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageInfo);
   }
 }
 
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
-  usedNode: ts.Identifier, pageFile: string): void {
+  usedNode: ts.Identifier, pageInfo: PageInfo): void {
   importSymbol = globalProgram.checker.getSymbolAtLocation(usedNode);
   if (importSymbol) {
     realSymbol = globalProgram.checker.getAliasedSymbol(importSymbol);
@@ -795,16 +801,16 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
       const escapedName: string = realSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
       if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
         realSymbol.exports && realSymbol.exports instanceof Map) {
-        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports, pageFile);
+        getIntegrationNodeInfo(originNode, usedNode, realSymbol.exports, pageInfo);
         return;
       }
     }
-    processImportNode(originNode, usedNode, false, null, pageFile);
+    processImportNode(originNode, usedNode, false, null, pageInfo);
   }
 }
 
 function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, exportsMap: ts.SymbolTable,
-  pageFile: string): void {
+  pageInfo: PageInfo): void {
   for (const usedSymbol of exportsMap) {
     try {
       originNode = globalProgram.checker.getAliasedSymbol(usedSymbol[1]).declarations[0];
@@ -812,16 +818,16 @@ function getIntegrationNodeInfo(originNode: ts.Node, usedNode: ts.Identifier, ex
       if (usedSymbol[1] && usedSymbol[1].declarations) {
         for (let i = 0; i < usedSymbol[1].declarations.length; i++) {
           originNode = usedSymbol[1].declarations[i];
-          exportAllManage(originNode, usedNode, pageFile);
+          exportAllManage(originNode, usedNode, pageInfo);
         }
       }
     }
-    processImportNode(originNode, usedNode, true, usedSymbol[0], pageFile);
+    processImportNode(originNode, usedNode, true, usedSymbol[0], pageInfo);
   }
 }
 
 // export * from 'xxx';
-function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageFile: string): void {
+function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageInfo: PageInfo): void {
   let exportOriginNode: ts.Node;
   if (!originNode.exportClause && originNode.moduleSpecifier && ts.isStringLiteral(originNode.moduleSpecifier)) {
     const exportSymbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(originNode.moduleSpecifier);
@@ -835,7 +841,7 @@ function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageFile:
         const escapedName: string = exportSymbol.escapedName.toString().replace(/^("|')/, '').replace(/("|')$/, '');
         if (fs.existsSync(escapedName + '.ets') || fs.existsSync(escapedName + '.ts') &&
           exportSymbol.exports && exportSymbol.exports instanceof Map) {
-          getIntegrationNodeInfo(originNode, usedNode, exportSymbol.exports, pageFile);
+          getIntegrationNodeInfo(originNode, usedNode, exportSymbol.exports, pageInfo);
           return;
         }
       }
@@ -844,7 +850,7 @@ function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageFile:
 }
 
 function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
-  usedPropName: string, pageFile: string): void {
+  usedPropName: string, pageInfo: PageInfo): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
   let asComponentName: string;
@@ -870,11 +876,22 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else {
     needCollection = false;
   }
-  if (needCollection && pageFile && originFile) {
-    storedFileInfo.transformCacheFiles[pageFile].children.push({
-      fileName: originFile,
-      mtimeMs: fs.existsSync(originFile) ? fs.statSync(originFile).mtimeMs : 0
+  if (needCollection && pageInfo.pageFile && !pageInfo.setChildOnce && originFile) {
+    const childFile: string = path.resolve(getRealPath(originFile) || originFile);
+    storedFileInfo.transformCacheFiles[pageInfo.pageFile].children.push({
+      fileName: childFile,
+      mtimeMs: fs.existsSync(childFile) ? fs.statSync(childFile).mtimeMs : 0
     });
+    pageInfo.setChildOnce = true;
+  }
+}
+
+function getRealPath(filePath: string): string {
+  try {
+    const newPath: string = fs.realpathSync.native(filePath);
+    return newPath;
+  } catch (err) {
+    return undefined;
   }
 }
 
