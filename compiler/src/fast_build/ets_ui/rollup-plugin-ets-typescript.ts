@@ -104,7 +104,7 @@ let disableCacheOptions = {
 
 export function etsTransform() {
   const allFilesInHar: Map<string, string> = new Map();
-  let cacheFile: CacheFile;
+  let cacheFile: { [fileName: string]: CacheFile };
   return {
     name: 'etsTransform',
     transform: transform,
@@ -115,7 +115,7 @@ export function etsTransform() {
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
-          this.cache.get('resourceToFileCacheInfo'));
+          this.cache.get('resourceToFileCacheInfo'), cacheFile);
         if (this.cache.get('lastResourcesArr')) {
           storedFileInfo.lastResourcesSet = new Set([...this.cache.get('lastResourcesArr')]);
         }
