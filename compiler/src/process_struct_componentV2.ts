@@ -155,13 +155,24 @@ function traverseStructInfo(structInfo: StructInfo,
 function setPropertyStatement(structInfo: StructInfo, addStatementsInConstructor: ts.Statement[],
   propName: string, initializer: ts.Expression, needInitFromParams: string[]): void {
   if (needInitFromParams.includes(propName)) {
-    addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, true));
+    if (structInfo.eventDecoratorSet.has(propName)) {
+      addStatementsInConstructor.push(
+        createPropertyAssignNode(propName, initializer || getDefaultValueForEvent(), true));
+    } else {
+      addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, true));
+    }
   } else if (structInfo.paramDecoratorMap.has(propName)) {
     const paramProperty: ParamDecoratorInfo = structInfo.paramDecoratorMap.get(propName);
     addStatementsInConstructor.push(createInitParam(propName, paramProperty.initializer));
   } else {
     addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, false));
   }
+}
+
+function getDefaultValueForEvent(): ts.Expression {
+  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createBlock([], false));
 }
 
 function createPropertyAssignNode(propName: string, initializer: ts.Expression,

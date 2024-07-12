@@ -174,7 +174,7 @@ class TestParam1 extends ViewV2 {
         super(parent, elmtId, extraInfo);
         this.initParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
         this.myEvent = "myEvent" in params ? params.myEvent : (newVal) => { };
-        this.myEvent1 = "myEvent1" in params ? params.myEvent1 : undefined;
+        this.myEvent1 = "myEvent1" in params ? params.myEvent1 : () => { };
         this.finalizeConstruction();
     }
     initialRender() { }
