@@ -90,7 +90,7 @@ class ModuleModeMock extends ModuleMode {
     this.generateAbcCacheFilesInfo();
   }
 
-  generateCompileContextInfoMock(rollupObject: object) {
+  generateCompileContextInfoMock(rollupObject: object): void {
       this.compileContextInfoPath = this.generateCompileContextInfo(rollupObject);
   }
 

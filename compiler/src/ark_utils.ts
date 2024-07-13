@@ -232,8 +232,8 @@ function processPackageDir(params: Object): string {
 }
 
 
-export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object, importerFile?: string,
-  useNormalizedOHMUrl: boolean = false): string {
+export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?: Object, logger?: Object,
+  importerFile?: string, useNormalizedOHMUrl: boolean = false): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
   const REG_LIB_SO: RegExp = /lib(\S+)\.so/;
@@ -262,8 +262,8 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
     if (useNormalizedOHMUrl) {
       const pkgInfo = config.pkgContextInfo[moduleRequest];
       if (pkgInfo === undefined) {
-        this.logger.error(red, `ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package '${moduleRequest}' ` +
-          `which being imported by ${importerFile}'`, reset);
+        logger?.error(red, `ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package '${moduleRequest}' ` +
+          `which being imported by '${importerFile}'`, reset);
       }
       const isSo = pkgInfo.isSO ? 'Y' : 'N';
       return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
