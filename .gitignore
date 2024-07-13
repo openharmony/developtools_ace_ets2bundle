@@ -17,9 +17,11 @@ compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/filesInfo.txt
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/modules.cache
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/npmEntries.txt
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/sourceMaps.map
+compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/compileContextInfo.json
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/build/temporary/
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/entry/
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/filesInfo.txt
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/modules.cache
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/npmEntries.txt
 compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/sourceMaps.map
+compiler/test/ark_compiler_ut/testdata/testcase_def/entry/preview/compileContextInfo.json

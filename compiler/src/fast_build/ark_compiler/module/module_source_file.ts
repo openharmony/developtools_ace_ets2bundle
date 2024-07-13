@@ -382,7 +382,7 @@ export class ModuleSourceFile {
       useNormalizedOHMUrl = rollupObject.share.projectConfig.useNormalizedOHMUrl;
     }
     let systemOrLibOhmUrl = getOhmUrlBySystemApiOrLibRequest(moduleRequest, ModuleSourceFile.projectConfig,
-      importerFile, useNormalizedOHMUrl);
+      ModuleSourceFile.logger, importerFile, useNormalizedOHMUrl);
     if (systemOrLibOhmUrl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, systemOrLibOhmUrl, rollupObject, importerFile);
@@ -398,7 +398,7 @@ export class ModuleSourceFile {
       return externalPkgOhmurl;
     }
     const byteCodeHarOhmurl: string | undefined = getOhmUrlByByteCodeHar(moduleRequest, ModuleSourceFile.projectConfig,
-      ModuleSourceFile.logger, useNormalizedOHMUrl);
+      ModuleSourceFile.logger);
     if (byteCodeHarOhmurl !== undefined) {
       if (ModuleSourceFile.needProcessMock) {
         ModuleSourceFile.generateNewMockInfo(moduleRequest, byteCodeHarOhmurl, rollupObject, importerFile);
