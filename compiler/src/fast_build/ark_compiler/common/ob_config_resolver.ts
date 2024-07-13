@@ -19,13 +19,14 @@ import JSON5 from 'json5';
 import type * as ts from 'typescript';
 import {
   ApiExtractor,
-  renamePropertyModule,
   getMapFromJson,
   renameFileNameModule,
   FileUtils,
   separateUniversalReservedItem,
   containWildcards,
-  wildcardTransformer
+  wildcardTransformer,
+  PropCollections,
+  clearGlobalCaches
 } from 'arkguard';
 import type {
   ArkObfuscator,
@@ -715,7 +716,7 @@ export function readNameCache(nameCachePath: string, logger: any): void {
     const nameCache: { compileSdkVersion?: string, [key:string]: string | {},
                       PropertyCache?: Object, FileNameCache?: Object } = JSON.parse(fileContent);
     if (nameCache.PropertyCache) {
-      renamePropertyModule.historyMangledTable = getMapFromJson(nameCache.PropertyCache);
+      PropCollections.historyMangledTable = getMapFromJson(nameCache.PropertyCache);
     }
     if (nameCache.FileNameCache) {
       renameFileNameModule.historyFileNameMangledTable = getMapFromJson(nameCache.FileNameCache);
@@ -738,8 +739,8 @@ export function getArkguardNameCache(enablePropertyObfuscation: boolean, enableF
 
   if (enablePropertyObfuscation) {
     const mergedPropertyNameCache: Map<string, string> = new Map();
-    fillNameCache(renamePropertyModule.historyMangledTable, mergedPropertyNameCache);
-    fillNameCache(renamePropertyModule.globalMangledTable, mergedPropertyNameCache);
+    fillNameCache(PropCollections.historyMangledTable, mergedPropertyNameCache);
+    fillNameCache(PropCollections.globalMangledTable, mergedPropertyNameCache);
     nameCacheCollection.PropertyCache = Object.fromEntries(mergedPropertyNameCache);
   }
 
@@ -848,13 +849,7 @@ export function mangleFilePath(originalPath: string): string {
 }
 
 export function resetObfuscation(): void {
-  renamePropertyModule.globalMangledTable?.clear();
-  renamePropertyModule.historyMangledTable?.clear();
-  renamePropertyModule.globalSwappedMangledTable?.clear();
-  renamePropertyModule.newlyOccupiedMangledProps?.clear();
-  renamePropertyModule.mangledPropsInNameCache?.clear();
-  renameFileNameModule.globalFileNameMangledTable?.clear();
-  renameFileNameModule.historyFileNameMangledTable?.clear();
+  clearGlobalCaches();
   ApiExtractor.mPropertySet?.clear();
   ApiExtractor.mSystemExportSet?.clear();
   localPackageSet?.clear();
