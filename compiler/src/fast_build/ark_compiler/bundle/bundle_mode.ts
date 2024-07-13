@@ -175,6 +175,9 @@ export class BundleMode extends CommonMode {
       `"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`,
       '--opt-try-catch-func=false'
     );
+    if (this.projectConfig.compatibleSdkReleaseType) {
+      this.cmdArgs.push(`"--target-api-sub-version=${this.projectConfig.compatibleSdkReleaseType}"`);
+    }
   }
 
   private generateFileInfoOfBundle(): string {
