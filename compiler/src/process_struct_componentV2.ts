@@ -69,6 +69,7 @@ export class StructInfo {
   builderParamDecoratorSet: Set<string> = new Set();
   regularSet: Set<string> = new Set();
   propertiesMap: Map<string, ts.Expression> = new Map();
+  staticPropertySet: Set<string> = new Set();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -144,11 +145,15 @@ function traverseStructInfo(structInfo: StructInfo,
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
     ...structInfo.eventDecoratorSet];
   for (const property of structInfo.propertiesMap) {
-    setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
-      needInitFromParams);
+    if (!structInfo.staticPropertySet.has(property[0])) {
+      setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
+        needInitFromParams);
+    }
   }
   for (const param of structInfo.paramDecoratorMap) {
-    paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
+    if (!structInfo.staticPropertySet.has(param[0])) {
+      paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
+    }
   }
 }
 
@@ -191,27 +196,31 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   log: LogInfo[]): ts.PropertyDeclaration {
   const propName: string = member.name.getText();
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
+  let initializer: ts.Expression;
+  if (structInfo.staticPropertySet.has(propName)) {
+    initializer = member.initializer;
+  }
   if (structInfo.paramDecoratorMap.has(propName)) {
-    return processParamProperty(member, decorators);
+    return processParamProperty(member, decorators, initializer);
   }
   if (structInfo.builderParamDecoratorSet.has(propName)) {
-    return processBuilderParamProperty(member, log, decorators);
+    return processBuilderParamProperty(member, log, decorators, initializer);
   }
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
-    member.name, member.questionToken, member.type, undefined);
+    member.name, member.questionToken, member.type, initializer);
 }
 
 function processParamProperty(member: ts.PropertyDeclaration,
-  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
+  decorators: readonly ts.Decorator[], initializer: ts.Expression): ts.PropertyDeclaration {
   const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.REQUIRE);
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
-    member.name, member.questionToken, member.type, undefined);
+    member.name, member.questionToken, member.type, initializer);
 }
 
 function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInfo[],
-  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
+  decorators: readonly ts.Decorator[], initializer: ts.Expression): ts.PropertyDeclaration {
   if (judgeBuilderParamAssignedByBuilder(member)) {
     log.push({
       type: LogType.ERROR,
@@ -222,7 +231,7 @@ function processBuilderParamProperty(member: ts.PropertyDeclaration, log: LogInf
   const newDecorators: readonly ts.Decorator[] = removeDecorator(decorators, constantDefine.BUILDER_PARAM);
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(newDecorators, ts.getModifiers(member)),
-    member.name, member.questionToken, member.type, undefined);
+    member.name, member.questionToken, member.type, initializer);
 }
 
 function setInitValue(propName: string, initializer: ts.Expression,
@@ -257,10 +266,24 @@ function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructIn
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isPropertyDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
+      const modifiers: readonly ts.Modifier[] = ts.getModifiers(member);
       structInfo.propertiesMap.set(member.name.getText(), member.initializer);
       parsePropertyDecorator(member, decorators, structInfo, log, sourceFileNode);
+      parsePropertyModifiers(member.name.getText(), structInfo, modifiers);
     }
   });
+}
+
+function parsePropertyModifiers(propName: string, structInfo: StructInfo,
+  modifiers: readonly ts.Modifier[]): void {
+  if (modifiers && modifiers.length) {
+    const isStatic: boolean = modifiers.some((item: ts.Modifier) => {
+      return item.kind === ts.SyntaxKind.StaticKeyword;
+    });
+    if (isStatic) {
+      structInfo.staticPropertySet.add(propName);
+    }
+  }
 }
 
 class PropertyDecorator {
