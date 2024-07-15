@@ -1,7 +1,7 @@
 {
   "name": "ArcSwiper",
   "attrs": [
-    "index", "indicator", "duration", "vertical", "disableSwipe", "onChange", 
+    "index", "indicator", "duration", "vertical", "disableSwipe", "digitalCrownSensitivity", "onChange", 
     "onAnimationStart", "onAnimationEnd", "onGestureSwipe"
   ]
 }
