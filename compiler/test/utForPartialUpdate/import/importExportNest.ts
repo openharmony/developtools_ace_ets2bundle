@@ -61,6 +61,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 const ImportNestAll_1 = require("./test/pages/ImportNestAll");
 class ImportTest extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -190,6 +193,7 @@ class ImportTest extends ViewPU {
         this.__testState5.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -198,12 +202,12 @@ class ImportTest extends ViewPU {
             Text.fontSize(50);
         }, Text);
         Text.pop();
-        ImportNestAll_1.tExtend.bind(this)(20, this);
+        ImportNestAll_1.tExtend.bind(this)(20);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create(this.testText2);
         }, Text);
         Text.pop();
-        ImportNestAll_1.tStyles.bind(this)(this);
+        ImportNestAll_1.tStyles.bind(this)();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel(this.testText3);
         }, Button);
@@ -258,9 +262,12 @@ class ImportTest extends ViewPU {
             }, { name: "DivideTest" });
         }
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

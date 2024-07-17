@@ -65,6 +65,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 let para = { 'PropA': 47 };
 let storage = new LocalStorage(para);
 class localStorageParam extends ViewPU {
@@ -96,6 +99,7 @@ class localStorageParam extends ViewPU {
         this.__storageLink1.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -164,9 +168,12 @@ class localStorageParam extends ViewPU {
             }, { name: "ComE" });
         }
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ComA extends ViewPU {
@@ -201,7 +208,9 @@ class ComA extends ViewPU {
     initialRender() {
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ComB extends ViewPU {
@@ -226,7 +235,9 @@ class ComB extends ViewPU {
     initialRender() {
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ComD extends ViewPU {
@@ -251,7 +262,9 @@ class ComD extends ViewPU {
     initialRender() {
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ComE extends ViewPU {
@@ -276,7 +289,9 @@ class ComE extends ViewPU {
     initialRender() {
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {

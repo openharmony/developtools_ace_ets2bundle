@@ -48,6 +48,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 function ComB(param, parent = null) {
     const __param__ = param;
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
@@ -61,7 +64,7 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
-                        let componentCall = new ComA(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
+                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
                         ViewPU.create(componentCall);
                         let paramsLambda = () => {
                             return {};
@@ -111,14 +114,18 @@ class Index extends ViewPU {
         this.__arr.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
-        ComB.bind(this)(this.arr, this);
+        ComB.bind(this)(this.arr);
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class ComA extends ViewPU {
@@ -141,6 +148,7 @@ class ComA extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
@@ -150,9 +158,12 @@ class ComA extends ViewPU {
         }, Text);
         Text.pop();
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

@@ -69,6 +69,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 const decoratorKeyCheck_1 = require("./test/pages/decoratorKeyCheck");
 let para = { 'PropA': 47 };
 let storage = new LocalStorage(para);
@@ -392,13 +395,17 @@ class Index extends ViewPU {
         this.__Consume4.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {

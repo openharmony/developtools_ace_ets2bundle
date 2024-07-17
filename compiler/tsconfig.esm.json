@@ -64,6 +64,10 @@
           "emitParameters" : false
         },
         {
+          "name":"LocalBuilder",
+          "emitParameters" : false
+        },
+        {
           "name":"BuilderParam",
           "emitParameters" : false
         },
@@ -152,7 +156,7 @@
       ],
       "render": {
         "method": ["build", "pageTransition"],
-        "decorator": "Builder"
+        "decorator": ["LocalBuilder", "Builder"]
       },
       "components": [
         "AbilityComponent",

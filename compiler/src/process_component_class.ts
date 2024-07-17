@@ -92,7 +92,13 @@ import {
   PROTOTYPE,
   REFLECT,
   CREATE_SET_METHOD,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  CONTEXT_STACK,
+  COMPONENT_IF_UNDEFINED,
+  COMPONENT_POP_FUNCTION,
+  PUSH,
+  PUV2_VIEW_BASE,
+  COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -143,7 +149,8 @@ import {
 } from '../main';
 import {
   builderTypeParameter,
-  initializeMYIDS
+  initializeMYIDS,
+  globalBuilderParamAssignment
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 
@@ -530,12 +537,19 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   }
   return undefined;
 }
-
+interface builderConditionType {
+  isBuilder: boolean,
+  isLocalBuilder: boolean
+}
 export function processComponentMethod(node: ts.MethodDeclaration, context: ts.TransformationContext,
   log: LogInfo[], buildCount: BuildCount): ts.MethodDeclaration {
   let updateItem: ts.MethodDeclaration = node;
   const name: string = node.name.getText();
   const customBuilder: ts.Decorator[] = [];
+  const builderCondition: builderConditionType = {
+    isBuilder: false,
+    isLocalBuilder: false
+  }
   if (builderParamObjectCollection.get(componentCollection.currentClassName)) {
     storedFileInfo.builderLikeCollection =
       new Set([...builderParamObjectCollection.get(componentCollection.currentClassName), ...CUSTOM_BUILDER_METHOD]);
@@ -560,25 +574,39 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       updateItem = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters, node.parameters,
         node.type, processComponentBlock(node.body, false, log, true));
-    } else if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR, customBuilder)) {
+    } else if (isBuilderOrLocalBuilder(node, builderCondition, customBuilder)) {
       storedFileInfo.processBuilder = true;
       storedFileInfo.processGlobalBuilder = false;
+      if (builderCondition.isLocalBuilder) {
+        storedFileInfo.processLocalBuilder = true;
+      }
       CUSTOM_BUILDER_METHOD.add(name);
       INNER_CUSTOM_BUILDER_METHOD.add(name);
       builderTypeParameter.params = getPossibleBuilderTypeParameter(node.parameters);
       const parameters: ts.NodeArray<ts.ParameterDeclaration> = ts.factory.createNodeArray(Array.from(node.parameters));
-      parameters.push(createParentParameter());
+      if (!builderCondition.isLocalBuilder) {
+        parameters.push(createParentParameter());
+      }
       if (projectConfig.optLazyForEach) {
         parameters.push(initializeMYIDS());
       }
       const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-      const builderNode: ts.MethodDeclaration = ts.factory.updateMethodDeclaration(node,
+      const componentBlock: ts.Block = processComponentBlock(node.body, false, log, false, true);
+      if (partialUpdateConfig.partialUpdateMode && builderCondition.isLocalBuilder &&
+        node.body.statements.length) {
+        componentBlock.statements.unshift(globalBuilderParamAssignment());
+      }
+      let builderNode: ts.MethodDeclaration | ts.PropertyDeclaration = ts.factory.updateMethodDeclaration(node,
         ts.concatenateDecoratorsAndModifiers(removeDecorator(customBuilder, 'Builder'), modifiers),
         node.asteriskToken, node.name, node.questionToken, node.typeParameters,
-        parameters, node.type, processComponentBlock(node.body, false, log, false, true));
+        parameters, node.type, componentBlock);
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
+      if (builderCondition.isLocalBuilder) {
+        updateItem = localBuilderNode(node, updateItem.body);
+      }
       storedFileInfo.processBuilder = false;
+      storedFileInfo.processLocalBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
@@ -598,6 +626,38 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
     }
   }
   return updateItem;
+}
+
+function isBuilderOrLocalBuilder(node: ts.MethodDeclaration, builderCondition: builderConditionType, customBuilder: ts.Decorator[]): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (decorators && decorators.length) {
+    for (let i = 0; i < decorators.length; i++) {
+      const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
+      if ([COMPONENT_LOCAL_BUILDER_DECORATOR, COMPONENT_BUILDER_DECORATOR].includes(originalDecortor)) {
+        if (originalDecortor === COMPONENT_BUILDER_DECORATOR) {
+          builderCondition.isBuilder = true;
+          if (customBuilder) {
+            customBuilder.push(...decorators.slice(i + 1), ...decorators.slice(0, i));
+          }
+        } else {
+          builderCondition.isLocalBuilder = true;
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function localBuilderNode(node: ts.MethodDeclaration, componentBlock: ts.Block): ts.PropertyDeclaration {
+  return ts.factory.createPropertyDeclaration(
+    undefined, node.name, undefined, undefined,
+    ts.factory.createArrowFunction(
+      undefined, undefined, node.parameters ? node.parameters : [], undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      componentBlock
+    )
+  );
 }
 
 export function createParentParameter(): ts.ParameterDeclaration {
@@ -897,6 +957,8 @@ export function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaratio
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
+  statements.unshift(contextStackPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
+  statements.push(contextStackPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), []));
   return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
     ts.factory.createBlock(statements, true));
@@ -1080,4 +1142,57 @@ export function checkFinalizeConstruction(): ts.Statement {
           ]
         ))
       ], true), undefined);
+}
+
+export function checkContextStack(): ts.Statement {
+  return ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createIdentifier(PUV2_VIEW_BASE),
+        ts.factory.createIdentifier(CONTEXT_STACK)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED)
+    ),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(REFLECT),
+          ts.factory.createIdentifier(CREATE_SET_METHOD)
+        ),
+        undefined,
+        [
+          ts.factory.createIdentifier(PUV2_VIEW_BASE),
+          ts.factory.createStringLiteral(CONTEXT_STACK),
+          ts.factory.createArrayLiteralExpression(
+            [],
+            false
+          )
+        ]
+      ))],
+      true
+    ),
+    undefined
+  );
+}
+
+export function contextStackPushOrPop(pushOrPop: ts.Identifier, param: ts.ThisExpression[] | []): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier(PUV2_VIEW_BASE),
+      ts.factory.createIdentifier(CONTEXT_STACK)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(PUV2_VIEW_BASE),
+          ts.factory.createIdentifier(CONTEXT_STACK)
+        ),
+        pushOrPop
+      ),
+      undefined,
+      param
+    )
+  ));
 }
