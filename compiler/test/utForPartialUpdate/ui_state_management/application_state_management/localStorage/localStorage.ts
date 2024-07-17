@@ -47,6 +47,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 let storage = LocalStorage.GetShared();
 class ClassA {
     constructor(a) {
@@ -94,6 +97,7 @@ class LocalStorageComponent extends ViewPU {
         this.__objectName.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.height(500);
@@ -107,9 +111,12 @@ class LocalStorageComponent extends ViewPU {
         }, Text);
         Text.pop();
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {

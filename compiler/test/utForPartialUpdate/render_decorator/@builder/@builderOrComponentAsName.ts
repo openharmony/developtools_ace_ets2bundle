@@ -77,6 +77,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 function ComA(parent = null) {
 }
 class Index extends ViewPU {
@@ -102,7 +105,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new AAA(ViewPU.__proto__ !== NativeViewPartialUpdate && parent instanceof PUV2ViewBase ? parent : this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
+                    let componentCall = new AAA(this, { AAA: ComA }, undefined, elmtId, () => { }, { page: "@builderOrComponentAsName.ets", line: 10, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -120,6 +123,7 @@ class Index extends ViewPU {
     CCC(parent = null) {
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
@@ -140,7 +144,7 @@ class Index extends ViewPU {
                 }
             }, { name: "CCC" });
         }
-        this.AAA.bind(this)(this);
+        this.AAA.bind(this)();
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
@@ -157,9 +161,12 @@ class Index extends ViewPU {
             }, { name: "BBB" });
         }
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class AAA extends ViewPU {
@@ -186,14 +193,18 @@ class AAA extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.AAA.bind(this)(this);
+        this.AAA.bind(this)();
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class BBB extends ViewPU {
@@ -218,14 +229,18 @@ class BBB extends ViewPU {
     BBB(parent = null) {
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.BBB.bind(this)(this);
+        this.BBB.bind(this)();
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class CCC extends ViewPU {
@@ -254,14 +269,18 @@ class CCC extends ViewPU {
     DDD(parent = null) {
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
-        this.CCC.bind(this)(this);
+        this.CCC.bind(this)();
         Row.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

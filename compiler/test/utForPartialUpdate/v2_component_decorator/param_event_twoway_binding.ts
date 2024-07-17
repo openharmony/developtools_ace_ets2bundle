@@ -64,6 +64,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 class HomeComponent extends ViewV2 {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
         super(parent, elmtId, extraInfo);
@@ -71,6 +74,7 @@ class HomeComponent extends ViewV2 {
         this.finalizeConstruction();
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -125,9 +129,12 @@ class HomeComponent extends ViewV2 {
             }, { name: "TestParam1" });
         }
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     static getEntryName() {
         return "HomeComponent";
@@ -157,7 +164,9 @@ class TestParam extends ViewV2 {
         }
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 __decorate([
@@ -187,7 +196,9 @@ class TestParam1 extends ViewV2 {
         }
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 __decorate([

@@ -557,7 +557,7 @@
             "type": "ERROR"
         },
         {
-            "message": "@Monitor can only decorate method.",
+            "message": "'@Monitor' can only decorate method.",
             "type": "ERROR"
         }
     ],

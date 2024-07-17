@@ -85,6 +85,9 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
+if (PUV2ViewBase.contextStack === undefined) {
+    Reflect.set(PUV2ViewBase, "contextStack", []);
+}
 function __Button__fancybut(color) {
     Button.backgroundColor(color);
     Button.width(200);
@@ -125,6 +128,7 @@ class ExtendComponent extends ViewPU {
         this.__width_value.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -143,9 +147,12 @@ class ExtendComponent extends ViewPU {
         }, Button);
         Button.pop();
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class StylesComponent extends ViewPU {
@@ -200,6 +207,7 @@ class StylesComponent extends ViewPU {
         this.__size_value.set(newValue);
     }
     initialRender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create({ space: 10 });
         }, Column);
@@ -254,9 +262,12 @@ class StylesComponent extends ViewPU {
         Text.pop();
         Button.pop();
         Column.pop();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
+        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 `
