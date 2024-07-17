@@ -92,6 +92,7 @@ struct MyComponent {
       if (err) {
         return console.error('ERROR: Failed to write app.ets.');
       }
+      return undefined;
     });
     fs.writeFile(manifestPath, manifest, (err) => {
       if (err) {
