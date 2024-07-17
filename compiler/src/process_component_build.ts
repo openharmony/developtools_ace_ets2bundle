@@ -670,34 +670,31 @@ function traverseBuilderParams(node: ts.ObjectLiteralExpression,
           const useThis: boolean = property.initializer.expression.kind === ts.SyntaxKind.ThisKeyword;
           addProperties(properties, property, name, isBuilder, useThis);
         } else {
-          properties.push(ts.factory.createPropertyAssignment(
-            property.name,
-            ts.factory.createArrowFunction(
-              undefined,
-              undefined,
-              [],
-              undefined,
-              ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              property.initializer
-            )
-          ));
+          addBuilderParamsProperties(properties, property);
         }
       } else {
-        properties.push(ts.factory.createPropertyAssignment(
-          property.name,
-          ts.factory.createArrowFunction(
-            undefined,
-            undefined,
-            [],
-            undefined,
-            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            property.initializer
-          )
-        ));
+        addBuilderParamsProperties(properties, property);
       }
     });
   }
   return ts.factory.createObjectLiteralExpression(properties);
+}
+
+function addBuilderParamsProperties(properties: ts.ObjectLiteralElementLike[],
+  property: ts.ObjectLiteralElementLike): void {
+  const initializer: ts.Expression = ts.isShorthandPropertyAssignment(property) ?
+    property.name : property.initializer;
+  properties.push(ts.factory.createPropertyAssignment(
+    property.name,
+    ts.factory.createArrowFunction(
+      undefined,
+      undefined,
+      [],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      initializer
+    )
+  ));
 }
 
 function addProperties(properties: ts.ObjectLiteralElementLike[], property: ts.ObjectLiteralElementLike,
