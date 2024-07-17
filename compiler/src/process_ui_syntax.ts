@@ -157,7 +157,7 @@ import {
   processSendableClass,
   processSendableFunction,
   processSendableType
-} from './process_sendable'
+} from './process_sendable';
 
 export let transformLog: FileLog = new FileLog();
 export let contextGlobal: ts.TransformationContext;

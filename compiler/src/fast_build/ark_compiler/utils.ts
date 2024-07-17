@@ -286,6 +286,7 @@ export function hasArkDecorator(node: ts.MethodDeclaration | ts.FunctionDeclarat
       return originalDecortor === decortorName;
     }
   }
+  return false;
 }
 
 export const utUtils = {
