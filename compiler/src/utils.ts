@@ -770,7 +770,7 @@ export class ProcessFileInfo {
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: { [resource: string]: Set<string> },
-    cacheFile: { [fileName: string]: CacheFile }) {
+    cacheFile: { [fileName: string]: CacheFile }): void {
     if (this.buildStart) {
       for (const element in resourceToFileCacheInfo) {
         this.resourceToFile[element] = new Set(resourceToFileCacheInfo[element]);
@@ -899,7 +899,7 @@ export class ProcessFileInfo {
     }
   }
 
-  collectResourceInFile(resource: string, file: string) {
+  collectResourceInFile(resource: string, file: string): void {
     if (this.wholeFileInfo[file]) {
       this.wholeFileInfo[file].newFileToResourceList.add(resource);
     }
