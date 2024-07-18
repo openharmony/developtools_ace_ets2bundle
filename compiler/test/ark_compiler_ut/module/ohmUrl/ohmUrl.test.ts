@@ -958,7 +958,7 @@ mocha.describe('generate ohmUrl', function () {
 
   mocha.it('NormalizedOHMUrl transform mockConfigInfo', function () {
     this.rollup.preview();
-    this.rollup.useNormalizedOHMUrl()
+    this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {
       'entry': {
         'packageName': 'entry',
@@ -1079,5 +1079,26 @@ mocha.describe('generate ohmUrl', function () {
     const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+  });
+
+  mocha.it('useNormalizedOHMUrl app builtins error message', function () {
+    this.rollup.build();
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {};
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const loggerStub = sinon.stub(logger, 'error');
+    const importerFile: string =
+      '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
+    const appSoModuleRequest: string = 'libapplication.so';
+    try {
+      getOhmUrlBySystemApiOrLibRequest(appSoModuleRequest, this.rollup.share.projectConfig, logger,
+        importerFile, true);
+    } catch (e) {
+    }
+    expect(loggerStub.calledWith(red, 'ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package ' +
+      `'${appSoModuleRequest}' which being imported by '${importerFile}'`, reset)).to.be.true;
+    loggerStub.restore();
   });
 });

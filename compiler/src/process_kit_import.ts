@@ -84,7 +84,7 @@ export function processKitImport(id: string, metaInfo: Object,
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
-      InterceptLazyImportWithKitImport(node);
+      interceptLazyImportWithKitImport(node);
 
       KitInfo.init(node, context, id);
 
@@ -121,7 +121,7 @@ export function processKitImport(id: string, metaInfo: Object,
 /**
  *  Kit does not support lazy-import yet, e.g.: import lazy {xxx} from '@kit.yyy'
  */ 
-function InterceptLazyImportWithKitImport(node: ts.SourceFile): void {
+function interceptLazyImportWithKitImport(node: ts.SourceFile): void {
   if (node && node.statements) {
     node.statements.forEach((statement) => {
       if (ts.isImportDeclaration(statement) && statement.moduleSpecifier) {
@@ -130,12 +130,12 @@ function InterceptLazyImportWithKitImport(node: ts.SourceFile): void {
           kitTransformLog.errors.push({
             type: LogType.ERROR,
             message: `Can not use lazy import statement with Kit '${moduleRequest}', ` +
-              "Please remove the lazy keyword.",
+              'Please remove the lazy keyword.',
             pos: statement.getStart()
           });
         }
       }
-    })
+    });
   }
 }
 
