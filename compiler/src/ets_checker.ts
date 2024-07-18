@@ -54,7 +54,6 @@ import {
   WATCH_COMPILER_BUILD_INFO_SUFFIX,
   COMPONENT_STYLES_DECORATOR
 } from './pre_define';
-import { getName } from './process_component_build';
 import {
   INNER_COMPONENT_NAMES,
   JS_BIND_COMPONENTS,
@@ -1116,7 +1115,7 @@ function checkUISyntax(source: string, fileName: string, extendFunctionInfo: ext
     if (process.env.compileMode === 'moduleJson' ||
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
       const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
-        ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
+        ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
       collectComponents(sourceFile);
       collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
@@ -1220,31 +1219,47 @@ function isForeachAndLzayForEach(node: ts.Node): boolean {
     ts.isArrowFunction(node.arguments[1]) && node.arguments[1].body && ts.isBlock(node.arguments[1].body);
 }
 
+function getComponentName(node: ts.Node): string {
+  let temp: any = node.expression;
+  let name: string;
+  while (temp) {
+    if (ts.isIdentifier(temp) && temp.parent && (ts.isCallExpression(temp.parent) ||
+      ts.isEtsComponentExpression(temp.parent))) {
+      name = temp.escapedText.toString();
+      break;
+    }
+    temp = temp.expression;
+  }
+  return name;
+}
+
 function traverseBuild(node: ts.Node, index: number): void {
   if (ts.isExpressionStatement(node)) {
-    let parentComponentName: string = getName(node);
-    if (!INNER_COMPONENT_NAMES.has(parentComponentName) && node.parent && node.parent.statements && index >= 1 &&
-      node.parent.statements[index - 1].expression && node.parent.statements[index - 1].expression.expression) {
-      parentComponentName = node.parent.statements[index - 1].expression.expression.escapedText;
-    }
+    const parentComponentName: string = getComponentName(node);
     node = node.expression;
-    if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-      ts.isIdentifier(node.expression) && !DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
-      node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
-        traverseBuild(item, indexBlock);
-      });
-    } else if (isForeachAndLzayForEach(node)) {
-      node.arguments[1].body.statements.forEach((item: ts.Statement, indexBlock: number) => {
-        traverseBuild(item, indexBlock);
-      });
-    } else {
-      loopNodeFindDoubleDollar(node, parentComponentName);
+    while (node) {
       if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-        ts.isIdentifier(node.expression)) {
+        ts.isIdentifier(node.expression) && !DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
         node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
           traverseBuild(item, indexBlock);
         });
+        break;
+      } else if (isForeachAndLzayForEach(node)) {
+        node.arguments[1].body.statements.forEach((item: ts.Statement, indexBlock: number) => {
+          traverseBuild(item, indexBlock);
+        });
+        break;
+      } else {
+        loopNodeFindDoubleDollar(node, parentComponentName);
+        if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
+          ts.isIdentifier(node.expression)) {
+          node.body.statements.forEach((item: ts.Statement, indexBlock: number) => {
+            traverseBuild(item, indexBlock);
+          });
+          break;
+        }
       }
+      node = node.expression;
     }
   } else if (ts.isIfStatement(node)) {
     ifInnerDollarAttribute(node);
@@ -1275,38 +1290,35 @@ function elseInnerDollarAttribute(node: ts.IfStatement): void {
 function isPropertiesAddDoubleDollar(node: ts.Node): boolean {
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.arguments && node.arguments.length) {
     return true;
-  } else if (ts.isEtsComponentExpression(node) && node.body && ts.isBlock(node.body) &&
-    ts.isIdentifier(node.expression) && DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
+  } else if (ts.isEtsComponentExpression(node) && ts.isIdentifier(node.expression) &&
+    DOLLAR_BLOCK_INTERFACE.has(node.expression.escapedText.toString())) {
     return true;
   } else {
     return false;
   }
 }
 function loopNodeFindDoubleDollar(node: ts.Node, parentComponentName: string): void {
-  while (node) {
-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-      const argument: ts.NodeArray<ts.Node> = node.arguments;
-      const propertyName: ts.Identifier | ts.PrivateIdentifier = node.expression.name;
-      if (isCanAddDoubleDollar(propertyName.getText(), parentComponentName)) {
-        argument.forEach((item: ts.Node) => {
-          doubleDollarCollection(item);
-        });
-      }
-    } else if (isPropertiesAddDoubleDollar(node)) {
-      node.arguments.forEach((item: ts.Node) => {
-        if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
-          item.properties.forEach((param: ts.Node) => {
-            if (isObjectPram(param, parentComponentName)) {
-              doubleDollarCollection(param.initializer);
-            }
-          });
-        } else if (ts.isPropertyAccessExpression(item) && (handleComponentDollarBlock(node as ts.CallExpression, parentComponentName) ||
-          STYLE_ADD_DOUBLE_DOLLAR.has(node.expression.getText()))) {
-          doubleDollarCollection(item);
-        }
+  if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+    const argument: ts.NodeArray<ts.Node> = node.arguments;
+    const propertyName: ts.Identifier | ts.PrivateIdentifier = node.expression.name;
+    if (isCanAddDoubleDollar(propertyName.getText(), parentComponentName)) {
+      argument.forEach((item: ts.Node) => {
+        doubleDollarCollection(item);
       });
     }
-    node = node.expression;
+  } else if (isPropertiesAddDoubleDollar(node)) {
+    node.arguments.forEach((item: ts.Node) => {
+      if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+        item.properties.forEach((param: ts.Node) => {
+          if (isObjectPram(param, parentComponentName)) {
+            doubleDollarCollection(param.initializer);
+          }
+        });
+      } else if (ts.isPropertyAccessExpression(item) && (handleComponentDollarBlock(node as ts.CallExpression, parentComponentName) ||
+        STYLE_ADD_DOUBLE_DOLLAR.has(node.expression.getText()))) {
+        doubleDollarCollection(item);
+      }
+    });
   }
 }
 
