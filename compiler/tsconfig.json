@@ -889,7 +889,19 @@
       "concurrent": {
         "decorator": "Concurrent"
       },
-      "customComponent": "CustomComponent"
+      "customComponent": "CustomComponent",
+      "syntaxComponents": {
+        "paramsUICallback": [
+          "ForEach",
+          "LazyForEach"
+        ],
+        "attrUICallback": [
+          {
+            "name": "Repeat",
+            "attributes": ["each", "template"]
+          }
+        ]
+      }
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
