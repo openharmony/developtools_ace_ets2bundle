@@ -561,15 +561,11 @@ class CreateProgramMoment {
   static getPlugin() {
     return {
       name: 'createProgramPlugin',
-      transform: {
+      load: {
         order: 'pre',
-        handler(code: string, id: string): void {
+        handler(id: string) {
           CreateProgramMoment.transFileCollect.add(id);
         }
-      },
-
-      shouldInvalidCache(options: optionsType) {
-        CreateProgramMoment.transFileCollect.add(options.id);
       },
 
       moduleParsed(moduleInfo: moduleInfoType): void {
