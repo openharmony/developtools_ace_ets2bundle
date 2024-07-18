@@ -539,6 +539,7 @@ export function validateFilePathLengths(filePaths: Array<string>, logger: any): 
     if (!validateFilePathLength(filePath, logger)) {
       return false;
     }
+    return true;
   });
   return true;
 }
