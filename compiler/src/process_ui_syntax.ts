@@ -456,7 +456,7 @@ export function globalBuilderParamAssignment(): ts.VariableStatement {
                 ts.factory.createIdentifier(LENGTH)
               ),
               ts.factory.createToken(ts.SyntaxKind.MinusToken),
-              ts.factory.createNumericLiteral("1")
+              ts.factory.createNumericLiteral('1')
             )
           ),
           ts.factory.createToken(ts.SyntaxKind.ColonToken),
