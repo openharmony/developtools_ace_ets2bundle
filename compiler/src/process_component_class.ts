@@ -549,7 +549,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
   const builderCondition: builderConditionType = {
     isBuilder: false,
     isLocalBuilder: false
-  }
+  };
   if (builderParamObjectCollection.get(componentCollection.currentClassName)) {
     storedFileInfo.builderLikeCollection =
       new Set([...builderParamObjectCollection.get(componentCollection.currentClassName), ...CUSTOM_BUILDER_METHOD]);
@@ -603,6 +603,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       builderTypeParameter.params = [];
       updateItem = processBuildMember(builderNode, context, log, true);
       if (builderCondition.isLocalBuilder) {
+        checkDecoratorMethod(node, modifiers, log);
         updateItem = localBuilderNode(node, updateItem.body);
       }
       storedFileInfo.processBuilder = false;
@@ -626,6 +627,21 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
     }
   }
   return updateItem;
+}
+
+function checkDecoratorMethod(node: ts.MethodDeclaration, modifiers: readonly ts.Modifier[], log: LogInfo[]): void {
+  if (modifiers && modifiers.length) {
+    for (let i = 0; i < modifiers.length; i++) {
+      if (modifiers[i].kind && modifiers[i].kind === ts.SyntaxKind.StaticKeyword) {
+        log.push({
+          type: LogType.ERROR,
+          message: `Static methods in custom components cannot be decorated by @LocalBuilder.`,
+          pos: node.getStart()
+        });
+        return;
+      }
+    }
+  }
 }
 
 function isBuilderOrLocalBuilder(node: ts.MethodDeclaration, builderCondition: builderConditionType, customBuilder: ts.Decorator[]): boolean {

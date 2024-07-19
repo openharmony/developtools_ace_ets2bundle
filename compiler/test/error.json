@@ -717,6 +717,24 @@
             "type": "ERROR"
         }
     ],
+    "@localBuilder": [
+        {
+            "message": "'@LocalBuilder' can only decorate method.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Static methods in custom components cannot be decorated by @LocalBuilder.",
+            "type": "ERROR"
+        },
+        {
+            "message": "'xx();' does not meet UI component syntax.",
+            "type": "ERROR"
+        }
+    ],
     "v1ToV2Component.ts": [],
     "v1ToV2ComponentValidate": [],
     "v2ToV1ComponentValidate": [],
