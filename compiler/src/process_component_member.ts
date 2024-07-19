@@ -560,7 +560,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
 }
 
 function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string,
-  hasPreview: boolean, log: LogInfo[]) {
+  hasPreview: boolean, log: LogInfo[]): void {
   if (hasPreview && projectConfig.isPreview) {
     log.push({
       type: LogType.WARN,
@@ -691,6 +691,7 @@ function updateSynchedPropertyOneWay(nameIdentifier: ts.Identifier, type: ts.Typ
       createPropertyAccessExpressionWithParams(name));
   } else {
     validateNonSimpleType(nameIdentifier, decoractor, log);
+    return undefined;
   }
 }
 
@@ -729,6 +730,7 @@ function updateStoragePropAndLinkProperty(node: ts.PropertyDeclaration, name: ts
         ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(storageFuncName),
           ts.factory.createIdentifier(setFuncName)), undefined, storageValue)));
   }
+  return undefined;
 }
 
 function getDecoratorKey(node: ts.PropertyDeclaration, isProvided: boolean = false): [string, boolean, ts.Node, boolean] {
@@ -1249,6 +1251,7 @@ function updateSynchedPropertyNesedObjectPU(nameIdentifier: ts.Identifier,
       createPropertyAccessExpressionWithParams(nameIdentifier.getText()));
   } else {
     validateNonObservedClassType(nameIdentifier, decoractor, log);
+    return undefined;
   }
 }
 
@@ -1313,6 +1316,7 @@ function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
       }
     }
   }
+  return undefined;
 }
 
 function isObserved(type: ts.Type): boolean {
@@ -1324,8 +1328,10 @@ function isObserved(type: ts.Type): boolean {
           return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
         });
       }
+      return undefined;
     });
   }
+  return undefined;
 }
 
 export function resetProcessComponentMember(): void {
