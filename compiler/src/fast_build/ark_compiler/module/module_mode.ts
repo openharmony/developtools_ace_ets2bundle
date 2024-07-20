@@ -497,6 +497,9 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
     this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
+    if (this.projectConfig.compatibleSdkReleaseType) {
+      this.cmdArgs.push(`"--target-api-sub-version=${this.projectConfig.compatibleSdkReleaseType}"`);
+    }
     if (this.arkConfig.isBranchElimination) {
       this.cmdArgs.push('--branch-elimination');
     }
