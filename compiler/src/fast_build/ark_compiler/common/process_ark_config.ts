@@ -37,6 +37,7 @@ import {
   isBranchElimination 
 } from '../utils';
 import {
+  isHarmonyOs,
   isLinux,
   isMac,
   isWindows,
@@ -362,6 +363,10 @@ function processPlatformInfo(arkConfig: ArkConfig): void {
     arkConfig.mergeAbcPath = path.join(arkPlatformPath, 'bin', 'merge_abc');
     arkConfig.js2abcPath = path.join(arkPlatformPath, 'bin', 'js2abc');
     arkConfig.aotCompilerPath = path.join(arkPlatformPath, 'bin', 'ark_aot_compiler');
+    return;
+  }
+  if (isHarmonyOs()) {
+    arkConfig.es2abcPath = path.join(arkPlatformPath, 'bin', 'es2abc');
     return;
   }
 }
