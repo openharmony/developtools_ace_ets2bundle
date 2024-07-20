@@ -629,7 +629,7 @@ function containFormError(message: string): boolean {
 
 let fileToIgnoreDiagnostics: Set<string> | undefined = undefined;
 
-function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set<string>) {
+function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set<string>): void {
   const normalizedFilePath: string = path.resolve(file);
   const unixFilePath: string = toUnixPath(file);
   if (fileToThrowDiagnostics.has(unixFilePath)) {
@@ -690,7 +690,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
 
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
-  })
+  });
 }
 
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
@@ -1413,7 +1413,7 @@ function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {
   if (diagnostics.file?.fileName === undefined) {
     return false;
   }
-  return isInSDK(diagnostics.file.fileName) && diagnostics.file.fileName.endsWith(".ets");
+  return isInSDK(diagnostics.file.fileName) && diagnostics.file.fileName.endsWith('.ets');
 }
 
 function isInOhModuleFile(diagnostics: ts.Diagnostic): boolean {

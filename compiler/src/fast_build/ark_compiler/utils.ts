@@ -101,7 +101,7 @@ function removeCacheFile(cacheFilePath: string, ext: string): void {
 }
 
 export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: Object): boolean {
-  const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig?.rootPathSet)
+  const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig?.rootPathSet);
   const sufStr: string = toUnixPath(filePath).replace(toUnixPath(projectRootPath), '');
   let cacheFilePath: string = path.join(projectConfig.cachePath, sufStr);
 

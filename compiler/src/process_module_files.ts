@@ -41,7 +41,8 @@ import { getRelativeSourcePath } from './fast_build/ark_compiler/common/ob_confi
 
 export const SRC_MAIN: string = 'src/main';
 
-export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, metaInfo: Object, moduleId?: string , parentEvent?: Object, logger?: Object): Promise<void> {
+export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Object, metaInfo: Object, moduleId?: string,
+  parentEvent?: Object, logger?: Object): Promise<void> {
   const eventWriteFileSyncByNode = createAndStartEvent(parentEvent, 'write file sync by node');
   const eventGenContentAndSourceMapInfo = createAndStartEvent(eventWriteFileSyncByNode, 'generate content and source map information');
   const mixedInfo: { content: string, sourceMapJson: ts.RawSourceMap } = genContentAndSourceMapInfo(node, moduleId, projectConfig, metaInfo);

@@ -59,7 +59,7 @@ export class ModuleColdreloadMode extends ModuleMode {
     }
   }
 
-  addColdReloadArgs() {
+  addColdReloadArgs(): void {
     if (isFirstBuild) {
       this.cmdArgs.push('--dump-symbol-table');
       this.cmdArgs.push(`"${this.symbolMapFilePath}"`);

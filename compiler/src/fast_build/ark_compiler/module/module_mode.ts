@@ -736,7 +736,7 @@ export class ModuleMode extends CommonMode {
   private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string, metaInfo: Object): string {
     const sufStr: string = toUnixPath(filePath).startsWith(toUnixPath(projectRootPath)) ?
     toUnixPath(filePath).replace(toUnixPath(projectRootPath) + '/', '') :
-    toUnixPath(filePath).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '')
+    toUnixPath(filePath).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '');
     const output: string = path.join(cachePath, sufStr);
     return output;
   }
