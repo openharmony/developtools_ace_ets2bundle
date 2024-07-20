@@ -92,7 +92,7 @@ export function generateAot(arkDir: string, appAbc: string,
   const appAot: string = path.join(projectConfig.anBuildOutPut, projectConfig.moduleName);
 
   if (!validateFilePathLengths([aotCompiler, appAbc, appAot], logger)) {
-    faultHandler(`ArkTS:ERROR GenerateAot failed. Invalid file path.`);
+    faultHandler('ArkTS:ERROR GenerateAot failed. Invalid file path.');
   }
   if (!fs.existsSync(appAbc)) {
     faultHandler(`ArkTS:ERROR GenerateAot failed. AppAbc not found in "${appAbc}"`);
@@ -105,7 +105,7 @@ export function generateAot(arkDir: string, appAbc: string,
   } else if (projectConfig.anBuildMode === AOT_PARTIAL) {
     const profile: string = projectConfig.apPath;
     if (!validateFilePathLength(profile, logger)) {
-      faultHandler(`ArkTS:ERROR GenerateAot failed. Invalid profile file path.`);
+      faultHandler('ArkTS:ERROR GenerateAot failed. Invalid profile file path.');
     }
     if (!fs.existsSync(profile)) {
       faultHandler(`ArkTS:ERROR GenerateAot failed. Partial mode lost profile in "${profile}"`);

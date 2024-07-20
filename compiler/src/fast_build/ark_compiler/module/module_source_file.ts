@@ -285,7 +285,7 @@ export class ModuleSourceFile {
     }
   }
 
-  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
+  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object): void {
     ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
   }
 
@@ -369,9 +369,11 @@ export class ModuleSourceFile {
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
-      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo, this.moduleId, parentEvent, ModuleSourceFile.logger);
+      await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
+        this.moduleId, parentEvent, ModuleSourceFile.logger);
     } else {
-      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, parentEvent, this.metaInfo);
+      await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
+        ModuleSourceFile.logger, parentEvent, this.metaInfo);
     }
   }
 
@@ -407,11 +409,11 @@ export class ModuleSourceFile {
     }
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
-      let res: string = "";
+      let res: string = '';
       if (useNormalizedOHMUrl) {
         res = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, filePath, importerFile);
       } else {
-        const moduleName: string = targetModuleInfo['meta']['moduleName'];
+        const moduleName: string = targetModuleInfo.meta.moduleName;
         const ohmUrl: string =
           getOhmUrlByFilepath(filePath, ModuleSourceFile.projectConfig, ModuleSourceFile.logger, moduleName, importerFile);
         res = ohmUrl.startsWith(PACKAGES) ? `@package:${ohmUrl}` : `@bundle:${ohmUrl}`;
@@ -432,8 +434,8 @@ export class ModuleSourceFile {
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
     const pkgParams = {
-      pkgName: moduleInfo['meta']['pkgName'],
-      pkgPath: moduleInfo['meta']['pkgPath'],
+      pkgName: moduleInfo.meta.pkgName,
+      pkgPath: moduleInfo.meta.pkgPath,
       isRecordName: false
     };
     const ohmUrl: string =

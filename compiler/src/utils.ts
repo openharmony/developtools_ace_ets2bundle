@@ -420,7 +420,7 @@ export interface GeneratedFileInHar {
 export const harFilesRecord: Map<string, GeneratedFileInHar> = new Map();
 
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string,
-  projectConfig: Object, rootPathSet?: Object) {
+  projectConfig: Object, rootPathSet?: Object): void {
   const projectRootPath: string = getProjectRootPath(sourcePath, projectConfig, rootPathSet) ;
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
