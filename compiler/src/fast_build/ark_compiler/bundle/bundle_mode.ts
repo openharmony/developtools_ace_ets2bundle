@@ -355,7 +355,7 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = this.filterIntermediateJsBundle[i].cacheFilePath;
       const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheAbcFilePath)) {
-        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: During hash JSON file generation, ` +
+        this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: During hash JSON file generation, ' +
           `${cacheFilePath} or ${cacheAbcFilePath} is not found.`);
       }
       const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -373,7 +373,7 @@ export class BundleMode extends CommonMode {
       const cacheAbcFilePath: string = changeFileExtension(value.cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheAbcFilePath)) {
         this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: ${cacheAbcFilePath} not found during incremental build. ` +
-          `Please try to rebuild the project`);
+          'Please try to rebuild the project');
       }
       const parent: string = path.join(abcFilePath, '..');
       if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {

@@ -39,7 +39,7 @@ export class ModuleBuildMode extends ModuleMode {
       this.invokeTs2AbcWorkersToGenProto(splittedModules);
       this.processTs2abcWorkersToGenAbc();
     } else {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
     }
   }
 }

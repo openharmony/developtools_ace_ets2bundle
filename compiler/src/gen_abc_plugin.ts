@@ -1088,7 +1088,7 @@ function handleHotReloadChangedFiles() {
 
   let changedFileListJson: string = fs.readFileSync(projectConfig.changedFileList).toString();
   let changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
-  if (typeof(changedFileList) === "undefined" || changedFileList.length === 0) {
+  if (typeof(changedFileList) === 'undefined' || changedFileList.length === 0) {
     return;
   }
 

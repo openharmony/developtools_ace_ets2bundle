@@ -55,8 +55,8 @@ export abstract class CommonMode {
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.arkConfig = initArkConfig(this.projectConfig);
-    this.cmdArgs = this.initCmdEnv();
     this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.cmdArgs = this.initCmdEnv();
     this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.hashJsonFilePath = this.genHashJsonFilePath();
     this.genAbcScriptPath = path.resolve(__dirname, GEN_ABC_SCRIPT);
@@ -94,7 +94,7 @@ export abstract class CommonMode {
         args.push('--debug-info');
       }
     } else {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`);
+      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
     }
 
     return args;
