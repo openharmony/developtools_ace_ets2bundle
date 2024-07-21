@@ -37,7 +37,7 @@ if (arkEnvParams.workerNumber !== undefined &&
   arkEnvParams.splittedData !== undefined &&
   arkEnvParams.cmdPrefix !== undefined) {
   let workerNumber: number = parseInt(arkEnvParams.workerNumber);
-  let splittedData: any = JSON.parse(arkEnvParams.splittedData);
+  let splittedData: Object = JSON.parse(arkEnvParams.splittedData);
   let cmdPrefix: string = arkEnvParams.cmdPrefix;
 
   const clusterNewApiVersion: number = 16;

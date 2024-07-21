@@ -71,8 +71,8 @@ export function processKitImport(id: string, metaInfo: Object,
             kitTransformLog.errors.push({
               type: LogType.ERROR,
               message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK. `+
-                       `Please make sure the Kit apis are consistent with SDK ` +
-                       `and there's no local modification on Kit apis.`,
+                       'Please make sure the Kit apis are consistent with SDK ' +
+                       "and there's no local modification on Kit apis.",
               pos: node.getStart()
             });
           }
