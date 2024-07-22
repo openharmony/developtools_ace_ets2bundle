@@ -1595,6 +1595,6 @@ export function resetEtsCheck(): void {
   filesBuildInfo.clear();
   fileExistsCache.clear();
   dirExistsCache.clear();
-  fileToIgnoreDiagnostics = undefined;
   targetESVersionChanged = false;
+  fileToIgnoreDiagnostics = undefined;
 }
