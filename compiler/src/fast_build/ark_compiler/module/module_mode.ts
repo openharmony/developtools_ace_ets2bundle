@@ -737,9 +737,16 @@ export class ModuleMode extends CommonMode {
   }
 
   private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string, metaInfo: Object): string {
-    const sufStr: string = toUnixPath(filePath).startsWith(toUnixPath(projectRootPath)) ?
-    toUnixPath(filePath).replace(toUnixPath(projectRootPath) + '/', '') :
-    toUnixPath(filePath).replace(toUnixPath(metaInfo.belongProjectPath) + '/', '');
+    filePath = toUnixPath(filePath);
+    let sufStr: string = '';
+    // Only the files of the third-party package will not have the belongProjectPath field in metaInfo.
+    // If both branches are not satisfied, the compilation process will not go here,
+    // and an error will be reported when the cache file is written to the disk(in the genTemporaryPath method).
+    if (metaInfo && metaInfo.belongProjectPath) {
+      sufStr = filePath.replace(toUnixPath(metaInfo.belongProjectPath) + '/', '');
+    } else if (filePath.startsWith(toUnixPath(projectRootPath))) {
+      sufStr = filePath.replace(toUnixPath(projectRootPath) + '/', '');
+    }
     const output: string = path.join(cachePath, sufStr);
     return output;
   }
