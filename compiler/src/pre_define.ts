@@ -570,26 +570,6 @@ export const DECORATOR_SUFFIX: string = '@';
 export const TRANSFORMED_MOCK_CONFIG: string = 'mock-config.json';
 export const USER_DEFINE_MOCK_CONFIG: string = 'mock-config.json5';
 
-export const FORM_TAG_CHECK_NAME: string = 'form';
-export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
-export const CROSSPLATFORM_TAG_CHECK_NAME: string = 'crossplatform';
-export const CROSSPLATFORM_TAG_CHECK_ERROER: string = "'{0}' can't support crossplatform application.";
-export const DEPRECATED_TAG_CHECK_NAME: string = 'deprecated';
-export const DEPRECATED_TAG_CHECK_WARNING: string = "'{0}' has been deprecated.";
-export const FA_TAG_CHECK_NAME: string = 'famodelonly';
-export const FA_TAG_HUMP_CHECK_NAME: string = 'FAModelOnly';
-export const FA_TAG_CHECK_ERROR: string = 'This API is used only in FA Mode, but the current Mode is Stage.';
-export const STAGE_TAG_CHECK_NAME: string = 'stagemodelonly';
-export const STAGE_TAG_HUMP_CHECK_NAME: string = 'StageModelOnly';
-export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mode, but the current Mode is FA.';
-export const STAGE_COMPILE_MODE: string = 'moduleJson';
-export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
-export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
-export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
-export const SINCE_TAG_NAME: string = 'since';
-export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
-export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
-
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
 export const WRAPBUILDER_BUILDERPROP: string = 'builder';
@@ -609,9 +589,6 @@ export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
 export const HOT_RELOAD_BUILD_INFO_SUFFIX = 'hotReload.tsbuildinfo';
 export const WATCH_COMPILER_BUILD_INFO_SUFFIX = 'watchCompiler.tsbuildinfo';
-
-export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
-  'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);;
 
 export const GET_SHARED: string = 'getShared';
 export const USE_SHARED_STORAGE: string = 'useSharedStorage';
