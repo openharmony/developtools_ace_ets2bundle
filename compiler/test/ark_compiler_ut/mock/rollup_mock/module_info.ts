@@ -15,7 +15,8 @@
 
 import {
   MODULE_ID_ROLLUP_PLACEHOLDER,
-  PROJECT_ROOT
+  PROJECT_ROOT,
+  DEFAULT_PROJECT
 } from '../rollup_mock/path_config';
 
 class Meta {
@@ -36,7 +37,7 @@ class Meta {
     this.isNodeEntryFile = false;
     this.pkgPath = modulePath;
     this.dependencyPkgInfo = undefined;
-    this.belongProjectPath = PROJECT_ROOT;
+    this.belongProjectPath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}`;
   }
 };
 
