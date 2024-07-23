@@ -346,10 +346,11 @@ export function genTemporaryPath(filePath: string, projectPath: string, buildPat
     const reset: string = '\u001b[39m';
     projectRootPath = toUnixPath(buildInHar ? projectPath : projectRootPath);
     let relativeFilePath: string = '';
-    if (filePath.startsWith(projectRootPath)) {
-      relativeFilePath = filePath.replace(projectRootPath, '');
-    } else if (metaInfo && metaInfo.belongProjectPath) {
+    // Only the files of the third-party package will not have the belongProjectPath field in metaInfo.
+    if (metaInfo && metaInfo.belongProjectPath) {
       relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
+    } else if (filePath.startsWith(projectRootPath)) {
+      relativeFilePath = filePath.replace(projectRootPath, '');
     } else {
       logger.error(red, 'ARKTS:INTERNAL ERROR\n' + 
         `Error Message: Failed to generate the cache path corresponding to file ${filePath}.\n` +
