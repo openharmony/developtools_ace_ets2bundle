@@ -654,7 +654,7 @@ export function writeUseOSFiles(useOSFiles: Set<string>): void {
 
 export function writeCollectionFile(cachePath: string, appCollection: Map<string, Set<string>>,
   allComponentsOrModules: Map<string, Array<string>>, fileName: string, allFiles: Set<string> = null,
-  widgetPath: string = undefined) {
+  widgetPath: string = undefined): void {
   for (let key of appCollection.keys()) {
     if (appCollection.get(key).size === 0) {
       allComponentsOrModules.delete(key);
