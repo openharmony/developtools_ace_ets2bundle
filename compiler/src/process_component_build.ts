@@ -408,7 +408,7 @@ type NameResult = {
   name: string,
   arguments: ts.NodeArray<ts.Expression> | [],
   node?: ts.Node
-}
+};
 
 function validateEtsComponentNode(node: ts.CallExpression | ts.EtsComponentExpression, result?: NameResult) {
   let childNode: ts.Node = node;
@@ -723,7 +723,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
     log.push({
       type: LogType.ERROR,
       message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
-        `@BuilderParam, and its @BuilderParam expects no parameter.`,
+        '@BuilderParam, and its @BuilderParam expects no parameter.',
       pos: node.getStart()
     });
     return null;
@@ -1408,8 +1408,8 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   nameResult: NameResult, log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
   idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null): void {
   const name: string = nameResult.name;
-  const TabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
-  const TabContentBody: ts.Block = TabContentComp.body;
+  const tabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
+  const tabContentBody: ts.Block = tabContentComp.body;
   let tabContentCreation: ts.Statement;
   const tabContentPop: ts.Statement = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(name),
@@ -1423,9 +1423,9 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   if (idName) {
     judgeIdStart = innerCompStatements.length;
   }
-  if (TabContentBody && TabContentBody.statements.length) {
+  if (tabContentBody && tabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
-    processComponentChild(TabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
+    processComponentChild(tabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
       false, parent, undefined, isGlobalBuilder, false, builderParamsResult);
     const navDestinationCallback: (ts.ArrowFunction | ts.NewExpression | ts.ObjectLiteralExpression)[] =
       [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
@@ -1609,6 +1609,7 @@ function createItemGenFunctionStatement(
       )
     );
   }
+  return undefined;
 }
 
 function isForEachItemGeneratorParam(argumentsArray: ts.Expression, newArrowNode: ts.NodeArray<ts.Statement>): ts.Statement[] {
@@ -1672,6 +1673,7 @@ function createItemIdFuncStatement(
       )
     );
   }
+  return undefined;
 }
 
 function createUpdateFunctionStatement(argumentsArray: ts.Expression[],
@@ -2094,7 +2096,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
   isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
-  let temp: any = node.expression;
+  let temp = node.expression;
   const statements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const updateStatements: ts.Statement[] = [];
@@ -2260,6 +2262,7 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
   } else if (ts.isObjectLiteralExpression(node)) {
     return processObjectPropertyBuilder(node);
   }
+  return undefined;
 }
 
 export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): ts.ObjectLiteralExpression {
@@ -2295,7 +2298,7 @@ export function processObjectPropertyBuilder(node: ts.ObjectLiteralExpression): 
   return ts.factory.updateObjectLiteralExpression(node, newProperties);
 }
 
-function trans$$inCustomBuilder(node: ts.CallExpression): ts.Expression[] {
+function transDoubleDollarInCustomBuilder(node: ts.CallExpression): ts.Expression[] {
   let name: string = '';
   if (node.expression && ts.isIdentifier(node.expression)) {
     name = node.expression.escapedText.toString();
@@ -2318,7 +2321,7 @@ function trans$$inCustomBuilder(node: ts.CallExpression): ts.Expression[] {
 }
 
 function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.PropertyAssignment {
-  const newArguments: ts.Expression[] = trans$$inCustomBuilder(property.initializer as ts.CallExpression);
+  const newArguments: ts.Expression[] = transDoubleDollarInCustomBuilder(property.initializer as ts.CallExpression);
   return ts.factory.updatePropertyAssignment(property, property.name,
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -2509,7 +2512,7 @@ function processIdentifierBuilderWithoutKey(node: ts.Identifier): ts.CallExpress
 
 function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
   ts.ObjectLiteralExpression {
-  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
+  const newArguments: ts.Expression[] = transDoubleDollarInCustomBuilder(node);
   return ts.factory.createObjectLiteralExpression([
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(BUILDER_ATTR_NAME),
@@ -2532,7 +2535,7 @@ function getParsedBuilderAttrArgumentWithParams(node: ts.CallExpression):
 
 function getParsedBuilderAttrArgumentWithParamsWithoutKey(node: ts.CallExpression):
   ts.ArrowFunction {
-  const newArguments: ts.Expression[] = trans$$inCustomBuilder(node);
+  const newArguments: ts.Expression[] = transDoubleDollarInCustomBuilder(node);
   return ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -2627,7 +2630,7 @@ function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
   }
 }
 
-function addComponentAttr(temp: any, node: ts.Identifier, lastStatement: any,
+function addComponentAttr(temp, node: ts.Identifier, lastStatement,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, immutableStatements: ts.Statement[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false,
@@ -2805,7 +2808,7 @@ function traversePropNode(node: ts.PropertyAccessExpression, result: AttrResult)
 }
 
 function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identifier,
-  propName: string, temp: any): boolean {
+  propName: string, temp): boolean {
   return !isStylesAttr &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
@@ -2842,7 +2845,7 @@ function changeEtsComponentKind(node: ts.Node): ts.Node {
   return ts.visitEachChild(node, changeEtsComponentKind, contextGlobal);
 }
 
-function classifyArgumentsNum(args: any, argumentsArr: ts.Expression[], propName: string,
+function classifyArgumentsNum(args, argumentsArr: ts.Expression[], propName: string,
   identifierNode: ts.Identifier): void {
   if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length >= 2) {
     const varExp: ts.Expression = updateArgumentForDollar(args[0]);
@@ -2871,7 +2874,7 @@ function generateObjectForDollar(varExp: ts.Expression): ts.ObjectLiteralExpress
   );
 }
 
-function createViewStackProcessor(item: any, endViewStack: boolean): ts.ExpressionStatement {
+function createViewStackProcessor(item, endViewStack: boolean): ts.ExpressionStatement {
   const argument: ts.StringLiteral[] = [];
   if (!endViewStack && item.name) {
     argument.push(ts.factory.createStringLiteral(item.name.getText()));
@@ -2886,7 +2889,7 @@ function createViewStackProcessor(item: any, endViewStack: boolean): ts.Expressi
   ));
 }
 
-function traverseStateStylesAttr(temp: any, statements: ts.Statement[],
+function traverseStateStylesAttr(temp, statements: ts.Statement[],
   identifierNode: ts.Identifier, log: LogInfo[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false): void {
   temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
@@ -2992,7 +2995,7 @@ function processGestureType(node: ts.CallExpression, statements: ts.Statement[],
   updateStatements: ts.Statement[], reverse: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const newNode: ts.ExpressionStatement = ts.factory.createExpressionStatement(node);
-  let temp: any = node.expression;
+  let temp = node.expression;
   while (temp && !ts.isIdentifier(temp) && temp.expression) {
     temp = temp.expression;
   }
@@ -3037,7 +3040,7 @@ function parseGestureInterface(node: ts.CallExpression, statements: ts.Statement
 
 export function getName(node: ts.ExpressionStatement | ts.Expression): string {
   // @ts-ignore
-  let temp: any = node.expression;
+  let temp = node.expression;
   let name: string;
   while (temp) {
     if (ts.isIdentifier(temp) && temp.parent && (ts.isCallExpression(temp.parent) ||
@@ -3186,7 +3189,7 @@ function judgeBuilderType(node: ts.ExpressionStatement): boolean {
   return false;
 }
 
-export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
+export function validateStateStyleSyntax(temp, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
     message: `.stateStyles doesn't conform standard.`,
@@ -3195,7 +3198,7 @@ export function validateStateStyleSyntax(temp: any, log: LogInfo[]): void {
 }
 
 function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponentExpression {
-  let current: any = node.expression;
+  let current = node.expression;
   while (current) {
     if (ts.isEtsComponentExpression(current)) {
       return current;
@@ -3206,7 +3209,7 @@ function getEtsComponentExpression(node:ts.ExpressionStatement): ts.EtsComponent
 }
 
 function checkEtsAndIdInIf(node:ts.ExpressionStatement, parent: string): [ts.EtsComponentExpression, ts.Expression] {
-  let current: any = node.expression;
+  let current = node.expression;
   let idName: ts.Expression;
   while (current) {
     if (ts.isEtsComponentExpression(current)) {
@@ -3267,7 +3270,7 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
 }
 
 function isLazyForEachChild(node: ts.ExpressionStatement): boolean {
-  let temp: any = node.parent;
+  let temp = node.parent;
   while (temp && !ts.isEtsComponentExpression(temp) && !ts.isCallExpression(temp)) {
     temp = temp.parent;
   }

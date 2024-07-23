@@ -401,7 +401,7 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
   if (node.asteriskToken) {
     let hasAsync: boolean = false;
     const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-    const checkAsyncModifier = (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword;
+    const checkAsyncModifier = (modifier: ts.Modifier) : boolean => modifier.kind === ts.SyntaxKind.AsyncKeyword;
     modifiers && (hasAsync = modifiers.some(checkAsyncModifier));
     const funcKind: string = hasAsync ? 'Async generator' : 'Generator';
     const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
@@ -998,6 +998,7 @@ function getNextNode(node: ts.EtsComponentExpression): ts.Block {
     const statementsArray: ts.Block = node.body;
     return statementsArray;
   }
+  return undefined;
 }
 
 function checkOneChildComponent(node: ts.EtsComponentExpression, allComponentNames: Set<string>,
@@ -1017,21 +1018,21 @@ function checkOneChildComponent(node: ts.EtsComponentExpression, allComponentNam
 function hasNonSingleChild(node: ts.EtsComponentExpression, allComponentNames: Set<string>,
   isCheckType: ParamType): boolean {
   const nodeName: ts.Identifier = node.expression as ts.Identifier;
-  const BlockNode: ts.Block = getNextNode(node);
+  const blockNode: ts.Block = getNextNode(node);
   if (SINGLE_CHILD_COMPONENT.has(nodeName.escapedText.toString()) || !judgeComponentType(nodeName, node, isCheckType) &&
     isCheckType.value === COMPONENT_BUTTON) {
-    if (!BlockNode) {
+    if (!blockNode) {
       return false;
     }
-    if (BlockNode && BlockNode.statements) {
-      const length: number = BlockNode.statements.length;
+    if (blockNode && blockNode.statements) {
+      const length: number = blockNode.statements.length;
       if (!length) {
         return false;
       }
       if (length > 3) {
         return true;
       }
-      const childCount: number = getBlockChildrenCount(BlockNode, allComponentNames);
+      const childCount: number = getBlockChildrenCount(blockNode, allComponentNames);
       if (childCount > 1) {
         return true;
       }
@@ -1056,7 +1057,7 @@ function getBlockChildrenCount(blockNode: ts.Block, allComponentNames: Set<strin
       maxCount += 1;
     }
     if (ts.isExpressionStatement(item) && ts.isCallExpression(item.expression)) {
-      let newNode: any = item.expression;
+      let newNode = item.expression;
       while (newNode.expression) {
         if (ts.isEtsComponentExpression(newNode) || ts.isCallExpression(newNode) &&
           isComponent(newNode, allComponentNames)) {
