@@ -2,7 +2,7 @@
   "name": "Button",
   "single": true,
   "attrs": [
-    "type","stateEffect","fontColor","fontSize","fontWeight","fontStyle","fontFamily","controlSize",
-    "role","contentModifier","labelStyle"
+    "type", "stateEffect", "fontColor", "fontSize", "fontWeight", "fontStyle", "fontFamily", "controlSize",
+    "role", "contentModifier", "labelStyle"
   ]
 }
