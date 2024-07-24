@@ -1316,7 +1316,7 @@ function checkObjectLinkType(typeNode: ts.TypeNode): boolean {
       }
     }
   }
-  return undefined;
+  return false;
 }
 
 function isObserved(type: ts.Type): boolean {
@@ -1328,10 +1328,10 @@ function isObserved(type: ts.Type): boolean {
           return ts.isIdentifier(decorator.expression) && decorator.expression.escapedText.toString() === OBSERVED;
         });
       }
-      return undefined;
+      return false;
     });
   }
-  return undefined;
+  return false;
 }
 
 export function resetProcessComponentMember(): void {
