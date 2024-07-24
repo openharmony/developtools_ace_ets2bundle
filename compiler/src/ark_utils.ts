@@ -18,7 +18,7 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils } from 'arkguard';
+import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils, nameCacheMap } from 'arkguard';
 import {
   OH_MODULES,
   SEPARATOR_AT,
@@ -77,7 +77,7 @@ const IDENTIFIER_CACHE: string = 'IdentifierCache';
 export const SRC_MAIN: string = 'src/main';
 
 export let newSourceMaps: Object = {};
-export let nameCacheObj: Object = {};
+
 export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
@@ -544,13 +544,13 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   }
 
   let historyNameCache = new Map<string, string>();
-  if (nameCacheObj) {
+  if (nameCacheMap) {
     let namecachePath = moduleInfo.relativeSourceFilePath;
     if (isDeclaration) {
       namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath,
         sourceFileBelongProject.get(toUnixPath(moduleInfo.originSourceFilePath)));
     }
-    let identifierCache = nameCacheObj[namecachePath]?.[IDENTIFIER_CACHE];
+    let identifierCache = nameCacheMap.get(namecachePath)?.[IDENTIFIER_CACHE];
     deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
@@ -583,7 +583,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
       obfName = mangleFilePath(moduleInfo.relativeSourceFilePath);
     }
     mixedInfo.nameCache.obfName = obfName;
-    nameCacheObj[moduleInfo.relativeSourceFilePath] = mixedInfo.nameCache;
+    nameCacheMap.set(moduleInfo.relativeSourceFilePath, mixedInfo.nameCache);
   }
 
   const newFilePath: string = tryMangleFileName(moduleInfo.buildFilePath, projectConfig, moduleInfo.originSourceFilePath);
@@ -816,7 +816,7 @@ export function getBuildBinDir(arkDir: string): string {
 
 export function cleanUpUtilsObjects(): void {
   newSourceMaps = {};
-  nameCacheObj = {};
+  nameCacheMap.clear();
   packageCollection.clear();
 }
 
