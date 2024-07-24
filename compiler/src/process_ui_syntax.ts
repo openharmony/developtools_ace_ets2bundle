@@ -178,12 +178,12 @@ export const builderTypeParameter: { params: string[] } = { params: [] };
 export function processUISyntax(program: ts.Program, ut = false,
   compilationTime: CompilationTimeStatistics = null, filePath: string = ''): Function {
   let entryNodeKey: ts.Expression;
-  let hasStruct: boolean = false;
   return (context: ts.TransformationContext) => {
     contextGlobal = context;
     let pagesDir: string;
     let pageFile: string;
     let hasUseResource: boolean = false;
+    let hasStruct: boolean = false;
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
       pagesDir = path.resolve(path.dirname(node.fileName));
