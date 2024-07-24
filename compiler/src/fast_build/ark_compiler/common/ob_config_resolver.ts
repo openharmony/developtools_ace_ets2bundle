@@ -902,7 +902,7 @@ export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<stri
  */
 function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, allKeepFiles: Set<string>,
   projectRootPath: string): Set<string> {
-  const keepFilesAndDependencies: Set<string>  = new Set<string>();
+  const keepFilesAndDependencies: Set<string> = new Set<string>();
   if (!mergedObConfig.options.enableExportObfuscation) {
     return keepFilesAndDependencies;
   }
@@ -925,7 +925,7 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
       if (!resolvedModule) {
         continue;
       }
-      let tempPath = toUnixPath(resolvedModule.resolvedFileName)
+      let tempPath = toUnixPath(resolvedModule.resolvedFileName);
       // resolvedModule can record system API declaration files and ignore them.
       if (tempPath.startsWith(projectRootPath)) {
         stack.push(tempPath);
