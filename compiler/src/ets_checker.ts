@@ -232,11 +232,11 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
   type FileInfoType = {
     version: string;
     affectsGlobalScope: boolean;
-  }
+  };
   type ProgramType = {
     fileNames: string[];
     fileInfos: (FileInfoType | string)[];
-  }
+  };
   let buildInfoProgram: ProgramType;
   try {
     const content: {program: ProgramType} = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
@@ -531,7 +531,8 @@ export function collectTscFiles(program: ts.Program): void {
       return;
     }
     allSourceFilePaths.add(fileName);
-    // For the windos and mac platform, the file path in filesBuildInfo is in lowercase, while fileName of sourceFile is the original path (including uppercase).
+    // For the windos and mac platform, the file path in filesBuildInfo is in lowercase,
+    // while fileName of sourceFile is the original path (including uppercase).
     if (filesBuildInfo.size > 0 &&
       Reflect.get(sourceFile, 'version') !== filesBuildInfo.get(isMacOrWin ? tryToLowerCasePath(fileName) : fileName)) {
       allResolvedModules.add(fileName);
