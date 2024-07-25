@@ -102,6 +102,7 @@ import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import { getMessageCollection } from './log_message_collection';
 
 export class ComponentCollection {
   localStorageName: string = null;
@@ -558,9 +559,10 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
     let innerDecoratorCount: number = 0;
     const exludeDecorators: string[] = ['@Require', '@Once'];
-    const v1MethodDecorators: string[] = ['@Builder', '@Styles', COMPONENT_LOCAL_BUILDER_DECORATOR];
+    const v1MethodDecorators: string[] = ['@Builder', '@Styles'];
     const v1DecoratorMap: Map<string, number> = new Map<string, number>();
     const v2DecoratorMap: Map<string, number> = new Map<string, number>();
+    let checkDecoratorCount: number = 0;
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
       if (!exludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
@@ -574,12 +576,17 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
         v1DecoratorMap.set(decoratorName, count + 1);
         return;
       }
+      if (decoratorName === COMPONENT_LOCAL_BUILDER_DECORATOR && decorators.length > 1) {
+        checkDecoratorCount = checkDecoratorCount + 1;
+        return;
+      }
     });
     const v2DecoratorMapKeys: string[] = Array.from(v2DecoratorMap.keys());
     const v2DecoratorMapValues: number[] = Array.from(v2DecoratorMap.values());
     const v1DecoratorMapKeys: string[] = Array.from(v1DecoratorMap.keys());
     const v1DecoratorMapValues: number[] = Array.from(v1DecoratorMap.values());
     innerDecoratorCount = v2DecoratorMapKeys.length + v1DecoratorMapKeys.length;
+    getMessageCollection().checkLocalBuilderDecoratorCount(node, sourceFileNode, checkDecoratorCount, log);
     if (innerDecoratorCount > 1) {
       const message: string = 'The member property or method can not be decorated by multiple built-in decorators.';
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
