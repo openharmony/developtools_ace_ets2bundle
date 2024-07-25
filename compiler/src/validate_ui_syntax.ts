@@ -702,23 +702,41 @@ function isMemberForComponentV2(decoratorName: string, isComponentV2: boolean): 
     (isComponentV2 && decoratorName === '@BuilderParam');
 }
 
-const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED, TYPE];
+const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
 const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, TYPE,
   constantDefine.MONITOR, constantDefine.COMPUTED];
+
+function validTypeCallback(node: ts.Identifier): boolean {
+  let isSdkPath: boolean = true;
+  if (globalProgram.checker && process.env.compileTool === 'rollup') {
+    const symbolObj: ts.Symbol = getSymbolIfAliased(node);
+    const fileName: string = symbolObj?.valueDeclaration?.getSourceFile()?.fileName;
+    isSdkPath = /@ohos.arkui.*/.test(fileName);
+  }
+  return isSdkPath;
+}
+
+function isTypeFromSdkCallback(classContext: boolean, decoratorName: string, isTypeFromSdk: boolean): boolean {
+  if (!classContext && decoratorName === TYPE && isTypeFromSdk) {
+    return true;
+  }
+  return false;
+}
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   classContext: boolean, decoratorName: string, isObservedClass: boolean, isObservedV1Class: boolean,
   isSendableClass: boolean): void {
-  if (!classContext && classDecorators.includes(decoratorName)) {
+  const isTypeFromSdk: boolean = validTypeCallback(node);
+  if (!classContext && (classDecorators.includes(decoratorName) || isTypeFromSdkCallback(classContext, decoratorName, isTypeFromSdk))) {
     const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
-    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass);
+    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass, isTypeFromSdk);
   }
 }
 
 function validateMemberInClass(isObservedClass: boolean, decoratorName: string, node: ts.Identifier,
-  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean): void {
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean, isTypeFromSdk: boolean): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
       const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with ObservedV2.`;
@@ -727,7 +745,9 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
     return;
   }
   if (decoratorName === TYPE) {
-    validType(sourceFileNode, node, log, decoratorName, isObservedV1Class, isSendableClass);
+    if (isTypeFromSdk) {
+      validType(sourceFileNode, node, log, decoratorName, isObservedV1Class, isSendableClass);
+    }
     return;
   }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
