@@ -43,7 +43,7 @@ cd $old_work_dir
 target_dir=./node_modules/arkguard
 
 echo "move $package_path to override $target_dir"
-if [ -d $target_dir ]; then
+if [ -d "$target_dir" ]; then
     rm -r $target_dir
 fi
 
@@ -65,7 +65,7 @@ cd $old_work_dir
 target_dir=./node_modules/typescript
 
 echo "move $tsc_package_path to override $target_dir"
-if [ -d $target_dir ]; then
+if [ -d "$target_dir" ]; then
     rm -r $target_dir
 fi
 
