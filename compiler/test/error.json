@@ -723,7 +723,7 @@
             "type": "ERROR"
         },
         {
-            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "message": "The member property or method can not be decorated by multiple decorators.",
             "type": "ERROR"
         },
         {
