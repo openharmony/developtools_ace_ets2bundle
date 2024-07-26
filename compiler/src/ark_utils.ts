@@ -546,7 +546,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   if (nameCacheMap) {
     let namecachePath = moduleInfo.relativeSourceFilePath;
     if (isDeclaration) {
-      namecachePath = harFilesRecord.get(moduleInfo.originSourceFilePath).sourceCachePath;
+      namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath, undefined);
     }
     let identifierCache = nameCacheMap.get(namecachePath)?.[IDENTIFIER_CACHE];
     deleteLineInfoForNameString(historyNameCache, identifierCache);
