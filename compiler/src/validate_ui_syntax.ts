@@ -1674,7 +1674,7 @@ export function collectImportNames(content: string, sourcePath: string = null): 
     /(import|export)\s+(.+)\s+from\s+['"](\S+)['"]|import\s+(.+)\s*=\s*require\(\s*['"](\S+)['"]\s*\)/g;
 
   const decls: string[] = content.match(REG_IMPORT_DECL);
-  if (decls != undefined) {
+  if (decls !== null) {
     decls.forEach(decl => {
       const parts: string[] = decl.split(' ');
       if (parts.length === 4 && parts[0] === 'import' && parts[2] === 'from' && !parts[3].includes('.so')) {
