@@ -89,6 +89,7 @@ import { resetProcessComponentMember } from '../../process_component_member';
 import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
+import { resetlogMessageCollection } from '../../log_message_collection';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -228,6 +229,7 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
+      resetlogMessageCollection();
     }
   };
 }
