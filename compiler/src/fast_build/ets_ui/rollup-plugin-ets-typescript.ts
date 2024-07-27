@@ -78,7 +78,8 @@ import {
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD,
-  resetComponentMap
+  resetComponentMap,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from '../../component_map';
 import {
   kitTransformLog,
@@ -456,6 +457,7 @@ function jsBundlePreProcess(code: string, id: string, isEntry: boolean, logger: 
 function clearCollection(): void {
   componentCollection.customComponents.clear();
   CUSTOM_BUILDER_METHOD.clear();
+  INNER_CUSTOM_LOCALBUILDER_METHOD.clear();
   GLOBAL_CUSTOM_BUILDER_METHOD.clear();
   INNER_CUSTOM_BUILDER_METHOD.clear();
   storedFileInfo.getCurrentArkTsFile().compFromDETS.clear();
