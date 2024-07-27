@@ -80,7 +80,8 @@ import {
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD,
-  INNER_STYLE_FUNCTION
+  INNER_STYLE_FUNCTION,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
 import {
   LogType,
@@ -98,6 +99,10 @@ import {
   transformLog,
   validatorCard
 } from './process_ui_syntax';
+import {
+  isBuilderOrLocalBuilder,
+  builderConditionType
+} from './process_component_class';
 import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
@@ -604,12 +609,20 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
 
 function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
   const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
-  if (hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
-    CUSTOM_BUILDER_METHOD.add(node.name.getText());
-    if (ts.isFunctionDeclaration(node)) {
-      GLOBAL_CUSTOM_BUILDER_METHOD.add(node.name.getText());
-    } else {
-      INNER_CUSTOM_BUILDER_METHOD.add(node.name.getText());
+  const builderCondition: builderConditionType = {
+    isBuilder: false,
+    isLocalBuilder: false
+  };
+  if (isBuilderOrLocalBuilder(node, builderCondition)) {
+    if (builderCondition.isBuilder) {
+      CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      if (ts.isFunctionDeclaration(node)) {
+        GLOBAL_CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      } else {
+        INNER_CUSTOM_BUILDER_METHOD.add(node.name.getText());
+      }
+    } else if (builderCondition.isLocalBuilder) {
+      INNER_CUSTOM_LOCALBUILDER_METHOD.add(node.name.getText());
     }
   } else if (ts.isFunctionDeclaration(node) && isExtendFunction(node, extendResult)) {
     if (extendResult.decoratorName === CHECK_COMPONENT_EXTEND_DECORATOR) {

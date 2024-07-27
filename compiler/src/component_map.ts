@@ -88,6 +88,7 @@ export const GESTURE_TYPE_NAMES: Set<string> = new Set([
   'SwipeGesture'
 ]);
 export const CUSTOM_BUILDER_METHOD: Set<string> = new Set();
+export const INNER_CUSTOM_LOCALBUILDER_METHOD: Set<string> = new Set();
 export const INNER_STYLE_FUNCTION: Map<string, ts.Block> = new Map();
 export const GLOBAL_STYLE_FUNCTION: Map<string, ts.Block> = new Map();
 

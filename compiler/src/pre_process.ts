@@ -30,7 +30,8 @@ import { parseVisual } from './process_visual';
 import {
   CUSTOM_BUILDER_METHOD,
   GLOBAL_CUSTOM_BUILDER_METHOD,
-  INNER_CUSTOM_BUILDER_METHOD
+  INNER_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
 
 function preProcess(source: string): string {
@@ -55,6 +56,7 @@ function preProcess(source: string): string {
 function clearCollection(): void {
   componentCollection.customComponents.clear();
   CUSTOM_BUILDER_METHOD.clear();
+  INNER_CUSTOM_LOCALBUILDER_METHOD.clear();
   GLOBAL_CUSTOM_BUILDER_METHOD.clear();
   INNER_CUSTOM_BUILDER_METHOD.clear();
 }
