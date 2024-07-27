@@ -59,7 +59,7 @@ if (!filter(id)) {
       const currentTimestamp: number = stat.mtime.getTime();
       if (!this.cache.has(visualId)) {
         this.cache.set(visualId, currentTimestamp);
-        return !(process.env.watchMode !== 'true' && 'esmodule' === projectConfig.compileMode);
+        return true;
       }
       const lastTimestamp: number = this.cache.get(visualId);
       this.cache.set(visualId, currentTimestamp);
