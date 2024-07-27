@@ -114,7 +114,10 @@ import {
   getRealNodePos,
   isWrappedBuilder
 } from './process_component_build';
-import { CUSTOM_BUILDER_METHOD } from './component_map';
+import {
+  CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
+} from './component_map';
 
 export type ControllerType = {
   hasController: boolean
@@ -809,7 +812,8 @@ export function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration)
     CUSTOM_BUILDER_METHOD.has(node.initializer.escapedText.toString()) ||
     ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
     ts.isIdentifier(node.initializer.name) &&
-    CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString()) ||
+    (CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString()) ||
+    INNER_CUSTOM_LOCALBUILDER_METHOD.has(node.initializer.name.escapedText.toString())) ||
     isWrappedBuilder(node.initializer as ts.PropertyAccessExpression)));
 }
 

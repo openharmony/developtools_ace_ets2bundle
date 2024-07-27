@@ -538,7 +538,7 @@ function createLocalStroageCallExpression(node: ts.PropertyDeclaration, name: st
   }
   return undefined;
 }
-interface builderConditionType {
+export interface builderConditionType {
   isBuilder: boolean,
   isLocalBuilder: boolean
 }
@@ -645,7 +645,8 @@ function checkDecoratorMethod(node: ts.MethodDeclaration, modifiers: readonly ts
   }
 }
 
-function isBuilderOrLocalBuilder(node: ts.MethodDeclaration, builderCondition: builderConditionType, customBuilder: ts.Decorator[]): boolean {
+export function isBuilderOrLocalBuilder(node: ts.MethodDeclaration | ts.FunctionDeclaration, builderCondition: builderConditionType,
+  customBuilder: ts.Decorator[] = undefined): boolean {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   if (decorators && decorators.length) {
     for (let i = 0; i < decorators.length; i++) {
