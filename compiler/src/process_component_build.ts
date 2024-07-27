@@ -732,7 +732,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
 
 function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Block,
   log: LogInfo[], name: string, isPropertyAccessExpressionNode: boolean): ts.ExpressionStatement {
-  const childParam: string = isPropertyAccessExpressionNode ?  [...storedFileInfo.overallBuilderParamCollection.get(name)].slice(-1)[0] :
+  const childParam: string = isPropertyAccessExpressionNode ? [...storedFileInfo.overallBuilderParamCollection.get(name)].slice(-1)[0] :
     [...builderParamObjectCollection.get(name)].slice(-1)[0];
   const newBlock: ts.Block = processComponentBlock(nextNode, false, log);
   const arrowNode: ts.ArrowFunction = ts.factory.createArrowFunction(undefined, undefined,
@@ -767,7 +767,7 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
 type EtsComponentResult = {
   etsComponentNode: ts.EtsComponentExpression;
   hasAttr: boolean;
-}
+};
 function parseEtsComponentExpression(node: ts.ExpressionStatement): EtsComponentResult {
   let etsComponentNode: ts.EtsComponentExpression;
   let hasAttr: boolean = false;
