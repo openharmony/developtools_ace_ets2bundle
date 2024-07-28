@@ -240,7 +240,7 @@ export class GenAbcPlugin {
         if (projectConfig.compileMode === JSBUNDLE || projectConfig.compileMode === undefined) {
           return;
         }
-        let newAssets: Object = {}
+        let newAssets: Object = {};
         Object.keys(compilation.assets).forEach(key => {
           if (path.extname(key) !== EXTNAME_JS && path.extname(key) !== EXTNAME_JS_MAP) {
             newAssets[key] = assets[key];
