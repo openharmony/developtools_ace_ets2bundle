@@ -70,7 +70,7 @@ export function processKitImport(id: string, metaInfo: Object,
           } else {
             kitTransformLog.errors.push({
               type: LogType.ERROR,
-              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK. `+
+              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK. ` +
                        'Please make sure the Kit apis are consistent with SDK ' +
                        "and there's no local modification on Kit apis.",
               pos: node.getStart()
@@ -211,7 +211,7 @@ class SpecificerInfo {
     }
   }
 
-  setOriginElementNode(originElement: TSspecifier) {
+  setOriginElementNode(originElement: TSspecifier): void {
     this.originElement = originElement;
   }
 
@@ -226,7 +226,7 @@ export class KitInfo {
   private static currentKitName: string = '';
   private static currentSourcefile: string = '';
   private static needSkipType: boolean = true;
-  private static tsEmitResolver: any;
+  private static tsEmitResolver: Object;
 
   private symbols: KitSymbols;
   private kitNode: TSModuleDeclaration;
@@ -289,7 +289,7 @@ export class KitInfo {
     // need to skip type symbol
     const resolver = this.tsEmitResolver;
     let isTypeSymbol: boolean = false;
-    switch(node.kind) {
+    switch (node.kind) {
       case ts.SyntaxKind.ImportDeclaration:
       case ts.SyntaxKind.ImportClause: {
         const importClause = ts.isImportClause(node) ? node : (node as ts.ImportDeclaration).importClause;
@@ -353,7 +353,7 @@ export class KitInfo {
     }
   }
 
-  static processExportDecl(kitNode: ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
+  static processExportDecl(kitNode: ts.ExportDeclaration, symbols: Record<string, KitSymbol>): void {
     if (kitNode.exportClause) {
       const namedExportBindings: ts.NamedExportBindings = kitNode.exportClause;
       if (ts.isNamespaceExport(namedExportBindings)) {
@@ -434,7 +434,7 @@ export class KitInfo {
     }
   }
 
-  collectSpecifier(element: TSspecifier) {
+  collectSpecifier(element: TSspecifier): void {
     if (KitInfo.needSkipTypeSymbolOfNode(this.getKitNode()) || KitInfo.needSkipTypeSymbolOfNode(element)) {
       // skip type symbol
       return;
@@ -484,7 +484,7 @@ class ImportSpecifierKitInfo extends KitInfo {
     this.specifierDefaultName = undefined;
   }
 
-  transform() {
+  transform(): void {
     const node: ts.ImportDeclaration = this.getKitNode() as ts.ImportDeclaration;
 
     this.getSpecifiers().forEach((specifiers: SpecificerInfo[], source: string) => {
@@ -623,7 +623,7 @@ const JSON_SUFFIX = '.json';
 const KIT_CONFIGS = 'kit_configs';
 const KIT_CONFIG_PATH = './build-tools/ets-loader/kit_configs';
 
-function getKitDefs(kitModuleRequest: string) {
+function getKitDefs(kitModuleRequest: string): Object | undefined {
   const kitConfigs: string[] = [path.resolve(__dirname, `../${KIT_CONFIGS}`)];
   if (process.env.externalApiPaths) {
     const externalApiPaths = process.env.externalApiPaths.split(path.delimiter);
