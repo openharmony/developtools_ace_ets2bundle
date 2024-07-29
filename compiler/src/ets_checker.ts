@@ -1221,7 +1221,7 @@ function isForeachAndLzayForEach(node: ts.Node): boolean {
 }
 
 function getComponentName(node: ts.Node): string {
-  let temp: any = node.expression;
+  let temp = node.expression;
   let name: string;
   while (temp) {
     if (ts.isIdentifier(temp) && temp.parent && (ts.isCallExpression(temp.parent) ||
