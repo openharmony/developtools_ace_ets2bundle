@@ -95,7 +95,14 @@ import { resetlogMessageCollection } from '../../log_message_collection';
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
 let shouldDisableCache: boolean = false;
-let shouldEnableDebugLine: boolean = false;
+interface ShouldEnableDebugLineType {
+  enableDebugLine: boolean;
+}
+
+export const ShouldEnableDebugLine: ShouldEnableDebugLineType = {
+  enableDebugLine: false
+};
+
 let disableCacheOptions = {
   bundleName: 'default',
   entryModuleName: 'default',
@@ -126,8 +133,8 @@ export function etsTransform() {
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
         }
       }
-      if (this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
-        shouldEnableDebugLine = true;
+      if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
+        ShouldEnableDebugLine.enableDebugLine = true;
       }
       stopTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
     },
@@ -149,7 +156,7 @@ export function etsTransform() {
     },
     shouldInvalidCache(options) {
       const fileName: string = path.resolve(options.id);
-      let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || shouldEnableDebugLine;
+      let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || ShouldEnableDebugLine.enableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
@@ -471,7 +478,7 @@ function resetCollection() {
 }
 
 function resetEtsTransform(): void {
-  shouldEnableDebugLine = false;
+  ShouldEnableDebugLine.enableDebugLine = false;
   projectConfig.ignoreWarning = false;
   projectConfig.widgetCompile = false;
   disableCacheOptions = {
