@@ -82,7 +82,7 @@
         "type": "ERROR"
     },
     "updateBuilderParamProperty": {
-        "message": "BuilderParam property can only initialized by Builder function.",
+        "message": "BuilderParam property can only initialized by Builder function or LocalBuilder method in struct.",
         "type": "ERROR"
     },
     "validateMultiDecorators": {
@@ -724,6 +724,10 @@
         },
         {
             "message": "The member property or method can not be decorated by multiple decorators.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@LocalBuilder' decorator can only be used in 'struct'.",
             "type": "ERROR"
         },
         {

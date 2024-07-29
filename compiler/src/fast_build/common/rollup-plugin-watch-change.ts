@@ -32,6 +32,7 @@ import {
   incrementWatchFile,
   hotReloadSupportFiles
 } from '../../ets_checker';
+import { ShouldEnableDebugLine } from '../ets_ui/rollup-plugin-ets-typescript';
 
 export function watchChangeFiles() {
   function addFileToCache(this: any, key: string, id: string) {
@@ -63,6 +64,7 @@ export function watchChangeFiles() {
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
         }
       }
+      ShouldEnableDebugLine.enableDebugLine = false;
     },
     beforeBuild() {
       this.cache.set('watchChangedFilesCache', 'watchChangedFiles');
