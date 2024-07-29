@@ -60,7 +60,6 @@ const reset: string = '\u001b[39m';
 const WINDOWS: string = 'Windows_NT';
 const LINUX: string = 'Linux';
 const MAC: string = 'Darwin';
-const HARMONYOS: string = 'HarmonyOS';
 
 export interface LogInfo {
   type: LogType,
@@ -504,14 +503,10 @@ export function isMac(): boolean {
   return os.type() === MAC;
 }
 
-export function isHarmonyOs(): boolean {
-  return os.type() === HARMONYOS;
-}
-
 export function maxFilePathLength(): number {
   if (isWindows()) {
     return 32766;
-  } else if (isLinux() || isHarmonyOs()) {
+  } else if (isLinux()) {
     return 4095;
   } else if (isMac()) {
     return 1016;
