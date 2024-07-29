@@ -378,18 +378,16 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
-  const tsImportSendableDiff: boolean | undefined = cache?.preTsImportSendable !== tsImportSendable;
+  const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
+    false :
+    cache?.preTsImportSendable !== tsImportSendable;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    // If the targetESVersion is changed, we need to delete the build info cahce files
-    if (targetESVersionDiffers || tsImportSendableDiff) {
-      deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
-      targetESVersionChanged = true;
-    }
+    rebuiuldProgram(targetESVersionDiffers, tsImportSendableDiff);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -405,6 +403,17 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
+}
+
+function rebuiuldProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean): void {
+  if (targetESVersionDiffers) {
+    // If the targetESVersion is changed, we need to delete the build info cahce files
+    deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
+    targetESVersionChanged = true;
+  } else if (tsImportSendableDiff) {
+    // When tsImportSendable is changed, we need to delete the build info cahce files
+    deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
+  }
 }
 
 function deleteBuildInfoCache(tsBuildInfoFilePath: string): void {
