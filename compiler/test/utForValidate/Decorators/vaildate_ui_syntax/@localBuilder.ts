@@ -32,4 +32,10 @@ struct HomeComponent {
     }
     .height(500)
   }
+}
+
+class apa {
+  @LocalBuilder xx() {
+    
+  }
 }`
