@@ -172,7 +172,9 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'incremental': true,
     'tsBuildInfoFile': buildInfoPath,
     'tsImportSendableEnable': tsImportSendable,
-    'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange
+    'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
+    'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
+    'compatibleSdkVersion': projectConfig.compatibleSdkVersion
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
