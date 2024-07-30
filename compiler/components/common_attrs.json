@@ -25,6 +25,7 @@
     "onGestureJudgeBegin","monopolizeEvents","onTouchIntercept","onChildTouchTest","onSizeChange", "onWillDismiss",
     "foregroundEffect", "backgroundEffect", "focusBox", "focusScopeId", "focusScopePriority",
     "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith", "backgroundImageResizable",
-    "onAttach", "onDetach"
+    "onAttach", "onDetach",
+    "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview"
   ]
 }
