@@ -719,6 +719,10 @@
     ],
     "@localBuilder": [
         {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
+            "type": "ERROR"
+        },
+        {
             "message": "'@LocalBuilder' can only decorate method.",
             "type": "ERROR"
         },

@@ -668,7 +668,7 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
       addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
     }
     const decoratorKeys: string[] = Array.from(decoratorMap.keys());
-    if (decoratorKeys.length > 1) {
+    if (decoratorKeys.length > 1 || decoratorKeys.includes('LocalBuilder')) {
       const message: string = 'A function can only be decorated by one of the ' +
         `'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.`;
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
