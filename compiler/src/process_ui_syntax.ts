@@ -217,7 +217,10 @@ export function processUISyntax(program: ts.Program, ut = false,
           statements.unshift(item);
         });
         if (partialUpdateConfig.partialUpdateMode && hasStruct) {
-          statements.unshift(checkFinalizeConstruction(), checkContextStack());
+          if (storedFileInfo.hasLocalBuilderInFile) {
+            statements.unshift(checkContextStack());
+          }
+          statements.unshift(checkFinalizeConstruction());
         }
         createNavigationInit(resourceFileName, statements);
         insertImportModuleNode(statements, hasUseResource);
