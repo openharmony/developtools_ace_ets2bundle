@@ -730,6 +730,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
   }
 }
 
+
 function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Block,
   log: LogInfo[], name: string, isPropertyAccessExpressionNode: boolean): ts.ExpressionStatement {
   const childParam: string = isPropertyAccessExpressionNode ? [...storedFileInfo.overallBuilderParamCollection.get(name)].slice(-1)[0] :
