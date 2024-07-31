@@ -67,7 +67,7 @@ import {
   utProcessArkConfig
 } from '../../lib/fast_build/ark_compiler/common/process_ark_config';
 import { ModuleSourceFile } from '../../lib/fast_build/ark_compiler/module/module_source_file';
-import { TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock/path_config';
+import { PROJECT_ROOT, TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock/path_config';
 import { GEN_ABC_PLUGIN_NAME } from '../../lib/fast_build/ark_compiler/common/ark_define';
 import { SourceMapGenerator } from '../../lib/fast_build/ark_compiler/generate_sourcemap';
 import { ArkObfuscator } from 'arkguard';
@@ -419,5 +419,110 @@ mocha.describe('test ark_utils file api', function () {
 
     const result = tryMangleFileName(filePath, projectConfig, originalFilePath);
     expect(result === newFilePath).to.be.true;
+  });
+
+  mocha.it('9-1: test writeArkguardObfuscatedSourceCode when obfuscation is enabled', async function () {
+    this.rollup.build(RELEASE);
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    const arkguardConfig = {
+      mCompact: false,
+      mDisableConsole: false,
+      mSimplify: false,
+      mRemoveComments: true,
+      mNameObfuscation: {
+        mEnable: true,
+        mNameGeneratorType: 1,
+        mReservedNames: [],
+        mRenameProperties: false,
+        mReservedProperties: [],
+        mKeepStringProperty: true,
+        mTopLevel: false,
+        mReservedToplevelNames: [],
+        mUniversalReservedProperties: [],
+        mUniversalReservedToplevelNames: [],
+      },
+      mRemoveDeclarationComments: {
+        mEnable: true,
+        mReservedComments: []
+      },
+      mEnableSourceMap: true,
+      mEnableNameCache: true,
+      mRenameFileName: {
+        mEnable: false,
+        mNameGeneratorType: 1,
+        mReservedFileNames: [],
+      },
+      mExportObfuscation: false,
+      mPerformancePrinter: {
+        mFilesPrinter: false,
+        mSingleFilePrinter: false,
+        mSumPrinter: false,
+        mOutputPath: ""
+      },
+      mKeepFileSourceCode: {
+        mKeepSourceOfPaths: new Set(),
+        mkeepFilesAndDependencies: new Set(),
+      },
+    };
+
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    sourceMapGenerator.setNewSoureMaps(false);
+    const arkObfuscator: ArkObfuscator = new ArkObfuscator();
+    arkObfuscator.init(arkguardConfig);
+
+    const projectConfig = {
+      projectRootPath: PROJECT_ROOT,
+      arkObfuscator: arkObfuscator,
+      packageDir: 'oh_modules',
+      localPackageSet: new Set(),
+      useTsHar: false,
+      useNormalized: false
+    };
+
+    const sourceFileName = 'sourceFile.ts';
+    const originalSourceFilePath = path.join(__dirname, '../../test/ark_compiler_ut/testdata/har_obfuscation', sourceFileName);
+    const moduleInfo = {
+      content: fs.readFileSync(originalSourceFilePath, 'utf-8'),
+      buildFilePath: `${PROJECT_ROOT}/har_obfuscation/build/default/cache/${sourceFileName}`,
+      relativeSourceFilePath: `har_obfuscation/${sourceFileName}`,
+      originSourceFilePath: originalSourceFilePath,
+      rollupModuleId: originalSourceFilePath
+    };
+
+    try {
+      await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, {});
+    } catch (e) {
+    }
+    const expectedResult = `export function add(d: number, e: number): number {
+    return d + e;
+}
+export function findElement<a>(b: a[], c: (item: a) => boolean): a | undefined {
+    return b.find(c);
+}
+`;
+    const result = fs.readFileSync(moduleInfo.buildFilePath, 'utf-8');
+    expect(result === expectedResult).to.be.true;
+
+    const declFileName = 'sourceFile.d.ts';
+    const originalDeclFilePath = path.join(__dirname, '../../test/ark_compiler_ut/testdata/har_obfuscation/', declFileName);
+
+    const declModuleInfo = {
+      content: fs.readFileSync(originalDeclFilePath, 'utf-8'),
+      buildFilePath: `${PROJECT_ROOT}/har_obfuscation/build/default/cache/${declFileName}`,
+      relativeSourceFilePath: `har_obfuscation/build/default/cache/${declFileName}`,
+      originSourceFilePath: originalSourceFilePath,
+      rollupModuleId: originalSourceFilePath
+    };
+
+    try {
+      await writeArkguardObfuscatedSourceCode(declModuleInfo, logger, projectConfig, {});
+    } catch (e) {
+    }
+
+    const expectedDeclResult = `export declare function add(d: number, e: number): number;
+export declare function findElement<a>(b: a[], c: (item: a) => boolean): a | undefined;
+`;
+    const declResult = fs.readFileSync(declModuleInfo.buildFilePath, 'utf-8');
+    expect(declResult === expectedDeclResult).to.be.true;
   });
 });
