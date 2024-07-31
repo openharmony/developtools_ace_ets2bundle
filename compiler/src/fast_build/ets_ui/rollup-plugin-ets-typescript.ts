@@ -475,6 +475,7 @@ function resetCollection() {
   propertyCollection.clear();
   linkCollection.clear();
   resetComponentCollection();
+  storedFileInfo.hasLocalBuilderInFile = false;
 }
 
 function resetEtsTransform(): void {
