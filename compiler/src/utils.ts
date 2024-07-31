@@ -770,6 +770,7 @@ export class ProcessFileInfo {
       isDependItem: false
     };
   routerInfo: Map<string, Array<RouterInfo>> = new Map();
+  hasLocalBuilderInFile: boolean = false;
 
   addGlobalCacheInfo(resourceListCacheInfo: string[],
     resourceToFileCacheInfo: { [resource: string]: Set<string> },

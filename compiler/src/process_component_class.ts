@@ -989,8 +989,10 @@ export function addRerenderFunc(statements: ts.Statement[]): ts.MethodDeclaratio
     ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(), ts.factory.createIdentifier(UPDATEDIRTYELEMENTS)), undefined, []));
   statements.push(updateDirtyElementStatement);
-  statements.unshift(contextStackPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
-  statements.push(contextStackPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), []));
+  if (storedFileInfo.hasLocalBuilderInFile) {
+    statements.unshift(contextStackPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
+    statements.push(contextStackPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), []));
+  }
   return ts.factory.createMethodDeclaration(undefined, undefined,
     ts.factory.createIdentifier(COMPONENT_RERENDER_FUNCTION), undefined, undefined, [], undefined,
     ts.factory.createBlock(statements, true));

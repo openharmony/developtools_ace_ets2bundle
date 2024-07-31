@@ -682,6 +682,7 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
+    setLocalBuilderInFile(decoratorName);
     validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
@@ -691,6 +692,12 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   }
   if (ts.isDecorator(node)) {
     validateSingleDecorator(node, sourceFileNode, log, isComponentV2);
+  }
+}
+
+function setLocalBuilderInFile(decoratorName: string): void {
+  if (decoratorName === 'LocalBuilder') {
+    storedFileInfo.hasLocalBuilderInFile = true;
   }
 }
 

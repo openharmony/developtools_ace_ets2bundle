@@ -203,7 +203,7 @@ export function processComponentBuild(node: ts.MethodDeclaration,
     newNode = ts.factory.updateMethodDeclaration(node, ts.getModifiers(node),
       node.asteriskToken, renderNode, node.questionToken, node.typeParameters, node.parameters,
       node.type, componentBlock);
-    if (partialUpdateConfig.partialUpdateMode) {
+    if (partialUpdateConfig.partialUpdateMode && storedFileInfo.hasLocalBuilderInFile) {
       componentBlock.statements.unshift(contextStackPushOrPop(ts.factory.createIdentifier(PUSH), [ts.factory.createThis()]));
       componentBlock.statements.push(contextStackPushOrPop(ts.factory.createIdentifier(COMPONENT_POP_FUNCTION), [])); 
     }
