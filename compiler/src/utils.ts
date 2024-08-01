@@ -1247,13 +1247,19 @@ export function removeDecorator(decorators: readonly ts.Decorator[], decoratorNa
   });
 }
 
+export function isFileInProject(filePath: string, projectRootPath: string): boolean {
+  const relativeFilePath: string = toUnixPath(path.relative(toUnixPath(projectRootPath), toUnixPath(filePath)));
+  // When processing ohmurl, hsp's filePath is consistent with moduleRequest
+  return fs.existsSync(filePath) && fs.statSync(filePath).isFile() && !relativeFilePath.startsWith('../');
+}
+
 export function getProjectRootPath(filePath: string, projectConfig: Object, rootPathSet: Object): string {
   if (rootPathSet) {
     for (const rootPath of rootPathSet) {
-      if (toUnixPath(filePath).indexOf(toUnixPath(rootPath)) !== -1) {
+      if (isFileInProject(filePath, rootPath)) {
         return rootPath;
       }
     }
   }
   return projectConfig.projectRootPath;
-} 
+}
