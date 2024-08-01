@@ -76,9 +76,6 @@ exports.VideoPlayer = void 0;
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 class BottomControllerParam {
     constructor() {
         this.playedTime = '';
@@ -168,18 +165,14 @@ class VideoPlayer extends ViewPU {
         Column.pop();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
         this.bottomController.bind(this)(makeBuilderParameterProxy("bottomController", { playedTime: () => (this["__currentPlayedTime"] ? this["__currentPlayedTime"] : this["currentPlayedTime"]), totalTime: () => (this["__totalTime"] ? this["__totalTime"] : this["totalTime"]), playedTimeNumber: () => (this["__currentPlayedTimeNumber"] ? this["__currentPlayedTimeNumber"] : this["currentPlayedTimeNumber"]) }));
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 exports.VideoPlayer = VideoPlayer;
