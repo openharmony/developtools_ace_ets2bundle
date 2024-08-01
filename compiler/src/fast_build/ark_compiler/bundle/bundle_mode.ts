@@ -290,7 +290,7 @@ export class BundleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute ts2abc`);
+            this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
           });
         });
       }
