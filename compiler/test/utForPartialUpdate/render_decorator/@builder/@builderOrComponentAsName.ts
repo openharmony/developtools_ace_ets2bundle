@@ -77,9 +77,6 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 function ComA(parent = null) {
 }
 class Index extends ViewPU {
@@ -123,7 +120,6 @@ class Index extends ViewPU {
     CCC(parent = null) {
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
@@ -161,12 +157,9 @@ class Index extends ViewPU {
             }, { name: "BBB" });
         }
         Row.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class AAA extends ViewPU {
@@ -193,18 +186,14 @@ class AAA extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
         this.AAA.bind(this)();
         Row.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class BBB extends ViewPU {
@@ -229,18 +218,14 @@ class BBB extends ViewPU {
     BBB(parent = null) {
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
         this.BBB.bind(this)();
         Row.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class CCC extends ViewPU {
@@ -269,18 +254,14 @@ class CCC extends ViewPU {
     DDD(parent = null) {
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();
         }, Row);
         this.CCC.bind(this)();
         Row.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

@@ -98,9 +98,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 const AllComponent = __importStar(require("./test/pages/NamespaceComponent"));
 const TsModule_1 = __importDefault(require("./test/pages/TsModule"));
 class ImportTest extends ViewPU {
@@ -171,7 +168,6 @@ class ImportTest extends ViewPU {
         this.__myState4.set(newValue);
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -302,12 +298,9 @@ class ImportTest extends ViewPU {
         }
         __Common__.pop();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

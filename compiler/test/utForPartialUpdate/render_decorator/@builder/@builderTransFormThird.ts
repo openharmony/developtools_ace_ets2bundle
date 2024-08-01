@@ -60,9 +60,6 @@ exports.expectResult =
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 class TestBuilder1 extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -83,7 +80,6 @@ class TestBuilder1 extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -92,7 +88,6 @@ class TestBuilder1 extends ViewPU {
         }, Text);
         Text.pop();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     innerBuidler(value, parent = null) {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -105,9 +100,7 @@ class TestBuilder1 extends ViewPU {
         Column.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class TestBuilderReusable extends ViewPU {
@@ -132,7 +125,6 @@ class TestBuilderReusable extends ViewPU {
     updateRecycleElmtId(oldElmtId, newElmtId) {
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -141,7 +133,6 @@ class TestBuilderReusable extends ViewPU {
         }, Text);
         Text.pop();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     innerBuidler(value, parent = null) {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -154,9 +145,7 @@ class TestBuilderReusable extends ViewPU {
         Column.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 function testInnerComponent(value, parent = null) {

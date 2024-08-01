@@ -106,9 +106,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 const TestComponent_1 = require("./test/pages/TestComponent");
 class CustomContainer extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -146,7 +143,6 @@ class CustomContainer extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -161,12 +157,9 @@ class CustomContainer extends ViewPU {
         }, Text);
         Text.pop();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class CustomContainer2 extends ViewPU {
@@ -197,7 +190,6 @@ class CustomContainer2 extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -207,12 +199,9 @@ class CustomContainer2 extends ViewPU {
         Text.pop();
         this.content.bind(this)();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 function specificWithParam(label1, label2, parent = null) {
@@ -290,7 +279,6 @@ class CustomContainerUser extends ViewPU {
         Column.pop();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
         }, Column);
@@ -406,12 +394,9 @@ class CustomContainerUser extends ViewPU {
         }
         Row.pop();
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());

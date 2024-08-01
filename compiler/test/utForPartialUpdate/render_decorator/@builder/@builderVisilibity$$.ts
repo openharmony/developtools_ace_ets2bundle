@@ -62,9 +62,6 @@ exports.visibility$$Demo = void 0;
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-if (PUV2ViewBase.contextStack === undefined) {
-    Reflect.set(PUV2ViewBase, "contextStack", []);
-}
 function comp($$, parent = null) {
     const __$$__ = $$;
     (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, $$ = __$$__) => {
@@ -113,17 +110,13 @@ class Child extends ViewPU {
         this.aboutToBeDeletedInternal();
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('TEST');
         }, Text);
         Text.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 class visibility$$Demo extends ViewPU {
@@ -185,19 +178,15 @@ class visibility$$Demo extends ViewPU {
         this.data = ['test', 'test2'];
     }
     initialRender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
             Column.height('100%');
         }, Column);
         comp.bind(this)(makeBuilderParameterProxy("comp", { vis: () => (this["__vis"] ? this["__vis"] : this["vis"]), data: () => (this["__data"] ? this["__data"] : this["data"]), width: () => (this["__w"] ? this["__w"] : this["w"]) }));
         Column.pop();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
     rerender() {
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.push(this);
         this.updateDirtyElements();
-        PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
 exports.visibility$$Demo = visibility$$Demo;
