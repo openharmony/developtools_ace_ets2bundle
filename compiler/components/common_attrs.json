@@ -26,6 +26,7 @@
     "foregroundEffect", "backgroundEffect", "focusBox", "focusScopeId", "focusScopePriority",
     "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith", "backgroundImageResizable",
     "onAttach", "onDetach",
-    "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview"
+    "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview",
+    "keyboardShortcut"
   ]
 }
