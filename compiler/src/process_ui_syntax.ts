@@ -75,6 +75,7 @@ import {
   COMPONENT_CONSTRUCTOR_PARENT,
   WRAPBUILDER_FUNCTION,
   FINISH_UPDATE_FUNC,
+  INTEGRATED_HSP,
   FUNCTION,
   PAGE_FULL_PATH,
   LENGTH,
@@ -1576,7 +1577,7 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
           routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath),
           routerOrNavPathWrite(context, PAGE_FULL_PATH, projectConfig.projectRootPath),
           context.factory.createPropertyAssignment(
-            context.factory.createIdentifier('integratedHsp'),
+            context.factory.createIdentifier(INTEGRATED_HSP),
             context.factory.createStringLiteral(integratedHspType())
           )
         ],
@@ -1590,7 +1591,7 @@ function routerOrNavPathWrite(context: ts.TransformationContext, keyName: string
   return context.factory.createPropertyAssignment(
     context.factory.createIdentifier(keyName),
     context.factory.createStringLiteral(
-      projectConfig.compileHar ? '' :
+      projectConfig.compileHar ? keyName === PAGE_PATH ? '__harDefaultPagePath__' : '' :
         path.relative(projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
     )
   );

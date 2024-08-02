@@ -465,7 +465,8 @@ export class ModuleSourceFile {
     this.source = (this.source as string)
       .replace(/\b__harDefaultBundleName__\b/gi, projectConfig.integratedHsp ? '' : projectConfig.bundleName)
       .replace(/\b__harDefaultModuleName__\b/gi, projectConfig.moduleName)
-      .replace(/\b__harDefaultIntegratedHspType__\b/gi, projectConfig.integratedHsp ? 'true' : 'false');
+      .replace(/\b__harDefaultIntegratedHspType__\b/gi, projectConfig.integratedHsp ? 'true' : 'false')
+      .replace(/\b__harDefaultPagePath__\b/gi, path.relative(projectConfig.projectPath || '', this.moduleId).replace(/\\/g, '/').replace(/\.js$/, ''));
   }
 
   private async processTransformedJsModuleRequest(rollupObject: Object): Promise<void> {
