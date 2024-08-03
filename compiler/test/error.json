@@ -743,6 +743,44 @@
             "type": "ERROR"
         }
     ],
+    "v2Component_member_type_check": [
+        {
+            "message": "The property 'local_value' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'builder_value' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'param_value' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'param_value1' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'param_value2' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'param_value3' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'event_value' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'provide_value' must specify a type.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The property 'consumer_value' must specify a type.",
+            "type": "ERROR"
+        }
+    ],
     "v1ToV2Component.ts": [],
     "v1ToV2ComponentValidate": [],
     "v2ToV1ComponentValidate": [],
