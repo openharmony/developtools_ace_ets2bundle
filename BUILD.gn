@@ -156,6 +156,7 @@ action("build_ets_sysResource") {
 
 ets_loader_sources = [
   "compiler/compile_plugin.js",
+  "compiler/config/obfuscateWhiteList.json5",
   "compiler/main.js",
   "compiler/node_modules",
   "compiler/npm-install.js",
