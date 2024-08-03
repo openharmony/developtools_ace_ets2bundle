@@ -197,6 +197,9 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   const propName: string = member.name.getText();
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
   let initializer: ts.Expression;
+  if (!structInfo.regularSet.has(propName) && !member.type) {
+    checkV2ComponentMemberType(member.name, propName, log);
+  }
   if (structInfo.staticPropertySet.has(propName)) {
     initializer = member.initializer;
   }
@@ -209,6 +212,14 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   return ts.factory.updatePropertyDeclaration(member,
     ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
     member.name, member.questionToken, member.type, initializer);
+}
+
+function checkV2ComponentMemberType(node: ts.Node, propName: string, log: LogInfo[]): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `The property '${propName}' must specify a type.`,
+    pos: node.getStart()
+  });
 }
 
 function processParamProperty(member: ts.PropertyDeclaration,
