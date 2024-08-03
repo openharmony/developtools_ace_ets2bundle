@@ -27,6 +27,14 @@
     "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith", "backgroundImageResizable",
     "onAttach", "onDetach",
     "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview",
-    "keyboardShortcut"
+    "keyboardShortcut",
+    "sphericalEffect", "lightUpEffect", "pixelStretchEffect", "systemBarEffect", "linearGradientBlur", "renderGroup", "blendMode", "useShadowBatching", "freeze",
+    "clipShape", "maskShape",
+    "motionBlur",
+    "outline", "outlineRadius", "outlineColor", "outlineWidth", "outlineStyle",
+    "compositingFilter", "foregroundFilter", "backgroundFilter", "visualEffect",
+    "drawModifier",
+    "customProperty",
+    "renderFit"
   ]
 }
