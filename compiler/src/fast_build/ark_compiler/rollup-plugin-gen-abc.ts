@@ -19,6 +19,7 @@ import { generateModuleAbc, cleanModuleMode } from './generate_module_abc';
 import { transformForModule } from './transform';
 import { checkArkCompilerCacheInfo, shouldInvalidCache } from './cache';
 import { checkIfJsImportingArkts } from './check_import_module';
+import { cleanSharedModuleSet } from './check_shared_module';
 import { compilerOptions } from '../../ets_checker';
 import { ModuleSourceFile } from './module/module_source_file';
 import { SourceMapGenerator } from './generate_sourcemap';
@@ -59,6 +60,7 @@ export function genAbc() {
       cleanUpFilesList();
       cleanModuleMode();
       ModuleSourceFile.cleanUpObjects();
+      cleanSharedModuleSet();
     }
   };
 }
