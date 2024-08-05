@@ -61,3 +61,7 @@ function processDeclarationFile(filePath: string): void {
       generatedDetsFilesInHar.originalDeclarationContent;
   }
 }
+
+export function cleanSharedModuleSet() {
+  sharedModuleSet.clear();
+}
