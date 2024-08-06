@@ -5,9 +5,9 @@
     "margin", "marginLeft", "marginRight", "marginTop", "marginBottom",
     "border", "borderStyle", "borderWidth", "borderColor", "borderRadius", "background", "backgroundBrightness",
     "backgroundColor", "backgroundImage", "backgroundImageSize", "backgroundImagePosition", "backgroundBlurStyle",
-    "obscured", "opacity", "animation", "transition", "stateStyles", "foregroundBlurStyle", "freeze",
+    "obscured", "opacity", "animation", "transition", "stateStyles", "foregroundBlurStyle",
     "onClick", "onTouch", "touchable", "onKeyEvent", "onHover", "hoverEffect", "onMouse", "onAreaChange",
-    "blur", "backdropBlur", "windowBlur", "translate", "rotate", "scale", "transform", "renderGroup",
+    "blur", "backdropBlur", "windowBlur", "translate", "rotate", "scale", "transform",
     "onAppear", "onDisAppear", "visibility", "flexBasis", "flexShrink", "flexGrow", "alignSelf",
     "useAlign", "zIndex", "sharedTransition", "direction", "align", "position", "markAnchor",
     "offset", "enabled", "aspectRatio", "displayPriority",
@@ -33,7 +33,6 @@
     "motionBlur",
     "outline", "outlineRadius", "outlineColor", "outlineWidth", "outlineStyle",
     "compositingFilter", "foregroundFilter", "backgroundFilter", "visualEffect",
-    "drawModifier",
     "customProperty",
     "renderFit"
   ]
