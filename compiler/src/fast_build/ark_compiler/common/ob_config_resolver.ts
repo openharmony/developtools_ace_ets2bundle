@@ -41,7 +41,7 @@ export {
   ObConfigResolver,
   readNameCache,
   writeObfuscationNameCache
-} from 'arkguard'
+} from 'arkguard';
 
 export function resetObfuscation(): void {
   clearGlobalCaches();
@@ -92,7 +92,7 @@ export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<stri
 
 /**
  * Use tsc's dependency collection to collect the dependency files of the keep files.
- * Risk: The files resolved by typescript are different from the files resolved by rollup. For example, the two entry files have different priorities. 
+ * Risk: The files resolved by typescript are different from the files resolved by rollup. For example, the two entry files have different priorities.
  * Tsc looks for files in the types field in oh-packagek.json5 first, and rollup looks for files in the main field.
  */
 function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, allKeepFiles: Set<string>,
