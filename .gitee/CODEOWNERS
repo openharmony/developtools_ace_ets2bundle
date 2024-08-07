@@ -22,3 +22,19 @@ compiler/src/process_ui_syntax.ts @lihong67
 compiler/src/result_process.ts @lihong67
 compiler/src/utils.ts @lihong67
 compiler/src/validate_ui_syntax.ts @lihong67
+
+# Code owners for ArkCompiler ace_ets2bundle
+
+[arkcompiler]
+compiler/src/fast_build/ark_compiler/ @klooer
+compiler/src/ark_utils.ts @klooer
+compiler/src/gen_abc_plugin.ts @klooer
+compiler/src/gen_abc.ts @klooer
+compiler/src/gen_merged_abc.ts @klooer
+compiler/src/gen_module_abc.ts @klooer
+compiler/src/process_kit_import.ts @klooer
+compiler/src/process_module_files.ts @klooer
+compiler/src/process_sendable.ts @klooer
+compiler/src/process_source_file.ts @klooer
+compiler/src/resolve_ohm_url.ts @klooer
+compiler/test/ark_compiler_ut/ @klooer
