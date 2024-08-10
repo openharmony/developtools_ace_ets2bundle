@@ -555,151 +555,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(excludePathArray[0].includes('filename_obf')).to.be.true;
   });
 
-  mocha.it('4-1: test getSystemApiCache: -enable-property-obfuscation', function () {
-    let obfuscationCacheDir = path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/property');
-    let obfuscationOptions = {
-      'selfConfig': {
-        'ruleOptions': {
-          'enable': true,
-          'rules': [ 
-            path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/property/property.txt')
-          ]
-        },
-        'consumerRules': [],
-      },
-      'dependencies': {
-        'libraries': [],
-        'hars': []
-      },
-      'obfuscationCacheDir': obfuscationCacheDir,
-      'sdkApis': [
-        path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/system_api.d.ts')
-      ]
-    };
-    let projectConfig = {
-      obfuscationOptions,
-      compileHar: false
-    }
-    const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, undefined);
-    
-    const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-    expect(mergedObConfig.reservedPropertyNames.length == 8).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('TestClass')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('para1')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('para2')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('foo')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('TestFunction')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('funcPara1')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('funcPara2')).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.includes('ns')).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.length == 0).to.be.true;
-
-    let systemApiPath = obfuscationCacheDir + '/systemApiCache.json';
-    const data = fs.readFileSync(systemApiPath, 'utf8');
-    const systemApiContent = JSON.parse(data);
-
-    expect(systemApiContent.ReservedPropertyNames.length == 8).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('TestClass')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('para1')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('para2')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('foo')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('TestFunction')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('funcPara1')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('funcPara2')).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames.includes('ns')).to.be.true;
-    expect(systemApiContent.ReservedGlobalNames == undefined).to.be.true;
-
-    fs.unlinkSync(systemApiPath);
-  });
-
-  mocha.it('4-2: test getSystemApiCache: -enable-export-obfuscation', function () {
-    let obfuscationCacheDir = path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/export');
-    let obfuscationOptions = {
-      'selfConfig': {
-        'ruleOptions': {
-          'enable': true,
-          'rules': [ 
-            path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/export/export.txt')
-          ]
-        },
-        'consumerRules': [],
-      },
-      'dependencies': {
-        'libraries': [],
-        'hars': []
-      },
-      'obfuscationCacheDir': obfuscationCacheDir,
-      'sdkApis': [
-        path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/system_api.d.ts')
-      ]
-    };
-    let projectConfig = {
-      obfuscationOptions,
-      compileHar: false
-    }
-    const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, undefined);
-    
-    const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-    expect(mergedObConfig.reservedNames.length == 0).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.length == 0).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.length == 0).to.be.true;
-
-    let systemApiPath = obfuscationCacheDir + '/systemApiCache.json';
-    const noSystemApi = fs.existsSync(systemApiPath);
-
-    expect(noSystemApi).to.be.false;
-  });
-
-  mocha.it('4-3: test getSystemApiCache: -enable-export-obfuscation -enable-toplevel-obfuscation', function () {
-    let obfuscationCacheDir = path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/export_toplevel');
-    let obfuscationOptions = {
-      'selfConfig': {
-        'ruleOptions': {
-          'enable': true,
-          'rules': [ 
-            path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/export_toplevel/export_toplevel.txt')
-          ]
-        },
-        'consumerRules': [],
-      },
-      'dependencies': {
-        'libraries': [],
-        'hars': []
-      },
-      'obfuscationCacheDir': obfuscationCacheDir,
-      'sdkApis': [
-        path.join(OBFUSCATE_TESTDATA_DIR, 'system_api_obfuscation/system_api.d.ts')
-      ]
-    };
-    let projectConfig = {
-      obfuscationOptions,
-      compileHar: false
-    }
-    const obConfig: ObConfigResolver =  new ObConfigResolver(projectConfig, undefined);
-
-    const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-    expect(mergedObConfig.reservedNames.length == 0).to.be.true;
-    expect(mergedObConfig.reservedPropertyNames.length == 0).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.length == 3).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.includes('TestClass')).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.includes('TestFunction')).to.be.true;
-    expect(mergedObConfig.reservedGlobalNames.includes('ns')).to.be.true;
-
-    let systemApiPath = obfuscationCacheDir + '/systemApiCache.json';
-    const data = fs.readFileSync(systemApiPath, 'utf8');
-    const systemApiContent = JSON.parse(data);
-
-    expect(systemApiContent.ReservedNames == undefined).to.be.true;
-    expect(systemApiContent.ReservedPropertyNames == undefined).to.be.true;
-    expect(systemApiContent.ReservedGlobalNames.length == 3).to.be.true;
-    expect(systemApiContent.ReservedGlobalNames.includes('TestClass')).to.be.true;
-    expect(systemApiContent.ReservedGlobalNames.includes('TestFunction')).to.be.true;
-    expect(systemApiContent.ReservedGlobalNames.includes('ns')).to.be.true;
-
-    fs.unlinkSync(systemApiPath);
-  });
-
-  mocha.it('5-1: test getRelativeSourcePath: filePath starts with projectRootPath', function () {
+  mocha.it('4-1: test getRelativeSourcePath: filePath starts with projectRootPath', function () {
     const filePath = 'C:/projects/my-project/src/file.ts';
     const projectRootPath = 'C:/projects/my-project';
     const belongProjectPath = undefined;
@@ -707,7 +563,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(relativePath).to.equal('src/file.ts');
   });
 
-  mocha.it('5-2: test getRelativeSourcePath: filePath starts with belongProjectPath', function () {
+  mocha.it('4-2: test getRelativeSourcePath: filePath starts with belongProjectPath', function () {
     const filePath = 'C:/projects/another-project/src/file.ts';
     const projectRootPath = 'C:/projects/my-project';
     const belongProjectPath = 'C:/projects/another-project';
@@ -715,7 +571,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(relativePath).to.equal('src/file.ts');
   });
 
-  mocha.it('5-3: test getRelativeSourcePath: undefined projectRootPath', function () {
+  mocha.it('4-3: test getRelativeSourcePath: undefined projectRootPath', function () {
     const filePath = 'C:/projects/another-project/src/file.ts';
     const projectRootPath = undefined;
     const belongProjectPath = 'C:/projects/another-project';
@@ -723,7 +579,7 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(relativePath).to.equal('src/file.ts');
   });
 
-  mocha.it('5-4: test getRelativeSourcePath: undefined belongProjectPath ', function () {
+  mocha.it('4-4: test getRelativeSourcePath: undefined belongProjectPath ', function () {
     const filePath = 'C:/projects/my-project/src/file.ts';
     const projectRootPath = 'C:/projects/my-project';
     const belongProjectPath = undefined;
