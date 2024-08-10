@@ -18,7 +18,13 @@ import fs from 'fs';
 import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
-import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils, nameCacheMap } from 'arkguard';
+import {
+  getMapFromJson,
+  deleteLineInfoForNameString,
+  MemoryUtils,
+  nameCacheMap,
+  unobfuscationNamesObj
+} from 'arkguard';
 import {
   OH_MODULES,
   SEPARATOR_AT,
@@ -64,7 +70,7 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { getRelativeSourcePath, mangleFilePath, loadHistoryUnobfuscationNames } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
@@ -543,16 +549,19 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   }
 
   let historyNameCache = new Map<string, string>();
+  let namecachePath = moduleInfo.relativeSourceFilePath;
+  if (isDeclaration) {
+    namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath, undefined);
+  }
   if (nameCacheMap) {
-    let namecachePath = moduleInfo.relativeSourceFilePath;
-    if (isDeclaration) {
-      namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath, undefined);
-    }
     let identifierCache = nameCacheMap.get(namecachePath)?.[IDENTIFIER_CACHE];
     deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
-  let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object };
+  // For incremental build
+  loadHistoryUnobfuscationNames(namecachePath);
+
+  let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object,  unobfuscationNameMap?: Map<string, Set<string>>};
   let projectInfo: {
     packageDir: string,
     projectRootPath: string,
@@ -582,6 +591,16 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     }
     mixedInfo.nameCache.obfName = obfName;
     nameCacheMap.set(moduleInfo.relativeSourceFilePath, mixedInfo.nameCache);
+  }
+
+  if (mixedInfo.unobfuscationNameMap && !isDeclaration) {
+    let arrayObject: Record<string, string[]> = {};
+    // The type of unobfuscationNameMap's value is Set, convert Set to Array.
+    mixedInfo.unobfuscationNameMap.forEach((value: Set<string>, key: string) => {
+      let array: string[] = Array.from(value);
+      arrayObject[key] = array;
+    });
+    unobfuscationNamesObj[moduleInfo.relativeSourceFilePath] = arrayObject;
   }
 
   const newFilePath: string = tryMangleFileName(moduleInfo.buildFilePath, projectConfig, moduleInfo.originSourceFilePath);

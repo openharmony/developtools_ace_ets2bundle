@@ -18,7 +18,9 @@ import path from 'path';
 import type * as ts from 'typescript';
 import {
   ApiExtractor,
-  clearGlobalCaches
+  clearGlobalCaches,
+  unobfuscationNamesObj,
+  renameIdentifierModule
 } from 'arkguard';
 import type {
   ArkObfuscator,
@@ -40,8 +42,9 @@ export {
   nameCacheMap,
   ObConfigResolver,
   readNameCache,
-  writeObfuscationNameCache
-} from 'arkguard';
+  writeObfuscationNameCache,
+  writeUnobfuscationContent
+} from 'arkguard'
 
 export function resetObfuscation(): void {
   clearGlobalCaches();
@@ -128,4 +131,10 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
     }
   }
   return keepFilesAndDependencies;
+}
+
+export function loadHistoryUnobfuscationNames(namecachePath: string): void {
+  if (unobfuscationNamesObj && unobfuscationNamesObj[namecachePath]) {
+    renameIdentifierModule.historyUnobfuscatedNamesMap = new Map(Object.entries(unobfuscationNamesObj[namecachePath]));
+  }
 }
