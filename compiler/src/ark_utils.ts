@@ -356,11 +356,16 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
     pkgName = aliasPkgNameMap.get(aliasName);
   }
   const pkgInfo: Object = projectConfig.pkgContextInfo[pkgName];
-  if (pkgInfo === undefined) {
-    logger.error(red, `ArkTS:INTERNAL ERROR: package ${pkgName} not found`, reset);
+  if (!pkgInfo) {
+    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to find package '${pkgName}'.\n` +
+      `Error Message: Failed to obtain package '${pkgName}' from the package context information.`, reset);
   }
   let normalizedPath: string = '';
-  if (filePath === undefined) {
+  if (!filePath) {
+    if (!pkgInfo.entryPath) {
+      logger.error(red, `ArkTS:INTERNAL ERROR: Failed to find entry file of '${pkgName}'.\n` +
+        `Error Message: Failed to obtain the entry file information of '${pkgName}' from the package context information.`, reset);
+    }
     normalizedPath = `${pkgName}/${toUnixPath(pkgInfo.entryPath)}`;
     normalizedPath = removeSuffix(normalizedPath);
   } else {
@@ -375,7 +380,7 @@ export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Obj
   string | undefined {
   if (projectConfig.byteCodeHarInfo) {
     if (Object.prototype.hasOwnProperty.call(projectConfig.byteCodeHarInfo, moduleRequest)) {
-      return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
+      return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig, logger);
     }
     for (const byteCodeHarName in projectConfig.byteCodeHarInfo) {
       if (moduleRequest.startsWith(byteCodeHarName + '/')) {
@@ -393,7 +398,7 @@ export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig:
   if (Object.keys(externalPkgMap).length !== 0) {
     if (Object.prototype.hasOwnProperty.call(externalPkgMap, moduleRequest)) {
       if (useNormalizedOHMUrl) {
-        return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig);
+        return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig, logger);
       }
       // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
       return externalPkgMap[moduleRequest];
