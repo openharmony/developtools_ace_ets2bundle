@@ -21,7 +21,8 @@ import {
   getOhmUrlByFilepath,
   getOhmUrlByExternalPackage,
   getOhmUrlBySystemApiOrLibRequest,
-  getNormalizedOhmUrlByFilepath
+  getNormalizedOhmUrlByFilepath,
+  getNormalizedOhmUrlByAliasName
 } from '../../../../lib/ark_utils';
 import { PACKAGES } from '../../../../lib/pre_define';
 import projectConfig from '../../utils/processProjectConfig';
@@ -1099,6 +1100,56 @@ mocha.describe('generate ohmUrl', function () {
     }
     expect(loggerStub.calledWith(red, 'ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package ' +
       `'${appSoModuleRequest}' which being imported by '${importerFile}'`, reset)).to.be.true;
+    loggerStub.restore();
+  });
+
+  mocha.it('the error message of getNormalizedOhmUrlByAliasName', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'bytecode_har': {
+        'packageName': 'bytecode_har',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    this.rollup.share.projectConfig.dependencyAliasMap = new Map([
+      ['bytecode_alias', 'bytecode_har']
+    ]);
+    this.rollup.share.projectConfig.byteCodeHarInfo = {
+      'bytecode_alias': {
+        'abcPath': 'D:\\projectPath\\bytecode_har\\modules.abc'
+      }
+    }
+
+    const aliasPkgName = 'bytecode_alias';
+    const pkgName = 'bytecode_har';
+    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
+    const loggerStub = sinon.stub(logger, 'error');
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+
+    try {
+      delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har']['entryPath'];
+      getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
+    } catch (e) {
+    }
+
+    expect(loggerStub.getCall(0).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find entry file of '${pkgName}'.\n` +
+        `Error Message: Failed to obtain the entry file information of '${pkgName}' from the package context information.`, reset)).to.be.true;
+
+    try {
+      delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har'];
+      getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
+    } catch (e) {
+    }
+
+    expect(loggerStub.getCall(1).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find package '${pkgName}'.\n` +
+      `Error Message: Failed to obtain package '${pkgName}' from the package context information.`, reset)).to.be.true;
+
     loggerStub.restore();
   });
 });
