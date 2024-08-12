@@ -233,7 +233,9 @@ mocha.describe('test bundle_mode file api', function () {
     const filesinfo: string[] = fs.readFileSync(bundleMode.generateFileInfoOfBundle()).toString().split(";");
     // sourceFile is the 4th field in filesInfo
     const sourceFile: string = filesinfo[3];
+    const relativePath: string = toUnixPath(bundleMode.projectConfig.aceModuleBuild.replace(
+      bundleMode.projectConfig.projectRootPath + path.sep, ''));
   
-    expect(sourceFile === path.join(bundleMode.projectConfig.aceModuleBuild, 'test.js')).to.be.true;
+    expect(sourceFile === path.join(relativePath, 'test.js')).to.be.true;
   });
 });
