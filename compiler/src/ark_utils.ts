@@ -19,7 +19,6 @@ import type sourceMap from 'source-map';
 
 import { minify, MinifyOutput } from 'terser';
 import {
-  getMapFromJson,
   deleteLineInfoForNameString,
   MemoryUtils,
   nameCacheMap,
@@ -70,7 +69,7 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { getRelativeSourcePath, mangleFilePath, loadHistoryUnobfuscationNames } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
@@ -563,9 +562,6 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
-  // For incremental build
-  loadHistoryUnobfuscationNames(namecachePath);
-
   let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object,  unobfuscationNameMap?: Map<string, Set<string>>};
   let projectInfo: {
     packageDir: string,
@@ -574,8 +570,9 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     useNormalized: boolean,
     useTsHar: boolean
   } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
+  let filePathObj = { buildFilePath: moduleInfo.buildFilePath, relativeFilePath: moduleInfo.relativeSourceFilePath };
   try {
-    mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, moduleInfo.buildFilePath, previousStageSourceMap,
+    mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, filePathObj, previousStageSourceMap,
       historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
   } catch (err) {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`);

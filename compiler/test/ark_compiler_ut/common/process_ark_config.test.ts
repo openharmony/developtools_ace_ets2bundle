@@ -362,7 +362,7 @@ mocha.describe('test process_ark_config file api', function () {
           mNameGeneratorType: 1,
           mRenameProperties: false,
           mReservedProperties: [],
-          mTopLevel: true,
+          mTopLevel: false,
           mReservedToplevelNames:[],
         },
         mExportObfuscation: true,
@@ -382,13 +382,14 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportName.has('foo6')).to.be.true;
       expect(UnobfuscationCollections.reservedExportName.size === 5).to.be.true;
       expect(UnobfuscationCollections.reservedLangForProperty.size > languageWhiteListNum).to.be.true;
-      UnobfuscationCollections.clearUnobfuscationCollections();
+      UnobfuscationCollections.clear();
     });
 
     mocha.it('5-2: test readProjectAndLibsSource with export & toplevel obfuscation', function () {
       let arkObfuscator: ArkObfuscator = new ArkObfuscator();
-      mergedObConfig.options.enableToplevelObfuscation = true;
+      arkguardConfig.mNameObfuscation.mTopLevel = true;
       arkObfuscator.init(arkguardConfig);
+      mergedObConfig.options.enableToplevelObfuscation = true;
       readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
 
       expect(UnobfuscationCollections.reservedExportName.has('foo1')).to.be.true;
@@ -398,24 +399,21 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportName.has('foo6')).to.be.true;
       expect(UnobfuscationCollections.reservedExportName.size === 5).to.be.true;
       expect(UnobfuscationCollections.reservedLangForProperty.size > languageWhiteListNum).to.be.true;
-      UnobfuscationCollections.clearUnobfuscationCollections();
+      UnobfuscationCollections.clear();
     });
 
     mocha.it('5-3: test readProjectAndLibsSource with property obfuscation', function () {
       arkguardConfig.mNameObfuscation.mRenameProperties = true;
       arkguardConfig.mExportObfuscation = false;
+      arkguardConfig.mNameObfuscation.mTopLevel = false;
       let arkObfuscator: ArkObfuscator = new ArkObfuscator();
       arkObfuscator.init(arkguardConfig);
-      mergedObConfig.options.enableToplevelObfuscation = false;
       mergedObConfig.options.enablePropertyObfuscation = true;
+      mergedObConfig.options.enableExportObfuscation = false;
+      mergedObConfig.options.enableToplevelObfuscation = false;
       readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
 
-      expect(UnobfuscationCollections.reservedExportName.has('foo1')).to.be.true;
-      expect(UnobfuscationCollections.reservedExportName.has('foo2')).to.be.true;
-      expect(UnobfuscationCollections.reservedExportName.has('ts')).to.be.true;
-      expect(UnobfuscationCollections.reservedExportName.has('foo5')).to.be.true;
-      expect(UnobfuscationCollections.reservedExportName.has('foo6')).to.be.true;
-      expect(UnobfuscationCollections.reservedExportName.size === 5).to.be.true;
+      expect(UnobfuscationCollections.reservedExportName.size === 0).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('foo1')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('foo2')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('ts')).to.be.true;
@@ -423,7 +421,7 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('foo6')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('prop21')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.size === 6).to.be.true;
-      UnobfuscationCollections.clearUnobfuscationCollections();
+      UnobfuscationCollections.clear();
     });
 
     mocha.it('5-4: test readProjectAndLibsSource with export & property & toplevel obfuscation', function () {
@@ -432,8 +430,9 @@ mocha.describe('test process_ark_config file api', function () {
       arkguardConfig.mNameObfuscation.mTopLevel = true;
       let arkObfuscator: ArkObfuscator = new ArkObfuscator();
       arkObfuscator.init(arkguardConfig);
-      mergedObConfig.options.enableToplevelObfuscation = true;
       mergedObConfig.options.enablePropertyObfuscation = true;
+      mergedObConfig.options.enableToplevelObfuscation = true;
+      mergedObConfig.options.enableExportObfuscation = true;
       readProjectAndLibsSource(allFiles, mergedObConfig, arkObfuscator, false, keepFilesAndDependencies);
 
       expect(UnobfuscationCollections.reservedExportName.has('foo1')).to.be.true;
@@ -449,6 +448,7 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('foo6')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.has('prop21')).to.be.true;
       expect(UnobfuscationCollections.reservedExportNameAndProp.size === 6).to.be.true;
+      UnobfuscationCollections.clear();
     });
   });
 });
