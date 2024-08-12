@@ -589,8 +589,7 @@ export class ModuleMode extends CommonMode {
       child.on('close', (code: any) => {
         if (code !== SUCCESS) {
           this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.\n' +
-            `Error Message: ${errMsg}\n` +
-            `The execution command of es2abc is: ${genAbcCmd}`);
+            `Error Message: ${errMsg}`);
         }
         stopEvent(eventGenAbc, true);
         this.triggerEndSignal();
