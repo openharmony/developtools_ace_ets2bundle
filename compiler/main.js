@@ -535,7 +535,7 @@ function readCardForm(form) {
     const cardPath = path.resolve(projectConfig.projectPath, '..', sourcePath + '.ets');
     if (cardPath && fs.existsSync(cardPath)) {
       projectConfig.entryObj['../' + sourcePath] = cardPath + '?entry';
-      setEntryArrayForObf(sourcePath)
+      setEntryArrayForObf(sourcePath);
       projectConfig.cardEntryObj['../' + sourcePath] = cardPath;
       projectConfig.cardObj[cardPath] = sourcePath.replace(/^\.\//, '');
     }
