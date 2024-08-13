@@ -45,6 +45,8 @@ function getMetaInfo(projectConfig: Object, arkProjectConfig: Object): string {
   // user selects the compatible API version information
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion ?
     projectConfig.compatibleSdkVersion : 'null_compatibleSdkVersion';
+  const compatibleSdkVersionStage: string = projectConfig.compatibleSdkVersionStage ?
+    projectConfig.compatibleSdkVersionStage : 'null_compatibleSdkVersionStage';
   const runtimeOS: string = projectConfig.runtimeOS ? projectConfig.runtimeOS : 'null_runtimeOS';
   const sdkPath: string = projectConfig.etsLoaderPath ?
     projectConfig.etsLoaderPath : 'null_sdkPath';
@@ -53,7 +55,8 @@ function getMetaInfo(projectConfig: Object, arkProjectConfig: Object): string {
     projectConfig.etsLoaderVersion : 'null_sdkVersion';
   const sdkReleaseType: string = projectConfig.etsLoaderReleaseType ?
     projectConfig.etsLoaderReleaseType : 'null_sdkReleaseType';
-  metaInfoArr.push(compileSdkVersion, compatibleSdkVersion, runtimeOS, sdkPath, sdkVersion, sdkReleaseType);
+  metaInfoArr.push(
+    compileSdkVersion, compatibleSdkVersion, compatibleSdkVersionStage, runtimeOS, sdkPath, sdkVersion, sdkReleaseType);
 
   if (projectConfig.compileHar) {
     const useTsHar: string = arkProjectConfig.useTsHar;
