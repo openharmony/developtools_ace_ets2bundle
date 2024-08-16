@@ -49,6 +49,7 @@ import {
   VISUAL_STATE,
   VIEW_STACK_PROCESSOR,
   STYLE_ADD_DOUBLE_DOLLAR,
+  STYLE_ADD_DOUBLE_EXCLAMATION,
   $$_VALUE,
   $$_CHANGE_EVENT,
   $$_THIS,
@@ -2581,6 +2582,13 @@ function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction
   );
 }
 
+function updateArgumentForExclamation(argument): ts.Expression {
+  if (ts.isNonNullExpression(argument) && ts.isNonNullExpression(argument.expression)) {
+    return argument.expression.expression;
+  }
+  return argument;
+}
+
 function updateArgumentForDollar(argument): ts.Expression {
   if (ts.isElementAccessExpression(argument)) {
     return ts.factory.updateElementAccessExpression(
@@ -2709,7 +2717,8 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
       }
     }
     lastStatement.kind = true;
-  } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
+  } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp) ||
+    isDoubleExclamationToChange(isStylesAttr, propName, temp)) {
     const argumentsArr: ts.Expression[] = [];
     classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode);
     const doubleDollarNode: ts.Statement = ts.factory.createExpressionStatement(
@@ -2817,6 +2826,13 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
     false;
 }
 
+function isDoubleExclamationToChange(isStylesAttr: boolean, propName: string, temp): boolean {
+  return !isStylesAttr &&
+    STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && temp.arguments.length && temp.arguments[0] &&
+    ts.isNonNullExpression(temp.arguments[0]) && ts.isNonNullExpression(temp.arguments[0].expression) &&
+    ts.isPropertyAccessExpression(temp.arguments[0].expression.expression);
+}
+
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
@@ -2850,12 +2866,40 @@ function classifyArgumentsNum(args, argumentsArr: ts.Expression[], propName: str
   if (STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length >= 2) {
     const varExp: ts.Expression = updateArgumentForDollar(args[0]);
     argumentsArr.push(generateObjectForDollar(varExp), ...args.slice(1));
+  } else if (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && args.length >= 2) {
+    const varExp: ts.Expression = updateArgumentForExclamation(args[0]);
+    argumentsArr.push(generateObjectForExclamation(varExp), ...args.slice(1));
   } else if (PROPERTIES_ADD_DOUBLE_DOLLAR.has(identifierNode.escapedText.toString()) && args.length === 1 &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(identifierNode.escapedText.toString()).has(propName) ||
     STYLE_ADD_DOUBLE_DOLLAR.has(propName) && args.length === 1) {
     const varExp: ts.Expression = updateArgumentForDollar(args[0]);
     argumentsArr.push(varExp, createArrowFunctionForDollar(varExp));
   }
+}
+
+function generateObjectForExclamation(varExp: ts.Expression): ts.ObjectLiteralExpression {
+  return ts.factory.createObjectLiteralExpression([
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier($$_VALUE),
+        varExp),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier($$_CHANGE_EVENT),
+        ts.factory.createArrowFunction(
+          undefined, undefined,
+          [ts.factory.createParameterDeclaration(
+            undefined, undefined,
+            ts.factory.createIdentifier($$_NEW_VALUE),
+            undefined, undefined, undefined
+          )],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            [ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
+              varExp,
+              ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+              ts.factory.createIdentifier($$_NEW_VALUE)
+            ))], false)
+        ))], false);
 }
 
 function generateObjectForDollar(varExp: ts.Expression): ts.ObjectLiteralExpression {
