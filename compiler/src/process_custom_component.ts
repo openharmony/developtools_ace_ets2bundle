@@ -473,7 +473,7 @@ function isForbiddenAssignToComponentV2(item: ts.PropertyAssignment, itemName: s
 
 function isObervedProperty(value: ts.Expression, info: ChildAndParentComponentInfo,
   isV1Parent: boolean = true): boolean {
-  if (ts.isPropertyAccessExpression(value) && value.expression.kind === ts.SyntaxKind.ThisKeyword &&
+  if (value && ts.isPropertyAccessExpression(value) && value.expression.kind === ts.SyntaxKind.ThisKeyword &&
     ts.isIdentifier(value.name)) {
     const propertyName: string = value.name.escapedText.toString();
     return isV1Parent ? info.updatePropsForV1Parent.includes(propertyName) :
