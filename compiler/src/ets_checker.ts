@@ -485,15 +485,26 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     props = languageService.getProps();
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
-    const wholeCache: WholeCache = fs.existsSync(cacheFile) ?
-      JSON.parse(fs.readFileSync(cacheFile).toString()) :
-      { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
+    const [isJsonObject, cacheJsonObject]: [boolean, WholeCache | undefined] = isJsonString(cacheFile);
+    const wholeCache: WholeCache =  isJsonObject ? cacheJsonObject : { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
     if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
       cache = wholeCache.fileList;
     } else {
       cache = {};
     }
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
+  }
+
+  function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
+    if (fs.existsSync(cacheFile)) {
+      try {
+        return [true, JSON.parse(fs.readFileSync(cacheFile).toString())];
+      } catch(e) {
+        return [false, undefined];
+      }
+    } else {
+      return [false, undefined];
+    }
   }
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
