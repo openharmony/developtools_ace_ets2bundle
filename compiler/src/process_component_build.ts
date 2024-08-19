@@ -934,7 +934,7 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
     return [
       ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
         repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
-        processComponentBlock(repeatPropArgs[0].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[0]), false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
       ...repeatPropArgs.slice(1)
     ];
   } else if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
@@ -943,11 +943,21 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
     return [
       repeatPropArgs[0], ts.factory.updateArrowFunction(repeatPropArgs[1], repeatPropArgs[1].modifiers, repeatPropArgs[1].typeParameters,
         repeatPropArgs[1].parameters, repeatPropArgs[1].type, repeatPropArgs[1].equalsGreaterThanToken,
-        processComponentBlock(repeatPropArgs[1].body as ts.Block, false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[1]), false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
       ...repeatPropArgs.slice(2)
     ];
   }
   return repeatPropArgs;
+}
+
+function processRepeatCallBackBlock(repeatPropArg: ts.ArrowFunction): ts.Block {
+  if (ts.isBlock(repeatPropArg.body)) {
+    return repeatPropArg.body;
+  } else {
+    return ts.factory.updateArrowFunction(repeatPropArg, ts.getModifiers(repeatPropArg), repeatPropArg.typeParameters,
+      repeatPropArg.parameters, repeatPropArg.type, repeatPropArg.equalsGreaterThanToken,
+      ts.factory.createBlock([ts.factory.createExpressionStatement(repeatPropArg.body)], true)).body as ts.Block;
+  }
 }
 
 function processRepeatAttributeArrowNode(argumentsNode: ts.ArrowFunction[]): ts.ArrowFunction[] {
