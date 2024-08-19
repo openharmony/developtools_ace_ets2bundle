@@ -916,7 +916,7 @@ function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpr
     return ts.factory.updatePropertyAccessExpression(node,
       recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition), node.name);
   } else {
-    let repeatPropArgs: ts.ArrowFunction[] = node.arguments;
+    let repeatPropArgs: ts.ArrowFunction[] = processRepeatAttributeArrowNode(node.arguments);
     storedFileInfo.processRepeat = true;
     repeatPropArgs = processRepeatPropWithChild(node, repeatPropArgs, log, isBuilder, isGlobalBuilder, isTransition);
     storedFileInfo.processRepeat = false;
@@ -948,6 +948,24 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
     ];
   }
   return repeatPropArgs;
+}
+
+function processRepeatAttributeArrowNode(argumentsNode: ts.ArrowFunction[]): ts.ArrowFunction[] {
+  for (let i = 0; i < argumentsNode.length; i++) {
+    while (ts.isParenthesizedExpression(argumentsNode[i])) {
+      if (ts.isArrowFunction(argumentsNode[i].expression)) {
+        argumentsNode.splice(i, 1, argumentsNode[i].expression);
+        break;
+      } else {
+        if (argumentsNode[i].expression) {
+          argumentsNode[i] = argumentsNode[i].expression;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+  return argumentsNode;
 }
 
 function processDebug(node: ts.Statement, nameResult: NameResult, newStatements: ts.Statement[],
