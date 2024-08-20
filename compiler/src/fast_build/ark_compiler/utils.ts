@@ -38,7 +38,8 @@ import {
   validateFilePathLength,
   toUnixPath,
   isPackageModulesFile,
-  getProjectRootPath
+  getProjectRootPath,
+  isFileInProject
 } from '../../utils';
 import {
   tryMangleFileName,
@@ -205,13 +206,13 @@ export function isCommonJsPluginVirtualFile(filePath: string): boolean {
 export function isCurrentProjectFiles(filePath: string, projectConfig: Object): boolean {
   if (projectConfig.rootPathSet) {
     for (const projectRootPath of projectConfig.rootPathSet) {
-      if (filePath.indexOf(projectRootPath) !== -1) {
+      if (isFileInProject(filePath, projectRootPath)) {
         return true;
       }
     }
     return false;
   } 
-  return filePath.indexOf(projectConfig.projectRootPath) >= 0;
+  return isFileInProject(filePath, projectConfig.projectRootPath);
 }
 
 export function genTemporaryModuleCacheDirectoryForBundle(projectConfig: Object): string {
