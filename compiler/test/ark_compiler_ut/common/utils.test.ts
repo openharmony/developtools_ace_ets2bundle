@@ -1313,12 +1313,35 @@ mocha.describe('test utils file api', function () {
     const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
     this.rollup.share.projectConfig.rootPathSet = ['/testHar', `${PROJECT_ROOT}/${DEFAULT_PROJECT}`];
     const projectConfig = this.rollup.share.projectConfig;
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+    const statSyncStub = sinon.stub(fs, 'statSync').returns({
+      isFile: sinon.stub().returns(true)
+    });
     const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
     const expectProjectConfig: string = '/testHar';
     expect(projectRootPath === expectProjectConfig).to.be.true;
+    existsSyncStub.restore();
+    statSyncStub.restore();
   });
 
-  mocha.it('17-2: test getProjectRootPath under build', function () {
+  mocha.it('17-2: test getProjectRootPath adapt external modules(multiple project names contain a relationship)',
+    function () {
+    this.rollup.build();
+    const filePath: string = '/project/testA/har/src/main/ets/utils/Calc.ets';
+    this.rollup.share.projectConfig.rootPathSet = ['/project/test', '/project/testA', '/project/testAB'];
+    const projectConfig = this.rollup.share.projectConfig;
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+    const statSyncStub = sinon.stub(fs, 'statSync').returns({
+      isFile: sinon.stub().returns(true)
+    });
+    const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
+    const expectProjectConfig: string = '/project/testA';
+    expect(projectRootPath === expectProjectConfig).to.be.true;
+    existsSyncStub.restore();
+    statSyncStub.restore();
+  });
+
+  mocha.it('17-3: test getProjectRootPath under build', function () {
     this.rollup.build();
     const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/src/main/ets/utils/Calc.ets`;
     const projectConfig = this.rollup.share.projectConfig;
