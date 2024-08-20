@@ -29,7 +29,8 @@ import {
   DEVICE_TYPE,
   NODE_JS_PATH,
   PORT_DEFAULT,
-  ENTRY_MODULE_VERSION_DEFAULT
+  ENTRY_MODULE_VERSION_DEFAULT,
+  SDK_VERSION_STAGE
 } from "./common";
 import {
   ESMODULE,
@@ -64,6 +65,7 @@ class ProjectConfig {
   packageManagerType: string = OHPM;
   compileSdkVersion: number = SDK_VERSION;
   compatibleSdkVersion: number = SDK_VERSION;
+  compatibleSdkVersionStage: string = SDK_VERSION_STAGE;
   bundleName: string = BUNDLE_NAME_DEFAULT;
   etsLoaderVersion: string = ETS_LOADER_VERSION;
   etsLoaderReleaseType: string = RELEASE;

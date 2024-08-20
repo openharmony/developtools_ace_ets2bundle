@@ -24,7 +24,8 @@ import {
   BUNDLE_NAME_DEFAULT,
   ETS_LOADER_VERSION,
   RUNTIME_OS_OPENHARMONY,
-  MODULE_NAME_HASH_DEFAULT
+  MODULE_NAME_HASH_DEFAULT,
+  SDK_VERSION_STAGE
 } from "./common";
 import {
   AN_BUILD_OUTPUT_PATH,
@@ -161,6 +162,7 @@ class RollUpPluginMock {
     const metaInfos = [
       SDK_VERSION,
       SDK_VERSION,
+      SDK_VERSION_STAGE,
       RUNTIME_OS_OPENHARMONY,
       `/OpenHarmony/Sdk/${SDK_VERSION}/ets/build-tools/app`,
       ETS_LOADER_VERSION,
