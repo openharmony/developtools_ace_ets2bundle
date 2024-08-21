@@ -651,7 +651,7 @@ function writeFileSync(inputString: string, buildPath: string, keyPath: string, 
   if (fs.existsSync(cacheOutputPath)) {
     const fileSize: number = fs.statSync(cacheOutputPath).size;
     let sourceFile: string = output.replace(/\.temp\.js$/, '_.js');
-    if (!isDebug && projectConfig.projectRootPath) {
+    if (projectConfig.projectRootPath) {
       sourceFile = toUnixPath(sourceFile.replace(projectConfig.projectRootPath + path.sep, ''));
     } else {
       sourceFile = toUnixPath(sourceFile);
