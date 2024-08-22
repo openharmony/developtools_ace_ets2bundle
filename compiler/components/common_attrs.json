@@ -27,6 +27,7 @@
     "onGestureRecognizerJudgeBegin", "shouldBuiltInRecognizerParallelWith", "backgroundImageResizable",
     "onAttach", "onDetach",
     "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview",
-    "keyboardShortcut"
+    "keyboardShortcut",
+    "pixelRound", "expandSafeArea"
   ]
 }
