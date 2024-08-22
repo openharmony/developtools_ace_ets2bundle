@@ -70,7 +70,7 @@ export function watchChangeFiles() {
       this.cache.set('watchChangedFilesCache', 'watchChangedFiles');
       const watchModifiedFiles: string[] = this.cache.get('watchModifiedFiles') || [];
       const watchRemovedFiles: string[] = this.cache.get('watchRemovedFiles') || [];
-      if (shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
+      if (!projectConfig.removeChangedFileListInSdk && shouldWriteChangedList(watchModifiedFiles, watchRemovedFiles)) {
         writeFileSync(projectConfig.changedFileList, JSON.stringify(
           getHotReloadFiles(watchModifiedFiles, watchRemovedFiles, hotReloadSupportFiles)));
       }

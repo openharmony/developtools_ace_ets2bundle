@@ -641,7 +641,8 @@ function readWorkerFile() {
 
 function readPatchConfig() {
   if (aceBuildJson.patchConfig) {
-    projectConfig.hotReload = process.env.watchMode === 'true' && !projectConfig.isPreview;
+    projectConfig.hotReload = (process.env.watchMode === 'true' && !projectConfig.isPreview) ||
+      aceBuildJson.patchConfig.mode === 'hotReload';
     projectConfig.coldReload = aceBuildJson.patchConfig.mode === COLD_RELOAD_MODE ? true : false;
     // The "isFirstBuild" field indicates whether it is the first compilation of cold reload mode
     // It is determined by hvigor and passed via env
@@ -649,13 +650,22 @@ function readPatchConfig() {
     projectConfig.patchAbcPath = aceBuildJson.patchConfig.patchAbcPath;
     projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
       aceBuildJson.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
+    projectConfig.removeChangedFileListInSdk = aceBuildJson.patchConfig.removeChangedFileListInSdk === 'true' || false;
     if (projectConfig.hotReload) {
-      writeFileSync(projectConfig.changedFileList, JSON.stringify({
-        modifiedFiles: [],
-        removedFiles: []
-      }));
+      writeFileSync(projectConfig.changedFileList, JSON.stringify(getChangeFileInfo()));
     }
   }
+}
+
+function getChangeFileInfo() {
+  const info = {
+    modifiedFiles: [],
+    removedFiles: []
+  };
+  if (projectConfig.removeChangedFileListInSdk) {
+    info.modifiedFilesV2 = [];
+  }
+  return info;
 }
 
 function filterWorker(workerPath) {
