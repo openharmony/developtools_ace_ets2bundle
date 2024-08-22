@@ -562,7 +562,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     deleteLineInfoForNameString(historyNameCache, identifierCache);
   }
 
-  let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object,  unobfuscationNameMap?: Map<string, Set<string>>};
+  let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object, unobfuscationNameMap?: Map<string, Set<string>>};
   let projectInfo: {
     packageDir: string,
     projectRootPath: string,
