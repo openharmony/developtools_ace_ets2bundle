@@ -211,8 +211,7 @@ export class BundleMode extends CommonMode {
       });
       child.on('close', (code: number) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.\n' +
-            `genAbcCmd: ${genAbcCmd}`);
+          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.');
         }
         this.afterCompilationProcess();
         this.triggerEndSignal();
