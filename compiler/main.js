@@ -651,21 +651,13 @@ function readPatchConfig() {
     projectConfig.changedFileList = aceBuildJson.patchConfig.changedFileList ?
       aceBuildJson.patchConfig.changedFileList : path.join(projectConfig.cachePath, 'changedFileList.json');
     projectConfig.removeChangedFileListInSdk = aceBuildJson.patchConfig.removeChangedFileListInSdk === 'true' || false;
-    if (projectConfig.hotReload) {
-      writeFileSync(projectConfig.changedFileList, JSON.stringify(getChangeFileInfo()));
+    if (!projectConfig.removeChangedFileListInSdk && projectConfig.hotReload) {
+      writeFileSync(projectConfig.changedFileList, JSON.stringify({
+        modifiedFiles: [],
+        removedFiles: []
+      }));
     }
   }
-}
-
-function getChangeFileInfo() {
-  const info = {
-    modifiedFiles: [],
-    removedFiles: []
-  };
-  if (projectConfig.removeChangedFileListInSdk) {
-    info.modifiedFilesV2 = [];
-  }
-  return info;
 }
 
 function filterWorker(workerPath) {
@@ -1098,6 +1090,7 @@ function resetProjectConfig() {
   projectConfig.isFirstBuild = undefined;
   projectConfig.changedFileList = undefined;
   projectConfig.patchAbcPath = undefined;
+  projectConfig.removeChangedFileListInSdk = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
