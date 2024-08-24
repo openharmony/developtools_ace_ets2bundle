@@ -191,8 +191,8 @@ export class BundleMode extends CommonMode {
       // In debug mode, '.temp.js' file is in cache path, and '.js' file is in output path.
       // '.temp.js' file is the input of es2abc, and should be uesd as sourceFile here. However，in debug mode ,
       // using '.temp.js' file as sourceFile needs IDE to adapt, so use '.js'  file in output path instead temporarily.
-      const sourceFile: string = isDebug(this.projectConfig) ? info.sourceFile.replace(/(.*)_/, '$1') :
-        cacheFilePath.replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
+      const sourceFile: string = (isDebug(this.projectConfig) ? info.sourceFile.replace(/(.*)_/, '$1') :
+        cacheFilePath).replace(toUnixPath(this.projectConfig.projectRootPath) + '/', '');
       const abcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       filesInfo += `${cacheFilePath};${recordName};${moduleType};${sourceFile};${abcFilePath}\n`;
     });
