@@ -57,12 +57,22 @@ function generateAbc(rollupObject: Object, parentEvent: Object): void {
       const moduleColdreloadMode: ModuleColdreloadMode = new ModuleColdreloadMode(rollupObject);
       moduleColdreloadMode.generateAbc(rollupObject, eventGenerateAbc);
       moduleMode = moduleColdreloadMode;
+    } else if (rollupObject.share.arkProjectConfig.hotReload) {
+      // If file changes are monitored by the IDE, rollup is not started in watch mode, 
+      // so rollupObject.share.projectConfig.watchMode is not true. Hotreload in this mode 
+      // supports scenarios where entry depends on HAR and HSP.
+      const moduleHotreloadMode: ModuleHotreloadMode = new ModuleHotreloadMode(rollupObject);
+      moduleHotreloadMode.generateAbc(rollupObject, eventGenerateAbc);
+      moduleMode = moduleHotreloadMode;
     } else {
       const moduleBuildMode: ModuleBuildMode = new ModuleBuildMode(rollupObject);
       moduleBuildMode.generateAbc(rollupObject, eventGenerateAbc);
       moduleMode = moduleBuildMode;
     }
   } else if (rollupObject.share.arkProjectConfig.hotReload) {
+    // If file changes are monitored by rollup, rollup must be started in watch mode, 
+    // so rollupObject.share.projectConfig.watchMode needs to be true. Hotreload in this mode
+    // does not support scenarios where entry depends on HSP.
     const moduleHotreloadMode: ModuleHotreloadMode = new ModuleHotreloadMode(rollupObject);
     moduleHotreloadMode.generateAbc(rollupObject, eventGenerateAbc);
     moduleMode = moduleHotreloadMode;
