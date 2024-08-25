@@ -26,6 +26,7 @@ import {
 } from '../common/ark_define';
 import { isJsonSourceFile } from '../utils';
 import {
+  isFileInProject,
   mkdirsSync,
   toUnixPath,
   validateFilePathLength
@@ -51,6 +52,8 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   generateAbc(rollupObject: Object, parentEvent: Object): void {
+    // If hotreload is not running in rollup’s watch mode, hvigor must 
+    // be running in daemon mode for isFirstBuild to be effective.
     if (isFirstBuild) {
       this.compileAllFiles(rollupObject, parentEvent);
       isFirstBuild = false;
@@ -60,6 +63,8 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   addHotReloadArgs() {
+    // If hotreload is not running in rollup’s watch mode, hvigor must 
+    // be running in daemon mode for isFirstBuild to be effective.
     if (isFirstBuild) {
       this.cmdArgs.push('--dump-symbol-table');
       this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
@@ -85,7 +90,31 @@ export class ModuleHotreloadMode extends ModuleMode {
     }
 
     const changedFileListJson: string = fs.readFileSync(this.projectConfig.changedFileList).toString();
-    const changedFileList: Array<string> = JSON.parse(changedFileListJson).modifiedFiles;
+    let changedFileListVersion: string = '';
+    let areAllChangedFilesInProject: boolean = true;
+    const currentProjectRootPath: string = this.projectConfig.projectRootPath;
+    const changedFileList: Array<string> = (
+      function(changedFileList: Object): Array<string> {
+        if (changedFileList.hasOwnProperty('modifiedFilesV2')) {
+          changedFileListVersion = 'v2';
+          areAllChangedFilesInProject = changedFileList.modifiedFilesV2
+            .filter(file => file.hasOwnProperty('filePath'))
+            .every(file => isFileInProject(file.filePath, currentProjectRootPath));
+          return changedFileList.modifiedFilesV2
+            .filter(file => file.hasOwnProperty('filePath'))
+            .map(file => file.filePath);
+        } else if (changedFileList.hasOwnProperty('modifiedFiles')) {
+          changedFileListVersion = 'v1';
+          return changedFileList.modifiedFiles;
+        } else {
+          return [];
+        }
+      }
+    )(JSON.parse(changedFileListJson));
+    if (areAllChangedFilesInProject === false) {
+      this.logger.debug(blue, `ArkTS: Found changed files outside of this project, skip hot reload build`, reset);
+      return;
+    }
     if (typeof changedFileList === 'undefined' || changedFileList.length === 0) {
       this.logger.debug(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
       return;
@@ -97,7 +126,7 @@ export class ModuleHotreloadMode extends ModuleMode {
         this.logger.debug(blue, `ARKTS: json source file: ${file} changed, skip hot reload build!`, reset);
         needHotreloadBuild = false;
       }
-      return path.join(this.projectConfig.projectPath, file);
+      return changedFileListVersion === 'v1' ? path.join(this.projectConfig.projectPath, file) : file;
     });
 
     if (!needHotreloadBuild) {
