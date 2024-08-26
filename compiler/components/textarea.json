@@ -37,6 +37,21 @@
     "maxLines",
     "wordBreak",
     "customKeyboard",
-    "type"
+    "type",
+    "enablePreviewText",
+    "editMenuOptions",
+    "lineBreakStrategy",
+    "lineSpacing",
+    "contentType",
+    "onWillDelete",
+    "onDidDelete",
+    "onWillInsert",
+    "onDidInsert",
+    "fontFeature",
+    "textOverflow",
+    "textIndent",
+    "caretStyle",
+    "selectedBackgroundColor",
+    "enableAutoFill"
   ]
 }
