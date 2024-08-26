@@ -50,6 +50,20 @@
     "wordBreak",
     "customKeyboard",
     "enableAutoFill",
-    "passwordRules"
+    "passwordRules",
+    "showPassword",
+    "underlineColor",
+    "enablePreviewText",
+    "editMenuOptions",
+    "lineBreakStrategy",
+    "contentType",
+    "onWillDelete",
+    "onDidDelete",
+    "onWillInsert",
+    "onDidInsert",
+    "onSecurityStateChange",
+    "textOverflow",
+    "textIndent",
+    "fontFeature"
   ]
 }
