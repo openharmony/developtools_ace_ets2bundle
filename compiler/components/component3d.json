@@ -5,5 +5,5 @@
     "environment", "customRender", "shader", "shaderImageTexture",
     "shaderInputBuffer", "renderWidth", "renderHeight"
   ],
-  "systemApi": true
+  "systemApi": false
 }
