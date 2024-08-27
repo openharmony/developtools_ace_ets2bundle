@@ -195,6 +195,7 @@
         "Image",
         "ImageAnimator",
         "Line",
+        "LinearIndicator",
         "List",
         "ListItem",
         "ListItemGroup",
@@ -456,6 +457,11 @@
             "name": "Line",
             "type": "LineAttribute",
             "instance": "LineInstance"
+          },
+          {
+            "name": "LinearIndicator",
+            "type": "LinearIndicatorAttribute",
+            "instance": "LinearIndicatorInstance"
           },
           {
             "name": "List",
