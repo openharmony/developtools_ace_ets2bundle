@@ -18,6 +18,8 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 import fs from 'fs';
 import path from 'path';
+import sinon from 'sinon';
+import os from "os";
 
 import {
   OBFUSCATION_TOOL,
@@ -38,6 +40,17 @@ import {
   MERGERABC_PATH,
   JS2ABC_PATH,
   AOTCOMPILER_PATH,
+  WIN_ES2ABC_PATH,
+  WIN_TS2ABC_PATH,
+  WIN_MERGERABC_PATH,
+  WIN_JS2ABC_PATH,
+  WIN_AOTCOMPILER_PATH,
+  MAC_ES2ABC_PATH,
+  MAC_TS2ABC_PATH,
+  MAC_MERGERABC_PATH,
+  MAC_JS2ABC_PATH,
+  MAC_AOTCOMPILER_PATH,
+  ARKROOT_PATH,
   ARKCONFIG_TS2ABC_PATH
 } from '../mock/rollup_mock/path_config';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
@@ -53,6 +66,11 @@ import {
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import { ArkObfuscator } from 'arkguard';
 import { UnobfuscationCollections } from 'arkguard/lib/utils/CommonCollections';
+
+const WINDOWS: string = 'Windows_NT';
+const LINUX: string = 'Linux';
+const MAC: string = 'Darwin';
+const HARMONYOS: string = 'HarmonyOS';
 
 mocha.describe('test process_ark_config file api', function () {
   mocha.before(function () {
@@ -450,5 +468,65 @@ mocha.describe('test process_ark_config file api', function () {
       expect(UnobfuscationCollections.reservedExportNameAndProp.size === 6).to.be.true;
       UnobfuscationCollections.clear();
     });
+  });
+
+  mocha.it('6-1: test processPlatformInfo on windows', function () {
+    this.rollup.build();
+    const stub = sinon.stub(os, 'type').returns(WINDOWS);
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    const expectEs2abcPath = path.join(ARKROOT_PATH, WIN_ES2ABC_PATH);
+    const expectTs2abcPath = path.join(ARKROOT_PATH, WIN_TS2ABC_PATH);
+    const expectMergeAbcPath = path.join(ARKROOT_PATH, WIN_MERGERABC_PATH);
+    const expectJs2abcPath = path.join(ARKROOT_PATH, WIN_JS2ABC_PATH);
+    const expectAotCompilerPath = path.join(ARKROOT_PATH, WIN_AOTCOMPILER_PATH);
+    expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
+    expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
+    expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
+    expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
+    expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('6-2: test processPlatformInfo on linux', function () {
+    this.rollup.build();
+    const stub = sinon.stub(os, 'type').returns(LINUX);
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    const expectEs2abcPath = path.join(ARKROOT_PATH, ES2ABC_PATH);
+    const expectTs2abcPath = path.join(ARKROOT_PATH, TS2ABC_PATH);
+    const expectMergeAbcPath = path.join(ARKROOT_PATH, MERGERABC_PATH);
+    const expectJs2abcPath = path.join(ARKROOT_PATH, JS2ABC_PATH);
+    const expectAotCompilerPath = path.join(ARKROOT_PATH, AOTCOMPILER_PATH);
+    expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
+    expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
+    expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
+    expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
+    expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('6-3: test processPlatformInfo on mac', function () {
+    this.rollup.build();
+    const stub = sinon.stub(os, 'type').returns(MAC);
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    const expectEs2abcPath = path.join(ARKROOT_PATH, MAC_ES2ABC_PATH);
+    const expectTs2abcPath = path.join(ARKROOT_PATH, MAC_TS2ABC_PATH);
+    const expectMergeAbcPath = path.join(ARKROOT_PATH, MAC_MERGERABC_PATH);
+    const expectJs2abcPath = path.join(ARKROOT_PATH, MAC_JS2ABC_PATH);
+    const expectAotCompilerPath = path.join(ARKROOT_PATH, MAC_AOTCOMPILER_PATH);
+    expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
+    expect(arkConfig.ts2abcPath === expectTs2abcPath).to.be.true;
+    expect(arkConfig.mergeAbcPath === expectMergeAbcPath).to.be.true;
+    expect(arkConfig.js2abcPath === expectJs2abcPath).to.be.true;
+    expect(arkConfig.aotCompilerPath === expectAotCompilerPath).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('6-4: test processPlatformInfo on harmonyos', function () {
+    this.rollup.build();
+    const stub = sinon.stub(os, 'type').returns(HARMONYOS);
+    const arkConfig = initArkConfig(this.rollup.share.projectConfig);
+    const expectEs2abcPath = path.join(ARKROOT_PATH, ES2ABC_PATH);
+    expect(arkConfig.es2abcPath === expectEs2abcPath).to.be.true;
+    stub.restore();
   });
 });
