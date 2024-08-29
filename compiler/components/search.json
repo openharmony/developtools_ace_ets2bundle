@@ -34,6 +34,12 @@
     "selectedBackgroundColor",
     "inputFilter",
     "textIndent",
-    "onEditChange"
+    "onEditChange",
+    "enablePreviewText",
+    "editMenuOptions",
+    "onWillInsert",
+    "onDidInsert",
+    "onWillDelete",
+    "onDidDelete"
   ]
 }
