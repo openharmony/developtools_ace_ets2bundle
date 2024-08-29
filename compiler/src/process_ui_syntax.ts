@@ -179,6 +179,7 @@ export function processUISyntax(program: ts.Program, ut = false,
     let hasUseResource: boolean = false;
     let hasStruct: boolean = false;
     return (node: ts.SourceFile) => {
+      startTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
@@ -201,7 +202,9 @@ export function processUISyntax(program: ts.Program, ut = false,
               writeFileSyncByNode(processedNode, projectConfig, undefined);
             }
           }
-          return ts.visitEachChild(node, visitor, context);
+          const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+          stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+          return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
@@ -233,8 +236,11 @@ export function processUISyntax(program: ts.Program, ut = false,
             writeFileSyncByNode(processedNode, projectConfig, undefined);
           }
         }
-        return ts.visitEachChild(node, visitor, context);
+        const visitEachChildNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
+        return visitEachChildNode;
       } else {
+        stopTimeStatisticsLocation(compilationTime ? compilationTime.processUISyntaxTime : undefined);
         return node;
       }
     };
