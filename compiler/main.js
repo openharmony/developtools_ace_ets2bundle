@@ -1033,6 +1033,7 @@ const globalProgram = {
   program: null,
   watchProgram: null,
   checker: null,
+  strictChecker: null,
   strictLanguageService: null,
 };
 
@@ -1108,6 +1109,7 @@ function resetGlobalProgram() {
   globalProgram.builderProgram = null;
   globalProgram.program = null;
   globalProgram.checker = null;
+  globalProgram.strictChecker = null;
   globalProgram.strictLanguageService = null;
 }
 

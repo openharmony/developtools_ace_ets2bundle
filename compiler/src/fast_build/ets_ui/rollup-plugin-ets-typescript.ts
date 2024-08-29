@@ -72,7 +72,8 @@ import {
   resolveTypeReferenceDirectives,
   resetEtsCheck,
   collectAllFiles,
-  allSourceFilePaths
+  allSourceFilePaths,
+  resetEtsCheckTypeScript
 } from '../../ets_checker';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -84,6 +85,7 @@ import {
 import {
   kitTransformLog,
   processKitImport,
+  checkHasKeepTs,
   resetKitImportLog
 } from '../../process_kit_import';
 import { resetProcessComponentMember } from '../../process_component_member';
@@ -175,6 +177,11 @@ export function etsTransform() {
         storedFileInfo.collectCachedFiles(fileName);
       }
       return shouldDisable;
+    },
+    buildEnd() {
+      if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
+        resetEtsCheckTypeScript();
+      }
     },
     afterBuildEnd() {
       // Copy the cache files in the compileArkTS directory to the loader_out directory
@@ -393,20 +400,37 @@ async function transform(code: string, id: string) {
   tsProgram.getCompilerOptions().noEmit = false;
   const metaInfo: Object = this.getModuleInfo(id).meta;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
+  startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
+  const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile);
+  stopTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
+  let transformResult: ts.TransformationResult<ts.SourceFile> = null;
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
     }
-    tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
-      {
-        before: [
-          processUISyntax(null, false, compilationTime, id),
-          processKitImport(id, metaInfo, compilationTime)
-        ]
-      }
-    );
+    if (shouldEmitJsFlag) {
+      startTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
+      tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
+        {
+          before: [
+            processUISyntax(null, false, compilationTime, id),
+            processKitImport(id, metaInfo, compilationTime)
+          ]
+        }
+      );
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
+    } else {
+      startTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
+      const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
+        undefined : targetSourceFile, undefined);
+      transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
+        tsProgram.getCompilerOptions(), [targetSourceFile],
+        [processUISyntax(null, false, compilationTime, id),
+        processKitImport(id, metaInfo, compilationTime, false)], false);
+      stopTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
+    }
     stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
@@ -422,11 +446,49 @@ async function transform(code: string, id: string) {
     resetKitImportLog();
   }
 
-  return {
+  return shouldEmitJsFlag ? {
     code: emitResult.outputText,
     // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in some cases
     map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap()
-  };
+  } : printSourceFile(transformResult.transformed[0], compilationTime);
+}
+
+function printSourceFile(sourceFile: ts.SourceFile, compilationTime: CompilationTimeStatistics): string | null {
+  if (sourceFile) {
+    startTimeStatisticsLocation(compilationTime ? compilationTime.printNodeTime : undefined);
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const sourceCode: string = printer.printNode(ts.EmitHint.Unspecified, sourceFile, sourceFile);
+    stopTimeStatisticsLocation(compilationTime ? compilationTime.printNodeTime : undefined);
+    return sourceCode;
+  }
+  return null;
+}
+
+function outFile(options: ts.CompilerOptions): string {
+  return options.outFile || options.out;
+}
+
+function getShouldEmitJs(shouldEmitJs: boolean, targetSourceFile: ts.SourceFile): boolean {
+  let shouldEmitJsFlag: boolean = true;
+  let hasKeepTs: boolean = false;
+  if (!projectConfig.processTs) {
+    return shouldEmitJsFlag;
+  }
+  if (projectConfig.complieHar) {
+    if (!projectConfig.UseTsHar && !projectConfig.byteCodeHar) {
+      return shouldEmitJsFlag;
+    }
+  } else {
+    hasKeepTs = checkHasKeepTs(targetSourceFile);
+  }
+  // FA model/code coverage instrumentation/default situation
+  // These three situations require calling the emit interface, while in other cases 'shouldEmitJs' be false.
+  // The 'shouldEmitJS' variable is obtained through 'this.share.sprojectConfig'.
+  if (shouldEmitJs !== undefined) {
+    // ark es2abc
+    shouldEmitJsFlag = shouldEmitJs || ts.hasTsNoCheckOrTsIgnoreFlag(targetSourceFile) && !hasKeepTs;
+  }
+  return shouldEmitJsFlag;
 }
 
 function setPkgNameForFile(moduleInfo: Object): void {
