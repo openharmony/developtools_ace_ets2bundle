@@ -370,6 +370,9 @@ export class KitInfo {
   }
 
   static processKitInfo(kitName: string, symbols: Record<string, KitSymbol>, kitNode: TSModuleDeclaration): void {
+    // clean up the currentKitInfo to prevent the following process getting
+    // the incorrect symbolTable with the KitInfo from last kit import.
+    this.currentKitInfo = undefined;
     this.currentKitName = kitName;
 
     // do not handle an empty import
