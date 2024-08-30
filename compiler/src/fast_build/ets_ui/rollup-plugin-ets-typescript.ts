@@ -272,12 +272,22 @@ interface EmitResult {
   sourceMapText: string,
 }
 
-const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
-compilerHost.writeFile = () => {};
-compilerHost.resolveModuleNames = resolveModuleNames;
-compilerHost.getCurrentDirectory = () => process.cwd();
-compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
-compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
+function getCompilerHost(): ts.CompilerHost {
+  const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
+  compilerHost.writeFile = () => {};
+  compilerHost.resolveModuleNames = resolveModuleNames;
+  compilerHost.getCurrentDirectory = () => process.cwd();
+  compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+  compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
+  return compilerHost;
+}
+
+let compilerHost: ts.CompilerHost = null;
+
+if (!compilerHost) {
+  compilerHost = getCompilerHost();
+}
+
 
 const arkoalaTsProgramCache: WeakMap<ts.Program, ts.Program> = new WeakMap();
 
@@ -482,6 +492,7 @@ function resetEtsTransform(): void {
   ShouldEnableDebugLine.enableDebugLine = false;
   projectConfig.ignoreWarning = false;
   projectConfig.widgetCompile = false;
+  compilerHost = null;
   disableCacheOptions = {
     bundleName: 'default',
     entryModuleName: 'default',
