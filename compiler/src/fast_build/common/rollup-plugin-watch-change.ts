@@ -37,7 +37,7 @@ import { ShouldEnableDebugLine } from '../ets_ui/rollup-plugin-ets-typescript';
 export function watchChangeFiles() {
   function addFileToCache(this: any, key: string, id: string) {
     let modifiedFiles: string[] = [];
-    if (this.cache && this.cache.has(key)) {
+    if (!projectConfig.hotReload && this.cache && this.cache.has(key)) {
       modifiedFiles = this.cache.get(key);
       modifiedFiles.push(id);
     } else {
