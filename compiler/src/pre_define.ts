@@ -531,6 +531,7 @@ export const CREATE_STORAGE_PROP = 'createStorageProp';
 export const CREATE_LOCAL_STORAGE_LINK = 'createLocalStorageLink';
 export const CREATE_LOCAL_STORAGE_PROP = 'createLocalStorageProp';
 export const GET_ENTRYNAME: string = 'getEntryName';
+export const SUPER_ARGS: string = 'args';
 export const FINALIZE_CONSTRUCTION: string = 'finalizeConstruction';
 export const PROTOTYPE: string = 'prototype';
 export const REFLECT: string = 'Reflect';
