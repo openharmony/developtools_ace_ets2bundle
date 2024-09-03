@@ -14,9 +14,10 @@
  */
 
 import { expect } from 'chai';
+import fs from 'fs';
 import mocha from 'mocha';
-import * as ts from 'typescript';
 import path from 'path';
+import * as ts from 'typescript';
 
 import {
   processKitImport,
@@ -116,13 +117,84 @@ const KIT_LAZY_IMPORT_CODE: string =
 'test;\n' +
 'appAccount.createAppAccountManager();';
 
+const SINGLE_DEFAULT_BINDINGS_IMPORT_CODE: string =
+'import buffer from "@kit.ArkTest";\n' +
+'const buf = new buffer()';
+
+const SINGLE_DEFAULT_BINDINGS_IMPORT_CODE_EXPECT: string =
+'import buffer from "@ohos.buffer";\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const DEFAULT_BINDINGS_IMPORT_AFTER_NORMAL_KIT_CODE: string =
+'import { Ability } from "@kit.AbilityKit";\n' +
+'import buffer from "@kit.ArkTest";\n' +
+'let localAbility = new Ability();\n' +
+'const buf = new buffer()';
+
+const DEFAULT_BINDINGS_IMPORT_AFTER_NORMAL_KIT_CODE_EXPECT: string =
+'import Ability from "@ohos.app.ability.Ability";\n' +
+'import buffer from "@ohos.buffer";\n' +
+'let localAbility = new Ability();\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const DEFAULT_BINDINGS_IMPORT_BEFORE_NORMAL_KIT_CODE: string =
+'import buffer from "@kit.ArkTest";\n' +
+'import { Ability } from "@kit.AbilityKit";\n' +
+'let localAbility = new Ability();\n' +
+'const buf = new buffer()';
+
+const DEFAULT_BINDINGS_IMPORT_AFTER_BEFORE_KIT_CODE_EXPECT: string =
+'import buffer from "@ohos.buffer";\n' +
+'import Ability from "@ohos.app.ability.Ability";\n' +
+'let localAbility = new Ability();\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE: string =
+'import { Ability } from "@kit.AbilityKit";\n' +
+'import buffer, {convertxml, process} from "@kit.ArkTest";\n' +
+'let localAbility = new Ability();\n' +
+'const localconvertxml = new convertxml();\n' +
+'const localprocess = new process();\n' +
+'const buf = new buffer()'
+
+const DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT: string =
+'import Ability from "@ohos.app.ability.Ability";\n' +
+'import convertxml from "@ohos.convertxml";\n' +
+'import process from "@ohos.process";\n' +
+'import buffer from "@ohos.buffer";\n' +
+'let localAbility = new Ability();\n' +
+'const localconvertxml = new convertxml();\n' +
+'const localprocess = new process();\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
+const ARK_TEST_KIT: Object = {
+  symbols: {
+    "default": {
+      "source": "@ohos.buffer.d.ts",
+      "bindings": "default"
+    },
+    "convertxml": {
+      "source": "@ohos.convertxml.d.ts",
+      "bindings": "default"
+    },
+    "process": {
+      "source": "@ohos.process.d.ts",
+      "bindings": "default"
+    }
+  }
+}
+
 const compilerOptions = ts.readConfigFile(
   path.resolve(__dirname, '../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
 compilerOptions['moduleResolution'] = 'nodenext';
 compilerOptions['module'] = 'es2020';
 
 // !! The Kit transform result would be changed once the kit config file has updated.
-mocha.describe('process Kit Imports tests', function () {
+mocha.describe('1-1: process Kit Imports tests', function () {
   mocha.it('process specifier imports', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_IMPORT_CODE, {
       compilerOptions: compilerOptions,
@@ -132,7 +204,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_IMPORT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process specifier exports', function () {
+  mocha.it('1-2: process specifier exports', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_EXPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -141,7 +213,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_EXPORT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process star export', function () {
+  mocha.it('1-3: process star export', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_STAR_EXPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -150,7 +222,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_STAR_EXPORT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process unused type import', function () {
+  mocha.it('1-4: process unused type import', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_UNUSED_TYPE_IMPROT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -159,7 +231,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_UNUSED_TYPE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process used type import', function () {
+  mocha.it('1-5 process used type import', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_USED_TYPE_IMPROT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -168,7 +240,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_USED_TYPE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process unused value import', function () {
+  mocha.it('1-6 process unused value import', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_UNUSED_VALUE_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -177,7 +249,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_UNUSED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('process used value import', function () {
+  mocha.it('1-7 process used value import', function () {
     const result: ts.TranspileOutput = ts.transpileModule(KIT_USED_VALUE_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -186,7 +258,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_USED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
-  mocha.it('the error message of processKitImport', function () {
+  mocha.it('2-1 the error message of processKitImport', function () {
     ts.transpileModule(KIT_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -200,7 +272,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(hasError).to.be.true;
   });
 
-  mocha.it('the error message of newSpecificerInfo', function () {
+  mocha.it('2-2 the error message of newSpecificerInfo', function () {
     const symbols = {
       'test': ''
     }
@@ -220,7 +292,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(hasError).to.be.true;
   });
 
-  mocha.it('the error message of empty import', function () {
+  mocha.it('2-3 the error message of empty import', function () {
     ts.transpileModule(KIT_EMPTY_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -233,7 +305,7 @@ mocha.describe('process Kit Imports tests', function () {
     expect(hasError).to.be.true;
   });
 
-  mocha.it('the error message of lazy import', function () {
+  mocha.it('2-4 the error message of lazy import', function () {
     ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
@@ -249,5 +321,69 @@ mocha.describe('process Kit Imports tests', function () {
     );
     expect(hasError).to.be.true;
     expect(hasError1).to.be.true;
+  });
+
+  mocha.it('3-1 process single default-bindings import', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(SINGLE_DEFAULT_BINDINGS_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == SINGLE_DEFAULT_BINDINGS_IMPORT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-2 process default-bindings import after normal kit', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(DEFAULT_BINDINGS_IMPORT_AFTER_NORMAL_KIT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == DEFAULT_BINDINGS_IMPORT_AFTER_NORMAL_KIT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-3 process default-bindings import before normal kit', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(DEFAULT_BINDINGS_IMPORT_BEFORE_NORMAL_KIT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == DEFAULT_BINDINGS_IMPORT_AFTER_BEFORE_KIT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-4 process default-bindings import with specifiers', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
   });
 });
