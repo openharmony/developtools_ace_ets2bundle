@@ -93,6 +93,7 @@ import {
   getRealModulePath,
   getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
+import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -551,6 +552,8 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
   const isMacOrWin = isWindows() || isMac();
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
+    // @ts-ignore
+    sourceFileDependencies.set(fileName, sourceFile.resolvedModules);
     if (!(fileName.startsWith(projectRootPath + '/') || isOtherProjectResolvedModulesFilePaths(rollupShareObject, fileName))) {
       return;
     }
