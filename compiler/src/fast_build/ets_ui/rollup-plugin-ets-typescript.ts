@@ -82,7 +82,8 @@ import {
   GLOBAL_CUSTOM_BUILDER_METHOD,
   INNER_CUSTOM_BUILDER_METHOD,
   resetComponentMap,
-  INNER_CUSTOM_LOCALBUILDER_METHOD
+  INNER_CUSTOM_LOCALBUILDER_METHOD,
+  EXTEND_ATTRIBUTE
 } from '../../component_map';
 import {
   kitTransformLog,
@@ -583,6 +584,7 @@ function resetCollection() {
   componentInfo.id = 0;
   propertyCollection.clear();
   linkCollection.clear();
+  EXTEND_ATTRIBUTE.clear();
   resetComponentCollection();
   storedFileInfo.hasLocalBuilderInFile = false;
 }
