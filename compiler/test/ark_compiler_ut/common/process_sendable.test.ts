@@ -58,6 +58,115 @@ const SENDABLE_WITH_CONSTRUCTOR_CODE_EXPECT: string =
 '}\n' +
 '//# sourceMappingURL=sendableTest.js.map'
 
+const SENDABLE_WITH_SUPER_CLASS_CODE: string =
+`@Sendable
+class SuperClass {}
+
+@Sendable
+class SubClass extends SuperClass {}`
+
+const SENDABLE_WITH_SUPER_CLASS_CODE_EXPECT: string =
+'"use strict";\n' +
+'class SuperClass {\n' +
+'    constructor() {\n' +
+'        "use sendable";\n' +
+'    }\n' +
+'}\n' +
+'class SubClass extends SuperClass {\n' +
+'    constructor(...args) {\n' +
+'        "use sendable";\n' +
+'        super(...args);\n' +
+'    }\n' +
+'}\n' +
+'//# sourceMappingURL=sendableTest.js.map'
+
+const SENDABLE_WITH_SUPER_CLASS_AND_CONSTRUCTOR_CODE: string =
+ ` @Sendable
+class SuperClass {}
+
+@Sendable
+class SubClass extends SuperClass {
+  constructor() {
+    super();
+  }
+}`
+
+const SENDABLE_WITH_SUPER_CLASS_AND_CONSTRUCTOR_CODE_EXPECT: string =
+'"use strict";\n' +
+'class SuperClass {\n' +
+'    constructor() {\n' +
+'        "use sendable";\n' +
+'    }\n' +
+'}\n' +
+'class SubClass extends SuperClass {\n' +
+'    constructor() {\n' +
+'        "use sendable";\n' +
+'        super();\n' +
+'    }\n' +
+'}\n' +
+'//# sourceMappingURL=sendableTest.js.map'
+
+const SENDABLE_WITH_OVERLOADED_CONSTRUCTOR_CODE: string =
+`@Sendable
+class SuperClass {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+@Sendable
+class SubClass extends SuperClass {
+
+}`
+
+const SENDABLE_WITH_OVERLOADED_CONSTRUCTOR_CODE_EXPECT: string =
+'"use strict";\n' +
+'class SuperClass {\n' +
+'    constructor(name) {\n' +
+'        "use sendable";\n' +
+'        this.name = name;\n' +
+'    }\n' +
+'}\n' +
+'class SubClass extends SuperClass {\n' +
+'    constructor(...args) {\n' +
+'        "use sendable";\n' +
+'        super(...args);\n' +
+'    }\n' +
+'}\n' +
+'//# sourceMappingURL=sendableTest.js.map';
+
+const SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE: string =
+`@Sendable
+class SuperClass {
+}
+
+@Sendable
+class SubClass extends SuperClass {
+    age: number;
+    constructor()
+    constructor(age: number)
+    constructor(age?: number) {
+        super();
+        this.age = age !== undefined ? age : 0;
+    }
+}`
+
+const SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE_EXPECT: string =
+'"use strict";\n' +
+'class SuperClass {\n' +
+'    constructor() {\n' +
+'        "use sendable";\n' +
+'    }\n' +
+'}\n' +
+'class SubClass extends SuperClass {\n' +
+'    constructor(age) {\n' +
+'        "use sendable";\n' +
+'        super();\n' +
+'        this.age = age !== undefined ? age : 0;\n' +
+'    }\n' +
+'}\n' +
+'//# sourceMappingURL=sendableTest.js.map'
+
 const SENDABLE_FUNCTION_WITH_BODY: string = 
 `
 @Sendable
@@ -131,6 +240,38 @@ mocha.describe('process sendable decorator', function () {
       transformers: { before: [ processSendable() ] }
     });
     expect(result.outputText == SENDABLE_WITH_CONSTRUCTOR_CODE_EXPECT).to.be.true;
+  });
+  mocha.it('1-3: process sendable subclass with super class tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITH_SUPER_CLASS_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_WITH_SUPER_CLASS_CODE_EXPECT).to.be.true;
+  });
+  mocha.it('1-4: process sendable subclass with super class and constructor tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITH_SUPER_CLASS_AND_CONSTRUCTOR_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_WITH_SUPER_CLASS_AND_CONSTRUCTOR_CODE_EXPECT).to.be.true;
+  });
+  mocha.it('1-5: process sendable subclass with super class and constructor tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITH_OVERLOADED_CONSTRUCTOR_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_WITH_OVERLOADED_CONSTRUCTOR_CODE_EXPECT).to.be.true;
+  });
+  mocha.it('1-6: process sendable subclass with no explicit constructor in super class tests', function () {
+    const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "sendableTest.ts",
+      transformers: { before: [ processSendable() ] }
+    });
+    expect(result.outputText == SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE_EXPECT).to.be.true;
   });
   mocha.it('2-1: process sendable function with body tests', function () {
     const result: ts.TranspileOutput = ts.transpileModule(SENDABLE_FUNCTION_WITH_BODY, {
