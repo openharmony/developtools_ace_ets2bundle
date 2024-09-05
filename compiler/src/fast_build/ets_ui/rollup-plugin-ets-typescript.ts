@@ -301,10 +301,10 @@ interface EmitResult {
 
 function getCompilerHost(): ts.CompilerHost {
   const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
-  compilerHost.writeFile = () => {};
+  compilerHost.writeFile = (): void => {};
   compilerHost.resolveModuleNames = resolveModuleNames;
-  compilerHost.getCurrentDirectory = () => process.cwd();
-  compilerHost.getDefaultLibFileName = options => ts.getDefaultLibFilePath(options);
+  compilerHost.getCurrentDirectory = (): string => process.cwd();
+  compilerHost.getDefaultLibFileName = (options: ts.CompilerOptions): string => ts.getDefaultLibFilePath(options);
   compilerHost.resolveTypeReferenceDirectives = resolveTypeReferenceDirectives;
   return compilerHost;
 }
