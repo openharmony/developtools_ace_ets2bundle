@@ -146,12 +146,12 @@ class SubClass extends SuperClass {
     constructor()
     constructor(age: number)
     constructor(age?: number) {
-        super();  
+        super();
         this.age = age !== undefined ? age : 0;
     }
 }`
 
-const SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE_EXPECT: string = 
+const SENDABLE_WITH_NO_PARENT_CONSTRUCTOR_CODE_EXPECT: string =
 '"use strict";\n' +
 'class SuperClass {\n' +
 '    constructor() {\n' +
