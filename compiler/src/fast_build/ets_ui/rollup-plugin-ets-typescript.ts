@@ -559,6 +559,7 @@ class CreateProgramMoment {
     if (CreateProgramMoment.promise) {
       return;
     }
+    CreateProgramMoment.roots.add(path.resolve(__dirname, '../../../declarations/common.d.ts'));
     CreateProgramMoment.emitter = new nodeEvents.EventEmitter();
     CreateProgramMoment.promise = new Promise<void>(resolve => {
       CreateProgramMoment.emitter.on('checkPrefCreateProgramId', () => {
