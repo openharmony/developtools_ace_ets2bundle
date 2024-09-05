@@ -14,7 +14,7 @@
  */
 
 import ts from 'typescript';
-import { COMPONENT_SENDABLE_DECORATOR } from './pre_define';
+import { SUPER_ARGS, COMPONENT_SENDABLE_DECORATOR } from './pre_define';
 
 function transformOptionalMemberForSendable(node: ts.PropertyDeclaration): ts.PropertyDeclaration {
   let updatedTypeNode: ts.TypeNode = node.type;
@@ -69,15 +69,36 @@ function updateSendableConstructor(constructor: ts.ConstructorDeclaration): ts.C
   );
 }
 
-function addConstructorForSendableClass(members: ts.NodeArray<ts.ClassElement>): ts.NodeArray<ts.ClassElement> {
+function addConstructorForSendableClass(
+  members: ts.NodeArray<ts.ClassElement>,
+  needSuper: boolean): ts.NodeArray<ts.ClassElement> {
+  const params: ts.ParameterDeclaration[] = []
+  const constructorStatements: ts.Statement[] = [
+    ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable'))
+  ];
+  if (needSuper) {
+    constructorStatements.push(
+      ts.factory.createExpressionStatement(
+        ts.factory.createCallExpression(
+          ts.factory.createSuper(), undefined, [ts.factory.createSpreadElement(ts.factory.createIdentifier(SUPER_ARGS))])
+      )
+    )
+    params.push(
+      ts.factory.createParameterDeclaration(
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
+        ts.factory.createIdentifier(SUPER_ARGS),
+        undefined,
+        undefined,
+        undefined)
+    )
+  }
   const constructor: ts.ConstructorDeclaration = ts.factory.createConstructorDeclaration(
     undefined,
-    [],
-    ts.factory.createBlock(
-      [ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable'))],
-      true
-    )
+    params,
+    ts.factory.createBlock(constructorStatements, true)
   );
+
   return ts.factory.createNodeArray([constructor, ...(members || [])]);
 }
 
@@ -85,6 +106,8 @@ export function processSendableClass(node: ts.ClassDeclaration): ts.ClassDeclara
   let hasConstructor = false;
   let updatedMembers: ts.NodeArray<ts.ClassElement> = node.members;
   let updatedModifiers: ts.NodeArray<ts.ModifierLike> = removeSendableDecorator(node.modifiers);
+  let needSuper: boolean =
+    node.heritageClauses?.some(clause => clause.token === ts.SyntaxKind.ExtendsKeyword) || false;
 
   for (const member of node.members) {
     if (ts.isPropertyDeclaration(member) && member.questionToken) {
@@ -104,7 +127,7 @@ export function processSendableClass(node: ts.ClassDeclaration): ts.ClassDeclara
   }
 
   if (!hasConstructor) {
-    updatedMembers = addConstructorForSendableClass(updatedMembers);
+    updatedMembers = addConstructorForSendableClass(updatedMembers, needSuper);
   }
 
   node = ts.factory.updateClassDeclaration(node, updatedModifiers, node.name, node.typeParameters,
