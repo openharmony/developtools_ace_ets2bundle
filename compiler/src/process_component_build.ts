@@ -2858,7 +2858,7 @@ function isDoubleExclamationToChange(isStylesAttr: boolean, propName: string, te
   return !isStylesAttr &&
     STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && temp.arguments.length && temp.arguments[0] &&
     ts.isNonNullExpression(temp.arguments[0]) && ts.isNonNullExpression(temp.arguments[0].expression) &&
-    ts.isPropertyAccessExpression(temp.arguments[0].expression.expression);
+    !ts.isNonNullExpression(temp.arguments[0].expression.expression);
 }
 
 function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean {
