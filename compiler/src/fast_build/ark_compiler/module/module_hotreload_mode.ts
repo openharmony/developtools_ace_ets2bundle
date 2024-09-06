@@ -62,7 +62,7 @@ export class ModuleHotreloadMode extends ModuleMode {
     }
   }
 
-  addHotReloadArgs() {
+  addHotReloadArgs(): void {
     // If hotreload is not running in rollup’s watch mode, hvigor must 
     // be running in daemon mode for isFirstBuild to be effective.
     if (isFirstBuild) {
@@ -90,27 +90,11 @@ export class ModuleHotreloadMode extends ModuleMode {
     }
 
     const changedFileListJson: string = fs.readFileSync(this.projectConfig.changedFileList).toString();
-    let changedFileListVersion: string = '';
-    let areAllChangedFilesInProject: boolean = true;
-    const currentProjectRootPath: string = this.projectConfig.projectRootPath;
-    const changedFileList: Array<string> = (
-      function(changedFileList: Object): Array<string> {
-        if (changedFileList.hasOwnProperty('modifiedFilesV2')) {
-          changedFileListVersion = 'v2';
-          areAllChangedFilesInProject = changedFileList.modifiedFilesV2
-            .filter(file => file.hasOwnProperty('filePath'))
-            .every(file => isFileInProject(file.filePath, currentProjectRootPath));
-          return changedFileList.modifiedFilesV2
-            .filter(file => file.hasOwnProperty('filePath'))
-            .map(file => file.filePath);
-        } else if (changedFileList.hasOwnProperty('modifiedFiles')) {
-          changedFileListVersion = 'v1';
-          return changedFileList.modifiedFiles;
-        } else {
-          return [];
-        }
-      }
-    )(JSON.parse(changedFileListJson));
+    const {
+      changedFileListVersion,
+      areAllChangedFilesInProject,
+      changedFileList
+    } = this.parseChangedFileListJson(changedFileListJson);
     if (areAllChangedFilesInProject === false) {
       this.logger.debug(blue, `ArkTS: Found changed files outside of this project, skip hot reload build`, reset);
       return;
@@ -148,6 +132,33 @@ export class ModuleHotreloadMode extends ModuleMode {
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
     this.generateAbcByEs2abc(parentEvent);
+  }
+
+  private parseChangedFileListJson(changedFileListJson: string): object {
+    const changedFileList = JSON.parse(changedFileListJson);
+    if (Object.prototype.hasOwnProperty.call(changedFileList, 'modifiedFilesV2')) {
+      return {
+        'changedFileListVersion': 'v2',
+        'areAllChangedFilesInProject': changedFileList.modifiedFilesV2
+          .filter(file => Object.prototype.hasOwnProperty.call(file, 'filePath'))
+          .every(file => isFileInProject(file.filePath, this.projectConfig.projectRootPath)),
+        'changedFileList': changedFileList.modifiedFilesV2
+          .filter(file => Object.prototype.hasOwnProperty.call(file, 'filePath'))
+          .map(file => file.filePath)
+      };
+    } else if (Object.prototype.hasOwnProperty.call(changedFileList, 'modifiedFiles')) {
+      return {
+        'changedFileListVersion': 'v1',
+        'areAllChangedFilesInProject': true,
+        'changedFileList': changedFileList.modifiedFiles
+      };
+    } else {
+      return {
+        'changedFileListVersion': '',
+        'areAllChangedFilesInProject': true,
+        'changedFileList': []
+      };
+    }
   }
 
   private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
