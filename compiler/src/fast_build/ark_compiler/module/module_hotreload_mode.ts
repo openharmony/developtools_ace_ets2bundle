@@ -52,19 +52,24 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   generateAbc(rollupObject: Object, parentEvent: Object): void {
-    // If hotreload is not running in rollup’s watch mode, hvigor must 
-    // be running in daemon mode for isFirstBuild to be effective.
+    // To support hotreload of multiple HSP modules, rollup no longer runs in watch mode. 
+    // In this case isFirstBuild needs to be passed in by hvigor, because if multiple HSP 
+    // module build tasks are running in the same worker in the IDE, the isFirstBuild of 
+    // the later build task will be overwritten by the first build task to false.
+    if (rollupObject.share.projectConfig.watchMode !== 'true') {
+      isFirstBuild = this.projectConfig.isFirstBuild;
+    }
     if (isFirstBuild) {
       this.compileAllFiles(rollupObject, parentEvent);
-      isFirstBuild = false;
+      if (rollupObject.share.projectConfig.watchMode === 'true') {
+        isFirstBuild = false;
+      }
     } else {
       this.compileChangeListFiles(rollupObject, parentEvent);
     }
   }
 
   addHotReloadArgs(): void {
-    // If hotreload is not running in rollup’s watch mode, hvigor must 
-    // be running in daemon mode for isFirstBuild to be effective.
     if (isFirstBuild) {
       this.cmdArgs.push('--dump-symbol-table');
       this.cmdArgs.push(`"${this.symbolMapFilePath}"`);
