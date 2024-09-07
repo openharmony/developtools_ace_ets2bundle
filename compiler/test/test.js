@@ -60,7 +60,6 @@ function expectActual(name, filePath, checkError = false) {
   componentInfo.id = 0;
   componentCollection.customComponents.clear();
   resetComponentCollection();
-  processStructComponentV2.default.resetStructMapInEts();
   storedFileInfo.setCurrentArkTsFile();
   const afterProcess = sourceReplace(source);
   if (checkError) {
@@ -78,6 +77,7 @@ function expectActual(name, filePath, checkError = false) {
     fileName: `${name}.ets`,
     transformers: { before: [processUISyntax(null, true)] }
   });
+  processStructComponentV2.default.resetStructMapInEts();
   if (checkError) {
     assertError(name);
   } else {
