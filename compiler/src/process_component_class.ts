@@ -153,7 +153,6 @@ import {
   globalBuilderParamAssignment
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
-import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
@@ -694,36 +693,22 @@ export function processBuildMember(node: ts.MethodDeclaration | ts.FunctionDecla
     if (isProperty(node)) {
       node = createReference(node as ts.PropertyAssignment, log, isBuilder);
     }
-    if (isNeedGetRawObject(node)) {
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
+      stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
+      ts.isPropertyAccessExpression(node.parent.expression) && node !== node.parent.expression &&
+      node.parent.expression.name.escapedText.toString() !== FOREACH_GET_RAW_OBJECT) {
       return ts.factory.createCallExpression(ts.factory.createPropertyAccessExpression(
         ts.factory.createIdentifier(FOREACH_OBSERVED_OBJECT),
         ts.factory.createIdentifier(FOREACH_GET_RAW_OBJECT)), undefined, [node]);
     }
     return ts.visitEachChild(node, visitBuild, context);
   }
-}
-
-function checkStateName(node: ts.PropertyAccessExpression): string {
-  if (node.expression && !node.expression.expression && node.name && ts.isIdentifier(node.name)) {
-    return node.name.escapedText.toString();
+  function checkStateName(node: ts.PropertyAccessExpression): string {
+    if (node.expression && !node.expression.expression && node.name && ts.isIdentifier(node.name)) {
+      return node.name.escapedText.toString();
+    }
+    return null;
   }
-  return null;
-}
-
-function isNeedGetRawObject(node: ts.Node): boolean {
-  return !isInComponentV2Context() && ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name) &&
-    stateObjectCollection.has(checkStateName(node)) && node.parent && ts.isCallExpression(node.parent) &&
-    ts.isPropertyAccessExpression(node.parent.expression) && node !== node.parent.expression &&
-    node.parent.expression.name.escapedText.toString() !== FOREACH_GET_RAW_OBJECT;
-}
-
-function isInComponentV2Context(): boolean {
-  if (componentCollection.currentClassName) {
-    const parentStructInfo: StructInfo =
-      processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
-    return parentStructInfo.isComponentV2;
-  }
-  return false;
 }
 
 function isGeometryView(node: ts.Node): boolean {
