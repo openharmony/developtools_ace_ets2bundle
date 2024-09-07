@@ -72,7 +72,7 @@ function updateSendableConstructor(constructor: ts.ConstructorDeclaration): ts.C
 function addConstructorForSendableClass(
   members: ts.NodeArray<ts.ClassElement>,
   needSuper: boolean): ts.NodeArray<ts.ClassElement> {
-  const params: ts.ParameterDeclaration[] = []
+  const params: ts.ParameterDeclaration[] = [];
   const constructorStatements: ts.Statement[] = [
     ts.factory.createExpressionStatement(ts.factory.createStringLiteral('use sendable'))
   ];
@@ -82,7 +82,7 @@ function addConstructorForSendableClass(
         ts.factory.createCallExpression(
           ts.factory.createSuper(), undefined, [ts.factory.createSpreadElement(ts.factory.createIdentifier(SUPER_ARGS))])
       )
-    )
+    );
     params.push(
       ts.factory.createParameterDeclaration(
         undefined,
@@ -91,7 +91,7 @@ function addConstructorForSendableClass(
         undefined,
         undefined,
         undefined)
-    )
+    );
   }
   const constructor: ts.ConstructorDeclaration = ts.factory.createConstructorDeclaration(
     undefined,
