@@ -122,6 +122,7 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
     fs.closeSync(fd);
   }
 };
+
 // The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
 const filesBuildInfo: Map<string, string> = new Map();
 
@@ -486,25 +487,13 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
     const [isJsonObject, cacheJsonObject]: [boolean, WholeCache | undefined] = isJsonString(cacheFile);
-    const wholeCache: WholeCache =  isJsonObject ? cacheJsonObject : { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
+    const wholeCache: WholeCache = isJsonObject ? cacheJsonObject : { 'runtimeOS': projectConfig.runtimeOS, 'sdkInfo': projectConfig.sdkInfo, 'fileList': {} };
     if (wholeCache.runtimeOS === projectConfig.runtimeOS && wholeCache.sdkInfo === projectConfig.sdkInfo) {
       cache = wholeCache.fileList;
     } else {
       cache = {};
     }
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
-  }
-
-  function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
-    if (fs.existsSync(cacheFile)) {
-      try {
-        return [true, JSON.parse(fs.readFileSync(cacheFile).toString())];
-      } catch(e) {
-        return [false, undefined];
-      }
-    } else {
-      return [false, undefined];
-    }
   }
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
@@ -536,6 +525,18 @@ export function collectAllFiles(program?: ts.Program, rollupFileList?: IterableI
     return;
   }
   mergeRollUpFiles(rollupFileList, rollupObject);
+}
+
+function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
+  if (fs.existsSync(cacheFile)) {
+    try {
+      return [true, JSON.parse(fs.readFileSync(cacheFile).toString())];
+    } catch(e) {
+      return [false, undefined];
+    }
+  } else {
+    return [false, undefined];
+  }
 }
 
 export function collectTscFiles(program: ts.Program): void {
