@@ -47,7 +47,7 @@ export function transformForModule(code: string, id: string) {
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const metaInfo: Object = this.getModuleInfo(id).meta;
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
-    if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig)) {
+    if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
       ModuleSourceFile.newSourceFile(id, code, metaInfo);
     }
