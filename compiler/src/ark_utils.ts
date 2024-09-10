@@ -73,6 +73,7 @@ import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
+import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -555,7 +556,8 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   let historyNameCache = new Map<string, string>();
   let namecachePath = moduleInfo.relativeSourceFilePath;
   if (isDeclaration) {
-    namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath, undefined);
+    namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath,
+      sourceFileBelongProject.get(toUnixPath(moduleInfo.originSourceFilePath)));
   }
   if (nameCacheMap) {
     let identifierCache = nameCacheMap.get(namecachePath)?.[IDENTIFIER_CACHE];
@@ -637,12 +639,12 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
 }
 
 export async function mangleDeclarationFileName(logger: Object, projectConfig: Object,
-  moduleIdMetaInfoMap: Map<string, string>): Promise<void> {
+  sourceFileBelongProject: Map<string, string>): Promise<void> {
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
       let filePath = genFilesInHar.originalDeclarationCachePath;
       let relativeSourceFilePath = getRelativeSourcePath(filePath,
-         projectConfig.projectRootPath, moduleIdMetaInfoMap.get(filePath));
+         projectConfig.projectRootPath, sourceFileBelongProject.get(toUnixPath(filePath)));
       await writeObfuscatedSourceCode({
           content: genFilesInHar.originalDeclarationContent,
           buildFilePath: genFilesInHar.originalDeclarationCachePath,

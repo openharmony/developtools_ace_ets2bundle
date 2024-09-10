@@ -26,6 +26,8 @@ import type {
 
 import { toUnixPath } from '../../../utils';
 import { allSourceFilePaths, localPackageSet } from '../../../ets_checker';
+import { isCurrentProjectFiles } from '../utils';
+import { sourceFileBelongProject } from '../module/module_source_file';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
@@ -45,6 +47,7 @@ export {
 
 export function resetObfuscation(): void {
   clearGlobalCaches();
+  sourceFileBelongProject.clear();
   ApiExtractor.mPropertySet?.clear();
   ApiExtractor.mSystemExportSet?.clear();
   localPackageSet?.clear();
@@ -78,7 +81,7 @@ function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>):
 
 // Collect all keep files and then collect their dependency files.
 export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>,
-  mergedObConfig: MergedConfig, projectRootPath: string, arkObfuscator: ArkObfuscator): Set<string> {
+  mergedObConfig: MergedConfig, projectRootPath: string, arkObfuscator: ArkObfuscator, projectConfig: Object): Set<string> {
   if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0) {
     return new Set<string>();
   }
@@ -86,7 +89,8 @@ export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<stri
   const excludePaths = mergedObConfig.excludePathSet;
   let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths, excludePaths);
   arkObfuscator.setKeepSourceOfPaths(allKeepFiles);
-  const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(resolvedModulesCache, mergedObConfig, allKeepFiles, projectRootPath);
+  const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(resolvedModulesCache, mergedObConfig,
+    allKeepFiles, projectRootPath, projectConfig);
   return keepFilesAndDependencies;
 }
 
@@ -95,8 +99,12 @@ export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<stri
  * Risk: The files resolved by typescript are different from the files resolved by rollup. For example, the two entry files have different priorities.
  * Tsc looks for files in the types field in oh-packagek.json5 first, and rollup looks for files in the main field.
  */
-function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>, mergedObConfig: MergedConfig, allKeepFiles: Set<string>,
-  projectRootPath: string): Set<string> {
+function getFileNamesForScanningWhitelist(
+  resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>,
+  mergedObConfig: MergedConfig,
+  allKeepFiles: Set<string>,
+  projectRootPath: string,
+  projectConfig: Object): Set<string> {
   const keepFilesAndDependencies: Set<string> = new Set<string>();
   if (!mergedObConfig.options.enableExportObfuscation) {
     return keepFilesAndDependencies;
@@ -122,7 +130,7 @@ function getFileNamesForScanningWhitelist(resolvedModulesCache: Map<string, ts.R
       }
       let tempPath = toUnixPath(resolvedModule.resolvedFileName);
       // resolvedModule can record system API declaration files and ignore them.
-      if (tempPath.startsWith(projectRootPath)) {
+      if (isCurrentProjectFiles(tempPath, projectConfig)) {
         stack.push(tempPath);
       }
     }
