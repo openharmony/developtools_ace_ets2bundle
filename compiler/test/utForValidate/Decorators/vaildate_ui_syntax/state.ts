@@ -14,6 +14,7 @@
  */
 
 exports.source = `
+@Entry
 @Component
 struct Button{
   @State message:string = 'Hello Word'

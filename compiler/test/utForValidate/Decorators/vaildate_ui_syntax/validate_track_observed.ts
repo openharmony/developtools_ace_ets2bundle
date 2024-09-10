@@ -16,8 +16,8 @@
 exports.source = `
 @Entry
 @Component
-struct HomeComponent {
-  @Trace value: string
+struct ValidateTrackObservedHomeComponent {
+  @Trace value: string = '';
   build() {
     Column() {
       Text("hello")
@@ -35,11 +35,11 @@ struct child {
 }
 
 class A {
-  @Trace value: string
+  @Trace value: string = '';
 }
 
 @ObservedV2
 class B {
-  @Trace value: string
+  @Trace value: string = '';
 }
 `;

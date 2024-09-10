@@ -14,6 +14,8 @@
  */
 
 exports.source = `
+@Entry
+@Component
 @IndexDecorator
 struct IndexDecorator{
   build(){

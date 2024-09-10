@@ -14,22 +14,24 @@
  */
 
 exports.source = `
+declare const CustomMethod: PropertyDecorator;
+
 @Entry
 @Component
-struct HomeComponent {
+struct ValidateDuplicateMethodHomeComponent {
   build() {
     Column() {}
   }
 }
 @Builder
 @Builder
-function testFunction1() {
+function testFunction4() {
   Text("testFunction1")
 }
 
 @CustomMethod
 @CustomMethod
-function testFunction2() {
+function testFunction5() {
   console.log("testFunction2")
 }
 

@@ -15,7 +15,7 @@
 
 exports.source = `
 @Component
-struct summerpockets {
+struct OneEntrySummerpockets {
     build(){
     }
 }

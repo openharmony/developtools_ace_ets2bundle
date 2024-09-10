@@ -16,7 +16,7 @@
 exports.source = `
 @Entry
 @Component
-struct summerpockets {
+struct ExceededEntrySummerpockets {
   build(){
 
   }
@@ -24,7 +24,7 @@ struct summerpockets {
 
 @Entry
 @Component
-struct ever17 {
+struct ExceededEntryEver17 {
   build(){
 
   }
