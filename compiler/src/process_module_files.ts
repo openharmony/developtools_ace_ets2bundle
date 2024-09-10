@@ -60,7 +60,7 @@ export async function writeFileSyncByNode(node: ts.SourceFile, projectConfig: Ob
    * In the current realization, when moduleId mechanism is changed, there would be a compilation error.
    */
   let temporaryFile: string = genTemporaryPath(moduleId ? moduleId : node.fileName, projectConfig.projectPath, process.env.cachePath,
-    projectConfig.projectRootPath, projectConfig, metaInfo, logger);
+    projectConfig, metaInfo);
   if (temporaryFile.length === 0) {
     return;
   }

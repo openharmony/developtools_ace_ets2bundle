@@ -16,10 +16,12 @@
 import {
   MODULE_ID_ROLLUP_PLACEHOLDER,
   PROJECT_ROOT,
-  DEFAULT_PROJECT
+  DEFAULT_PROJECT,
+  DEFAULT_ENTRY
 } from '../rollup_mock/path_config';
 
 class Meta {
+  belongModulePath: string;
   hostModulesInfo: Array<object>;
   moduleName: string;
   pkgName: string;
@@ -30,6 +32,7 @@ class Meta {
   belongProjectPath: string;
 
   constructor(entryModuleName: string, modulePath: string) {
+    this.belongModulePath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}`;
     this.hostModulesInfo = [];
     this.moduleName = entryModuleName;
     this.pkgName = '';

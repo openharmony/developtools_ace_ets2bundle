@@ -22,6 +22,7 @@ export const OH_MODULES_OHOS_HYPIUM: string = 'oh_modules/@ohos/hypium';
 // project root path, default project name
 export const PROJECT_ROOT = path.resolve(__dirname, '../../../../test/ark_compiler_ut/testdata');
 export const DEFAULT_PROJECT: string = 'testcase_def';
+export const DEFAULT_ENTRY: string = 'entry';
 
 // project module id
 export const MODULE_ID_ROLLUP_PLACEHOLDER = "\x00rollup_plugin_ignore_empty_module_placeholder";
