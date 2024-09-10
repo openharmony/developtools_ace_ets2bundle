@@ -71,6 +71,7 @@ const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
 const ROLLUP_DYNAMICIMPORT_NODE: string = 'ImportExpression';
 const ROLLUP_LITERAL_NODE: string = 'Literal';
+export const sourceFileBelongProject = new Map<string, string>();
 
 export class ModuleSourceFile {
   private static sourceFiles: ModuleSourceFile[] = [];
@@ -312,7 +313,7 @@ export class ModuleSourceFile {
       const obfuscationConfig: MergedConfig = sourceProjectConfig.obfuscationMergedObConfig;
       handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
       const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig,
-        sourceProjectConfig.projectRootPath, sourceProjectConfig.arkObfuscator);
+        sourceProjectConfig.projectRootPath, sourceProjectConfig.arkObfuscator, sourceProjectConfig);
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
         sourceProjectConfig.compileHar, keepFilesAndDependencies);
     }
@@ -326,9 +327,8 @@ export class ModuleSourceFile {
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
-    const moduleIdMetaInfoMap = new Map<string, string>();
     for (const source of ModuleSourceFile.sourceFiles) {
-      moduleIdMetaInfoMap.set(source.moduleId, source.metaInfo?.belongProjectPath);
+      sourceFileBelongProject.set(toUnixPath(source.moduleId), source.metaInfo?.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
         const eventBuildModuleSourceFile = createAndStartEvent(parentEvent, 'build module source files');
@@ -341,7 +341,7 @@ export class ModuleSourceFile {
     }
 
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, moduleIdMetaInfoMap);
+      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
     }
     performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
     performancePrinter?.timeSumPrinter?.print('Sum up time cost of processes');
