@@ -40,7 +40,8 @@ import {
   genLoaderOutPathOfHar,
   harFilesRecord,
   resetUtils,
-  getResolveModules
+  getResolveModules,
+  toUnixPath
 } from '../../utils';
 import {
   preprocessExtend,
@@ -72,7 +73,7 @@ import {
   resolveTypeReferenceDirectives,
   resetEtsCheck,
   collectAllFiles,
-  allSourceFilePaths,
+  allModuleIds,
   resetEtsCheckTypeScript
 } from '../../ets_checker';
 import {
@@ -187,19 +188,24 @@ export function etsTransform() {
     afterBuildEnd() {
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
-        for (let moduleInfoId of allSourceFilePaths) {
+        for (let moduleInfoId of allModuleIds.keys()) {
+          const moduleInfo: Object = this.getModuleInfo(moduleInfoId);
+          if (!moduleInfo) {
+            continue;
+          }
           if (moduleInfoId && !moduleInfoId.match(new RegExp(projectConfig.packageDir)) &&
             !moduleInfoId.startsWith('\x00') &&
             path.resolve(moduleInfoId).startsWith(projectConfig.moduleRootPath + path.sep)) {
             let filePath: string = moduleInfoId;
+            const metaInfo: Object = moduleInfo.meta;
             if (this.share.arkProjectConfig?.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
               filePath = mangleFilePath(filePath);
             }
 
             const cacheFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              process.env.cachePath, projectConfig.projectRootPath, projectConfig, undefined, undefined);
+              process.env.cachePath, projectConfig, metaInfo);
             const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
-              projectConfig.buildPath, projectConfig.projectRootPath, projectConfig, undefined, undefined, true);
+              projectConfig.buildPath, projectConfig, metaInfo, true);
             if (filePath.match(/\.e?ts$/)) {
               setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {

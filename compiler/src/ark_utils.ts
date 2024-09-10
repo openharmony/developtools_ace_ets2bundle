@@ -301,7 +301,7 @@ export function getBuildModeInLowerCase(projectConfig: Object): string {
  */
 export function writeFileSyncByString(sourcePath: string, sourceCode: string, projectConfig: Object, logger: Object): void {
   const filePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath,
-    projectConfig.projectRootPath, projectConfig, undefined, logger);
+    projectConfig, undefined);
   if (filePath.length === 0) {
     return;
   }
@@ -732,7 +732,7 @@ export function getPackageInfo(configFile: string): Array<string> {
 export function generateSourceFilesToTemporary(sourcePath: string, sourceContent: string, sourceMap: Object,
   projectConfig: Object, logger: Object): void {
     let jsFilePath: string = genTemporaryPath(sourcePath, projectConfig.projectPath, process.env.cachePath,
-      projectConfig.projectRootPath, projectConfig, undefined, logger);
+      projectConfig, undefined);
   if (jsFilePath.length === 0) {
     return;
   }
