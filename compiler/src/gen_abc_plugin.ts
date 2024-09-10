@@ -322,7 +322,7 @@ function getEntryInfo(filePath: string, resourceResolveData: Object): string {
 
   const fakeEntryPath: string = path.resolve(npmInfoPath, 'fake.js');
   const tempFakeEntryPath: string = genTemporaryPath(fakeEntryPath, projectConfig.projectPath, process.env.cachePath,
-    projectConfig.projectRootPath, projectConfig, undefined, undefined);
+    projectConfig, undefined);
   const buildFakeEntryPath: string = genBuildPath(fakeEntryPath, projectConfig.projectPath, projectConfig.buildPath,
     projectConfig);
   npmInfoPath = toUnixPath(path.resolve(tempFakeEntryPath, '..'));
@@ -544,7 +544,7 @@ function handleFullModuleFiles(modules, callback): void {
     if (module !== undefined && module.resourceResolveData !== undefined) {
       const filePath: string = module.resourceResolveData.path;
       let tempFilePath = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath,
-        projectConfig.projectRootPath, projectConfig, undefined, undefined);
+        projectConfig, undefined);
       if (tempFilePath.length === 0) {
         return;
       }
@@ -1101,7 +1101,7 @@ function handleHotReloadChangedFiles() {
     let filePath: string = path.join(projectConfig.projectPath, file);
     validateFilePathLength(filePath, logger);
     let tempFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, process.env.cachePath,
-      projectConfig.projectRootPath, projectConfig, undefined, undefined);
+      projectConfig, undefined);
     if (tempFilePath.length === 0) {
       return;
     }
