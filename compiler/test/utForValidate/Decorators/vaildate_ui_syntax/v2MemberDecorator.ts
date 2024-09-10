@@ -25,7 +25,7 @@ struct v2MemberDecorator {
   @Computed
   bb() {}
 
-  @Monitor("user") get value() {}
+  @Monitor("user") get value(){ return "" }
 
   build() {
     Column()

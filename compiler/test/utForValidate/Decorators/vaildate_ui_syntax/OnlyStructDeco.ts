@@ -14,16 +14,16 @@
  */
 
 exports.source = `
-class bsd {
-    @Builder
-    bsd() {
+class OnlyStructDecoBsd {
+  @Builder
+  OnlyStructDecoBsd() {
 
     }
 }
 
 @Entry
 @Component
-struct summerpockets {
+struct OnlyStructDecoSummerpockets {
   build(){
   }
 }
