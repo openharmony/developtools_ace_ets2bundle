@@ -41,7 +41,7 @@ export {
   ObConfigResolver,
   writeObfuscationNameCache,
   writeUnobfuscationContent
-} from 'arkguard'
+} from 'arkguard';
 
 export function resetObfuscation(): void {
   clearGlobalCaches();
