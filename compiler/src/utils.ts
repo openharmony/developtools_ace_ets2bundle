@@ -73,30 +73,10 @@ export interface LogInfo {
 
 export const repeatLog: Map<string, LogInfo> = new Map();
 
-export class FileLog {
-  private _sourceFile: ts.SourceFile | undefined;
-  private _errors: LogInfo[] = [];
-
-  public get sourceFile() {
-    return this._sourceFile;
-  }
-
-  public set sourceFile(newValue: ts.SourceFile) {
-    this._sourceFile = newValue;
-  }
-
-  public get errors() {
-    return this._errors;
-  }
-
-  public set errors(newValue: LogInfo[]) {
-    this._errors = newValue;
-  }
-
-  public cleanUp(): void {
-    this._sourceFile = undefined;
-    this._errors = [];
-  }
+export interface IFileLog {
+  sourceFile: ts.SourceFile | undefined;
+  errors: LogInfo[];
+  cleanUp(): void
 }
 
 export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
@@ -146,7 +126,7 @@ export function getMessage(fileName: string, info: LogInfo, fastBuild: boolean =
   return message;
 }
 
-export function getTransformLog(transformLog: FileLog): LogInfo[] {
+export function getTransformLog(transformLog: IFileLog): LogInfo[] {
   const sourceFile: ts.SourceFile = transformLog.sourceFile;
   const logInfos: LogInfo[] = transformLog.errors.map((item) => {
     if (item.pos) {
