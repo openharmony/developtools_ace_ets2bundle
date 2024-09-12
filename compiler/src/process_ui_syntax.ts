@@ -157,14 +157,14 @@ import {
 } from './fast_build/system_api/api_check_utils';
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
-import createAstNodeUtils, { FileLog } from './create_ast_node_utils';
+import createAstNodeUtils from './create_ast_node_utils';
 import {
   processSendableClass,
   processSendableFunction,
   processSendableType
 } from './process_sendable';
 
-export let transformLog: IFileLog = new FileLog();
+export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
@@ -1967,7 +1967,7 @@ export function validatorCard(log: any[], type: number, pos: number,
 }
 
 export function resetProcessUiSyntax(): void {
-  transformLog = new FileLog();
+  transformLog = new createAstNodeUtils.FileLog();
   contextGlobal = undefined;
 }
 
