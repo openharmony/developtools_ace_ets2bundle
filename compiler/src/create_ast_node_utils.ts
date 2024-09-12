@@ -22,7 +22,7 @@ import {
 
 import { IFileLog, LogInfo } from './utils';
 
-export class FileLog {
+class FileLog implements IFileLog {
   private _sourceFile: ts.SourceFile | undefined;
   private _errors: LogInfo[] = [];
 
@@ -86,6 +86,7 @@ function createImportNodeForModuleInfo(): ts.ImportDeclaration {
 }
 
 export default {
+  FileLog: FileLog,
   createParameterDeclaration: createParameterDeclaration,
   createFinalizeConstruction: createFinalizeConstruction,
   createImportNodeForModuleInfo: createImportNodeForModuleInfo
