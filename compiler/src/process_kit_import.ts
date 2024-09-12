@@ -29,7 +29,7 @@ import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 import { compilerOptions } from './ets_checker';
-import { FileLog } from './create_ast_node_utils';
+import createAstNodeUtils from './create_ast_node_utils';
 
 /*
 * basic implementation logic:
@@ -41,7 +41,7 @@ import { FileLog } from './create_ast_node_utils';
 *                  | -> replace each origin declaration with corresponding ohosImports
 */
 
-export const kitTransformLog: IFileLog = new FileLog();
+export const kitTransformLog: IFileLog = new createAstNodeUtils.FileLog();
 
 const KIT_PREFIX = '@kit.';
 const KEEPTS = '// @keepTs';
