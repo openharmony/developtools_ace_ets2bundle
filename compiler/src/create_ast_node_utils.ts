@@ -20,13 +20,16 @@ import {
   FINALIZE_CONSTRUCTION
 } from './pre_define';
 
-import { IFileLog, LogInfo } from './utils';
+import { 
+  IFileLog, 
+  LogInfo 
+} from './utils';
 
 class FileLog implements IFileLog {
   private _sourceFile: ts.SourceFile | undefined;
   private _errors: LogInfo[] = [];
 
-  public get sourceFile() {
+  public get sourceFile(): ts.SourceFile | undefined {
     return this._sourceFile;
   }
 
@@ -34,7 +37,7 @@ class FileLog implements IFileLog {
     this._sourceFile = newValue;
   }
 
-  public get errors() {
+  public get errors(): LogInfo[] {
     return this._errors;
   }
 
