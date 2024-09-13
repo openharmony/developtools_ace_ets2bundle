@@ -54,6 +54,7 @@ import {
   $$_CHANGE_EVENT,
   $$_THIS,
   $$_NEW_VALUE,
+  $_VALUE,
   BUILDER_ATTR_NAME,
   BUILDER_ATTR_BIND,
   CUSTOM_DIALOG_CONTROLLER_BUILDER,
@@ -2666,11 +2667,29 @@ function verifyComponentId(temp: any, node: ts.Identifier, propName: string,
   }
 }
 
+class StyleResult {
+  doubleDollar: boolean = false;
+  doubleExclamation: boolean = false;
+}
+
+function isDoubleBind(styleResult: StyleResult, isStylesAttr: boolean, identifierNode: ts.Identifier,
+  propName: string, temp: any): boolean {
+  if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
+    styleResult.doubleDollar = true;
+    return true;
+  } else if (isDoubleExclamationToChange(isStylesAttr, propName, temp)) {
+    styleResult.doubleExclamation = true;
+    return true;
+  }
+  return false;
+}
+
 function addComponentAttr(temp, node: ts.Identifier, lastStatement,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, immutableStatements: ts.Statement[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false,
   isStyleFunction: boolean = false): void {
+  const styleResult: StyleResult = new StyleResult();
   const propName: string = node.getText();
   verifyComponentId(temp, node, propName, log);
   const extendType: ExtendType = {type: ''};
@@ -2745,10 +2764,10 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
       }
     }
     lastStatement.kind = true;
-  } else if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp) ||
-    isDoubleExclamationToChange(isStylesAttr, propName, temp)) {
+  } else if (isDoubleBind(styleResult, isStylesAttr, identifierNode, propName, temp)) {
     const argumentsArr: ts.Expression[] = [];
-    classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode);
+    styleResult.doubleDollar ? classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode) :
+      classifyArgumentsNumV2(temp.arguments, argumentsArr, propName);
     const doubleDollarNode: ts.Statement = ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, argumentsArr));
     statements.push(doubleDollarNode);
@@ -2905,13 +2924,20 @@ function classifyArgumentsNum(args, argumentsArr: ts.Expression[], propName: str
   }
 }
 
+function classifyArgumentsNumV2(args, argumentsArr: ts.Expression[], propName: string): void {
+  if (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && args.length >= 2) {
+    const varExp: ts.Expression = updateArgumentForExclamation(args[0]);
+    argumentsArr.push(generateObjectForExclamation(varExp), ...args.slice(1));
+  }
+}
+
 function generateObjectForExclamation(varExp: ts.Expression): ts.ObjectLiteralExpression {
   return ts.factory.createObjectLiteralExpression([
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier($$_VALUE),
         varExp),
       ts.factory.createPropertyAssignment(
-        ts.factory.createIdentifier($$_CHANGE_EVENT),
+        ts.factory.createIdentifier($_VALUE),
         ts.factory.createArrowFunction(
           undefined, undefined,
           [ts.factory.createParameterDeclaration(
