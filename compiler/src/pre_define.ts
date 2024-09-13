@@ -317,6 +317,7 @@ export const CHECKED: string = 'checked';
 export const RADIO: string = 'Radio';
 export const $$_VALUE: string = 'value';
 export const $$_CHANGE_EVENT: string = 'changeEvent';
+export const $_VALUE: string = '$value';
 export const TEXT_TIMER: string = 'TextTimer';
 export const REFRESH: string = 'Refresh';
 export const REFRESHING: string = 'refreshing';
