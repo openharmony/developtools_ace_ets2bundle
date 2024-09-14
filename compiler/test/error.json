@@ -184,7 +184,7 @@
         "type": "ERROR"
     },
     "notConcurrent": {
-        "message": "The struct 'IndexDecorator' use invalid decorator.",
+        "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
         "type": "WARN"
     },
     "notConcurrentFun": {
@@ -200,7 +200,7 @@
         "type": "WARN"
     },
     "vaildateDecorator": {
-        "message": "The struct 'Index' use invalid decorator.",
+        "message": "The struct 'VaildateDecoratorIndex' use invalid decorator.",
         "type": "WARN"
     },
     "state": {

@@ -14,8 +14,9 @@
  */
 
 exports.source = `
+@Entry
 @Concurrent
-struct Index{
+struct VaildateDecoratorIndex{
   build(){
     Column(){
       Text('hello')

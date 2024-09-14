@@ -14,9 +14,11 @@
  */
 
 exports.source = `
+@Entry
+@Component
 @Concurrent
 struct StylesDuplicate{
-  @State @opacity: string = 'Hello Word'
+  @State message:string = 'Hello Word'
   build(){
     Row(){
       Column(){
