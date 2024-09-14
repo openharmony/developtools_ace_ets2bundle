@@ -16,7 +16,7 @@
 exports.source = `
 @Entry
 @Component
-struct HomeComponent {
+struct ValidateAccessQualifierHomeComponent {
   @State message: string = "hello"
 
   build() {

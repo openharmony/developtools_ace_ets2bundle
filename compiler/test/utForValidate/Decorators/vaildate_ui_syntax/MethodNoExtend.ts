@@ -16,7 +16,7 @@
 exports.source = `
 @Entry
 @Component
-struct summerpockets {
+struct MethodNoExtendSummerpockets {
   @Extend
   build(){
 

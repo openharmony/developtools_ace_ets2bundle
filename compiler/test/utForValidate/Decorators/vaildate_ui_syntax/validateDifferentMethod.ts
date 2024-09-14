@@ -14,9 +14,11 @@
  */
 
 exports.source = `
+declare const CustomMethod: PropertyDecorator;
+
 @Entry
 @Component
-struct HomeComponent {
+struct ValidateDifferentMethodHomeComponent {
   build() {
     Column() {}
   }
@@ -44,7 +46,7 @@ function testFunction3() {
 }
 
 @Component
-struct TestComponent {
+struct ValidateDifferentMethodTestComponent {
   build() {
 
   }
@@ -63,7 +65,7 @@ struct TestComponent {
 }
 
 @ComponentV2
-struct TestComponent1 {
+struct ValidateDifferentMethodTestComponent1 {
   build() {
 
   }

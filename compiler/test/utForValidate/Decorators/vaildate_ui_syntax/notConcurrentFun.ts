@@ -16,9 +16,8 @@
 exports.source = `
 @Entry
 @Component
-struct StylesDuplicate{
-  @State @opacity: string = 'Hello Word'
-  @Concurrent conFun()
+struct notConcurrentFun{
+  @Concurrent conFun(){}
   build(){
     Row(){
       Column(){
@@ -28,9 +27,7 @@ struct StylesDuplicate{
     .height('100%')
   }
 }
-conFun(){
-}
 function conFun() {
-throw new Error('Function not implemented.')
+  throw new Error('Function not implemented.')
 }
 `

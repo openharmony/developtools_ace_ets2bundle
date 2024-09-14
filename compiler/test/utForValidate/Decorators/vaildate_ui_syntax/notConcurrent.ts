@@ -14,8 +14,9 @@
  */
 
 exports.source = `
+@Entry
 @Concurrent
-struct IndexDecorator{
+struct NotConcurrentIndexDecorator{
   build(){
     Column(){
       Text('hello')

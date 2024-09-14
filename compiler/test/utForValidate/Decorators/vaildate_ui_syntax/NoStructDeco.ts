@@ -15,13 +15,13 @@
 
 exports.source = `
 @Component
-function nekopara () {
+class nekopara {
 
 }
 
 @Entry
 @Component
-struct summerpockets {
+struct NoStructDecoSummerpockets {
   build(){
   }
 }
