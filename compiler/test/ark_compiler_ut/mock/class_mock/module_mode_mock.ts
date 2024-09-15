@@ -127,8 +127,10 @@ class ModuleModeMock extends ModuleMode {
     }
     this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
-    if (Object.prototype.hasOwnProperty.call(rollupObject.share.projectConfig, 'pkgContextInfo')) {
-      compileContextInfo.pkgContextInfo = rollupObject.share.projectConfig.pkgContextInfo;
+    if (rollupObject.share.projectConfig.updateVersionInfo) {
+      compileContextInfo.updateVersionInfo = this.projectConfig.updateVersionInfo;
+    } else if (rollupObject.share.projectConfig.pkgContextInfo) {
+      compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     if (JSON.stringify(compileContextInfo) === cacheCompileContextInfo) {
       return true;
@@ -146,9 +148,12 @@ class ModuleModeMock extends ModuleMode {
         `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
     });
-    this.abcPaths.forEach((abcPath) => {
-      mockfilesInfo += `${abcPath};;;;;\n`;
-    });
+    if (this.projectConfig.byteCodeHarInfo) {
+      Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {  
+        const abcPath: string = toUnixPath(abcInfo.abcPath);
+        mockfilesInfo += `${abcPath};;;;${pkgName};\n`; 
+      });
+    }
     if (filesInfo === mockfilesInfo) {
       return true;
     }
