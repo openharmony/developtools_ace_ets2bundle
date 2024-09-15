@@ -123,6 +123,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.optTryCatchFunc = true;
   // All files which dependent on bytecode har, and should be added to compilation entries.
   projectConfig.otherCompileFiles = {};
+  // Packages which need to update version in bytecode har 
+  projectConfig.updateVersionInfo = {};
 }
 
 function loadEntryObj(projectConfig) {
@@ -599,6 +601,9 @@ function loadBuildJson() {
   }
   if (!!aceBuildJson.byteCodeHar) { 
     projectConfig.useTsHar = true;
+  }
+  if (aceBuildJson.updateVersionInfo) {
+    projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;
   }
 }
 
@@ -1099,6 +1104,7 @@ function resetProjectConfig() {
     }
   }
   projectConfig.otherCompileFiles = {};
+  projectConfig.updateVersionInfo = {};
 }
 
 function resetGlobalProgram() {
