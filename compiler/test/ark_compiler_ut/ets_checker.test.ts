@@ -17,6 +17,7 @@ import mocha from 'mocha';
 import fs from 'fs';
 import path from 'path';
 import { expect } from 'chai';
+import * as ts from 'typescript';
 
 import { EXPECT_INDEX_ETS } from './mock/rollup_mock/path_config';
 import RollUpPluginMock from './mock/rollup_mock/rollup_plugin_mock';
@@ -175,5 +176,13 @@ mocha.describe('test ets_checker file api', function () {
         expect(needReCheckForChangedDepUsers).to.be.false;
         expect(globalProgram.program == null).to.be.true;
         expect(compilerOptions.skipPathsInKeyForCompilationSettings).to.be.true;
+    });
+    mocha.it('1-5: test GetEmitHost of program', function () {
+        const compilerOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ES2021
+        };
+        const fileNames: string[] = ['../testdata/testfiles/testGetEmitHost.ts'];
+        let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
+        expect(program.getEmitHost()).to.not.be.undefined;
     });
 });
