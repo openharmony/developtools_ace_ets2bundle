@@ -29,7 +29,7 @@ import {
 import {
   LogType,
   LogInfo,
-  FileLog
+  IFileLog
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -205,9 +205,9 @@ export function moduleRequestCallback(moduleRequest: string, _: string,
  * api check from sdk
  *
  * @param {ts.TypeReferenceNode} node - typeReferenceNode
- * @param {FileLog} transformLog - log info
+ * @param {IFileLog} transformLog - log info
  */
-export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: FileLog): void {
+export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: IFileLog): void {
   const fileName: string = transformLog.sourceFile.fileName;
   const currentTypeName: string = node.getText();
   if (/(?<!\.d)\.ts$/g.test(fileName)) {
