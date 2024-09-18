@@ -60,7 +60,8 @@ import ModuleSourceFileMock from '../mock/class_mock/module_source_files_mock';
 import {
   genTemporaryPath,
   toUnixPath,
-  getProjectRootPath
+  getProjectRootPath,
+  getBelongModuleInfo
 } from '../../../lib/utils';
 import projectConfig from '../utils/processProjectConfig';
 import {
@@ -274,8 +275,7 @@ mocha.describe('test utils file api', function () {
         const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
-          moduleSource.metaInfo, moduleSource.logger);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig, moduleSource.metaInfo);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -296,8 +296,7 @@ mocha.describe('test utils file api', function () {
         const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
-          moduleSource.metaInfo, moduleSource.logger);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig, moduleSource.metaInfo);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -318,8 +317,7 @@ mocha.describe('test utils file api', function () {
         const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
-          moduleSource.metaInfo, moduleSource.logger);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig, moduleSource.metaInfo);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -339,8 +337,7 @@ mocha.describe('test utils file api', function () {
         const moduleSource = new ModuleSourceFileMock(moduleId, code, metaInfo);
         moduleSource.initPluginEnvMock(this.rollup);
         const filePath = genTemporaryPath(moduleSource.moduleId, moduleSource.projectConfig.projectPath,
-          moduleSource.projectConfig.cachePath, moduleSource.projectConfig.projectRootPath, moduleSource.projectConfig,
-          moduleSource.metaInfo, moduleSource.logger);
+          moduleSource.projectConfig.cachePath, moduleSource.projectConfig, moduleSource.metaInfo);
         utUtils.writeFileContent(moduleSource.moduleId, filePath, moduleSource.source,
           moduleSource.projectConfig, moduleSource.logger);
         const newFilePath = changeFileExtension(filePath, EXTNAME_JS);
@@ -1271,41 +1268,39 @@ mocha.describe('test utils file api', function () {
     const moduleInfo = {
       id: filePath,
       meta: {
-        belongProjectPath: '/testHar'
+        isLocalDependency: true,
+        moduleName: 'libhar',
+        belongModulePath: '/testHar/har',
       }
     };
     this.rollup.moduleInfos.push(moduleInfo);
     const projectConfig = this.rollup.share.projectConfig;
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
     const metaInfo = this.rollup.getModuleInfo(filePath).meta;
     const cacheFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.cachePath,
-      projectConfig.projectRootPath, projectConfig, metaInfo, logger);
-    const expectCacheFilePath = `${projectConfig.cachePath}/har/src/main/ets/utils/Calc.ets`;
+      projectConfig, metaInfo);
+    const expectCacheFilePath = `${projectConfig.cachePath}/libhar/src/main/ets/utils/Calc.ets`;
     expect(cacheFilePath === expectCacheFilePath).to.be.true;
   });
 
-  mocha.it('16-2: test genTemporaryPath error message', function () {
+  mocha.it('16-2: test genTemporaryPath to concatenate the paths under the PackageHar directory', function () {
     this.rollup.build();
     const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
     const moduleInfo = {
       id: filePath,
       meta: {
-        belongProjectPath: undefined
+        isLocalDependency: true,
+        moduleName: 'libhar',
+        belongModulePath: '/testHar/har',
       }
     };
     this.rollup.moduleInfos.push(moduleInfo);
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     const projectConfig = this.rollup.share.projectConfig;
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
-    const loggerStub = sinon.stub(logger, 'error');
+    projectConfig.compileHar = true;
     const metaInfo = this.rollup.getModuleInfo(filePath).meta;
-    genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.cachePath,
-      projectConfig.projectRootPath, projectConfig, metaInfo, logger);
-    expect(loggerStub.calledWith(red, 'ARKTS:INTERNAL ERROR\n' + 
-      `Error Message: Failed to generate the cache path corresponding to file ${filePath}.\n` +
-      'Because the file belongs to a module outside the project and has no project information.', reset)).to.be.true;
-    loggerStub.restore();
+    const buildFilePath = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.buildPath,
+      projectConfig, metaInfo, true);
+    const expectBuildFilePath = `${projectConfig.buildPath}/src/main/ets/utils/Calc.ets`;
+    expect(buildFilePath === expectBuildFilePath).to.be.true;
   });
 
   mocha.it('17-1: test getProjectRootPath adapt external modules', function () {
@@ -1347,5 +1342,43 @@ mocha.describe('test utils file api', function () {
     const projectConfig = this.rollup.share.projectConfig;
     const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
     expect(projectRootPath === projectConfig.projectRootPath).to.be.true;
+  });
+
+  mocha.it('18-1: test getBelongModuleInfo under build file is local dependency', function () {
+    this.rollup.build();
+    const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/src/main/ets/utils/Calc.ets`;
+    const projectRootPath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}`;
+    const modulePathMap: Object = {
+        'enrty': `${PROJECT_ROOT}/${DEFAULT_PROJECT}/entry`,
+        'libhar': `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`
+    };
+    const expectBelongModuleInfo: Object = {
+      isLocalDependency: true,
+      moduleName: 'libhar',
+      belongModulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`
+    };
+    const belongModuleInfo: Object = getBelongModuleInfo(filePath, modulePathMap, projectRootPath);
+    Object.keys(belongModuleInfo).forEach(item => {
+      expect(belongModuleInfo[item] === expectBelongModuleInfo[item]).to.be.true;
+    });
+  });
+
+  mocha.it('18-2: test getBelongModuleInfo under build file is not local dependency', function () {
+    this.rollup.build();
+    const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/oh_modules/.ohpm/json5/index.js`;
+    const projectRootPath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}`;
+    const modulePathMap: Object = {
+        'enrty': `${PROJECT_ROOT}/${DEFAULT_PROJECT}/entry`,
+        'libhar': `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har`
+    };
+    const expectBelongModuleInfo: Object = {
+      isLocalDependency: false,
+      moduleName: '',
+      belongModulePath: `${PROJECT_ROOT}/${DEFAULT_PROJECT}`
+    };
+    const belongModuleInfo: Object = getBelongModuleInfo(filePath, modulePathMap, projectRootPath);
+    Object.keys(belongModuleInfo).forEach(item => {
+      expect(belongModuleInfo[item] === expectBelongModuleInfo[item]).to.be.true;
+    });
   });
 });

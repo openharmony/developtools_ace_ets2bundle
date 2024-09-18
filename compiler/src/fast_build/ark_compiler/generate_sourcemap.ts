@@ -118,7 +118,7 @@ export class SourceMapGenerator {
     }
 
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
-    let middlePath = this.getIntermediateModuleId(moduleId).replace(pkgPath + path.sep, '');
+    let middlePath = this.getIntermediateModuleId(moduleId, metaInfo).replace(pkgPath + path.sep, '');
     if (shouldObfuscateFileName) {
       middlePath = mangleFilePath(middlePath);
     }
@@ -198,7 +198,7 @@ export class SourceMapGenerator {
       const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
       fs.writeFile(this.sourceMapPath, JSON.stringify(cacheSourceMapObject, null, 2), 'utf-8', (err) => {
         if (err) {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n` +
+          this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n' +
             `File: ${this.sourceMapPath}\n` +
             `Error message: ${err.message}`);
         }
@@ -321,15 +321,15 @@ export class SourceMapGenerator {
     }
   }
 
-  private getIntermediateModuleId(moduleId: string): string {
+  private getIntermediateModuleId(moduleId: string, metaInfo?: Object): string {
     let extName: string = "";
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
-        extName = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
+        extName = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : EXTNAME_TS;
         break;
       }
       case EXTNAME_TS: {
-        extName = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : '';
+        extName = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : '';
         break;
       }
       case EXTNAME_JS:
