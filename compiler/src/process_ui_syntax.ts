@@ -87,7 +87,7 @@ import {
   LogInfo,
   LogType,
   hasDecorator,
-  FileLog,
+  IFileLog,
   getPossibleBuilderTypeParameter,
   storedFileInfo,
   ExtendResult,
@@ -164,7 +164,7 @@ import {
   processSendableType
 } from './process_sendable';
 
-export let transformLog: FileLog = new FileLog();
+export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
@@ -1967,7 +1967,7 @@ export function validatorCard(log: any[], type: number, pos: number,
 }
 
 export function resetProcessUiSyntax(): void {
-  transformLog = new FileLog();
+  transformLog = new createAstNodeUtils.FileLog();
   contextGlobal = undefined;
 }
 
