@@ -122,6 +122,25 @@ export function shouldETSOrTSFileTransformToJS(filePath: string, projectConfig: 
   return fs.existsSync(cacheFilePath);
 }
 
+// This API is used exclusively to determine whether a file needs to be converted into a JS file without removing the cached files,
+// which differs from API 'shouldETSOrTSFileTransformToJS'.
+export function shouldETSOrTSFileTransformToJSWithoutRemove(filePath: string, projectConfig: Object, metaInfo?: Object): boolean {
+  if (!projectConfig.processTs) {
+    return true;
+  }
+
+  if (compilingEtsOrTsFiles.indexOf(filePath) !== -1) {
+    // file involves in compilation
+    return hasTsNoCheckOrTsIgnoreFiles.indexOf(filePath) !== -1;
+  }
+
+  let cacheFilePath: string = genTemporaryPath(filePath, projectConfig.projectPath, projectConfig.cachePath,
+    projectConfig, metaInfo);
+  cacheFilePath = updateCacheFilePathIfEnableObuscatedFilePath(filePath, cacheFilePath, projectConfig);
+  cacheFilePath = toUnixPath(changeFileExtension(cacheFilePath, EXTNAME_JS));
+  return fs.existsSync(cacheFilePath);
+}
+
 function updateCacheFilePathIfEnableObuscatedFilePath(filePath: string, cacheFilePath: string, projectConfig: Object): string {
   const isPackageModules = isPackageModulesFile(filePath, projectConfig);
   if (enableObfuscatedFilePathConfig(isPackageModules, projectConfig) && enableObfuscateFileName(isPackageModules, projectConfig)) {
