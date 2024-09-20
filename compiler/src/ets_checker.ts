@@ -508,7 +508,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
-  collectAllFiles(globalProgram.program);
+  collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   runArkTSLinter();
@@ -533,15 +533,15 @@ function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
 
 // collect the compiled files of tsc and rollup for obfuscation scanning.
 export function collectAllFiles(program?: ts.Program, rollupFileList?: IterableIterator<string>,
-  rollupObject?: Object): void {
+  rollupObject?: Object, rollupShareObject: Object = null): void {
   if (program) {
-    collectTscFiles(program);
+    collectTscFiles(program, rollupShareObject);
     return;
   }
   mergeRollUpFiles(rollupFileList, rollupObject);
 }
 
-export function collectTscFiles(program: ts.Program): void {
+export function collectTscFiles(program: ts.Program, rollupShareObject: Object = null): void {
   const programAllFiles: readonly ts.SourceFile[] = program.getSourceFiles();
   let projectRootPath: string = projectConfig.projectRootPath;
   if (!projectRootPath) {
@@ -551,7 +551,7 @@ export function collectTscFiles(program: ts.Program): void {
   const isMacOrWin = isWindows() || isMac();
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
-    if (!fileName.startsWith(projectRootPath)) {
+    if (!(fileName.startsWith(projectRootPath + '/') || isOtherProjectResolvedModulesFilePaths(rollupShareObject, fileName))) {
       return;
     }
     allSourceFilePaths.add(fileName);
@@ -563,6 +563,23 @@ export function collectTscFiles(program: ts.Program): void {
       allResolvedModules.add(fileName);
     }
   });
+}
+
+function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileName: string): boolean {
+  if (!!rollupShareObject && rollupShareObject.projectConfig && !!rollupShareObject.projectConfig.rootPathSet) {
+    const rootPathSet: string[] | Set<string> = rollupShareObject.projectConfig.rootPathSet;
+    if (Array.isArray(rootPathSet)) {
+      for (let i = 0; i < rootPathSet.length; i++) {
+        const pathNormalization: string = toUnixPath(rootPathSet[i]) + '/';
+        if (fileName.startsWith(pathNormalization)) {
+          return true;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+  return false;
 }
 
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
