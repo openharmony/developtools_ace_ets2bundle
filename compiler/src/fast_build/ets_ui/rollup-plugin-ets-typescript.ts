@@ -180,7 +180,7 @@ export function etsTransform() {
       }
       return shouldDisable;
     },
-    buildEnd() {
+    buildEnd(): void {
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
       }
