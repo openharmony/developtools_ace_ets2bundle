@@ -16,6 +16,7 @@
 
 import { expect } from 'chai';
 import fs from "fs";
+import * as ts from 'typescript';
 import mocha from 'mocha';
 import path from "path";
 
@@ -23,7 +24,9 @@ import {
   MergedConfig,
   ObConfigResolver,
   collectResevedFileNameInIDEConfig,
-  getRelativeSourcePath
+  getRelativeSourcePath,
+  handleKeepFilesAndGetDependencies,
+  sourceFileDependencies
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -32,6 +35,7 @@ import {
 import { OBFUSCATION_TOOL } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
+import { ArkObfuscator } from 'arkguard';
 
 const OBFUSCATE_TESTDATA_DIR = path.resolve(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation');
 
@@ -593,5 +597,133 @@ mocha.describe('test obfuscate config resolver api', function () {
     const belongProjectPath = undefined;
     const relativePath = getRelativeSourcePath(filePath, projectRootPath, belongProjectPath);
     expect(relativePath).to.equal('src/file.ts');
+  });
+
+  mocha.it('5-1: test getFileNamesForScanningWhitelist: -keep is empty ', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.projectRootPath = ''
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+    mergedObConfig.keepSourceOfPaths = [];
+    const keepFilesAndDependencies: Set<string> = handleKeepFilesAndGetDependencies(mergedObConfig,
+      this.rollup.share.projectConfig.projectRootPath, new ArkObfuscator());
+    expect(keepFilesAndDependencies.size === 0).to.be.true;
+  });
+
+  mocha.it('5-2: test getFileNamesForScanningWhitelist: unable export obfuscation ', function () {
+    this.rollup.build(RELEASE);
+    const logger: object = this.rollup.share.getLogger(OBFUSCATION_TOOL);
+    const optionContent: string = '-enble-export-obfuscation';
+    fs.writeFileSync(`${OBFUSCATION_RULE_PATH}`, optionContent);
+    this.rollup.share.projectConfig.projectRootPath = ''
+    this.rollup.share.projectConfig.obfuscationOptions = {
+      'selfConfig': {
+        'ruleOptions': {
+          'enable': true,
+          'rules': [OBFUSCATION_RULE_PATH]
+        },
+        'consumerRules': [],
+      },
+      'dependencies': {
+        'libraries': [],
+        'hars': []
+      }
+    };
+    
+    const obConfigResolver: ObConfigResolver =  new ObConfigResolver(this.rollup.share.projectConfig, logger, true);
+    const mergedObConfig: MergedConfig = obConfigResolver.resolveObfuscationConfigs();
+
+    let testFile1: string = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project1/file1.js');
+    let testFile2: string = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project1/file2.js');
+    let testFile3: string = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project2/file3.js');
+    let testFile4: string = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project2/file4.js');
+    let testFile5: string = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project3/file5.js');
+
+    mergedObConfig.keepSourceOfPaths = [
+      testFile1,
+      testFile3
+    ];
+    mergedObConfig.excludePathSet = new Set<string>([]);
+    mergedObConfig.options.enableExportObfuscation = true;
+    this.rollup.share.projectConfig.rootPathSet = new Set<string>([
+      path.resolve(__dirname, '../testdata/obfuscation_keeptest/project1/'),
+      path.resolve(__dirname, '../testdata/obfuscation_keeptest/project2/')
+    ]);
+    this.rollup.share.projectConfig.projectRootPath = path.resolve(__dirname, '../testdata/obfuscation_keeptest/project1/');
+
+    const cache1: ts.ModeAwareCache<ts.ResolvedModuleFull | undefined> =
+      ts.createModeAwareCache<ts.ResolvedModuleFull | undefined>();
+    cache1.set('file1.ts', ts.ModuleKind.ESNext, { 
+      resolvedFileName: testFile2, 
+      isExternalLibraryImport: false, 
+      extension: ts.Extension.Js
+    });
+    cache1.set('file2.ts', ts.ModuleKind.ESNext, { 
+      resolvedFileName: testFile3, 
+      isExternalLibraryImport: false, 
+      extension: ts.Extension.Js
+    });
+    sourceFileDependencies.set(testFile1, cache1);
+
+    const cache2: ts.ModeAwareCache<ts.ResolvedModuleFull | undefined> =
+      ts.createModeAwareCache<ts.ResolvedModuleFull | undefined>();
+    cache2.set('file4.ts', ts.ModuleKind.ESNext, { 
+      resolvedFileName: testFile4, 
+      isExternalLibraryImport: false, 
+      extension: ts.Extension.Js
+    });
+    cache2.set('file5.ts', ts.ModuleKind.ESNext, { 
+      resolvedFileName: testFile5, 
+      isExternalLibraryImport: false, 
+      extension: ts.Extension.Js
+    });
+    sourceFileDependencies.set(testFile3, cache2);
+
+    let arkguardConfig: Object = {
+      mNameObfuscation: {
+        mEnable: true,
+        mNameGeneratorType: 1,
+        mRenameProperties: false,
+        mReservedProperties: [],
+        mTopLevel: false,
+        mReservedToplevelNames:[],
+      },
+      mKeepFileSourceCode: {
+        mKeepSourceOfPaths: [
+          testFile1,
+          testFile3
+        ],
+        mkeepFilesAndDependencies: []
+      },
+      mExportObfuscation: true,
+      mPerformancePrinter: []
+    };
+
+    let arkObfuscator: ArkObfuscator = new ArkObfuscator();
+    arkObfuscator.init(arkguardConfig);
+
+    const keepFilesAndDependencies: Set<string> = handleKeepFilesAndGetDependencies(mergedObConfig,
+      arkObfuscator, this.rollup.share.projectConfig);
+    expect(keepFilesAndDependencies.has(testFile1)).to.be.true;
+    expect(keepFilesAndDependencies.has(testFile2)).to.be.true;
+    expect(keepFilesAndDependencies.has(testFile3)).to.be.true;
+    expect(keepFilesAndDependencies.has(testFile4)).to.be.true;
+    expect(keepFilesAndDependencies.has(testFile5)).to.be.false;
   });
 });
