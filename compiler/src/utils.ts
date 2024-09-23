@@ -1093,21 +1093,21 @@ export class CompilationTimeStatistics {
         this.createProgramTime = this.hookEventFactory.createEvent('createProgram');
         this.runArkTSLinterTime = this.hookEventFactory.createEvent('arkTSLinter');
         this.diagnosticTime = this.hookEventFactory.createEvent('diagnostic');
-        this.scriptSnapshotTime = this.hookEventFactory.createEvent('scriptSnapshot');
+        this.scriptSnapshotTime = this.createProgramTime.createSubEvent('scriptSnapshot');
         resolveModuleNamesTime = this.hookEventFactory.createEvent('resolveModuleNames');
       } else if (pluginName === 'etsTransform' && hookName === 'transform' && share.getHookEventFactory(pluginName, hookName)) {
         this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
-        this.processImportTime = this.hookEventFactory.createEvent('processImport');
-        this.processComponentClassTime = this.hookEventFactory.createEvent('processComponentClass');
         this.validateEtsTime = this.hookEventFactory.createEvent('validateEts');
         this.tsProgramEmitTime = this.hookEventFactory.createEvent('tsProgramEmit');
         this.shouldEmitJsTime = this.hookEventFactory.createEvent('shouldEmitJs');
-        this.transformNodesTime = this.hookEventFactory.createEvent('transformNodes');
-        this.emitTime = this.hookEventFactory.createEvent('emit');
+        this.transformNodesTime = this.tsProgramEmitTime.createSubEvent('transformNodes');
+        this.emitTime = this.tsProgramEmitTime.createSubEvent('emit');
         this.printNodeTime = this.hookEventFactory.createEvent('printNode');
         this.noSourceFileRebuildProgramTime = this.hookEventFactory.createEvent('noSourceFileRebuildProgram');
-        this.processKitImportTime = this.hookEventFactory.createEvent('processKitImport');
-        this.processUISyntaxTime = this.hookEventFactory.createEvent('processUISyntax');
+        this.processKitImportTime = this.tsProgramEmitTime.createSubEvent('processKitImport');
+        this.processUISyntaxTime = this.tsProgramEmitTime.createSubEvent('processUISyntax');
+        this.processImportTime = this.processUISyntaxTime.createSubEvent('processImport');
+        this.processComponentClassTime = this.processUISyntaxTime.createSubEvent('processComponentClass');
       } else if (pluginName === 'etsTransform' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
         this.hookEventFactory = share.getHookEventFactory(pluginName, hookName);
         this.etsTransformBuildStartTime = this.hookEventFactory.createEvent('etsTransformBuildStart');
