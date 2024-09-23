@@ -53,6 +53,11 @@ export function resetObfuscation(): void {
   localPackageSet?.clear();
 }
 
+/**
+ * dependencies of sourceFiles
+ */
+export const sourceFileDependencies: Map<string, ts.ModeAwareCache<ts.ResolvedModuleFull | undefined>> = new Map();
+
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
 function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>): Set<string> {
   const allKeepFiles: Set<string> = new Set();
@@ -80,17 +85,18 @@ function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>):
 }
 
 // Collect all keep files and then collect their dependency files.
-export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>,
-  mergedObConfig: MergedConfig, projectRootPath: string, arkObfuscator: ArkObfuscator, projectConfig: Object): Set<string> {
+export function handleKeepFilesAndGetDependencies(mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator,
+  projectConfig: Object): Set<string> {
   if (mergedObConfig === undefined || mergedObConfig.keepSourceOfPaths.length === 0) {
+    sourceFileDependencies.clear();
     return new Set<string>();
   }
   const keepPaths = mergedObConfig.keepSourceOfPaths;
   const excludePaths = mergedObConfig.excludePathSet;
   let allKeepFiles: Set<string> = collectAllKeepFiles(keepPaths, excludePaths);
   arkObfuscator.setKeepSourceOfPaths(allKeepFiles);
-  const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(resolvedModulesCache, mergedObConfig,
-    allKeepFiles, projectRootPath, projectConfig);
+  const keepFilesAndDependencies: Set<string> = getFileNamesForScanningWhitelist(mergedObConfig, allKeepFiles, projectConfig);
+  sourceFileDependencies.clear();
   return keepFilesAndDependencies;
 }
 
@@ -99,41 +105,32 @@ export function handleKeepFilesAndGetDependencies(resolvedModulesCache: Map<stri
  * Risk: The files resolved by typescript are different from the files resolved by rollup. For example, the two entry files have different priorities.
  * Tsc looks for files in the types field in oh-packagek.json5 first, and rollup looks for files in the main field.
  */
-function getFileNamesForScanningWhitelist(
-  resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]>,
-  mergedObConfig: MergedConfig,
-  allKeepFiles: Set<string>,
-  projectRootPath: string,
+function getFileNamesForScanningWhitelist(mergedObConfig: MergedConfig, allKeepFiles: Set<string>,
   projectConfig: Object): Set<string> {
   const keepFilesAndDependencies: Set<string> = new Set<string>();
   if (!mergedObConfig.options.enableExportObfuscation) {
     return keepFilesAndDependencies;
   }
   let stack: string[] = Array.from(allKeepFiles);
-  projectRootPath = toUnixPath(projectRootPath);
   while (stack.length > 0) {
-    const filePath = stack.pop();
+    const filePath: string = toUnixPath(stack.pop());
     if (keepFilesAndDependencies.has(filePath)) {
       continue;
     }
 
     keepFilesAndDependencies.add(filePath);
-    const resolvedModules = resolvedModulesCache.get(path.resolve(filePath));
-    if (!resolvedModules) {
-      continue;
-    }
-
-    for (const resolvedModule of resolvedModules) {
-      // For `import moduleName form 'xx.so'`, when the xx.so cannot be resolved, resolvedModules is [null]
+    const dependentModules: ts.ModeAwareCache<ts.ResolvedModuleFull | undefined> = sourceFileDependencies.get(filePath);
+    dependentModules?.forEach(resolvedModule => {
       if (!resolvedModule) {
-        continue;
+        // For `import moduleName form 'xx.so'`, when the xx.so cannot be resolved, dependentModules is [null]
+        return;
       }
-      let tempPath = toUnixPath(resolvedModule.resolvedFileName);
-      // resolvedModule can record system API declaration files and ignore them.
-      if (isCurrentProjectFiles(tempPath, projectConfig)) {
-        stack.push(tempPath);
+      let curDependencyPath: string = toUnixPath(resolvedModule.resolvedFileName);
+      // resolvedModule can record system Api declaration files and ignore them
+      if (isCurrentProjectFiles(curDependencyPath, projectConfig)) {
+        stack.push(curDependencyPath);
       }
-    }
+    });
   }
   return keepFilesAndDependencies;
 }

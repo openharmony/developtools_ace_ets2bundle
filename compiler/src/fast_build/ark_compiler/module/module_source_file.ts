@@ -61,7 +61,6 @@ import { readProjectAndLibsSource } from '../common/process_ark_config';
 import {
   allSourceFilePaths,
   collectAllFiles,
-  resolvedModulesCache,
   localPackageSet
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
@@ -313,8 +312,8 @@ export class ModuleSourceFile {
     if (compileToolIsRollUp()) {
       const obfuscationConfig: MergedConfig = sourceProjectConfig.obfuscationMergedObConfig;
       handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
-      const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(resolvedModulesCache, obfuscationConfig,
-        sourceProjectConfig.projectRootPath, sourceProjectConfig.arkObfuscator, sourceProjectConfig);
+      const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(obfuscationConfig,
+        sourceProjectConfig.arkObfuscator, sourceProjectConfig);
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
         sourceProjectConfig.compileHar, keepFilesAndDependencies);
     }
