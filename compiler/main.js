@@ -975,9 +975,6 @@ function isPartialUpdate(metadata, moduleType) {
       if (item.name === 'SkipArkTSStaticBlocksCheck' && item.value === 'true') {
         partialUpdateConfig.skipArkTSStaticBlocksCheck = true;
       }
-      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
-        projectConfig.useArkoala = true;
-      }
       if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
         projectConfig.useTsHar = true;
       }
