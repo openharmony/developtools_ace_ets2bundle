@@ -463,6 +463,8 @@ export const appComponentCollection: Map<string, Set<string>> = new Map();
 const allResolvedModules: Set<string> = new Set();
 // all files of tsc and rollup for obfuscation scanning.
 export const allSourceFilePaths: Set<string> = new Set();
+// Used to collect file paths that have not been converted toUnixPath.
+export const allModuleIds: Set<string> = new Set();
 export let props: string[] = [];
 
 export let fastBuildLogger = null;
@@ -553,6 +555,7 @@ export function collectTscFiles(program: ts.Program): void {
       return;
     }
     allSourceFilePaths.add(fileName);
+    allModuleIds.add(sourceFile.fileName);
     // For the windos and mac platform, the file path in filesBuildInfo is in lowercase,
     // while fileName of sourceFile is the original path (including uppercase).
     if (filesBuildInfo.size > 0 &&
@@ -566,6 +569,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
+      allModuleIds.add(moduleId);
       addLocalPackageSet(moduleId, rollupObject);
     }
   }
@@ -613,13 +617,12 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
     let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean): void => {
       emit = text;
     };
-    const rootPathSet: Object = rollupShareObject?.projectConfig.rootPathSet;
     [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
       if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
         try {
           if ((/\.d\.e?ts$/).test(moduleFile)) {
             generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
-              projectConfig, rootPathSet);
+              projectConfig, projectConfig.modulePathMap);
           } else if ((/\.e?ts$/).test(moduleFile)) {
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
@@ -627,7 +630,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
               globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true);
             }
             if (emit) {
-              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, rootPathSet);
+              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, projectConfig.modulePathMap);
             }
           }
         } catch (err) { }
@@ -1628,6 +1631,7 @@ export function resetEtsCheck(): void {
   dollarCollection.clear();
   extendCollection.clear();
   allSourceFilePaths.clear();
+  allModuleIds.clear();
   filesBuildInfo.clear();
   fileExistsCache.clear();
   dirExistsCache.clear();

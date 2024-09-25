@@ -378,12 +378,12 @@ export class ModuleMode extends CommonMode {
   private processModuleInfos(moduleId: string, moduleInfos: Map<String, ModuleInfo>, metaInfo?: Object): void {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
-        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : EXTNAME_TS;
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : EXTNAME_TS;
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
       case EXTNAME_TS: {
-        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig) ? EXTNAME_JS : '';
+        const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : '';
         this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
         break;
       }
@@ -738,13 +738,14 @@ export class ModuleMode extends CommonMode {
   private genFileCachePath(filePath: string, projectRootPath: string, cachePath: string, metaInfo: Object): string {
     filePath = toUnixPath(filePath);
     let sufStr: string = '';
-    // Only the files of the third-party package will not have the belongProjectPath field in metaInfo.
-    // If both branches are not satisfied, the compilation process will not go here,
-    // and an error will be reported when the cache file is written to the disk(in the genTemporaryPath method).
-    if (metaInfo && metaInfo.belongProjectPath) {
-      sufStr = filePath.replace(toUnixPath(metaInfo.belongProjectPath) + '/', '');
-    } else if (filePath.startsWith(toUnixPath(projectRootPath))) {
-      sufStr = filePath.replace(toUnixPath(projectRootPath) + '/', '');
+    if (metaInfo) {
+      if (metaInfo.isLocalDependency) {
+        sufStr = filePath.replace(toUnixPath(metaInfo.belongModulePath), metaInfo.moduleName);
+      } else {
+        sufStr = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
+      }
+    } else {
+      sufStr = filePath.replace(toUnixPath(projectRootPath), '');
     }
     const output: string = path.join(cachePath, sufStr);
     return output;

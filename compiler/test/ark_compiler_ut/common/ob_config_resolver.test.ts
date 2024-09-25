@@ -292,7 +292,7 @@ mocha.describe('test obfuscate config resolver api', function () {
       };
       modulePathMap = {
         'entry': '/mnt/application/entry',
-        'harPackageName': '/mnt/application/harPackageName'
+        'harpackagename': '/mnt/application/harPackageName'
       };
       entryArray = [
         'entryability/EntryAbility',
@@ -318,6 +318,8 @@ mocha.describe('test obfuscate config resolver api', function () {
         'mnt',
         'application',
         'harPackageName',
+        'entry',
+        'harpackagename',
         '.',
         'Index-oh-package.ets',
         '.',
@@ -374,6 +376,8 @@ mocha.describe('test obfuscate config resolver api', function () {
         'mnt',
         'application',
         'harPackageName',
+        'entry',
+        'harpackagename',
         '.',
         'Index-oh-package.ets',
         '.',
@@ -421,6 +425,8 @@ mocha.describe('test obfuscate config resolver api', function () {
         'mnt',
         'application',
         'harPackageName',
+        'entry',
+        'harpackagename',
         '.',
         'Index-oh-package.ets',
         '.',
@@ -468,6 +474,8 @@ mocha.describe('test obfuscate config resolver api', function () {
         'mnt',
         'application',
         'harPackageName',
+        'entry',
+        'harpackagename',
         '.',
         'Index-oh-package.ets',
         '.',
