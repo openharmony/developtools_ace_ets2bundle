@@ -335,26 +335,27 @@ export function genLoaderOutPathOfHar(filePath: string, cachePath: string, build
   return output;
 }
 
-// projectRootPath: When compiling har or hsp, the project path of the module file outside the project.
-export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, projectRootPath: string,
-  projectConfig: Object, metaInfo: Object, logger: Object, buildInHar: boolean = false): string {
+export function genTemporaryPath(filePath: string, projectPath: string, buildPath: string, projectConfig: Object,
+  metaInfo: Object, buildInHar: boolean = false): string {
   filePath = toUnixPath(filePath).replace(/\.[cm]js$/, EXTNAME_JS);
   projectPath = toUnixPath(projectPath);
 
   if (process.env.compileTool === 'rollup') {
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
-    projectRootPath = toUnixPath(buildInHar ? projectPath : projectRootPath);
     let relativeFilePath: string = '';
-    // Only the files of the third-party package will not have the belongProjectPath field in metaInfo.
-    if (metaInfo && metaInfo.belongProjectPath) {
-      relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
-    } else if (filePath.startsWith(projectRootPath)) {
-      relativeFilePath = filePath.replace(projectRootPath, '');
+    if (metaInfo) {
+      if (metaInfo.isLocalDependency) {
+        // When buildInHar and compileHar are both True,
+        // this is the path under the PackageHar directory being spliced ​​together.
+        // Here, only the relative path based on moduleRootPath needs to be retained.
+        // eg. moduleA/index.js --> index.js --> PackageHar/index.js
+        // eg. moduleA/src/main/ets/test.js --> src/main/ets/test.js --> PackageHar/src/main/ets/test.js
+        const moduleName: string = buildInHar && projectConfig.compileHar ? '' : metaInfo.moduleName;
+        relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongModulePath), moduleName);
+      } else {
+        relativeFilePath = filePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
+      }
     } else {
-      logger.error(red, 'ARKTS:INTERNAL ERROR\n' + 
-        `Error Message: Failed to generate the cache path corresponding to file ${filePath}.\n` +
-        'Because the file belongs to a module outside the project and has no project information.', reset);
+      relativeFilePath = filePath.replace(toUnixPath(projectConfig.projectRootPath), '');
     }
     const output: string = path.join(buildPath, relativeFilePath);
     return output;
@@ -421,13 +422,13 @@ export interface GeneratedFileInHar {
 export const harFilesRecord: Map<string, GeneratedFileInHar> = new Map();
 
 export function generateSourceFilesInHar(sourcePath: string, sourceContent: string, suffix: string,
-  projectConfig: Object, rootPathSet?: Object): void {
-  const projectRootPath: string = getProjectRootPath(sourcePath, projectConfig, rootPathSet);
+  projectConfig: Object, modulePathMap?: Object): void {
+  const belongModuleInfo: Object = getBelongModuleInfo(sourcePath, modulePathMap, projectConfig.projectRootPath);
   // compileShared: compile shared har of project
   let jsFilePath: string = genTemporaryPath(sourcePath,
-    projectConfig.compileShared ? projectRootPath : projectConfig.moduleRootPath,
+    projectConfig.compileShared ? projectConfig.projectRootPath : projectConfig.moduleRootPath,
     projectConfig.compileShared || projectConfig.byteCodeHar ? path.resolve(projectConfig.aceModuleBuild, '../etsFortgz') : projectConfig.cachePath,
-    projectRootPath, projectConfig, undefined, undefined, projectConfig.compileShared);
+    projectConfig, belongModuleInfo, projectConfig.compileShared);
   if (!jsFilePath.match(new RegExp(projectConfig.packageDir))) {
     jsFilePath = jsFilePath.replace(/\.ets$/, suffix).replace(/\.ts$/, suffix);
     if (projectConfig.obfuscateHarType === 'uglify' && suffix === '.js') {
@@ -1262,4 +1263,21 @@ export function getProjectRootPath(filePath: string, projectConfig: Object, root
     }
   }
   return projectConfig.projectRootPath;
+}
+
+export function getBelongModuleInfo(filePath: string, modulePathMap: Object, projectRootPath: string): Object {
+  for (const moduleName of Object.keys(modulePathMap)) {
+    if (toUnixPath(filePath).startsWith(toUnixPath(modulePathMap[moduleName]) + '/')) {
+      return {
+        isLocalDependency: true,
+        moduleName: moduleName,
+        belongModulePath: modulePathMap[moduleName]
+      };
+    }
+  }
+  return {
+    isLocalDependency: false,
+    moduleName: '',
+    belongModulePath: projectRootPath
+  };
 }
