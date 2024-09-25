@@ -56,7 +56,7 @@ const KEEPTS = '// @keepTs';
 *    ```
 */
 export function processKitImport(id: string, metaInfo: Object,
-  compilationTime: CompilationTimeStatistics): Function {
+  compilationTime: CompilationTimeStatistics, shouldReturnOriginalNode: boolean = true): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -108,7 +108,7 @@ export function processKitImport(id: string, metaInfo: Object,
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
-        return node; // this node not used for [writeFile]
+        return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
       }
       // process KitImport transforming
       const processedNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
@@ -645,7 +645,7 @@ function trimSourceSuffix(source: string): string {
   return source.replace(/\.d.[e]?ts$/, '');
 }
 
-function checkHasKeepTs(node: ts.SourceFile): boolean {
+export function checkHasKeepTs(node: ts.SourceFile): boolean {
   // Get the first comment in the file and determine whether it is "// @keepTs"
   const comments = ts.getTrailingCommentRanges(node.getFullText(), 0) || [];
   if (comments.length === 0) {

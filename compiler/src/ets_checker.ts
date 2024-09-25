@@ -1613,10 +1613,7 @@ export function etsStandaloneChecker(entryObj, logger, projectConfig): void {
   resetEtsStandaloneCheckerConfig(beforeInitFastBuildLogger, beforeInitCompileMode);
 }
 
-export function resetEtsCheck(): void {
-  cache = {};
-  props = [];
-  needReCheckForChangedDepUsers = false;
+export function resetEtsCheckTypeScript(): void {
   if (globalProgram.program) {
     globalProgram.program.releaseTypeChecker();
   } else if (languageService) {
@@ -1624,6 +1621,13 @@ export function resetEtsCheck(): void {
   }
   resetGlobalProgram();
   languageService = null;
+}
+
+export function resetEtsCheck(): void {
+  cache = {};
+  props = [];
+  needReCheckForChangedDepUsers = false;
+  resetEtsCheckTypeScript();
   allResolvedModules.clear();
   checkerResult.count = 0;
   warnCheckerResult.count = 0;
