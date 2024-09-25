@@ -1077,6 +1077,10 @@ export class CompilationTimeStatistics {
   processComponentClassTime: CompileEvent;
   validateEtsTime: CompileEvent;
   tsProgramEmitTime: CompileEvent;
+  shouldEmitJsTime: CompileEvent;
+  transformNodesTime: CompileEvent;
+  emitTime: CompileEvent;
+  printNodeTime: CompileEvent;
   noSourceFileRebuildProgramTime: CompileEvent;
   etsTransformBuildStartTime: CompileEvent;
   etsTransformLoadTime: CompileEvent;
@@ -1096,6 +1100,10 @@ export class CompilationTimeStatistics {
         this.processComponentClassTime = this.hookEventFactory.createEvent('processComponentClass');
         this.validateEtsTime = this.hookEventFactory.createEvent('validateEts');
         this.tsProgramEmitTime = this.hookEventFactory.createEvent('tsProgramEmit');
+        this.shouldEmitJsTime = this.hookEventFactory.createEvent('shouldEmitJs');
+        this.transformNodesTime = this.hookEventFactory.createEvent('transformNodes');
+        this.emitTime = this.hookEventFactory.createEvent('emit');
+        this.printNodeTime = this.hookEventFactory.createEvent('printNode');
         this.noSourceFileRebuildProgramTime = this.hookEventFactory.createEvent('noSourceFileRebuildProgram');
         this.processKitImportTime = this.hookEventFactory.createEvent('processKitImport');
       } else if (pluginName === 'etsTransform' && hookName === 'buildStart' && share.getHookEventFactory(pluginName, hookName)) {
