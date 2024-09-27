@@ -97,10 +97,10 @@ class LocalStorageComponent extends ViewPU {
     }
 }
 if (temp && temp.routeName != undefined && temp.storage != undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false", moduleType: "followWithHap" });
 }
 else if (temp && temp.routeName != undefined && temp.storage == undefined) {
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}, temp.useSharedStorage ? LocalStorage.getShared() : temp.storage), temp.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageForThreeParam", pageFullPath: "localStorageForThreeParam", integratedHsp: "false", moduleType: "followWithHap" });
 }
 else if (temp && temp.routeName == undefined && temp.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
