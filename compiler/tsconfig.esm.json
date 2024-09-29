@@ -216,6 +216,7 @@
         "Path",
         "PatternLock",
         "Piece",
+        "PlatformView",
         "PluginComponent",
         "Polygon",
         "Polyline",
@@ -562,6 +563,11 @@
             "name": "Piece",
             "type": "PieceAttribute",
             "instance": "PieceInstance"
+          },
+          {
+            "name": "PlatformView",
+            "type": "PlatformViewAttribute",
+            "instance": "PlatformViewInstance"
           },
           {
             "name": "PluginComponent",
