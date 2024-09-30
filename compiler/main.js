@@ -127,10 +127,20 @@ function initProjectConfig(projectConfig) {
   projectConfig.updateVersionInfo = undefined;
 }
 
+function loadMemoryTrackingConfig(projectConfig) {
+  projectConfig.enableMemoryDotting = process.env.enableMemoryDotting || false;
+  projectConfig.memoryDottingPath = path.resolve(projectConfig.buildPath, '../', '../', 'dottingfile');
+  // recordInterval config, unit is ms
+  projectConfig.memoryDottingRecordInterval = process.env.memoryDottingRecordInterval || 100;
+  // records the config interval for writing files， unit is ms. 
+  projectConfig.memoryDottingWriteFileInterval = process.env.memoryDottingWriteFileInterval || 1000;
+}
+
 function loadEntryObj(projectConfig) {
   let manifest = {};
   initMain();
   initProjectConfig(projectConfig);
+  loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
@@ -599,7 +609,7 @@ function loadBuildJson() {
       }
     });
   }
-  if (!!aceBuildJson.byteCodeHar) { 
+  if (!!aceBuildJson.byteCodeHar) {
     projectConfig.useTsHar = true;
   }
   if (aceBuildJson.updateVersionInfo) {
