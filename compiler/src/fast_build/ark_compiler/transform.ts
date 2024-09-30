@@ -35,6 +35,8 @@ import {
   stopEvent
 } from '../../ark_utils';
 import { SourceMapGenerator } from './generate_sourcemap';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { MODULE_SOURCE_FILE_NEW_SOURCE_FILE } from '../meomry_monitor/memory_define';
 
 /**
  * rollup transform hook
@@ -49,7 +51,9 @@ export function transformForModule(code: string, id: string) {
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
+      MemoryMonitor.getInstance().recordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
       ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      MemoryMonitor.getInstance().stopRecordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
@@ -64,7 +68,9 @@ export function transformForModule(code: string, id: string) {
           preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
         }
       }
+      MemoryMonitor.getInstance().recordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
       ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      MemoryMonitor.getInstance().stopRecordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
     }
   }
   stopEvent(eventTransformForModule);

@@ -30,6 +30,8 @@ import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 import { compilerOptions } from './ets_checker';
 import createAstNodeUtils from './create_ast_node_utils';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { NEW_SOURCE_FILE } from './fast_build/meomry_monitor/memory_define';
 
 /*
 * basic implementation logic:
@@ -84,6 +86,7 @@ export function processKitImport(id: string, metaInfo: Object,
 
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
+      MemoryMonitor.getInstance().recordStage(NEW_SOURCE_FILE);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
       interceptLazyImportWithKitImport(node);
 
@@ -101,6 +104,7 @@ export function processKitImport(id: string, metaInfo: Object,
           // process KitImport transforming
           const processedNode: ts.SourceFile =
             ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
+          MemoryMonitor.getInstance().stopRecordStage(NEW_SOURCE_FILE);
           stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
           return processedNode;
         }
@@ -108,11 +112,13 @@ export function processKitImport(id: string, metaInfo: Object,
         const processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
+        MemoryMonitor.getInstance().stopRecordStage(NEW_SOURCE_FILE);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
       }
       // process KitImport transforming
       const processedNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+      MemoryMonitor.getInstance().stopRecordStage(NEW_SOURCE_FILE);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       return processedNode;
     };
@@ -121,7 +127,7 @@ export function processKitImport(id: string, metaInfo: Object,
 
 /**
  *  Kit does not support lazy-import yet, e.g.: import lazy {xxx} from '@kit.yyy'
- */ 
+ */
 function interceptLazyImportWithKitImport(node: ts.SourceFile): void {
   if (node && node.statements) {
     node.statements.forEach((statement) => {
