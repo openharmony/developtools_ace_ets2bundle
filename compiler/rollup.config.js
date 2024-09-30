@@ -41,6 +41,7 @@ const { watchChangeFiles } = require('./lib/fast_build/common/rollup-plugin-watc
 const { initArkConfig } = require('./lib/fast_build/ark_compiler/common/process_ark_config');
 const { genAbc } = require('./lib/fast_build/ark_compiler/rollup-plugin-gen-abc');
 const { visualTransform } = require('./lib/fast_build/visual/rollup-plugin-visual');
+const { memoryMonitor } = require('./lib/fast_build/meomry_monitor/rollup-plugin-memory-monitor');
 
 process.env.watchMode = (process.env.watchMode && process.env.watchMode === 'true') || 'false';
 process.env.compileTool = 'rollup';
@@ -91,6 +92,7 @@ const config = {
       ],
       compact: false
     }),
+    memoryMonitor(),
     watchChangeFiles(),
     etsChecker(),
     visualTransform(),
