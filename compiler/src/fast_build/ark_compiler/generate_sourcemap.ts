@@ -35,7 +35,7 @@ import {
   isDebug,
   shouldETSOrTSFileTransformToJS
 } from "./utils";
-import { 
+import {
   toUnixPath,
   isPackageModulesFile,
   getProjectRootPath
@@ -45,6 +45,8 @@ import {
   mangleFilePath,
   enableObfuscateFileName
 } from './common/ob_config_resolver';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { UPDATE_SOURCE_MAPS } from '../meomry_monitor/memory_define';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -191,7 +193,9 @@ export class SourceMapGenerator {
         }
       });
     }
+    MemoryMonitor.getInstance().recordStage(UPDATE_SOURCE_MAPS);
     const cacheSourceMapObject: Object = this.updateCachedSourceMaps();
+    MemoryMonitor.getInstance().stopRecordStage(UPDATE_SOURCE_MAPS);
     stopEvent(eventUpdateCachedSourceMaps);
 
     this.triggerAsync(() => {

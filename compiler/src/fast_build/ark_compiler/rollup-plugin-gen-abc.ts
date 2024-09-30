@@ -26,6 +26,7 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import { cleanUpUtilsObjects } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 
 export function genAbc() {
   return {
