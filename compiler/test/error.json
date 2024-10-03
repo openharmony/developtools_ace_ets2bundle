@@ -31,10 +31,14 @@
         {
             "message": "Then statement cannot be null in if statement.",
             "type": "ERROR"
+        },
+        {
+            "message": "'' does not meet UI component syntax.",
+            "type": "ERROR"
         }
     ],
     "idCheck": {
-        "message": "The current component id \"1\" is duplicate with ${path.resolve(__dirname, '../idCheck.ets')}:7:21.",
+        "message": "The current component id \"1\" is duplicate with ${const path = require('path');path.resolve(__dirname, '../../../test/transform_ut/application/entry/src/main/ets/pages/utForValidate/Decorators/process_component_build/idCheck.ets')}:6:21.",
         "type": "WARN"
     },
     "arkUIStandard": {
@@ -109,18 +113,30 @@
         "message": "The @Entry component 'Index' cannot have the @Prop property 'message'.",
         "type": "WARN"
     },
-    "validateHasIllegalQuestionToken": {
-        "message": "The @ObjectLink property 'message' cannot be an optional parameter.",
-        "type": "WARN"
-    },
+    "validateHasIllegalQuestionToken": [
+        {
+            "message": "The @ObjectLink property 'message' cannot be an optional parameter.",
+            "type": "WARN"
+        },
+        {
+            "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
+            "type": "ERROR"
+        }
+    ],
     "validateForbiddenUseStateType": {
         "message": "The @State property 'message' cannot be a 'CustomDialogController' object.",
         "type": "ERROR"
     },
-    "validateDuplicateDecorator": {
-        "message": "The inner decorator @State cannot be used together with custom decorator.",
-        "type": "ERROR"
-    },
+    "validateDuplicateDecorator": [
+        {
+            "message": "The inner decorator @State cannot be used together with custom decorator.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The decorator '@opacity' cannot have the same name as the built-in style attribute 'opacity'.",
+            "type": "ERROR"
+        }
+    ],
     "validateWatchDecorator": {
         "message": "Regular variable 'message' can not be decorated with @Watch.",
         "type": "ERROR"
@@ -271,18 +287,9 @@
         "message": "@Styles can't have parameters.",
         "type": "ERROR"
     },
-    "ExceededPreview": {
-        "message": "A page can contain at most 10 '@Preview' decorators.",
-        "type": "ERROR"
-    },
-    "ExceededEntry": {
-        "message": "A page can't contain more than one '@Entry' decorator",
-        "type": "ERROR"
-    },
-    "OneEntry": {
-        "message": "A page configured in 'undefined or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
-        "type": "ERROR"
-    },
+    "ExceededPreview": [],
+    "ExceededEntry": [],
+    "OneEntry": [],
     "notMethodDeco": {
         "message": "'@State' can not decorate the method.",
         "type": "ERROR"
@@ -781,8 +788,216 @@
             "type": "ERROR"
         }
     ],
-    "v1ToV2Component.ts": [],
-    "v1ToV2ComponentValidate": [],
-    "v2ToV1ComponentValidate": [],
-    "property_observe_validate": []
+    "v1ToV2Component": [
+        {
+            "message": "Property 'func_value1' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'func_value2' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        }
+    ],
+    "v1ToV2ComponentValidate": [
+        {
+            "message": "The type of the @Param property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'param_value' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'param_value_alias_type' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'state_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'provide_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'consume_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'objectLink_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'local_storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'local_storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        }
+    ],
+    "v2ToV1ComponentValidate": [
+        {
+            "message": "The type of the @Provider property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'set_value' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'set_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'map_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'arr_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'arr_value1' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'arr_value2' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'arr_value3' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        }
+    ],
+    "property_observe_validate": [
+        {
+            "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @State property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Prop property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Link property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Provide property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Consume property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @StorageLink property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @StorageProp property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @LocalStorageLink property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @LocalStorageProp property can not be a class decorated with @ObservedV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Local property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Param property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Param property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Param property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Event property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Provider property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        }
+    ],
+    "index": {
+        "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
+        "type": "ERROR"
+    }
 }

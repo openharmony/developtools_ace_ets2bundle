@@ -1,0 +1,71 @@
+"use strict";
+let __generate__Id = 0;
+function generateId() {
+    return "@builderWithForEach_" + ++__generate__Id;
+}
+function ComB(param, parent = null) {
+    ForEach.create("3", parent ? parent : this, ObservedObject.GetRawObject(param), item => {
+        __Common__.create();
+        __Common__.backgroundColor('red');
+        let earlierCreatedChild_2 = ((parent ? parent : this) && (parent ? parent : this).findChildById) ? (parent ? parent : this).findChildById(generateId()) : undefined;
+        if (earlierCreatedChild_2 == undefined) {
+            View.create(new ComA("@builderWithForEach_" + __generate__Id, parent ? parent : this, {}));
+        }
+        else {
+            earlierCreatedChild_2.updateWithValueParams({});
+            if (!earlierCreatedChild_2.needsUpdate()) {
+                earlierCreatedChild_2.markStatic();
+            }
+            View.create(earlierCreatedChild_2);
+        }
+        __Common__.pop();
+    });
+    ForEach.pop();
+}
+class Index extends View {
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
+        this.__arr = new ObservedPropertyObject(['1', '2', '3', '4', '5'], this, "arr");
+        this.updateWithValueParams(params);
+    }
+    updateWithValueParams(params) {
+        if (params.arr !== undefined) {
+            this.arr = params.arr;
+        }
+    }
+    aboutToBeDeleted() {
+        this.__arr.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id());
+    }
+    get arr() {
+        return this.__arr.get();
+    }
+    set arr(newValue) {
+        this.__arr.set(newValue);
+    }
+    render() {
+        Column.create();
+        ComB(this.arr, this);
+        Column.pop();
+    }
+}
+class ComA extends View {
+    constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
+        super(compilerAssignedUniqueChildId, parent, localStorage);
+        this.updateWithValueParams(params);
+    }
+    updateWithValueParams(params) {
+    }
+    aboutToBeDeleted() {
+        SubscriberManager.Get().delete(this.id());
+    }
+    render() {
+        Row.create();
+        Text.create('自定义组件');
+        Text.fontSize(30);
+        Text.pop();
+        Row.pop();
+    }
+}
+loadDocument(new Index("1", undefined, {}));
+//# sourceMappingURL=@builderWithForEach.js.map

@@ -1,0 +1,4 @@
+@Entry
+@Component
+struct Index {
+}
