@@ -1093,6 +1093,7 @@ function resetProjectConfig() {
   projectConfig.optLazyForEach = false;
   projectConfig.hspResourcesMap = false;
   projectConfig.coldReload = undefined;
+  projectConfig.hotReload = undefined;
   projectConfig.isFirstBuild = undefined;
   projectConfig.changedFileList = undefined;
   projectConfig.patchAbcPath = undefined;
