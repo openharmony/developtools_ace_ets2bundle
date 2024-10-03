@@ -1,4 +1,5 @@
 .vscode/
+compiler/etsTest_build/
 compiler/arkTest_build/
 compiler/node_modules/
 compiler/lib/
