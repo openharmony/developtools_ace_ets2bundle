@@ -184,7 +184,9 @@ export function initArkProjectConfig(share: Object): Object {
   arkProjectConfig.entryObj = mainProjectConfig.entryObj;
   arkProjectConfig.entryArrayForObf = mainProjectConfig.entryArrayForObf;
   arkProjectConfig.cardEntryObj = mainProjectConfig.cardEntryObj;
-
+  if (mainProjectConfig.updateVersionInfo) {
+    arkProjectConfig.updateVersionInfo = mainProjectConfig.updateVersionInfo;
+  }
   if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
     const logger: any = share.getLogger(OBFUSCATION_TOOL);
