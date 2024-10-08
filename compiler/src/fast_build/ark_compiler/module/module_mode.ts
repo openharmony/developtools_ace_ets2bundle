@@ -219,7 +219,9 @@ export class ModuleMode extends CommonMode {
     }
     this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
-    if (!!this.projectConfig.pkgContextInfo) {
+    if (this.projectConfig.updateVersionInfo) {
+      compileContextInfo.updateVersionInfo = this.projectConfig.updateVersionInfo;
+    } else if (this.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     fs.writeFileSync(compileContextInfoPath, JSON.stringify(compileContextInfo), 'utf-8');
@@ -533,10 +535,15 @@ export class ModuleMode extends CommonMode {
       filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
     });
-    this.abcPaths.forEach((abcPath) => {
-      // es2abc parses only the first data according to the file extension .abc
-      filesInfo += `${abcPath};;;;;\n`;
-    });
+    if (this.projectConfig.byteCodeHarInfo) {
+      Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {
+        // es2abc parses file path and pkgName according to the file extension .abc.
+        // Accurate version replacement requires 'pkgName' to es2abc.
+        const abcPath: string = toUnixPath(abcInfo.abcPath);
+        filesInfo += `${abcPath};;;;${pkgName};\n`;
+      });
+    }
+
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
 
