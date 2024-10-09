@@ -163,6 +163,12 @@ import {
   processSendableFunction,
   processSendableType
 } from './process_sendable';
+import {
+  routerOrNavPathWrite,
+  integratedHspType,
+  routerModuleType,
+  routerBundleOrModule
+} from './process_module_package';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -1554,6 +1560,7 @@ function loadDocumentWithRoute(context: ts.TransformationContext, name: string, 
 
 function createRegisterNamedRoute(context: ts.TransformationContext, newExpressionParams: ts.NewExpression[],
   isObject: boolean, entryOptionNode: ts.Expression, hasRouteName: boolean): ts.ExpressionStatement {
+  const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
   return context.factory.createExpressionStatement(context.factory.createCallExpression(
     context.factory.createIdentifier(REGISTER_NAMED_ROUTE),
     undefined,
@@ -1572,39 +1579,20 @@ function createRegisterNamedRoute(context: ts.TransformationContext, newExpressi
       ) : ts.factory.createStringLiteral(''),
       context.factory.createObjectLiteralExpression(
         [
-          context.factory.createPropertyAssignment(
-            context.factory.createIdentifier(RESOURCE_NAME_BUNDLE),
-            context.factory.createStringLiteral(projectConfig.bundleName || '')
-          ),
-          context.factory.createPropertyAssignment(
-            context.factory.createIdentifier(RESOURCE_NAME_MODULE),
-            context.factory.createStringLiteral(projectConfig.moduleName || '')
-          ),
-          routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath),
+          routerBundleOrModule(context, isByteCodeHar, RESOURCE_NAME_BUNDLE),
+          routerBundleOrModule(context, isByteCodeHar, RESOURCE_NAME_MODULE),
+          routerOrNavPathWrite(context, PAGE_PATH, projectConfig.projectPath, projectConfig.projectRootPath),
           routerOrNavPathWrite(context, PAGE_FULL_PATH, projectConfig.projectRootPath),
           context.factory.createPropertyAssignment(
             context.factory.createIdentifier(INTEGRATED_HSP),
             context.factory.createStringLiteral(integratedHspType())
-          )
+          ),
+          routerModuleType(context)
         ],
         false
       )
     ]
   ));
-}
-
-function routerOrNavPathWrite(context: ts.TransformationContext, keyName: string, projectPath: string): ts.PropertyAssignment {
-  return context.factory.createPropertyAssignment(
-    context.factory.createIdentifier(keyName),
-    context.factory.createStringLiteral(
-      projectConfig.compileHar ? keyName === PAGE_PATH ? '__harDefaultPagePath__' : '' :
-        path.relative(projectPath || '', resourceFileName).replace(/\\/g, '/').replace(/\.ets$/, '')
-    )
-  );
-}
-
-function integratedHspType(): string {
-  return projectConfig.integratedHsp ? 'true' : projectConfig.compileHar ? '__harDefaultIntegratedHspType__' : 'false';
 }
 
 export function createStartGetAccessRecording(context: ts.TransformationContext): ts.ExpressionStatement {
@@ -1983,7 +1971,7 @@ function createSharedStorageWithRoute(context: ts.TransformationContext, name: s
 }
 
 function insertImportModuleNode(statements: ts.Statement[], hasUseResource: boolean): ts.Statement[] {
-  if (projectConfig.compileHar && projectConfig.byteCodeHar && hasUseResource) {
+  if (projectConfig.compileHar && projectConfig.byteCodeHar && (hasUseResource || componentCollection.entryComponent)) {
     statements.unshift(createAstNodeUtils.createImportNodeForModuleInfo());
   }
   return statements;
