@@ -1791,4 +1791,30 @@ mocha.describe('test module_mode file api', function () {
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
+
+  mocha.it('18-11: test generateCompileContext has not exist moduleId', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+
+    const logger = moduleMode.logger;
+    const loggerStub = sinon.stub(logger, 'error');
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const entryObjName:string = 'test';
+    const moduleId:string = 'd:/test.ets';
+    try {
+      moduleMode.projectConfig.entryObj[entryObjName]=moduleId;
+      moduleMode.projectConfig.cardEntryObj[entryObjName]=moduleId;
+      moduleMode.generateCompileContextInfoMock(this.rollup);
+    } catch (e) {
+    }
+
+    expect(loggerStub.getCall(0).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
+          `Error Message: Failed to find module info with '${moduleId}' from the context information.`, reset)).to.be.true;
+
+    loggerStub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 });
