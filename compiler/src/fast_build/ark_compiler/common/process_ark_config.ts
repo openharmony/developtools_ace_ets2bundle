@@ -17,6 +17,7 @@ import path from 'path';
 import fs from 'fs';
 import {
   ArkObfuscator,
+  initObfuscationConfig,
   readProjectPropertiesByCollectedPaths,
   performancePrinter
 } from 'arkguard';
@@ -45,22 +46,7 @@ import {
 import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
-import {
-  ObConfigResolver,
-  collectResevedFileNameInIDEConfig,
-  readNameCache
-} from './ob_config_resolver';
 import type { MergedConfig } from './ob_config_resolver';
-export const printerConfig = {
-  //Print obfuscation time&memory usage of all files and obfuscation processes
-  mFilesPrinter: false,
-  //Print time&memory usage of a single file obfuscation in transform processes
-  mSingleFilePrinter: false,
-  //Print sum up time of transform processes during obfuscation
-  mSumPrinter: false,
-  //Output path of printer
-  mOutputPath: ''
-};
 
 type ArkConfig = {
   arkRootPath: string;
@@ -197,26 +183,6 @@ export function initArkProjectConfig(share: Object): Object {
   return arkProjectConfig;
 }
 
-function initObfuscationConfig(projectConfig: any, arkProjectConfig: any, logger: any): void {
-  const obConfig: ObConfigResolver = new ObConfigResolver(projectConfig, logger, true);
-  const mergedObConfig: MergedConfig = obConfig.resolveObfuscationConfigs();
-  const isHarCompiled: boolean = projectConfig.compileHar;
-  if (mergedObConfig.options.disableObfuscation) {
-    return;
-  }
-
-  if (mergedObConfig.options.enableFileNameObfuscation) {
-    const ohPackagePath = path.join(projectConfig.modulePath, 'oh-package.json5');
-    const entryArray = arkProjectConfig.entryArrayForObf;
-    const reservedFileNamesInIDEconfig = collectResevedFileNameInIDEConfig(ohPackagePath, projectConfig,
-      arkProjectConfig.modulePathMap, entryArray);
-    mergedObConfig.reservedFileNames.push(...reservedFileNamesInIDEconfig);
-  }
-  arkProjectConfig.obfuscationMergedObConfig = mergedObConfig;
-
-  arkProjectConfig.arkObfuscator = initArkGuardConfig(projectConfig.obfuscationOptions?.obfuscationCacheDir, logger, mergedObConfig, isHarCompiled);
-}
-
 function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): any {
   const isCompact = projectConfig.obfuscationOptions ? mergedObConfig.options.compact : isHarCompiled;
   const minifyOptions = {
@@ -260,60 +226,6 @@ function initTerserConfig(projectConfig: any, logger: any, mergedObConfig: Merge
     };
   }
   return minifyOptions;
-}
-
-function initArkGuardConfig(obfuscationCacheDir: string | undefined, logger: any, mergedObConfig: MergedConfig, isHarCompiled: boolean): ArkObfuscator {
-  const arkguardConfig = {
-    mCompact: mergedObConfig.options.compact,
-    mDisableHilog: false,
-    mDisableConsole: mergedObConfig.options.removeLog,
-    mSimplify: false,
-    mRemoveComments: true,
-    mNameObfuscation: {
-      mEnable: true,
-      mNameGeneratorType: 1,
-      mReservedNames: mergedObConfig.reservedNames,
-      mRenameProperties: mergedObConfig.options.enablePropertyObfuscation,
-      mReservedProperties: mergedObConfig.reservedPropertyNames,
-      mKeepStringProperty: !mergedObConfig.options.enableStringPropertyObfuscation,
-      mTopLevel: mergedObConfig.options.enableToplevelObfuscation,
-      mReservedToplevelNames: mergedObConfig.reservedGlobalNames,
-      mUniversalReservedProperties: mergedObConfig.universalReservedPropertyNames,
-      mUniversalReservedToplevelNames: mergedObConfig.universalReservedGlobalNames
-    },
-    mRemoveDeclarationComments: {
-      mEnable: mergedObConfig.options.removeComments,
-      mReservedComments: mergedObConfig.keepComments
-    },
-    mEnableSourceMap: true,
-    mEnableNameCache: true,
-    mRenameFileName: undefined,
-    mExportObfuscation: mergedObConfig.options.enableExportObfuscation,
-    mPerformancePrinter: printerConfig,
-    mKeepFileSourceCode: {
-      mKeepSourceOfPaths: new Set(), mkeepFilesAndDependencies: new Set(),
-    }
-  };
-
-  arkguardConfig.mRenameFileName = {
-    mEnable: mergedObConfig.options.enableFileNameObfuscation,
-    mNameGeneratorType: 1,
-    mReservedFileNames: mergedObConfig.reservedFileNames,
-  };
-
-  const arkObfuscator: ArkObfuscator = new ArkObfuscator();
-  arkObfuscator.init(arkguardConfig);
-  if (mergedObConfig.options.applyNameCache && mergedObConfig.options.applyNameCache.length > 0) {
-    readNameCache(mergedObConfig.options.applyNameCache, logger);
-  } else {
-    if (obfuscationCacheDir) {
-      const defaultNameCachePath: string = path.join(obfuscationCacheDir, 'nameCache.json');
-      if (fs.existsSync(defaultNameCachePath)) {
-        readNameCache(defaultNameCachePath, logger);
-      }
-    }
-  }
-  return arkObfuscator;
 }
 
 // Scan the source code of project and libraries to collect whitelists.
