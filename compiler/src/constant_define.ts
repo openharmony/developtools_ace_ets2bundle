@@ -43,6 +43,14 @@ const INIT_PARAM: string = 'initParam';
 const UPDATE_PARAM: string = 'updateParam';
 const UPDATE_STATE_VARS: string = 'updateStateVars';
 
+const BYTE_CODE_HAR: string = 'byteCodeHar';
+const CLOSED_SOURCE_HAR: string = 'closedSourceHar';
+const SHARED_HSP: string = 'sharedHsp';
+const MODULE_TYPE: string = 'moduleType';
+const HAR_DEFAULT_PAGE_PATH: string = '__harDefaultPagePath__';
+const HAR_DEFAULT_INTEGRATED_HSP_TYPE: string = '__harDefaultIntegratedHspType__';
+const FOLLOW_WITH_HAP: string = 'followWithHap';
+
 export default {
   NAVIGATION_BUILDER_REGISTER,
   MONITOR,
@@ -58,5 +66,12 @@ export default {
   COMPUTED_DECORATOR,
   DECORATOR_V2,
   BUILDER_PARAM,
-  DECORATOR_BUILDER_PARAM
+  DECORATOR_BUILDER_PARAM,
+  BYTE_CODE_HAR,
+  CLOSED_SOURCE_HAR,
+  SHARED_HSP,
+  MODULE_TYPE,
+  HAR_DEFAULT_PAGE_PATH,
+  HAR_DEFAULT_INTEGRATED_HSP_TYPE,
+  FOLLOW_WITH_HAP
 };
