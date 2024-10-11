@@ -124,7 +124,7 @@ function initProjectConfig(projectConfig) {
   // All files which dependent on bytecode har, and should be added to compilation entries.
   projectConfig.otherCompileFiles = {};
   // Packages which need to update version in bytecode har 
-  projectConfig.updateVersionInfo = {};
+  projectConfig.updateVersionInfo = undefined;
 }
 
 function loadEntryObj(projectConfig) {
@@ -1109,7 +1109,7 @@ function resetProjectConfig() {
     }
   }
   projectConfig.otherCompileFiles = {};
-  projectConfig.updateVersionInfo = {};
+  projectConfig.updateVersionInfo = undefined;
 }
 
 function resetGlobalProgram() {
