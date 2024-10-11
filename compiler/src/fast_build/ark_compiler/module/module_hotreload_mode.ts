@@ -26,7 +26,6 @@ import {
 } from '../common/ark_define';
 import { isJsonSourceFile } from '../utils';
 import {
-  isFileInProject,
   mkdirsSync,
   toUnixPath,
   validateFilePathLength
@@ -97,13 +96,8 @@ export class ModuleHotreloadMode extends ModuleMode {
     const changedFileListJson: string = fs.readFileSync(this.projectConfig.changedFileList).toString();
     const {
       changedFileListVersion,
-      areAllChangedFilesInProject,
       changedFileList
     } = this.parseChangedFileListJson(changedFileListJson);
-    if (areAllChangedFilesInProject === false) {
-      this.logger.debug(blue, `ArkTS: Found changed files outside of this project, skip hot reload build`, reset);
-      return;
-    }
     if (typeof changedFileList === 'undefined' || changedFileList.length === 0) {
       this.logger.debug(blue, `ArkTS: No changed files found, skip hot reload build`, reset);
       return;
@@ -144,9 +138,6 @@ export class ModuleHotreloadMode extends ModuleMode {
     if (Object.prototype.hasOwnProperty.call(changedFileList, 'modifiedFilesV2')) {
       return {
         'changedFileListVersion': 'v2',
-        'areAllChangedFilesInProject': changedFileList.modifiedFilesV2
-          .filter(file => Object.prototype.hasOwnProperty.call(file, 'filePath'))
-          .every(file => isFileInProject(file.filePath, this.projectConfig.projectRootPath)),
         'changedFileList': changedFileList.modifiedFilesV2
           .filter(file => Object.prototype.hasOwnProperty.call(file, 'filePath'))
           .map(file => file.filePath)
@@ -154,13 +145,11 @@ export class ModuleHotreloadMode extends ModuleMode {
     } else if (Object.prototype.hasOwnProperty.call(changedFileList, 'modifiedFiles')) {
       return {
         'changedFileListVersion': 'v1',
-        'areAllChangedFilesInProject': true,
         'changedFileList': changedFileList.modifiedFiles
       };
     } else {
       return {
         'changedFileListVersion': '',
-        'areAllChangedFilesInProject': true,
         'changedFileList': []
       };
     }
