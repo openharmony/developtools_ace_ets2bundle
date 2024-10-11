@@ -295,10 +295,10 @@ class ComE extends ViewPU {
     }
 }
 if (storage && storage.routeName != undefined && storage.storage != undefined) {
-    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", pageFullPath: "localStorageParam", integratedHsp: "false" });
+    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", pageFullPath: "localStorageParam", integratedHsp: "false", moduleType: "followWithHap" });
 }
 else if (storage && storage.routeName != undefined && storage.storage == undefined) {
-    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", pageFullPath: "localStorageParam", integratedHsp: "false" });
+    registerNamedRoute(() => new localStorageParam(undefined, {}, storage.useSharedStorage ? LocalStorage.getShared() : storage.storage), storage.routeName, { bundleName: "", moduleName: "", pagePath: "localStorageParam", pageFullPath: "localStorageParam", integratedHsp: "false", moduleType: "followWithHap" });
 }
 else if (storage && storage.routeName == undefined && storage.storage != undefined) {
     ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
