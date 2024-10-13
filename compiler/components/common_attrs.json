@@ -35,6 +35,7 @@
     "compositingFilter", "foregroundFilter", "backgroundFilter", "visualEffect",
     "customProperty",
     "renderFit",
-    "pixelRound", "expandSafeArea"
+    "pixelRound", "expandSafeArea",
+    "safeAreaPadding"
   ]
 }
