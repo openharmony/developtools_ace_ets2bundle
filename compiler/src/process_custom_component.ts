@@ -873,7 +873,8 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
   if (componentNode.arguments && componentNode.arguments.length > 0 &&
     ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties) {
     componentNode.arguments[0].properties.forEach((propertyItem: ts.PropertyAssignment) => {
-      const newPropertyItem: ts.PropertyAssignment = createReference(propertyItem, [], false, false, true);
+      const newPropertyItem: ts.PropertyAssignment = isProperty(propertyItem) ?
+        createReference(propertyItem, [], false, false, true) : propertyItem;
       componentParam.push(newPropertyItem);
     });
     argNode = [ts.factory.createObjectLiteralExpression(componentParam, false)];
