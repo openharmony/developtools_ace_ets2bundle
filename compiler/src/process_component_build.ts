@@ -2161,7 +2161,6 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
         default:
           temp = processCustomBuilderProperty(temp, identifierNode, propertyName);
       }
-      flag = true;
     }
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name) &&
