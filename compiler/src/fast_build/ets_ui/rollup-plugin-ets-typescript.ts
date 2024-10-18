@@ -466,7 +466,10 @@ async function transform(code: string, id: string) {
   return shouldEmitJsFlag ? {
     code: emitResult.outputText,
     // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in some cases
-    map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap()
+    map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap(),
+    meta: {
+      shouldEmitJs: shouldEmitJsFlag
+    }
   } : printSourceFile(transformResult.transformed[0], compilationTime);
 }
 
