@@ -69,7 +69,8 @@ export const forbiddenUseStateType: Set<string> = new Set(['Scroller', 'SwiperSc
   'TabsController', 'CalendarController', 'AbilityController', 'XComponentController',
   'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData', 'Path2D',
   'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'PatternLockController',
-  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', 'RichEditorController'
+  'TextAreaController', 'TextInputController', 'TextTimerController', 'SearchController', 'RichEditorController',
+  'ArcSwiperController'
 ]);
 
 const FOREACH_ATTRIBUTE = ['onMove'];
@@ -111,7 +112,7 @@ export const JS_BIND_COMPONENTS: Set<string> = new Set([
   'XComponentController', 'CanvasRenderingContext2D', 'CanvasGradient', 'ImageBitmap', 'ImageData',
   'Path2D', 'RenderingContextSettings', 'OffscreenCanvasRenderingContext2D', 'DatePickerDialog',
   'TextPickerDialog', 'AlertDialog', 'ContextMenu', 'ActionSheet', 'PatternLockController',
-  'TimePickerDialog', 'CalendarPickerDialog'
+  'TimePickerDialog', 'CalendarPickerDialog', 'ArcSwiperController'
 ]);
 
 export const NEEDPOP_COMPONENT: Set<string> = new Set(['Blank', 'Search']);
