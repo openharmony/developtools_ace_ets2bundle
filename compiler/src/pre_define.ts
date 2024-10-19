@@ -310,6 +310,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['WaterFlow', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Radio', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Checkbox', new Set([COMPONENT_CREATE_FUNCTION])],
+  ['Web', new Set(['bindSelectionMenu'])],
   [ALL_COMPONENTS, new Set(['bindContextMenu', 'bindSheet', 'dragPreview'])]
 ]);
 
