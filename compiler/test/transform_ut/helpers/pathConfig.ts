@@ -132,7 +132,15 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
 
   // 'ui_state_management/application_state_management/@storageLink/@storageLink',
   // 'ui_state_management/application_state_management/@storageProp/@storageProp',
-  'ui_state_management/application_state_management/appStorage/appStorage'
+  // 'ui_state_management/application_state_management/appStorage/appStorage',
+  // 'ui_state_management/application_state_management/localStorage/localStorage',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForBoth',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForChainCall',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForRoute',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForStorage',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForThree',
+  // 'ui_state_management/application_state_management/localStorage/localStorageForThreeParam',
+  'ui_state_management/application_state_management/localStorage/localStorageParam'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
