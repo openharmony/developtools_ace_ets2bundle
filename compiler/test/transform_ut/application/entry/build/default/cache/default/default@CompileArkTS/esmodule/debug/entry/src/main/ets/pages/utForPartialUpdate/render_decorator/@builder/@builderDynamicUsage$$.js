@@ -1,0 +1,107 @@
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+class BottomControllerParam {
+    constructor() {
+        this.playedTime = '';
+        this.totalTime = '';
+        this.playedTimeNumber = 0;
+    }
+}
+export class VideoPlayer extends ViewPU {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
+        super(parent, __localStorage, elmtId, extraInfo);
+        if (typeof paramsLambda === "function") {
+            this.paramsGenerator_ = paramsLambda;
+        }
+        this.totalTime = '';
+        this.__currentPlayedTime = new ObservedPropertySimplePU("00:00", this, "currentPlayedTime");
+        this.__currentPlayedTimeNumber = new ObservedPropertySimplePU(1, this, "currentPlayedTimeNumber");
+        this.setInitiallyProvidedValue(params);
+        this.finalizeConstruction();
+    }
+    setInitiallyProvidedValue(params) {
+        if (params.totalTime !== undefined) {
+            this.totalTime = params.totalTime;
+        }
+        if (params.currentPlayedTime !== undefined) {
+            this.currentPlayedTime = params.currentPlayedTime;
+        }
+        if (params.currentPlayedTimeNumber !== undefined) {
+            this.currentPlayedTimeNumber = params.currentPlayedTimeNumber;
+        }
+    }
+    updateStateVars(params) {
+    }
+    purgeVariableDependenciesOnElmtId(rmElmtId) {
+        this.__currentPlayedTime.purgeDependencyOnElmtId(rmElmtId);
+        this.__currentPlayedTimeNumber.purgeDependencyOnElmtId(rmElmtId);
+    }
+    aboutToBeDeleted() {
+        this.__currentPlayedTime.aboutToBeDeleted();
+        this.__currentPlayedTimeNumber.aboutToBeDeleted();
+        SubscriberManager.Get().delete(this.id__());
+        this.aboutToBeDeletedInternal();
+    }
+    get currentPlayedTime() {
+        return this.__currentPlayedTime.get();
+    }
+    set currentPlayedTime(newValue) {
+        this.__currentPlayedTime.set(newValue);
+    }
+    get currentPlayedTimeNumber() {
+        return this.__currentPlayedTimeNumber.get();
+    }
+    set currentPlayedTimeNumber(newValue) {
+        this.__currentPlayedTimeNumber.set(newValue);
+    }
+    bottomController($$, parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create('Hello' + $$.playedTimeNumber);
+            Text.fontSize(13);
+            Text.margin({ left: 4, bottom: 12 });
+            Text.id("played_time");
+        }, Text);
+        Text.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            TextInput.create({ text: $$.totalTime, placeholder: 'builder test' });
+            TextInput.placeholderColor(Color.Grey);
+            TextInput.placeholderFont({ size: 14, weight: 400 });
+            TextInput.caretColor(Color.Blue);
+            TextInput.width(300);
+        }, TextInput);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Slider.create({
+                value: $$.playedTimeNumber,
+                min: 0,
+                max: 1000,
+                step: 1,
+                style: SliderStyle.OutSet
+            });
+            Slider.width('100%');
+            Slider.margin({ left: 8, right: 8 });
+            Slider.trackColor(Color.Gray);
+            Slider.showSteps(true);
+            Slider.id("slider");
+        }, Slider);
+        Column.pop();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+        }, Column);
+        this.bottomController.bind(this)(makeBuilderParameterProxy("bottomController", { playedTime: () => (this["__currentPlayedTime"] ? this["__currentPlayedTime"] : this["currentPlayedTime"]), totalTime: () => (this["__totalTime"] ? this["__totalTime"] : this["totalTime"]), playedTimeNumber: () => (this["__currentPlayedTimeNumber"] ? this["__currentPlayedTimeNumber"] : this["currentPlayedTimeNumber"]) }));
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "VideoPlayer";
+    }
+}
+registerNamedRoute(() => new VideoPlayer(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", integratedHsp: "false" });
+//# sourceMappingURL=@builderDynamicUsage$$.js.map

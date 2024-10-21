@@ -96,7 +96,13 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'inner_component_transform/transition_component/navigation/navigation_component',
   // 'inner_component_transform/transition_component/pageTransition/pageTransition',
 
-  'render_decorator/@AnimatableExtend/animatableExtend',
+  // 'render_decorator/@AnimatableExtend/animatableExtend',
+  // 'render_decorator/@builder/@builder',
+  // 'render_decorator/@builder/@builderDynamicUsage$$',
+  // 'render_decorator/@builder/@builderOrComponentAsName',
+  // 'render_decorator/@builder/@builderSimplifyAfferent',
+  // 'render_decorator/@builder/@builderTransFormFirst',
+  'render_decorator/@builder/@builderTransFormFourth'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
