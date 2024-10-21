@@ -140,7 +140,12 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'ui_state_management/application_state_management/localStorage/localStorageForStorage',
   // 'ui_state_management/application_state_management/localStorage/localStorageForThree',
   // 'ui_state_management/application_state_management/localStorage/localStorageForThreeParam',
-  'ui_state_management/application_state_management/localStorage/localStorageParam'
+  // 'ui_state_management/application_state_management/localStorage/localStorageParam',
+  // 'ui_state_management/inner_struct_state_management/@link/@link',
+  // 'ui_state_management/inner_struct_state_management/@objectLink/@objectLink',
+  // 'ui_state_management/inner_struct_state_management/@prop/@prop',
+  // 'ui_state_management/inner_struct_state_management/@prop/@propComplexType',
+  'ui_state_management/inner_struct_state_management/@state/@state'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
