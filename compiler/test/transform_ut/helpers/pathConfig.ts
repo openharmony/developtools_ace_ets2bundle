@@ -126,7 +126,13 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'render_decorator/@recycle/recycle',
   // 'render_decorator/@styles/@styles',
   // 'render_decorator/@styles/@stylesExport',
-  'render_decorator/@styles/@stylesOrComponentAsName'
+  // 'render_decorator/@styles/@stylesOrComponentAsName',
+
+  // 'ui_context/build_ui_in_correct_place',
+
+  // 'ui_state_management/application_state_management/@storageLink/@storageLink',
+  // 'ui_state_management/application_state_management/@storageProp/@storageProp',
+  'ui_state_management/application_state_management/appStorage/appStorage'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
