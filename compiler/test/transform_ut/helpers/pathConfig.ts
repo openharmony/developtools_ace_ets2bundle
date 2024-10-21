@@ -90,7 +90,11 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'inner_component_transform/render_component/repeat/repeatVirtualScroll',
   // 'inner_component_transform/render_component/tab/tab',
   // 'inner_component_transform/simple_component/button/button',
-  'inner_component_transform/simple_component/xcomponent/XComponentContainer'
+  // 'inner_component_transform/simple_component/xcomponent/XComponentContainer',
+  // 'inner_component_transform/transition_component/animateTo/animateTo',
+  // 'inner_component_transform/transition_component/navDestination_component/navDestination_component',
+  // 'inner_component_transform/transition_component/navigation/navigation_component',
+  'inner_component_transform/transition_component/pageTransition/pageTransition',
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
