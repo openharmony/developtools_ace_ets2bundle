@@ -41,7 +41,7 @@ import {
   harFilesRecord,
   resetUtils,
   getResolveModules,
-  toUnixPath
+  toUnixPath,
 } from '../../utils';
 import {
   preprocessExtend,
@@ -91,10 +91,15 @@ import {
   resetKitImportLog
 } from '../../process_kit_import';
 import { resetProcessComponentMember } from '../../process_component_member';
-import { mangleFilePath, resetObfuscation } from '../ark_compiler/common/ob_config_resolver';
+import {
+  collectReservedNameForObf,
+  mangleFilePath,
+  resetObfuscation
+} from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { resetlogMessageCollection } from '../../log_message_collection';
+import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -433,7 +438,9 @@ async function transform(code: string, id: string) {
         {
           before: [
             processUISyntax(null, false, compilationTime, id),
-            processKitImport(id, metaInfo, compilationTime)
+            processKitImport(id, metaInfo, compilationTime),
+            collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
+              shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
           ]
         }
       );
@@ -445,7 +452,9 @@ async function transform(code: string, id: string) {
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, compilationTime, id),
-        processKitImport(id, metaInfo, compilationTime, false)], false);
+        processKitImport(id, metaInfo, compilationTime, false),
+        collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
+          shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
     }
     stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
