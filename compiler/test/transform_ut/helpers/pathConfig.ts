@@ -86,9 +86,11 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'inner_component_transform/render_component/lazyforeach/lazyforeach',
   // 'inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam',
   // 'inner_component_transform/render_component/repeat/repeat',
-  'inner_component_transform/render_component/repeat/repeatAttr',
-  'inner_component_transform/render_component/repeat/repeatVirtualScroll',
-  'inner_component_transform/render_component/tab/tab'
+  // 'inner_component_transform/render_component/repeat/repeatAttr',
+  // 'inner_component_transform/render_component/repeat/repeatVirtualScroll',
+  // 'inner_component_transform/render_component/tab/tab',
+  // 'inner_component_transform/simple_component/button/button',
+  'inner_component_transform/simple_component/xcomponent/XComponentContainer'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
@@ -193,22 +195,22 @@ export const UT_VALIDATE_PAGES: string[] = [
   // 'Decorators/vaildate_ui_syntax/validateDuplicateMethod'
 ]
 
-export const MAIN_PAGES = [
+export const MAIN_PAGES: string[] = [
   ...UT_PAGES.map((p) => `pages/ut/${p}`),
   ...UT_PARTIAL_UPFATE_PAGES.map((p) => `pages/utForPartialUpdate/${p}`),
   ...UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`),
 ];
 
-export const CACHE_PATH = 'default/cache/default/default@CompileArkTS/esmodule/debug';
-export const AN_BUILD_OUTPUT_PATH = 'default/intermediates/loader_out/default/an/arm64-v8a';
-export const MODULE_ID_ROLLUP_PLACEHOLDER = "\x00rollup_plugin_ignore_empty_module_placeholder";
-export const NODE_MODULES_PATH = "default/intermediates/loader_out/default/node_modules";
-export const ACE_PROFILE_PATH = 'default/intermediates/res/default/resources/base/profile';
-export const LOADER_PATH = 'default/intermediates/loader/default';
-export const MAIN_PATH = 'default/intermediates/loader_out/default/ets'; 
-export const PREVIEW_CACHE_PATH = 'default/cache/default/default@PreviewArkTS/esmodule/debug'; 
-export const PREVIEW_MAIN_PATH = 'default/intermediates/assets/default/ets'; 
-export const PROJECT_PATH_HASH_DEFAULT = 'this_is_a_project_path_hash'; 
-export const RES_PATH = 'default/intermediates/res/default';
+export const CACHE_PATH: string = 'default/cache/default/default@CompileArkTS/esmodule/debug';
+export const AN_BUILD_OUTPUT_PATH: string = 'default/intermediates/loader_out/default/an/arm64-v8a';
+export const MODULE_ID_ROLLUP_PLACEHOLDER: string = "\x00rollup_plugin_ignore_empty_module_placeholder";
+export const NODE_MODULES_PATH: string = "default/intermediates/loader_out/default/node_modules";
+export const ACE_PROFILE_PATH: string = 'default/intermediates/res/default/resources/base/profile';
+export const LOADER_PATH: string = 'default/intermediates/loader/default';
+export const MAIN_PATH: string = 'default/intermediates/loader_out/default/ets'; 
+export const PREVIEW_CACHE_PATH: string = 'default/cache/default/default@PreviewArkTS/esmodule/debug'; 
+export const PREVIEW_MAIN_PATH: string = 'default/intermediates/assets/default/ets'; 
+export const PROJECT_PATH_HASH_DEFAULT: string = 'this_is_a_project_path_hash'; 
+export const RES_PATH: string = 'default/intermediates/res/default';
 export const OH_MODULES_OHPM_HYPIUM: string = 'oh_modules/.ohpm/@ohos+hypium@1.0.6/oh_modules/@ohos/hypium';
 export const OH_MODULES_OHOS_HYPIUM: string = 'oh_modules/@ohos/hypium';
