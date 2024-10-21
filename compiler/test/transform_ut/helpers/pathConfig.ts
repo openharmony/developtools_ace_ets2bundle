@@ -145,7 +145,11 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'ui_state_management/inner_struct_state_management/@objectLink/@objectLink',
   // 'ui_state_management/inner_struct_state_management/@prop/@prop',
   // 'ui_state_management/inner_struct_state_management/@prop/@propComplexType',
-  'ui_state_management/inner_struct_state_management/@state/@state'
+  // 'ui_state_management/inner_struct_state_management/@state/@state',
+  // 'ui_state_management/others/@consume_@provide/@consume_@provide',
+  // 'ui_state_management/others/@observed_@objectLink/@observed_@objectLink',
+  // 'ui_state_management/others/@watch/@watch',
+  'ui_state_management/others/decoratorKeyCheck/decoratorKeyCheck'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
