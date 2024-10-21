@@ -112,7 +112,11 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'render_decorator/@builder/handleCustomBuilder',
   // 'render_decorator/@builderParam/@builderParam',
   // 'render_decorator/@builderParam/@builderParamQuestionMark',
-  'render_decorator/@builderParam/@BuilderParamReturnType'
+  // 'render_decorator/@builderParam/@BuilderParamReturnType',
+  // 'render_decorator/@componentParent/@componentParent',
+  // 'render_decorator/@customDialog/@customDialog',
+  // 'render_decorator/@extend/@extend',
+  'render_decorator/@localBuilder/@localBuilder'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
