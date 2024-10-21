@@ -102,7 +102,14 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'render_decorator/@builder/@builderOrComponentAsName',
   // 'render_decorator/@builder/@builderSimplifyAfferent',
   // 'render_decorator/@builder/@builderTransFormFirst',
-  'render_decorator/@builder/@builderTransFormFourth'
+  // 'render_decorator/@builder/@builderTransFormFourth',
+  // 'render_decorator/@builder/@builderTransFormSecond',
+  // 'render_decorator/@builder/@builderTransFormThird',
+  // 'render_decorator/@builder/@builderVisilibity$$',
+  // 'render_decorator/@builder/@builderWithComponent',
+  // 'render_decorator/@builder/@builderWithForEach',
+  // 'render_decorator/@builder/@builderWithLinkData',
+  'render_decorator/@builder/handleCustomBuilder'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [

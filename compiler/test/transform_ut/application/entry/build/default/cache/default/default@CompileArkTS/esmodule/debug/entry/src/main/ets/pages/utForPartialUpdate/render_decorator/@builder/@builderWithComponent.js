@@ -1,49 +1,4 @@
-/*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Builder
-function myBuilder() {
-  child();
-}
-
-@Entry
-@Component
-struct Index {
-  @Builder Builder1() {
-    child()
-  }
-  build() {
-    Row() {
-      myBuilder();
-      this.Builder1();
-      child();
-    }
-  }
-}
-
-@Component
-struct child{
-  build() {
-    Text('Hello')
-  }
-}
-`
-
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -51,7 +6,7 @@ function myBuilder(parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender) => {
             if (isInitialRender) {
-                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 4, col: 3 });
+                let componentCall = new child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithComponent.ets", line: 3, col: 3 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -87,7 +42,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 11, col: 5 });
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithComponent.ets", line: 10, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -109,7 +64,7 @@ class Index extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "@builderWithComponent.ets", line: 17, col: 7 });
+                    let componentCall = new child(this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithComponent.ets", line: 16, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {};
@@ -125,6 +80,9 @@ class Index extends ViewPU {
     }
     rerender() {
         this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "Index";
     }
 }
 class child extends ViewPU {
@@ -156,7 +114,5 @@ class child extends ViewPU {
         this.updateDirtyElements();
     }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new Index(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithComponent", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithComponent", integratedHsp: "false" });
+//# sourceMappingURL=@builderWithComponent.js.map

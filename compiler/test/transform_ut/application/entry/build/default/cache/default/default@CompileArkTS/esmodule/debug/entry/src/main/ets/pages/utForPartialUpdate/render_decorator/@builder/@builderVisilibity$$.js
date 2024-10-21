@@ -1,64 +1,3 @@
-/*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-interface Model {
-  readonly vis: Boolean;
-  readonly data: Array<String>;
-  readonly width: number;
-
-}
-
-@Builder function comp($$: Model) {
-  Column() {
-    Child()
-      .visibility($$.vis ? Visibility.Visible : Visibility.Hidden)
-      .width($$.vis ? 100: 200)
-  }
-}
-
-@Component
-struct Child {
-  build() {
-    Text('TEST')
-  }
-}
-
-@Entry
-@Component
-export struct visibility$$Demo {
-  @State data: Array<String> = [];
-  @State vis: Boolean = false;
-  @State w: number = 100;
-
-  aboutToAppear(): void {
-    this.data = ['test', 'test2']
-  }
-
-  build() {
-    Column() {
-      comp({vis: this.vis, data: this.data, width: this.w})
-    }
-    .height('100%')
-  }
-}
-`
-exports.expectResult =
-`"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.visibility$$Demo = void 0;
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -75,7 +14,7 @@ function comp($$, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, $$ = __$$__) => {
             if (isInitialRender) {
-                let componentCall = new Child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderVisilibity$$.ets", line: 11, col: 5 });
+                let componentCall = new Child(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$.ets", line: 10, col: 7 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -119,7 +58,7 @@ class Child extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class visibility$$Demo extends ViewPU {
+export class visibility$$Demo extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -188,9 +127,9 @@ class visibility$$Demo extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "visibility$$Demo";
+    }
 }
-exports.visibility$$Demo = visibility$$Demo;
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new visibility$$Demo(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new visibility$$Demo(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", integratedHsp: "false" });
+//# sourceMappingURL=@builderVisilibity$$.js.map
