@@ -42,7 +42,8 @@ export {
   nameCacheMap,
   ObConfigResolver,
   writeObfuscationNameCache,
-  writeUnobfuscationContent
+  writeUnobfuscationContent,
+  collectReservedNameForObf
 } from 'arkguard';
 
 export function resetObfuscation(): void {
