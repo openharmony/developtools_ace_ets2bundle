@@ -86,7 +86,9 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'inner_component_transform/render_component/lazyforeach/lazyforeach',
   // 'inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam',
   // 'inner_component_transform/render_component/repeat/repeat',
-  'inner_component_transform/render_component/repeat/repeatAttr'
+  'inner_component_transform/render_component/repeat/repeatAttr',
+  'inner_component_transform/render_component/repeat/repeatVirtualScroll',
+  'inner_component_transform/render_component/tab/tab'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [

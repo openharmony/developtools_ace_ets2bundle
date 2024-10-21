@@ -83,6 +83,5 @@ class entryCompSucc extends ViewV2 {
 __decorate([
     Local
 ], entryCompSucc.prototype, "vehicleItems", void 0);
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new entryCompSucc(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
+registerNamedRoute(() => new entryCompSucc(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", integratedHsp: "false" });
+//# sourceMappingURL=repeatAttr.js.map

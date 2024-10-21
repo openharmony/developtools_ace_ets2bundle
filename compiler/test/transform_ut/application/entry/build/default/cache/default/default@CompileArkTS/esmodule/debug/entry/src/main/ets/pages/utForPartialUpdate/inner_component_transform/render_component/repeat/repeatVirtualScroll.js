@@ -93,7 +93,9 @@ class ChildComponent extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "ChildComponent";
+    }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new ChildComponent(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
+registerNamedRoute(() => new ChildComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", integratedHsp: "false" });
+//# sourceMappingURL=repeatVirtualScroll.js.map
