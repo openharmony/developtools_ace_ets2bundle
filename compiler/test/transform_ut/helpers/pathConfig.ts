@@ -123,7 +123,10 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'render_decorator/@recycle/recycle_function_array',
   // 'render_decorator/@recycle/recycle_gesture',
   // 'render_decorator/@recycle/recycle_reuseId',
-  'render_decorator/@recycle/recycle'
+  // 'render_decorator/@recycle/recycle',
+  // 'render_decorator/@styles/@styles',
+  // 'render_decorator/@styles/@stylesExport',
+  'render_decorator/@styles/@stylesOrComponentAsName'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
