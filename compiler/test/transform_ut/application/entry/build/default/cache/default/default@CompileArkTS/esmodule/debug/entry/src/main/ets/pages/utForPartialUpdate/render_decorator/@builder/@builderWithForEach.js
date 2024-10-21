@@ -1,50 +1,4 @@
-/*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Builder
-function ComB(param: string[]) {
-  ForEach(param, item => {
-    ComA().backgroundColor('red')
-  })
-}
-
-@Entry
-@Component
-struct Index {
-  @State arr: string[] = ['1', '2', '3', '4', '5']
-
-  build() {
-    Column() {
-      ComB(this.arr);
-    }
-  }
-}
-
-@Component
-struct ComA {
-  build() {
-    Row() {
-      Text('自定义组件')
-        .fontSize(30)
-    }
-  }
-}
-`
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -61,7 +15,7 @@ function ComB(param, parent = null) {
             {
                 (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, param = __param__) => {
                     if (isInitialRender) {
-                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderWithForEach.ets", line: 5, col: 5 });
+                        let componentCall = new ComA(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach.ets", line: 4, col: 5 });
                         ViewPU.create(componentCall);
                         let paramsLambda = () => {
                             return {};
@@ -120,6 +74,9 @@ class Index extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "Index";
+    }
 }
 class ComA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
@@ -155,7 +112,5 @@ class ComA extends ViewPU {
         this.updateDirtyElements();
     }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new Index(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", integratedHsp: "false" });
+//# sourceMappingURL=@builderWithForEach.js.map

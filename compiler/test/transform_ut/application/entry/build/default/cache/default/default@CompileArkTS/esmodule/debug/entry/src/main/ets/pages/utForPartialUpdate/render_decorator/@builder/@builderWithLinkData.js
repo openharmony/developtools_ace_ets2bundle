@@ -1,44 +1,4 @@
-/*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Component
-struct TitleComp {
-  @Link title: string
-  build() {
-    Text(this.title)
-  }
-}
-
-@Entry
-@Component
-struct TestPage{
-  @State value: string = 'hello world'
-  @Builder
-  TitleCompView() {
-    TitleComp({title: $value})
-  }
-  build() {
-    Flex() {
-      this.TitleCompView()
-    }
-  }
-}
-`
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -115,7 +75,7 @@ class TestPage extends ViewPU {
         {
             this.observeComponentCreation2((elmtId, isInitialRender) => {
                 if (isInitialRender) {
-                    let componentCall = new TitleComp(this, { title: this.__value }, undefined, elmtId, () => { }, { page: "@builderWithLinkData.ets", line: 16, col: 5 });
+                    let componentCall = new TitleComp(this, { title: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData.ets", line: 15, col: 5 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -140,8 +100,9 @@ class TestPage extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "TestPage";
+    }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new TestPage(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new TestPage(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", integratedHsp: "false" });
+//# sourceMappingURL=@builderWithLinkData.js.map

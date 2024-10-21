@@ -1,66 +1,4 @@
-/*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Entry
-@Component
-struct TestBuilder1 {
-  build() {
-    Column() {
-      Text("hello")
-    }
-  }
-  @Builder
-  innerBuidler(value: string) {
-    Column() {
-      Text("hello")
-    }
-  }
-}
-
-@Component
-struct TestBuilderChild {
-  build() {
-    Column() {
-      Text("hello")
-    }
-  }
-  @Builder
-  innerBuidler(value: object) {
-    Column() {
-      Text("hello")
-    }
-  }
-}
-
-@Builder
-function commonBuilder() {}
-
-@Builder
-function testInnerComponent(value: string) {
-  Column() {
-    commonBuilder()
-    TestBuilderChild()
-    TestBuilderChild().width(value)
-    Text(value)
-    Text("hello testInnerComponent")
-  }
-}
-`
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -105,6 +43,9 @@ class TestBuilder1 extends ViewPU {
     }
     rerender() {
         this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "TestBuilder1";
     }
 }
 class TestBuilderChild extends ViewPU {
@@ -160,7 +101,7 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 40, col: 5 });
+                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormSecond.ets", line: 39, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -179,7 +120,7 @@ function testInnerComponent(value, parent = null) {
     {
         (parent ? parent : this).observeComponentCreation2((elmtId, isInitialRender, value = __value__) => {
             if (isInitialRender) {
-                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "@builderTransFormSecond.ets", line: 41, col: 5 });
+                let componentCall = new TestBuilderChild(parent ? parent : this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormSecond.ets", line: 40, col: 5 });
                 ViewPU.create(componentCall);
                 let paramsLambda = () => {
                     return {};
@@ -202,7 +143,5 @@ function testInnerComponent(value, parent = null) {
     Text.pop();
     Column.pop();
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new TestBuilder1(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new TestBuilder1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormSecond", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormSecond", integratedHsp: "false" });
+//# sourceMappingURL=@builderTransFormSecond.js.map
