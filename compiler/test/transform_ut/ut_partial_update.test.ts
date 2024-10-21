@@ -40,7 +40,10 @@ import {
 	CACHE_PATH,
 	UT_PARTIAL_UPFATE_PAGES
 } from './helpers/pathConfig';
-import { parseCode, sourceReplace } from './helpers/parser';
+import { 
+	parseCode, 
+	sourceReplace 
+} from './helpers/parser';
 
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';

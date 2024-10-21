@@ -144,4 +144,38 @@ export const UT_VALIDATE_PAGES: string[] = [
   // 'Decorators/process_ui_syntax/EntryDecoParam',
   // 'Decorators/process_ui_syntax/ExtendOneChild',
   // 'Decorators/process_ui_syntax/NoSrc',
-  // 'Decorators/process_ui_synta
+  // 'Decorators/process_ui_syntax/NotSupportResrcParam',
+  // 'Decorators/process_ui_syntax/NotSupportResrcType',
+  // 'Decorators/process_ui_syntax/StylesNoParam',
+  // 'Decorators/process_ui_syntax/UnknownSrc',
+  // 'Decorators/process_ui_syntax/UnknownSrcName',
+  // 'Decorators/process_ui_syntax/UnknownSrcType',
+
+  // 'Decorators/v1AndV2ComponentDecorators/property_observe_validate',
+  // 'Decorators/v1AndV2ComponentDecorators/v1ToV2Component',
+  // 'Decorators/v1AndV2ComponentDecorators/v1ToV2ComponentValidate',
+  // 'Decorators/v1AndV2ComponentDecorators/v2ToV1ComponentValidate',
+  // 'Decorators/v1AndV2ComponentDecorators/v2ToV1Link',
+
+
+]
+
+export const MAIN_PAGES = [
+  ...UT_PAGES.map((p) => `pages/ut/${p}`),
+  ...UT_PARTIAL_UPFATE_PAGES.map((p) => `pages/utForPartialUpdate/${p}`),
+  ...UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`),
+];
+
+export const CACHE_PATH = 'default/cache/default/default@CompileArkTS/esmodule/debug';
+export const AN_BUILD_OUTPUT_PATH = 'default/intermediates/loader_out/default/an/arm64-v8a';
+export const MODULE_ID_ROLLUP_PLACEHOLDER = "\x00rollup_plugin_ignore_empty_module_placeholder";
+export const NODE_MODULES_PATH = "default/intermediates/loader_out/default/node_modules";
+export const ACE_PROFILE_PATH = 'default/intermediates/res/default/resources/base/profile';
+export const LOADER_PATH = 'default/intermediates/loader/default';
+export const MAIN_PATH = 'default/intermediates/loader_out/default/ets'; 
+export const PREVIEW_CACHE_PATH = 'default/cache/default/default@PreviewArkTS/esmodule/debug'; 
+export const PREVIEW_MAIN_PATH = 'default/intermediates/assets/default/ets'; 
+export const PROJECT_PATH_HASH_DEFAULT = 'this_is_a_project_path_hash'; 
+export const RES_PATH = 'default/intermediate/res/default';
+export const OH_MODULES_OHPM_HYPIUM: string = 'oh_modules/.ohpm/@ohos+hypium@1.0.6/oh_modules/@ohos/hypium';
+export const OH_MODULES_OHOS_HYPIUM: string = 'oh_modules/@ohos/hypium';

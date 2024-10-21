@@ -9,14 +9,14 @@ import {
 } from '../../lib/pre_define';
 import {
 	resetComponentCollection,
-  componentCollection
+  	componentCollection
 } from '../../lib/validate_ui_syntax';
 import { 
 	transformLog 
 } from '../../lib/process_ui_syntax';
 import {
-  componentInfo,
-  storedFileInfo
+  	componentInfo,
+  	storedFileInfo
 } from '../../lib/utils';
 import {
 	partialUpdateConfig, 
@@ -40,7 +40,10 @@ import {
 	CACHE_PATH,
 	UT_PAGES 
 } from './helpers/pathConfig';
-import { parseCode, sourceReplace } from './helpers/parser';
+import { 
+	parseCode, 
+	sourceReplace 
+} from './helpers/parser';
 
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
