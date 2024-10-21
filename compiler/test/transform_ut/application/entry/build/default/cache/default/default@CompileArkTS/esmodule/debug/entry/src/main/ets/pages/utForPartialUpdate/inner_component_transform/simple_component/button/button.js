@@ -1,40 +1,4 @@
-/*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Entry
-@Component
-struct ButtonExample {
-  build() {
-    Flex({ direction: FlexDirection.Column, alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceBetween }) {
-      Flex({ alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween }) {
-        Button('Ok', { type: ButtonType.Normal, stateEffect: true }).borderRadius(8).backgroundColor(0x317aff).width(90)
-        Button({ type: ButtonType.Normal, stateEffect: true }) {
-          Row() {
-            Text('loading').fontSize(12).fontColor(0xffffff).margin({ left: 5, right: 12 })
-          }.alignItems(VerticalAlign.Center)
-        }.borderRadius(8).backgroundColor(0x317aff).width(90)
-        Button('Disable', { type: ButtonType.Normal, stateEffect: false }).opacity(0.5)
-          .borderRadius(8).backgroundColor(0x317aff).width(90)
-      }
-    }
-  }
-}
-`
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -104,8 +68,9 @@ class ButtonExample extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "ButtonExample";
+    }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new ButtonExample(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new ButtonExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", integratedHsp: "false" });
+//# sourceMappingURL=button.js.map

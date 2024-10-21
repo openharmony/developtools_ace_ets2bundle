@@ -1,35 +1,4 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-exports.source = `
-@Entry
-@Component
-struct HomeComponent {
-
-  build() {
-    Column() {
-      XComponent({id: '1', type: 'component'})
-      XComponent({id: '2', type: 1})
-      XComponent({id: '3', type: XComponentType.COMPONENT})
-    }
-  }
-}
-`
-
-exports.expectResult =
-`"use strict";
+"use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -57,15 +26,15 @@ class HomeComponent extends ViewPU {
             Column.create();
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            XComponent.create({ id: '1', type: 'component' });
+            XComponent.create({ id: '1', type: 'component' }, "com.example.application/application");
         }, XComponent);
         XComponent.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            XComponent.create({ id: '2', type: 1 });
+            XComponent.create({ id: '2', type: 1 }, "com.example.application/application");
         }, XComponent);
         XComponent.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            XComponent.create({ id: '3', type: XComponentType.COMPONENT });
+            XComponent.create({ id: '3', type: XComponentType.COMPONENT }, "com.example.application/application");
         }, XComponent);
         XComponent.pop();
         Column.pop();
@@ -73,8 +42,9 @@ class HomeComponent extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
+    static getEntryName() {
+        return "HomeComponent";
+    }
 }
-ViewStackProcessor.StartGetAccessRecordingFor(ViewStackProcessor.AllocateNewElmetIdForNextComponent());
-loadDocument(new HomeComponent(undefined, {}));
-ViewStackProcessor.StopGetAccessRecording();
-`
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", integratedHsp: "false" });
+//# sourceMappingURL=XComponentContainer.js.map
