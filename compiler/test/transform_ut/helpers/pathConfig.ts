@@ -116,7 +116,14 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'render_decorator/@componentParent/@componentParent',
   // 'render_decorator/@customDialog/@customDialog',
   // 'render_decorator/@extend/@extend',
-  'render_decorator/@localBuilder/@localBuilder'
+  // 'render_decorator/@localBuilder/@localBuilder',
+  // 'render_decorator/@preview/@preview',
+  // 'render_decorator/@recycle/recycle_$$component',
+  // 'render_decorator/@recycle/recycle_extend_styles',
+  // 'render_decorator/@recycle/recycle_function_array',
+  // 'render_decorator/@recycle/recycle_gesture',
+  // 'render_decorator/@recycle/recycle_reuseId',
+  'render_decorator/@recycle/recycle'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
