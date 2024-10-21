@@ -157,7 +157,38 @@ export const UT_VALIDATE_PAGES: string[] = [
   // 'Decorators/v1AndV2ComponentDecorators/v2ToV1ComponentValidate',
   // 'Decorators/v1AndV2ComponentDecorators/v2ToV1Link',
 
-
+  // 'Decorators/vaildate_ui_syntax/@localBuilder',
+  // 'Decorators/vaildate_ui_syntax/@Monitor',
+  // 'Decorators/vaildate_ui_syntax/@Trace',
+  // 'Decorators/vaildate_ui_syntax/@Type',
+  // 'Decorators/vaildate_ui_syntax/componentV2BothWithComponent',
+  // 'Decorators/vaildate_ui_syntax/ExceededEntry',
+  // 'Decorators/vaildate_ui_syntax/ExceededPreview',
+  // 'Decorators/vaildate_ui_syntax/MethodNoExtend',
+  // 'Decorators/vaildate_ui_syntax/mutiDecoratorInComponentV2',
+  // 'Decorators/vaildate_ui_syntax/NoChild',
+  // 'Decorators/vaildate_ui_syntax/NoStructDeco',
+  // 'Decorators/vaildate_ui_syntax/notComponent',
+  // 'Decorators/vaildate_ui_syntax/notConcurrent',
+  // 'Decorators/vaildate_ui_syntax/notConcurrentFun',
+  // 'Decorators/vaildate_ui_syntax/notConcurrentFunAster',
+  // 'Decorators/vaildate_ui_syntax/notDecorator',
+  // 'Decorators/vaildate_ui_syntax/notMethodDeco',
+  // 'Decorators/vaildate_ui_syntax/OneChild',
+  // 'Decorators/vaildate_ui_syntax/OneEntry',
+  // 'Decorators/vaildate_ui_syntax/OnlyStructDeco',
+  // 'Decorators/vaildate_ui_syntax/state',
+  // 'Decorators/vaildate_ui_syntax/StructNameInvalid',
+  // 'Decorators/vaildate_ui_syntax/StylesDuplicate',
+  // 'Decorators/vaildate_ui_syntax/v1DecoratorInComponentV2',
+  // 'Decorators/vaildate_ui_syntax/v2DecoratorInClass',
+  // 'Decorators/vaildate_ui_syntax/v2DecoratorInComponent',
+  // 'Decorators/vaildate_ui_syntax/v2MemberDecorator',
+  // 'Decorators/vaildate_ui_syntax/vaildateDecorator',
+  // 'Decorators/vaildate_ui_syntax/validate_track_observed',
+  // 'Decorators/vaildate_ui_syntax/validateAccessQualifier',
+  // 'Decorators/vaildate_ui_syntax/validateDifferentMethod',
+  // 'Decorators/vaildate_ui_syntax/validateDuplicateMethod'
 ]
 
 export const MAIN_PAGES = [
@@ -176,6 +207,6 @@ export const MAIN_PATH = 'default/intermediates/loader_out/default/ets';
 export const PREVIEW_CACHE_PATH = 'default/cache/default/default@PreviewArkTS/esmodule/debug'; 
 export const PREVIEW_MAIN_PATH = 'default/intermediates/assets/default/ets'; 
 export const PROJECT_PATH_HASH_DEFAULT = 'this_is_a_project_path_hash'; 
-export const RES_PATH = 'default/intermediate/res/default';
+export const RES_PATH = 'default/intermediates/res/default';
 export const OH_MODULES_OHPM_HYPIUM: string = 'oh_modules/.ohpm/@ohos+hypium@1.0.6/oh_modules/@ohos/hypium';
 export const OH_MODULES_OHOS_HYPIUM: string = 'oh_modules/@ohos/hypium';
