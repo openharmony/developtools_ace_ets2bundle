@@ -27,7 +27,6 @@ import {
 } from './common';
 import { 
 	AN_BUILD_OUTPUT_PATH, 
-	MAIN_PAGES, 
 	MODULE_ID_ROLLUP_PLACEHOLDER, 
 	NODE_MODULES_PATH 
 } from './pathConfig';
@@ -56,7 +55,7 @@ class RollUpPluginMock {
 		this.share.projectConfig.setBuildMode(buildMode);
   }
 
-  public build(projectRoot: string, testcase: string, buildMode: string = DEBUG) {
+  public build(projectRoot: string, testcase: string, pagePaths: string[] = [], buildMode: string = DEBUG) {
     this.isPreview = false;
     this.share = new Share();
 		this.share.projectConfig.setBuildMode(buildMode);
@@ -64,27 +63,27 @@ class RollUpPluginMock {
     this.share.projectConfig.setPreview(this.isPreview);
     this.meta.watchMode = this.isPreview;
 
-    this.doBuild(projectRoot, testcase);
+    this.doBuild(projectRoot, testcase, pagePaths);
   }
 
-  public chooseTestData(projectRoot: string, testcase: string) {
+  public chooseTestData(projectRoot: string, testcase: string, pagePaths: string[] = []) {
     if (!this.share) {
       throw new Error('Call build API first.');
     }
-    this.doBuild(projectRoot, testcase);
+    this.doBuild(projectRoot, testcase, pagePaths);
   }
 
-  public preview(projectRoot: string, testcase: string) {
+  public preview(projectRoot: string, testcase: string, pagePaths: string[] = []) {
     this.isPreview = true;
     this.share = new Share();
 
     this.share.projectConfig.setPreview(this.isPreview);
     this.meta.watchMode = this.isPreview;
 
-    this.doBuild(projectRoot, testcase);
+    this.doBuild(projectRoot, testcase, pagePaths);
   }
 
-  public coldReload(projectRoot: string, testcase: string, buildMode: string = DEBUG) {
+  public coldReload(projectRoot: string, testcase: string, pagePaths: string[] = [], buildMode: string = DEBUG) {
     this.isPreview = false;
     this.share = new Share();
 		this.share.projectConfig.setBuildMode(buildMode)
@@ -92,25 +91,25 @@ class RollUpPluginMock {
     this.share.projectConfig.setPreview(this.isPreview);
     this.meta.watchMode = false;
 
-    this.doBuild(projectRoot, testcase);
+    this.doBuild(projectRoot, testcase, pagePaths);
   }
 
-  public hotReload(projectRoot: string, testcase: string) {
+  public hotReload(projectRoot: string, testcase: string, pagePaths: string[] = []) {
     this.isPreview = false;
     this.share = new Share();
 
     this.share.projectConfig.setPreview(this.isPreview);
     this.meta.watchMode = this.isPreview;
 
-    this.doBuild(projectRoot, testcase);
+    this.doBuild(projectRoot, testcase, pagePaths);
   }
 
   public useNormalizedOHMUrl() {
     this.share.projectConfig.useNormalizedOHMUrl = true;
   }
 
-  public mockCompileContextInfo(projectRoot: string, testcase: string) {
-    this.share.projectConfig.mockCompileContextInfo(`${projectRoot}/${testcase}`);
+  public mockCompileContextInfo(projectRoot: string, testcase: string, pagePaths: string[] = []) {
+    this.share.projectConfig.mockCompileContextInfo(`${projectRoot}/${testcase}`, pagePaths);
     let entryObj: object = this.share.projectConfig.entryObj;
     if (!!this.share.projectConfig.widgetCompile) {
       entryObj = this.share.projectConfig.cardEntryObj
@@ -123,9 +122,9 @@ class RollUpPluginMock {
     }
   }
 
-  private doBuild(projectRoot: string, testcase: string) {
-    this.share.scan(projectRoot, testcase);
-    this.load();
+  private doBuild(projectRoot: string, testcase: string, pagePaths: string[] = []) {
+    this.share.scan(projectRoot, testcase, pagePaths);
+    this.load(pagePaths);
 
     // mock ets-loader build start
     this.share.arkProjectConfig = RollUpPluginMock.mockArkProjectConfig(projectRoot, testcase, this.isPreview);
@@ -203,7 +202,7 @@ class RollUpPluginMock {
 
   public getWatchFiles() { }
 
-  public load() {
+  public load(pagePaths: string[] = []) {
     // load project files list
     this.share.allFiles = new Set<string>();
     if (fs.existsSync(this.share.projectConfig.projectPath)) {
@@ -215,7 +214,7 @@ class RollUpPluginMock {
       this.share.allFiles.add(tsFilePath);
       this.share.allFiles.add(jsFilePath);
 
-      MAIN_PAGES.forEach((mainPage: string) => {
+      pagePaths.forEach((mainPage: string) => {
         const etsFilePath = path.join(this.share.projectConfig.projectPath, `/${mainPage}.ets`);
         this.share.allFiles.add(etsFilePath);
       })

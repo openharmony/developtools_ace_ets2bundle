@@ -1,107 +1,53 @@
-@Entry
-@Component
-struct V2ToV2ComponentValidate {
-  build() {}
-}
-
-class A {
-  name: string
-  constructor(name: string) {
-    this.name = name
-  }
-}
-
 enum MemberType {
   first = 1
 }
 
-@Observed
-class TestObserved {
-
+@Entry
+@Component
+struct V1ToV2Component {
+  build() {}
 }
-type newType = Set<number> | Set<string>
-@ComponentV2
-struct TestV2Parent1 {
-  string_value: string = "hello"
-  @Param string_value1: string | Set<string> = "hello"
-  regular_value: Set<string> = new Set()
-  @Local enum_value1: MemberType = MemberType.first
-  @Provider() local_value: TestObserved
-  @Consumer() enum_value: Set<number> | MemberType = MemberType.first
-  @Event func_value1: Function = () => {}
-  @Event func_value2: () => void  = () => {}
 
-  @Local set_value: Set<number> | Set<string> = new Set<number>()
-  @Local set_value_alias: newType = new Set<string>()
+@Component
+struct TestV1Parent {
+  @State state_string_value: string = "hello"
+  @Prop prop_number_value: number = 1
+  @Link link_boolean_value: boolean
+  @Provide provide_enum_value: MemberType = MemberType.first
+  @Consume consume_null_value: null
+  @StorageLink("a") storage_link_undefined_value: undefined = undefined
+  @StorageProp("b") storage_prop_string_value: string = "hello"
+  @LocalStorageLink("c") func_value1: Function = () => {}
+  @LocalStorageProp("d") func_value2: () => void  = () => {}
+
   build() {
     Column() {
-      TestV1Child1({
-        string_value: this.string_value,
-        string_value1: this.string_value1,
-        regular_value: this.regular_value,
-        enum_value1: this.enum_value1,
-        objectLink_value: this.local_value,
-        enum_value: this.enum_value,
-        set_value: this.set_value,
-        set_value_alias: this.set_value_alias,
+      TestV2Child({
+        state_string_value: this.state_string_value,
+        prop_number_value: this.prop_number_value,
+        link_boolean_value: this.link_boolean_value,
+        provide_enum_value: this.provide_enum_value,
+        consume_null_value: this.consume_null_value,
+        storage_link_undefined_value: this.storage_link_undefined_value,
+        storage_prop_string_value: this.storage_prop_string_value,
         func_value1: this.func_value1,
         func_value2: this.func_value2
       })
     }
   }
 }
-
-@Component
-struct TestV1Child1 {
-  @State string_value: string = "hello"
-  @State string_value1: string | Set<string> = "hello"
-  @Prop regular_value: Set<string> = new Set()
-  @Link enum_value1: MemberType
-  @Link enum_value: Set<number> | MemberType
-  @Provide set_value: Set<number> | Set<string> = new Set<string>()
-  @State set_value_alias: newType = new Set<string>()
-  @ObjectLink objectLink_value: TestObserved
-  @Prop func_value1: Function
-  @BuilderParam func_value2: () => void
-
-  build() {
-
-  }
-}
-
 @ComponentV2
-struct TestV2Parent {
-  @Local set_value: Set<string> = new Set()
-  @Param map_value: Map<string, string> = new Map();
-  @Param @Once date_value: Date = new Date()
-  @Require @Param arr_value: Array<string> = new Array()
-  @Param arr_value1: Array<A> = new Array()
-  @Provider() arr_value2: Array<string> = new Array()
-  @Consumer() arr_value3: Array<MemberType> = new Array()
-  build() {
-    Column() {
-      TestV1Child({
-        set_value: this.set_value,
-        map_value: this.map_value,
-        date_value: this.date_value,
-        arr_value: this.arr_value,
-        arr_value1: this.arr_value1,
-        arr_value2: this.arr_value2,
-        arr_value3: this.arr_value3
-      })
-    }
-  }
-}
+struct TestV2Child {
+  @Param state_string_value: string = "hello"
+  @Param prop_number_value: number = 1
+  @Param link_boolean_value: boolean = true
+  @Param provide_enum_value: MemberType = MemberType.first
+  @Param consume_null_value: null = null
+  @Param storage_link_undefined_value: undefined = undefined
+  @Param storage_prop_string_value: string = "hello"
+  @Event func_value1: Function = () => {}
+  @Event func_value2: () => void  = () => {}
 
-@Component
-struct TestV1Child {
-  @State set_value: Set<string> = new Set()
-  @Prop map_value: Map<string, string> = new Map();
-  @Link date_value: Date
-  @Provide arr_value: Array<string> = new Array()
-  @State arr_value1: Array<A> = new Array()
-  @State arr_value2: Array<string> = new Array()
-  @State arr_value3: Array<MemberType> = new Array()
   build() {
 
   }
