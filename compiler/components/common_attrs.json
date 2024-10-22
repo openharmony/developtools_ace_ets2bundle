@@ -36,6 +36,7 @@
     "customProperty",
     "renderFit",
     "pixelRound", "expandSafeArea",
-    "safeAreaPadding"
+    "safeAreaPadding",
+    "chainWeight"
   ]
 }
