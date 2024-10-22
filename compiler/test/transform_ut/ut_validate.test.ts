@@ -76,7 +76,7 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		this.globalProjectConfig.setIgnoreWarning(true);
 		this.globalProjectConfig.scan(PROJECT_ROOT, DEFAULT_PROJECT, MAIN_PAGES);
 		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, MAIN_PAGES);
-		this.globalProjectConfig.concat(RollUpPluginMock.mockArkProjectConfig(PROJECT_ROOT, DEFAULT_PROJECT, true));
+		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, MAIN_PAGES);
 
 		this.rollup.share.projectConfig.concat(this.globalProjectConfig);
 		Object.assign(projectConfig, this.globalProjectConfig);
@@ -137,11 +137,12 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 
 	UT_VALIDATE_PAGES.forEach((utPage, index) => {
 		mocha.it(`1-${index + 1}: test ${utPage}`, function (done) {
-			const transform = this.etsTransformPlugin.transform.bind(this.rollup);
-	
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `utForValidate/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
 
+			storedFileInfo.addFileCacheInfo(sourceFilePath);
+
+			const transform = this.etsTransformPlugin.transform.bind(this.rollup);
 			const errorCollection: object = JSON.parse(fs.readFileSync(ERROR_COLLECTION_PATH, 'utf-8'));
 			const errorKey: string = parseFileNameFromPath(sourceFilePath);
 			const errorVals: object = errorCollection[errorKey] ?? {};

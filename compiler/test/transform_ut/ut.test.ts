@@ -70,7 +70,7 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 		this.globalProjectConfig.setIgnoreWarning(true);
 		this.globalProjectConfig.scan(PROJECT_ROOT, DEFAULT_PROJECT, MAIN_PAGES);
 		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, MAIN_PAGES);
-		this.globalProjectConfig.concat(RollUpPluginMock.mockArkProjectConfig(PROJECT_ROOT, DEFAULT_PROJECT, true));
+		this.globalProjectConfig.concat(RollUpPluginMock.mockArkProjectConfig(PROJECT_ROOT, DEFAULT_PROJECT, false));
 
 		this.rollup.share.projectConfig.concat(this.globalProjectConfig);
 		Object.assign(projectConfig, this.globalProjectConfig);
