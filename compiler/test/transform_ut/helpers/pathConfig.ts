@@ -202,7 +202,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_custom_component/validateNonLinkWithDollar',
   'Decorators/process_custom_component/validateParamTwoWayBind',
 
-  'Decorators/process_import/index', // No such test case
   'Decorators/process_import/validateModuleName',
 
   'Decorators/process_struct_componentV2/param_require_once_check',

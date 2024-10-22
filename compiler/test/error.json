@@ -191,10 +191,7 @@
         "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
         "type": "ERROR"
     },
-    "validateModuleName": {
-        "message": "The module name 'Button' can not be the same as the inner component name.",
-        "type": "ERROR"
-    },
+    "validateModuleName": [],
     "notComponent": [],
     "notConcurrent": {
         "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
@@ -1002,9 +999,5 @@
             "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
             "type": "ERROR"
         }
-    ],
-    "index": {
-        "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
-        "type": "ERROR"
-    }
+    ]
 }
