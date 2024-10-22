@@ -6,7 +6,7 @@
 
 @Entry
 @Component
-struct summerpockets {
-build(){
-}
+struct ExtendOneChildSummerpockets {
+  build(){
+  }
 }

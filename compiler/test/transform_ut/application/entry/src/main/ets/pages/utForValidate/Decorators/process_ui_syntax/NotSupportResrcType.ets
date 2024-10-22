@@ -1,10 +1,11 @@
 @Entry
 @Component
-struct paworks {
+struct NotSupportResrcTypePaworks {
 
   build(){
     Column(){
-      Image($r('app.font.song'))
+      Image($r('app.string.module_desc'))
+      Image($r('app.font'))
     }
   }
 }

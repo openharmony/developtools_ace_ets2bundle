@@ -1,10 +1,11 @@
-@Styles function kiminona (value: number) {
-  .width(value)
-}  
-
 @Entry
 @Component
-struct summerpockets {
-build(){
-}
+struct StylesNoParamSummerpockets {
+
+  @Styles kiminona (value: number) {
+    .width(value)
+  }
+
+  build(){
+  }
 }
