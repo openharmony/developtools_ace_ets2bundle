@@ -1,18 +1,21 @@
 const gloabel_value: string = "Foo"
-const obj = {
+const obj: paramA = {
   gloabel_value:  "Foo"
+}
+class paramA {
+  gloabel_value: string = "Foo"
 }
 @Entry
 @ComponentV2
 struct validateParamTwoWayBind {
   @Local local_value: string = "Foo"
-  obj = {
+  obj: paramA = {
     gloabel_value:  "Foo"
   }
   aa() {
     return {
       gloabel_value:  "Foo"
-    }
+    } as paramA
   }
   bb() {
     return "Foo";
