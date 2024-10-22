@@ -1,16 +1,16 @@
 @Entry
 @Component
-struct Parent {
+struct LinkInitializeParent {
   @State state: string = 'text'
   build() {
     Column() {
-      Child({link: this.state})
+      LinkInitializeChild({link: this.state})
     }
   }
 }
 
 @Component
-struct Child {
+struct LinkInitializeChild {
   @Link link: string = 'text'
   build() {
     Column() {

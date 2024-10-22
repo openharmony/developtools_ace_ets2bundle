@@ -181,10 +181,10 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_member/processWatch',
   'Decorators/process_component_member/updateBuilderParamProperty',
   'Decorators/process_component_member/validateCustomDecorator',
-  'Decorators/process_component_member/validateDuplicateDecorator', // Miss one error message
+  'Decorators/process_component_member/validateDuplicateDecorator',
   'Decorators/process_component_member/validateForbiddenUseStateType',
   'Decorators/process_component_member/validateHasIllegalDecoratorInEntry',
-  'Decorators/process_component_member/validateHasIllegalQuestionToken', // Miss one error message
+  'Decorators/process_component_member/validateHasIllegalQuestionToken',
   'Decorators/process_component_member/validateMultiDecorators',
   'Decorators/process_component_member/validateNonObservedClassType',
   'Decorators/process_component_member/validatePropertyDefaultValue',

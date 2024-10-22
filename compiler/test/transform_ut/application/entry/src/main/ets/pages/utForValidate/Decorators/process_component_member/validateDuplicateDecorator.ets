@@ -1,8 +1,7 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
- @State @opacity: string = 'Hello';
+struct ValidateDuplicateDecoratorIndex {
+  @State @Hi name: string = 'Hello';
   build() {
     Row() {}
   }

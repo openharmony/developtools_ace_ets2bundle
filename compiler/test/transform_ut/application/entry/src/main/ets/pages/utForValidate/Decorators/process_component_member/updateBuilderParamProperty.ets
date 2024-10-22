@@ -1,5 +1,5 @@
 @Component
-struct Child {
+struct UpdateBuilderParamPropertyChild {
   @BuilderParam componentBuilder: string = 'Hello';
   build() {
     Row() {}
@@ -8,10 +8,10 @@ struct Child {
 
 @Entry
 @Component
-struct Parent {
+struct UpdateBuilderParamPropertyParent {
   build() {
     Column() {
-      Child()
+      UpdateBuilderParamPropertyChild()
     }
   }
 }

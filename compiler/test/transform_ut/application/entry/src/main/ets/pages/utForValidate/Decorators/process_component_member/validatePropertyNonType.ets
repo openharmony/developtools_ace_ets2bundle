@@ -1,7 +1,6 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
+struct ValidatePropertyNonTypeIndex {
   @State message = 'Hi'
   build() {
     Row() {}
