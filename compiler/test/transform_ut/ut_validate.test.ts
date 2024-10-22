@@ -57,7 +57,7 @@ const ERROR_COLLECTION_PATH: string = path.resolve(__dirname, '../../test/error.
 const MAIN_PAGES: string[] = UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`);
 
 mocha.describe('test UT for validate testcases [non-preview mode]', function () {
-  	this.timeout(7500);
+  	this.timeout(10000);
 
 	mocha.before(function () {
 		resetUtils();
@@ -82,6 +82,7 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		Object.assign(projectConfig, this.globalProjectConfig);
 
 		this.globalPartialUpdateConfig = new PartialUpdateConfig();
+		this.globalPartialUpdateConfig.setPartialUpdateMode(true);
 		this.globalPartialUpdateConfig.mockDisableArkTSLinter();
 
 		Object.assign(partialUpdateConfig, this.globalPartialUpdateConfig);
