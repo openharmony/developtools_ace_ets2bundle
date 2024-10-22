@@ -138,15 +138,11 @@ mocha.describe('test UT for partial update testcases [non-preview mode]', functi
 
 			const transform = this.etsTransformPlugin.transform.bind(this.rollup);
 
-			// expect(sourceCode !== null).to.be.true;
-			// done();
-
 			transform(sourceReplace(sourceCode), sourceFilePath)
 				.then(res => {
-					console.error(`1-${index}: result: `, res.code);
+					// console.error(`1-${index}: result: `, res.code);
 	
 					expect(parseCode(res.code)).eql(parseCode(targetCode));
-					// expect(res !== null).to.be.true;
 					done();
 				})
 				.catch(err => done(err));
