@@ -1,18 +1,18 @@
 @Entry
 @Component
-struct Parent {
+struct ValidateInitDecoratorParent {
   @State message: string ='Hello';
 
   build() {
     Column() {
-      Child();
+      ValidateInitDecoratorChild();
     }
   }
 }
 
 @Component
-struct Child {
-  @Require regular_value: string
+struct ValidateInitDecoratorChild {
+  @Require regular_value: string = "hello"
   @Require @State state_value: string = "hello"
   @Require @Provide provide_value: string = "hello"
   @Require @Prop prop_value: string

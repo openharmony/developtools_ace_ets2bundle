@@ -154,11 +154,11 @@
         "type": "WARN"
     },
     "validateForbiddenToInitViaParam": {
-        "message": "Property 'message' in the custom component 'Child' cannot be initialized here (forbidden to specify).",
+        "message": "Property 'message' in the custom component 'ValidateForbiddenToInitViaParamChild' cannot be initialized here (forbidden to specify).",
         "type": "ERROR"
     },
     "validateMandatoryToInitViaParam": {
-        "message": "Property 'message' in the custom component 'Child' is missing (mandatory to specify).",
+        "message": "Property 'message' in the custom component 'ValidateMandatoryToInitViaParamChild' is missing (mandatory to specify).",
         "type": "ERROR"
     },
     "validateInitDecorator": [

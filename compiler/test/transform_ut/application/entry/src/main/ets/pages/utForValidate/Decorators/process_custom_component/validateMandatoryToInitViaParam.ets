@@ -1,17 +1,17 @@
 @Entry
 @Component
-struct Parent {
+struct ValidateMandatoryToInitViaParamParent {
   @State message: string ='Hello';
 
   build() {
     Column() {
-      Child();
+      ValidateMandatoryToInitViaParamChild();
     }
   }
 }
 
 @Component
-struct Child {
+struct ValidateMandatoryToInitViaParamChild {
   @Link message: string
   build() {
     Row() {}

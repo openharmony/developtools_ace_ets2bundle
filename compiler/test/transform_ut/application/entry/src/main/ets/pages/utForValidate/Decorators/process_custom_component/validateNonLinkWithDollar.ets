@@ -1,17 +1,17 @@
 @Entry
 @Component
-struct Parent {
+struct ValidateNonLinkWithDollarParent {
   @State message: string ='Hello';
-  
+
   build() {
     Column() {
-      Child({message: $message});
+      ValidateNonLinkWithDollarChild({message: $message});
     }
   }
 }
 
 @Component
-struct Child {
+struct ValidateNonLinkWithDollarChild {
   @Prop message: string;
   build() {
     Row() {}

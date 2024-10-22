@@ -1,17 +1,17 @@
 @Entry
 @Component
-struct Parent {
+struct ValidateIllegalInitFromParentParent {
   private message: string ='Hello';
-  
+
   build() {
     Column() {
-      Child({message: $message});
+      ValidateIllegalInitFromParentChild({message: $message});
     }
   }
 }
 
 @Component
-struct Child {
+struct ValidateIllegalInitFromParentChild {
   @Link message: string;
   build() {
     Row() {}

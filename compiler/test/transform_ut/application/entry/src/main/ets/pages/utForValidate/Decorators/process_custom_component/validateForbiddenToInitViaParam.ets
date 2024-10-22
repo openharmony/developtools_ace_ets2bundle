@@ -1,17 +1,17 @@
 @Entry
 @Component
-struct Parent {
+struct ValidateForbiddenToInitViaParamParent {
   @StorageProp('111') message: string = 'Hello';
 
   build() {
     Column() {
-      Child({message: this.message});
+      ValidateForbiddenToInitViaParamChild({message: this.message});
     }
   }
 }
 
 @Component
-struct Child {
+struct ValidateForbiddenToInitViaParamChild {
   @StorageProp('111') message: string = 'Hello';
   build() {
 

@@ -1,10 +1,13 @@
+class param {
+  paramA1: string = ""
+}
 @Entry
 @Component
-struct Parent {
+struct CheckBuilderParent {
   @State label: string = 'Hello';
 
-  @Builder ABuilder($$: { paramA1: string }) {
-    Child({ message: $$.paramA1 })
+  @Builder ABuilder($$: param) {
+    CheckBuilderChild({ message: $$.paramA1 })
   }
 
   build() {
@@ -16,7 +19,7 @@ struct Parent {
 }
 
 @Component
-struct Child {
+struct CheckBuilderChild {
   @Link message: string
 
   build() {
