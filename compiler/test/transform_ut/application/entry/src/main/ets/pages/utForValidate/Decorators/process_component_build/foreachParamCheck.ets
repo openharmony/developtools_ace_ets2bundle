@@ -1,7 +1,6 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
+struct ForeachParamCheckIndex {
   @State arr: string[] = ['10', '20', '30'];
 
   build() {

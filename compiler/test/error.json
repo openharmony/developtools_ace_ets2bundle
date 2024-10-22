@@ -42,7 +42,7 @@
         "type": "WARN"
     },
     "arkUIStandard": {
-        "message": "'Text('Hello').onCilck' does not meet UI component syntax.",
+        "message": "'Text('Hello').onClick' does not meet UI component syntax.",
         "type": "ERROR"
     },
     "stateStyles": {
@@ -54,7 +54,7 @@
         "type": "ERROR"
     },
     "attributeCheck": {
-        "message": "'ForEach(this.arr, () =>{}, this.arr[0]).h' does not meet UI component syntax.",
+        "message": "'ForEach(this.arr, () =>{}, (item: string) => item).h' does not meet UI component syntax.",
         "type": "ERROR"
     },
     "validateDecorators": {

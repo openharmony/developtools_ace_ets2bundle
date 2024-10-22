@@ -1,6 +1,6 @@
 @Entry
 @Component
-struct Index {
+struct CheckNonspecificParentsIndex {
   build() {
     Row() {
       List() {

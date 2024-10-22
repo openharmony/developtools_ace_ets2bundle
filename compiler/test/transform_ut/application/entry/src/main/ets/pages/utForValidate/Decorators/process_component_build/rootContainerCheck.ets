@@ -1,9 +1,8 @@
 @Entry
 @Component
-struct Index {
+struct RootContainerCheckIndex {
   build() {
     Row() {}
     Row(){}
   }
 }
-

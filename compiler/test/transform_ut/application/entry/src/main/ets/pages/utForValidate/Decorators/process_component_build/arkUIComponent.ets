@@ -1,9 +1,9 @@
 @Entry
 @Component
-struct Index {
+struct ComponentIndex {
   build() {
     Row() {
-    let aa =1
-    }  
-  } 
+      let aa =1
+    }
+  }
 }
