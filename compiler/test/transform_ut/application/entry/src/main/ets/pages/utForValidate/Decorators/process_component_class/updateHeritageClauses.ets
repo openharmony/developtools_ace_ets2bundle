@@ -1,13 +1,12 @@
 class TestCase {
   private name: string;
-  constructor(name) {
+  constructor(name: string) {
     this.name = name;
   }
- }
-// @ts-nocheck
+}
 @Entry
 @Component
-struct Index extends TestCase{
+struct UpdateHeritageClausesIndex extends TestCase{
   build() {
     Row(){}
   }

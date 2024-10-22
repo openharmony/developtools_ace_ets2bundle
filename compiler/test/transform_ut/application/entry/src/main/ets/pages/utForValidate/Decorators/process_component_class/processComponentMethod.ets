@@ -1,8 +1,7 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
-  build(a) {
+struct ProcessComponentMethodIndex {
+  build(a:string) {
     Row(){}
   }
 }

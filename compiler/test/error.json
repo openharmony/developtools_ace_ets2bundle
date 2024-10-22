@@ -74,7 +74,7 @@
         "type": "ERROR"
     },
     "validateBuildMethodCount": {
-        "message": "struct 'Index' must be at least or at most one 'build' method.Solutions:>A structurally modified page must have at least one and no more than one'build' method.",
+        "message": "struct 'ValidateBuildMethodCountIndex' must be at least or at most one 'build' method.Solutions:>A structurally modified page must have at least one and no more than one'build' method.",
         "type": "ERROR"
     },
     "validateHasController": {

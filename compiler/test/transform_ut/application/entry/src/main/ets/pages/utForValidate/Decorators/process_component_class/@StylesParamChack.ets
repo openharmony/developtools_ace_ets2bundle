@@ -1,12 +1,11 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
-  @Styles styleComp(color) {
+struct StylesParamChackIndex {
+  @Styles styleComp(color: string) {
     .backgroundColor(color)
   }
   build() {
     Text('Hello')
-    .styleComp('red')
+      .styleComp('red')
   }
 }
