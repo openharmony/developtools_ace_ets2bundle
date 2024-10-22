@@ -1,6 +1,6 @@
 @Entry
 @Component
-struct paworks {
+struct UnknownSrcTypePaworks {
 
   build(){
     Column(){

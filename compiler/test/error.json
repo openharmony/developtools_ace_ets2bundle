@@ -268,10 +268,16 @@
         "message": "Unknown resource name 'tari'.",
         "type": "ERROR"
     },
-    "NotSupportResrcType": {
-        "message": "The resource type font is not supported.",
-        "type": "ERROR"
-    },
+    "NotSupportResrcType": [
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The input parameter is not supported.",
+            "type": "ERROR"
+        }
+    ],
     "NoSrc": {
         "message": "No such 'test.png' resource in current module.",
         "type": "ERROR"
