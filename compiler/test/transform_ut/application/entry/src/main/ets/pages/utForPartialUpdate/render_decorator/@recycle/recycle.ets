@@ -1,11 +1,11 @@
 @Entry
 @Component
-struct HomeComponent {
+struct RecycleHomeComponent {
   @State state_value: string = "100%"
   @State value: number = 1
   build() {
     Column() {
-      child({propvalue: this.value, linkvalue: this.value})
+      RecycleChild({propvalue: this.value, linkvalue: this.value})
         .border({width: 3, color: Color.Red})
         .width(this.state_value)
       Text("aa")
@@ -19,7 +19,7 @@ struct HomeComponent {
 
 @Reusable
 @Component
-struct child {
+struct RecycleChild {
   @Prop propvalue: number;
   @Link linkvalue: number;
   @State state_value: number = 1;
@@ -29,7 +29,7 @@ struct child {
   @State heightValue: number = 100
   build() {
     Column() {
-      AnimationTest()
+      RecycleAnimationTest()
         .border({width: 3, color: Color.Red})
         .height(this.heightValue)
 
@@ -94,7 +94,7 @@ struct child {
 }
 
 @Component
-struct NormalComponent {
+struct RecycleNormalComponent {
   @State width_value: string = "100%"
   build() {
     Column() {
@@ -107,7 +107,7 @@ struct NormalComponent {
 
 @Reusable
 @Component
-struct AnimationTest {
+struct RecycleAnimationTest {
   @State width_value: string = "100%"
   build() {
     Column() {

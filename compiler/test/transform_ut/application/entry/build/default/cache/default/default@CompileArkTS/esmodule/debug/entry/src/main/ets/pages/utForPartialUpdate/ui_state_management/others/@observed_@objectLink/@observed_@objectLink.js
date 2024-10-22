@@ -9,23 +9,23 @@ if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
 let NextID = 0;
-let ClassA = class ClassA {
+let ObservedObjectLinkClassA = class ObservedObjectLinkClassA {
     constructor(c) {
         this.id = NextID++;
         this.c = c;
     }
 };
-ClassA = __decorate([
+ObservedObjectLinkClassA = __decorate([
     Observed
-], ClassA);
-let ClassB = class ClassB {
+], ObservedObjectLinkClassA);
+let ObservedObjectLinkClassB = class ObservedObjectLinkClassB {
     constructor(a) {
         this.a = a;
     }
 };
-ClassB = __decorate([
+ObservedObjectLinkClassB = __decorate([
     Observed
-], ClassB);
+], ObservedObjectLinkClassB);
 class ViewA extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -73,7 +73,7 @@ class ViewB extends ViewPU {
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        this.__varB = new ObservedPropertyObjectPU(new ClassB(new ClassA(0)), this, "varB");
+        this.__varB = new ObservedPropertyObjectPU(new ObservedObjectLinkClassB(new ObservedObjectLinkClassA(0)), this, "varB");
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }

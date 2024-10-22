@@ -3,7 +3,7 @@ if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
 let storage = LocalStorage.GetShared();
-class ClassA {
+class LocalStorageClassA {
     constructor(a) {
         this.id = 1;
         this.type = 2;
@@ -15,7 +15,7 @@ class LocalStorageComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         this.__simpleVarName = this.createLocalStorageLink("storageSimpleProp", 0, "simpleVarName");
-        this.__objectName = this.createLocalStorageProp("storageObjectProp", new ClassA("x"), "objectName");
+        this.__objectName = this.createLocalStorageProp("storageObjectProp", new LocalStorageClassA("x"), "objectName");
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
