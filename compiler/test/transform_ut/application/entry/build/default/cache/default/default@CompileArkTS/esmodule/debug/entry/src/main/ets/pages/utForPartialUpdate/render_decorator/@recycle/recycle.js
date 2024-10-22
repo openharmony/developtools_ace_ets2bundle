@@ -2,7 +2,7 @@
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-class HomeComponent extends ViewPU {
+class RecycleHomeComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -60,11 +60,11 @@ class HomeComponent extends ViewPU {
             __Recycle__.create();
         }, __Recycle__);
         {
-            this.observeRecycleComponentCreation("child", (elmtId, isInitialRender, recycleNode = null) => {
+            this.observeRecycleComponentCreation("RecycleChild", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new child(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle.ets", line: 8, col: 7 });
-                    ViewPU.createRecycle(componentCall, recycleNode !== null, "child", () => {
+                    let componentCall = recycleNode ? recycleNode : new RecycleChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle.ets", line: 8, col: 7 });
+                    ViewPU.createRecycle(componentCall, recycleNode !== null, "RecycleChild", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -105,10 +105,10 @@ class HomeComponent extends ViewPU {
         this.updateDirtyElements();
     }
     static getEntryName() {
-        return "HomeComponent";
+        return "RecycleHomeComponent";
     }
 }
-class child extends ViewPU {
+class RecycleChild extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -212,11 +212,11 @@ class child extends ViewPU {
             __Recycle__.create();
         }, __Recycle__);
         {
-            this.observeRecycleComponentCreation("AnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
+            this.observeRecycleComponentCreation("RecycleAnimationTest", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new AnimationTest(this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle.ets", line: 32, col: 7 });
-                    ViewPU.createRecycle(componentCall, recycleNode !== null, "AnimationTest", () => {
+                    let componentCall = recycleNode ? recycleNode : new RecycleAnimationTest(this, {}, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle.ets", line: 32, col: 7 });
+                    ViewPU.createRecycle(componentCall, recycleNode !== null, "RecycleAnimationTest", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
                         }
@@ -394,7 +394,7 @@ class child extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class NormalComponent extends ViewPU {
+class RecycleNormalComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -441,7 +441,7 @@ class NormalComponent extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class AnimationTest extends ViewPU {
+class RecycleAnimationTest extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -493,5 +493,5 @@ class AnimationTest extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle", integratedHsp: "false" });
+registerNamedRoute(() => new RecycleHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle", integratedHsp: "false" });
 //# sourceMappingURL=recycle.js.map

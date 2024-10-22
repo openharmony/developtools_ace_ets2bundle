@@ -1,17 +1,17 @@
 @Entry
 @Component
-struct HomeComponent {
+struct RecycleFuncArrHomeComponent {
   @State value: number = 1
   build() {
     Column() {
-      child({propvalue: this.value, linkvalue: this.value})
+      RecycleFuncArrChild({propvalue: this.value, linkvalue: this.value})
     }
   }
 }
 
 @Reusable
 @Component
-struct child {
+struct RecycleFuncArrChild {
   @State state_value: number = 1;
   reguar_value: string = "hello"
   build() {

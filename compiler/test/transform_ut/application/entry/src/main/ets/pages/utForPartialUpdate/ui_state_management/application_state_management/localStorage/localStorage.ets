@@ -1,6 +1,6 @@
 let storage = LocalStorage.GetShared();
 
-class ClassA {
+class LocalStorageClassA {
     public id: number = 1;
     public type: number = 2;
     public a: string = "aaa";
@@ -13,7 +13,7 @@ class ClassA {
 @Component
 struct LocalStorageComponent {
     @LocalStorageLink("storageSimpleProp") simpleVarName: number = 0;
-    @LocalStorageProp("storageObjectProp") objectName: ClassA = new ClassA("x");
+    @LocalStorageProp("storageObjectProp") objectName: LocalStorageClassA = new LocalStorageClassA("x");
     build() {
         Column() {
             Text(this.objectName.a)
