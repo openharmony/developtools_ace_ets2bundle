@@ -1,0 +1,58 @@
+"use strict";
+if (!("finalizeConstruction" in ViewPU.prototype)) {
+    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
+}
+class HomeComponent extends ViewV2 {
+    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda, extraInfo) {
+        super(parent, elmtId, extraInfo);
+        this.buildTest = "buildTest" in params ? params.buildTest : undefined;
+        this.buildTest1 = "buildTest1" in params ? params.buildTest1 : this.testBuilder;
+        this.finalizeConstruction();
+    }
+    testBuilder(parent = null) {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create("hello testBuilder");
+        }, Text);
+        Text.pop();
+    }
+    initialRender() {
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Column.create();
+        }, Column);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Button.createWithChild();
+            ViewStackProcessor.visualState("normal");
+            Button.backgroundColor(Color.Green);
+            ViewStackProcessor.visualState("disabled");
+            Button.backgroundColor(Color.Red);
+            ViewStackProcessor.visualState("pressed");
+            ViewStackProcessor.visualState("normal");
+            Button.width(200);
+            ViewStackProcessor.visualState();
+            ViewStackProcessor.visualState();
+        }, Button);
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create("hello HomeComponent");
+            Text.fontSize(30);
+            Text.backgroundColor(Color.Red);
+        }, Text);
+        Text.pop();
+        Button.pop();
+        this.observeComponentCreation2((elmtId, isInitialRender) => {
+            Text.create("Fancy");
+            ViewStackProcessor.visualState("normal");
+            Text.width(200);
+            ViewStackProcessor.visualState();
+        }, Text);
+        Text.pop();
+        Column.pop();
+    }
+    rerender() {
+        this.updateDirtyElements();
+    }
+    static getEntryName() {
+        return "HomeComponent";
+    }
+}
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", integratedHsp: "false" });
+//# sourceMappingURL=builderParamStyles.js.map

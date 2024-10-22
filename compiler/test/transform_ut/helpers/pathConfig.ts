@@ -149,7 +149,11 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   // 'ui_state_management/others/@consume_@provide/@consume_@provide',
   // 'ui_state_management/others/@observed_@objectLink/@observed_@objectLink',
   // 'ui_state_management/others/@watch/@watch',
-  'ui_state_management/others/decoratorKeyCheck/decoratorKeyCheck'
+  // 'ui_state_management/others/decoratorKeyCheck/decoratorKeyCheck',
+
+  // 'v2_component_decorator/builderParamStyles',
+  // 'v2_component_decorator/param_event_twoway_binding',
+  'v2_component_decorator/staticComponentMember'
 ];
 
 export const UT_VALIDATE_PAGES: string[] = [
