@@ -2,7 +2,7 @@ class OnlyStructDecoBsd {
   @Builder
   OnlyStructDecoBsd() {
 
-    }
+  }
 }
 
 @Entry

@@ -80,7 +80,7 @@ struct TestV1Parent {
   @StorageProp("b") storage_prop_value: A = new A("hello")
   @LocalStorageLink("c") local_storage_link_value: A = new A("hello")
   @LocalStorageProp("c") local_storage_prop_value: A = new A("hello")
-  
+
   build() {
     Column() {
       TestV2Child({
@@ -114,6 +114,6 @@ struct TestV2Child {
   @Event local_storage_prop_value: A = new A("hello")
 
   build() {
-    
+
   }
 }

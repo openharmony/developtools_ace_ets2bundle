@@ -1,5 +1,5 @@
 @Component
 struct OneEntrySummerpockets {
-    build(){
-    }
+  build(){
+  }
 }
