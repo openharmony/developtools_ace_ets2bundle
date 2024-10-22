@@ -195,10 +195,7 @@
         "message": "The module name 'Button' can not be the same as the inner component name.",
         "type": "ERROR"
     },
-    "notComponent": {
-        "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
-        "type": "ERROR"
-    },
+    "notComponent": [],
     "notConcurrent": {
         "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
         "type": "WARN"

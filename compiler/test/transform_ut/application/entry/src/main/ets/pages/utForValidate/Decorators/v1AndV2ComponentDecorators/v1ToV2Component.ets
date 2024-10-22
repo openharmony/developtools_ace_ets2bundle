@@ -19,7 +19,7 @@ struct TestV1Parent {
   @StorageProp("b") storage_prop_string_value: string = "hello"
   @LocalStorageLink("c") func_value1: Function = () => {}
   @LocalStorageProp("d") func_value2: () => void  = () => {}
-  
+
   build() {
     Column() {
       TestV2Child({

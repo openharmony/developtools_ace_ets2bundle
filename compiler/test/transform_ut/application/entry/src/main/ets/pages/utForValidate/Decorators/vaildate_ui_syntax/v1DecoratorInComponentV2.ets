@@ -13,7 +13,7 @@ struct v1DecoratorInComponentV2 {
   @LocalStorageLink("b") localStorageLink_value: string = "hello"
   @LocalStorageProp("b") localStorageProp_value: string = "hello"
   @ObjectLink objectLink_value: AA
-  
+
   aa() {}
 
   build() {

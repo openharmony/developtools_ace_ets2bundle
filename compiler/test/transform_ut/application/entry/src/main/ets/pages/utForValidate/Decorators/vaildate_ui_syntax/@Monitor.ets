@@ -9,7 +9,7 @@ struct MonitorHomeComponent {
 
 class Test1 {
   @Monitor("aa") onChange() {
-    
+
   }
 }
 declare const Custom: () => MethodDecorator

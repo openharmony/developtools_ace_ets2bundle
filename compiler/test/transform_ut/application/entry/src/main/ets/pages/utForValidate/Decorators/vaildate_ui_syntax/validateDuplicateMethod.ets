@@ -1,4 +1,4 @@
-declare const CustomMethod: PropertyDecorator;
+// declare const CustomMethod: PropertyDecorator;
 
 @Entry
 @Component
