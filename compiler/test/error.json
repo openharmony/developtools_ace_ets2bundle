@@ -105,10 +105,7 @@
         "message": "The property 'message' must specify a type.",
         "type": "ERROR"
     },
-    "validateNonObservedClassType": {
-        "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
-        "type": "ERROR"
-    },
+    "validateNonObservedClassType": [],
     "validateHasIllegalDecoratorInEntry": {
         "message": "The @Entry component 'ValidateHasIllegalDecoratorInEntryIndex' cannot have the @Prop property 'message'.",
         "type": "WARN"
@@ -138,7 +135,7 @@
         "type": "ERROR"
     },
     "checkBuilder$$": {
-        "message": "Unrecognized property 'paramA1', make sure it can be assigned to @Link property 'message' by yourself.",
+        "message": "The regular property 'paramA1' cannot be assigned to the @Link property 'message'.",
         "type": "WARN"
     },
     "validateForbiddenToInitViaParam": {
@@ -296,28 +293,7 @@
             "type": "ERROR"
         }
     ],
-    "@Type": [
-        {
-            "message": "The '@Type' decorator can only be used in 'class'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The '@Type' decorator can not be used in a 'class' decorated with Sendable.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The '@Type' can decorate only member variables in a 'class'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The '@Type' decorator can not be used in a 'class' decorated with Observed.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The '@Type' can decorate only member variables in a 'class'.",
-            "type": "ERROR"
-        }
-    ],
+    "@Type": [],
     "validate_track_observed": [
         {
             "message": "The struct 'child' use invalid decorator.",
@@ -578,50 +554,11 @@
             "type": "ERROR"
         }
     ],
-    "v2DecoratorInitFromParent": [
-        {
-            "message": "Property 'param_value' must be initialized through the component constructor.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'regular_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'local_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'provider_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'consumer_value' in the custom component 'testChild' cannot be initialized here (forbidden to specify).",
-            "type": "ERROR"
-        }
-    ],
-    "validateParamTwoWayBind": [
-        {
-            "message": "When the two-way binding syntax is used, the variable 'value' must be decorated with @Param, and the @Event variable '$value' must be defined in the testParamChild1.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The optional character can not be used in the initial value of property 'paramValue'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The optional character can not be used in the initial value of property 'paramValue'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
-            "type": "ERROR"
-        },
-        {
-            "message": "When the two-way binding syntax is used, the initial value of property 'paramValue' must be a variable.",
-            "type": "ERROR"
-        }
-    ],
+    "v2DecoratorInitFromParent": {
+        "message": "Property 'param_value' must be initialized through the component constructor.",
+        "type": "ERROR"
+    },
+    "validateParamTwoWayBind": [],
     "validateDifferentMethod": [
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
@@ -776,67 +713,14 @@
             "type": "ERROR"
         }
     ],
-    "v1ToV2Component": [
-        {
-            "message": "Property 'func_value1' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'func_value2' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        }
-    ],
+    "v1ToV2Component": [],
     "v1ToV2ComponentValidate": [
         {
             "message": "The type of the @Param property can not be a class decorated with @Observed.",
             "type": "ERROR"
         },
         {
-            "message": "Property 'param_value' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'param_value_alias_type' in the @ComponentV2 component 'TestV2Child2' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'state_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'provide_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'consume_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'objectLink_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'local_storage_link_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'local_storage_prop_value' in the @ComponentV2 component 'TestV2Child' are not allowed to be assigned values here.",
+            "message": "The type of the @Prop property 'prop_value' can only be string, number or boolean.",
             "type": "ERROR"
         }
     ],
@@ -850,11 +734,11 @@
             "type": "ERROR"
         },
         {
-            "message": "Property 'set_value' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
+            "message": "The type of the @Prop property 'regular_value' can only be string, number or boolean.",
             "type": "ERROR"
         },
         {
-            "message": "Property 'set_value_alias' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
+            "message": "The type of the @Prop property 'func_value1' can only be string, number or boolean.",
             "type": "ERROR"
         },
         {
@@ -862,27 +746,7 @@
             "type": "ERROR"
         },
         {
-            "message": "Property 'set_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'map_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'arr_value' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'arr_value1' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'arr_value2' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
-            "type": "ERROR"
-        },
-        {
-            "message": "Property 'arr_value3' in the @Component component 'TestV1Child' are not allowed to be assigned values here.",
+            "message": "The type of the @Prop property 'map_value' can only be string, number or boolean.",
             "type": "ERROR"
         }
     ],
@@ -985,6 +849,10 @@
         },
         {
             "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the @Prop property 'prop_value' can only be string, number or boolean.",
             "type": "ERROR"
         }
     ]
