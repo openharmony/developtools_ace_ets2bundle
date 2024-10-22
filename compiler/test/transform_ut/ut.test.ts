@@ -55,13 +55,13 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 
 	mocha.before(function () {
 		this.rollup = new RollUpPluginMock();
-		this.rollup.build(PROJECT_ROOT, DEFAULT_PROJECT);
+		this.rollup.build(PROJECT_ROOT, DEFAULT_PROJECT, UT_PAGES);
 
 		this.globalProjectConfig = new ProjectConfig();
 		this.globalProjectConfig.setPreview(false);
 		this.globalProjectConfig.setIgnoreWarning(true);
-		this.globalProjectConfig.scan(PROJECT_ROOT, DEFAULT_PROJECT);
-		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`);
+		this.globalProjectConfig.scan(PROJECT_ROOT, DEFAULT_PROJECT, UT_PAGES);
+		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, UT_PAGES);
 		this.globalProjectConfig.concat(RollUpPluginMock.mockArkProjectConfig(PROJECT_ROOT, DEFAULT_PROJECT, true));
 
 		this.rollup.share.projectConfig.concat(this.globalProjectConfig);

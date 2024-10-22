@@ -72,11 +72,11 @@ class Share {
 		return Logger.removeLogger(prefix);
 	}
 
-	public scan(projectRoot: string, testcase: string) {
+	public scan(projectRoot: string, testcase: string, pagePaths: string[] = []) {
     if (!testcase) {
       return;
     }
-    this.projectConfig.scan(projectRoot, testcase);
+    this.projectConfig.scan(projectRoot, testcase, pagePaths);
     this.symlinkMap[`${this.projectConfig.projectTopDir}/${OH_MODULES_OHPM_HYPIUM}`] = [
       `${this.projectConfig.projectTopDir}/${OH_MODULES_OHOS_HYPIUM}`
     ];

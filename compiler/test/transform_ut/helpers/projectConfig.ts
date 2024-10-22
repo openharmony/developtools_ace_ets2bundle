@@ -34,7 +34,6 @@ import {
   ACE_PROFILE_PATH, 
   CACHE_PATH, 
   LOADER_PATH, 
-  MAIN_PAGES, 
   MAIN_PATH, 
   PREVIEW_CACHE_PATH, 
   PREVIEW_MAIN_PATH, 
@@ -249,8 +248,8 @@ class ProjectConfig {
     this.compatibleSdkVersion = version;
   }
 
-  public scan(projectRoot: string, testcase: string) {
-    this.initPath(`${projectRoot}/${testcase}`);
+  public scan(projectRoot: string, testcase: string, pagePaths: string[] = []) {
+    this.initPath(`${projectRoot}/${testcase}`, pagePaths);
   }
 
   public concat(other: typeof ProjectConfig | ArkProjectConfig) {
@@ -270,7 +269,7 @@ class ProjectConfig {
     // }
   }
 
-	private initPath(projectPath: string) {
+	private initPath(projectPath: string, pagePaths: string[] = []) {
 		let mode = this.isPreview ? '.preview' : this.isLocalTest ? '.test' : 'build';
 
     this.projectPath = `${projectPath}/${this.entryModuleName}/src/main/ets`;
@@ -291,11 +290,11 @@ class ProjectConfig {
     this.projectRootPath = `${projectPath}`;
 
     if (this.isPreview) {
-      this.previewUniqueConfig();
+      this.previewUniqueConfig(pagePaths);
     }
 	}
 
-  private previewUniqueConfig() {
+  private previewUniqueConfig(pagePaths: string[] = []) {
     this.deviceType = DEVICE_TYPE;
     this.checkEntry = 'true';
     this.Path = NODE_JS_PATH;
@@ -307,7 +306,7 @@ class ProjectConfig {
     this.stageRouterConfig = {
       'contents': [
         "{\"module\":{\"pages\":\"$profile:main_pages\",\"name\":\"entry\"}}",
-        JSON.stringify({ 'src': MAIN_PAGES })
+        JSON.stringify({ 'src': pagePaths })
       ],
       'paths': [
         `${this.projectRootPath}/${this.entryModuleName}/.preview/${RES_PATH}/module.json`,
@@ -318,7 +317,7 @@ class ProjectConfig {
     this.aceSoPath = `${this.projectRootPath}/${this.entryModuleName}/.preview/cache/nativeDependencies.txt`;
   }
 
-  public mockCompileContextInfo(projectRoot: string) {
+  public mockCompileContextInfo(projectRoot: string, pagePaths: string[] = []) {
     this.entryObj = {
       'entryAbility/EntryAbility': `${projectRoot}/entry/src/main/ets/entryability/EntryAbility.ets`,
       'entryformability/EntryFormAbility': `${projectRoot}/entry/src/main/ets/entryformability/EntryFormAbility.ets`,
@@ -331,7 +330,7 @@ class ProjectConfig {
       // "pages/Index"
     ];
 
-    MAIN_PAGES.forEach((mainPage: string) => {
+    pagePaths.forEach((mainPage: string) => {
       this.entryObj[mainPage] = `${projectRoot}/entry/src/main/ets/${mainPage}.ets`;
       this.entryArrayForObf.push(mainPage);
     })
