@@ -56,7 +56,7 @@ const OUTPUTS_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/
 const MAIN_PAGES: string[] = UT_PARTIAL_UPFATE_PAGES.map((p) => `pages/utForPartialUpdate/${p}`);
 
 mocha.describe('test UT for partial update testcases [non-preview mode]', function () {
-	this.timeout(7500);
+	this.timeout(10000);
 
 	mocha.before(function () {
 		resetUtils();

@@ -19,7 +19,7 @@ enum MemberType {
 class TestObserved {
 
 }
-type newType = Set<number> | Set<string>
+type DummyNewType = Set<number> | Set<string>
 @ComponentV2
 struct TestV2Parent1 {
   string_value: string = "hello"
@@ -32,7 +32,7 @@ struct TestV2Parent1 {
   @Event func_value2: () => void  = () => {}
 
   @Local set_value: Set<number> | Set<string> = new Set<number>()
-  @Local set_value_alias: newType = new Set<string>()
+  @Local set_value_alias: DummyNewType = new Set<string>()
   build() {
     Column() {
       TestV1Child1({
@@ -59,7 +59,7 @@ struct TestV1Child1 {
   @Link enum_value1: MemberType
   @Link enum_value: Set<number> | MemberType
   @Provide set_value: Set<number> | Set<string> = new Set<string>()
-  @State set_value_alias: newType = new Set<string>()
+  @State set_value_alias: DummyNewType = new Set<string>()
   @ObjectLink objectLink_value: TestObserved
   @Prop func_value1: Function
   @BuilderParam func_value2: () => void

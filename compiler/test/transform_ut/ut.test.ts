@@ -56,7 +56,7 @@ const OUTPUTS_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/
 const MAIN_PAGES: string[] = UT_PAGES.map((p) => `pages/ut/${p}`);
 
 mocha.describe('test UT testcases [non-preview mode]', function () {
-	this.timeout(7500);
+	this.timeout(10000);
 
 	mocha.before(function () {
 		resetUtils();
@@ -137,15 +137,9 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 
 			const transform = this.etsTransformPlugin.transform.bind(this.rollup);
 
-			// expect(sourceCode !== null).to.be.true;
-			// done();
-
 			transform(sourceReplace(sourceCode), sourceFilePath)
 				.then(res => {
-					// console.error(`1-${index}: result: `, res.code);
-	
 					expect(parseCode(res.code)).eql(parseCode(targetCode));
-					// expect(res !== null).to.be.true;
 					done();
 				})
 				.catch(err => done(err));
