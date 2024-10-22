@@ -866,6 +866,10 @@
             "type": "ERROR"
         },
         {
+            "message": "Property 'set_value_alias' in the @Component component 'TestV1Child1' are not allowed to be assigned values here.",
+            "type": "ERROR"
+        },
+        {
             "message": "The @ComponentV2 struct must not contain any @Component with an @Link decorated variable",
             "type": "ERROR"
         },
