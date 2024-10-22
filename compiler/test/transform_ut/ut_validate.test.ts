@@ -165,24 +165,24 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 					const warnMsgs: string[] = logger.getWarnMsgs();
 					const infoMsgs: string[] = logger.getInfoMsgs();
 
-					console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
-					console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
+					// console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
+					// console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
 
-					console.error(`1-${index}: errorMsgs.length: ${errorMsgs.length}, expectErrorMsgs.length: ${expectErrorMsgs.length}`);
-					console.error(`1-${index}: warnMsgs.length: ${warnMsgs.length}, expectWarnMsgs.length: ${expectWarnMsgs.length}`);
+					// console.error(`1-${index}: errorMsgs.length: ${errorMsgs.length}, expectErrorMsgs.length: ${expectErrorMsgs.length}`);
+					// console.error(`1-${index}: warnMsgs.length: ${warnMsgs.length}, expectWarnMsgs.length: ${expectWarnMsgs.length}`);
 
 					expect(errorMsgs.length === expectErrorMsgs.length).to.be.true;
 					expect(warnMsgs.length === expectWarnMsgs.length).to.be.true;
 
-					console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
-					console.error(`1-${index}: warnMsgs: `, JSON.stringify(warnMsgs));
-					console.error(`1-${index}: infoMsgs: `, JSON.stringify(infoMsgs));
+					// console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
+					// console.error(`1-${index}: warnMsgs: `, JSON.stringify(warnMsgs));
+					// console.error(`1-${index}: infoMsgs: `, JSON.stringify(infoMsgs));
 
 					errorMsgs.forEach((err) => {
 						const logInfo: string = parseLog(err);
 						
-						console.error(`1-${index}: logInfo: `, logInfo);
-						console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
+						// console.error(`1-${index}: logInfo: `, logInfo);
+						// console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
 						expect(expectErrorMsgs.includes(logInfo)).to.be.true;
 					});
 

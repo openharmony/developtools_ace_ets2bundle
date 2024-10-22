@@ -21,7 +21,6 @@ class Logger {
 		return this.infoMsgs;
 	}
 
-
 	public debug(msg: string) {
 		console.debug(msg);
 	}

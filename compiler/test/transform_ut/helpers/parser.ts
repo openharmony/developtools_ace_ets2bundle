@@ -66,8 +66,6 @@ export function parseLog(log: string) {
   const regexPattern = /(:\d+:\d+)?\n(.*)/gm;
   const matchResult = regexPattern.exec(log);
 
-  console.error('matchResult: ', JSON.stringify(matchResult));
-
   const logInfo: string = matchResult[2].trim();
 
   return logInfo;
