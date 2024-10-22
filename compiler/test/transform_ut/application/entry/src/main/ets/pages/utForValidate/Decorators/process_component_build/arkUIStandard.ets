@@ -1,9 +1,9 @@
 @Entry
 @Component
-struct Index {
+struct StandardIndex {
   build() {
     Column() {
-     Text('Hello').onCilck
+      Text('Hello').onClick
     }
   }
 }

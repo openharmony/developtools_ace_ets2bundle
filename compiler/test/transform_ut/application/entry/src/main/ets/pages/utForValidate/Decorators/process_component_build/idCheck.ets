@@ -1,6 +1,6 @@
 @Entry
 @Component
-struct Index {
+struct IdCheckIndex {
   build() {
     Column() {
       Text('Hello').id('1')

@@ -1,7 +1,6 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
+struct StateStylesIndex {
   build() {
     Column({ space: 5 }) {
       Button() {

@@ -164,8 +164,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_build/buttonCheck',
   'Decorators/process_component_build/checkNonspecificParents',
   'Decorators/process_component_build/foreachParamCheck',
-  'Decorators/process_component_build/idCheck', // Need to change error log
-  'Decorators/process_component_build/ifComponent', // Miss one error message
+  'Decorators/process_component_build/idCheck',
+  'Decorators/process_component_build/ifComponent',
   'Decorators/process_component_build/rootContainerCheck',
   'Decorators/process_component_build/stateStyles',
 

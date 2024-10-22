@@ -1,10 +1,9 @@
 @Entry
 @Component
-struct Index {
+struct IfComponentIndex {
   build() {
     Column() {
-     if()
+      if()
     }
   }
 }
-
