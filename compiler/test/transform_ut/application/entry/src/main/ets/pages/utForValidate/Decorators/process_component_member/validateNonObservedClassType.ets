@@ -1,31 +1,30 @@
-// @ts-nocheck
-let NextID: number = 1;
+let NextIDa: number = 1;
 
 @Observed
-class ClassA {
+class ClassB {
   public id: number;
   public c: number;
 
   constructor(c: number) {
-    this.id = NextID++;
+    this.id = NextIDa++;
     this.c = c;
   }
 }
 
 @Entry
 @Component
-struct Index {
-  @State message: ClassA = new ClassA(0)
+struct ValidateNonObservedClassTypeIndex {
+  @State message: ClassB = new ClassB(0)
   build() {
     Row() {
-      Child({message: this.message})
+      ValidateNonObservedClassTypeChild({message: this.message})
     }
   }
 }
 
 @Component
-struct Child {
-  @ObjectLink message: string
+struct ValidateNonObservedClassTypeChild {
+  @ObjectLink message: ClassB | string
   build() {
     Row() {}
   }

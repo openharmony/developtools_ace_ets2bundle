@@ -5,17 +5,17 @@ class observe {
 
 @Entry
 @Component
-struct Parent {
+struct ObjectLinkInitializeParent {
   @State state: observe = new observe()
   build() {
     Column() {
-      Child({objectLink: this.state})
+      ObjectLinkInitializeChild({objectLink: this.state})
     }
   }
 }
 
 @Component
-struct Child {
+struct ObjectLinkInitializeChild {
   @ObjectLink objectLink: observe = new observe()
   build() {
     Column() {

@@ -1,19 +1,18 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
+struct ValidatePropertyDefaultValueIndex {
   @State message: string = 'Hi'
   build() {
     Row() {
-      Child({message: this.message})
+      ValidatePropertyDefaultValueChild({message: this.message})
     }
-   
+
   }
 }
 
 @Component
-struct Child {
- @Link message:string = 'Hello'
+struct ValidatePropertyDefaultValueChild {
+  @Link message:string = 'Hello'
   build() {
     Row() {}
   }

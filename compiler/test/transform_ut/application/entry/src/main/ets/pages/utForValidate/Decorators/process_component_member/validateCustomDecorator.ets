@@ -1,8 +1,8 @@
-// @ts-nocheck
+declare const Hi: PropertyDecorator;
 @Entry
 @Component
-struct Index {
- @State @Hi message: string = 'Hello'
+struct ValidateCustomDecoratorIndex {
+  @State @Hi message: string = 'Hello'
   build() {
     Row() {}
   }

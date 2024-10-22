@@ -82,7 +82,7 @@
         "type": "ERROR"
     },
     "processWatch": {
-        "message": "Cannot find name 'onWatch' in struct 'Index'.",
+        "message": "Cannot find name 'onWatch' in struct 'ProcessWatchIndex'.",
         "type": "ERROR"
     },
     "updateBuilderParamProperty": {
@@ -110,33 +110,21 @@
         "type": "ERROR"
     },
     "validateHasIllegalDecoratorInEntry": {
-        "message": "The @Entry component 'Index' cannot have the @Prop property 'message'.",
+        "message": "The @Entry component 'ValidateHasIllegalDecoratorInEntryIndex' cannot have the @Prop property 'message'.",
         "type": "WARN"
     },
-    "validateHasIllegalQuestionToken": [
-        {
-            "message": "The @ObjectLink property 'message' cannot be an optional parameter.",
-            "type": "WARN"
-        },
-        {
-            "message": "The type of the @ObjectLink property 'message' can only be objects of classes decorated with @Observed class decorator in ets (not ts).",
-            "type": "ERROR"
-        }
-    ],
+    "validateHasIllegalQuestionToken": {
+        "message": "The @ObjectLink property 'message' cannot be an optional parameter.",
+        "type": "WARN"
+    },
     "validateForbiddenUseStateType": {
         "message": "The @State property 'message' cannot be a 'CustomDialogController' object.",
         "type": "ERROR"
     },
-    "validateDuplicateDecorator": [
-        {
-            "message": "The inner decorator @State cannot be used together with custom decorator.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The decorator '@opacity' cannot have the same name as the built-in style attribute 'opacity'.",
-            "type": "ERROR"
-        }
-    ],
+    "validateDuplicateDecorator": {
+        "message": "The inner decorator @State cannot be used together with custom decorator.",
+        "type": "ERROR"
+    },
     "validateWatchDecorator": {
         "message": "Regular variable 'message' can not be decorated with @Watch.",
         "type": "ERROR"

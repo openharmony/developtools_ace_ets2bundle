@@ -1,8 +1,10 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
- @State message:string
+struct ValidatePropertyNonDefaultValueIndex {
+  @State message: string
+
   build() {
-    Row() {}
+    Row() {
+    }
   }
+}

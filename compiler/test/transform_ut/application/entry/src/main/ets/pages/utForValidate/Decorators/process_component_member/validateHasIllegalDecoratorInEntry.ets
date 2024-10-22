@@ -1,8 +1,7 @@
-// @ts-nocheck
 @Entry
 @Component
-struct Index {
- @Prop message: string = 'Hello'
+struct ValidateHasIllegalDecoratorInEntryIndex {
+  @Prop message: string = 'Hello'
   build() {
     Row() {}
   }

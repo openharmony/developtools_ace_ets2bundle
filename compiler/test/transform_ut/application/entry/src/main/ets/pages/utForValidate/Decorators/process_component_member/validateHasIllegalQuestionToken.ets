@@ -1,4 +1,3 @@
-// @ts-nocheck
 let NextID: number = 1;
 
 @Observed
@@ -14,18 +13,18 @@ class ClassA {
 
 @Entry
 @Component
-struct Index {
+struct ValidateHasIllegalQuestionTokenIndex {
   @State message: ClassA = new ClassA(0)
   build() {
     Row() {
-      Child({message: this.message})
+      ValidateHasIllegalQuestionTokenChild({message: this.message})
     }
   }
 }
 
 @Component
-struct Child {
-  @ObjectLink message?: string
+struct ValidateHasIllegalQuestionTokenChild {
+  @ObjectLink message?: ClassA
   build() {
     Row() {}
   }
