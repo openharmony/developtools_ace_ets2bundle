@@ -180,7 +180,10 @@
         "type": "ERROR"
     },
     "validateModuleName": [],
-    "notComponent": [],
+    "notComponent": {
+        "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
+        "type": "ERROR"
+    },
     "notConcurrent": {
         "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
         "type": "WARN"
