@@ -1,5 +1,5 @@
 @Component
-export struct Button1 {
+export struct Button {
   @State message: string = 'Hello World';
   build() {
     Column() {
