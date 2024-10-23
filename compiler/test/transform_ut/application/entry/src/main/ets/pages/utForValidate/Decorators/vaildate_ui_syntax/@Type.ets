@@ -1,4 +1,4 @@
-import { Type } from '../../../test/import@ohosArkuiStateManagement';
+import { Type } from '@ohos.arkui.StateManagement';
 
 class A {
   p: number = 1;

@@ -19,12 +19,14 @@ import {
 	resetUtils,
 	storedFileInfo
 } from '../../lib/utils';
-import {
+import main, {
 	partialUpdateConfig, 
 	projectConfig, 
 	resetGlobalProgram, 
 	resetMain, 
-	resources 
+	resources, 
+	sdkConfigs,
+	systemModules
 } from '../../main';
 import { 
 	etsChecker 
@@ -49,12 +51,19 @@ import {
 	processExecInStr, 
 	sourceReplace 
 } from './helpers/parser';
+import { 
+	scanFileNames
+} from './helpers/utils';
 
 const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
 const TEST_CASES_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/pages');
+const SYS_CONFIG_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/test/common');
 const ERROR_COLLECTION_PATH: string = path.resolve(__dirname, '../../test/error.json');
 const MAIN_PAGES: string[] = UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`);
+
+const systemModuleSet: Set<string> = new Set();
+scanFileNames(SYS_CONFIG_PATH, systemModuleSet);
 
 mocha.describe('test UT for validate testcases [non-preview mode]', function () {
   	this.timeout(10000);
@@ -84,8 +93,20 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		this.globalPartialUpdateConfig = new PartialUpdateConfig();
 		this.globalPartialUpdateConfig.setPartialUpdateMode(true);
 		this.globalPartialUpdateConfig.mockDisableArkTSLinter();
-
 		Object.assign(partialUpdateConfig, this.globalPartialUpdateConfig);
+
+		Object.assign(main, { 
+			sdkConfigs: [
+				...sdkConfigs
+					.filter((sdkConfig) => !sdkConfig['apiPath'].includes(SYS_CONFIG_PATH))
+					.map((sdkConfig) => {
+						sdkConfig['apiPath'].push(SYS_CONFIG_PATH);
+						return sdkConfig;
+					}
+				),
+			],
+			systemModules: [...systemModules, ...systemModuleSet]
+		});
 
 		this.etsCheckerPlugin = etsChecker();
 		this.etsTransformPlugin = etsTransform();
@@ -189,8 +210,8 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 					warnMsgs.forEach((err) => {
 						const logInfo: string = parseLog(err);
 						
-						console.error(`1-${index}: logInfo: `, logInfo);
-						console.error(`1-${index}: expectWarnMsgs: `, JSON.stringify(expectWarnMsgs));
+						// console.error(`1-${index}: logInfo: `, logInfo);
+						// console.error(`1-${index}: expectWarnMsgs: `, JSON.stringify(expectWarnMsgs));
 						expect(expectWarnMsgs.includes(logInfo)).to.be.true;
 					});
 
