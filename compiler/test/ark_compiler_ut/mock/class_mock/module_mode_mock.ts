@@ -78,8 +78,8 @@ class ModuleModeMock extends ModuleMode {
     return { moduleInfos: moduleMode.moduleInfos, sourceMap: sourceMapGenerator.getSourceMaps() };
   }
 
-  generateCompileFilesInfoMock() {
-    this.generateCompileFilesInfo();
+  generateCompileFilesInfoMock(includeByteCodeHarInfo: boolean) {
+    this.generateCompileFilesInfo(includeByteCodeHarInfo);
   }
 
   generateNpmEntriesInfoMock() {
@@ -138,7 +138,7 @@ class ModuleModeMock extends ModuleMode {
     return false;
   }
 
-  checkGenerateCompileFilesInfo(): boolean {
+  checkGenerateCompileFilesInfo(includeByteCodeHarInfo: boolean): boolean {
     let mockfilesInfo: string = '';
     const filesInfo = fs.readFileSync(this.filesInfoPath, 'utf-8');
     this.moduleInfos.forEach((info) => {
@@ -148,7 +148,7 @@ class ModuleModeMock extends ModuleMode {
         `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
     });
-    if (this.projectConfig.byteCodeHarInfo) {
+    if (includeByteCodeHarInfo) {
       Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {  
         const abcPath: string = toUnixPath(abcInfo.abcPath);
         mockfilesInfo += `${abcPath};;;;${pkgName};\n`; 
