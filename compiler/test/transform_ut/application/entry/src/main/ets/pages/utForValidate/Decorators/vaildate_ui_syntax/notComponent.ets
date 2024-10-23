@@ -1,4 +1,3 @@
-@Entry
 struct EntryComponent{
   build(){
     Column(){
