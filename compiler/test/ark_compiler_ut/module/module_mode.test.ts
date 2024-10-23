@@ -943,8 +943,8 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
-    moduleMode.generateCompileFilesInfoMock();
-    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    moduleMode.generateCompileFilesInfoMock(false);
+    expect(moduleMode.checkGenerateCompileFilesInfo(false) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
 
@@ -953,8 +953,8 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
-    moduleMode.generateCompileFilesInfoMock();
-    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    moduleMode.generateCompileFilesInfoMock(false);
+    expect(moduleMode.checkGenerateCompileFilesInfo(false) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
 
@@ -963,8 +963,8 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
-    moduleMode.generateCompileFilesInfoMock();
-    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    moduleMode.generateCompileFilesInfoMock(false);
+    expect(moduleMode.checkGenerateCompileFilesInfo(false) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
 
@@ -973,8 +973,8 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
-    moduleMode.generateCompileFilesInfoMock();
-    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    moduleMode.generateCompileFilesInfoMock(false);
+    expect(moduleMode.checkGenerateCompileFilesInfo(false) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
 
@@ -988,8 +988,23 @@ mocha.describe('test module_mode file api', function () {
     };
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.addModuleInfoItemMock(this.rollup, false, '');
-    moduleMode.generateCompileFilesInfoMock();
-    expect(moduleMode.checkGenerateCompileFilesInfo() === true).to.be.true;
+    moduleMode.generateCompileFilesInfoMock(true);
+    expect(moduleMode.checkGenerateCompileFilesInfo(true) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('4-6: test generateCompileFilesInfo under hot reload debug incremental', function () {
+    this.rollup.hotReload();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.share.projectConfig.byteCodeHarInfo = {
+      'har': {
+        'abcPath': 'module.abc'
+      }
+    };
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.addModuleInfoItemMock(this.rollup, false, '');
+    moduleMode.generateCompileFilesInfoMock(false);
+    expect(moduleMode.checkGenerateCompileFilesInfo(false) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
 

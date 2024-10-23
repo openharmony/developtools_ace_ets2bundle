@@ -32,6 +32,7 @@ export class ModulePreviewMode extends ModuleMode {
     if (isEs2Abc(this.projectConfig)) {
       this.generateEs2AbcCmd();
       this.addCacheFileArgs();
+      this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo);
       this.generateMergedAbcOfEs2Abc(parentEvent);
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();

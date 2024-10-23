@@ -40,6 +40,7 @@ export class ModuleHotfixMode extends ModuleMode {
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
 
     this.generateEs2AbcCmdForHotfix();
+    this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo);
     this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 
