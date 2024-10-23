@@ -1,27 +1,27 @@
 # Code owners for ArkUI ace_ets2bundle
 
 [编译工具链]
-compiler/main.js @lihong67
-compiler/src/fast_build/common @lihong67
-compiler/src/fast_build/ets_ui @lihong67
-compiler/src/compile_info.ts @lihong67
-compiler/src/component_map.ts @lihong67
-compiler/src/constant_define.ts @lihong67
-compiler/src/create_ast_node_utils.ts @lihong67
-compiler/src/ets_checker.ts @lihong67
-compiler/src/pre_define.ts @lihong67
-compiler/src/pre_process.ts @lihong67
-compiler/src/process_component_build.ts @lihong67
-compiler/src/process_component_class.ts @lihong67
-compiler/src/process_component_constructor.ts @lihong67
-compiler/src/process_component_member.ts @lihong67
-compiler/src/process_custom_component.ts @lihong67
-compiler/src/process_import.ts @lihong67
-compiler/src/process_struct_componentV2.ts @lihong67
-compiler/src/process_ui_syntax.ts @lihong67
-compiler/src/result_process.ts @lihong67
-compiler/src/utils.ts @lihong67
-compiler/src/validate_ui_syntax.ts @lihong67
+compiler/main.js @lixingchi1
+compiler/src/fast_build/common @lixingchi1
+compiler/src/fast_build/ets_ui @lixingchi1
+compiler/src/compile_info.ts @lixingchi1
+compiler/src/component_map.ts @lixingchi1
+compiler/src/constant_define.ts @lixingchi1
+compiler/src/create_ast_node_utils.ts @lixingchi1
+compiler/src/ets_checker.ts @lixingchi1
+compiler/src/pre_define.ts @lixingchi1
+compiler/src/pre_process.ts @lixingchi1
+compiler/src/process_component_build.ts @lixingchi1
+compiler/src/process_component_class.ts @lixingchi1
+compiler/src/process_component_constructor.ts @lixingchi1
+compiler/src/process_component_member.ts @lixingchi1
+compiler/src/process_custom_component.ts @lixingchi1
+compiler/src/process_import.ts @lixingchi1
+compiler/src/process_struct_componentV2.ts @lixingchi1
+compiler/src/process_ui_syntax.ts @lixingchi1
+compiler/src/result_process.ts @lixingchi1
+compiler/src/utils.ts @lixingchi1
+compiler/src/validate_ui_syntax.ts @lixingchi1
 
 # Code owners for ArkCompiler ace_ets2bundle
 
