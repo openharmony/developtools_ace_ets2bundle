@@ -27,10 +27,15 @@ class ModuleInfo {
   id: string;
   importedIdMaps: object = {};
   importCache = [];
+  isEntry: boolean = false;
 
   constructor(id: string, entryModuleName: string, modulePath: string) {
     this.meta = new Meta(entryModuleName, modulePath);
     this.id = id;
+
+    if (entryModuleName === 'entry') {
+      this.isEntry = true;
+    }
   }
 
   setIsLocalDependency(value: boolean) {
