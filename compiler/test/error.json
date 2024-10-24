@@ -179,11 +179,20 @@
         "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
         "type": "ERROR"
     },
-    "validateModuleName": [],
-    "notComponent": {
-        "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
+    "validateModuleName": {
+        "message": "The module name 'Button' can not be the same as the inner component name.",
         "type": "ERROR"
     },
+    "notComponent": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
+            "type": "ERROR"
+        }
+    ],
     "notConcurrent": {
         "message": "The struct 'NotConcurrentIndexDecorator' use invalid decorator.",
         "type": "WARN"
@@ -256,16 +265,10 @@
         "message": "Unknown resource name 'tari'.",
         "type": "ERROR"
     },
-    "NotSupportResrcType": [
-        {
-            "message": "Unknown resource type 'string'.",
-            "type": "ERROR"
-        },
-        {
-            "message": "The input parameter is not supported.",
-            "type": "ERROR"
-        }
-    ],
+    "NotSupportResrcType": {
+        "message": "The resource type font is not supported.",
+        "type": "ERROR"
+    },
     "NoSrc": {
         "message": "No such 'test.png' resource in current module.",
         "type": "ERROR"
@@ -278,9 +281,24 @@
         "message": "@Styles can't have parameters.",
         "type": "ERROR"
     },
-    "ExceededPreview": [],
-    "ExceededEntry": [],
-    "OneEntry": [],
+    "ExceededPreview": {
+        "message": "A page can contain at most 10 '@Preview' decorators.",
+        "type": "ERROR"
+    },
+    "ExceededEntry": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator",
+            "type": "ERROR"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
+            "type": "ERROR"
+        }
+    ],
+    "OneEntry": {
+        "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.",
+        "type": "ERROR"
+    },
     "notMethodDeco": {
         "message": "'@State' can not decorate the method.",
         "type": "ERROR"

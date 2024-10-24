@@ -156,6 +156,8 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'v2_component_decorator/staticComponentMember'
 ];
 
+export const UT_VALIDATE_PAGES_PREVIEW: string[] = [];
+
 export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_build/@BuilderParam',
   'Decorators/process_component_build/arkUIComponent',
@@ -201,8 +203,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_custom_component/validateMandatoryToInitViaParam',
   'Decorators/process_custom_component/validateNonLinkWithDollar',
   'Decorators/process_custom_component/validateParamTwoWayBind',
-
-  'Decorators/process_import/validateModuleName',
 
   'Decorators/process_struct_componentV2/param_require_once_check',
   'Decorators/process_struct_componentV2/v2Component_member_type_check',
@@ -257,11 +257,9 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validateDuplicateMethod'
 ]
 
-export const MAIN_PAGES: string[] = [
-  ...UT_PAGES.map((p) => `pages/ut/${p}`),
-  ...UT_PARTIAL_UPFATE_PAGES.map((p) => `pages/utForPartialUpdate/${p}`),
-  ...UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`),
-];
+export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
+  'Decorators/process_import/validateModuleName',
+]
 
 export const CACHE_PATH: string = 'default/cache/default/default@CompileArkTS/esmodule/debug';
 export const AN_BUILD_OUTPUT_PATH: string = 'default/intermediates/loader_out/default/an/arm64-v8a';

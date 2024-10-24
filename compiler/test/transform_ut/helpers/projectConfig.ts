@@ -262,11 +262,6 @@ class ProjectConfig {
 
     Object.assign(this, Object.fromEntries(filteredEntries));
 
-    // for (let key in other) {
-    //   if (other.hasOwnProperty(key) && (this[key] === undefined || other[key] !== undefined)) {
-    //     this[key] = other[key];
-    //   }
-    // }
   }
 
 	private initPath(projectPath: string, pagePaths: string[] = []) {
@@ -321,13 +316,11 @@ class ProjectConfig {
     this.entryObj = {
       'entryAbility/EntryAbility': `${projectRoot}/entry/src/main/ets/entryability/EntryAbility.ets`,
       'entryformability/EntryFormAbility': `${projectRoot}/entry/src/main/ets/entryformability/EntryFormAbility.ets`,
-      // 'pages/Intex': `${projectRoot}/entry/src/main/ets/pages/Index.ets`
     };
 
     this.entryArrayForObf = [
       "./entryability/EntryAbility",
       "./entryformability/EntryFormAbility",
-      // "pages/Index"
     ];
 
     pagePaths.forEach((mainPage: string) => {

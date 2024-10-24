@@ -6,6 +6,7 @@ import { expect } from 'chai';
 
 import {
 	BUILD_ON,
+	JSBUNDLE,
 } from '../../lib/pre_define';
 import {
 	resetComponentCollection,
@@ -22,6 +23,7 @@ import {
 import main, {
 	partialUpdateConfig, 
 	projectConfig, 
+	readAppResource, 
 	resetGlobalProgram, 
 	resetMain, 
 	resources, 
@@ -43,7 +45,9 @@ import {
 	ProjectConfig 
 } from './helpers/projectConfig';
 import { 
-	UT_VALIDATE_PAGES
+	UT_VALIDATE_PAGES,
+	UT_VALIDATE_PAGES_JSBUNDLE,
+	UT_VALIDATE_PAGES_PREVIEW
 } from './helpers/pathConfig';
 import { 
 	parseFileNameFromPath, 
@@ -60,7 +64,11 @@ const DEFAULT_PROJECT: string = 'application';
 const TEST_CASES_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/pages');
 const SYS_CONFIG_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/test/common');
 const ERROR_COLLECTION_PATH: string = path.resolve(__dirname, '../../test/error.json');
-const MAIN_PAGES: string[] = UT_VALIDATE_PAGES.map((p) => `pages/utForValidate/${p}`);
+const MAIN_PAGES: string[] = [
+	...UT_VALIDATE_PAGES,
+	...UT_VALIDATE_PAGES_PREVIEW,
+	...UT_VALIDATE_PAGES_JSBUNDLE
+].map((p) => `pages/utForValidate/${p}`);
 
 const systemModuleSet: Set<string> = new Set();
 scanFileNames(SYS_CONFIG_PATH, systemModuleSet);
@@ -85,10 +93,11 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		this.globalProjectConfig.setIgnoreWarning(true);
 		this.globalProjectConfig.scan(PROJECT_ROOT, DEFAULT_PROJECT, MAIN_PAGES);
 		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, MAIN_PAGES);
-		this.globalProjectConfig.mockCompileContextInfo(`${PROJECT_ROOT}/${DEFAULT_PROJECT}`, MAIN_PAGES);
+		this.globalProjectConfig.concat(RollUpPluginMock.mockArkProjectConfig(PROJECT_ROOT, DEFAULT_PROJECT, false));
 
 		this.rollup.share.projectConfig.concat(this.globalProjectConfig);
 		Object.assign(projectConfig, this.globalProjectConfig);
+		readAppResource(projectConfig.appResource);
 
 		this.globalPartialUpdateConfig = new PartialUpdateConfig();
 		this.globalPartialUpdateConfig.setPartialUpdateMode(true);
@@ -157,8 +166,12 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 		processStructComponentV2.resetStructMapInEts();
 	});
 
-	UT_VALIDATE_PAGES.forEach((utPage, index) => {
+	[...UT_VALIDATE_PAGES, ...UT_VALIDATE_PAGES_JSBUNDLE].forEach((utPage, index) => {
 		mocha.it(`1-${index + 1}: test ${utPage}`, function (done) {
+			if (UT_VALIDATE_PAGES_JSBUNDLE.includes(utPage)) {
+				Object.assign(projectConfig, { compileMode: JSBUNDLE });
+			}
+
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `utForValidate/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
 
