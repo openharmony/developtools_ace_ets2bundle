@@ -5,19 +5,19 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import {
-  BUILD_ON
+  	BUILD_ON
 } from '../../lib/pre_define';
 import {
 	resetComponentCollection,
-  componentCollection
+  	componentCollection
 } from '../../lib/validate_ui_syntax';
 import { 
 	transformLog 
 } from '../../lib/process_ui_syntax';
 import {
-  componentInfo,
-  resetUtils,
-  storedFileInfo
+  	componentInfo,
+  	resetUtils,
+	storedFileInfo
 } from '../../lib/utils';
 import {
 	partialUpdateConfig, 
@@ -140,8 +140,6 @@ mocha.describe('test UT for partial update testcases [non-preview mode]', functi
 
 			transform(sourceReplace(sourceCode), sourceFilePath)
 				.then(res => {
-					// console.error(`1-${index}: result: `, res.code);
-	
 					expect(parseCode(res.code)).eql(parseCode(targetCode));
 					done();
 				})
