@@ -51,6 +51,12 @@ function processSystemApi(content) {
   return newContent;
 }
 
+export function cleanCopyRight(str: string) {
+  const copyrightBlockRegex = /(?:\/\*.*Copyright \(c\) 2022 Huawei Device Co\., Ltd\..*\*\/)/gs;
+
+  return str.replace(copyrightBlockRegex, '');
+}
+
 export function processExecInStr(str: string) {
   const regex = /\${(.*?)}/g;
   return str.replace(regex, (match, p1) => {
@@ -72,7 +78,7 @@ export function parseLog(log: string) {
 }
 
 export function parseCode(code: string) {
-  return normalizeFileContent(code);
+  return normalizeFileContent(cleanCopyRight(code));
 }
 
 export function sourceReplace(source: string) {
