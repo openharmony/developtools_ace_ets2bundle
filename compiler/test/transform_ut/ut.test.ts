@@ -5,7 +5,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import {
-  BUILD_ON,
+  	BUILD_ON,
 } from '../../lib/pre_define';
 import {
 	resetComponentCollection,

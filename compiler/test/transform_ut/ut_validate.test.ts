@@ -63,7 +63,7 @@ const PROJECT_ROOT: string = path.resolve(__dirname, '../../test/transform_ut');
 const DEFAULT_PROJECT: string = 'application';
 const TEST_CASES_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/pages');
 const SYS_CONFIG_PATH: string = path.resolve(PROJECT_ROOT, DEFAULT_PROJECT, 'entry/src/main/ets/test/common');
-const ERROR_COLLECTION_PATH: string = path.resolve(__dirname, '../../test/error.json');
+const ERROR_COLLECTION_PATH: string = path.resolve(__dirname, '../../test/transform_ut_error.json');
 const MAIN_PAGES: string[] = [
 	...UT_VALIDATE_PAGES,
 	...UT_VALIDATE_PAGES_PREVIEW,
@@ -199,32 +199,16 @@ mocha.describe('test UT for validate testcases [non-preview mode]', function () 
 					const warnMsgs: string[] = logger.getWarnMsgs();
 					const infoMsgs: string[] = logger.getInfoMsgs();
 
-					// console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
-					// console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
-
-					// console.error(`1-${index}: errorMsgs.length: ${errorMsgs.length}, expectErrorMsgs.length: ${expectErrorMsgs.length}`);
-					// console.error(`1-${index}: warnMsgs.length: ${warnMsgs.length}, expectWarnMsgs.length: ${expectWarnMsgs.length}`);
-
 					expect(errorMsgs.length === expectErrorMsgs.length).to.be.true;
 					expect(warnMsgs.length === expectWarnMsgs.length).to.be.true;
 
-					// console.error(`1-${index}: errorMsgs: `, JSON.stringify(errorMsgs));
-					// console.error(`1-${index}: warnMsgs: `, JSON.stringify(warnMsgs));
-					// console.error(`1-${index}: infoMsgs: `, JSON.stringify(infoMsgs));
-
 					errorMsgs.forEach((err) => {
 						const logInfo: string = parseLog(err);
-						
-						// console.error(`1-${index}: logInfo: `, logInfo);
-						// console.error(`1-${index}: expectErrorMsgs: `, JSON.stringify(expectErrorMsgs));
 						expect(expectErrorMsgs.includes(logInfo)).to.be.true;
 					});
 
 					warnMsgs.forEach((err) => {
 						const logInfo: string = parseLog(err);
-						
-						// console.error(`1-${index}: logInfo: `, logInfo);
-						// console.error(`1-${index}: expectWarnMsgs: `, JSON.stringify(expectWarnMsgs));
 						expect(expectWarnMsgs.includes(logInfo)).to.be.true;
 					});
 
