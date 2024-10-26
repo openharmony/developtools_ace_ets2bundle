@@ -38,7 +38,7 @@
         }
     ],
     "idCheck": {
-        "message": "The current component id \"1\" is duplicate with ${const path = require('path');path.resolve(__dirname, '../../../test/transform_ut/application/entry/src/main/ets/pages/utForValidate/Decorators/process_component_build/idCheck.ets')}:6:21.",
+        "message": "The current component id \"1\" is duplicate with ${const path = require('path');path.resolve(__dirname, '../../../test/transform_ut/application/entry/src/main/ets/pages/utForValidate/Decorators/process_component_build/idCheck.ets')}:20:21.",
         "type": "WARN"
     },
     "arkUIStandard": {
