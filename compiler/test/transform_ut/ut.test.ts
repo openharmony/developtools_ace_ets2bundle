@@ -144,7 +144,7 @@ mocha.describe('test UT testcases [non-preview mode]', function () {
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `ut/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
 			
-			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `ut/${utPage}.js`);
+			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `ut/${utPage}.js.sample`);
 			const targetCode: string = fs.readFileSync(targetFilePath, 'utf-8');
 
 			storedFileInfo.addFileCacheInfo(sourceFilePath);
