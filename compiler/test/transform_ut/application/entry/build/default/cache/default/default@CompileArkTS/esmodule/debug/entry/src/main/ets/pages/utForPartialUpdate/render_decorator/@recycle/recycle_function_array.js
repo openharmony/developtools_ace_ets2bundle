@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 "use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
@@ -44,7 +58,7 @@ class RecycleFuncArrHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("RecycleFuncArrChild", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleFuncArrChild(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array.ets", line: 7, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleFuncArrChild(this, { propvalue: this.value, linkvalue: this.value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array.ets", line: 21, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "RecycleFuncArrChild", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();

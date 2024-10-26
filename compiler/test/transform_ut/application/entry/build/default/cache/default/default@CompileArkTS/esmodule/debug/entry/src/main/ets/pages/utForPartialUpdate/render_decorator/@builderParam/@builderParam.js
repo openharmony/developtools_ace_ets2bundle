@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -192,7 +206,7 @@ class CustomContainerUser extends ViewPU {
                             specificWithParam.bind(this)("111", "22");
                             Column.pop();
                         }
-                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 55, col: 7 });
+                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 69, col: 7 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -227,7 +241,7 @@ class CustomContainerUser extends ViewPU {
                         content: this.specificParam,
                         callContent: this.callSpecificParam("callContent1", 'callContent2'),
                         footer: "Footer",
-                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 65, col: 9 });
+                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 79, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {
@@ -263,7 +277,7 @@ class CustomContainerUser extends ViewPU {
                             this.callSpecificParam.bind(this)("111", '222');
                             Column.pop();
                         }
-                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 73, col: 9 });
+                    }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam.ets", line: 87, col: 9 });
                     ViewPU.create(componentCall);
                     let paramsLambda = () => {
                         return {

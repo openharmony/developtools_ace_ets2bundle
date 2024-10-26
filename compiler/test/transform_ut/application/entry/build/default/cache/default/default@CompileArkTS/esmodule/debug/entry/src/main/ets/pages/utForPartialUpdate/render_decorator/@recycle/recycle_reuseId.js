@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 "use strict";
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
@@ -62,7 +76,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 9, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 23, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "reuse_key", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -103,7 +117,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(this.state_value, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 13, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 27, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, this.state_value, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -140,7 +154,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("reuse_key11111111111", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 16, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 30, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "reuse_key11111111111", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -181,7 +195,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation("RecycleReuseIdChild", (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 18, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 32, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, "RecycleReuseIdChild", () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();
@@ -218,7 +232,7 @@ class RecycleReuseIdHomeComponent extends ViewPU {
             this.observeRecycleComponentCreation(a, (elmtId, isInitialRender, recycleNode = null) => {
                 ViewStackProcessor.StartGetAccessRecordingFor(elmtId);
                 if (isInitialRender) {
-                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 21, col: 7 });
+                    let componentCall = recycleNode ? recycleNode : new RecycleReuseIdChild(this, { propvalue: this.value, linkvalue: this.__value }, undefined, elmtId, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId.ets", line: 35, col: 7 });
                     ViewPU.createRecycle(componentCall, recycleNode !== null, a, () => {
                         if (recycleNode && typeof recycleNode.aboutToReuseInternal === "function") {
                             recycleNode.aboutToReuseInternal();

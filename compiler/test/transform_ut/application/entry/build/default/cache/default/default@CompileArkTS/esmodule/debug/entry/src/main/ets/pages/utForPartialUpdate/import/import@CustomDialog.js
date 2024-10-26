@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -17,7 +31,7 @@ class CustomDialogUser extends ViewPU {
                     confirm: this.onAccept,
                     textValue: this.__textValue,
                     inputValue: this.__inputValue
-                }, undefined, -1, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/import/import@CustomDialog.ets", line: 9, col: 14 });
+                }, undefined, -1, () => { }, { page: "test/transform_ut/application/entry/src/main/ets/pages/utForPartialUpdate/import/import@CustomDialog.ets", line: 23, col: 14 });
                 jsDialog.setController(this.dialogController);
                 ViewPU.create(jsDialog);
                 let paramsLambda = () => {
