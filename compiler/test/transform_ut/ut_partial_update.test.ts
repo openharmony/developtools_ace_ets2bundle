@@ -145,7 +145,7 @@ mocha.describe('test UT for partial update testcases [non-preview mode]', functi
 			const sourceFilePath: string = path.resolve(TEST_CASES_PATH, `utForPartialUpdate/${utPage}.ets`);
 			const sourceCode: string = fs.readFileSync(sourceFilePath, 'utf-8');
 			
-			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `utForPartialUpdate/${utPage}.js`);
+			const targetFilePath: string = path.resolve(OUTPUTS_PATH, `utForPartialUpdate/${utPage}.js.sample`);
 			const targetCode: string = fs.readFileSync(targetFilePath, 'utf-8');
 
 			storedFileInfo.addFileCacheInfo(sourceFilePath);
