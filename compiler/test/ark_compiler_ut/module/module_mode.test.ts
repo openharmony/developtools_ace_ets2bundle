@@ -1853,4 +1853,16 @@ mocha.describe('test module_mode file api', function () {
       `Error Message: Failed to find meta info with '${moduleId}' from the module info.`)).to.be.true;
     stub.restore();
   });
+
+  mocha.it('18-14: test generateCompileContext inter—app hsp deps bytecode har', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.mockCompileContextInfo();
+    this.rollup.share.projectConfig.bundleType = 'shared';
+    this.rollup.share.projectConfig.bundleName = 'com.inter-app.hsp';
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 });
