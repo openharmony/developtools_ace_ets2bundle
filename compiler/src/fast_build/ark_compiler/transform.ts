@@ -32,7 +32,8 @@ import { toUnixPath } from '../../utils';
 import {
   getHookEventFactory,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  transformLazyImport
 } from '../../ark_utils';
 import { SourceMapGenerator } from './generate_sourcemap';
 
@@ -49,12 +50,22 @@ export function transformForModule(code: string, id: string) {
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
+      // when ets/ts -> js, convert lazy-import here
+      if (this.share.projectConfig?.autoLazyImport) {
+        code = <string> transformLazyImport(code, undefined, id);
+      }
       ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      stopEvent(eventTransformForModule);
+      // return the code after lazy-import conversion
+      return code;
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id)) {
+        if (this.share.projectConfig?.autoLazyImport) {
+          code = <string> transformLazyImport(code, undefined, id);
+        }
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
           code = transformedResult.code;

@@ -21,6 +21,7 @@ import fs from "fs";
 import path from "path";
 import MagicString from 'magic-string';
 import sinon from 'sinon';
+import * as ts from 'typescript'
 
 import {
   getBuildModeInLowerCase,
@@ -30,7 +31,8 @@ import {
   isEs2Abc,
   writeArkguardObfuscatedSourceCode,
   writeMinimizedSourceCode,
-  tryMangleFileName
+  tryMangleFileName,
+  transformLazyImport
 } from '../../lib/ark_utils';
 import {
   DEBUG,
@@ -524,5 +526,18 @@ export declare function findElement<a>(b: a[], c: (item: a) => boolean): a | und
 `;
     const declResult = fs.readFileSync(declModuleInfo.buildFilePath, 'utf-8');
     expect(declResult === expectedDeclResult).to.be.true;
+  });
+
+  mocha.it('10-1: test transformLazyImport: js code', function () {
+    const code: string = `
+    import { test } from "./test";
+    import { test1 as t } from "./test1";
+    const a = "a" + test() + t();
+    `;
+    const expectCode: string = 'import lazy { test } from "./test";\n' +
+    'import lazy { test1 as t } from "./test1";\n' +
+    'const a = "a" + test() + t();\n';
+    const result: string = transformLazyImport(code, undefined, "index.js");
+    expect(result === expectCode).to.be.true;
   });
 });
