@@ -16,6 +16,7 @@
 import path from 'path';
 import fs from 'fs';
 import type sourceMap from 'source-map';
+import * as ts from 'typescript';
 
 import { minify, MinifyOutput } from 'terser';
 import { getMapFromJson, deleteLineInfoForNameString, MemoryUtils, nameCacheMap } from 'arkguard';
@@ -880,4 +881,64 @@ export function transformOhmurlToPkgName(ohmurl: string): string {
     return paths.slice(0, 2).join(SEPARATOR_SLASH);
   }
   return paths[0];
+}
+
+export function transformLazyImport(sourceFile: ts.SourceFile | string, resolver: Object, filePath?: string): ts.SourceFile | string {
+  const sourceNode: ts.SourceFile = (typeof sourceFile !== 'string') ? <ts.SourceFile> sourceFile :
+    ts.createSourceFile(filePath, <string> sourceFile, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
+  const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
+    const visitor: ts.Visitor = node => {
+      if (ts.isImportDeclaration(node)) {
+        return updateImportDecl(node, resolver);
+      }
+      return node;
+    };
+    return node => ts.visitEachChild(node, visitor, context);
+  };
+
+  const result: ts.TransformationResult<ts.SourceFile> =
+    ts.transform(sourceNode, [moduleNodeTransformer]);
+
+  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  return (typeof sourceFile !== 'string') ? result.transformed[0] : printer.printFile(result.transformed[0]);
+}
+
+function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {
+  const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  const importClause: ts.ImportClause | undefined = node.importClause;
+  if (importClause && importClause.namedBindings && !importClause.name && ts.isNamedImports(importClause.namedBindings) && 
+    !importClause.isLazy && !importClause.isTypeOnly) {
+    let newImportClause: ts.ImportClause;
+    const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
+    if (resolver) {
+      // eliminate the type symbol
+      // eg: import { typeSymbol, xxx } from 'xxxx' -> import { xxx } from 'xxxx'
+      const newNameBindings: ts.ImportSpecifier[] = eliminateTypeSymbol(namedBindings, resolver);
+      newImportClause = ts.factory.createImportClause(false, importClause.name,
+        ts.factory.createNamedImports(newNameBindings));
+    } else {
+      newImportClause = ts.factory.createImportClause(false, importClause.name, namedBindings);
+    }
+    // @ts-ignore
+    newImportClause.isLazy = true;
+    return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
+  }
+  return node;
+}
+
+function eliminateTypeSymbol(namedBindings: ts.NamedImportBindings, resolver: Object): ts.ImportSpecifier[] {
+  const newNameBindings: ts.ImportSpecifier[] = [];
+  namedBindings.elements.forEach(item => {
+    const element = item as ts.ImportSpecifier;
+    if (!element.isTypeOnly && resolver.isReferencedAliasDeclaration(element)) {
+      newNameBindings.push(
+        ts.factory.createImportSpecifier(
+          false,
+          element.propertyName ? ts.factory.createIdentifier(element.propertyName.text) : undefined,
+          ts.factory.createIdentifier(element.name.text)
+        )
+      );
+    }
+  });
+  return newNameBindings;
 }
