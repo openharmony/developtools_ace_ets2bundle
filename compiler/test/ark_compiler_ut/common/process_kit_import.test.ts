@@ -24,6 +24,8 @@ import {
   KitInfo
 } from '../../../lib/process_kit_import';
 import { findImportSpecifier } from '../utils/utils';
+import { projectConfig } from '../../../main';
+import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -249,5 +251,73 @@ mocha.describe('process Kit Imports tests', function () {
     );
     expect(hasError).to.be.true;
     expect(hasError1).to.be.true;
+  });
+
+  mocha.it('test transformLazyImport (ts.sourceFile): perform lazy conversion', function () {
+    const code: string = `
+    import { test } from "./test";
+    import { test1 as t } from "./test1";
+    const a: string = "a" + test() + t();
+    `;
+    projectConfig.processTs = true;
+    ts.transpileModule(code, {
+      compilerOptions: compilerOptions,
+      fileName: 'test.ets',
+      transformers: {
+        before: [
+          processKitImport('test.ets', undefined, undefined, true, true)
+        ]
+      }
+    });
+    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'test.ets');
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    // @ts-ignore
+    const writer: ts.EmitTextWriter = ts.createTextWriter(
+      // @ts-ignore
+      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+    printer.writeFile(sourceFile.source, writer, undefined);
+    const expectCode: string = 'import lazy { test } from "./test";\n' +
+    'import lazy { test1 as t } from "./test1";\n' +
+    'const a: string = "a" + test() + t();\n';
+    expect(writer.getText() === expectCode).to.be.true;
+  });
+
+  mocha.it('test transformLazyImport (ts.sourceFile): no lazy conversion', function () {
+    const code: string = `
+    import lazy { test } from "./test";
+    import lazy { test1 as t } from "./test1";
+    import test2 from "./test2";
+    import * as test3 from "./test3";
+    import test4, { test5 } from "./test4";
+    import type { testType } from "./testType";
+    import "test6";
+    let a: testType = test + t + test2 + test3.b + test4 + test5;
+    `;
+    projectConfig.processTs = true;
+    ts.transpileModule(code, {
+      compilerOptions: compilerOptions,
+      fileName: 'no.ets',
+      transformers: {
+        before: [
+          processKitImport('no.ets', undefined, undefined, true, true)
+        ]
+      }
+    });
+    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'no.ets');
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    // @ts-ignore
+    const writer: ts.EmitTextWriter = ts.createTextWriter(
+      // @ts-ignore
+      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+    printer.writeFile(sourceFile.source, writer, undefined);
+    const expectCode: string = 'import lazy { test } from "./test";\n' +
+    'import lazy { test1 as t } from "./test1";\n' +
+    'import test2 from "./test2";\n' +
+    'import * as test3 from "./test3";\n' +
+    'import test4, { test5 } from "./test4";\n' +
+    'import type { testType } from "./testType";\n' +
+    'import "test6";\n' +
+    'let a: testType = test + t + test2 + test3.b + test4 + test5;\n';
+    expect(writer.getText() === expectCode).to.be.true;
   });
 });
