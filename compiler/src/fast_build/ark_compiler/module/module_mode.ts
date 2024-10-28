@@ -528,7 +528,7 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
   }
 
-  private generateCompileFilesInfo(includeByteCodeHarInfo: boolean) {
+  private generateCompileFilesInfo(includeByteCodeHarInfo: boolean): void {
     let filesInfo: string = '';
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
@@ -572,7 +572,7 @@ export class ModuleMode extends CommonMode {
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
   }
 
-  genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean) {
+  genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean): void {
     this.generateCompileFilesInfo(includeByteCodeHarInfo);
     if (!this.byteCodeHar) {
       this.generateNpmEntriesInfo();
