@@ -25,6 +25,8 @@ import {
   KitInfo
 } from '../../../lib/process_kit_import';
 import { findImportSpecifier } from '../utils/utils';
+import { projectConfig } from '../../../main';
+import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -385,5 +387,34 @@ mocha.describe('1-1: process Kit Imports tests', function () {
     });
     expect(result.outputText == DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT).to.be.true;
     fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('4-1: test transformLazyImport: ts.sourceFile', function () {
+    const code: string = `
+    import { test } from "./test";
+    import { test1 as t } from "./test1";
+    const a: string = "a" + test() + t();
+    `;
+    projectConfig.processTs = true;
+    ts.transpileModule(code, {
+      compilerOptions: compilerOptions,
+      fileName: 'test.ets',
+      transformers: {
+        before: [
+          processKitImport('test.ets', undefined, compilerOptions, true, true)
+        ]
+      }
+    });
+    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'test.ets');
+    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    // @ts-ignore
+    const writer: ts.EmitTextWriter = ts.createTextWriter(
+      // @ts-ignore
+      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+    printer.writeFile(sourceFile.source, writer, undefined);
+    const expectCode: string = 'import lazy { test } from "./test";\n' +
+    'import lazy { test1 as t } from "./test1";\n' +
+    'const a: string = "a" + test() + t();\n';
+    expect(writer.getText() === expectCode).to.be.true;
   });
 });
