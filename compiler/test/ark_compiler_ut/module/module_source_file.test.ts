@@ -51,6 +51,10 @@ import projectConfig from '../utils/processProjectConfig';
 import { ModuleInfo as ModuleInfoMock } from '../mock/rollup_mock/module_info';
 import { scanFiles } from "../utils/utils";
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
+import {
+  TRANSFORMED_MOCK_CONFIG,
+  USER_DEFINE_MOCK_CONFIG
+} from '../../../lib/pre_define';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -814,4 +818,15 @@ mocha.describe('test module_source_file file api', function () {
     fs.unlinkSync(this.rollup.share.projectConfig.cachePath + '/mock-config.json5');
   });
 
+  mocha.it('6-1: test removePotentialMockConfigCache delete mock-config', function () {
+    const transformedMockConfigCache: string =
+      path.resolve(this.rollup.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
+    const userDefinedMockConfigCache: string =
+      path.resolve(this.rollup.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
+    fs.writeFileSync(transformedMockConfigCache, '{}');
+    fs.writeFileSync(userDefinedMockConfigCache, '{}');
+    ModuleSourceFile.removePotentialMockConfigCache(this.rollup);
+    expect(!fs.existsSync(transformedMockConfigCache)).to.be.true;
+    expect(!fs.existsSync(userDefinedMockConfigCache)).to.be.true;
+  });
 });
