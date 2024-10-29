@@ -64,6 +64,13 @@
     "onSecurityStateChange",
     "textOverflow",
     "textIndent",
-    "fontFeature"
+    "fontFeature",
+    "enableHapticFeedback",
+    "cancelButton",
+    "constructor",
+    "caretPosition",
+    "setTextSelection",
+    "stopEditing",
+    "keepEditableState"
   ]
 }

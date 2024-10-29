@@ -52,6 +52,11 @@
     "textIndent",
     "caretStyle",
     "selectedBackgroundColor",
-    "enableAutoFill"
+    "enableAutoFill",
+    "enableHapticFeedback",
+    "constructor",
+    "caretPosition",
+    "setTextSelection",
+    "stopEditing"
   ]
 }
