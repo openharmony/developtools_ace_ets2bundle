@@ -1,5 +1,5 @@
 {
   "name": "LoadingProgress",
   "atomic": true,
-  "attrs": ["color", "enableLoading"]
+  "attrs": ["color", "enableLoading", "contentModifier"]
 }
