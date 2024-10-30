@@ -12,6 +12,7 @@
     "pathStrokeWidth",
     "onPatternComplete",
     "autoReset",
-    "onDotConnect"
+    "onDotConnect",
+    "activateCircleStyle"
   ]
 }
