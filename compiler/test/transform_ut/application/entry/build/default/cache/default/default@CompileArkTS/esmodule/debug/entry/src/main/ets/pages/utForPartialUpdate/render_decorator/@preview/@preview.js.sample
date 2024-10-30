@@ -97,5 +97,5 @@ class HomePreviewComponent_Preview extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new HomePreviewComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@preview/@preview", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@preview/@preview", integratedHsp: "false" });
+registerNamedRoute(() => new HomePreviewComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@preview/@preview", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@preview/@preview", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@preview.js.map

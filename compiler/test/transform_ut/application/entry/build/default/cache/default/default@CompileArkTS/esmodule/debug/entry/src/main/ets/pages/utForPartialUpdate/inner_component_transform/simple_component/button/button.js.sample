@@ -86,5 +86,5 @@ class ButtonExample extends ViewPU {
         return "ButtonExample";
     }
 }
-registerNamedRoute(() => new ButtonExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", integratedHsp: "false" });
+registerNamedRoute(() => new ButtonExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/button/button", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=button.js.map

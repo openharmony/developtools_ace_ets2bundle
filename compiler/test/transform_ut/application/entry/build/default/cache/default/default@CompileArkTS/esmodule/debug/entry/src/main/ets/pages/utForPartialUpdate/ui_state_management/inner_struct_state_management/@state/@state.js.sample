@@ -64,5 +64,5 @@ class StatePage extends ViewPU {
         return "StatePage";
     }
 }
-registerNamedRoute(() => new StatePage(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@state/@state", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@state/@state", integratedHsp: "false" });
+registerNamedRoute(() => new StatePage(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@state/@state", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@state/@state", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@state.js.map

@@ -100,5 +100,5 @@ class TabSimple extends ViewPU {
         return "TabSimple";
     }
 }
-registerNamedRoute(() => new TabSimple(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/tab/tab", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/tab/tab", integratedHsp: "false" });
+registerNamedRoute(() => new TabSimple(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/tab/tab", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/tab/tab", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=tab.js.map

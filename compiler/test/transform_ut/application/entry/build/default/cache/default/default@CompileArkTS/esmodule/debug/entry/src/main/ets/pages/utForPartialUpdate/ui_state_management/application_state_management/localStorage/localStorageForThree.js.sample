@@ -73,10 +73,10 @@ class LocalStorageComponent extends ViewPU {
 {
     let routeNameNode = route;
     if (routeNameNode != undefined) {
-        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, true ? LocalStorage.getShared() : storage), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", integratedHsp: "false" });
+        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, true ? LocalStorage.getShared() : storage), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", integratedHsp: "false", moduleType: "followWithHap" });
     }
     else {
-        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, true ? LocalStorage.getShared() : storage), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", integratedHsp: "false" });
+        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, true ? LocalStorage.getShared() : storage), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForThree", integratedHsp: "false", moduleType: "followWithHap" });
     }
 }
 //# sourceMappingURL=localStorageForThree.js.map

@@ -105,5 +105,5 @@ class foreachThreeParam extends ViewPU {
         return "foreachThreeParam";
     }
 }
-registerNamedRoute(() => new foreachThreeParam(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachThreeParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachThreeParam", integratedHsp: "false" });
+registerNamedRoute(() => new foreachThreeParam(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachThreeParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachThreeParam", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=forEachThreeParam.js.map

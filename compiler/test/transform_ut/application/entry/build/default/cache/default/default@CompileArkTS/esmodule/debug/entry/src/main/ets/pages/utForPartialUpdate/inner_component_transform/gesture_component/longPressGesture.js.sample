@@ -81,5 +81,5 @@ class LongPressGestureExample extends ViewPU {
         return "LongPressGestureExample";
     }
 }
-registerNamedRoute(() => new LongPressGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/longPressGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/longPressGesture", integratedHsp: "false" });
+registerNamedRoute(() => new LongPressGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/longPressGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/longPressGesture", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=longPressGesture.js.map

@@ -100,5 +100,5 @@ class PanGestureExample extends ViewPU {
         return "PanGestureExample";
     }
 }
-registerNamedRoute(() => new PanGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/panGestrue", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/panGestrue", integratedHsp: "false" });
+registerNamedRoute(() => new PanGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/panGestrue", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/panGestrue", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=panGestrue.js.map

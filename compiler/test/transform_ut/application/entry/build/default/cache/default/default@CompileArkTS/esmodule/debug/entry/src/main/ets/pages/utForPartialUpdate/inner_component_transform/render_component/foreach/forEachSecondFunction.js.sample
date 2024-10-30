@@ -86,5 +86,5 @@ class MyComponent extends ViewPU {
         return "MyComponent";
     }
 }
-registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachSecondFunction", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachSecondFunction", integratedHsp: "false" });
+registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachSecondFunction", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/foreach/forEachSecondFunction", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=forEachSecondFunction.js.map

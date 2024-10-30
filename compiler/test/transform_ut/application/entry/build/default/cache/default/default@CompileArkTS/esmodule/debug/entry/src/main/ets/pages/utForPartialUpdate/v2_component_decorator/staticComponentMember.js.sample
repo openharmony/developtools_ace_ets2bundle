@@ -92,5 +92,5 @@ __decorate([
 __decorate([
     Computed
 ], ChildComponent, "fullName", null);
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/staticComponentMember", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/staticComponentMember", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/staticComponentMember", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/staticComponentMember", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=staticComponentMember.js.map

@@ -239,5 +239,5 @@ class TransitionExample extends ViewPU {
         return "TransitionExample";
     }
 }
-registerNamedRoute(() => new TransitionExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/animateTo/animateTo", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/animateTo/animateTo", integratedHsp: "false" });
+registerNamedRoute(() => new TransitionExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/animateTo/animateTo", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/animateTo/animateTo", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=animateTo.js.map

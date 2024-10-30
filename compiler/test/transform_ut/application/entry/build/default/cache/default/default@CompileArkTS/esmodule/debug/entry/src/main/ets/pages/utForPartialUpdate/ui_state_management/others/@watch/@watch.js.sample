@@ -146,5 +146,5 @@ class CompA extends ViewPU {
         return "CompA";
     }
 }
-registerNamedRoute(() => new CompA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/others/@watch/@watch", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/others/@watch/@watch", integratedHsp: "false" });
+registerNamedRoute(() => new CompA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/others/@watch/@watch", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/others/@watch/@watch", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@watch.js.map

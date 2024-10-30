@@ -95,5 +95,5 @@ class MyComponent extends ViewPU {
         return "MyComponent";
     }
 }
-registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/@storageLink/@storageLink", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/@storageLink/@storageLink", integratedHsp: "false" });
+registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/@storageLink/@storageLink", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/@storageLink/@storageLink", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@storageLink.js.map

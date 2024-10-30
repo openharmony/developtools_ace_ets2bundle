@@ -69,5 +69,5 @@ function overBuilder($$, parent = null) {
     Text.pop();
     Column.pop();
 }
-registerNamedRoute(() => new testDemo(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderSimplifyAfferent", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderSimplifyAfferent", integratedHsp: "false" });
+registerNamedRoute(() => new testDemo(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderSimplifyAfferent", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderSimplifyAfferent", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderSimplifyAfferent.js.map

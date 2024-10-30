@@ -132,5 +132,5 @@ class CustomY extends ViewPU {
       return "CustomY";
   }
 }
-registerNamedRoute(() => new CustomY(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@prop/@prop", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@prop/@prop", integratedHsp: "false" });
+registerNamedRoute(() => new CustomY(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@prop/@prop", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/inner_struct_state_management/@prop/@prop", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@prop.js.map

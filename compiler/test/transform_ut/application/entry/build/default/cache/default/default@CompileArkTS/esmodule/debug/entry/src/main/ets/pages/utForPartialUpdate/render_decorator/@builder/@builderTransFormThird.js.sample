@@ -181,5 +181,5 @@ function testInnerComponent(value, parent = null) {
     __Recycle__.pop();
     Column.pop();
 }
-registerNamedRoute(() => new TestBuilder1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormThird", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormThird", integratedHsp: "false" });
+registerNamedRoute(() => new TestBuilder1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormThird", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormThird", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderTransFormThird.js.map

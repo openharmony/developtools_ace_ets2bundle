@@ -157,5 +157,5 @@ __decorate([
 __decorate([
     Event
 ], TestParam1.prototype, "myEvent1", void 0);
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/param_event_twoway_binding", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/param_event_twoway_binding", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/param_event_twoway_binding", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/param_event_twoway_binding", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=param_event_twoway_binding.js.map

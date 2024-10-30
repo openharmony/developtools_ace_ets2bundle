@@ -202,5 +202,5 @@ class ViewB extends ViewPU {
         return "ViewB";
     }
 }
-registerNamedRoute(() => new ViewB(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/import@Observed", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/import@Observed", integratedHsp: "false" });
+registerNamedRoute(() => new ViewB(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/import@Observed", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/import@Observed", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=import@Observed.js.map

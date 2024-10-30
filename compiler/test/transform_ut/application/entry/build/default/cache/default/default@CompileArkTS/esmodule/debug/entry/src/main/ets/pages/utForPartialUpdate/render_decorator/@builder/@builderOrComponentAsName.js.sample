@@ -206,5 +206,5 @@ class CCC extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderOrComponentAsName", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderOrComponentAsName", integratedHsp: "false" });
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderOrComponentAsName", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderOrComponentAsName", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderOrComponentAsName.js.map

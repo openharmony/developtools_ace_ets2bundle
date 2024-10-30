@@ -100,5 +100,5 @@ class FancyUse extends ViewPU {
         return "FancyUse";
     }
 }
-registerNamedRoute(() => new FancyUse(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@styles/@styles", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@styles/@styles", integratedHsp: "false" });
+registerNamedRoute(() => new FancyUse(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@styles/@styles", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@styles/@styles", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@styles.js.map

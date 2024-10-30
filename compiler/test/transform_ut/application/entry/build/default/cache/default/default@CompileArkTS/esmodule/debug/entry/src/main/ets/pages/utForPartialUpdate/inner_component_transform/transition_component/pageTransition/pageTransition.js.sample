@@ -119,5 +119,5 @@ class PageTransitionExample1 extends ViewPU {
         return "PageTransitionExample1";
     }
 }
-registerNamedRoute(() => new PageTransitionExample1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/pageTransition/pageTransition", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/pageTransition/pageTransition", integratedHsp: "false" });
+registerNamedRoute(() => new PageTransitionExample1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/pageTransition/pageTransition", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/pageTransition/pageTransition", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=pageTransition.js.map

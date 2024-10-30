@@ -60,5 +60,5 @@ class HomeComponent extends ViewPU {
         return "HomeComponent";
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/simple_component/xcomponent/XComponentContainer", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=XComponentContainer.js.map

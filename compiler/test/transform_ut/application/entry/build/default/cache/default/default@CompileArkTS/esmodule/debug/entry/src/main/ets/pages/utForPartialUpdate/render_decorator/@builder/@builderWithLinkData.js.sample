@@ -118,5 +118,5 @@ class TestPage extends ViewPU {
         return "TestPage";
     }
 }
-registerNamedRoute(() => new TestPage(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", integratedHsp: "false" });
+registerNamedRoute(() => new TestPage(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithLinkData", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderWithLinkData.js.map

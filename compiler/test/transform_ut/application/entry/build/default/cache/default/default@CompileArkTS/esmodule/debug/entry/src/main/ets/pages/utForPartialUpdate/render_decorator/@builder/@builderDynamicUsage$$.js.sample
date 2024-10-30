@@ -117,5 +117,5 @@ export class VideoPlayer extends ViewPU {
         return "VideoPlayer";
     }
 }
-registerNamedRoute(() => new VideoPlayer(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", integratedHsp: "false" });
+registerNamedRoute(() => new VideoPlayer(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderDynamicUsage$$", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderDynamicUsage$$.js.map

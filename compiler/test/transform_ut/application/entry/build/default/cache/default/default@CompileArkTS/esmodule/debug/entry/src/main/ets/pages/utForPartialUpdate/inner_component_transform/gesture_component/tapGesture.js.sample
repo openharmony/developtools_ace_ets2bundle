@@ -80,5 +80,5 @@ class TapGestureExample extends ViewPU {
         return "TapGestureExample";
     }
 }
-registerNamedRoute(() => new TapGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/tapGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/tapGesture", integratedHsp: "false" });
+registerNamedRoute(() => new TapGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/tapGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/tapGesture", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=tapGesture.js.map

@@ -121,5 +121,5 @@ class CustomDialogUser extends ViewPU {
         return "CustomDialogUser";
     }
 }
-registerNamedRoute(() => new CustomDialogUser(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/import@CustomDialog", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/import@CustomDialog", integratedHsp: "false" });
+registerNamedRoute(() => new CustomDialogUser(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/import@CustomDialog", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/import@CustomDialog", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=import@CustomDialog.js.map

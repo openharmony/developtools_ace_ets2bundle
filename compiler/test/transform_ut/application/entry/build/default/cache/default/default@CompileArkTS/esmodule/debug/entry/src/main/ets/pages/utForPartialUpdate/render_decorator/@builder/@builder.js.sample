@@ -317,5 +317,5 @@ class MyComponent extends ViewPU {
         return "MyComponent";
     }
 }
-registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builder", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builder", integratedHsp: "false" });
+registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builder", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builder", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builder.js.map

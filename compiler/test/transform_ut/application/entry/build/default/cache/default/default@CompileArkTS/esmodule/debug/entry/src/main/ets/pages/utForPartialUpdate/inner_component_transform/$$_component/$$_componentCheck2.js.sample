@@ -80,5 +80,5 @@ class TextInputExample extends ViewPU {
         return "TextInputExample";
     }
 }
-registerNamedRoute(() => new TextInputExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck2", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck2", integratedHsp: "false" });
+registerNamedRoute(() => new TextInputExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck2", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck2", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=$$_componentCheck2.js.map

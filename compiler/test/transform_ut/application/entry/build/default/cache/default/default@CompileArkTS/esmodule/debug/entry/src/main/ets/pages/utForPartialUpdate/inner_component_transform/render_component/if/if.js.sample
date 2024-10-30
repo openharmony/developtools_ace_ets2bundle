@@ -136,5 +136,5 @@ class IFView extends ViewPU {
         return "IFView";
     }
 }
-registerNamedRoute(() => new IFView(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/if/if", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/if/if", integratedHsp: "false" });
+registerNamedRoute(() => new IFView(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/if/if", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/if/if", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=if.js.map

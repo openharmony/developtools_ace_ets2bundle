@@ -92,5 +92,5 @@ class SwipeGestureExample extends ViewPU {
         return "SwipeGestureExample";
     }
 }
-registerNamedRoute(() => new SwipeGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/swipeGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/swipeGesture", integratedHsp: "false" });
+registerNamedRoute(() => new SwipeGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/swipeGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/swipeGesture", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=swipeGesture.js.map

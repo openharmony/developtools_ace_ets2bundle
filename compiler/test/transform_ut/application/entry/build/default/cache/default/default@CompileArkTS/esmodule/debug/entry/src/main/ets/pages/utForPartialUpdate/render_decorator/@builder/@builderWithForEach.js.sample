@@ -126,5 +126,5 @@ class ComA extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", integratedHsp: "false" });
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderWithForEach", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderWithForEach.js.map

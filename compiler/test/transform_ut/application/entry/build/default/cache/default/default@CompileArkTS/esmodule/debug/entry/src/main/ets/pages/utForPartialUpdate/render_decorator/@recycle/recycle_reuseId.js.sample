@@ -322,5 +322,5 @@ class RecycleReuseIdChild extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new RecycleReuseIdHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", integratedHsp: "false" });
+registerNamedRoute(() => new RecycleReuseIdHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_reuseId", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=recycle_reuseId.js.map

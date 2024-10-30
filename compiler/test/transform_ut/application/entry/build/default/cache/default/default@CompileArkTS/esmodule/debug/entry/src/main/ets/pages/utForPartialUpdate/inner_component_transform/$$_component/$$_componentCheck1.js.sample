@@ -160,5 +160,5 @@ class TabsExample extends ViewPU {
         return "TabsExample";
     }
 }
-registerNamedRoute(() => new TabsExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck1", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck1", integratedHsp: "false" });
+registerNamedRoute(() => new TabsExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck1", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck1", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=$$_componentCheck1.js.map

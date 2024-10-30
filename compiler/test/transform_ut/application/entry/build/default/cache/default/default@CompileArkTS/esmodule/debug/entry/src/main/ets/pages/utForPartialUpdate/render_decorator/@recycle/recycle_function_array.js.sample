@@ -165,5 +165,5 @@ class RecycleFuncArrChild extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new RecycleFuncArrHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array", integratedHsp: "false" });
+registerNamedRoute(() => new RecycleFuncArrHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle_function_array", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=recycle_function_array.js.map

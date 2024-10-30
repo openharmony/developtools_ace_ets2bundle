@@ -68,5 +68,5 @@ class PageOne extends ViewPU {
         return "PageOne";
     }
 }
-registerNamedRoute(() => new PageOne(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/navDestination_component/navDestination_component", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/navDestination_component/navDestination_component", integratedHsp: "false" });
+registerNamedRoute(() => new PageOne(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/transition_component/navDestination_component/navDestination_component", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/transition_component/navDestination_component/navDestination_component", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=navDestination_component.js.map

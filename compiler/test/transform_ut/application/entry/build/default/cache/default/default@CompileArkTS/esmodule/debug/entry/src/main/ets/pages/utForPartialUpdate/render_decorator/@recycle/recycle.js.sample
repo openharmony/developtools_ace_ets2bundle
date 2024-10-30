@@ -507,5 +507,5 @@ class RecycleAnimationTest extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new RecycleHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle", integratedHsp: "false" });
+registerNamedRoute(() => new RecycleHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=recycle.js.map
