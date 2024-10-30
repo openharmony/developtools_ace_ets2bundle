@@ -65,5 +65,5 @@ class ParentView extends ViewPU {
         return "ParentView";
     }
 }
-registerNamedRoute(() => new ParentView(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/item/GridItem", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/item/GridItem", integratedHsp: "false" });
+registerNamedRoute(() => new ParentView(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/item/GridItem", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/item/GridItem", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=GridItem.js.map

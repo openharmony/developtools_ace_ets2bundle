@@ -111,5 +111,5 @@ class ChildComponent extends ViewPU {
         return "ChildComponent";
     }
 }
-registerNamedRoute(() => new ChildComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", integratedHsp: "false" });
+registerNamedRoute(() => new ChildComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatVirtualScroll", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=repeatVirtualScroll.js.map

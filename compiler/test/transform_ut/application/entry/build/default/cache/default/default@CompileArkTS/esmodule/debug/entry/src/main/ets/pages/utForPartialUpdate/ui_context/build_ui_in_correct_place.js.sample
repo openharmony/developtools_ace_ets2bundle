@@ -222,5 +222,5 @@ class Parent extends ViewPU {
         return "Parent";
     }
 }
-registerNamedRoute(() => new Parent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_context/build_ui_in_correct_place", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_context/build_ui_in_correct_place", integratedHsp: "false" });
+registerNamedRoute(() => new Parent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_context/build_ui_in_correct_place", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_context/build_ui_in_correct_place", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=build_ui_in_correct_place.js.map

@@ -52,6 +52,6 @@ class LocalStorageComponent extends ViewPU {
 }
 {
     let routeNameNode = route;
-    registerNamedRoute(() => new LocalStorageComponent(undefined, {}), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForRoute", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForRoute", integratedHsp: "false" });
+    registerNamedRoute(() => new LocalStorageComponent(undefined, {}), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForRoute", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForRoute", integratedHsp: "false", moduleType: "followWithHap" });
 }
 //# sourceMappingURL=localStorageForRoute.js.map

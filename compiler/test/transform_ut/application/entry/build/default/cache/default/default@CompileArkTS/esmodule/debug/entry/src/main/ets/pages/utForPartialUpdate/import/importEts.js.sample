@@ -295,5 +295,5 @@ class ImportTest extends ViewPU {
         return "ImportTest";
     }
 }
-registerNamedRoute(() => new ImportTest(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/importEts", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/importEts", integratedHsp: "false" });
+registerNamedRoute(() => new ImportTest(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/import/importEts", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/import/importEts", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=importEts.js.map

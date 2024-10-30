@@ -62,5 +62,5 @@ class childTest extends ViewPU {
         return "childTest";
     }
 }
-registerNamedRoute(() => new childTest(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/GestureModeParallel", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/GestureModeParallel", integratedHsp: "false" });
+registerNamedRoute(() => new childTest(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/GestureModeParallel", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/GestureModeParallel", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=GestureModeParallel.js.map

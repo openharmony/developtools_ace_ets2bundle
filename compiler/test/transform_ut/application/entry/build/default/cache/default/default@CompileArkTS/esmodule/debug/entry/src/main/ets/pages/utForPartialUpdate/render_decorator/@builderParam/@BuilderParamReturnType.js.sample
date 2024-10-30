@@ -108,5 +108,5 @@ class TestUlModule4 {
         return this.builderVar.builder;
     }
 }
-registerNamedRoute(() => new ComA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@BuilderParamReturnType", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@BuilderParamReturnType", integratedHsp: "false" });
+registerNamedRoute(() => new ComA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@BuilderParamReturnType", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@BuilderParamReturnType", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@BuilderParamReturnType.js.map

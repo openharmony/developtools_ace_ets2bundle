@@ -230,5 +230,5 @@ class lazyforEachThreeParam extends ViewPU {
         return "lazyforEachThreeParam";
     }
 }
-registerNamedRoute(() => new lazyforEachThreeParam(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam", integratedHsp: "false" });
+registerNamedRoute(() => new lazyforEachThreeParam(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforEachThreeParam", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=lazyforEachThreeParam.js.map

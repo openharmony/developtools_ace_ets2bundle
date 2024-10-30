@@ -96,5 +96,5 @@ class HomeComponent extends ViewPU {
         return "HomeComponent";
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@AnimatableExtend/animatableExtend", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@AnimatableExtend/animatableExtend", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@AnimatableExtend/animatableExtend", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@AnimatableExtend/animatableExtend", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=animatableExtend.js.map

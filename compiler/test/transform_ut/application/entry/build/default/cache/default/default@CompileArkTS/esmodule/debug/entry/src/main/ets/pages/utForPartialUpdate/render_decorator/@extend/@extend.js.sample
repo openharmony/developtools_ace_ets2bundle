@@ -95,5 +95,5 @@ function __Text__fancytext(fontSize) {
     Text.fontSize(fontSize);
     Text.fontStyle(FontStyle.Italic);
 }
-registerNamedRoute(() => new FancyUse(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@extend/@extend", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@extend/@extend", integratedHsp: "false" });
+registerNamedRoute(() => new FancyUse(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@extend/@extend", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@extend/@extend", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@extend.js.map

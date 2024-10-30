@@ -137,5 +137,5 @@ class ComB extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@componentParent/@componentParent", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@componentParent/@componentParent", integratedHsp: "false" });
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@componentParent/@componentParent", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@componentParent/@componentParent", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@componentParent.js.map

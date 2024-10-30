@@ -669,5 +669,5 @@ class MyDataSource extends BasicDataSource {
         this.notifyDataAdd(this.dataArray.length - 1);
     }
 }
-registerNamedRoute(() => new TestBuilder1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormFourth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormFourth", integratedHsp: "false" });
+registerNamedRoute(() => new TestBuilder1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormFourth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderTransFormFourth", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderTransFormFourth.js.map

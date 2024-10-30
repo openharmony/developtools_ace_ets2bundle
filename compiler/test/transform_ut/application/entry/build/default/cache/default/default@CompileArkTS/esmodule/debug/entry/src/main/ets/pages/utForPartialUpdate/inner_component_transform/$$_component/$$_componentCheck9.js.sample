@@ -106,5 +106,5 @@ class SheetSizeExample1 extends ViewPU {
         return "SheetSizeExample1";
     }
 }
-registerNamedRoute(() => new SheetSizeExample1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck9", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck9", integratedHsp: "false" });
+registerNamedRoute(() => new SheetSizeExample1(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck9", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/$$_component/$$_componentCheck9", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=$$_componentCheck9.js.map

@@ -121,5 +121,5 @@ class Index extends ViewPU {
         return "Index";
     }
 }
-registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@builderParamQuestionMark", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParamQuestionMark", integratedHsp: "false" });
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@builderParamQuestionMark", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParamQuestionMark", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderParamQuestionMark.js.map

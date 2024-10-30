@@ -83,5 +83,5 @@ class PinchGestureExample extends ViewPU {
         return "PinchGestureExample";
     }
 }
-registerNamedRoute(() => new PinchGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", integratedHsp: "false" });
+registerNamedRoute(() => new PinchGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=pinchGesture.js.map

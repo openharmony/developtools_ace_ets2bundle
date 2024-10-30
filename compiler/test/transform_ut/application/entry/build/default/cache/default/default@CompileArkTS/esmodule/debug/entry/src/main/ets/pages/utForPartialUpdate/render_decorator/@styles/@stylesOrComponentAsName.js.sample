@@ -210,5 +210,5 @@ class MyComponent extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@styles/@stylesOrComponentAsName", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@styles/@stylesOrComponentAsName", integratedHsp: "false" });
+registerNamedRoute(() => new Index(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@styles/@stylesOrComponentAsName", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@styles/@stylesOrComponentAsName", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@stylesOrComponentAsName.js.map

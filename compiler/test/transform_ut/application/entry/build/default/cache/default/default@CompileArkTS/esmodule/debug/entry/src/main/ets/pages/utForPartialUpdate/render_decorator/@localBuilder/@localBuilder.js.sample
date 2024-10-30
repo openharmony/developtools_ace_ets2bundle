@@ -130,5 +130,5 @@ class Chind extends ViewPU {
         PUV2ViewBase.contextStack && PUV2ViewBase.contextStack.pop();
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@localBuilder/@localBuilder", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@localBuilder/@localBuilder", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@localBuilder/@localBuilder", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@localBuilder/@localBuilder", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@localBuilder.js.map

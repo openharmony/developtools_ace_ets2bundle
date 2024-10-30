@@ -209,5 +209,5 @@ class ChildComponent2 extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeat", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeat", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeat", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeat", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=repeat.js.map

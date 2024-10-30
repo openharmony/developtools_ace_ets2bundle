@@ -205,5 +205,5 @@ class ChildTest extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Test(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", integratedHsp: "false" });
+registerNamedRoute(() => new Test(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=lazyforeach.js.map

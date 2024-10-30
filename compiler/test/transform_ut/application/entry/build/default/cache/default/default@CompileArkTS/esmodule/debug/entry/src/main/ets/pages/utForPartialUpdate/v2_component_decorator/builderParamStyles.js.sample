@@ -68,5 +68,5 @@ class HomeComponent extends ViewV2 {
         return "HomeComponent";
     }
 }
-registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", integratedHsp: "false" });
+registerNamedRoute(() => new HomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/v2_component_decorator/builderParamStyles", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=builderParamStyles.js.map

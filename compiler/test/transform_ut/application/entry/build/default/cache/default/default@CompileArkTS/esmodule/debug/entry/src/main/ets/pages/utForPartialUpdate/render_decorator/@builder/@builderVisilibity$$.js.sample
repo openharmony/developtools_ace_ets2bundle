@@ -145,5 +145,5 @@ export class visibility$$Demo extends ViewPU {
         return "visibility$$Demo";
     }
 }
-registerNamedRoute(() => new visibility$$Demo(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", integratedHsp: "false" });
+registerNamedRoute(() => new visibility$$Demo(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builder/@builderVisilibity$$", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderVisilibity$$.js.map

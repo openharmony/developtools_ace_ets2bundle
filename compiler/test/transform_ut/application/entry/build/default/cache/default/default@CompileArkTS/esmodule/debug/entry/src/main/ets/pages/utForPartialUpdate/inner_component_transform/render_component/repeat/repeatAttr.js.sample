@@ -97,5 +97,5 @@ class entryCompSucc extends ViewV2 {
 __decorate([
     Local
 ], entryCompSucc.prototype, "vehicleItems", void 0);
-registerNamedRoute(() => new entryCompSucc(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", integratedHsp: "false" });
+registerNamedRoute(() => new entryCompSucc(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/repeat/repeatAttr", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=repeatAttr.js.map

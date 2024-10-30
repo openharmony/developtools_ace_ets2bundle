@@ -311,5 +311,5 @@ class CustomContainerUser extends ViewPU {
         return "CustomContainerUser";
     }
 }
-registerNamedRoute(() => new CustomContainerUser(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam", integratedHsp: "false" });
+registerNamedRoute(() => new CustomContainerUser(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@builderParam/@builderParam", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@builderParam.js.map

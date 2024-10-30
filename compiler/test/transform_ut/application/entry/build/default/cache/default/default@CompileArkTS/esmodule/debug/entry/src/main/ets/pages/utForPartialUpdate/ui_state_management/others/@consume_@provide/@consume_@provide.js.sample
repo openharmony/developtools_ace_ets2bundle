@@ -197,5 +197,5 @@ class CompC extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new CompA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/others/@consume_@provide/@consume_@provide", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/others/@consume_@provide/@consume_@provide", integratedHsp: "false" });
+registerNamedRoute(() => new CompA(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/others/@consume_@provide/@consume_@provide", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/others/@consume_@provide/@consume_@provide", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=@consume_@provide.js.map

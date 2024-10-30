@@ -203,5 +203,5 @@ class Banner extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/custom_component/custom_component", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/custom_component/custom_component", integratedHsp: "false" });
+registerNamedRoute(() => new MyComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/custom_component/custom_component", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/custom_component/custom_component", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=custom_component.js.map
