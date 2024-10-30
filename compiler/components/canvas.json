@@ -1,6 +1,6 @@
 {
   "name": "Canvas",
   "attrs": [
-    "onReady"
+    "onReady", "enableAnalyzer"
   ]
 }
