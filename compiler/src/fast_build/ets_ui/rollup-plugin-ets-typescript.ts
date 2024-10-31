@@ -477,7 +477,7 @@ async function transform(code: string, id: string) {
     // Use magicString to generate sourceMap because of Typescript do not emit sourceMap in some cases
     map: emitResult.sourceMapText ? JSON.parse(emitResult.sourceMapText) : new MagicString(code).generateMap(),
     meta: {
-      shouldEmitJs: shouldEmitJsFlag
+      shouldEmitJs: true
     }
   } : printSourceFile(transformResult.transformed[0], compilationTime);
 }
