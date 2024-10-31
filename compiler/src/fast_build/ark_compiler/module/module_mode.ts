@@ -528,7 +528,7 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
   }
 
-  private generateCompileFilesInfo() {
+  private generateCompileFilesInfo(includeByteCodeHarInfo: boolean): void {
     let filesInfo: string = '';
     this.moduleInfos.forEach((info) => {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
@@ -536,7 +536,7 @@ export class ModuleMode extends CommonMode {
       filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
         `${isSharedModule}\n`;
     });
-    if (this.projectConfig.byteCodeHarInfo) {
+    if (includeByteCodeHarInfo) {
       Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {
         // es2abc parses file path and pkgName according to the file extension .abc.
         // Accurate version replacement requires 'pkgName' to es2abc.
@@ -572,8 +572,8 @@ export class ModuleMode extends CommonMode {
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
   }
 
-  private genDescriptionsForMergedEs2abc() {
-    this.generateCompileFilesInfo();
+  genDescriptionsForMergedEs2abc(includeByteCodeHarInfo: boolean): void {
+    this.generateCompileFilesInfo(includeByteCodeHarInfo);
     if (!this.byteCodeHar) {
       this.generateNpmEntriesInfo();
     }
@@ -584,7 +584,6 @@ export class ModuleMode extends CommonMode {
     // collect data error from subprocess
     let errMsg: string = '';
     const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
-    this.genDescriptionsForMergedEs2abc();
     stopEvent(eventGenDescriptionsForMergedEs2abc);
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
