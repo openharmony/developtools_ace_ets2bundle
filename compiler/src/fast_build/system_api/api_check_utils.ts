@@ -347,7 +347,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
-        false, ts.DiagnosticCategory.Warning, '', true));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
