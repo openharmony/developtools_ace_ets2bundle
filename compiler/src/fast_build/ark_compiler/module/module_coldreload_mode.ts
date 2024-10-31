@@ -74,7 +74,7 @@ export class ModuleColdreloadMode extends ModuleMode {
   private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
     this.prepareForCompilation(rollupObject, parentEvent);
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
-    this.generateAbcByEs2abc(parentEvent);
+    this.generateAbcByEs2abc(parentEvent, !!this.projectConfig.byteCodeHarInfo);
   }
 
   private compileChangeListFiles(rollupObject: Object, parentEvent: Object): void {
@@ -118,7 +118,8 @@ export class ModuleColdreloadMode extends ModuleMode {
     const outputABCPath: string = path.join(this.projectConfig.patchAbcPath, MODULES_ABC);
     validateFilePathLength(outputABCPath, this.logger);
     this.moduleAbcPath = outputABCPath;
-    this.generateAbcByEs2abc(parentEvent);
+    // During incremental compilation, the bytecode har path must be blocked from being written to filesInfo.
+    this.generateAbcByEs2abc(parentEvent, false);
   }
 
   private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
@@ -147,9 +148,10 @@ export class ModuleColdreloadMode extends ModuleMode {
     stopEvent(eventUpdateSourceMapFromFileList);
   }
 
-  private generateAbcByEs2abc(parentEvent: Object): void {
+  private generateAbcByEs2abc(parentEvent: Object, includeByteCodeHarInfo: boolean): void {
     this.generateEs2AbcCmd();
     this.addColdReloadArgs();
+    this.genDescriptionsForMergedEs2abc(includeByteCodeHarInfo);
     this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 }
