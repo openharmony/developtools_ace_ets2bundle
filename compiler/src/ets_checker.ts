@@ -518,6 +518,16 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   if (process.env.watchMode !== 'true') {
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
   }
+
+  if (globalProgram.program &&
+    (process.env.watchMode !== 'true' && !projectConfig.isPreview &&
+      !projectConfig.hotReload && !projectConfig.coldReload)) {
+        globalProgram.program.releaseTypeChecker();
+        const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
+        if (allowGC) {
+          global.gc();
+        }
+  }
 }
 
 function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
