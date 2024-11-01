@@ -278,11 +278,11 @@ export class ModuleSourceFile {
     const userDefinedMockConfigCache: string =
       path.resolve(rollupObject.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
     if (fs.existsSync(transformedMockConfigCache)) {
-      fs.rm(transformedMockConfigCache);
+      fs.rmSync(transformedMockConfigCache);
     }
 
     if (fs.existsSync(userDefinedMockConfigCache)) {
-      fs.rm(userDefinedMockConfigCache);
+      fs.rmSync(userDefinedMockConfigCache);
     }
   }
 
