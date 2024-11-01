@@ -18,7 +18,8 @@ import path from 'path';
 import type * as ts from 'typescript';
 import {
   ApiExtractor,
-  clearGlobalCaches
+  clearGlobalCaches,
+  performancePrinter
 } from 'arkguard';
 import type {
   ArkObfuscator,
@@ -134,4 +135,15 @@ function getFileNamesForScanningWhitelist(mergedObConfig: MergedConfig, allKeepF
     });
   }
   return keepFilesAndDependencies;
+}
+
+/**
+ * Disable performance printer when the build mode is debug
+ */
+export function disablePerformancePrinter(): void {
+  if (performancePrinter !== undefined) {
+    performancePrinter.filesPrinter = undefined;
+    performancePrinter.singleFilePrinter = undefined;
+    performancePrinter.timeSumPrinter = undefined
+  }
 }

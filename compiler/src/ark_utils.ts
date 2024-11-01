@@ -22,7 +22,9 @@ import {
   deleteLineInfoForNameString,
   MemoryUtils,
   nameCacheMap,
-  unobfuscationNamesObj
+  unobfuscationNamesObj,
+  performancePrinter,
+  EventList 
 } from 'arkguard';
 import {
   OH_MODULES,
@@ -71,7 +73,6 @@ import {
 } from '../main';
 import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
-import { performancePrinter } from 'arkguard/lib/ArkObfuscator';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
 
@@ -503,11 +504,11 @@ interface ModuleInfo {
 export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
-    MemoryUtils.tryGC();
     performancePrinter?.filesPrinter?.startEvent(moduleInfo.buildFilePath);
-    await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
-    performancePrinter?.filesPrinter?.endEvent(moduleInfo.buildFilePath, undefined, true);
     MemoryUtils.tryGC();
+    await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
+    MemoryUtils.tryGC();
+    performancePrinter?.filesPrinter?.endEvent(moduleInfo.buildFilePath, undefined, true);
     return;
   }
   mkdirsSync(path.dirname(moduleInfo.buildFilePath));
@@ -574,8 +575,10 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
   let filePathObj = { buildFilePath: moduleInfo.buildFilePath, relativeFilePath: moduleInfo.relativeSourceFilePath };
   try {
+    performancePrinter?.singleFilePrinter?.startEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter, filePathObj.buildFilePath);
     mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, filePathObj, previousStageSourceMap,
       historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
+    performancePrinter?.singleFilePrinter?.endEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter);
   } catch (err) {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`);
   }
@@ -611,8 +614,11 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   if (newFilePath !== moduleInfo.buildFilePath && !isDeclaration) {
     sourceMapGeneratorInstance.saveKeyMappingForObfFileName(moduleInfo.rollupModuleId!);
   }
+
+  performancePrinter?.singleFilePrinter?.startEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter);
   mkdirsSync(path.dirname(newFilePath));
   fs.writeFileSync(newFilePath, mixedInfo.content ?? '');
+  performancePrinter?.singleFilePrinter?.endEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
 }
 
 export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string): string {
