@@ -896,7 +896,7 @@ mocha.describe('generate ohmUrl', function () {
     }
     expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
       `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      `Solutions: > Check whether the "json5" module which ${filePath} belongs to is correctly configured.` +
       '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
     loggerStub.restore();
   });
