@@ -472,7 +472,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
     isObservedV1Class, isSendableClass);
-  node.getChildren().forEach((item: ts.Node) => visitAllNode(item, sourceFileNode, allComponentNames, log,
+  ts.forEachChild(node, (child: ts.Node) => visitAllNode(child, sourceFileNode, allComponentNames, log,
     structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass));
   structContext = false;
   classContext = false;
