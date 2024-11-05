@@ -19,6 +19,7 @@ import mocha from 'mocha';
 import path from 'path';
 import fs from 'fs';
 import ts from 'typescript';
+import sinon from 'sinon';
 
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
@@ -333,6 +334,39 @@ mocha.describe('test module_source_file file api', function () {
       }
     }
     SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('1-4: test the error message of getOhmUrl: module info is undefined', function () {
+    this.rollup.build();
+    const filePath: string = 'test.ets';
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger, 'error');
+    moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
+    expect(stub.calledWith(red,
+      `ArkTS:INTERNAL ERROR: Failed to get module info of file 'test.ets'`, reset)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('1-5: test the error message of getOhmUrl: meta info is undefined', function () {
+    this.rollup.build();
+    const filePath: string = 'test.ets';
+    const red: string = '\u001b[31m';
+    const reset: string = '\u001b[39m';
+    const moduleInfo: Object = {
+      id: filePath,
+      meta: null
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger, 'error');
+    moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
+    expect(stub.calledWith(red,
+      `ArkTS:INTERNAL ERROR: Failed to get meta info of file 'test.ets'`, reset)).to.be.true;
+    stub.restore();
   });
 
   mocha.it('2-1: test processJsModuleRequest under build debug', function () {
