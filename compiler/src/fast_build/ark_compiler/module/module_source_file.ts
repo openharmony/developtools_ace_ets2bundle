@@ -19,7 +19,9 @@ import path from 'path';
 import MagicString from 'magic-string';
 import {
   GEN_ABC_PLUGIN_NAME,
-  PACKAGES
+  PACKAGES,
+  red,
+  reset
 } from '../common/ark_define';
 import {
   getNormalizedOhmUrlByFilepath,
@@ -152,8 +154,6 @@ export class ModuleSourceFile {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
       return;
     }
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     if (mockModuleInfo.filePath) {
       if (useNormalizedOHMUrl) {
         transformedMockTarget = ModuleSourceFile.spliceNormalizedOhmurl(mockModuleInfo, mockModuleInfo.filePath, undefined);
@@ -414,6 +414,16 @@ export class ModuleSourceFile {
     }
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
+      if (!targetModuleInfo) {
+        ModuleSourceFile.logger.error(red,
+          `ArkTS:INTERNAL ERROR: Failed to get module info of file '${filePath}'`, reset);
+        return undefined;
+      }
+      if (!targetModuleInfo.meta) {
+        ModuleSourceFile.logger.error(red,
+          `ArkTS:INTERNAL ERROR: Failed to get meta info of file '${filePath}'`, reset);
+          return undefined;
+      }
       let res: string = '';
       if (useNormalizedOHMUrl) {
         res = ModuleSourceFile.spliceNormalizedOhmurl(targetModuleInfo, filePath, importerFile);
