@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -88,10 +88,10 @@ class LocalStorageComponent extends ViewPU {
 {
     let routeNameNode = route;
     if (routeNameNode != undefined) {
-        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", integratedHsp: "false" });
+        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage), routeNameNode, { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", integratedHsp: "false", moduleType: "followWithHap" });
     }
     else {
-        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", integratedHsp: "false" });
+        registerNamedRoute(() => new LocalStorageComponent(undefined, {}, storage), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/ui_state_management/application_state_management/localStorage/localStorageForBoth", integratedHsp: "false", moduleType: "followWithHap" });
     }
 }
 //# sourceMappingURL=localStorageForBoth.js.map

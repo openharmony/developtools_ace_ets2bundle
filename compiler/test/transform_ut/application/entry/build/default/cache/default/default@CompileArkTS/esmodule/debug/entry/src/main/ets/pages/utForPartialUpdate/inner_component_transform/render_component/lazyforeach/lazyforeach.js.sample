@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -205,5 +205,5 @@ class ChildTest extends ViewPU {
         this.updateDirtyElements();
     }
 }
-registerNamedRoute(() => new Test(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", integratedHsp: "false" });
+registerNamedRoute(() => new Test(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/render_component/lazyforeach/lazyforeach", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=lazyforeach.js.map
