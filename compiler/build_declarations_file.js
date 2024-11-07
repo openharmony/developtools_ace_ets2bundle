@@ -221,7 +221,7 @@ generateComponentConfig(process.argv[4], process.argv[5]);
 function generateComponentConfig(dir, buildPublicSDK) {
   const configFile = path.resolve(dir, 'component_map.js');
   if (fs.existsSync(configFile)) {
-    const { COMPONENT_MAP, FORM_MAP, forbiddenUseStateType } = require(configFile);
+    const { COMPONENT_MAP, FORM_MAP, COMMON_ATTRS, forbiddenUseStateType } = require(configFile);
     const buildConfig = {
       forbiddenUseStateTypeForDecorators: [
         '@State', '@Prop', '@Link', '@Provide', '@Consume', '@ObjectLink', '@BuilderParam',
@@ -231,6 +231,9 @@ function generateComponentConfig(dir, buildPublicSDK) {
     };
     try {
       removeSystemApiComp(buildPublicSDK, COMPONENT_MAP, FORM_MAP);
+      let commonMap = new Map();
+      commonMap.attrs = [...COMMON_ATTRS];
+      COMPONENT_MAP.Common = commonMap;
       fs.writeFileSync(path.resolve(dir, '../component_config.json'), JSON.stringify(COMPONENT_MAP));
       fs.writeFileSync(path.resolve(dir, '../form_config.json'), JSON.stringify(FORM_MAP));
       fs.writeFileSync(path.resolve(dir, '../build_config.json'), JSON.stringify(buildConfig));
