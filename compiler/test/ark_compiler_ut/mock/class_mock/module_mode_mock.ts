@@ -115,7 +115,15 @@ class ModuleModeMock extends ModuleMode {
     for (const key in entryObj) {
       let moduleId: string = entryObj[key];
       let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
+      if (!moduleInfo) {
+        this.throwArkTsCompilerError(red, `ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
+          `Error Message: Failed to find module info with '${moduleId}' from the context information.`, reset);
+      }
       let metaInfo: Object = moduleInfo.meta;
+      if (!metaInfo) {
+        this.throwArkTsCompilerError(red, `ArkTS:INTERNAL ERROR: Failed to find meta info.\n` +
+          `Error Message: Failed to find meta info with '${moduleId}' from the module info.`, reset);
+      }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath: metaInfo.pkgPath,

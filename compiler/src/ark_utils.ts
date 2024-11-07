@@ -96,7 +96,6 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   }
   let unixFilePath: string = toUnixPath(filePath);
   unixFilePath = unixFilePath.substring(0, filePath.lastIndexOf('.')); // remove extension
-  let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
   // case1: /entry/src/main/ets/xxx/yyy
   // case2: /entry/src/ohosTest/ets/xxx/yyy
   // case3: /node_modules/xxx/yyy
@@ -105,12 +104,14 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   // case6: /library/index.ts
   // ---> @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
   let pkgInfo = projectConfig.pkgContextInfo[pkgName];
-  if (pkgInfo === undefined) {
+  if (!pkgInfo || !pkgPath) {
     logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
       `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
+      `Solutions: > Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.` +
       '> Check the corresponding file name is correct(including case-sensitivity).', reset);
+    return filePath;
   }
+  let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
   let recordName = `${pkgInfo.bundleName}&${pkgName}${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
     // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>

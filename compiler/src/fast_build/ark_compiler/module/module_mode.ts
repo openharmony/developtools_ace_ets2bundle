@@ -205,10 +205,14 @@ export class ModuleMode extends CommonMode {
       let moduleId: string = entryObj[key];
       let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
       if (!moduleInfo) {
-        this.logger.error(red, `ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
-          `Error Message: Failed to find module info with '${moduleId}' from the context information.`, reset);
+        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
+          `Error Message: Failed to find module info with '${moduleId}' from the context information.`);
       }
       let metaInfo: Object = moduleInfo.meta;
+      if (!metaInfo) {
+        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to find meta info.\n` +
+          `Error Message: Failed to find meta info with '${moduleId}' from the module info.`);
+      }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
         pkgPath: metaInfo.pkgPath,
