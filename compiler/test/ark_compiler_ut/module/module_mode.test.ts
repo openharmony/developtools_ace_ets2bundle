@@ -1792,9 +1792,7 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     this.rollup.mockCompileContextInfo();
     const moduleMode = new ModuleModeMock(this.rollup);
-
-    const logger = moduleMode.logger;
-    const loggerStub = sinon.stub(logger, 'error');
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
     const red: string = '\u001b[31m';
     const reset: string = '\u001b[39m';
     const entryObjName:string = 'test';
@@ -1806,10 +1804,10 @@ mocha.describe('test module_mode file api', function () {
     } catch (e) {
     }
 
-    expect(loggerStub.getCall(0).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
-          `Error Message: Failed to find module info with '${moduleId}' from the context information.`, reset)).to.be.true;
+    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
+      `Error Message: Failed to find module info with '${moduleId}' from the context information.`)).to.be.true;
 
-    loggerStub.restore();
+    stub.restore();
     SourceMapGenerator.cleanSourceMapObject();
   });
 
@@ -1831,5 +1829,28 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.generateCompileContextInfoMock(this.rollup);
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-13: test generateCompileContext has not exist meta info', function () {
+    this.rollup.build();
+    this.rollup.mockCompileContextInfo();
+    const moduleMode = new ModuleModeMock(this.rollup);
+    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const entryObjName:string = 'noMetaInfo';
+    const moduleId:string = 'd:/test.ets';
+    moduleMode.projectConfig.entryObj[entryObjName]=moduleId;
+    moduleMode.projectConfig.cardEntryObj[entryObjName]=moduleId;
+    const moduleInfo = {
+      id: moduleId,
+      meta: null
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    try {
+      moduleMode.generateCompileContextInfoMock(this.rollup);
+    } catch (e) {
+    }
+    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Failed to find meta info.\n` +
+      `Error Message: Failed to find meta info with '${moduleId}' from the module info.`)).to.be.true;
+    stub.restore();
   });
 });
