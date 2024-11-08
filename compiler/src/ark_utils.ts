@@ -71,14 +71,20 @@ import {
   projectConfig,
   sdkConfigPrefix
 } from '../main';
-import { getRelativeSourcePath, mangleFilePath } from './fast_build/ark_compiler/common/ob_config_resolver';
+import {
+  getRelativeSourcePath,
+  mangleFilePath,
+  setNewNameCache,
+  getNameCacheByPath,
+  setUnobfuscationNames,
+  writeObfuscatedFile
+} from './fast_build/ark_compiler/common/ob_config_resolver';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
-const IDENTIFIER_CACHE: string = 'IdentifierCache';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -484,7 +490,10 @@ function replaceRelativeDependency(item: string, moduleRequest: string, sourcePa
   return item;
 }
 
-interface ModuleInfo {
+/**
+ * Informantion of build files
+ */
+export interface ModuleInfo {
   content: string,
   /**
    * the path in build cache dir
@@ -555,16 +564,7 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     previousStageSourceMap = sourceMapGeneratorInstance.getSpecifySourceMap(rollupNewSourceMaps, selectedFilePath) as sourceMap.RawSourceMap;
   }
 
-  let historyNameCache = new Map<string, string>();
-  let namecachePath = moduleInfo.relativeSourceFilePath;
-  if (isDeclaration) {
-    namecachePath = getRelativeSourcePath(moduleInfo.originSourceFilePath, projectRootPath,
-      sourceFileBelongProject.get(toUnixPath(moduleInfo.originSourceFilePath)));
-  }
-  if (nameCacheMap) {
-    let identifierCache = nameCacheMap.get(namecachePath)?.[IDENTIFIER_CACHE];
-    deleteLineInfoForNameString(historyNameCache, identifierCache);
-  }
+  const historyNameCache: Map<string, string> = getNameCacheByPath(moduleInfo, isDeclaration, projectRootPath);
 
   let mixedInfo: { content: string, sourceMap?: Object, nameCache?: Object, unobfuscationNameMap?: Map<string, Set<string>>};
   let projectInfo: {
@@ -591,35 +591,16 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
     sourceMapGeneratorInstance.updateSpecifySourceMap(rollupNewSourceMaps, selectedFilePath, mixedInfo.sourceMap);
   }
 
-  if (mixedInfo.nameCache && !isDeclaration) {
-    let obfName: string = moduleInfo.relativeSourceFilePath;
-    let isOhModule = isPackageModulesFile(moduleInfo.originSourceFilePath, projectConfig);
-    if (projectConfig.obfuscationMergedObConfig?.options.enableFileNameObfuscation && !isOhModule) {
-      obfName = mangleFilePath(moduleInfo.relativeSourceFilePath);
-    }
-    mixedInfo.nameCache.obfName = obfName;
-    nameCacheMap.set(moduleInfo.relativeSourceFilePath, mixedInfo.nameCache);
-  }
+  setNewNameCache(mixedInfo.nameCache, isDeclaration, moduleInfo, projectConfig);
 
-  if (mixedInfo.unobfuscationNameMap && !isDeclaration) {
-    let arrayObject: Record<string, string[]> = {};
-    // The type of unobfuscationNameMap's value is Set, convert Set to Array.
-    mixedInfo.unobfuscationNameMap.forEach((value: Set<string>, key: string) => {
-      let array: string[] = Array.from(value);
-      arrayObject[key] = array;
-    });
-    unobfuscationNamesObj[moduleInfo.relativeSourceFilePath] = arrayObject;
-  }
+  setUnobfuscationNames(mixedInfo.unobfuscationNameMap, moduleInfo.relativeSourceFilePath, isDeclaration);
 
   const newFilePath: string = tryMangleFileName(moduleInfo.buildFilePath, projectConfig, moduleInfo.originSourceFilePath);
   if (newFilePath !== moduleInfo.buildFilePath && !isDeclaration) {
     sourceMapGeneratorInstance.saveKeyMappingForObfFileName(moduleInfo.rollupModuleId!);
   }
 
-  performancePrinter?.singleFilePrinter?.startEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter);
-  mkdirsSync(path.dirname(newFilePath));
-  fs.writeFileSync(newFilePath, mixedInfo.content ?? '');
-  performancePrinter?.singleFilePrinter?.endEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
+  writeObfuscatedFile(newFilePath, mixedInfo.content ?? '');
 }
 
 export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string): string {

@@ -24,9 +24,14 @@ import {
   MergedConfig,
   ObConfigResolver,
   collectResevedFileNameInIDEConfig,
+  getNameCacheByPath,
   getRelativeSourcePath,
   handleKeepFilesAndGetDependencies,
-  sourceFileDependencies
+  setNewNameCache,
+  setUnobfuscationNames,
+  sourceFileDependencies,
+  writeObfuscatedFile,
+  IDENTIFIER_CACHE
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -35,7 +40,7 @@ import {
 import { OBFUSCATION_TOOL } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ArkObfuscator } from 'arkguard';
+import { ArkObfuscator, nameCacheMap, unobfuscationNamesObj } from 'arkguard';
 
 const OBFUSCATE_TESTDATA_DIR = path.resolve(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation');
 
@@ -725,5 +730,144 @@ mocha.describe('test obfuscate config resolver api', function () {
     expect(keepFilesAndDependencies.has(testFile3)).to.be.true;
     expect(keepFilesAndDependencies.has(testFile4)).to.be.true;
     expect(keepFilesAndDependencies.has(testFile5)).to.be.false;
+  });
+
+  mocha.it('6-1: test getHistoryNameCache: isDeclaration false', function () {
+    const moduleInfo = {
+      content: 'module content',
+      buildFilePath: 'build/path/to/file.ts',
+      relativeSourceFilePath: 'src/file.ts',
+      originSourceFilePath: 'C:/projects/my-project/src/file.ts'
+    };
+    nameCacheMap.set('src/file.ts', {
+      [IDENTIFIER_CACHE]: {
+        'identifier1:1': 'obfuscated1',
+        identifier2: 'obfuscated2'
+      }
+    });
+    const isDeclaration: boolean = false;
+    const projectRootPath: string = 'C:/projects/my-project';
+    const result: Map<string, string> = getNameCacheByPath(moduleInfo, isDeclaration, projectRootPath);
+    nameCacheMap.clear();
+    expect(result.size).to.equal(2);
+    expect(result.get('identifier1')).to.equal('obfuscated1');
+    expect(result.get('identifier2')).to.equal('obfuscated2');
+  });
+
+  mocha.it('6-2: test getHistoryNameCache: isDeclaration true', function () {
+    const moduleInfo = {
+      content: 'module content',
+      buildFilePath: 'build/path/to/file.d.ts',
+      relativeSourceFilePath: 'src/file.ts',
+      originSourceFilePath: 'C:/projects/my-project/src/file.ts'
+    };
+    nameCacheMap.set('src/file.ts', {
+      [IDENTIFIER_CACHE]: {
+        'identifier1:1': 'obfuscated1',
+        identifier2: 'obfuscated2'
+      }
+    });
+    const isDeclaration: boolean = true;
+    const projectRootPath: string = 'C:/projects/my-project';
+    const result: Map<string, string> = getNameCacheByPath(moduleInfo, isDeclaration, projectRootPath);
+    nameCacheMap.clear();
+    expect(result.size).to.equal(2);
+    expect(result.get('identifier1')).to.equal('obfuscated1');
+    expect(result.get('identifier2')).to.equal('obfuscated2');
+  });
+
+  mocha.it('7-1: test setNewNameCache: isOhModule is false', function () {
+    const moduleInfo = {
+      content: 'module content',
+      buildFilePath: 'build/path/to/file.ts',
+      relativeSourceFilePath: 'src/file.ts',
+      originSourceFilePath: 'C:/projects/my-project/src/file.ts'
+    };
+    nameCacheMap.set('src/file.ts', {
+      [IDENTIFIER_CACHE]: {
+        'identifier1:1': 'obfuscated1',
+        identifier2: 'obfuscated2'
+      }
+    });
+    const newNameCache = {
+      [IDENTIFIER_CACHE]: {
+        'identifier3:3': 'obfuscated3'
+      }
+    };
+    const isDeclaration: boolean = false;
+    const projectConfig: Object = {
+      obfuscationMergedObConfig: { options: { enableFileNameObfuscation: true } },
+      projectRootPath: '/projectRoot',
+      packageDir: 'oh_modules',
+      modulePathMap: {
+        module1: '/externalModule'
+      },
+    };
+    setNewNameCache(newNameCache, isDeclaration, moduleInfo, projectConfig);
+    const result: string | {} = nameCacheMap.get(moduleInfo.relativeSourceFilePath);
+    nameCacheMap.clear();
+
+    expect(result[IDENTIFIER_CACHE]['identifier3:3'] === 'obfuscated3').to.be.true;
+    expect(result.obfName === 'src/file.ts').to.be.false;
+  });
+
+  mocha.it('7-2: test setNewNameCache: isOhModule is true', function () {
+    const moduleInfo = {
+      content: 'module content',
+      buildFilePath: 'build/path/to/file.ts',
+      relativeSourceFilePath: 'src/file.ts',
+      originSourceFilePath: '/projectRoot/oh_modules/src/file.ts'
+    };
+    nameCacheMap.set('src/file.ts', {
+      [IDENTIFIER_CACHE]: {
+        'identifier1:1': 'obfuscated1',
+        identifier2: 'obfuscated2'
+      }
+    });
+    const newNameCache = {
+      [IDENTIFIER_CACHE]: {
+        'identifier3:3': 'obfuscated3'
+      }
+    };
+    const isDeclaration: boolean = false;
+    const projectConfig: Object = {
+      obfuscationMergedObConfig: { options: { enableFileNameObfuscation: true } },
+      projectRootPath: '/projectRoot',
+      packageDir: 'oh_modules'
+    };
+    setNewNameCache(newNameCache, isDeclaration, moduleInfo, projectConfig);
+    const result: string | {} = nameCacheMap.get(moduleInfo.relativeSourceFilePath);
+    nameCacheMap.clear();
+
+    expect(result[IDENTIFIER_CACHE]['identifier3:3'] === 'obfuscated3').to.be.true;
+    expect(result.obfName === 'src/file.ts').to.be.true;
+  });
+
+  mocha.it('8-1: test setUnobfuscationNames', function () {
+    const relativeSourceFilePath: string = 'src/file.ts';
+    const unobfuscationNameMap: Map<string, Set<string>> = new Map([
+      ['key1', new Set(['value1', 'value2'])],
+      ['key2', new Set(['value3'])]
+    ]);
+    const isDeclaration: boolean = false;
+
+    setUnobfuscationNames(unobfuscationNameMap, relativeSourceFilePath, isDeclaration);
+
+    expect(unobfuscationNamesObj[relativeSourceFilePath]).to.deep.equal({
+      key1: ['value1', 'value2'],
+      key2: ['value3']
+    });
+  });
+
+  mocha.it('9-1: test writeFile', function () {
+    const newFilePath: string = '../../test/ark_compiler_ut/testdata/writeFile.ts';
+    const content: string = 'obfuscated code';
+
+    writeObfuscatedFile(newFilePath, content);
+
+    expect(fs.existsSync(newFilePath)).to.be.true;
+    const fileContent: string = fs.readFileSync(newFilePath, 'utf-8');
+    expect(fileContent).to.equal(content);
+    fs.unlinkSync(newFilePath);
   });
 });
