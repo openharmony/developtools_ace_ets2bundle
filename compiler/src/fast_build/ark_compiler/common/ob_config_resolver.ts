@@ -19,16 +19,23 @@ import type * as ts from 'typescript';
 import {
   ApiExtractor,
   clearGlobalCaches,
-  performancePrinter
+  performancePrinter,
+  getRelativeSourcePath,
+  nameCacheMap,
+  deleteLineInfoForNameString,
+  mangleFilePath,
+  unobfuscationNamesObj,
+  EventList
 } from 'arkguard';
 import type {
   ArkObfuscator,
 } from 'arkguard';
 
-import { toUnixPath } from '../../../utils';
+import { isPackageModulesFile, mkdirsSync, toUnixPath } from '../../../utils';
 import { allSourceFilePaths, localPackageSet } from '../../../ets_checker';
 import { isCurrentProjectFiles } from '../utils';
 import { sourceFileBelongProject } from '../module/module_source_file';
+import { ModuleInfo } from '../../../ark_utils';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
@@ -59,6 +66,11 @@ export function resetObfuscation(): void {
  * dependencies of sourceFiles
  */
 export const sourceFileDependencies: Map<string, ts.ModeAwareCache<ts.ResolvedModuleFull | undefined>> = new Map();
+
+/**
+ * Identifier cache name
+ */
+export const IDENTIFIER_CACHE: string = 'IdentifierCache';
 
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
 function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>): Set<string> {
@@ -144,6 +156,82 @@ export function disablePerformancePrinter(): void {
   if (performancePrinter !== undefined) {
     performancePrinter.filesPrinter = undefined;
     performancePrinter.singleFilePrinter = undefined;
-    performancePrinter.timeSumPrinter = undefined
+    performancePrinter.timeSumPrinter = undefined;
   }
+}
+
+/**
+ * Get namecache by path
+ *
+ * If it is a declaration file, retrieves the corresponding source file's obfuscation results
+ * Or retrieves obfuscation results from full compilation run
+ */
+export function getNameCacheByPath(
+  moduleInfo: ModuleInfo,
+  isDeclaration: boolean,
+  projectRootPath: string | undefined
+): Map<string, string> {
+  let historyNameCache = new Map<string, string>();
+  let nameCachePath = moduleInfo.relativeSourceFilePath;
+  if (isDeclaration) {
+    nameCachePath = getRelativeSourcePath(
+      moduleInfo.originSourceFilePath,
+      projectRootPath,
+      sourceFileBelongProject.get(toUnixPath(moduleInfo.originSourceFilePath))
+    );
+  }
+  if (nameCacheMap) {
+    let identifierCache = nameCacheMap.get(nameCachePath)?.[IDENTIFIER_CACHE];
+    deleteLineInfoForNameString(historyNameCache, identifierCache);
+  }
+  return historyNameCache;
+}
+
+/**
+ * Set newly updated namecache for project source files
+ */
+export function setNewNameCache(
+  newNameCache: Object,
+  isDeclaration: boolean,
+  moduleInfo: ModuleInfo,
+  projectConfig: Object
+): void {
+  if (newNameCache && !isDeclaration) {
+    let obfName: string = moduleInfo.relativeSourceFilePath;
+    let isOhModule: boolean = isPackageModulesFile(moduleInfo.originSourceFilePath, projectConfig);
+    if (projectConfig.obfuscationMergedObConfig?.options.enableFileNameObfuscation && !isOhModule) {
+      obfName = mangleFilePath(moduleInfo.relativeSourceFilePath);
+    }
+    newNameCache.obfName = obfName;
+    nameCacheMap.set(moduleInfo.relativeSourceFilePath, newNameCache);
+  }
+}
+
+/**
+ * Set unobfuscation list after obfuscation
+ */
+export function setUnobfuscationNames(
+  unobfuscationNameMap: Map<string, Set<string>> | undefined,
+  relativeSourceFilePath: string,
+  isDeclaration: boolean
+): void {
+  if (unobfuscationNameMap && !isDeclaration) {
+    let arrayObject: Record<string, string[]> = {};
+    // The type of unobfuscationNameMap's value is Set, convert Set to Array.
+    unobfuscationNameMap.forEach((value: Set<string>, key: string) => {
+      let array: string[] = Array.from(value);
+      arrayObject[key] = array;
+    });
+    unobfuscationNamesObj[relativeSourceFilePath] = arrayObject;
+  }
+}
+
+/**
+ * Write out obfuscated files
+ */
+export function writeObfuscatedFile(newFilePath: string, content: string): void {
+  performancePrinter?.singleFilePrinter?.startEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter);
+  mkdirsSync(path.dirname(newFilePath));
+  fs.writeFileSync(newFilePath, content);
+  performancePrinter?.singleFilePrinter?.endEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
 }
