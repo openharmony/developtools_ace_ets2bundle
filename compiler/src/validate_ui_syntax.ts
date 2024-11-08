@@ -73,6 +73,7 @@ import {
   SINGLE_CHILD_COMPONENT,
   SPECIFIC_CHILD_COMPONENT,
   BUILDIN_STYLE_NAMES,
+  COMPONENT_SYSTEMAPI_NAMES,
   EXTEND_ATTRIBUTE,
   GLOBAL_STYLE_FUNCTION,
   STYLES_ATTRIBUTE,
@@ -380,7 +381,7 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
       `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
-  if (BUILDIN_STYLE_NAMES.has(componentName)) {
+  if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
     const message: string = `The struct '${componentName}' cannot have the same name ` +
       `as the built-in attribute '${componentName}'.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
