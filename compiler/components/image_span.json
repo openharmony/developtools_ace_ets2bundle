@@ -3,6 +3,6 @@
   "parents": ["Text", "ContainerSpan"],
   "atomic": true,
   "attrs": [
-    "verticalAlign", "objectFit", "textBackgroundStyle"
+    "verticalAlign", "objectFit", "textBackgroundStyle", "alt", "colorFilter", "onComplete", "onError"
   ]
 }

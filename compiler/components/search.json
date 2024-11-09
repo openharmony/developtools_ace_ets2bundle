@@ -40,6 +40,11 @@
     "onWillInsert",
     "onDidInsert",
     "onWillDelete",
-    "onDidDelete"
+    "onDidDelete",
+    "enableHapticFeedback",
+    "constructor",
+    "caretPosition",
+    "setTextSelection",
+    "stopEditing"
   ]
 }
