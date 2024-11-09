@@ -3,6 +3,6 @@
   "children": ["Span", "ImageSpan"],
   "parents": ["Text"],
   "attrs": [
-    "textBackgroundStyle"
+    "textBackgroundStyle", "attributeModifier"
   ]
 }
