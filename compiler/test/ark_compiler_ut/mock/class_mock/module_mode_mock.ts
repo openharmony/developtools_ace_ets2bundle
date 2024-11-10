@@ -194,7 +194,10 @@ class ModuleModeMock extends ModuleMode {
 
     const npmEntriesCacheFilePath: string = changeFileExtension(this.npmEntriesInfoPath, EXTNAME_PROTO_BIN);
     mockabcCacheFilesInfo += `${this.npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
-
+    this.abcPaths.forEach((abcPath) => {
+      let abcCacheFilePath: string = changeFileExtension(abcPath, EXTNAME_PROTO_BIN);
+      mockabcCacheFilesInfo += `${abcPath};${abcCacheFilePath}\n`;
+    });
     if (filesInfo === mockabcCacheFilesInfo) {
       return true;
     }
