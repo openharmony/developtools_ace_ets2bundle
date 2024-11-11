@@ -24,7 +24,11 @@ import {
   nameCacheMap,
   unobfuscationNamesObj,
   performancePrinter,
-  EventList 
+  EventList,
+  endFilesEvent,
+  endSingleFileEvent,
+  startFilesEvent,
+  startSingleFileEvent,
 } from 'arkguard';
 import {
   OH_MODULES,
@@ -514,11 +518,11 @@ export interface ModuleInfo {
 export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
-    performancePrinter?.filesPrinter?.startEvent(moduleInfo.buildFilePath);
+    startFilesEvent(moduleInfo.buildFilePath);
     MemoryUtils.tryGC();
     await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
     MemoryUtils.tryGC();
-    performancePrinter?.filesPrinter?.endEvent(moduleInfo.buildFilePath, undefined, true);
+    endFilesEvent(moduleInfo.buildFilePath, undefined, true);
     return;
   }
   mkdirsSync(path.dirname(moduleInfo.buildFilePath));
@@ -576,10 +580,10 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
   } = { packageDir, projectRootPath, localPackageSet, useNormalized, useTsHar };
   let filePathObj = { buildFilePath: moduleInfo.buildFilePath, relativeFilePath: moduleInfo.relativeSourceFilePath };
   try {
-    performancePrinter?.singleFilePrinter?.startEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter, filePathObj.buildFilePath);
+    startSingleFileEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter, filePathObj.buildFilePath);
     mixedInfo = await arkObfuscator.obfuscate(moduleInfo.content, filePathObj, previousStageSourceMap,
       historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
-    performancePrinter?.singleFilePrinter?.endEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter);
+    endSingleFileEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter);
   } catch (err) {
     logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`);
   }

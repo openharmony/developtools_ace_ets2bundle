@@ -66,7 +66,14 @@ import {
   localPackageSet
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
-import { performancePrinter, EventList } from 'arkguard';
+import {
+  EventList,
+  endFilesEvent,
+  performancePrinter,
+  printTimeSumData,
+  printTimeSumInfo,
+  startFilesEvent
+} from 'arkguard';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -305,7 +312,7 @@ export class ModuleSourceFile {
     }
 
     collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
-    performancePrinter?.filesPrinter?.startEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+    startFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
     let sourceProjectConfig: Object = ModuleSourceFile.projectConfig;
     // obfuscation initialization, include collect file, resolve denpendency, read source
     if (compileToolIsRollUp()) {
@@ -316,9 +323,9 @@ export class ModuleSourceFile {
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
         sourceProjectConfig.compileHar, keepFilesAndDependencies);
     }
-    performancePrinter?.filesPrinter?.endEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+    endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
 
-    performancePrinter?.filesPrinter?.startEvent(EventList.ALL_FILES_OBFUSCATION);
+    startFilesEvent(EventList.ALL_FILES_OBFUSCATION);
     let byteCodeHar = false;
     if (Object.prototype.hasOwnProperty.call(sourceProjectConfig, 'byteCodeHar')) {
       byteCodeHar = sourceProjectConfig.byteCodeHar;
@@ -342,9 +349,9 @@ export class ModuleSourceFile {
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
       await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
     }
-    performancePrinter?.timeSumPrinter?.print('All files obfuscation:');
-    performancePrinter?.timeSumPrinter?.summarizeEventDuration();
-    performancePrinter?.filesPrinter?.endEvent(EventList.ALL_FILES_OBFUSCATION);
+    printTimeSumInfo('All files obfuscation:');
+    printTimeSumData();
+    endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;

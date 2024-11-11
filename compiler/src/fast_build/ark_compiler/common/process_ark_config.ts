@@ -20,7 +20,10 @@ import {
   initObfuscationConfig,
   readProjectPropertiesByCollectedPaths,
   performancePrinter,
-  EventList
+  EventList,
+  blockPrinter,
+  endFilesEvent,
+  startFilesEvent,
 } from 'arkguard';
 
 import {
@@ -45,7 +48,7 @@ import {
 import { getArkBuildDir } from '../../../ark_utils';
 import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
-import { disablePerformancePrinter, type MergedConfig } from './ob_config_resolver';
+import type { MergedConfig } from './ob_config_resolver';
 import type { ReseverdSetForArkguard } from 'arkguard';
 
 type ArkConfig = {
@@ -176,12 +179,12 @@ export function initArkProjectConfig(share: Object): Object {
   if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
     const logger: any = share.getLogger(OBFUSCATION_TOOL);
-    performancePrinter?.filesPrinter?.startEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
+    startFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
     initObfuscationConfig(projectConfig, arkProjectConfig, logger);
-    performancePrinter?.filesPrinter?.endEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
+    endFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
   } else {
     // Set performance printer to undefined in case we cannot disable it without obfuscation initialization
-    disablePerformancePrinter();
+    blockPrinter();
   }
   return arkProjectConfig;
 }
