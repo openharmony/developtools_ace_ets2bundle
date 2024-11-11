@@ -196,6 +196,7 @@
         "Hyperlink",
         "Image",
         "ImageAnimator",
+        "IndicatorComponent",
         "Line",
         "LinearIndicator",
         "List",
@@ -467,6 +468,11 @@
             "name": "ImageAnimator",
             "type": "ImageAnimatorAttribute",
             "instance": "ImageAnimatorInstance"
+          },
+          {
+            "name": "IndicatorComponent",
+            "type": "IndicatorComponentAttribute",
+            "instance": "IndicatorComponentInstance"
           },
           {
             "name": "Line",
