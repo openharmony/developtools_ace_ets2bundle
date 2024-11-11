@@ -25,7 +25,9 @@ import {
   deleteLineInfoForNameString,
   mangleFilePath,
   unobfuscationNamesObj,
-  EventList
+  EventList,
+  endSingleFileEvent,
+  startSingleFileEvent
 } from 'arkguard';
 import type {
   ArkObfuscator,
@@ -150,17 +152,6 @@ function getFileNamesForScanningWhitelist(mergedObConfig: MergedConfig, allKeepF
 }
 
 /**
- * Disable performance printer when the build mode is debug
- */
-export function disablePerformancePrinter(): void {
-  if (performancePrinter !== undefined) {
-    performancePrinter.filesPrinter = undefined;
-    performancePrinter.singleFilePrinter = undefined;
-    performancePrinter.timeSumPrinter = undefined;
-  }
-}
-
-/**
  * Get namecache by path
  *
  * If it is a declaration file, retrieves the corresponding source file's obfuscation results
@@ -230,8 +221,8 @@ export function setUnobfuscationNames(
  * Write out obfuscated files
  */
 export function writeObfuscatedFile(newFilePath: string, content: string): void {
-  performancePrinter?.singleFilePrinter?.startEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter);
+  startSingleFileEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter);
   mkdirsSync(path.dirname(newFilePath));
   fs.writeFileSync(newFilePath, content);
-  performancePrinter?.singleFilePrinter?.endEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
+  endSingleFileEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
 }
