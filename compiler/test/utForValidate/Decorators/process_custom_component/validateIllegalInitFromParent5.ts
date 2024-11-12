@@ -12,10 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+exports.source = `
+@Observed
+class Info {
+  count: number;
+  constructor(count: number) {
+    this.count = count;
+  }
+}
+
 @Entry
 @Component
 struct Parent {
-  @Consume $arr: number[];
+  @State $arr: Info = new Info(1);
   
   build() {
     Column() {
@@ -26,7 +35,8 @@ struct Parent {
 
 @Component
 struct Child {
-  items: number[] = [1, 2, 3];
+  @ObjectLink items: Info;
   build() {
   }
 }
+`

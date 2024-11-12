@@ -12,29 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@Observed
-class Info {
-  count: number;
-  constructor(count: number) {
-    this.count = count;
-  }
-}
-
+exports.source = `
 @Entry
 @Component
 struct Parent {
-  @State $arr: Info = new Info(1);
+  @State $arr: number[] = [1, 2, 3];
   
   build() {
     Column() {
-      Child({items: this.$arr});
+      Child({items: this.arr});
     }
   }
 }
 
 @Component
 struct Child {
-  @ObjectLink items: Info;
+  @Link items: number[];
   build() {
   }
 }
+`
