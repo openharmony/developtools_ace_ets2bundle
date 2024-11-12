@@ -175,6 +175,10 @@
         "message": "The regular property 'message' cannot be assigned to the @Link property 'message'.",
         "type": "ERROR"
     },
+    "validateIllegalInitFromParent4": {
+        "message": "The @Consume property '$arr' cannot be assigned to the regular property 'items'.",
+        "type": "ERROR"
+    },
     "validateNonLinkWithDollar": {
         "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
         "type": "ERROR"
