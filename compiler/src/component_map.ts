@@ -76,6 +76,7 @@ const FOREACH_ATTRIBUTE = ['onMove'];
 export const INNER_COMPONENT_NAMES: Set<string> = new Set();
 export const NO_DEBUG_LINE_COMPONENT: Set<string> = new Set();
 export const BUILDIN_CONTAINER_COMPONENT: Set<string> = new Set();
+export const COMPONENT_SYSTEMAPI_NAMES: Set<string> = new Set();
 export const BUILDIN_STYLE_NAMES: Set<string> = new Set([
   ...COMMON_ATTRS, ...GESTURE_ATTRS, ...TRANSITION_COMMON_ATTRS, ...FOREACH_ATTRIBUTE
 ]);
@@ -140,9 +141,14 @@ export const CUSTOM_BUILDER_CONSTRUCTORS: Set<string> = new Set(['MenuItem', 'Me
         new Set([...COMPONENT_MAP[componentName].children]));
     }
     if (COMPONENT_MAP[componentName].attrs && COMPONENT_MAP[componentName].attrs.length) {
-      COMPONENT_MAP[componentName].attrs.forEach((item) => {
+      COMPONENT_MAP[componentName].attrs.forEach((item: string) => {
         BUILDIN_STYLE_NAMES.add(item);
       });
+      if (COMPONENT_MAP[componentName].systemApi) {
+        COMPONENT_MAP[componentName].attrs.forEach((item: string) => {
+          COMPONENT_SYSTEMAPI_NAMES.add(item);
+        });
+      }
     }
     if (COMPONENT_MAP[componentName].noDebugLine) {
       NO_DEBUG_LINE_COMPONENT.add(componentName);
