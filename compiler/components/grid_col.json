@@ -3,6 +3,6 @@
     "parents": ["GridRow"],
     "single": true,
     "attrs": [
-        "span", "offset", "order"
+        "span", "offset", "order", "gridColOffset"
     ]
 }
