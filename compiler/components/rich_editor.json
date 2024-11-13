@@ -3,6 +3,8 @@
   "atomic": true,
   "attrs": [
     "onReady", "onSelect", "aboutToIMEInput",
-    "onIMEInputComplete", "aboutToDelete", "onDeleteComplete"
+    "onIMEInputComplete", "aboutToDelete", "onDeleteComplete",
+    "onSelectionChange", "bindSelectionMenu", "copyOptions", "enableDataDetector", "dataDetectorConfig",
+    "placeholder", "onDidIMEInput", "onEditingChange", "onWillChange", "onDidChange"
   ]
 }
