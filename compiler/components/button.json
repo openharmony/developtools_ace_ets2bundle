@@ -3,6 +3,6 @@
   "single": true,
   "attrs": [
     "type", "stateEffect", "fontColor", "fontSize", "fontWeight", "fontStyle", "fontFamily", "controlSize",
-    "role", "contentModifier", "labelStyle"
+    "role", "contentModifier", "labelStyle", "buttonStyle"
   ]
 }
