@@ -263,7 +263,40 @@ export class UpdateResult {
   }
 }
 
-export const curPropMap: Map<string, string> = new Map();
+export class PropMapManager {
+  static curPropMap: Map<string, string> = new Map();
+  static logInfoMap: Map<string, LogInfo[]> = new Map();
+
+  public static register(identifierName: string, decoratorName: string) {
+    PropMapManager.curPropMap.set(identifierName, decoratorName);
+
+    if (decoratorName !== COMPONENT_NON_DECORATOR) {
+      PropMapManager.releaseLogs(identifierName, COMPONENT_NON_DECORATOR);
+    }
+  }
+
+  public static find(identifierName: string) {
+    return PropMapManager.curPropMap.get(identifierName);
+  }
+
+  public static reserveLog(identifierName: string, decoratorName: string, log: LogInfo) {
+    const key: string = `${identifierName}-${decoratorName}`;
+    const logInfos: LogInfo[] = PropMapManager.logInfoMap.get(key) ?? [];
+    PropMapManager.logInfoMap.set(key, [...logInfos, log]);
+  }
+
+  public static releaseLogs(identifierName: string, decoratorName: string) {
+    const key: string = `${identifierName}-${decoratorName}`;
+    if (PropMapManager.logInfoMap.has(key)) {
+      PropMapManager.logInfoMap.delete(key);
+    }
+  }
+
+  public static reset() {
+    PropMapManager.curPropMap.clear();
+    PropMapManager.logInfoMap.clear();
+  }
+}
 
 export function processMemberVariableDecorators(parentName: ts.Identifier,
   item: ts.PropertyDeclaration, ctorNode: ts.ConstructorDeclaration, watchMap: Map<string, ts.Node>,
@@ -276,7 +309,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     if (!name.escapedText) {
       return updateResult;
     }
-    curPropMap.set(name.escapedText.toString(), COMPONENT_NON_DECORATOR);
+    PropMapManager.register(name.escapedText.toString(), COMPONENT_NON_DECORATOR);
     updateResult.setProperity(undefined);
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_NON_DECORATOR));
     updateResult.setCtor(updateConstructor(ctorNode, [], [
@@ -348,7 +381,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     const includeWatchAndRequire: boolean =
       [COMPONENT_WATCH_DECORATOR, COMPONENT_REQUIRE_DECORATOR].includes(decoratorName);
     if (!includeWatchAndRequire) {
-      curPropMap.set(name.escapedText.toString(), decoratorName);
+      PropMapManager.register(name.escapedText.toString(), decoratorName);
     }
     if (BUILDIN_STYLE_NAMES.has(decoratorName.replace('@', ''))) {
       validateDuplicateDecorator(decorators[i], log);
