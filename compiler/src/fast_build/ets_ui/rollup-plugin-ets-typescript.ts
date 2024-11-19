@@ -108,6 +108,7 @@ import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
+import { ProjectCollections } from 'arkguard';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -436,6 +437,7 @@ async function transform(code: string, id: string) {
   shouldEmitJsFlagMap.set(id, shouldEmitJsFlag);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
   let transformResult: ts.TransformationResult<ts.SourceFile> = null;
+  ProjectCollections.projectWhiteListManager?.setCurrentCollector(id);
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);

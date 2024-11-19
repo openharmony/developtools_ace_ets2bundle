@@ -19,31 +19,56 @@ import type * as ts from 'typescript';
 import {
   ApiExtractor,
   clearGlobalCaches,
-  performancePrinter,
-  getRelativeSourcePath,
-  nameCacheMap,
+  clearNameCache,
   deleteLineInfoForNameString,
-  mangleFilePath,
-  unobfuscationNamesObj,
-  EventList,
+  endFilesEvent,
   endSingleFileEvent,
-  startSingleFileEvent
+  EventList,
+  getRelativeSourcePath,
+  handleUniversalPathInObf,
+  mangleFilePath,
+  MemoryUtils,
+  nameCacheMap,
+  performancePrinter,
+  printTimeSumData,
+  printTimeSumInfo,
+  ProjectCollections,
+  startFilesEvent,
+  startSingleFileEvent,
+  unobfuscationNamesObj,
+  writeObfuscationNameCache,
+  writeUnobfuscationContent,
 } from 'arkguard';
 import type {
   ArkObfuscator,
   HvigorErrorInfo
 } from 'arkguard';
 
-import { isPackageModulesFile, mkdirsSync, toUnixPath } from '../../../utils';
-import { allSourceFilePaths, localPackageSet } from '../../../ets_checker';
+import { GeneratedFileInHar, harFilesRecord, isPackageModulesFile, mkdirsSync, toUnixPath } from '../../../utils';
+import { allSourceFilePaths, collectAllFiles, localPackageSet } from '../../../ets_checker';
 import { isCurrentProjectFiles } from '../utils';
 import { sourceFileBelongProject } from '../module/module_source_file';
-import { ModuleInfo } from '../../../ark_utils';
-import { red, yellow, OBFUSCATION_TOOL } from './ark_define';
+import {
+  compileToolIsRollUp,
+  createAndStartEvent,
+  mangleDeclarationFileName,
+  ModuleInfo,
+  stopEvent,
+  writeArkguardObfuscatedSourceCode
+} from '../../../ark_utils';
+import { OBFUSCATION_TOOL, red, yellow } from './ark_define';
 import { logger } from '../../../compile_info';
+import { MergedConfig } from '../common/ob_config_resolver';
+import { ModuleSourceFile } from '../module/module_source_file';
+import { readProjectAndLibsSource } from './process_ark_config';
+import { CommonLogger } from '../logger';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../../meomry_monitor/memory_define';
+import { ESMODULE } from '../../../pre_define';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
+  collectReservedNameForObf,
   enableObfuscatedFilePathConfig,
   enableObfuscateFileName,
   generateConsumerObConfigFile,
@@ -56,7 +81,6 @@ export {
   ObConfigResolver,
   writeObfuscationNameCache,
   writeUnobfuscationContent,
-  collectReservedNameForObf
 } from 'arkguard';
 
 export function resetObfuscation(): void {
@@ -278,4 +302,199 @@ export function writeObfuscatedFile(newFilePath: string, content: string): void 
   mkdirsSync(path.dirname(newFilePath));
   fs.writeFileSync(newFilePath, content);
   endSingleFileEvent(EventList.WRITE_FILE, performancePrinter.timeSumPrinter, false, true);
+}
+
+// create or update incremental caches, also set the shouldReObfuscate flag if needed
+export function updateIncrementalCaches(arkObfuscator: ArkObfuscator): void {
+  if (arkObfuscator.filePathManager) {
+    const deletedFilesSet: Set<string> = arkObfuscator.filePathManager.getDeletedSourceFilePaths();
+    ProjectCollections.projectWhiteListManager.createOrUpdateWhiteListCaches(deletedFilesSet);
+    arkObfuscator.fileContentManager.deleteFileContent(deletedFilesSet);
+    arkObfuscator.shouldReObfuscate = ProjectCollections.projectWhiteListManager.getShouldReObfuscate();
+  }
+}
+
+// Scan all files of project and create or update cache for it
+export function readProjectCaches(allFiles: Set<string>, arkObfuscator: ArkObfuscator): void {
+  arkObfuscator.filePathManager?.createOrUpdateSourceFilePaths(allFiles);
+
+  // read fileContent caches if is increamental
+  if (arkObfuscator.isIncremental) {
+    arkObfuscator.fileContentManager.readFileNamesMap();
+  }
+}
+
+export function getUpdatedFiles(
+  sourceProjectConfig: Object,
+  allSourceFilePaths: Set<string>,
+  moduleSourceFiles: ModuleSourceFile[]
+): Set<string> {
+  let updatedFiles: Set<string> = new Set();
+  if (sourceProjectConfig.arkObfuscator?.isIncremental) {
+    moduleSourceFiles.forEach((sourceFile) => {
+      updatedFiles.add(toUnixPath(sourceFile.moduleId));
+    });
+    sourceProjectConfig.arkObfuscator?.filePathManager.addedSourceFilePaths.forEach((path: string) => {
+      updatedFiles.add(path);
+    });
+    // Add declaration files written by users
+    allSourceFilePaths.forEach((path: string) => {
+      if (path.endsWith('.d.ts') || path.endsWith('.d.ets')) {
+        updatedFiles.add(path);
+      }
+    });
+  } else {
+    updatedFiles = allSourceFilePaths;
+  }
+  return updatedFiles;
+}
+
+/**
+ * Preprocess of obfuscation:
+ * 1. collect whileLists for each file.
+ * 2. create or update incremental caches
+ */
+export function obfuscationPreprocess(
+  sourceProjectConfig: Object,
+  obfuscationConfig: MergedConfig,
+  allSourceFilePaths: Set<string>,
+  keepFilesAndDependencies: Set<string>,
+  moduleSourceFiles: ModuleSourceFile[]
+): void {
+  if (sourceProjectConfig.arkObfuscator) {
+    readProjectCaches(allSourceFilePaths, sourceProjectConfig.arkObfuscator);
+
+    const updatedFiles = getUpdatedFiles(sourceProjectConfig, allSourceFilePaths, moduleSourceFiles);
+
+    readProjectAndLibsSource(
+      updatedFiles,
+      obfuscationConfig,
+      sourceProjectConfig.arkObfuscator,
+      sourceProjectConfig.compileHar,
+      keepFilesAndDependencies
+    );
+
+    updateIncrementalCaches(sourceProjectConfig.arkObfuscator);
+    ProjectCollections.clearProjectWhiteListManager();
+  }
+}
+
+/**
+ * Reobfuscate all files if needed.
+ */
+export async function reObfuscate(
+  arkObfuscator: ArkObfuscator,
+  harFilesRecord: Map<string, GeneratedFileInHar>,
+  logger: Function,
+  projectConfig: Object
+): Promise<void> {
+  // name cache cannot be used since we need to reObfuscate all files
+  clearNameCache();
+  const sortedFiles: string[] = arkObfuscator.fileContentManager.getSortedFiles();
+  for (const originFilePath of sortedFiles) {
+    const transformedFilePath: string = arkObfuscator.fileContentManager.fileNamesMap.get(originFilePath);
+    const fileContentObj: ProjectCollections.FileContent = arkObfuscator.fileContentManager.readFileContent(transformedFilePath);
+    const originSourceFilePath: string = toUnixPath(fileContentObj.moduleInfo.originSourceFilePath);
+    const isOriginalDeclaration: boolean = (/\.d\.e?ts$/).test(originSourceFilePath);
+    if (isOriginalDeclaration) {
+      if (!harFilesRecord.has(originSourceFilePath)) {
+        const genFilesInHar: GeneratedFileInHar = {
+          sourcePath: originSourceFilePath,
+          originalDeclarationCachePath: fileContentObj.moduleInfo.buildFilePath,
+          originalDeclarationContent: fileContentObj.moduleInfo.content
+        };
+        harFilesRecord.set(originSourceFilePath, genFilesInHar);
+      }
+      continue;
+    }
+    MemoryUtils.tryGC();
+    await writeArkguardObfuscatedSourceCode(fileContentObj.moduleInfo, logger, projectConfig, fileContentObj.previousStageSourceMap);
+    MemoryUtils.tryGC();
+  }
+}
+
+/**
+ * Include collect file, resolve denpendency, read source
+ */
+export function collectSourcesWhiteList(rollupObject: Object, allSourceFilePaths: Set<string>, sourceProjectConfig: Object,
+  sourceFiles: ModuleSourceFile[]
+): void {
+  collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
+  startFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SCAN_SOURCEFILES);
+  if (compileToolIsRollUp()) {
+    const obfuscationConfig = sourceProjectConfig.obfuscationMergedObConfig;
+    handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
+    const keepFilesAndDependencies = handleKeepFilesAndGetDependencies(
+      obfuscationConfig,
+      sourceProjectConfig.arkObfuscator,
+      sourceProjectConfig
+    );
+    obfuscationPreprocess(
+      sourceProjectConfig,
+      obfuscationConfig,
+      allSourceFilePaths,
+      keepFilesAndDependencies,
+      sourceFiles
+    );
+  }
+  MemoryMonitor.stopRecordStage(recordInfo);
+  endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+}
+
+/**
+ * Handle post obfuscation tasks:
+ * 1.ReObfuscate all files if whitelists changed in incremental build.
+ * 2.Obfuscate declaration files.
+ * 3.Write fileNamesMap.
+ */
+export async function handlePostObfuscationTasks(
+  sourceProjectConfig: Object,
+  projectConfig: Object,
+  rollupObject: Object,
+  logger: Function
+): Promise<void> {
+  const arkObfuscator = sourceProjectConfig.arkObfuscator;
+
+  if (arkObfuscator?.shouldReObfuscate) {
+    await reObfuscate(arkObfuscator, harFilesRecord, logger, projectConfig);
+    arkObfuscator.shouldReObfuscate = false;
+  }
+
+  if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
+    await mangleDeclarationFileName(logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
+  }
+
+  if (arkObfuscator?.fileContentManager) {
+    arkObfuscator.fileContentManager.writeFileNamesMap();
+  }
+
+  printTimeSumInfo('All files obfuscation:');
+  printTimeSumData();
+  endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+}
+
+/**
+ * Write obfuscation caches if needed
+ */
+export function writeObfuscationCaches(sourceProjectConfig: Object, eventOrEventFactory: Object): void {
+  const eventObfuscatedCode = createAndStartEvent(eventOrEventFactory, 'write obfuscation name cache');
+
+  const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
+  const isWidgetCompile = sourceProjectConfig.widgetCompile;
+
+  if (needToWriteCache) {
+    writeObfuscationNameCache(
+      sourceProjectConfig,
+      sourceProjectConfig.entryPackageInfo,
+      sourceProjectConfig.obfuscationOptions.obfuscationCacheDir,
+      sourceProjectConfig.obfuscationMergedObConfig.options?.printNameCache
+    );
+  }
+
+  if (needToWriteCache && !isWidgetCompile) {
+    writeUnobfuscationContent(sourceProjectConfig);
+  }
+
+  stopEvent(eventObfuscatedCode);
 }

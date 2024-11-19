@@ -19,6 +19,7 @@ import fs from "fs";
 import * as ts from 'typescript';
 import mocha from 'mocha';
 import path from "path";
+import sinon from 'sinon';
 
 import {
   MergedConfig,
@@ -32,7 +33,11 @@ import {
   sourceFileDependencies,
   writeObfuscatedFile,
   IDENTIFIER_CACHE,
-  initObfLogger,
+  updateIncrementalCaches,
+  readProjectCaches,
+  getUpdatedFiles,
+  obfuscationPreprocess,
+  reObfuscate,
   printObfLogger
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
@@ -42,7 +47,8 @@ import {
 import { OBFUSCATION_TOOL } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import { RELEASE } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ArkObfuscator, nameCacheMap, unobfuscationNamesObj } from 'arkguard';
+import { ArkObfuscator, nameCacheMap, unobfuscationNamesObj, ProjectCollections } from 'arkguard';
+import * as arkUtils from '../../../lib/ark_utils'
 
 const OBFUSCATE_TESTDATA_DIR = path.resolve(__dirname, '../../../test/ark_compiler_ut/testdata/obfuscation');
 
@@ -823,5 +829,232 @@ mocha.describe('test obfuscate config resolver api', function () {
     const fileContent: string = fs.readFileSync(newFilePath, 'utf-8');
     expect(fileContent).to.equal(content);
     fs.unlinkSync(newFilePath);
+  });
+
+  mocha.describe('10: test Obfuscation Functions', function () {
+    let arkObfuscatorStub;
+    let filePathManagerStub;
+    let fileContentManagerStub;
+    let projectWhiteListManagerStub;
+
+    mocha.beforeEach(function () {
+      filePathManagerStub = {
+        getDeletedSourceFilePaths: sinon.stub(),
+        createOrUpdateSourceFilePaths: sinon.stub(),
+        addedSourceFilePaths: new Set(),
+      };
+      fileContentManagerStub = {
+        deleteFileContent: sinon.stub(),
+        readFileNamesMap: sinon.stub(),
+        getSortedFiles: sinon.stub(),
+        fileNamesMap: new Map(),
+        readFileContent: sinon.stub(),
+      };
+      projectWhiteListManagerStub = {
+        createOrUpdateWhiteListCaches: sinon.stub(),
+        getShouldReObfuscate: sinon.stub(),
+      };
+      arkObfuscatorStub = {
+        filePathManager: filePathManagerStub,
+        fileContentManager: fileContentManagerStub,
+        shouldReObfuscate: false,
+        isIncremental: false,
+      };
+      ProjectCollections.initProjectWhiteListManager('', false, false);
+      sinon.stub(ProjectCollections, 'projectWhiteListManager').value(projectWhiteListManagerStub);
+    });
+
+    mocha.afterEach(function () {
+      sinon.restore();
+    });
+
+    mocha.describe('10-1: updateIncrementalCaches', function () {
+      mocha.it('10-1-1: should update caches and set shouldReObfuscate flag if needed', function () {
+        const deletedFilesSet = new Set(['file1.ts', 'file2.ts']);
+        filePathManagerStub.getDeletedSourceFilePaths.returns(deletedFilesSet);
+        projectWhiteListManagerStub.getShouldReObfuscate.returns(true);
+
+        updateIncrementalCaches(arkObfuscatorStub);
+
+        expect(projectWhiteListManagerStub.createOrUpdateWhiteListCaches.calledWith(deletedFilesSet)).to.be.true;
+        expect(fileContentManagerStub.deleteFileContent.calledWith(deletedFilesSet)).to.be.true;
+        expect(arkObfuscatorStub.shouldReObfuscate).to.be.true;
+      });
+
+      mocha.it('10-1-2: should not set shouldReObfuscate flag if not needed', function () {
+        const deletedFilesSet = new Set(['file1.ts', 'file2.ts']);
+        filePathManagerStub.getDeletedSourceFilePaths.returns(deletedFilesSet);
+        projectWhiteListManagerStub.getShouldReObfuscate.returns(false);
+
+        updateIncrementalCaches(arkObfuscatorStub);
+
+        expect(arkObfuscatorStub.shouldReObfuscate).to.be.false;
+      });
+    });
+
+    mocha.describe('10-2: readProjectCaches', function () {
+      mocha.it('10-2-1: should update source file paths and read file names map if incremental', function () {
+        const allFiles = new Set(['file1.ts', 'file2.ts']);
+        arkObfuscatorStub.isIncremental = true;
+
+        readProjectCaches(allFiles, arkObfuscatorStub);
+
+        expect(filePathManagerStub.createOrUpdateSourceFilePaths.calledWith(allFiles)).to.be.true;
+        expect(fileContentManagerStub.readFileNamesMap.calledOnce).to.be.true;
+      });
+
+      mocha.it('10-2-2: should not read file names map if not incremental', function () {
+        const allFiles = new Set(['file1.ts', 'file2.ts']);
+        arkObfuscatorStub.isIncremental = false;
+
+        readProjectCaches(allFiles, arkObfuscatorStub);
+
+        expect(fileContentManagerStub.readFileNamesMap.called).to.be.false;
+      });
+    });
+
+    mocha.describe('10-3: getUpdatedFiles', function () {
+      mocha.it('10-3-1: should return updated files if incremental', function () {
+        const sourceProjectConfig = {
+          arkObfuscator: {
+            isIncremental: true,
+            filePathManager: {
+              addedSourceFilePaths: new Set(['file3.ts']),
+            },
+          },
+        };
+        const allSourceFilePaths = new Set(['file1.ts', 'file2.ts', 'file3.d.ts', 'file4.d.ets']);
+        const moduleSourceFiles = [{ moduleId: 'file1.ts' }, { moduleId: 'file2.ts' }];
+        const updatedFiles = getUpdatedFiles(sourceProjectConfig, allSourceFilePaths, moduleSourceFiles);
+        expect(updatedFiles).to.deep.equal(new Set(['file1.ts', 'file2.ts', 'file3.ts', 'file3.d.ts', 'file4.d.ets']));
+      });
+
+      mocha.it('10-3-2: should return all source files if not incremental', function () {
+        const sourceProjectConfig = {
+          arkObfuscator: {
+            isIncremental: false,
+          },
+        };
+        const allSourceFilePaths = new Set(['file1.ts', 'file2.ts', 'file3.d.ts']);
+        const moduleSourceFiles = [{ moduleId: 'file1.ts' }, { moduleId: 'file2.ts' }];
+        const updatedFiles = getUpdatedFiles(sourceProjectConfig, allSourceFilePaths, moduleSourceFiles);
+        expect(updatedFiles).to.deep.equal(allSourceFilePaths);
+      });
+    });
+
+    mocha.describe('10-4: obfuscationPreprocess', function () {
+      mocha.it('10-4-1: should call readProjectCaches and updateIncrementalCaches if arkObfuscator exists', function () {
+        const sourceProjectConfig = {
+          arkObfuscator: arkObfuscatorStub,
+        };
+        const allSourceFilePaths = new Set(['file1.ts', 'file2.ts']);
+        const obfuscationConfig = {};
+        const keepFilesAndDependencies = new Set();
+        const moduleSourceFiles = [{ moduleId: 'file1.ts' }, { moduleId: 'file2.ts' }];
+
+        obfuscationPreprocess(
+          sourceProjectConfig,
+          obfuscationConfig,
+          allSourceFilePaths,
+          keepFilesAndDependencies,
+          moduleSourceFiles
+        );
+
+        expect(filePathManagerStub.createOrUpdateSourceFilePaths.calledWith(allSourceFilePaths)).to.be.true;
+        expect(projectWhiteListManagerStub.createOrUpdateWhiteListCaches.called).to.be.true;
+        expect(ProjectCollections.projectWhiteListManager).to.be.undefined;
+      });
+
+      mocha.it('10-4-2: should not call readProjectCaches if arkObfuscator does not exist', function () {
+        const sourceProjectConfig = {};
+        const allSourceFilePaths = new Set(['file1.ts', 'file2.ts']);
+        const obfuscationConfig = {};
+        const keepFilesAndDependencies = new Set();
+        const moduleSourceFiles = [{ moduleId: 'file1.ts' }, { moduleId: 'file2.ts' }];
+
+        obfuscationPreprocess(
+          sourceProjectConfig,
+          obfuscationConfig,
+          allSourceFilePaths,
+          keepFilesAndDependencies,
+          moduleSourceFiles
+        );
+
+        expect(filePathManagerStub.createOrUpdateSourceFilePaths.called).to.be.false;
+      });
+    });
+
+    mocha.describe('10-5: reObfuscate', function () {
+      mocha.it('10-5-1: should update harFilesRecord if is declaration file', async function () {
+        const harFilesRecord = new Map();
+        const logger = {};
+        const projectConfig = {};
+        const sortedFiles = ['file1.d.ts', 'file2.d.ts'];
+        const fileContentObj1 = {
+          moduleInfo: {
+            originSourceFilePath: 'file1.d.ts',
+            buildFilePath: 'file1.d.ts',
+            content: 'content1',
+          },
+          previousStageSourceMap: {},
+        };
+        const fileContentObj2 = {
+          moduleInfo: {
+            originSourceFilePath: 'file2.d.ts',
+            buildFilePath: 'file2.d.ts',
+            content: 'content2',
+          },
+          previousStageSourceMap: {},
+        };
+        fileContentManagerStub.getSortedFiles.returns(sortedFiles);
+        fileContentManagerStub.fileNamesMap.set('file1.d.ts', 'file1.d.ts');
+        fileContentManagerStub.fileNamesMap.set('file2.d.ts', 'file2.d.ts');
+        fileContentManagerStub.readFileContent
+          .withArgs('file1.d.ts').returns(fileContentObj1)
+          .withArgs('file2.d.ts').returns(fileContentObj2);
+        harFilesRecord.set('file2.d.ts',{});
+        await reObfuscate(arkObfuscatorStub, harFilesRecord, printObfLogger, projectConfig);
+        expect(harFilesRecord.has('file1.d.ts')).to.be.true;
+        expect(harFilesRecord.get('file1.d.ts')).to.deep.equal({
+          sourcePath: 'file1.d.ts',
+          originalDeclarationCachePath: 'file1.d.ts',
+          originalDeclarationContent: 'content1'
+        });
+        expect(harFilesRecord.has('file2.d.ts')).to.be.true;
+        expect(harFilesRecord.get('file2.d.ts')).to.deep.equal({});
+      });
+
+      mocha.it('10-5-2: should writeArkguardObfuscatedSourceCode if is not declaraiont file', async function () {
+        const harFilesRecord = new Map();
+        const logger = {};
+        const projectConfig = {};
+        const sortedFiles = ['file1.ts', 'file2.ts'];
+        const fileContentObj1 = {
+          moduleInfo: {
+            originSourceFilePath: 'file1.ts',
+            buildFilePath: 'file1.ts',
+            content: 'content1',
+          },
+          previousStageSourceMap: {},
+        };
+        const fileContentObj2 = {
+          moduleInfo: {
+            originSourceFilePath: 'file2.ts',
+            buildFilePath: 'file2.ts',
+            content: 'content2',
+          },
+          previousStageSourceMap: {},
+        };
+        let writeArkguardObfuscatedSourceCodeStub = sinon.stub(arkUtils, 'writeArkguardObfuscatedSourceCode');
+        fileContentManagerStub.getSortedFiles.returns(sortedFiles);
+        fileContentManagerStub.fileNamesMap.set('file1.ts', 'file1.ts');
+        fileContentManagerStub.fileNamesMap.set('file2.ts', 'file2.ts');
+        fileContentManagerStub.readFileContent
+          .withArgs('file1.ts').returns(fileContentObj1)
+          .withArgs('file2.ts').returns(fileContentObj2);
+        await reObfuscate(arkObfuscatorStub, harFilesRecord, printObfLogger, projectConfig);
+        expect(writeArkguardObfuscatedSourceCodeStub.calledTwice).to.be.true;
+      });
+    });
   });
 });
