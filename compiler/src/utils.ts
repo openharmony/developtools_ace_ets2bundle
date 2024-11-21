@@ -129,7 +129,7 @@ export function getMessage(fileName: string, info: LogInfo, fastBuild: boolean =
 export function getTransformLog(transformLog: IFileLog): LogInfo[] {
   const sourceFile: ts.SourceFile = transformLog.sourceFile;
   const logInfos: LogInfo[] = transformLog.errors.map((item) => {
-    if (item.pos) {
+    if (item.pos || item.pos === 0) {
       if (!item.column || !item.line) {
         const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(item.pos);
         item.line = posOfNode.line + 1;
