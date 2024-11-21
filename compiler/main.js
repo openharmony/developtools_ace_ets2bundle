@@ -86,8 +86,7 @@ function initProjectConfig(projectConfig) {
     path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
-  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath;
+  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath || process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
     hashProjectPath(projectConfig.projectPath);
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
@@ -104,6 +103,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.compileHar = false;
   projectConfig.compileShared = false;
   projectConfig.splitCommon = false;
+  projectConfig.allowEtsAnnotations = false;
   projectConfig.checkEntry = projectConfig.checkEntry || process.env.checkEntry;
   projectConfig.obfuscateHarType = projectConfig.obfuscateHarType || process.env.obfuscate;
   projectConfig.packageDir = 'node_modules';

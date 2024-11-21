@@ -164,6 +164,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     },
     'lib': convertConfigLib(getTargetESVersionLib()),
     'types': projectConfig.compilerTypes,
+    'etsAnnotationsEnable': projectConfig.allowEtsAnnotations,
     'etsLoaderPath': projectConfig.etsLoaderPath,
     'needDoArkTsLinter': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE,
     'isCompatibleVersion': getArkTSLinterMode() === ArkTSLinterMode.COMPATIBLE_MODE,

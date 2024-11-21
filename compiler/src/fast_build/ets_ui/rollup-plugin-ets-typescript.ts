@@ -286,7 +286,7 @@ interface EmitResult {
   sourceMapText: string,
 }
 
-function getCompilerHost(): ts.CompilerHost {
+export function getCompilerHost(): ts.CompilerHost {
   const compilerHost: ts.CompilerHost = ts.createCompilerHost(etsCheckerCompilerOptions);
   compilerHost.writeFile = (): void => {};
   compilerHost.resolveModuleNames = resolveModuleNames;
