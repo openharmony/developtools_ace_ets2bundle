@@ -2127,6 +2127,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
   isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
+  const isStylesUIComponent: boolean = validateStylesUIComponent(node, isStylesAttr);
   let temp = node.expression;
   const statements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
@@ -2137,9 +2138,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     hasAnimationAttr: false
   };
   const isRecycleComponent: boolean = isRecycle(componentCollection.currentClassName);
-  if (ts.isPropertyAccessExpression(temp)) {
+  if (ts.isPropertyAccessExpression(temp) || isStylesUIComponent) {
     log.push({
-      type: LogType.ERROR,
+      type: isStylesUIComponent ? LogType.WARN :LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
       pos: node.getStart()
     });
@@ -2204,6 +2205,10 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       reverse ? newImmutableStatements.push(...immutableStatements.reverse()) : newImmutableStatements.push(...immutableStatements);
     }
   }
+}  
+
+function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: boolean): boolean {
+  return (ts.isIfStatement(node) || ts.isSwitchStatement(node)) && isStylesAttr;
 }
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, isRecycleComponent: boolean,
