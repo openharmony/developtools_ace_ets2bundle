@@ -521,6 +521,9 @@ export class ModuleMode extends CommonMode {
     if (!this.arkConfig.optTryCatchFunc) {
       this.cmdArgs.push('--opt-try-catch-func=false');
     }
+    if (this.projectConfig.allowEtsAnnotations) {
+      this.cmdArgs.push('--enable-annotations');
+    }
   }
 
   addCacheFileArgs() {

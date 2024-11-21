@@ -17,6 +17,7 @@ const ts = require('typescript');
 const path = require('path');
 const chai = require('chai');
 const mocha = require('mocha');
+const fs = require('fs');
 const expect = chai.expect;
 const {
   processUISyntax,
@@ -45,8 +46,43 @@ const {
   resources
 } = require('../main');
 const processStructComponentV2 = require('../lib/process_struct_componentV2');
+const { getCompilerHost } = require('../lib/fast_build/ets_ui/rollup-plugin-ets-typescript');
+const { processKitImport } = require('../lib/process_kit_import');
+const { ModuleSourceFile } = require('../lib/fast_build/ark_compiler/module/module_source_file');
 
 projectConfig.projectPath = path.resolve(process.cwd());
+
+function processModule(compilerOptions, etsFilePath) {
+  const compilerHost = getCompilerHost();
+  const tsProgram = ts.createProgram([etsFilePath], compilerOptions, compilerHost);
+  tsProgram.emit(tsProgram.getSourceFile(etsFilePath), undefined, undefined, undefined,
+    {
+      before: [
+        processUISyntax(null, true),
+        processKitImport(etsFilePath, undefined, undefined, false)
+      ]
+    }
+  );
+}
+
+function processIntermediateTS(content, filePath, afterProcess) {
+  projectConfig.processTs = true;
+  const etsCheckerCompilerOptions = require('../lib/ets_checker').compilerOptions;
+  etsCheckerCompilerOptions.lib = ["lib.es2021.d.ts"];
+  if (content.etsAnnotationsEnable) {
+    Object.assign(etsCheckerCompilerOptions, {
+      'etsAnnotationsEnable': true
+    });
+  }
+  const etsFilePath = filePath.replace('.ts', '.ets')
+  fs.writeFileSync(etsFilePath, afterProcess.content);
+  processModule(etsCheckerCompilerOptions, etsFilePath);
+  sourceFile = ModuleSourceFile.getSourceFiles().find((element) => element.moduleId.includes(etsFilePath));
+  result = generateIntermediateContent(sourceFile);
+  fs.unlinkSync(etsFilePath);
+  projectConfig.processTs = false;
+  return result
+}
 
 function expectActual(name, filePath, checkError = false) {
   transformLog.errors = [];
@@ -72,17 +108,31 @@ function expectActual(name, filePath, checkError = false) {
   Object.assign(compilerOptions, {
     'sourceMap': false
   });
-  const result = ts.transpileModule(afterProcess.content, {
-    compilerOptions: compilerOptions,
-    fileName: `${name}.ets`,
-    transformers: { before: [processUISyntax(null, true)] }
-  });
+  let actualResult = '';
+  if (content.emitIntermediateTS) {
+    actualResult = processIntermediateTS(content, filePath, afterProcess);
+  } else {
+    const result = ts.transpileModule(afterProcess.content, {
+      compilerOptions: compilerOptions,
+      fileName: `${name}.ets`,
+      transformers: { before: [processUISyntax(null, true)] }
+    });
+    actualResult = result.outputText;
+  }
   processStructComponentV2.default.resetStructMapInEts();
   if (checkError) {
     assertError(name);
   } else {
-    expect(result.outputText).eql(content.expectResult);
+    expect(actualResult).eql(content.expectResult);
   }
+}
+
+function generateIntermediateContent(sourceFile) {
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+  const writer = ts.createTextWriter(
+    ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
+  printer.writeFile(sourceFile.source, writer, undefined);
+  return writer.getText();
 }
 
 mocha.describe('compiler', () => {
