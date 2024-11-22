@@ -74,29 +74,12 @@ let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
 
 function initProjectConfig(projectConfig) {
+  initProjectPathConfig(projectConfig);
   projectConfig.entryObj = {};
   projectConfig.entryArrayForObf = []; // Only used for arkguard
   projectConfig.cardObj = {};
-  projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
-    path.join(process.cwd(), 'sample');
-  projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
-    path.resolve(projectConfig.projectPath, 'build');
-  projectConfig.aceModuleBuild = projectConfig.buildPath; // To be compatible with both webpack and rollup
-  projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
-    path.join(projectConfig.projectPath, 'manifest.json');
-  projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
-  projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
-  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath;
-  projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
-    hashProjectPath(projectConfig.projectPath);
   projectConfig.aceBuildJson = projectConfig.aceBuildJson || process.env.aceBuildJson;
-  projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
-    path.resolve(__dirname, 'node_modules/.cache');
-  projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
   projectConfig.xtsMode = /ets_loader_ark$/.test(__dirname) || process.env.xtsMode === 'true';
-  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
-  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
   projectConfig.isPreview = projectConfig.isPreview || process.env.isPreview === 'true';
   projectConfig.compileMode = projectConfig.compileMode || process.env.compileMode || 'jsbundle';
   projectConfig.runtimeOS = projectConfig.runtimeOS || process.env.runtimeOS || 'default';
@@ -125,6 +108,28 @@ function initProjectConfig(projectConfig) {
   projectConfig.otherCompileFiles = {};
   // Packages which need to update version in bytecode har 
   projectConfig.updateVersionInfo = undefined;
+  projectConfig.allowEmptyBundleName = false;
+}
+
+function initProjectPathConfig(projectConfig) {
+  projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
+  path.join(process.cwd(), 'sample');
+  projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
+  path.resolve(projectConfig.projectPath, 'build');
+  projectConfig.aceModuleBuild = projectConfig.buildPath; // To be compatible with both webpack and rollup
+  projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
+  path.join(projectConfig.projectPath, 'manifest.json');
+  projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
+  projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
+  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
+  process.env.aceSuperVisualPath;
+  projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
+  hashProjectPath(projectConfig.projectPath);
+  projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
+    path.resolve(__dirname, 'node_modules/.cache');
+  projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
+  projectConfig.localPropertiesPath = projectConfig.localPropertiesPath || process.env.localPropertiesPath;
+  projectConfig.projectProfilePath = projectConfig.projectProfilePath || process.env.projectProfilePath;
 }
 
 function loadEntryObj(projectConfig) {
@@ -1098,6 +1103,7 @@ function resetProjectConfig() {
   projectConfig.changedFileList = undefined;
   projectConfig.patchAbcPath = undefined;
   projectConfig.removeChangedFileListInSdk = false;
+  projectConfig.allowEmptyBundleName = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',
