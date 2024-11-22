@@ -794,7 +794,7 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      projectConfig.resetBundleName ? ts.factory.createStringLiteral('') :
+      (projectConfig.resetBundleName || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
         createBundleOrModuleNode(isByteCodeHar, 'bundleName')
     ));
   }
@@ -1923,10 +1923,10 @@ export function resetLog(): void {
 
 function addCardStringliteral(newExpressionParams: any[], context: ts.TransformationContext,
   cardRelativePath: string): void {
+  const bundleName = projectConfig.allowEmptyBundleName ? '' : projectConfig.bundleName;
   if (cardRelativePath) {
     newExpressionParams.push(context.factory.createStringLiteral(
-      projectConfig.bundleName + '/' + projectConfig.moduleName + '/' +
-      cardRelativePath));
+      bundleName + '/' + projectConfig.moduleName + '/' + cardRelativePath));
   }
 }
 
