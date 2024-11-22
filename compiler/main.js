@@ -74,7 +74,7 @@ let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
 
 function initProjectConfig(projectConfig) {
-  initProjectPathConfig(projectConfig)
+  initProjectPathConfig(projectConfig);
   projectConfig.entryObj = {};
   projectConfig.entryArrayForObf = []; // Only used for arkguard
   projectConfig.cardObj = {};
