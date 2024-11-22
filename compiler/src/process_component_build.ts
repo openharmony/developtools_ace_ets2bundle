@@ -137,7 +137,8 @@ import {
   NAVIGATION,
   CREATE_ROUTER_COMPONENT_COLLECT,
   NAV_PATH_STACK,
-  IS_USER_CREATE_STACK
+  IS_USER_CREATE_STACK,
+  SpanComponents
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -2147,6 +2148,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
     let flag: boolean = false;
+    validatePropertyAccessExpressionOnSpanComponent(temp.expression, identifierNode, log);
     if (temp.expression && (validatePropertyAccessExpressionWithCustomBuilder(temp.expression) ||
       validateIdentifierWithCustomBuilder(temp.expression))) {
       let propertyName: string = '';
@@ -2593,6 +2595,17 @@ function validatePropertyAccessExpressionWithCustomBuilder(node: ts.Node): boole
 
 function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
   return ts.isIdentifier(node) && CUSTOM_BUILDER_PROPERTIES.has(node.escapedText.toString());
+}
+
+function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
+  if (SpanComponents.includes(identifierNode.escapedText.toString()) && ts.isPropertyAccessExpression(node) && node.name &&
+    ts.isIdentifier(node.name) && BUILDIN_STYLE_NAMES.has(node.name.escapedText.toString())) {
+    log.push({
+      type: LogType.WARN,
+      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${identifierNode.escapedText.toString()}'.`,
+      pos: node.getStart()
+    });
+  }
 }
 
 function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction {
