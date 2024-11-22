@@ -794,7 +794,7 @@ function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, re
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      projectConfig.resetBundleName ? ts.factory.createStringLiteral('') :
+      (projectConfig.resetBundleName || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
         createBundleOrModuleNode(isByteCodeHar, 'bundleName')
     ));
   }
