@@ -125,7 +125,7 @@ import {
   processMemberVariableDecorators,
   UpdateResult,
   stateObjectCollection,
-  curPropMap,
+  PropMapManager,
   decoratorParamSet,
   isSimpleType,
   isSingleKey,
@@ -271,7 +271,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     partialUpdateConfig.partialUpdateMode && projectConfig.minAPIVersion > 10) {
     newMembers.push(getEntryNameFunction(componentCollection.entryComponent));
   }
-  curPropMap.clear();
+  log.push(...Array.from(PropMapManager.logInfoMap.values()).flat());
+  PropMapManager.reset();
   return newMembers;
 }
 

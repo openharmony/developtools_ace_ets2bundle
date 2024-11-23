@@ -2,6 +2,7 @@
   "name": "Refresh",
   "single": true,
   "attrs": [
-    "refreshing", "offset", "friction", "onStateChange", "onRefreshing"
+    "onStateChange", "onRefreshing", "refreshOffset",
+    "pullToRefresh", "pullDownRatio", "onOffsetChange"
   ]
 }

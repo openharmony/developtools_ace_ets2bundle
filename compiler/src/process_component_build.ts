@@ -158,6 +158,7 @@ import {
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
   STYLES_ATTRIBUTE,
+  INNER_CUSTOM_LOCALBUILDER_METHOD,
   COMPONENT_MAP
 } from './component_map';
 import {
@@ -2128,6 +2129,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
   isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
+  const isStylesUIComponent: boolean = validateStylesUIComponent(node, isStylesAttr);
   let temp = node.expression;
   const statements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
@@ -2138,9 +2140,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     hasAnimationAttr: false
   };
   const isRecycleComponent: boolean = isRecycle(componentCollection.currentClassName);
-  if (ts.isPropertyAccessExpression(temp)) {
+  if (ts.isPropertyAccessExpression(temp) || isStylesUIComponent) {
     log.push({
-      type: LogType.ERROR,
+      type: isStylesUIComponent ? LogType.WARN :LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
       pos: node.getStart()
     });
@@ -2206,6 +2208,10 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
       reverse ? newImmutableStatements.push(...immutableStatements.reverse()) : newImmutableStatements.push(...immutableStatements);
     }
   }
+}  
+
+function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: boolean): boolean {
+  return (ts.isIfStatement(node) || ts.isSwitchStatement(node)) && isStylesAttr;
 }
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, isRecycleComponent: boolean,
@@ -3231,8 +3237,10 @@ function isParamFunction(node: ts.ExpressionStatement): boolean {
 function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: string,
   parent: string, forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined): ComponentType {
   let isBuilderName: boolean = true;
+  let isLocalBuilderName: boolean = true;
   if (forEachParameters && isSomeName(forEachParameters, name) && isParamFunction(node)) {
     isBuilderName = false;
+    isLocalBuilderName = false;
   }
   if (isEtsComponent(node)) {
     if (componentCollection.customComponents.has(name)) {
@@ -3246,7 +3254,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     return ComponentType.forEachComponent;
   } else if (name === COMPONENT_REPEAT) {
     return ComponentType.repeatComponent;
-  } else if (CUSTOM_BUILDER_METHOD.has(name) && isBuilderName || isWrappedBuilderExpression(node)) {
+  } else if (isLocalBuilderOrBuilderMethod(CUSTOM_BUILDER_METHOD, isBuilderName, name) || isWrappedBuilderExpression(node) ||
+    isLocalBuilderOrBuilderMethod(INNER_CUSTOM_LOCALBUILDER_METHOD, isLocalBuilderName, name)) {
     return ComponentType.customBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
@@ -3265,6 +3274,11 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     });
   }
   return null;
+}
+
+function isLocalBuilderOrBuilderMethod(LocalBuilderOrBuilderSet: Set<string>,
+  isLocalBuilderOrBuilderName: boolean, name: string): boolean {
+  return LocalBuilderOrBuilderSet.has(name) && isLocalBuilderOrBuilderName;
 }
 
 function isPartMethod(node: ts.ExpressionStatement): boolean {

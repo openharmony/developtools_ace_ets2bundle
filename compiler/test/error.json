@@ -741,10 +741,6 @@
         {
             "message": "Static methods in custom components cannot be decorated by @LocalBuilder.",
             "type": "ERROR"
-        },
-        {
-            "message": "'xx();' does not meet UI component syntax.",
-            "type": "ERROR"
         }
     ],
     "v2Component_member_type_check": [
