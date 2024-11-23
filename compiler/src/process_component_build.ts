@@ -157,7 +157,8 @@ import {
   CUSTOM_BUILDER_CONSTRUCTORS,
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  COMPONENT_MAP
 } from './component_map';
 import {
   componentCollection,
@@ -2592,11 +2593,12 @@ function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
 }
 
 function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
-  if (SpanComponents.includes(identifierNode.escapedText.toString()) && ts.isPropertyAccessExpression(node) && node.name &&
-    ts.isIdentifier(node.name) && BUILDIN_STYLE_NAMES.has(node.name.escapedText.toString())) {
+  let compName: string = identifierNode.escapedText.toString();
+  if (SpanComponents.includes(compName) && ts.isPropertyAccessExpression(node) && node.name &&
+    ts.isIdentifier(node.name) && !COMPONENT_MAP[compName].attrs.includes(node.name.escapedText.toString())) {
     log.push({
       type: LogType.WARN,
-      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${identifierNode.escapedText.toString()}'.`,
+      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${compName}'.`,
       pos: node.getStart()
     });
   }
