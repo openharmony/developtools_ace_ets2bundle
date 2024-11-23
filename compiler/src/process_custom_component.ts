@@ -79,7 +79,7 @@ import {
   componentCollection
 } from './validate_ui_syntax';
 import {
-  curPropMap,
+  PropMapManager,
   createViewCreate,
   createCustomComponentNewExpression,
   isLocalStorageParameter,
@@ -1055,10 +1055,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
     if (isInitFromParent(node)) {
       parentPropertyName =
         getParentPropertyName(node as ts.PropertyAssignment, curPropertyKind, log);
-      let parentPropertyKind: string = curPropMap.get(parentPropertyName);
-      if (!parentPropertyKind) {
-        parentPropertyKind = COMPONENT_NON_DECORATOR;
-      }
+      let parentPropertyKind: string = PropMapManager.find(parentPropertyName);
       if (parentPropertyKind && !isCorrectInitFormParent(parentPropertyKind, curPropertyKind)) {
         validateIllegalInitFromParent(
           node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log);
@@ -1131,22 +1128,22 @@ function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: str
     return undefined;
   }
   let parentPropertyName: string = initExpression.getText();
+  const symbol = globalProgram.checker?.getSymbolAtLocation(initExpression);
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     // @ts-ignore
     const initName: ts.Identifier = initExpression.name || initExpression;
-    if (hasDollar(initExpression)) {
+    if (!symbol && hasDollar(initExpression)) {
       parentPropertyName = initName.getText().replace(/^\$/, '');
     } else {
       parentPropertyName = initName.getText();
     }
   } else {
-    if (hasDollar(initExpression)) {
+    if (!symbol && hasDollar(initExpression)) {
       validateNonLinkWithDollar(node, log);
-    } else {
-      // @ts-ignore
-      if (node.initializer && node.initializer.name) {
-        parentPropertyName = node.initializer.name.getText();
-      }
+    }
+    // @ts-ignore
+    if (node.initializer && node.initializer.name) {
+      parentPropertyName = node.initializer.name.getText();
     }
   }
 
@@ -1350,7 +1347,7 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     parentPropertyKind) && curPropertyKind === COMPONENT_OBJECT_LINK_DECORATOR) {
     type = LogType.WARN;
   }
-  log.push({
+  PropMapManager.reserveLog(parentPropertyName, parentPropertyKind, {
     type: type,
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,

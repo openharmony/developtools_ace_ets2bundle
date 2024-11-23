@@ -4,6 +4,7 @@
         "onResult",
         "onRelease",
         "onError",
+        "onTerminated",
         "onReceive",
         "onRemoteReady"
     ],

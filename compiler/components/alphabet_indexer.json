@@ -6,6 +6,6 @@
     "selectedFont", "popupFont", "itemSize", "font", "color", "alignStyle", "onRequestPopupData", "onPopupSelect",
     "selected", "popupPosition", "onSelect", "popupItemFont", "popupItemBackgroundColor", "popupSelectedColor",
     "popupUnselectedColor", "autoCollapse", "popupItemBorderRadius", "itemBorderRadius", "popupBackgroundBlurStyle",
-    "popupTitleBackground"
+    "popupTitleBackground", "enableHapticFeedback"
   ]
 }
