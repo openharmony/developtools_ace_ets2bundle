@@ -291,6 +291,10 @@
         "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
         "type": "ERROR"
     },
+    "checkNonSpanProperty": {
+        "message": "Property 'width' does not take effect on 'Span'.",
+        "type": "WARN"
+    },
     "@Trace": [
         {
             "message": "The '@Trace' decorator can only be used in 'class'.",
