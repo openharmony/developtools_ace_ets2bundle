@@ -118,6 +118,7 @@ import {
 import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './process_struct_componentV2';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
+import logMessageCollection from './log_message_collection';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -797,6 +798,14 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
   }
 }
 
+function validateTwoWayComputed(node: ts.PropertyAccessExpression, log: LogInfo[]): void {
+  if (ts.isPropertyAccessExpression(node) && node.expression && 
+    node.expression.kind === ts.SyntaxKind.ThisKeyword && globalProgram.checker) {
+    const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
+    logMessageCollection.checkTwoWayComputed(node, symbol, log);
+  }
+}
+
 function createUpdateTwoWayNode(itemName: string, leftHandExpression: ts.Expression): ts.PropertyAssignment {
   return ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier('$' + itemName),
@@ -1037,10 +1046,22 @@ function validateStateManagement(node: ts.ObjectLiteralElementLike, customCompon
     const parentStructInfo: StructInfo =
       processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
     if (parentStructInfo.isComponentV2) {
+      if (ts.isPropertyAssignment(node)) {
+        checkInvalidPropertyAssignment(node, log);
+      }
       return;
     }
   }
   checkFromParentToChild(node, customComponentName, log, isBuilder);
+}
+
+function checkInvalidPropertyAssignment(node: ts.PropertyAssignment, log: LogInfo[]): void {
+  if (node.initializer && isDoubleNonNullExpression(node.initializer)) {
+    if (node.initializer.expression && node.initializer.expression.expression && 
+      isLeftHandExpression(node.initializer.expression.expression)) {
+      validateTwoWayComputed(node.initializer.expression.expression, log);
+    }
+  }
 }
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,
