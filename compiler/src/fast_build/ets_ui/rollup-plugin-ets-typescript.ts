@@ -560,6 +560,7 @@ function clearCollection(): void {
   GLOBAL_CUSTOM_BUILDER_METHOD.clear();
   INNER_CUSTOM_BUILDER_METHOD.clear();
   storedFileInfo.getCurrentArkTsFile().compFromDETS.clear();
+  storedFileInfo.getCurrentArkTsFile().recycleComponents.clear();
 }
 
 function resetCollection() {
