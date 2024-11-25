@@ -98,7 +98,6 @@ import {
 } from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
-import { resetlogMessageCollection } from '../../log_message_collection';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 
 const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -256,7 +255,6 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
-      resetlogMessageCollection();
     }
   };
 }
