@@ -55,6 +55,19 @@ function checkComputedGetter(symbol: ts.Symbol, declaration: ts.Declaration, log
   }
 }
 
+function checkIfNeedDollarEvent(doubleExclamationCollection: string[], dollarPropertyCollection: string[], 
+  node: ts.CallExpression, log: LogInfo[]): void {
+  for (const item of doubleExclamationCollection) {
+    if (dollarPropertyCollection.some((value) => value === '$' + item)) {
+      log.push({
+        type: LogType.ERROR,
+        message: `When the two-way binding syntax is used, do not assign a value to '${constantDefine.EVENT_DECORATOR}' variable '${'$' + item}' because the framework generates the default assignment.`,
+        pos: node.getStart()
+      });
+    }
+  }
+}
+
 function isTagWithDecorator(node: ts.NodeArray<ts.ModifierLike>, decoratorName: string): boolean {
   return node.some((item: ts.Decorator) => ts.isDecorator(item) && 
     ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === decoratorName);
@@ -63,5 +76,6 @@ function isTagWithDecorator(node: ts.NodeArray<ts.ModifierLike>, decoratorName: 
 export default {
   checkLocalBuilderDecoratorCount,
   checkTwoWayComputed,
-  checkComputedGetter
+  checkComputedGetter,
+  checkIfNeedDollarEvent
 };
