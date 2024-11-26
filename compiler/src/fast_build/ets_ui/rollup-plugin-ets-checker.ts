@@ -42,6 +42,8 @@ import {
   configureSyscapInfo,
   configurePermission
 } from '../system_api/api_check_utils';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { BUILDER_PROGRAM, COLLECT_FILE_TO_IGNORE, ROLLUP_PLUGIN_BUILD_START } from '../meomry_monitor/memory_define';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -51,6 +53,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      MemoryMonitor.getInstance().recordStage(ROLLUP_PLUGIN_BUILD_START);
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
@@ -100,12 +103,16 @@ export function etsChecker() {
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
+          MemoryMonitor.getInstance().recordStage(BUILDER_PROGRAM);
           timePrinterInstance.appendTime(ts.TimePhase.START);
           globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
           globalProgram.program = globalProgram.builderProgram.getProgram();
           timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+          MemoryMonitor.getInstance().stopRecordStage(BUILDER_PROGRAM);
+          MemoryMonitor.getInstance().recordStage(COLLECT_FILE_TO_IGNORE);
           collectFileToIgnoreDiagnostics(rootFileNames);
           runArkTSLinter();
+          MemoryMonitor.getInstance().stopRecordStage(COLLECT_FILE_TO_IGNORE);
         }
         executedOnce = true;
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
@@ -122,6 +129,7 @@ export function etsChecker() {
         serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
       }
       setChecker();
+      MemoryMonitor.getInstance().stopRecordStage(ROLLUP_PLUGIN_BUILD_START);
     },
     shouldInvalidCache(): boolean {
       // The generated js file might be different in some cases when we change the targetESVersion,

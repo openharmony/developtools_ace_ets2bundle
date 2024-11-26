@@ -94,6 +94,20 @@ import {
   getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { 
+	COLLECT_TSC_FILES_ALL_RESOLVED_MODULES, 
+	CREATE_LANGUAGE_SERVICE, 
+	ETS_CHECKER_CREATE_LANGUAGE_SERVICE,
+	FILE_TO_IGNORE_DIAGNOSTICS, 
+	GET_BUILDER_PROGRAM, 
+	MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET, 
+	PROCESS_BUILD_HAP, 
+	PROCESS_BUILD_HAP_EMIT_BUILD_INFO,
+	PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS,
+	ROLLUP_PLUGIN_BUILD_START, 
+	RUN_ARK_TS_LINTER 
+} from './fast_build/meomry_monitor/memory_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -359,10 +373,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   };
 
   if (process.env.watchMode === 'true') {
-    return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    MemoryMonitor.getInstance().recordStage(ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+    const tsLanguageService = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    MemoryMonitor.getInstance().stopRecordStage(ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+    return tsLanguageService;
   }
-
-  return getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  MemoryMonitor.getInstance().recordStage(ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  MemoryMonitor.getInstance().stopRecordStage(ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+  return tsLanguageService;
 }
 
 export let targetESVersionChanged: boolean = false;
@@ -484,7 +503,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
         hotReloadSupportFiles.add(fileName);
       });
     }
+    MemoryMonitor.getInstance().recordStage(CREATE_LANGUAGE_SERVICE, ROLLUP_PLUGIN_BUILD_START);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
+    MemoryMonitor.getInstance().stopRecordStage(CREATE_LANGUAGE_SERVICE, ROLLUP_PLUGIN_BUILD_START);
     props = languageService.getProps();
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -495,28 +516,36 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     } else {
       cache = {};
     }
+    MemoryMonitor.getInstance().recordStage(CREATE_LANGUAGE_SERVICE, ROLLUP_PLUGIN_BUILD_START);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
+    MemoryMonitor.getInstance().stopRecordStage(CREATE_LANGUAGE_SERVICE, ROLLUP_PLUGIN_BUILD_START);
   }
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+  MemoryMonitor.getInstance().recordStage(GET_BUILDER_PROGRAM, ROLLUP_PLUGIN_BUILD_START);
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+  MemoryMonitor.getInstance().stopRecordStage(GET_BUILDER_PROGRAM,ROLLUP_PLUGIN_BUILD_START);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+  MemoryMonitor.getInstance().recordStage(RUN_ARK_TS_LINTER, ROLLUP_PLUGIN_BUILD_START);
   runArkTSLinter();
+  MemoryMonitor.getInstance().stopRecordStage(RUN_ARK_TS_LINTER, ROLLUP_PLUGIN_BUILD_START);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
+    MemoryMonitor.getInstance().recordStage(PROCESS_BUILD_HAP, ROLLUP_PLUGIN_BUILD_START);
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
+    MemoryMonitor.getInstance().stopRecordStage(PROCESS_BUILD_HAP, ROLLUP_PLUGIN_BUILD_START);
   }
 
   if (globalProgram.program &&
@@ -560,6 +589,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
   }
   projectRootPath = toUnixPath(projectRootPath);
   const isMacOrWin = isWindows() || isMac();
+  MemoryMonitor.getInstance().recordStage(COLLECT_TSC_FILES_ALL_RESOLVED_MODULES);
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
     // @ts-ignore
@@ -576,6 +606,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
       allResolvedModules.add(fileName);
     }
   });
+  MemoryMonitor.getInstance().stopRecordStage(COLLECT_TSC_FILES_ALL_RESOLVED_MODULES);
 }
 
 function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileName: string): boolean {
@@ -596,6 +627,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
 }
 
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
+  MemoryMonitor.getInstance().recordStage(MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
@@ -603,6 +635,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
       addLocalPackageSet(moduleId, rollupObject);
     }
   }
+  MemoryMonitor.getInstance().stopRecordStage(MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
 }
 
 // collect the modulename or pkgname of all local modules.
@@ -626,14 +659,18 @@ export function emitBuildInfo(): void {
 function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics,
   rollupShareObject: Object): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  MemoryMonitor.getInstance().recordStage(PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS, PROCESS_BUILD_HAP);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
+  MemoryMonitor.getInstance().stopRecordStage(PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS, PROCESS_BUILD_HAP);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  MemoryMonitor.getInstance().recordStage(PROCESS_BUILD_HAP_EMIT_BUILD_INFO, PROCESS_BUILD_HAP);
   emitBuildInfo();
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+  MemoryMonitor.getInstance().stopRecordStage(PROCESS_BUILD_HAP_EMIT_BUILD_INFO, PROCESS_BUILD_HAP);
   if (!projectConfig.xtsMode) {
     fse.ensureDirSync(projectConfig.cachePath);
     fs.writeFileSync(cacheFile, JSON.stringify({
@@ -734,6 +771,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
       elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
   });
 
+  MemoryMonitor.getInstance().recordStage(FILE_TO_IGNORE_DIAGNOSTICS);
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
     // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
@@ -747,6 +785,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
   });
+  MemoryMonitor.getInstance().stopRecordStage(FILE_TO_IGNORE_DIAGNOSTICS);
 }
 
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {

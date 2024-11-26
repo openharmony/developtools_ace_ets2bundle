@@ -74,6 +74,8 @@ import {
   printTimeSumInfo,
   startFilesEvent
 } from 'arkguard';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { ALL_FILES_OBFUSCATION, FILES_FOR_EACH, SOURCE_PROJECT_CONFIG } from '../../meomry_monitor/memory_define';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -313,6 +315,7 @@ export class ModuleSourceFile {
 
     collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
     startFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+    MemoryMonitor.getInstance().recordStage(SOURCE_PROJECT_CONFIG);
     let sourceProjectConfig: Object = ModuleSourceFile.projectConfig;
     // obfuscation initialization, include collect file, resolve denpendency, read source
     if (compileToolIsRollUp()) {
@@ -323,6 +326,7 @@ export class ModuleSourceFile {
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
         sourceProjectConfig.compileHar, keepFilesAndDependencies);
     }
+    MemoryMonitor.getInstance().stopRecordStage(SOURCE_PROJECT_CONFIG);
     endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
 
     startFilesEvent(EventList.ALL_FILES_OBFUSCATION);
@@ -331,9 +335,11 @@ export class ModuleSourceFile {
       byteCodeHar = sourceProjectConfig.byteCodeHar;
     }
     // Sort the collection by file name to ensure binary consistency.
+    MemoryMonitor.getInstance().recordStage(ALL_FILES_OBFUSCATION);
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
     for (const source of ModuleSourceFile.sourceFiles) {
+      MemoryMonitor.getInstance().recordStage(FILES_FOR_EACH, ALL_FILES_OBFUSCATION);
       sourceFileBelongProject.set(toUnixPath(source.moduleId), source.metaInfo?.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
@@ -344,14 +350,15 @@ export class ModuleSourceFile {
       const eventWriteSourceFile = createAndStartEvent(parentEvent, 'write source file');
       await source.writeSourceFile(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
+      MemoryMonitor.getInstance().stopRecordStage(FILES_FOR_EACH, ALL_FILES_OBFUSCATION);
     }
-
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
       await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
     }
     printTimeSumInfo('All files obfuscation:');
     printTimeSumData();
     endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+    MemoryMonitor.getInstance().stopRecordStage(ALL_FILES_OBFUSCATION);
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
