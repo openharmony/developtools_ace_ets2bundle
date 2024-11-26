@@ -52,7 +52,7 @@ export function transformForModule(code: string, id: string) {
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
       MemoryMonitor.getInstance().recordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.getInstance().stopRecordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
     }
 
@@ -69,7 +69,7 @@ export function transformForModule(code: string, id: string) {
         }
       }
       MemoryMonitor.getInstance().recordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.getInstance().stopRecordStage(MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
     }
   }
