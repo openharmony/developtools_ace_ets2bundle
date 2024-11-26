@@ -102,6 +102,7 @@ import processStructComponentV2 from '../../process_struct_componentV2';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
+import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -129,6 +130,12 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
+    moduleParsed(moduleInfo: moduleInfoType): void {
+      if (this.share.projectConfig.singleFileEmit && this.share.projectConfig.needCoverageInsert) {
+        //ts coverage instrumentation
+        this.share.sourceFile = ModuleSourceFile.getSourceFileById(moduleInfo.id);
+      }
+    },
     buildStart() {
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'buildStart');
       startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);

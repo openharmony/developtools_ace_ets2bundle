@@ -638,25 +638,26 @@ export class ModuleMode extends CommonMode {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('close', (code: any) => {
-        if (code !== SUCCESS) {
-          for (const logData of logDataList) {
-            this.logger.printError(logData);
-          }
-          if (errMsg !== '') {
-            this.logger.error(`Error Message: ${errMsg}`);
-          }
-          const errInfo: LogData = LogDataFactory.newInstance(
-            ErrorCode.ETS2BUNDLE_EXTERNAL_ES2ABC_EXECUTION_FAILED,
-            ArkTSErrorDescription,
-            'Failed to execute es2abc.',
-            '',
-            ["Please refer to es2abc's error codes."]
-          );
-          this.logger.printErrorAndExit(errInfo);
+        if (code === SUCCESS) {
+          stopEvent(eventGenAbc, true);
+          this.triggerEndSignal();
+          this.processAotIfNeeded();
+          return;
         }
-        stopEvent(eventGenAbc, true);
-        this.triggerEndSignal();
-        this.processAotIfNeeded();
+        for (const logData of logDataList) {
+          this.logger.printError(logData);
+        }
+        if (errMsg !== '') {
+          this.logger.error(`Error Message: ${errMsg}`);
+        }
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_EXTERNAL_ES2ABC_EXECUTION_FAILED,
+          ArkTSErrorDescription,
+          'Failed to execute es2abc.',
+          '',
+          ["Please refer to es2abc's error codes."]
+        );
+        this.logger.printErrorAndExit(errInfo);
       });
 
       child.on('error', (err: any) => {
