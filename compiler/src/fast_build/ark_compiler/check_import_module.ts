@@ -34,32 +34,44 @@ import {
   ErrorCode
 } from './error_code';
 
-export function checkIfJsImportingArkts(rollupObject: Object): void {
-  ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
-    const id: string = sourceFile.getModuleId();
-    const unixId: string = toUnixPath(id);
-    const logger: CommonLogger = CommonLogger.getInstance(rollupObject);
-    if (isJsSourceFile(id) && unixId.indexOf('/oh_modules/') === -1) {
-      const importMap = rollupObject.getModuleInfo(id).importedIdMaps;
-      Object.values(importMap).forEach((requestFile: string) => {
-        if (requestFile.endsWith(EXTNAME_ETS) || requestFile.endsWith(EXTNAME_D_ETS)) {
-          if (compilerOptions.isCompatibleVersion) {
-            const warnMsg: string = `ArkTS:WARN File: ${id}\n` +
-              `Importing ArkTS files in JS and TS files is about to be forbidden.\n`;
-            logger.warn(yellow + warnMsg);
-          } else {
-            const errInfo: LogData = LogDataFactory.newInstance(
-              ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
-              ArkTSErrorDescription,
-              'Importing ArkTS files in JS and TS files is forbidden.',
-              '',
-              [`Please remove the import statement of the ArkTS file in ${id}.`]
-            );
-            logger.printError(errInfo);
-          }
-        }
-      }
-      );
+export function checkIfJsImportingArkts(rollupObject: Object, moduleSourceFile?: ModuleSourceFile): void {
+  if (rollupObject.share.projectConfig.singleFileEmit && moduleSourceFile) {
+    checkAndLogArkTsFileImports(rollupObject, moduleSourceFile);
+  } else {  
+    ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
+      checkAndLogArkTsFileImports(rollupObject, sourceFile);
+    });
+  }
+}
+
+function checkAndLogArkTsFileImports(rollupObject: Object, sourceFile: ModuleSourceFile): void {
+  const id: string = sourceFile.getModuleId();
+  const unixId: string = toUnixPath(id);
+  const logger: CommonLogger = CommonLogger.getInstance(rollupObject);
+  if (isJsSourceFile(id) && unixId.indexOf('/oh_modules/') === -1) {
+    const importMap = rollupObject.getModuleInfo(id).importedIdMaps;
+    Object.values(importMap).forEach((requestFile: string) => {
+      logIfFileEndsWithArkts(requestFile, id, logger);
     }
-  });
+    );
+  }
+}
+
+function logIfFileEndsWithArkts(requestFile: string, id: string, logger: CommonLogger): void {
+  if (requestFile.endsWith(EXTNAME_ETS) || requestFile.endsWith(EXTNAME_D_ETS)) {
+    if (compilerOptions.isCompatibleVersion) {
+      const warnMsg: string = `ArkTS:WARN File: ${id}\n` +
+        `Importing ArkTS files in JS and TS files is about to be forbidden.\n`;
+      logger.warn(yellow + warnMsg);
+    } else {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+        ArkTSErrorDescription,
+        'Importing ArkTS files in JS and TS files is forbidden.',
+        '',
+        [`Please remove the import statement of the ArkTS file in ${id}.`]
+      );
+      logger.printError(errInfo);
+    }
+  }
 }
