@@ -54,7 +54,7 @@ export function transformForModule(code: string, id: string): string {
       if (this.share.projectConfig?.autoLazyImport) {
         code = <string> transformLazyImport(code, undefined, id);
       }
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
@@ -72,7 +72,7 @@ export function transformForModule(code: string, id: string): string {
           preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
         }
       }
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
     }
   }
   stopEvent(eventTransformForModule);
