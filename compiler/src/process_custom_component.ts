@@ -1069,7 +1069,7 @@ function checkDoubleExclamationPropertyAssignment(node: ts.PropertyAssignment, l
   }
 }
 
-function checkDollarPropertyAssignment(node: ts.PropertyAssignment, dollarPropertyCollection: string[]) {
+function checkDollarPropertyAssignment(node: ts.PropertyAssignment, dollarPropertyCollection: string[]): void {
   const regex = /^\$[a-zA-Z_][a-zA-Z0-9_]*$/;
   if (node.name && ts.isIdentifier(node.name) && regex.test(node.name.escapedText.toString())) {
     dollarPropertyCollection.push(node.name.escapedText.toString());
