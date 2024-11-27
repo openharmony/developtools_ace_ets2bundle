@@ -240,7 +240,6 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
         processPropertyUnchanged(result, purgeVariableDepStatements);
       }
     }
-    staticBlock(item, newMembers);
     if (ts.isMethodDeclaration(item) && item.name) {
       updateItem =
         processComponentMethod(item, context, log, buildCount);
@@ -273,12 +272,6 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   }
   curPropMap.clear();
   return newMembers;
-}
-
-function staticBlock(item: ts.ClassElement, newMembers: ts.ClassElement[]): void {
-  if (ts.isClassStaticBlockDeclaration(item) && item.body && ts.isBlock(item.body)) {
-    newMembers.push(item);
-  }
 }
 
 export function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
