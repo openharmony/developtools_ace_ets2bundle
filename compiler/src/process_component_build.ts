@@ -135,7 +135,8 @@ import {
   NAVIGATION,
   CREATE_ROUTER_COMPONENT_COLLECT,
   NAV_PATH_STACK,
-  IS_USER_CREATE_STACK
+  IS_USER_CREATE_STACK,
+  SpanComponents
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -154,7 +155,8 @@ import {
   CUSTOM_BUILDER_CONSTRUCTORS,
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
-  STYLES_ATTRIBUTE
+  STYLES_ATTRIBUTE,
+  COMPONENT_MAP
 } from './component_map';
 import {
   componentCollection,
@@ -2143,6 +2145,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
     let flag: boolean = false;
+    validatePropertyAccessExpressionOnSpanComponent(temp.expression, identifierNode, log);
     if (temp.expression && (validatePropertyAccessExpressionWithCustomBuilder(temp.expression) ||
       validateIdentifierWithCustomBuilder(temp.expression))) {
       let propertyName: string = '';
@@ -2585,6 +2588,18 @@ function validatePropertyAccessExpressionWithCustomBuilder(node: ts.Node): boole
 
 function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
   return ts.isIdentifier(node) && CUSTOM_BUILDER_PROPERTIES.has(node.escapedText.toString());
+}
+
+function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
+  let compName: string = identifierNode.escapedText.toString();
+  if (SpanComponents.includes(compName) && ts.isPropertyAccessExpression(node) && node.name &&
+    ts.isIdentifier(node.name) && !COMPONENT_MAP[compName].attrs.includes(node.name.escapedText.toString())) {
+    log.push({
+      type: LogType.WARN,
+      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${compName}'.`,
+      pos: node.getStart()
+    });
+  }
 }
 
 function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction {
