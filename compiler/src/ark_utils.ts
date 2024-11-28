@@ -897,35 +897,7 @@ export function transformLazyImport(sourceFile: ts.SourceFile | string, resolver
   const moduleNodeTransformer: ts.TransformerFactory<ts.SourceFile> = context => {
     const visitor: ts.Visitor = node => {
       if (ts.isImportDeclaration(node)) {
-        const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-        const importClause: ts.ImportClause = node.importClause;
-        const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
-        if (importClause && importClause.namedBindings && !importClause.name && ts.isNamedImports(namedBindings) && 
-          !importClause.isLazy && !importClause.isTypeOnly) {
-          let newImportClause: ts.ImportClause;
-          if (resolver) {
-            const newNameBindings: ts.ImportSpecifier[] = [];
-            namedBindings.elements.forEach(item => {
-              const element = item as ts.ImportSpecifier;
-              if (!element.isTypeOnly && resolver.isReferencedAliasDeclaration(element)) {
-                newNameBindings.push(
-                  ts.factory.createImportSpecifier(
-                    false,
-                    element.propertyName ? ts.factory.createIdentifier(element.propertyName.text) : undefined,
-                    ts.factory.createIdentifier(element.name.text)
-                  )
-                );
-              }
-            });
-            newImportClause = ts.factory.createImportClause(false, importClause.name,
-              ts.factory.createNamedImports(newNameBindings));
-          } else {
-            newImportClause = ts.factory.createImportClause(false, importClause.name, namedBindings);
-          }
-          // @ts-ignore
-          newImportClause.isLazy = true;
-          return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
-        }
+        return updateImportDecl(node, resolver);
       }
       return node;
     };
@@ -937,4 +909,39 @@ export function transformLazyImport(sourceFile: ts.SourceFile | string, resolver
 
   const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   return (typeof sourceFile !== 'string') ? result.transformed[0] : printer.printFile(result.transformed[0]);
+}
+
+function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {
+  const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  const importClause: ts.ImportClause = node.importClause;
+  const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
+  if (importClause && importClause.namedBindings && !importClause.name && ts.isNamedImports(namedBindings) && 
+    !importClause.isLazy && !importClause.isTypeOnly) {
+    let newImportClause: ts.ImportClause;
+    if (resolver) {
+      // eliminate the type symbol
+      // eg: import { typeSymbol, xxx } from 'xxxx' -> import { xxx } from 'xxxx'
+      const newNameBindings: ts.ImportSpecifier[] = [];
+      namedBindings.elements.forEach(item => {
+        const element = item as ts.ImportSpecifier;
+        if (!element.isTypeOnly && resolver.isReferencedAliasDeclaration(element)) {
+          newNameBindings.push(
+            ts.factory.createImportSpecifier(
+              false,
+              element.propertyName ? ts.factory.createIdentifier(element.propertyName.text) : undefined,
+              ts.factory.createIdentifier(element.name.text)
+            )
+          );
+        }
+      });
+      newImportClause = ts.factory.createImportClause(false, importClause.name,
+        ts.factory.createNamedImports(newNameBindings));
+    } else {
+      newImportClause = ts.factory.createImportClause(false, importClause.name, namedBindings);
+    }
+    // @ts-ignore
+    newImportClause.isLazy = true;
+    return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
+  }
+  return node;
 }
