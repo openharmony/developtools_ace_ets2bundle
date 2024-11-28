@@ -37,7 +37,8 @@ import {
 } from '../../utils';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 
-const filter: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
+const filterCrossplatform: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
+const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const allFiles: Set<string> = new Set();
 
 export const appImportModuleCollection: Map<string, Set<string>> = new Map();
@@ -53,7 +54,7 @@ export function apiTransform() {
     },
     transform(code: string, id: string) {
       const magicString = new MagicString(code);
-      if (filter(id)) {
+      if (projectConfig.isCrossplatform ? filterCrossplatform(id) : filter(id)) {
         if (projectConfig.compileMode === 'esmodule') {
           code = processSystemApiAndLibso(code, id, useOSFiles);
           hiresStatus = this.share.projectConfig.needCompleteSourcesMap || hasTsNoCheckOrTsIgnoreFiles.includes(id) ?
