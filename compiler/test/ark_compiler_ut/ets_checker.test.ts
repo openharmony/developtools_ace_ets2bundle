@@ -28,8 +28,10 @@ import {
   needReCheckForChangedDepUsers,
   resetEtsCheck,
   serviceChecker,
+  getMaxFlowDepth,
+  MAX_FLOW_DEPTH_DEFAULT_VALUE
 } from '../../lib/ets_checker';
-import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define'
+import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
 import {
   globalProgram,
   projectConfig
@@ -184,5 +186,67 @@ mocha.describe('test ets_checker file api', function () {
         const fileNames: string[] = ['../testdata/testfiles/testGetEmitHost.ts'];
         let program: ts.Program = ts.createProgram(fileNames, compilerOptions);
         expect(program.getEmitHost()).to.not.be.undefined;
+    });
+});
+
+mocha.describe('getMaxFlowDepth', () => { 
+    mocha.it('1-1: test should return the default value when maxFlowDepth is undefined', () => {
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
+    });
+  
+    mocha.it('1-2: test should return the default value and log a warning when maxFlowDepth is less than the minimum valid value', () => {
+        const invalidMaxFlowDepth = 1999;
+        projectConfig.projectArkOption = {
+            tscConfig: {
+                maxFlowDepth: invalidMaxFlowDepth
+          }
+        }
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
+      });
+
+    mocha.it('1-3: test should return the value of maxFlowDepth when it is 2000 within the valid range', () => {
+        const validMaxFlowDepth = 2000;
+        projectConfig.projectArkOption = {
+            tscConfig: {
+                maxFlowDepth: validMaxFlowDepth
+            }
+        }
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(validMaxFlowDepth);
+    });
+  
+    mocha.it('1-4: test should return the value of maxFlowDepth when it is 3000 within the valid range', () => {
+        const validMaxFlowDepth = 3000;
+        projectConfig.projectArkOption = {
+            tscConfig: {
+                maxFlowDepth: validMaxFlowDepth
+            }
+        }
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(validMaxFlowDepth);
+    });
+
+    mocha.it('1-5: test should return the value of maxFlowDepth when it is 65535 within the valid range', () => {
+        const validMaxFlowDepth = 65535;
+        projectConfig.projectArkOption = {
+            tscConfig: {
+                maxFlowDepth: validMaxFlowDepth
+            }
+        }
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(validMaxFlowDepth);
+    });
+  
+    mocha.it('1-6: test should return the default value and log a warning when maxFlowDepth is greater than the maximum valid value', () => {
+        const invalidMaxFlowDepth = 65536;
+        projectConfig.projectArkOption = {
+            tscConfig: {
+                maxFlowDepth: invalidMaxFlowDepth
+            }
+        }
+        const result = getMaxFlowDepth();
+        expect(result).to.equal(MAX_FLOW_DEPTH_DEFAULT_VALUE);
     });
 });
