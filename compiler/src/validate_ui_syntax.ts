@@ -107,7 +107,7 @@ import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
-import { getMessageCollection } from './log_message_collection';
+import logMessageCollection from './log_message_collection';
 
 export class ComponentCollection {
   localStorageName: string = null;
@@ -591,7 +591,7 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     const v1DecoratorMapKeys: string[] = Array.from(v1DecoratorMap.keys());
     const v1DecoratorMapValues: number[] = Array.from(v1DecoratorMap.values());
     innerDecoratorCount = v2DecoratorMapKeys.length + v1DecoratorMapKeys.length;
-    getMessageCollection().checkLocalBuilderDecoratorCount(node, sourceFileNode, checkDecoratorCount, log);
+    logMessageCollection.checkLocalBuilderDecoratorCount(node, sourceFileNode, checkDecoratorCount, log);
     if (innerDecoratorCount > 1) {
       const message: string = 'The member property or method can not be decorated by multiple built-in decorators.';
       addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);

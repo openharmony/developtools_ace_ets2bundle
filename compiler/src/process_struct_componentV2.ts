@@ -47,6 +47,8 @@ import {
   componentCollection,
   builderParamObjectCollection
 } from './validate_ui_syntax';
+import logMessageCollection from './log_message_collection';
+import { globalProgram } from '../main';
 
 export class ParamDecoratorInfo {
   initializer: ts.Expression;
@@ -116,6 +118,11 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   decoratorAssignParams(structDecorators, context, freezeParam);
   traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod);
   node.members.forEach((member: ts.ClassElement) => {
+    if (ts.isGetAccessor(member) && member.modifiers?.some(isComputedDecorator) && member.name &&
+      ts.isIdentifier(member.name)) {
+      const symbol: ts.Symbol = globalProgram.checker?.getSymbolAtLocation(member.name);
+      validateComputedGetter(symbol, log);
+    }
     if (ts.isConstructorDeclaration(member)) {
       processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, freezeParam);
       return;
@@ -138,6 +145,19 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
     newMembers.push(getEntryNameFunction(componentCollection.entryComponent));
   }
   return newMembers;
+}
+
+function isComputedDecorator(decorator: ts.Decorator): boolean {
+  return ts.isDecorator(decorator) && ts.isIdentifier(decorator.expression) &&
+    decorator.expression.escapedText.toString() === constantDefine.COMPUTED;
+}
+
+function validateComputedGetter(symbol: ts.Symbol, log: LogInfo[]): void {
+  if (symbol && symbol.declarations) {
+    symbol.declarations.forEach((declaration: ts.Declaration) => {
+      logMessageCollection.checkComputedGetter(symbol, declaration, log);
+    });
+  }
 }
 
 function traverseStructInfo(structInfo: StructInfo,

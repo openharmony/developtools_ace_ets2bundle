@@ -22,6 +22,7 @@ const BUILDER_PARAM: string = 'BuilderParam';
 const DECORATOR_BUILDER_PARAM: string = '@BuilderParam';
 const MONITOR_DECORATOR: string = '@Monitor';
 const COMPUTED_DECORATOR: string = '@Computed';
+const EVENT_DECORATOR: string = '@Event';
 
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
   '@State', '@Prop', '@Link', '@Provide', '@Consume', '@Watch', '@StorageLink', '@StorageProp',
@@ -73,5 +74,6 @@ export default {
   MODULE_TYPE,
   HAR_DEFAULT_PAGE_PATH,
   HAR_DEFAULT_INTEGRATED_HSP_TYPE,
-  FOLLOW_WITH_HAP
+  FOLLOW_WITH_HAP,
+  EVENT_DECORATOR
 };
