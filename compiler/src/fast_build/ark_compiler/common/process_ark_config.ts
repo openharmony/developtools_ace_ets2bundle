@@ -140,6 +140,9 @@ export function initArkProjectConfig(share: Object): Object {
     if (buildJsonInfo.byteCodeHarInfo) {
       arkProjectConfig.byteCodeHarInfo = buildJsonInfo.byteCodeHarInfo;
     }
+    // Currently, the IDE does not have this configuration option, and cacheBytecodeHar is true by default.
+    arkProjectConfig.cacheBytecodeHar = !buildJsonInfo.hasOwnProperty('cacheBytecodeHar') ||
+      buildJsonInfo.cacheBytecodeHar;
   }
   if (projectConfig.aceManifestPath && fs.existsSync(projectConfig.aceManifestPath)) {
     const manifestJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceManifestPath).toString());

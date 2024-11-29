@@ -1086,7 +1086,28 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.generateAbcCacheFilesInfoMock();
     expect(moduleMode.checkGenerateAbcCacheFilesInfo() === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
- });
+  });
+
+  mocha.it('6-5: test generateAbcCacheFilesInfo add bchar under build debug', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    const moduleMode = new ModuleModeMock(this.rollup);
+    moduleMode.projectConfig.cacheBytecodeHar = true;
+    moduleMode.abcPaths = [
+      "D:/bchar1/modules.abc",
+      "E:/bchar1/modules.abc",
+    ];
+    moduleMode.generateAbcCacheFilesInfoMock();
+    const cacheInfo = fs.readFileSync(moduleMode.cacheFilePath, 'utf-8');
+    // delete default npmEntries line
+    const lines = cacheInfo.split('\n');
+    lines.shift();
+    const res = lines.join('\n');
+    const expectRes = 'D:/bchar1/modules.abc;D:/bchar1/modules.protoBin\n' +
+                      'E:/bchar1/modules.abc;E:/bchar1/modules.protoBin\n';
+    expect(res === expectRes).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 
   mocha.it('7-1: test getPackageEntryInfo under build debug', function () {
     this.rollup.build();
