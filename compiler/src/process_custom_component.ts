@@ -118,6 +118,7 @@ import {
 import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './process_struct_componentV2';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
+import logMessageCollection from './log_message_collection';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -797,6 +798,14 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
   }
 }
 
+function validateTwoWayComputed(node: ts.PropertyAccessExpression, log: LogInfo[]): void {
+  if (ts.isPropertyAccessExpression(node) && node.expression && 
+    node.expression.kind === ts.SyntaxKind.ThisKeyword && globalProgram.checker) {
+    const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
+    logMessageCollection.checkTwoWayComputed(node, symbol, log);
+  }
+}
+
 function createUpdateTwoWayNode(itemName: string, leftHandExpression: ts.Expression): ts.PropertyAssignment {
   return ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier('$' + itemName),
@@ -951,11 +960,13 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
   if (nodeArguments && nodeArguments.length >= 1 &&
     ts.isObjectLiteralExpression(nodeArguments[0])) {
     const nodeArgument: ts.ObjectLiteralExpression = nodeArguments[0] as ts.ObjectLiteralExpression;
+    const doubleExclamationCollection: string[] = [];
+    const dollarPropertyCollection: string[] = [];
     nodeArgument.properties.forEach(item => {
       if (item.name && ts.isIdentifier(item.name)) {
         curChildProps.add(item.name.escapedText.toString());
       }
-      validateStateManagement(item, name, log, isBuilder);
+      validateStateManagement(item, name, log, isBuilder, doubleExclamationCollection, dollarPropertyCollection);
       if (isNonThisProperty(item, linkSet)) {
         if (isToChange(item as ts.PropertyAssignment, name)) {
           item = ts.factory.updatePropertyAssignment(item as ts.PropertyAssignment,
@@ -964,6 +975,7 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
         props.push(item);
       }
     });
+    logMessageCollection.checkIfNeedDollarEvent(doubleExclamationCollection, dollarPropertyCollection, node, log);
   }
   const parentStructInfo: StructInfo = componentCollection.currentClassName ?
     processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName) :
@@ -1030,17 +1042,38 @@ function isNonThisProperty(node: ts.ObjectLiteralElementLike, propertySet: Set<s
   return false;
 }
 
-function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string,
-  log: LogInfo[], isBuilder: boolean): void {
+function validateStateManagement(node: ts.ObjectLiteralElementLike, customComponentName: string, log: LogInfo[], 
+  isBuilder: boolean, doubleExclamationCollection: string[], dollarPropertyCollection: string[]): void {
   validateForbiddenToInitViaParam(node, customComponentName, log);
   if (componentCollection.currentClassName) {
     const parentStructInfo: StructInfo =
       processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
     if (parentStructInfo.isComponentV2) {
+      if (ts.isPropertyAssignment(node)) {
+        checkDoubleExclamationPropertyAssignment(node, log, doubleExclamationCollection);
+        checkDollarPropertyAssignment(node, dollarPropertyCollection);
+      }
       return;
     }
   }
   checkFromParentToChild(node, customComponentName, log, isBuilder);
+}
+
+function checkDoubleExclamationPropertyAssignment(node: ts.PropertyAssignment, log: LogInfo[], doubleExclamationCollection: string[]): void {
+  if (node.initializer && isDoubleNonNullExpression(node.initializer)) {
+    if (node.initializer.expression && node.initializer.expression.expression && 
+      isLeftHandExpression(node.initializer.expression.expression)) {
+        doubleExclamationCollection.push(node.name.getText());
+        validateTwoWayComputed(node.initializer.expression.expression, log);
+    }
+  }
+}
+
+function checkDollarPropertyAssignment(node: ts.PropertyAssignment, dollarPropertyCollection: string[]): void {
+  const regex = /^\$[a-zA-Z_][a-zA-Z0-9_]*$/;
+  if (node.name && ts.isIdentifier(node.name) && regex.test(node.name.escapedText.toString())) {
+    dollarPropertyCollection.push(node.name.escapedText.toString());
+  }
 }
 
 function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customComponentName: string,

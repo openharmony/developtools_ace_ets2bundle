@@ -98,7 +98,6 @@ import {
 } from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
-import { resetlogMessageCollection } from '../../log_message_collection';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { GLOBAL_PROGRAM_GET_CHECKER, GLOBAL_PROGRAM_UI_KIT, SET_INCREMENTAL_FILE_IN_HAR, STORED_FILE_INFO_TRANSFORM } from '../meomry_monitor/memory_define';
@@ -260,7 +259,6 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
-      resetlogMessageCollection();
     }
   };
 }
