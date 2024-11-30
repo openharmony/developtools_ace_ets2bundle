@@ -426,6 +426,7 @@ mocha.describe('process Kit Imports tests', function () {
     import * as test3 from "./test3";
     import test4, { test5 } from "./test4";
     import type { testType } from "./testType";
+    import "test6";
     let a: testType = test + t + test2 + test3.b + test4 + test5;
     `;
     projectConfig.processTs = true;
@@ -451,6 +452,7 @@ mocha.describe('process Kit Imports tests', function () {
     'import * as test3 from "./test3";\n' +
     'import test4, { test5 } from "./test4";\n' +
     'import type { testType } from "./testType";\n' +
+    'import "test6";\n' +
     'let a: testType = test + t + test2 + test3.b + test4 + test5;\n';
     expect(writer.getText() === expectCode).to.be.true;
   });
