@@ -205,6 +205,7 @@
         "Menu",
         "MenuItem",
         "MenuItemGroup",
+        "MetaBall",
         "NavDestination",
         "NavRouter",
         "Navigation",
@@ -508,6 +509,11 @@
             "name": "MenuItemGroup",
             "type": "MenuItemGroupAttribute",
             "instance": "MenuItemGroupInstance"
+          },
+          {
+            "name": "MetaBall",
+            "type": "MetaBallAttribute",
+            "instance": "MetaBallInstance"
           },
           {
             "name": "NavDestination",
