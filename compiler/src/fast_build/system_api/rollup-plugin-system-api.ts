@@ -35,7 +35,9 @@ import {
   writeCollectionFile,
   getAllComponentsOrModules
 } from '../../utils';
+import { appComponentCollection } from "../../ets_checker";
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
+import { shouldEmitJsFlagById } from "../ets_ui/rollup-plugin-ets-typescript";
 
 const filterCrossplatform: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -47,13 +49,30 @@ export const kitModules: Map<string, Map<string, Set<string>>> = new Map();
 export function apiTransform() {
   const useOSFiles: Set<string> = new Set();
   let hiresStatus: boolean = true;
+  let needModuleCollection: boolean = false;
+  let needComponentCollection: boolean = false;
   return {
     name: 'apiTransform',
     load(id: string) {
       allFiles.add(path.join(id));
     },
+    buildStart() {
+      if (this.share.projectConfig.isCrossplatform) {
+        needModuleCollection = true;
+        needComponentCollection = true;
+      } else if (this.share.projectConfig.widgetCompile) {
+        needModuleCollection = false;
+        needComponentCollection = true;
+      }
+    },
     transform(code: string, id: string) {
-      const magicString = new MagicString(code);
+      const shouldEmitJsFlag: boolean = id.endsWith(".js") || shouldEmitJsFlagById(id);
+      if (!shouldEmitJsFlag &&
+        !this.share.projectConfig.isCrossplatform &&
+        !this.share.projectConfig.widgetCompile) {
+        return null;
+      }
+
       if (projectConfig.isCrossplatform ? filterCrossplatform(id) : filter(id)) {
         if (projectConfig.compileMode === 'esmodule') {
           code = processSystemApiAndLibso(code, id, useOSFiles);
@@ -66,21 +85,33 @@ export function apiTransform() {
           hiresStatus = true;
         }
       }
+      if (!shouldEmitJsFlag) {
+        return null
+      }
+      const magicString = new MagicString(code);
       return {
         code: code,
         map: magicString.generateMap({ hires: hiresStatus })
       };
     },
     beforeBuildEnd() {
-      this.share.allComponents = getAllComponentsOrModules(allFiles, 'component_collection.json');
       this.share.allFiles = allFiles;
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode && needComponentCollection) {
+        let widgetPath: string;
+        if (projectConfig.widgetCompile) {
+          widgetPath = path.resolve(projectConfig.aceModuleBuild, 'widget');
+        }
+        this.share.allComponents = getAllComponentsOrModules(allFiles, 'component_collection.json');
+        writeCollectionFile(projectConfig.cachePath, appComponentCollection,
+          this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
+      }
     },
     buildEnd() {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
         writeUseOSFiles(useOSFiles);
       }
-      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
+      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode && needModuleCollection) {
         replaceKitModules();
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
