@@ -548,12 +548,14 @@ export declare function findElement<a>(b: a[], c: (item: a) => boolean): a | und
     import test2 from "./test2";
     import * as test3 from "./test3";
     import test4, { test5 } from "./test4";
+    import "test6";
     `;
     const expectCode: string = 'import lazy { test } from "./test";\n' +
     'import lazy { test1 as t } from "./test1";\n' +
     'import test2 from "./test2";\n' +
     'import * as test3 from "./test3";\n' +
-    'import test4, { test5 } from "./test4";\n';
+    'import test4, { test5 } from "./test4";\n' +
+    'import "test6";\n';
     const result: string = transformLazyImport(code, undefined, "index.js");
     expect(result === expectCode).to.be.true;
   });
