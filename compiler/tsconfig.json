@@ -208,6 +208,7 @@
         "Menu",
         "MenuItem",
         "MenuItemGroup",
+        "MetaBall",
         "MovingPhotoView",
         "NavDestination",
         "NavRouter",
@@ -526,6 +527,11 @@
             "name": "MenuItemGroup",
             "type": "MenuItemGroupAttribute",
             "instance": "MenuItemGroupInstance"
+          },
+          {
+            "name": "MetaBall",
+            "type": "MetaBallAttribute",
+            "instance": "MetaBallInstance"
           },
           {
             "name": "MovingPhotoView",
