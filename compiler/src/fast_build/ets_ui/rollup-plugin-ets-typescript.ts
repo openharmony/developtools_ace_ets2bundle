@@ -97,7 +97,7 @@ import { resetlogMessageCollection } from '../../log_message_collection';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
-const shouldEmitJsFlagMap: Map<string, boolean> = new Map<string, boolean>()
+const shouldEmitJsFlagMap: Map<string, boolean> = new Map();
 let shouldDisableCache: boolean = false;
 interface ShouldEnableDebugLineType {
   enableDebugLine: boolean;
@@ -249,7 +249,7 @@ export function etsTransform() {
 }
 
 export function shouldEmitJsFlagById(id: string): boolean {
-  return shouldEmitJsFlagMap.get(id)
+  return shouldEmitJsFlagMap.get(id);
 }
 
 // If a ArkTS file don't have @Entry decorator but it is entry file this time
@@ -484,22 +484,14 @@ function outFile(options: ts.CompilerOptions): string {
   return options.outFile || options.out;
 }
 
-const shouldEmitJsMap = new Map();
-
-export function shouldEmitJsById(id: string) {
-  return shouldEmitJsMap.get(id);
-}
-
 function getShouldEmitJs(shouldEmitJs: boolean, targetSourceFile: ts.SourceFile, id: string): boolean {
   let shouldEmitJsFlag: boolean = true;
   let hasKeepTs: boolean = false;
   if (!projectConfig.processTs) {
-    shouldEmitJsMap.set(id, shouldEmitJsFlag);
     return shouldEmitJsFlag;
   }
   if (projectConfig.complieHar) {
     if (!projectConfig.UseTsHar && !projectConfig.byteCodeHar) {
-      shouldEmitJsMap.set(id, shouldEmitJsFlag);
       return shouldEmitJsFlag;
     }
   } else {
@@ -512,7 +504,6 @@ function getShouldEmitJs(shouldEmitJs: boolean, targetSourceFile: ts.SourceFile,
     // ark es2abc
     shouldEmitJsFlag = shouldEmitJs || ts.hasTsNoCheckOrTsIgnoreFlag(targetSourceFile) && !hasKeepTs;
   }
-  shouldEmitJsMap.set(id, shouldEmitJsFlag);
   return shouldEmitJsFlag;
 }
 
@@ -664,7 +655,7 @@ class CreateProgramMoment {
       name: 'createProgramPlugin',
       load: {
         order: 'pre',
-        handler(id: string) {
+        handler(id: string): void {
           CreateProgramMoment.transFileCollect.add(id);
         }
       },
@@ -674,7 +665,7 @@ class CreateProgramMoment {
         CreateProgramMoment.emitter?.emit('checkPrefCreateProgramId');
       },
       cleanUp(): void {
-        shouldEmitJsMap.clear();
+        shouldEmitJsFlagMap.clear();
         CreateProgramMoment.reset();
       }
     };
