@@ -214,6 +214,9 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
+        if(context.getCompilerOptions().etsAnnotationsEnable){
+          node = ts.getAnnotationTransformer()(context)(node);
+        }
         node = createEntryNode(node, context, entryNodeKey, id);
         GLOBAL_STYLE_FUNCTION.forEach((block, styleName) => {
           BUILDIN_STYLE_NAMES.delete(styleName);
