@@ -35,9 +35,9 @@ import {
   writeCollectionFile,
   getAllComponentsOrModules
 } from '../../utils';
-import { appComponentCollection } from "../../ets_checker";
+import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
-import { shouldEmitJsFlagById } from "../ets_ui/rollup-plugin-ets-typescript";
+import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
 
 const filterCrossplatform: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -66,7 +66,7 @@ export function apiTransform() {
       }
     },
     transform(code: string, id: string) {
-      const shouldEmitJsFlag: boolean = id.endsWith(".js") || shouldEmitJsFlagById(id);
+      const shouldEmitJsFlag: boolean = id.endsWith('.js') || shouldEmitJsFlagById(id);
       if (!shouldEmitJsFlag &&
         !this.share.projectConfig.isCrossplatform &&
         !this.share.projectConfig.widgetCompile) {
@@ -86,7 +86,7 @@ export function apiTransform() {
         }
       }
       if (!shouldEmitJsFlag) {
-        return null
+        return null;
       }
       const magicString = new MagicString(code);
       return {
