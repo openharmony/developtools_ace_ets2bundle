@@ -66,7 +66,8 @@ export function apiTransform() {
       }
     },
     transform(code: string, id: string) {
-      const shouldEmitJsFlag: boolean = id.endsWith(".js") || shouldEmitJsFlagById(id);
+      const shouldEmitJsFlag: boolean = id.endsWith('.js') ||
+        shouldEmitJsFlagById(id) || projectConfig.compileMode !== 'esmodule';
       if (!shouldEmitJsFlag &&
         !this.share.projectConfig.isCrossplatform &&
         !this.share.projectConfig.widgetCompile) {
