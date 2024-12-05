@@ -208,7 +208,7 @@
         "Menu",
         "MenuItem",
         "MenuItemGroup",
-        "MetaBall",
+        "Metaball",
         "MovingPhotoView",
         "NavDestination",
         "NavRouter",
@@ -529,9 +529,9 @@
             "instance": "MenuItemGroupInstance"
           },
           {
-            "name": "MetaBall",
-            "type": "MetaBallAttribute",
-            "instance": "MetaBallInstance"
+            "name": "Metaball",
+            "type": "MetaballAttribute",
+            "instance": "MetaballInstance"
           },
           {
             "name": "MovingPhotoView",
