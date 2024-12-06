@@ -60,6 +60,7 @@ import {
   CompileEvent,
   stopEvent
 } from '../../performance';
+import { BytecodeObfuscator } from './bytecode_obfuscator';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -245,12 +246,19 @@ export class SourceMapGenerator {
     }
 
     let cacheSourceMapObject: Object;
-
     if (!fs.existsSync(this.cacheSourceMapPath)) {
       cacheSourceMapObject = this.sourceMaps;
     } else {
-      cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
-
+      /**
+       * bytecode obfuscation requires that the input sourceMap must be unobfuscated,
+       * the sourceMap will be saved in the cache directory before the first bytecode obfuscation,
+       * and it will as the input for merging sourceMap during incremental compilation.
+       */
+      if (BytecodeObfuscator.enable && fs.existsSync(BytecodeObfuscator.getInstance().getBackupSourceMapPath())) {
+        cacheSourceMapObject = JSON.parse(fs.readFileSync(BytecodeObfuscator.getInstance().getBackupSourceMapPath()).toString());
+      } else {
+        cacheSourceMapObject = JSON.parse(fs.readFileSync(this.cacheSourceMapPath).toString());
+      }
       // remove unused source files's sourceMap
       let unusedFiles = [];
       let compileFileList: Set<string> = new Set();

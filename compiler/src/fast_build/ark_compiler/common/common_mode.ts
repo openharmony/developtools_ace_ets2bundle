@@ -59,6 +59,8 @@ export abstract class CommonMode {
   genAbcScriptPath: string;
   triggerAsync: Object;
   triggerEndSignal: Object;
+  isArkguardEnabled: boolean;
+  isBytecodeObfEnabled: boolean;
 
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
@@ -74,6 +76,8 @@ export abstract class CommonMode {
     // If the child process throws an error by calling throwArkTsCompilerError(), IDE will reset the counting state.
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
+    this.isArkguardEnabled = rollupObject.share.arkProjectConfig.isArkguardEnabled;
+    this.isBytecodeObfEnabled = rollupObject.share.arkProjectConfig.isBytecodeObfEnabled;
   }
 
   initCmdEnv() {
