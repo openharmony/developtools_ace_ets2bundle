@@ -582,7 +582,20 @@ export interface ModuleInfo {
 
 export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Function | Object,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
-  if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
+  /**
+   * Obfuscation mode rules:
+   * - When isArkguardEnabled=true (source code obfuscation): Obfuscate ALL files
+   * - When isBytecodeObfEnabled=true (bytecode obfuscation): Only decl files will be obfuscated
+   * - These two flags are mutually exclusive (only one can be true at a time)
+   */
+  let shouldSkipObfuscation = false;
+  if (projectConfig.isBytecodeObfEnabled) {
+    shouldSkipObfuscation = !/\.d\.e?ts$/.test(moduleInfo.buildFilePath);
+  }
+
+  const isObfuscatorEnabled = projectConfig.arkObfuscator &&
+    (projectConfig.isArkguardEnabled || !shouldSkipObfuscation);
+  if (compileToolIsRollUp() && isObfuscatorEnabled) {
     startFilesEvent(moduleInfo.buildFilePath);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.WRITE_OBFUSCATED_SOURCE_CODE);
     const previousStageSourceMap: sourceMap.RawSourceMap | undefined = getPreviousStageSourceMap(moduleInfo, rollupNewSourceMaps);
@@ -711,8 +724,15 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
 
   writeObfuscatedFile(newFilePath, mixedInfo.content ?? '');
 }
-
-export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string): string {
+/**
+ * This function will be called when obfuscating sourceFile and declaration file.
+ * Declaration file is not affected by bytecode obfuscation.
+ * When bytecode obfuscation is enabel, the name of sourceFile will not be obfuscated.
+ * Because harFilesRecord is collected in this function
+ * This parameter is added to process sourceFile and return early only when bytecode obfuscation is turned on.
+ * It does not affect the original call effect.
+ */
+export function tryMangleFileName(filePath: string, projectConfig: Object, originalFilePath: string, skipObf: boolean = false): string {
   originalFilePath = toUnixPath(originalFilePath);
   let isOhModule = isPackageModulesFile(originalFilePath, projectConfig);
   let genFileInHar: GeneratedFileInHar = harFilesRecord.get(originalFilePath);
@@ -720,7 +740,9 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
     genFileInHar = { sourcePath: originalFilePath };
     harFilesRecord.set(originalFilePath, genFileInHar);
   }
-
+  if (skipObf) {
+    return filePath;
+  }
   if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation && !isOhModule) {
     const mangledFilePath: string = mangleFilePath(filePath);
     if ((/\.d\.e?ts$/).test(filePath)) {

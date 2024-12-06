@@ -503,6 +503,28 @@ mocha.describe('test ark_utils file api', function () {
     expect(result === newFilePath).to.be.true;
   });
 
+  mocha.it('8-3: test tryMangleFileName when bytecode obfuscation is enabled', async function () {
+    const filePath = '/mnt/application/entry/build/default/cache/default/default@CompileArkTS/esmodule/release/src/main/ets/entryability/EntryAbility.ts';
+    const originalFilePath = '/mnt/application/entry/src/main/ets/entryability/EntryAbility.ets';
+    const projectConfig = {
+      projectRootPath: '/mnt/application',
+      packageDir: 'oh_modules',
+      modulePathMap: {
+        entry: '/mnt/application/entry'
+      },
+      obfuscationMergedObConfig: {
+        options: {
+          enableFileNameObfuscation: true
+        }
+      },
+      isArkguardEnabled: false,
+      isBytecodeObfEnabled: true
+    }
+    const result = tryMangleFileName(filePath, projectConfig, originalFilePath, projectConfig.isBytecodeObfEnabled);
+    expect(result === filePath).to.be.true;
+    projectConfig.isBytecodeObfEnabled = false
+  });
+
   mocha.it('9-1: test writeArkguardObfuscatedSourceCode when obfuscation is enabled', async function () {
     this.rollup.build(RELEASE);
     const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
