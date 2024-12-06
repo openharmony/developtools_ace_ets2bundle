@@ -57,6 +57,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../performance';
+import { BytecodeObfuscator } from './bytecode_obfuscator';
 
 export let hasTsNoCheckOrTsIgnoreFiles: string[] = [];
 export let compilingEtsOrTsFiles: string[] = [];
@@ -182,7 +183,7 @@ export async function writeFileContentToTempDir(id: string, content: string, pro
       await writeFileContent(id, filePath, content, projectConfig, logger, metaInfo);
       break;
     case EXTNAME_JSON:
-      const newFilePath: string = tryMangleFileName(filePath, projectConfig, id);
+      const newFilePath: string = tryMangleFileName(filePath, projectConfig, id, projectConfig.isBytecodeObfEnabled);
       mkdirsSync(path.dirname(newFilePath));
       fs.writeFileSync(newFilePath, content ?? '');
       break;

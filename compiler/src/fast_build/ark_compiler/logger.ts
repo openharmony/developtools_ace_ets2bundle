@@ -136,6 +136,65 @@ export class LogDataFactory {
     }
     return undefined;
   }
+
+  static newInstanceFromBytecodeObfuscation(errorOutput: string, statusCode: number): LogData | undefined {
+    const trimmedOutput = errorOutput?.trim();
+    if (!trimmedOutput) {
+      return LogDataFactory.newInstance(
+        ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
+        'Bytecode program terminated abnormally',
+        `Status code: ${statusCode}`
+      );
+    }
+  
+    const parseErrorLines = (output: string): Record<string, string> => 
+      output
+        .split('\n')
+        .reduce((acc: Record<string, string>, line) => {
+          const [key, ...values] = line.split(':').map(part => part.trim());
+          return key && values.length ? { ...acc, [key]: values.join(':').trim() } : acc;
+        }, {});
+  
+    const parsedErrors = parseErrorLines(trimmedOutput);
+  
+    const getErrorInfo = (): {
+      code: ErrorCode;
+      description: string;
+      cause: string;
+      position: string;
+      solutions: string[];
+      details: string;
+    } => {
+      if (Object.keys(parsedErrors).length === 0) {
+        return {
+          code: ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
+          description: trimmedOutput,
+          cause: '',
+          position: '',
+          solutions: [],
+          details: `Status code: ${statusCode}`,
+        };
+      }
+  
+      return {
+        code: parsedErrors['[ErrorCode]'] ?? ErrorCode.BYTECODE_OBFUSCATION_COMMON_ERROR,
+        description: parsedErrors['[Description]'] ?? parsedErrors['[Cause]'] ?? 'Unknown error',
+        cause: parsedErrors['[Cause]'] ?? '',
+        position: parsedErrors['[Position]'] ?? '',
+        solutions: parsedErrors['[Solutions]']?.split(',').filter(Boolean) ?? [],
+        details: `Status code: ${statusCode}`,
+      };
+    };
+  
+    const { code, description, cause, position, solutions, details } = getErrorInfo();
+    return LogDataFactory.newInstance(
+      code,
+      description,
+      details ?? cause,
+      position,
+      solutions
+    );
+  }
 }
 
 export class LogData {
