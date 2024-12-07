@@ -24,22 +24,39 @@ import {
   red,
   yellow
 } from './common/ark_define';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from './logger';
+import {
+  ArkTSErrorDescription,
+  ErrorCode
+} from './error_code';
 
 export function checkIfJsImportingArkts(rollupObject: Object): void {
   ModuleSourceFile.getSourceFiles().forEach((sourceFile: ModuleSourceFile) => {
     const id: string = sourceFile.getModuleId();
     const unixId: string = toUnixPath(id);
+    const logger: CommonLogger = CommonLogger.getInstance(rollupObject);
     if (isJsSourceFile(id) && unixId.indexOf('/oh_modules/') === -1) {
       const importMap = rollupObject.getModuleInfo(id).importedIdMaps;
       Object.values(importMap).forEach((requestFile: string) => {
         if (requestFile.endsWith(EXTNAME_ETS) || requestFile.endsWith(EXTNAME_D_ETS)) {
-          const errorMsg: string = compilerOptions.isCompatibleVersion ?
-            `ArkTS:WARN File: ${id}\n` +
-            `Importing ArkTS files in JS and TS files is about to be forbidden.\n` :
-            `ArkTS:ERROR ArkTS:ERROR File: ${id}\n` +
-            `Importing ArkTS files in JS and TS files is forbidden.\n`;
-          const logger: Object = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
-          compilerOptions.isCompatibleVersion ? logger.warn(yellow + errorMsg) : logger.error(red + errorMsg);
+          if (compilerOptions.isCompatibleVersion) {
+            const warnMsg: string = `ArkTS:WARN File: ${id}\n` +
+              `Importing ArkTS files in JS and TS files is about to be forbidden.\n`;
+            logger.warn(yellow + warnMsg);
+          } else {
+            const errInfo: LogData = LogDataFactory.newInstance(
+              ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+              ArkTSErrorDescription,
+              'Importing ArkTS files in JS and TS files is forbidden.',
+              '',
+              [`Please remove the import statement of the ArkTS file in ${id}.`]
+            );
+            logger.printError(errInfo);
+          }
         }
       }
       );

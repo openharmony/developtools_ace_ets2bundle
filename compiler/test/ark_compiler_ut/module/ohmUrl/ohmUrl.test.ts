@@ -30,6 +30,17 @@ import { projectConfig as mainProjectConfig } from '../../../../main';
 import RollUpPluginMock from '../../mock/rollup_mock/rollup_plugin_mock';
 import { GEN_ABC_PLUGIN_NAME } from '../../../../lib/fast_build/ark_compiler/common/ark_define';
 import { ModuleSourceFile } from '../../../../lib/fast_build/ark_compiler/module/module_source_file';
+import {
+  ArkTSErrorDescription,
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../../../lib/fast_build/ark_compiler/error_code';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../../lib/fast_build/ark_compiler/logger';
+
 const PRVIEW_MOCK_CONFIG : Object = {
   // system api mock
   "@ohos.bluetooth": {
@@ -166,38 +177,102 @@ mocha.describe('generate ohmUrl', function () {
   mocha.it('the error message of processPackageDir', function () {
     this.rollup.build();
     projectConfig.modulePathMap = {};
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
     const moduleName: string = 'entry';
     const importerFile: string = 'importTest.ts';
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
-    const loggerStub = sinon.stub(logger, 'error');
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
-    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
-      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
-    loggerStub.restore();
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('the error message of processPackageDir without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    projectConfig.modulePathMap = {};
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.logger, 'error');
+    getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
   });
 
   mocha.it('the error message of processPackageDir(packageDir is invalid value)', function () {
     this.rollup.build();
     projectConfig.packageDir = undefined;
     projectConfig.modulePathMap = {};
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
     const moduleName: string = 'entry';
     const importerFile: string = 'importTest.ts';
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
-    const loggerStub = sinon.stub(logger, 'error');
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' + 
+      '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
-    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the module which ${filePath} belongs to is correctly configured.` +
-      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
-    loggerStub.restore();
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('the error message of processPackageDir(packageDir is invalid value) ' +
+    'without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    projectConfig.packageDir = undefined;
+    projectConfig.modulePathMap = {};
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. Failed to get a resolved OhmUrl for ' + 
+      '"/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.logger, 'error');
+    getOhmUrlByFilepath(filePath, projectConfig, logger, moduleName, importerFile);
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
   });
 
   mocha.it('NormalizedOHMUrl inter-app hsp self import', function () {
@@ -883,22 +958,63 @@ mocha.describe('generate ohmUrl', function () {
     projectConfig.pkgContextInfo = {
       'json5': undefined
     };
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
     const moduleName: string = 'entry';
     const importerFile: string = 'importTest.ts';
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
-    const loggerStub = sinon.stub(logger, 'error');
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the "json5" module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     try {
       getNormalizedOhmUrlByFilepath(filePath, projectConfig, logger, pkgParams, importerFile);
     } catch (e) {
     }
-    expect(loggerStub.calledWith(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the "json5" module which ${filePath} belongs to is correctly configured.` +
-      '> Check the corresponding file name is correct(including case-sensitivity).', reset)).to.be.true;
-    loggerStub.restore();
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('the error message of getNormalizedOhmUrlByFilepath without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    const pkgParams = {
+      pkgName: 'json5',
+      pkgPath: `${projectConfig.projectRootPath}/entry/oh_modules/json5`,
+      isRecordName: false
+    };
+    projectConfig.pkgContextInfo = {
+      'json5': undefined
+    };
+    const filePath: string = `${projectConfig.projectRootPath}/entry/oh_modules/json5/dist/index.js`;
+    const moduleName: string = 'entry';
+    const importerFile: string = 'importTest.ts';
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      'Failed to get a resolved OhmUrl for "/testProjectRootPath/entry/oh_modules/json5/dist/index.js" imported by "importTest.ts".',
+      '',
+      ['Check whether the "json5" module which /testProjectRootPath/entry/oh_modules/json5/dist/index.js belongs to is correctly configured.',
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.logger, 'error');
+    try {
+      getNormalizedOhmUrlByFilepath(filePath, projectConfig, logger, pkgParams, importerFile);
+    } catch (e) {
+    }
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
   });
 
   mocha.it('transform mockConfigInfo', function () {
@@ -1086,10 +1202,14 @@ mocha.describe('generate ohmUrl', function () {
     this.rollup.build();
     this.rollup.useNormalizedOHMUrl();
     this.rollup.share.projectConfig.pkgContextInfo = {};
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
-    const loggerStub = sinon.stub(logger, 'error');
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_PKG_CONTENT_INFO,
+      ArkTSInternalErrorDescription,
+      "Can not get pkgContextInfo of package 'libapplication.so' which being imported by " +
+      "'/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets'"
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const loggerStub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     const importerFile: string =
       '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
     const appSoModuleRequest: string = 'libapplication.so';
@@ -1098,8 +1218,36 @@ mocha.describe('generate ohmUrl', function () {
         importerFile, true);
     } catch (e) {
     }
-    expect(loggerStub.calledWith(red, 'ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package ' +
-      `'${appSoModuleRequest}' which being imported by '${importerFile}'`, reset)).to.be.true;
+    expect(loggerStub.calledWith(errInfo)).to.be.true;
+    loggerStub.restore();
+  });
+
+  mocha.it('useNormalizedOHMUrl app builtins error message without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    this.rollup.useNormalizedOHMUrl();
+    this.rollup.share.projectConfig.pkgContextInfo = {};
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_PKG_CONTENT_INFO,
+      ArkTSInternalErrorDescription,
+      "Can not get pkgContextInfo of package 'libapplication.so' which being imported by " +
+      "'/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets'"
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const logger = CommonLogger.getInstance(this.rollup);
+    const loggerStub = sinon.stub(logger.logger, 'error');
+    const importerFile: string =
+      '/testHap/oh_modules/.ohpm/pkghar@test+har=/oh_modules/pkghar/src/main/ets/pages/Index.ets';
+    const appSoModuleRequest: string = 'libapplication.so';
+    try {
+      getOhmUrlBySystemApiOrLibRequest(appSoModuleRequest, this.rollup.share.projectConfig, logger,
+        importerFile, true);
+    } catch (e) {
+    }
+    expect(loggerStub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     loggerStub.restore();
   });
 
@@ -1124,32 +1272,96 @@ mocha.describe('generate ohmUrl', function () {
         'abcPath': 'D:\\projectPath\\bytecode_har\\modules.abc'
       }
     }
-
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_ENTRY_FILE_NOT_FOUND,
+      ArkTSInternalErrorDescription,
+      "Failed to find entry file of 'bytecode_har'. Failed to obtain the entry file " +
+      "information of 'bytecode_har' from the package context information."
+    );
     const aliasPkgName = 'bytecode_alias';
     const pkgName = 'bytecode_har';
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME)
-    const loggerStub = sinon.stub(logger, 'error');
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
+    const logger = CommonLogger.getInstance(this.rollup);
+    const loggerStub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
 
     try {
       delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har']['entryPath'];
       getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
     } catch (e) {
     }
-
-    expect(loggerStub.getCall(0).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find entry file of '${pkgName}'.\n` +
-        `Error Message: Failed to obtain the entry file information of '${pkgName}' from the package context information.`, reset)).to.be.true;
+    expect(loggerStub.getCall(0).calledWith(errInfo)).to.be.true;
 
     try {
       delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har'];
       getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
     } catch (e) {
     }
+    const errInfo1: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
+      ArkTSInternalErrorDescription,
+      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " + 
+      "from the package context information."
+    );
+    expect(loggerStub.getCall(1).calledWithMatch(errInfo1)).to.be.true;
 
-    expect(loggerStub.getCall(1).calledWith(red, `ArkTS:INTERNAL ERROR: Failed to find package '${pkgName}'.\n` +
-      `Error Message: Failed to obtain package '${pkgName}' from the package context information.`, reset)).to.be.true;
+    loggerStub.restore();
+  });
 
+  mocha.it('the error message of getNormalizedOhmUrlByAliasName without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'bytecode_har': {
+        'packageName': 'bytecode_har',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    this.rollup.share.projectConfig.dependencyAliasMap = new Map([
+      ['bytecode_alias', 'bytecode_har']
+    ]);
+    this.rollup.share.projectConfig.byteCodeHarInfo = {
+      'bytecode_alias': {
+        'abcPath': 'D:\\projectPath\\bytecode_har\\modules.abc'
+      }
+    }
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_ENTRY_FILE_NOT_FOUND,
+      ArkTSInternalErrorDescription,
+      "Failed to find entry file of 'bytecode_har'. Failed to obtain the entry file " +
+      "information of 'bytecode_har' from the package context information."
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const aliasPkgName = 'bytecode_alias';
+    const pkgName = 'bytecode_har';
+    const logger = CommonLogger.getInstance(this.rollup);
+    const loggerStub = sinon.stub(logger.logger, 'error');
+
+    try {
+      delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har']['entryPath'];
+      getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
+    } catch (e) {
+    }
+    expect(loggerStub.getCall(0).calledWith(errInfo.toString())).to.be.true;
+
+    try {
+      delete this.rollup.share.projectConfig.pkgContextInfo['bytecode_har'];
+      getNormalizedOhmUrlByAliasName(aliasPkgName, this.rollup.share.projectConfig, logger);
+    } catch (e) {
+    }
+    const errInfo1: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
+      ArkTSInternalErrorDescription,
+      "Failed to find package 'bytecode_har'. Failed to obtain package 'bytecode_har' " + 
+      "from the package context information."
+    );
+    expect(loggerStub.getCall(1).calledWithMatch(errInfo1.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     loggerStub.restore();
   });
 });

@@ -41,8 +41,8 @@ mocha.describe('test gen_aot file api', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
     const loggerStub = sinon.stub(moduleMode.logger, 'debug');
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
-    const faultHandler = ((error: string) => { moduleMode.throwArkTsCompilerError(error); })
+    const stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
+    const faultHandler = ((error: string) => { moduleMode.logger.throwArkTsCompilerError(error); })
     try {
       generateAot(moduleMode.arkConfig.arkRootPath, moduleMode.moduleAbcPath,
         moduleMode.projectConfig, moduleMode.logger, faultHandler);
@@ -58,8 +58,8 @@ mocha.describe('test gen_aot file api', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
     const loggerStub = sinon.stub(moduleMode.logger, 'debug');
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
-    const faultHandler = ((error: string) => { moduleMode.throwArkTsCompilerError(error); });
+    const stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
+    const faultHandler = ((error: string) => { moduleMode.logger.throwArkTsCompilerError(error); });
     moduleMode.projectConfig.anBuildMode = 'partial';
     moduleMode.projectConfig.apPath = '';
     try {

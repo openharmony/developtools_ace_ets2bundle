@@ -27,6 +27,15 @@ import {
 import { findImportSpecifier } from '../utils/utils';
 import { projectConfig } from '../../../main';
 import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
+import { 
+  ArkTSErrorDescription,
+  ArkTSInternalErrorDescription,
+  ErrorCode,
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -110,6 +119,10 @@ const KIT_EMPTY_IMPORT_CODE: string =
 'import { appAccount } from "@kit.BasicServicesKit";\n' +
 'import "@kit.ArkUI";\n' +
 'appAccount.createAppAccountManager();';
+
+const KIT_NAMESPACE_IMPORT_CODE: string =
+'import * as ArkUI "@kit.ArkUI";\n' +
+'ArkUI.AlertDialog;';
 
 const KIT_LAZY_IMPORT_CODE: string =
 'import { test } from "./test";\n' +
@@ -266,10 +279,15 @@ mocha.describe('process Kit Imports tests', function () {
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_CONFIG_FILE_NOT_FOUND,
+      ArkTSErrorDescription,
+      "Kit '@kit.Kit' has no corresponding config file in ArkTS SDK.",
+      '',
+      ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Kit '@kit.Kit' has no corresponding config file in ArkTS SDK. "+
-      'Please make sure the Kit apis are consistent with SDK ' +
-      "and there's no local modification on Kit apis.")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
@@ -287,22 +305,36 @@ mocha.describe('process Kit Imports tests', function () {
     );
     const kitNode = findImportSpecifier(sourceFile);
     const kitInfo = new KitInfo(kitNode, symbols);
-    kitInfo.newSpecificerInfo('', 'test', undefined)
+    kitInfo.newSpecificerInfo('', 'test', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_IMPORT_NAME_NOT_EXPORTED_FROM_KIT,
+      ArkTSErrorDescription,
+      "'test' is not exported from Kit '@kit.BasicServicesKit'.",
+      '',
+      ["Please add the exported symbol of 'test' in the Kit '@kit.BasicServicesKit'."]
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("'test' is not exported from Kit")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-3 the error message of empty import', function () {
+  mocha.it('2-3 the error message of EmptyImportKitInfo', function () {
     ts.transpileModule(KIT_EMPTY_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_EMPTY_IMPORT_NOT_ALLOWED_WITH_KIT,
+      ArkTSErrorDescription,
+      "Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI'.",
+      '',
+      ['Please specify imported symbols explicitly. ' + 
+       'For example, import "@kit.ArkUI"; -> import { lang } from "@kit.ArkUI";']
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI', " +
-      "Please specify imported symbols explicitly.")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
@@ -323,6 +355,59 @@ mocha.describe('process Kit Imports tests', function () {
     );
     expect(hasError).to.be.true;
     expect(hasError1).to.be.true;
+  });
+
+  mocha.it('2-5 the error message of NameSpaceKitInfo', function () {
+    ts.transpileModule(KIT_NAMESPACE_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_NAMESPACE_IMPORT_EXPORT_NOT_SUPPORTED,
+      ArkTSErrorDescription,
+      'Namespace import or export of Kit is not supported currently.',
+      '',
+      ['Please namespace import or export of Kit replace it with named import or export instead. ' + 
+       'For example, import * as ArkTS from "@kit.ArkUI"; -> import { AlertDialog } from "@kit.ArkUI";']
+    );
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes(errInfo.toString())
+    );
+    expect(hasError).to.be.true;
+  });
+
+  mocha.it('2-6 the error message of validateImportingETSDeclarationSymbol', function () {
+    const symbols = {
+      "test": {
+        "source": "@ohos.test.d.ets",
+        "bindings": "default"
+      }
+    };
+    const sourceCode = 'import { test } from "my-module";';
+    const sourceFile = ts.createSourceFile(
+      "tempFile.ts",
+      sourceCode,
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const kitNode = findImportSpecifier(sourceFile);
+    const kitInfo = new KitInfo(kitNode, symbols);
+    compilerOptions['tsImportSendableEnable'] = false;
+    kitInfo.newSpecificerInfo('', 'test', findImportSpecifier(sourceFile));
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_IDENTIFIER_IMPORT_NOT_ALLOWED_IN_TS_FILE,
+      ArkTSErrorDescription,
+      "Identifier 'test' comes from '@ohos.test.d.ets' " + 
+      'which can not be imported in .ts file.',
+      '',
+      ["Please remove the import statement or change the file extension to .ets."]
+    );
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes(errInfo.toString())
+
+    );
+    expect(hasError).to.be.true;
   });
 
   mocha.it('3-1 process single default-bindings import', function () {
