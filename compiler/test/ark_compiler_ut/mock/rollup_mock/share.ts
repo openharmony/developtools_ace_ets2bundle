@@ -36,8 +36,12 @@ class Logger {
     console.debug(`${color}${this.prefix}: ${JSON.stringify(msg)}${reset}`);
   }
 
+  public warn(color: string, msg: string, reset: string) {
+    console.warn(`${color}${this.prefix}: ${JSON.stringify(msg)}${reset}`);
+  }
+
   public error(color: string, errormsg: string, reset: string) {
-    this.messsage = color.toString();
+    this.messsage = errormsg.toString();
   }
 
   public getPrefix() {
@@ -55,6 +59,43 @@ class Logger {
   public static createLogger(prefix) {
     const logger = new Logger(prefix);
     Logger.instances.push(logger);
+    return logger;
+  }
+}
+
+class HvigorConsoleLogger {
+
+  private prefix: string;
+  private messsage: string;
+  static instances = [];
+
+  constructor(prefix: string) {
+    this.prefix = prefix;
+  }
+
+  public printError(error: object): void {
+    this.messsage = error.code.toString();
+  }
+
+  public printErrorAndExit(error: object): void {
+    this.messsage = error.code.toString();
+  }
+
+  public getPrefix(): string {
+    return this.prefix;
+  }
+
+  public static getLogger(prefix): Object {
+    for (const instance of HvigorConsoleLogger.instances) {
+      if (instance.getPrefix() == prefix) {
+        return instance;
+      }
+    }
+  }
+
+  public static createLogger(prefix): HvigorConsoleLogger {
+    const logger = new HvigorConsoleLogger(prefix);
+    HvigorConsoleLogger.instances.push(logger);
     return logger;
   }
 }
@@ -126,6 +167,14 @@ class Share {
     const logger = Logger.getLogger(prefix);
     if (!logger || logger == undefined) {
       return Logger.createLogger(prefix);
+    }
+    return logger;
+  }
+
+  public getHvigorConsoleLogger(prefix: string): HvigorConsoleLogger {
+    const logger = HvigorConsoleLogger.getLogger(prefix);
+    if (!logger || logger == undefined) {
+      return HvigorConsoleLogger.createLogger(prefix);
     }
     return logger;
   }

@@ -26,6 +26,7 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import { cleanUpUtilsObjects } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
+import { CommonLogger } from './logger';
 
 export function genAbc() {
   return {
@@ -61,6 +62,7 @@ export function genAbc() {
       cleanModuleMode();
       ModuleSourceFile.cleanUpObjects();
       cleanSharedModuleSet();
+      CommonLogger.destroyInstance();
     }
   };
 }
