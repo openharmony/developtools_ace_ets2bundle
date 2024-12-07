@@ -17,6 +17,7 @@ import { expect } from 'chai';
 import fs from 'fs';
 import mocha from 'mocha';
 import path from 'path';
+import sinon from 'sinon';
 
 import {
   RELEASE
@@ -36,6 +37,14 @@ import {
   hasTsNoCheckOrTsIgnoreFiles,
   cleanUpFilesList
 } from '../../../lib/fast_build/ark_compiler/utils';
+import {
+  ArkTSInternalErrorDescription,
+  ErrorCode,
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 const prefix = `${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}|`;
 let entryPkgInfo = `${ENTRY_PACKAGE_NAME_DEFAULT}|${ENTRY_MODULE_VERSION_DEFAULT}`;
@@ -98,6 +107,72 @@ mocha.describe('test generate_sourcemap api', function () {
     expect(pkgInfo.modulePath == 'src/main/a/b.js').to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
+
+  mocha.it('1-6: test GetModuleInfoFaild error of getPkgInfoByModuleId', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId = "moduleId";
+    const getModuleInfoStub = sinon.stub(SourceMapGenerator.rollupObject, 'getModuleInfo').returns(undefined);
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
+
+    try {
+      sourceMapGenerator.getPkgInfoByModuleId(moduleId);
+    } catch (e) {
+    }
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to get ModuleInfo, moduleId: moduleId'
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
+    getModuleInfoStub.restore();
+    stub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
+  })
+
+  mocha.it('1-7: test UnableToGetModuleInfoMeta error of getPkgInfoByModuleId', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId = "moduleId";
+    const getModuleInfoStub = sinon.stub(SourceMapGenerator.rollupObject, 'getModuleInfo').returns({'meta': undefined});
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
+
+    try {
+      sourceMapGenerator.getPkgInfoByModuleId(moduleId);
+    } catch (e) {
+    }
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+      ArkTSInternalErrorDescription,
+      "Failed to get ModuleInfo properties 'meta', moduleId: moduleId"
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
+    getModuleInfoStub.restore();
+    stub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
+  })
+
+  mocha.it('1-8: test UnableToGetModuleInfoMetaPkgPath error of getPkgInfoByModuleId', function () {
+    this.rollup.build();
+    const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
+    let moduleId = "moduleId";
+    const getModuleInfoStub = sinon.stub(SourceMapGenerator.rollupObject, 'getModuleInfo').returns({'meta': {'pkgPath': undefined}});
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
+
+    try {
+      sourceMapGenerator.getPkgInfoByModuleId(moduleId);
+    } catch (e) {
+    }
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+      ArkTSInternalErrorDescription,
+      "Failed to get ModuleInfo properties 'meta.pkgPath', moduleId: moduleId"
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
+    getModuleInfoStub.restore();
+    stub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
+  })
 
   mocha.it('2-1: test genKey under build debug', function () {
     this.rollup.build();

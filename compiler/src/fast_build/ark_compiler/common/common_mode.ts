@@ -40,13 +40,21 @@ import {
 import {
   genTemporaryModuleCacheDirectoryForBundle
 } from '../utils';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../logger';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode 
+} from '../error_code';
 
 export abstract class CommonMode {
   projectConfig: Object;
   arkConfig: Object;
   cmdArgs: string[] = [];
-  logger: Object;
-  throwArkTsCompilerError: Object;
+  logger: CommonLogger;
   hashJsonFilePath: string;
   genAbcScriptPath: string;
   triggerAsync: Object;
@@ -55,9 +63,8 @@ export abstract class CommonMode {
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.arkConfig = initArkConfig(this.projectConfig);
-    this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.logger = CommonLogger.getInstance(rollupObject);
     this.cmdArgs = this.initCmdEnv();
-    this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.hashJsonFilePath = this.genHashJsonFilePath();
     this.genAbcScriptPath = path.resolve(__dirname, GEN_ABC_SCRIPT);
     // Each time triggerAsync() was called, IDE will wait for asynchronous operation to finish before continue excuting.
@@ -94,7 +101,13 @@ export abstract class CommonMode {
         args.push('--debug-info');
       }
     } else {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+        ArkTSInternalErrorDescription,
+        'Invalid compilation mode. ' + 
+        `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
 
     return args;

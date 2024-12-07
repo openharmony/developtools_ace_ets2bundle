@@ -78,6 +78,16 @@ import {
 } from 'arkguard';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { ALL_FILES_OBFUSCATION, FILES_FOR_EACH, SOURCE_PROJECT_CONFIG } from '../../meomry_monitor/memory_define';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../logger';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../error_code';
+
 import { checkIfJsImportingArkts } from '../check_import_module';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -93,7 +103,7 @@ export class ModuleSourceFile {
   private metaInfo: Object;
   private isSourceNode: boolean = false;
   private static projectConfig: Object;
-  private static logger: Object;
+  private static logger: CommonLogger;
   private static mockConfigInfo: Object = {};
   private static mockFiles: string[] = [];
   private static newMockConfigInfo: Object = {};
@@ -182,8 +192,13 @@ export class ModuleSourceFile {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
       return;
     } else {
-      ModuleSourceFile.logger.error(red, 'ArkTS:INTERNAL ERROR: Failed to convert the key in mock-config to ohmurl, ' +
-                                    'because the file path corresponding to the key in mock-config is empty.', reset);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_MOCK_CONFIG_KEY_TO_OHM_URL_CONVERSION_FAILED,
+        ArkTSInternalErrorDescription,
+        'Failed to convert the key in mock-config to ohmurl, ' +
+        'because the file path corresponding to the key in mock-config is empty.'
+      );
+      ModuleSourceFile.logger.printError(errInfo);
     }
   }
 
@@ -477,14 +492,22 @@ export class ModuleSourceFile {
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       if (!targetModuleInfo) {
-        ModuleSourceFile.logger.error(red,
-          `ArkTS:INTERNAL ERROR: Failed to get module info of file '${filePath}'`, reset);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+          ArkTSInternalErrorDescription,
+          `Failed to get ModuleInfo, moduleId: ${filePath}`
+        );
+        ModuleSourceFile.logger.printError(errInfo);
         return undefined;
       }
       if (!targetModuleInfo.meta) {
-        ModuleSourceFile.logger.error(red,
-          `ArkTS:INTERNAL ERROR: Failed to get meta info of file '${filePath}'`, reset);
-          return undefined;
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+          ArkTSInternalErrorDescription,
+          `Failed to get ModuleInfo properties 'meta', moduleId: ${filePath}`
+        );
+        ModuleSourceFile.logger.printError(errInfo);
+        return undefined;
       }
       let res: string = '';
       if (useNormalizedOHMUrl) {
@@ -694,7 +717,7 @@ export class ModuleSourceFile {
 
   private static initPluginEnv(rollupObject: Object): void {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
-    this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.logger = CommonLogger.getInstance(rollupObject);
   }
 
   public static sortSourceFilesByModuleId(): void {

@@ -15,7 +15,10 @@
 
 import path from 'path';
 import fs from 'fs';
-import { createAndStartEvent, stopEvent } from "../../ark_utils";
+import { 
+  createAndStartEvent,
+  stopEvent
+} from "../../ark_utils";
 import {
   EXTNAME_ETS,
   EXTNAME_JS,
@@ -47,6 +50,15 @@ import {
 } from './common/ob_config_resolver';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { UPDATE_SOURCE_MAPS } from '../meomry_monitor/memory_define';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from './error_code';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from './logger';
 
 export class SourceMapGenerator {
   private static instance: SourceMapGenerator | undefined = undefined;
@@ -57,22 +69,20 @@ export class SourceMapGenerator {
   private cacheSourceMapPath: string;
   private triggerAsync: Object;
   private triggerEndSignal: Object;
-  private throwArkTsCompilerError: Object;
   private sourceMaps: Object = {};
   private isNewSourceMap: boolean = true;
   private keyCache: Map<string, string> = new Map();
-  private logger: Object;
+  private logger: CommonLogger;
 
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
-    this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
     this.sourceMapPath = this.getSourceMapSavePath();
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.triggerAsync = rollupObject.async;
     this.triggerEndSignal = rollupObject.signal;
-    this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.logger = CommonLogger.getInstance(rollupObject);
   }
 
   static init(rollupObject: Object): void {
@@ -103,20 +113,30 @@ export class SourceMapGenerator {
 
     const moduleInfo: Object = SourceMapGenerator.rollupObject.getModuleInfo(moduleId);
     if (!moduleInfo) {
-      this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to get ModuleInfo,\n` +
-        `moduleId: ${moduleId}`);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+        ArkTSInternalErrorDescription,
+        `Failed to get ModuleInfo, moduleId: ${moduleId}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
     const metaInfo: Object = moduleInfo['meta'];
     if (!metaInfo) {
-      this.throwArkTsCompilerError(
-        `ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta',\n` +
-        `moduleId: ${moduleId}`);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+        ArkTSInternalErrorDescription,
+        `Failed to get ModuleInfo properties 'meta', moduleId: ${moduleId}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
     const pkgPath = metaInfo['pkgPath'];
     if (!pkgPath) {
-      this.throwArkTsCompilerError(
-        `ArkTS:INTERNAL ERROR: Failed to get ModuleInfo properties 'meta.pkgPath',\n` +
-        `moduleId: ${moduleId}`);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+        ArkTSInternalErrorDescription,
+        `Failed to get ModuleInfo properties 'meta.pkgPath', moduleId: ${moduleId}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
 
     const dependencyPkgInfo = metaInfo['dependencyPkgInfo'];
@@ -202,9 +222,13 @@ export class SourceMapGenerator {
       const eventWriteFile = createAndStartEvent(parentEvent, 'write source map (async)', true);
       fs.writeFile(this.sourceMapPath, JSON.stringify(cacheSourceMapObject, null, 2), 'utf-8', (err) => {
         if (err) {
-          this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.\n' +
-            `File: ${this.sourceMapPath}\n` +
-            `Error message: ${err.message}`);
+          const errInfo: LogData = LogDataFactory.newInstance(
+            ErrorCode.ETS2BUNDLE_INTERNAL_WRITE_SOURCE_MAP_FAILED,
+            ArkTSInternalErrorDescription,
+            `Failed to write sourceMaps. ${err.message}`,
+            this.sourceMapPath
+          );
+          this.logger.printErrorAndExit(errInfo);
         }
         fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
         stopEvent(eventWriteFile, true);

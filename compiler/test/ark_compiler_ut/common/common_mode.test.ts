@@ -18,6 +18,7 @@ import mocha from 'mocha';
 import sinon from 'sinon';
 
 import {
+  ES2ABC,
   RELEASE,
   OH_MODULES
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
@@ -35,6 +36,16 @@ import {
   DEBUG,
   MODULES
 } from '../mock/rollup_mock/common';
+import {
+  ArkTSInternalErrorDescription,
+  ArkTSErrorDescription,
+  ErrorCode,
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 mocha.describe('test common_mode file api', function () {
   mocha.before(function () {
@@ -70,14 +81,20 @@ mocha.describe('test common_mode file api', function () {
 
   mocha.it('1-1-3: test initCmdEnv under build debug: projectConfig.pandaMode is invalid value', function () {
     this.rollup.build();
-    const modeMock =  new CommonModeMock(this.rollup);
-    const stub = sinon.stub(modeMock, 'throwArkTsCompilerError');
+    const modeMock = new CommonModeMock(this.rollup);
+    const stub = sinon.stub(modeMock.logger, 'printErrorAndExit');
     modeMock.projectConfig.pandaMode = 'invalid value';
     try {
       modeMock.checkInitCmdEnv();
     } catch (e) {
     }
-    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Invalid compilation mode.`)).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+      ArkTSInternalErrorDescription,
+      'Invalid compilation mode. ' + 
+      `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 

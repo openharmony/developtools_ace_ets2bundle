@@ -47,6 +47,15 @@ import {
   SOURCE
 } from '../mock/rollup_mock/common';
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
+import {
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 mocha.describe('test module_hotreload_mode file api', function () {
   mocha.before(function () {
@@ -108,13 +117,17 @@ mocha.describe('test module_hotreload_mode file api', function () {
   mocha.it('3-1: test the error message of the ModuleHotreloadMode constructor', function () {
     this.rollup.hotReload();
     this.rollup.share.projectConfig.oldMapFilePath = '';
-    const stub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup), 'printErrorAndExit');
     try {
       new ModuleHotreloadMode(this.rollup);
     } catch (e) {
     }
-    expect(stub.calledWith('ArkTS:INTERNAL ERROR: Hotreload failed, ' +
-      'symbolMap file is not correctly configured.')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_HOT_RELOAD_FAILED_INCORRECT_SYMBOL_MAP_CONFIG,
+      ArkTSInternalErrorDescription,
+      'Hot Reload failed, symbolMap file is not correctly configured.'
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 });

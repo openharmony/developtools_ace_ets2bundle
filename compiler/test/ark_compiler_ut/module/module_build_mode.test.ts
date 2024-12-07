@@ -23,7 +23,7 @@ import {
   TS2ABC
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ModulePreviewMode } from '../../../lib/fast_build/ark_compiler/module/module_preview_mode';
+import { ModuleBuildMode } from '../../../lib/fast_build/ark_compiler/module/module_build_mode';
 import {
   ArkTSInternalErrorDescription,
   ErrorCode
@@ -33,7 +33,7 @@ import {
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
 
-mocha.describe('test module_preview_mode file api', function () {
+mocha.describe('test module_build_mode file api', function () {
   mocha.before(function () {
     this.rollup = new RollUpPluginMock();
   });
@@ -42,12 +42,12 @@ mocha.describe('test module_preview_mode file api', function () {
     delete this.rollup;
   });
 
-  mocha.it('1-1: test the error message of ModulePreviewMode executeArkCompiler', function () {
-    this.rollup.preview();
-    const modulePreviewMode = new ModulePreviewMode(this.rollup);
-    modulePreviewMode.projectConfig.pandaMode = 'invalid value'
-    const stub = sinon.stub(modulePreviewMode.logger, 'printErrorAndExit');
-    modulePreviewMode.executeArkCompiler();
+  mocha.it('1-1: test the error message of ModuleBuildMode executeArkCompiler', function () {
+    this.rollup.build();
+    const moduleBuildMode = new ModuleBuildMode(this.rollup);
+    moduleBuildMode.projectConfig.pandaMode = 'invalid value'
+    const stub = sinon.stub(moduleBuildMode.logger, 'printErrorAndExit');
+    moduleBuildMode.executeArkCompiler();
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
       ArkTSInternalErrorDescription,
