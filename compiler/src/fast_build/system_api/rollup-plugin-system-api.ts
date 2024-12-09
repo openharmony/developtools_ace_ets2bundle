@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import MagicString from 'magic-string';
+import MagicString, { SourceMap } from 'magic-string';
 import { createFilter } from '@rollup/pluginutils';
 import path from 'path';
 import {
@@ -39,8 +39,8 @@ import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
 
-const filterCrossplatform: any = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
-const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
+const filterCrossplatform: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
+const filter: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts)$/);
 const allFiles: Set<string> = new Set();
 
 export const appImportModuleCollection: Map<string, Set<string>> = new Map();
@@ -53,10 +53,10 @@ export function apiTransform() {
   let needComponentCollection: boolean = false;
   return {
     name: 'apiTransform',
-    load(id: string) {
+    load(id: string): void {
       allFiles.add(path.join(id));
     },
-    buildStart() {
+    buildStart(): void {
       if (this.share.projectConfig.isCrossplatform) {
         needModuleCollection = true;
         needComponentCollection = true;
@@ -65,7 +65,10 @@ export function apiTransform() {
         needComponentCollection = true;
       }
     },
-    transform(code: string, id: string) {
+    transform(code: string, id: string): {
+      code: string;
+      map: SourceMap;
+    } {
       const shouldEmitJsFlag: boolean = id.endsWith('.js') ||
         shouldEmitJsFlagById(id) || projectConfig.compileMode !== 'esmodule';
       if (!shouldEmitJsFlag &&
@@ -89,13 +92,13 @@ export function apiTransform() {
       if (!shouldEmitJsFlag) {
         return null;
       }
-      const magicString = new MagicString(code);
+      const magicString: MagicString = new MagicString(code);
       return {
         code: code,
         map: magicString.generateMap({ hires: hiresStatus })
       };
     },
-    beforeBuildEnd() {
+    beforeBuildEnd(): void {
       this.share.allFiles = allFiles;
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode && needComponentCollection) {
         let widgetPath: string;
@@ -107,7 +110,7 @@ export function apiTransform() {
           this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
       }
     },
-    buildEnd() {
+    buildEnd(): void {
       if (projectConfig.isPreview && projectConfig.aceSoPath &&
         useOSFiles && useOSFiles.size > 0) {
         writeUseOSFiles(useOSFiles);
