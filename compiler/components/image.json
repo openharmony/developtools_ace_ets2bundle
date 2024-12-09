@@ -23,6 +23,7 @@
     "copyOption",
     "draggable",
     "enableAnalyzer",
-    "privacySensitive"
+    "privacySensitive",
+    "imageMatrix"
   ]
 }
