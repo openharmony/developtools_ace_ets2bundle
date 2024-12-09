@@ -2,11 +2,31 @@ const ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
 
+/**
+ * Directory location to API .d.ts files.
+ */
 const SOURCE_DTS_DIR = process.argv[2];
+
+/**
+ * Directory location to component JSON files.
+ */
 const COMPONENT_OUTPUT_DIR = process.argv[3];
+
+/**
+ * Directory location to form component JSON files.
+ */
 const FORM_COMPONENT_OUTPUT_DIR = process.argv[4];
 
+/**
+ * Map _special_ extend class name to method names under the class.
+ * 
+ * @type {Map<string, string[]>}
+ */
 const SPECIAL_EXTEND_ATTRS = new Map();
+
+/**
+ * _special_ extend class names
+ */
 const SPECIAL_EXTEND_ATTR_NAMES = [
   "DynamicNode", 
   "BaseSpan", 
@@ -15,6 +35,14 @@ const SPECIAL_EXTEND_ATTR_NAMES = [
   "SecurityComponentMethod"
 ];
 
+/**
+ * _special_ component data array. Each data contains:
+ * 
+ * - componentName: the component JSON file name.
+ * - apiName: the API .d.ts file name.
+ * - className: the class name in the API .d.ts file.
+ * - includeClassName: whether needs to include the class name in the component JSON file.
+ */
 const SPECIAL_COMPONENTS = [
   {
     componentName: "common_attrs",
@@ -24,7 +52,14 @@ const SPECIAL_COMPONENTS = [
   }
 ];
 
+/**
+ * API .d.ts file names to skip finding components.
+ */
 const COMPONENT_WHITE_LIST = ["common"];
+
+/**
+ * API .d.ts file names to skip finding form components.
+ */
 const FORM_COMPONENT_WHITE_LIST = ["common"];
 
 registerSpecialExtends(path.join(SOURCE_DTS_DIR, 'common.d.ts'));
@@ -33,6 +68,14 @@ registerSpecialExtends(path.join(SOURCE_DTS_DIR, 'security_component.d.ts'));
 generateSpecialTargetFiles();
 generateTargetFile(SOURCE_DTS_DIR);
 
+/**
+ * Register _special_ extend classes (i.e. classes except CommonMethod that Component attributes' extends from).
+ * 
+ * Registered classes will be recognized later when an Component attribute extends any of them, 
+ * then parse those methods in the extend class as the methods of the Component attribute.
+ * 
+ * @param {string} filePath File location of the special extend classes.
+ */
 function registerSpecialExtends(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -46,6 +89,9 @@ function registerSpecialExtends(filePath) {
   });
 }
 
+/**
+ * Generate or update component JSON files for the special extend classes (e.g. CommonMethod).
+ */
 function generateSpecialTargetFiles() {
   SPECIAL_COMPONENTS.forEach((special) => {
     const { componentName, apiName, className, includeClassName } = special;
@@ -63,8 +109,8 @@ function generateSpecialTargetFiles() {
         const formComponent = { attrs: Array.from(new Set(getAttrs(node, isForm))), ...flags };
 
         if (includeClassName) {
-          component['name'] = className;
-          formComponent['name'] = className;
+          component.name = className;
+          formComponent.name = className;
         }
 
         if (!COMPONENT_WHITE_LIST.includes(componentName)) {
@@ -80,6 +126,11 @@ function generateSpecialTargetFiles() {
   });
 }
 
+/**
+ * Generate or update component JSON files for the Component attributes.
+ * 
+ * @param {string} filePath Directory location of API .d.ts files.
+ */
 function generateTargetFile(filePath) {
   const files = [];
   readFile(filePath, files);
@@ -106,6 +157,14 @@ function generateTargetFile(filePath) {
   });
 }
 
+/**
+ * Write file utility for generating or updating component JSON files.
+ * 
+ * This only updates the `attrs` attribute in the JSON file.
+ * 
+ * @param {string} filePath File location to write the component JSON file.
+ * @param {object} component component JSON object.
+ */
 function generateComponentJSONFile(filePath, component) {
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(path.resolve(filePath), JSON.stringify(component, null, 2));
@@ -116,6 +175,14 @@ function generateComponentJSONFile(filePath, component) {
   fs.writeFileSync(path.resolve(filePath), JSON.stringify(updateComponent, null, 2));
 }
 
+/**
+ * Read file utility for reading all files in the directory `dir`.
+ * 
+ * Add all file pathes to the array `fileDir`.
+ * 
+ * @param {string} dir Directory location for reading all files. 
+ * @param {string[]} fileDir All file pathes array. 
+ */
 function readFile(dir, fileDir) {
   const files = fs.readdirSync(dir);
   files.forEach((element) => {
@@ -129,6 +196,15 @@ function readFile(dir, fileDir) {
   });
 }
 
+/**
+ * Find any Component attribute in the API .d.ts file.
+ * 
+ * @param {ts.SourceFile} sourceFile .d.ts file.
+ * @param {ts.TypeChecker} checker type checker.
+ * @param {ts.Program} program program.
+ * @returns {[object, object, boolean]} A component JSON object, a form component JSON object, 
+ * and a boolean to indicate whether the Component attribute can be a form component.
+ */
 function findComponent(sourceFile, checker, program) {
   let component = {};
   let formComponent = {};
@@ -160,30 +236,66 @@ function findComponent(sourceFile, checker, program) {
   return [ component, formComponent, isForm ];
 }
 
+/**
+ * Check whether a AST Node is a class.
+ * 
+ * @param {ts.Node} node 
+ * @returns {boolean}
+ */
 function isClass(node) {
   return ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
     /Attribute$/.test(node.name.getText());
 }
 
+/**
+ * Check whether a AST Node is a _special_ extend class.
+ * 
+ * @param {ts.Node} node 
+ * @returns {boolean}
+ */
 function isSpecialExtendClass(node) {
   return ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
     SPECIAL_EXTEND_ATTR_NAMES.includes(node.name.getText());
 }
 
+/**
+ * Check whether a AST Node is a method.
+ * 
+ * @param {ts.Node} node 
+ * @returns {boolean}
+ */
 function isMethod(node) {
   return ts.isMethodDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
     node.name.escapedText;
 }
 
+/**
+ * Check whether a AST Node is a class and extends any _special_ extend class.
+ * 
+ * @param {ts.Node} node 
+ * @returns {boolean}
+ */
 function isExtendSpecialDeclaration(node) {
   return ts.isClassDeclaration(node) && node.heritageClauses && node.heritageClauses.length > 0;
 }
 
+/**
+ * Check whether a method belongs to the form component.
+ * 
+ * @param {ts.Node} node 
+ * @returns {boolean}
+ */
 function isFormComponent(node) {
   const flags = getFlags(node);
   return flags && flags[1];
 }
 
+/**
+ * Get all identifiers that this class extends.
+ * 
+ * @param {ts.Node} node 
+ * @returns {ts.Expression[]}
+ */
 function getExtendIdentifiers(node) {
   if (!ts.isHeritageClause(node)) {
     return [];
@@ -199,6 +311,12 @@ function getExtendIdentifiers(node) {
   return identifiers;
 }
 
+/**
+ * Get all method names from _special_ extend class.
+ * 
+ * @param {ts.ClassDeclaration} node 
+ * @returns {string[]}
+ */
 function getCommonAttrs(node) {
   if (!isExtendSpecialDeclaration(node)) {
     return [];
@@ -215,6 +333,13 @@ function getCommonAttrs(node) {
   return attrs;
 }
 
+/**
+ * Get all method names from the class (without any method names from extend class).
+ * 
+ * @param {ts.ClassDeclaration} node 
+ * @param {boolean} shouldFilterForm Whether needs to filter any method names that belongs to form component.
+ * @returns {string[]}
+ */
 function getAttrs(node, shouldFilterForm) {
   const attrs = [];
 
@@ -228,6 +353,12 @@ function getAttrs(node, shouldFilterForm) {
   return attrs;
 }
 
+/**
+ * Get flags and whether is form component boolean.
+ * 
+ * @param {ts.Node} node 
+ * @returns {[string[], boolean]} Flag names, whether is form component.
+ */
 function getFlags(node) {
   const tags = parseTags(node);
   const flags = filterFlags(tags);
@@ -239,6 +370,12 @@ function getFlags(node) {
   return [ flags, false ];
 }
 
+/**
+ * Parse all JSDoc tags from a AST Node.
+ * 
+ * @param {ts.Node} node 
+ * @returns {string[]}
+ */
 function parseTags(node) {
   const tags = [];
   const jsTags = ts.getJSDocTags(node);
@@ -249,11 +386,19 @@ function parseTags(node) {
   return tags;
 }
 
+/**
+ * Filter useful tags from a tag array.
+ * 
+ * Currently, we only parse `@form`.
+ * 
+ * @param {string} tags 
+ * @returns {object}
+ */
 function filterFlags(tags) {
   let form;
 
   tags.forEach((tag) => {
-    const name = typeof tag === "string" ? tag : tag?.['title'];
+    const name = typeof tag === "string" ? tag : tag?.title;
 
     if (name) {
       if (name === "form") {
@@ -267,10 +412,17 @@ function filterFlags(tags) {
   };
 }
 
+/**
+ * Convert file path format to linux-style.
+ * 
+ * @param {string} data file location. 
+ * @returns {string}
+ */
 function toUnixPath(data) {
   if (/^win/.test(require('os').platform())) {
     const fileTmps = data.split(path.sep);
     const newData = path.posix.join(...fileTmps);
+    return newData;
   }
   return data;
 }
