@@ -29,7 +29,9 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics
+  collectFileToIgnoreDiagnostics,
+  ErrorCodeModule,
+  TSC_SYSTEM_CODE
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -120,8 +122,11 @@ export function etsChecker() {
           .concat(globalProgram.builderProgram.getSemanticDiagnostics());
         stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         emitBuildInfo();
+        let errorCodeLogger: Object | undefined = this.share?.getHvigorConsoleLogger ?
+          this.share?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
+
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-          printDiagnostic(diagnostic);
+          printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
         });
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
