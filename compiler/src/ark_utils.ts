@@ -392,12 +392,34 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
 export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, logger?: Object):
   string | undefined {
   if (projectConfig.byteCodeHarInfo) {
-    if (Object.prototype.hasOwnProperty.call(projectConfig.byteCodeHarInfo, moduleRequest)) {
-      return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig, logger);
+    let aliasName: string = getAliasNameFromPackageMap(projectConfig.byteCodeHarInfo, moduleRequest);
+    if (aliasName) {
+      return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
     }
     for (const byteCodeHarName in projectConfig.byteCodeHarInfo) {
       if (moduleRequest.startsWith(byteCodeHarName + '/')) {
         return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
+      }
+    }
+  }
+  return undefined;
+}
+
+function getAliasNameFromPackageMap(externalPkgMap: Object, moduleRequest: string): string | undefined {
+  // Matches strings that contain zero or more `/` or `\` characters
+  const ONLY_SLASHES_REGEX: RegExp = /^\/*$|^\\*$/;
+  const keys: string[] = Object.keys(externalPkgMap);
+  for (const key of keys) {
+    if (moduleRequest === key) {
+      return key;
+    }
+    // In the following cases, the moduleRequest matches the aliasName field in the packageMap
+    // case1: key = "hsp", moduleRequest = "hsp/"
+    // case2: key = "hsp", moduleRequest = "hsp\\"
+    if (moduleRequest.length > key.length && moduleRequest.startsWith(key)) {
+      const remaining: string = moduleRequest.replace(key, '');
+      if (ONLY_SLASHES_REGEX.test(remaining)) {
+        return key;
       }
     }
   }
@@ -409,9 +431,10 @@ export function getOhmUrlByExternalPackage(moduleRequest: string, projectConfig:
   // The externalPkgMap store the ohmurl with the alias of hsp package and the hars depended on bytecode har.
   let externalPkgMap: Object = Object.assign({}, projectConfig.hspNameOhmMap, projectConfig.harNameOhmMap);
   if (Object.keys(externalPkgMap).length !== 0) {
-    if (Object.prototype.hasOwnProperty.call(externalPkgMap, moduleRequest)) {
+    let aliasName: string = getAliasNameFromPackageMap(externalPkgMap, moduleRequest);
+    if (aliasName) {
       if (useNormalizedOHMUrl) {
-        return getNormalizedOhmUrlByAliasName(moduleRequest, projectConfig, logger);
+        return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
       }
       // case1: "@ohos/lib" ---> "@bundle:bundleName/lib/ets/index"
       return externalPkgMap[moduleRequest];

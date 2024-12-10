@@ -108,15 +108,19 @@ mocha.describe('generate ohmUrl', function () {
 
   mocha.it('shared library', function () {
     const sharedLibraryPackageName: string = "@ohos/sharedLibrary";
+    const sharedLibraryPackageNameSlashes: string = "@ohos/library///";
     const sharedLibraryPage: string = "@ohos/sharedLibrary/src/main/ets/pages/page1";
     const errorSharedLibrary: string = "@ohos/staticLibrary";
     const sharedLibraryPackageNameOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageName, projectConfig);
+    const sharedLibraryPackageNameSlashesOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPackageNameSlashes, projectConfig, ModuleSourceFile.logger, true);
     const sharedLibraryPageOhmUrl: string = getOhmUrlByExternalPackage(sharedLibraryPage, projectConfig);
     const errorSharedLibraryOhmUrl = getOhmUrlByExternalPackage(errorSharedLibrary, projectConfig);
     const expectedSharedLibraryOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/index";
+    const expectedSharedLibrarySlashesOhmUrl: string = "@normalized:N&&&@ohos/library/Index&1.0.0";
     const expectedSharedLibraryPageOhmUrl: string = "@bundle:UtTestApplication/sharedLibrary/ets/pages/page1";
     const expectedErrorSharedLibraryOhmUrl = undefined;
     expect(sharedLibraryPackageNameOhmUrl == expectedSharedLibraryOhmUrl).to.be.true;
+    expect(sharedLibraryPackageNameSlashesOhmUrl == expectedSharedLibrarySlashesOhmUrl).to.be.true;
     expect(sharedLibraryPageOhmUrl == expectedSharedLibraryPageOhmUrl).to.be.true;
     expect(errorSharedLibraryOhmUrl == expectedErrorSharedLibraryOhmUrl).to.be.true;
   });
@@ -1055,14 +1059,25 @@ mocha.describe('generate ohmUrl', function () {
         'version': '1.0.0',
         'entryPath': 'Index.ets',
         'isSO': false
+      },
+      'bytecode_alias_oh': {
+        'packageName': 'bytecode_alias_oh',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
       }
     }
     this.rollup.share.projectConfig.dependencyAliasMap = new Map([
-      ['bytecode_alias', 'bytecode_har']
+      ['bytecode_alias', 'bytecode_har', 'bytecode_alias_oh']
     ]);
     this.rollup.share.projectConfig.byteCodeHarInfo = {
       'bytecode_alias': {
         'abcPath':'D:\\projectPath\\bytecode_har\\modules.abc'
+      },
+      'bytecode_alias_oh': {
+        'abcPath':'D:\\projectPath\\bytecode_alias_oh\\modules.abc'
       }
     }
     const filePath: string = 'bytecode_alias/src/main/ets/utils/Calc';
@@ -1071,15 +1086,23 @@ mocha.describe('generate ohmUrl', function () {
     const importerFile: string = '/testHap/entry/src/main/ets/pages/index.ets'
     const importByPkgName = 'bytecode_alias';
     const standardImportPath: string = 'bytecode_alias/src/main/ets/utils/Calc';
+    const importByPkgNameSlashes = 'bytecode_alias///';
+    const importByPkgNameSlashesOh = 'bytecode_alias_oh///';
     const moduleSourceFile: string = new ModuleSourceFile();
     ModuleSourceFile.initPluginEnv(this.rollup);
     const importByPkgNameOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, importByPkgName, indexFilePath, importerFile);
     const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
       importerFile);
+    const importByPkgNameOhmUrlSlashes = moduleSourceFile.getOhmUrl(this.rollup, importByPkgNameSlashes, indexFilePath, importerFile);
+    const importByPkgNameOhmUrlSlashesOh = moduleSourceFile.getOhmUrl(this.rollup, importByPkgNameSlashesOh, indexFilePath, importerFile);
     const importByPkgNameNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/Index&1.0.0';
     const standardImportPathNormalizedOhmUrl: string = '@normalized:N&&&bytecode_har/src/main/ets/utils/Calc&1.0.0';
+    const importByPkgNameNormalizedOhmUrlSlashes: string = '@normalized:N&&&bytecode_har/Index&1.0.0';
+    const importByPkgNameNormalizedOhmUrlSlashesOh: string = '@normalized:N&&&bytecode_alias_oh/Index&1.0.0';
     expect(importByPkgNameOhmUrl == importByPkgNameNormalizedOhmUrl).to.be.true;
     expect(standardImportPathOhmUrl == standardImportPathNormalizedOhmUrl).to.be.true;
+    expect(importByPkgNameOhmUrlSlashes == importByPkgNameNormalizedOhmUrlSlashes).to.be.true;
+    expect(importByPkgNameOhmUrlSlashesOh == importByPkgNameNormalizedOhmUrlSlashesOh).to.be.true;
   });
 
   mocha.it('useNormalizedOHMUrl app builtins error message', function () {
