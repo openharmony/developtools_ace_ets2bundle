@@ -534,6 +534,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
+  traverseProgramSourceFiles(languageService.getProps());
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   MemoryMonitor.stopRecordStage(recordInfo);
@@ -564,6 +565,12 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
           global.gc();
         }
   }
+}
+
+function traverseProgramSourceFiles(props: string[]): void {
+  globalProgram.program.getSourceFiles().forEach((sourceFile: ts.SourceFile) => {
+    checkUISyntax(sourceFile, sourceFile.fileName, [], props);
+  })
 }
 
 function isJsonString(cacheFile: string): [boolean, WholeCache | undefined] {
@@ -1215,7 +1222,6 @@ export function watchChecker(rootFileNames: string[], newLogger: any = null, res
 
 export function instanceInsteadThis(content: string, fileName: string, extendFunctionInfo: extendInfo[],
   props: string[]): string {
-  checkUISyntax(content, fileName, extendFunctionInfo, props);
   extendFunctionInfo.reverse().forEach((item) => {
     const subStr: string = content.substring(item.start, item.end);
     const insert: string = subStr.replace(/(\s)\$(\.)/g, (origin, item1, item2) => {
@@ -1238,12 +1244,10 @@ export const dollarCollection: Set<string> = new Set();
 export const extendCollection: Set<string> = new Set();
 export const importModuleCollection: Set<string> = new Set();
 
-function checkUISyntax(source: string, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
-  if (/\.ets$/.test(fileName)) {
+function checkUISyntax(sourceFile: ts.SourceFile, fileName: string, extendFunctionInfo: extendInfo[], props: string[]): void {
+  if (/\.ets$/.test(fileName) && !/\.d.ets$/.test(fileName)) {
     if (process.env.compileMode === 'moduleJson' ||
       path.resolve(fileName) !== path.resolve(projectConfig.projectPath, 'app.ets')) {
-      const sourceFile: ts.SourceFile = ts.createSourceFile(fileName, source,
-        ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS, compilerOptions);
       collectComponents(sourceFile);
       collectionCustomizeStyles(sourceFile);
       parseAllNode(sourceFile, sourceFile, extendFunctionInfo);
