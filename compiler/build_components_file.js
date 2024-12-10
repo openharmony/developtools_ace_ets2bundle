@@ -43,11 +43,11 @@ const SPECIAL_EXTEND_ATTRS = new Map();
  * _special_ extend class names
  */
 const SPECIAL_EXTEND_ATTR_NAMES = [
-  "DynamicNode", 
-  "BaseSpan", 
-  "ScrollableCommonMethod",
-  "CommonShapeMethod",
-  "SecurityComponentMethod"
+  'DynamicNode', 
+  'BaseSpan', 
+  'ScrollableCommonMethod',
+  'CommonShapeMethod',
+  'SecurityComponentMethod'
 ];
 
 /**
@@ -60,9 +60,9 @@ const SPECIAL_EXTEND_ATTR_NAMES = [
  */
 const SPECIAL_COMPONENTS = [
   {
-    componentName: "common_attrs",
-    apiName: "common",
-    className: "CommonMethod",
+    componentName: 'common_attrs',
+    apiName: 'common',
+    className: 'CommonMethod',
     includeClassName: false,
   }
 ];
@@ -70,12 +70,12 @@ const SPECIAL_COMPONENTS = [
 /**
  * API .d.ts file names to skip finding components.
  */
-const COMPONENT_WHITE_LIST = ["common"];
+const COMPONENT_WHITE_LIST = ['common'];
 
 /**
  * API .d.ts file names to skip finding form components.
  */
-const FORM_COMPONENT_WHITE_LIST = ["common"];
+const FORM_COMPONENT_WHITE_LIST = ['common'];
 
 registerSpecialExtends(path.join(SOURCE_DTS_DIR, 'common.d.ts'));
 registerSpecialExtends(path.join(SOURCE_DTS_DIR, 'span.d.ts'));
@@ -119,7 +119,7 @@ function generateSpecialTargetFiles() {
     ts.forEachChild(sourceFile, (node) => {
       if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
         node.name.getText() === className) {
-        const [ flags, isForm ] = getFlags(node);
+        const [flags, isForm] = getFlags(node);
         const component = { attrs: Array.from(new Set(getAttrs(node, false))), ...flags };
         const formComponent = { attrs: Array.from(new Set(getAttrs(node, isForm))), ...flags };
 
@@ -128,14 +128,7 @@ function generateSpecialTargetFiles() {
           formComponent.name = className;
         }
 
-        if (!COMPONENT_WHITE_LIST.includes(componentName)) {
-          if (isForm && !FORM_COMPONENT_WHITE_LIST.includes(componentName)) {
-            const formComponentFileName = path.join(FORM_COMPONENT_OUTPUT_DIR, `${componentName}.json`);
-            generateComponentJSONFile(formComponentFileName, formComponent);
-          }
-          const componentFileName = path.join(COMPONENT_OUTPUT_DIR, `${componentName}.json`);
-          generateComponentJSONFile(componentFileName, component);
-        }
+        generateFormAndComponents(componentName, component, formComponent, isForm);
       }
     });
   });
@@ -159,17 +152,30 @@ function generateTargetFile(filePath) {
     const sourceFilePath = path.parse(toUnixPath(sourceFile.fileName));
     const baseName = path.basename(sourceFilePath.name, path.extname(sourceFilePath.name));
 
-    const [ component, formComponent, isForm ] = findComponent(sourceFile, checker, program);
+    const [component, formComponent, isForm] = findComponent(sourceFile, checker, program);
 
-    if (Object.keys(component).length > 0 && !COMPONENT_WHITE_LIST.includes(baseName)) {
-      if (isForm && !FORM_COMPONENT_WHITE_LIST.includes(baseName)) {
-        const formComponentFileName = path.join(FORM_COMPONENT_OUTPUT_DIR, `${baseName}.json`);
-        generateComponentJSONFile(formComponentFileName, formComponent);
-      }
-      const componentFileName = path.join(COMPONENT_OUTPUT_DIR, `${baseName}.json`);
-      generateComponentJSONFile(componentFileName, component);
-    }
+    Object.keys(component).length > 0 && 
+      generateFormAndComponents(baseName, component, formComponent, isForm);
   });
+}
+
+/**
+ * Generate or update component JSON files for form and non-form components.
+ * 
+ * @param {string} componentName Component name.
+ * @param {object} component Component JSON data.
+ * @param {object} formComponent Form component JSON data.
+ * @param {boolean} isForm Whether the component can be a form component.
+ */
+function generateFormAndComponents(componentName, component, formComponent, isForm) {
+  if (!COMPONENT_WHITE_LIST.includes(componentName)) {
+    if (isForm && !FORM_COMPONENT_WHITE_LIST.includes(componentName)) {
+      const formComponentFileName = path.join(FORM_COMPONENT_OUTPUT_DIR, `${componentName}.json`);
+      generateComponentJSONFile(formComponentFileName, formComponent);
+    }
+    const componentFileName = path.join(COMPONENT_OUTPUT_DIR, `${componentName}.json`);
+    generateComponentJSONFile(componentFileName, component);
+  }
 }
 
 /**
@@ -227,7 +233,7 @@ function findComponent(sourceFile, checker, program) {
 
   ts.forEachChild(sourceFile, (node) => {
     if (isClass(node)) {
-      const [ flags, _isForm ] = getFlags(node);
+      const [flags, _isForm] = getFlags(node);
       component = {
         name: node.name.getText().replace(/Attribute$/, ''),
         attrs: Array.from(new Set([
@@ -243,12 +249,12 @@ function findComponent(sourceFile, checker, program) {
           ...getCommonAttrs(node)
         ])),
         ...flags
-      }
+      };
       isForm = _isForm;
     }
   });
 
-  return [ component, formComponent, isForm ];
+  return [component, formComponent, isForm];
 }
 
 /**
@@ -380,9 +386,9 @@ function getFlags(node) {
 
   if (flags.form) {
     delete flags.form;
-    return [ flags, true ];
+    return [flags, true];
   }
-  return [ flags, false ];
+  return [flags, false];
 }
 
 /**
@@ -413,10 +419,10 @@ function filterFlags(tags) {
   let form;
 
   tags.forEach((tag) => {
-    const name = typeof tag === "string" ? tag : tag?.title;
+    const name = typeof tag === 'string' ? tag : tag?.title;
 
     if (name) {
-      if (name === "form") {
+      if (name === 'form') {
         form = true;
       }
     }
