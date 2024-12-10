@@ -117,19 +117,21 @@ function generateSpecialTargetFiles() {
     const sourceFile = ts.createSourceFile(apiFilePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
     ts.forEachChild(sourceFile, (node) => {
-      if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
-        node.name.getText() === className) {
-        const [flags, isForm] = getFlags(node);
-        const component = { attrs: Array.from(new Set(getAttrs(node, false))), ...flags };
-        const formComponent = { attrs: Array.from(new Set(getAttrs(node, isForm))), ...flags };
-
-        if (includeClassName) {
-          component.name = className;
-          formComponent.name = className;
-        }
-
-        generateFormAndComponents(componentName, component, formComponent, isForm);
+      if (!(ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name) &&
+        node.name.getText() === className)) {
+        return;
       }
+
+      const [flags, isForm] = getFlags(node);
+      const component = { attrs: Array.from(new Set(getAttrs(node, false))), ...flags };
+      const formComponent = { attrs: Array.from(new Set(getAttrs(node, isForm))), ...flags };
+
+      if (includeClassName) {
+        component.name = className;
+        formComponent.name = className;
+      }
+
+      generateFormAndComponents(componentName, component, formComponent, isForm);
     });
   });
 }
