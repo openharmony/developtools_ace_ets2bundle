@@ -4,7 +4,6 @@
   "atomic": true,
   "attrs": [
     "fontColor", "fontSize", "fontStyle", "fontFamily", "fontWeight", "decoration", "letterSpacing",
-    "textCase","font", "textBackgroundStyle", "lineHeight", "textShadow", "baselineOffset",
-    "id", "key", "onClick"
+    "textCase","font", "textBackgroundStyle"
   ]
 }
