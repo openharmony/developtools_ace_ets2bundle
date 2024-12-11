@@ -267,7 +267,7 @@ export class PropMapManager {
   static curPropMap: Map<string, string> = new Map();
   static logInfoMap: Map<string, LogInfo[]> = new Map();
 
-  public static register(identifierName: string, decoratorName: string) {
+  public static register(identifierName: string, decoratorName: string): void {
     PropMapManager.curPropMap.set(identifierName, decoratorName);
 
     if (decoratorName !== COMPONENT_NON_DECORATOR) {
@@ -275,24 +275,24 @@ export class PropMapManager {
     }
   }
 
-  public static find(identifierName: string) {
+  public static find(identifierName: string): string {
     return PropMapManager.curPropMap.get(identifierName);
   }
 
-  public static reserveLog(identifierName: string, decoratorName: string, log: LogInfo) {
+  public static reserveLog(identifierName: string, decoratorName: string, log: LogInfo): void {
     const key: string = `${identifierName}-${decoratorName}`;
     const logInfos: LogInfo[] = PropMapManager.logInfoMap.get(key) ?? [];
     PropMapManager.logInfoMap.set(key, [...logInfos, log]);
   }
 
-  public static releaseLogs(identifierName: string, decoratorName: string) {
+  public static releaseLogs(identifierName: string, decoratorName: string): void {
     const key: string = `${identifierName}-${decoratorName}`;
     if (PropMapManager.logInfoMap.has(key)) {
       PropMapManager.logInfoMap.delete(key);
     }
   }
 
-  public static reset() {
+  public static reset(): void {
     PropMapManager.curPropMap.clear();
     PropMapManager.logInfoMap.clear();
   }
