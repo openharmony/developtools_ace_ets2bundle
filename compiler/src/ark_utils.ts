@@ -31,6 +31,7 @@ import {
   startFilesEvent,
   startSingleFileEvent,
 } from 'arkguard';
+import type { HvigorErrorInfo } from 'arkguard';
 import {
   OH_MODULES,
   SEPARATOR_AT,
@@ -557,13 +558,13 @@ export interface ModuleInfo {
   rollupModuleId?: string
 }
 
-export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Function | Object,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
     startFilesEvent(moduleInfo.buildFilePath);
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.WRITE_OBFUSCATED_SOURCE_CODE);
     MemoryUtils.tryGC();
-    await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
+    await writeArkguardObfuscatedSourceCode(moduleInfo, logger as Function, projectConfig, rollupNewSourceMaps);
     MemoryUtils.tryGC();
     MemoryMonitor.stopRecordStage(recordInfo);
     endFilesEvent(moduleInfo.buildFilePath, undefined, true);
@@ -595,7 +596,7 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
  * This Api only be used by rollup compiling process & only be
  * exported for unit test.
  */
-export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, printObfLogger: Function,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
@@ -629,12 +630,15 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
       historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
     endSingleFileEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter);
   } catch (err) {
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_ARKGUARD_OBFUSCATION_FAILED,
-      ArkTSInternalErrorDescription,
-      `Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`
-    );
-    logger.printError(errInfo);
+    const errorInfo: string = `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`;
+    const errorCodeInfo: HvigorErrorInfo = {
+      code: '10810001',
+      description: 'ArkTS compiler Error',
+      cause: `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`,
+      position: moduleInfo.relativeSourceFilePath,
+      solutions: [`Please modify the code based on the error information.`],
+    };
+    printObfLogger(errorInfo, errorCodeInfo, 'error');
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
@@ -679,7 +683,7 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
   return filePath;
 }
 
-export async function mangleDeclarationFileName(logger: Object, projectConfig: Object,
+export async function mangleDeclarationFileName(printObfLogger: Function, projectConfig: Object,
   sourceFileBelongProject: Map<string, string>): Promise<void> {
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
@@ -691,7 +695,7 @@ export async function mangleDeclarationFileName(logger: Object, projectConfig: O
           buildFilePath: genFilesInHar.originalDeclarationCachePath,
           relativeSourceFilePath: relativeSourceFilePath,
           originSourceFilePath: sourcePath
-        }, logger, projectConfig, {});
+        }, printObfLogger, projectConfig, {});
     }
   }
 }
