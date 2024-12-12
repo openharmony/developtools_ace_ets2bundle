@@ -30,7 +30,6 @@ import {
   runArkTSLinter,
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
-  ErrorCodeModule,
   TSC_SYSTEM_CODE
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
@@ -46,6 +45,8 @@ import {
 } from '../system_api/api_check_utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
+import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
+import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -113,7 +114,9 @@ export function etsChecker() {
           MemoryMonitor.stopRecordStage(buildProgramRecordInfo);
           const collectFileToIgnore = MemoryMonitor.recordStage(MemoryDefine.COLLECT_FILE_TOIGNORE_RUN_TSLINTER);
           collectFileToIgnoreDiagnostics(rootFileNames);
-          runArkTSLinter();
+          const errorCodeLogger: Object | undefined = !!this.share?.getHvigorConsoleLogger ?
+            this.share?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
+          runArkTSLinter(errorCodeLogger);
           MemoryMonitor.stopRecordStage(collectFileToIgnore);
         }
         executedOnce = true;
