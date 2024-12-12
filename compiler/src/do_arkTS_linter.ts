@@ -16,26 +16,21 @@
 import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
+import { projectConfig } from '../main';
+import { toUnixPath } from './utils';
 import {
-  globalProgram,
-  projectConfig
-} from '../main';
-import {
-  toUnixPath,
-  getRollupCache,
-  setRollupCache
-} from './utils';
-import {
-  resolveModuleNames,
-  resolveTypeReferenceDirectives,
-  fileHashScriptVersion,
-  LanguageServiceCache,
-} from './ets_checker';
-import { ARKTS_LINTER_BUILD_INFO_SUFFIX } from './pre_define';
+  ERROR_DESCRIPTION,
+  LINTER_SUBSYSTEM_CODE,
+  ERROR_TYPE_CODE,
+  EXTENSION_CODE,
+  HvigorErrorInfo,
+} from './hvigor_error_code/hvigor_error_info'
 
 const arkTSDir: string = 'ArkTS';
 const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
 const spaceNumBeforeJsonLine = 2;
+const complementSize: number = 3;
+const complementCode: string = '0';
 
 interface OutputInfo {
   categoryInfo: string | undefined;
@@ -56,7 +51,7 @@ export enum ArkTSVersion {
   ArkTS_1_1,
 }
 
-export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic) => void;
+export type ProcessDiagnosticsFunc = (diagnostics: ts.Diagnostic, errorCodeLogger?: Object | undefined) => void;
 
 function getArkTSVersionString(arkTSVersion: ArkTSVersion): string {
   return arkTSVersion === ArkTSVersion.ArkTS_1_0 ? 'ArkTS_1_0' : 'ArkTS_1_1';
@@ -64,7 +59,7 @@ function getArkTSVersionString(arkTSVersion: ArkTSVersion): string {
 
 export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinterMode,
   builderProgram: ts.BuilderProgram, printDiagnostic: ProcessDiagnosticsFunc, shouldWriteFile: boolean = true,
-  buildInfoWriteFile?: ts.WriteFileCallback): ts.Diagnostic[] {
+  buildInfoWriteFile?: ts.WriteFileCallback, errorCodeLogger?: Object | undefined): ts.Diagnostic[] {
   if (arkTSMode === ArkTSLinterMode.NOT_USE) {
     return [];
   }
@@ -87,15 +82,15 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
   if (arkTSMode === ArkTSLinterMode.COMPATIBLE_MODE) {
     processArkTSLinterReportAsWarning(diagnostics, printDiagnostic, shouldWriteFile);
   } else {
-    processArkTSLinterReportAsError(diagnostics, printDiagnostic);
+    processArkTSLinterReportAsError(diagnostics, printDiagnostic, errorCodeLogger);
   }
 
   return diagnostics;
 }
 
-function processArkTSLinterReportAsError(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc): void {
+function processArkTSLinterReportAsError(diagnostics: ts.Diagnostic[], printDiagnostic: ProcessDiagnosticsFunc, errorCodeLogger?: Object | undefined): void {
   diagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
+    printDiagnostic(diagnostic, errorCodeLogger);
   });
   printArkTSLinterFAQ(diagnostics, printDiagnostic);
 }
@@ -192,4 +187,19 @@ function printArkTSLinterFAQ(diagnostics: ts.Diagnostic[], printDiagnostic: Proc
     reportsDeprecated: undefined
   };
   printDiagnostic(arkTSFAQDiagnostic);
+}
+
+export function transfromErrorCode(code: number, positionMessage: string, message: string): HvigorErrorInfo {
+  return new HvigorErrorInfo()
+    .setCode(formatNumber(code))
+    .setDescription(ERROR_DESCRIPTION)
+    .setCause(message)
+    .setPosition(positionMessage)
+    .setSolutions([]);
+}
+
+function formatNumber(num: number): string {
+  // The minimum code in strict mode starts from 1000
+  const extendedCode = num > 1000 ? EXTENSION_CODE : num.toString().padStart(complementSize, complementCode);
+  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + extendedCode;
 }

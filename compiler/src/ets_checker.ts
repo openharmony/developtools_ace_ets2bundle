@@ -86,6 +86,7 @@ import {
   doArkTSLinter,
   ArkTSLinterMode,
   ArkTSVersion,
+  transfromErrorCode,
 } from './do_arkTS_linter';
 import {
   getJsDocNodeCheckConfig,
@@ -108,6 +109,11 @@ import {
 	ROLLUP_PLUGIN_BUILD_START, 
 	RUN_ARK_TS_LINTER 
 } from './fast_build/meomry_monitor/memory_define';
+import {
+  LINTER_SUBSYSTEM_CODE,
+  HvigorErrorInfo
+} from './hvigor_error_code/hvigor_error_info'
+import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module'
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -115,12 +121,6 @@ export interface LanguageServiceCache {
   targetESVersion?: ts.ScriptTarget;
   maxFlowDepth?: number;
   preTsImportSendable?: boolean;
-}
-
-export enum ErrorCodeModule {
-  TSC = 0,
-  LINTER = 1,
-  UI = 2
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -554,7 +554,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
   MemoryMonitor.getInstance().recordStage(RUN_ARK_TS_LINTER, ROLLUP_PLUGIN_BUILD_START);
-  runArkTSLinter();
+  const errorCodeLogger: Object | undefined = !!rollupShareObject?.getHvigorConsoleLogger ?
+    rollupShareObject?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
+  runArkTSLinter(errorCodeLogger);
   MemoryMonitor.getInstance().stopRecordStage(RUN_ARK_TS_LINTER, ROLLUP_PLUGIN_BUILD_START);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
@@ -836,10 +838,12 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     } else {
       warnCheckerResult.count += 1;
     }
+    let positionMessage: string = '';
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-      logMessage = `ArkTS:${logPrefix} File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`;
+      positionMessage = `File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}`;
+      logMessage = `ArkTS:${logPrefix} ${positionMessage}\n ${message}\n`;
     } else {
       logMessage = `ArkTS:${logPrefix}: ${message}`;
     }
@@ -850,6 +854,11 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
             ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
           errorCode = ts.getErrorCode(diagnostic);
           errorCodeLogger.printError(errorCode);
+        } else if (flag === ErrorCodeModule.LINTER ||
+            (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
+            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.Linter)) {
+          const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
+          errorCodeLogger.printError(linterErrorInfo);
         } else {
           etsCheckerLogger.error('\u001b[31m' + logMessage);
         }
@@ -1518,7 +1527,7 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-export function runArkTSLinter(): void {
+export function runArkTSLinter(errorCodeLogger?: Object | undefined): void {
   const originProgram: ts.BuilderProgram = globalProgram.builderProgram;
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
@@ -1528,7 +1537,8 @@ export function runArkTSLinter(): void {
     originProgram,
     printArkTSLinterDiagnostic,
     !projectConfig.xtsMode,
-    buildInfoWriteFile);
+    buildInfoWriteFile,
+    errorCodeLogger);
 
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
@@ -1540,7 +1550,7 @@ export function runArkTSLinter(): void {
   ts.ArkTSLinterTimePrinter.destroyInstance();
 }
 
-function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
+function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic, errorCodeLogger?: Object | undefined): void {
   if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isEtsDeclFileInSdk(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
@@ -1548,7 +1558,7 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
     diagnostic.category = originalCategory;
     return;
   }
-  printDiagnostic(diagnostic);
+  printDiagnostic(diagnostic, ErrorCodeModule.LINTER, errorCodeLogger);
 }
 
 function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {

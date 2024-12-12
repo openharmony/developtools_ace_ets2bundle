@@ -46,6 +46,7 @@ import {
 } from '../system_api/api_check_utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { BUILDER_PROGRAM, COLLECT_FILE_TO_IGNORE, ROLLUP_PLUGIN_BUILD_START } from '../meomry_monitor/memory_define';
+import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info'
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -113,7 +114,9 @@ export function etsChecker() {
           MemoryMonitor.getInstance().stopRecordStage(BUILDER_PROGRAM);
           MemoryMonitor.getInstance().recordStage(COLLECT_FILE_TO_IGNORE);
           collectFileToIgnoreDiagnostics(rootFileNames);
-          runArkTSLinter();
+          const errorCodeLogger: Object | undefined = !!this.share?.getHvigorConsoleLogger ?
+            this.share?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
+          runArkTSLinter(errorCodeLogger);
           MemoryMonitor.getInstance().stopRecordStage(COLLECT_FILE_TO_IGNORE);
         }
         executedOnce = true;
