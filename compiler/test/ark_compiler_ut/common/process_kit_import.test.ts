@@ -113,9 +113,35 @@ const KIT_LAZY_IMPORT_CODE: string =
 'import { test } from "./test";\n' +
 'import lazy { appAccount } from "@kit.BasicServicesKit";\n' +
 'import lazy { lang } from "@kit.ArkTS";\n' +
-'type ISendable = lang.ISendable;\n' +
+'import lazy { socket, VpnExtensionContext } from "@kit.NetworkKit";\n' +
+'import lazy { UIAbility as x1 } from "@kit.AbilityKit";\n' +
+'import lazy buffer from "@kit.ArkTest";\n' +
 'test;\n' +
-'appAccount.createAppAccountManager();';
+'appAccount.createAppAccountManager();\n' +
+'type ISendable = lang.ISendable;\n' +
+'socket.sppCloseServerSocket(1);\n' +
+'new VpnExtensionContext();\n' +
+'export { x1 };\n' +
+'const buf = new buffer();';
+
+const KIT_LAZY_IMPORT_CODE_EXPECT: string =
+'import { test } from "./test";\n' +
+'import lazy appAccount from "@ohos.account.appAccount";\n' +
+'import lazy socket from "@ohos.net.socket";\n' +
+'import lazy { VpnExtensionContext } from "@ohos.app.ability.VpnExtensionAbility";\n' +
+'import lazy x1 from "@ohos.app.ability.UIAbility";\n' +
+'import lazy buffer from "@ohos.buffer";\n' +
+'test;\n' +
+'appAccount.createAppAccountManager();\n' +
+'socket.sppCloseServerSocket(1);\n' +
+'new VpnExtensionContext();\n' +
+'export { x1 };\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map';
+
+const KIT_LAZY_IMPORT_ERROR_CODE: string =
+'import lazy Animator from "@kit.ArkUI";\n' +
+'new Animator();'
 
 const SINGLE_DEFAULT_BINDINGS_IMPORT_CODE: string =
 'import buffer from "@kit.ArkTest";\n' +
@@ -258,6 +284,21 @@ mocha.describe('1-1: process Kit Imports tests', function () {
     expect(result.outputText == KIT_USED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
+  mocha.it('1-8 process used lazy import', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == KIT_LAZY_IMPORT_CODE_EXPECT).to.be.true;
+  });
+
   mocha.it('2-1 the error message of processKitImport', function () {
     ts.transpileModule(KIT_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
@@ -272,7 +313,7 @@ mocha.describe('1-1: process Kit Imports tests', function () {
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-2 the error message of newSpecificerInfo', function () {
+  mocha.it('2-2 the error message of test specifiers in newSpecificerInfo', function () {
     const symbols = {
       'test': ''
     }
@@ -305,22 +346,16 @@ mocha.describe('1-1: process Kit Imports tests', function () {
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-4 the error message of lazy import', function () {
-    ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
+  mocha.it('2-4 the error message of default specifiers in newSpecificerInfo', function () {
+    ts.transpileModule(KIT_LAZY_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use lazy import statement with Kit '@kit.BasicServicesKit', " +
-        "Please remove the lazy keyword.")
-    );
-    const hasError1 = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use lazy import statement with Kit '@kit.ArkTS', " +
-        "Please remove the lazy keyword.")
+      error.message.includes("'default' is not exported from Kit '@kit.ArkUI'.")
     );
     expect(hasError).to.be.true;
-    expect(hasError1).to.be.true;
   });
 
   mocha.it('3-1 process single default-bindings import', function () {
