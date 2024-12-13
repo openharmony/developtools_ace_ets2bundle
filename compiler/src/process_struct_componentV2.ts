@@ -28,7 +28,8 @@ import {
   ELMTID,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   CUSTOM_COMPONENT_EXTRAINFO,
-  COMPONENT_CONSTRUCTOR_UNDEFINED
+  COMPONENT_CONSTRUCTOR_UNDEFINED,
+  DECORATOR_REUSABLE_V2
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -42,6 +43,7 @@ import {
   FreezeParamType,
   decoratorAssignParams
 } from './process_component_class';
+import { isReuseInV2 } from "./process_custom_component";
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
 import {
   componentCollection,
@@ -60,11 +62,12 @@ export class StructInfo {
   isComponentV2: boolean = false;
   isCustomDialog: boolean = false;
   isReusable: boolean = false;
+  isReusableV2: boolean = false;
   structName: string = '';
   updatePropsDecoratorsV1: string[] = [];
   linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
-  eventDecoratorSet: Set<string> = new Set();
+  eventDecoratorMap: Map<string, ts.PropertyDeclaration> = new Map();
   localDecoratorSet: Set<string> = new Set();
   providerDecoratorSet: Set<string> = new Set();
   consumerDecoratorSet: Set<string> = new Set();
@@ -72,6 +75,8 @@ export class StructInfo {
   regularSet: Set<string> = new Set();
   propertiesMap: Map<string, ts.Expression> = new Map();
   staticPropertySet: Set<string> = new Set();
+  computedDecoratorSet: Set<string> = new Set();
+  monitorDecoratorSet: Set<string> = new Set();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -100,9 +105,18 @@ function getAliasStructInfo(node: ts.CallExpression): StructInfo {
 
 function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
   context: ts.TransformationContext): ts.ClassDeclaration {
-  return ts.factory.createClassDeclaration(ts.getModifiers(node), node.name,
-    node.typeParameters, updateHeritageClauses(node, log, true),
-    processStructMembersV2(node, context, log));
+  const addReusableV2: boolean = node.name && ts.isIdentifier(node.name) && isReuseInV2(node.name.getText());
+  return ts.factory.createClassDeclaration(addReusableV2 ? 
+    ts.concatenateDecoratorsAndModifiers(
+      [ts.factory.createDecorator(ts.factory.createIdentifier(DECORATOR_REUSABLE_V2))], 
+      ts.getModifiers(node)
+    ) : 
+    ts.getModifiers(node), 
+    node.name,
+    node.typeParameters, 
+    updateHeritageClauses(node, log, true),
+    processStructMembersV2(node, context, log)
+  );
 }
 
 function processStructMembersV2(node: ts.StructDeclaration, context: ts.TransformationContext,
@@ -112,11 +126,12 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   const buildCount: BuildCount = { count: 0 };
   const structInfo: StructInfo = getOrCreateStructInfo(structName);
   const addStatementsInConstructor: ts.Statement[] = [];
+  const addStatementsInResetOnReuse: ts.Statement[] = [];
   const paramStatementsInStateVarsMethod: ts.Statement[] = [];
   const structDecorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const freezeParam: FreezeParamType = { componentFreezeParam: undefined };
   decoratorAssignParams(structDecorators, context, freezeParam);
-  traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod);
+  traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod, addStatementsInResetOnReuse);
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isGetAccessor(member) && member.modifiers?.some(isComputedDecorator) && member.name &&
       ts.isIdentifier(member.name)) {
@@ -125,6 +140,7 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
     }
     if (ts.isConstructorDeclaration(member)) {
       processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, freezeParam);
+      createResetStateVarsOnReuse(structInfo, newMembers, addStatementsInResetOnReuse);
       return;
     } else if (ts.isPropertyDeclaration(member)) {
       newMembers.push(processComponentProperty(member, structInfo, log));
@@ -161,13 +177,14 @@ function validateComputedGetter(symbol: ts.Symbol, log: LogInfo[]): void {
 }
 
 function traverseStructInfo(structInfo: StructInfo,
-  addStatementsInConstructor: ts.Statement[], paramStatementsInStateVarsMethod: ts.Statement[]): void {
+  addStatementsInConstructor: ts.Statement[], paramStatementsInStateVarsMethod: ts.Statement[],
+  addStatementsInResetOnReuse: ts.Statement[]): void {
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
-    ...structInfo.eventDecoratorSet];
+    ...structInfo.eventDecoratorMap.keys()];
   for (const property of structInfo.propertiesMap) {
     if (!structInfo.staticPropertySet.has(property[0])) {
       setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
-        needInitFromParams);
+        needInitFromParams, addStatementsInResetOnReuse);
     }
   }
   for (const param of structInfo.paramDecoratorMap) {
@@ -178,24 +195,44 @@ function traverseStructInfo(structInfo: StructInfo,
 }
 
 function setPropertyStatement(structInfo: StructInfo, addStatementsInConstructor: ts.Statement[],
-  propName: string, initializer: ts.Expression, needInitFromParams: string[]): void {
+  propName: string, initializer: ts.Expression, needInitFromParams: string[], 
+  addStatementsInResetOnReuse: ts.Statement[]): void {
   if (needInitFromParams.includes(propName)) {
-    if (structInfo.eventDecoratorSet.has(propName)) {
+    if (structInfo.eventDecoratorMap.has(propName)) {
+      const eventDeclaration: ts.PropertyDeclaration = structInfo.eventDecoratorMap.get(propName);
       addStatementsInConstructor.push(
-        createPropertyAssignNode(propName, initializer || getDefaultValueForEvent(), true));
+        createPropertyAssignNode(propName, initializer || getDefaultValueForEvent(eventDeclaration, false), true));
+      addStatementsInResetOnReuse.push(
+        createPropertyAssignNode(propName, initializer || getDefaultValueForEvent(eventDeclaration, true), true));
     } else {
-      addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, true));
+      const builderParamExpression: ts.ExpressionStatement = createPropertyAssignNode(propName, initializer, true);
+      addStatementsInConstructor.push(builderParamExpression);
+      addStatementsInResetOnReuse.push(builderParamExpression);
     }
   } else if (structInfo.paramDecoratorMap.has(propName)) {
     const paramProperty: ParamDecoratorInfo = structInfo.paramDecoratorMap.get(propName);
-    addStatementsInConstructor.push(createInitParam(propName, paramProperty.initializer));
-  } else {
+    addStatementsInConstructor.push(createInitOrUpdateParam(propName, paramProperty.initializer, true));
+    addStatementsInResetOnReuse.push(createInitOrUpdateParam(propName, paramProperty.initializer, false));
+  } else if (structInfo.consumerDecoratorSet.has(propName)) {
     addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, false));
+    addStatementsInResetOnReuse.push(createResetNode(propName, constantDefine.RESET_CONSUMER, initializer));
+  } else if (structInfo.regularSet.has(propName)) {
+    addStatementsInConstructor.push(createPropertyAssignNode(propName, initializer, false));
+  } else if (structInfo.computedDecoratorSet.has(propName)) {
+    addStatementsInResetOnReuse.push(createResetNode(propName, constantDefine.RESET_COMPUTED));
+  } else {
+    const propertyAssignNode: ts.ExpressionStatement = createPropertyAssignNode(propName, initializer, false);
+    addStatementsInConstructor.push(propertyAssignNode);
+    addStatementsInResetOnReuse.push(propertyAssignNode);
   }
 }
 
-function getDefaultValueForEvent(): ts.Expression {
-  return ts.factory.createArrowFunction(undefined, undefined, [], undefined,
+function getDefaultValueForEvent(node: ts.PropertyDeclaration, isResetOnReuse: boolean = false): ts.Expression {
+  let param: ts.NodeArray<ts.ParameterDeclaration>;
+  if (node.type && ts.isFunctionTypeNode(node.type) && node.type.parameters && node.type.parameters.length) {
+    param = node.type.parameters;
+  }
+  return ts.factory.createArrowFunction(undefined, undefined, isResetOnReuse && param ? param : [], undefined,
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock([], false));
 }
@@ -209,6 +246,23 @@ function createPropertyAssignNode(propName: string, initializer: ts.Expression,
     ),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken),
     setInitValue(propName, initializer, initFromParams)
+  ));
+}
+
+function createResetNode(propName: string, type: string, initializer: ts.Expression = null): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createThis(),
+      ts.factory.createIdentifier(type)
+    ),
+    undefined,
+    type === constantDefine.RESET_CONSUMER ? 
+    [
+      ts.factory.createStringLiteral(propName),
+      initializer ? initializer : ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+    ] : [
+      ts.factory.createStringLiteral(propName)
+    ]
   ));
 }
 
@@ -301,8 +355,33 @@ function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructIn
       structInfo.propertiesMap.set(member.name.getText(), member.initializer);
       parsePropertyDecorator(member, decorators, structInfo, log, sourceFileNode);
       parsePropertyModifiers(member.name.getText(), structInfo, modifiers);
+    } else if (ts.isGetAccessor(member)) {
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
+      parseGetAccessor(member, decorators, structInfo);
+    } else if (ts.isMethodDeclaration(member)) {
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
+      parseMethodDeclaration(member, decorators, structInfo);
     }
   });
+}
+
+function parseGetAccessor(member: ts.GetAccessorDeclaration, decorators: readonly ts.Decorator[],
+  structInfo: StructInfo): void {
+  if (decorators.length && decorators.some((value: ts.Decorator) => getDecoratorName(value) === constantDefine.COMPUTED_DECORATOR)) {
+    structInfo.propertiesMap.set(member.name.getText(), undefined);
+    structInfo.computedDecoratorSet.add(member.name.getText());
+  }
+}
+
+function parseMethodDeclaration(member: ts.MethodDeclaration, decorators: readonly ts.Decorator[],
+  structInfo: StructInfo): void {
+  if (decorators.length && decorators.some((value: ts.Decorator) => getDecoratorName(value) === constantDefine.MONITOR_DECORATOR)) {
+    structInfo.monitorDecoratorSet.add(member.name.getText());
+  }
+}
+
+function getDecoratorName(decorator: ts.Decorator): string {
+  return decorator.getText().replace(/\([^\(\)]*\)/, '').trim();
 }
 
 function parsePropertyModifiers(propName: string, structInfo: StructInfo,
@@ -340,7 +419,7 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
   const propertyDecorator: PropertyDecorator = new PropertyDecorator();
   let isRegular: boolean = true;
   for (let i = 0; i < decorators.length; i++) {
-    const originalName: string = decorators[i].getText().replace(/\([^\(\)]*\)/, '').trim();
+    const originalName: string = getDecoratorName(decorators[i]);
     const name: string = originalName.replace('@', '').trim();
     if (decoratorsFunc[name]) {
       decoratorsFunc[name](propertyDecorator, member, structInfo);
@@ -377,7 +456,7 @@ function parseParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
 function parseEventDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
   structInfo: StructInfo): void {
   propertyDecorator.hasEvent = true;
-  structInfo.eventDecoratorSet.add(member.name.getText());
+  structInfo.eventDecoratorMap.set(member.name.getText(), member);
 }
 
 function parseRequireDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
@@ -471,6 +550,48 @@ function updateConstructorBody(node: ts.Block, paramStatements: ts.Statement[],
   return ts.factory.createBlock(body, true);
 }
 
+function createResetStateVarsOnReuse(structInfo: StructInfo, newMembers: ts.ClassElement[], 
+  addStatementsInResetOnReuse: ts.Statement[]): void {
+  if (structInfo.monitorDecoratorSet.size) {
+    addStatementsInResetOnReuse.push(generateResetMonitor());
+  }
+  const resetOnReuseNode: ts.MethodDeclaration = ts.factory.createMethodDeclaration(
+    [ts.factory.createToken(ts.SyntaxKind.PublicKeyword)],
+    undefined,
+    ts.factory.createIdentifier(constantDefine.RESET_STATE_VARS_METHOD),
+    undefined,
+    undefined,
+    [ts.factory.createParameterDeclaration(
+      undefined,
+      undefined,
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
+      undefined,
+      ts.factory.createTypeReferenceNode(
+        ts.factory.createIdentifier(constantDefine.OBJECT_TYPE),
+        undefined
+      ),
+      undefined
+    )],
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+    ts.factory.createBlock(
+      addStatementsInResetOnReuse,
+      true
+    )
+  );
+  newMembers.push(resetOnReuseNode);
+}
+
+function generateResetMonitor(): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createThis(),
+      ts.factory.createIdentifier(constantDefine.RESET_MONITORS_ON_REUSE)
+    ),
+    undefined,
+    []
+  ));
+}
+
 function createSuperV2(): ts.Statement {
   const paramNames: string[] = [COMPONENT_CONSTRUCTOR_PARENT, ELMTID, CUSTOM_COMPONENT_EXTRAINFO];
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -479,10 +600,10 @@ function createSuperV2(): ts.Statement {
     })));
 }
 
-function createInitParam(propName: string, initializer: ts.Expression): ts.ExpressionStatement {
+function createInitOrUpdateParam(propName: string, initializer: ts.Expression, isInit: boolean): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-      ts.factory.createIdentifier(constantDefine.INIT_PARAM)),
+      ts.factory.createIdentifier(isInit ? constantDefine.INIT_PARAM : constantDefine.UPDATE_PARAM)),
     undefined,
     [
       ts.factory.createStringLiteral(propName),

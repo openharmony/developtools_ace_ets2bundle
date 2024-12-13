@@ -47,6 +47,9 @@ class Index extends ViewV2 {
         this.localInfo = new Info("Tom", 25);
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.localInfo = new Info("Tom", 25);
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();

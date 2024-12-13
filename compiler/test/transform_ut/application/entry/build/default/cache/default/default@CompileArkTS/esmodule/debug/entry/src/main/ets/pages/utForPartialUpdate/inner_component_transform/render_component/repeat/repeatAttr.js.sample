@@ -51,6 +51,9 @@ class entryCompSucc extends ViewV2 {
         this.vehicleItems = new VehicleDB().vehicleItems;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.vehicleItems = new VehicleDB().vehicleItems;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
