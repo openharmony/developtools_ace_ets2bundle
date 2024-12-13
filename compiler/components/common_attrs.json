@@ -28,6 +28,7 @@
     "onAttach", "onDetach",
     "onPreDrag", "dragPreviewOptions", "allowDrop", "dragPreview",
     "keyboardShortcut",
-    "pixelRound", "expandSafeArea"
+    "pixelRound", "expandSafeArea",
+    "safeAreaPadding"
   ]
 }
