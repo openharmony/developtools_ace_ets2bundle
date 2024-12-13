@@ -43,6 +43,16 @@ const STRUCT_PARENT: string = 'ViewV2';
 const INIT_PARAM: string = 'initParam';
 const UPDATE_PARAM: string = 'updateParam';
 const UPDATE_STATE_VARS: string = 'updateStateVars';
+const RESET_STATE_VARS_METHOD: string = 'resetStateVarsOnReuse';
+const RESET_CONSUMER: string = 'resetConsumer';
+const RESET_COMPUTED: string = 'resetComputed';
+const RESET_MONITORS_ON_REUSE: string = 'resetMonitorsOnReuse';
+const OBJECT_TYPE: string = 'Object';
+const REUSE_OR_CREATE_METHOD: string = 'reuseOrCreateNewComponent';
+const COMPONENT_CLASS: string = 'componentClass';
+const GET_PARAMS: string = 'getParams';
+const GET_REUSE_ID: string = 'getReuseId';
+const EXTRA_INFO: string = 'extraInfo';
 
 const BYTE_CODE_HAR: string = 'byteCodeHar';
 const CLOSED_SOURCE_HAR: string = 'closedSourceHar';
@@ -75,5 +85,15 @@ export default {
   HAR_DEFAULT_PAGE_PATH,
   HAR_DEFAULT_INTEGRATED_HSP_TYPE,
   FOLLOW_WITH_HAP,
-  EVENT_DECORATOR
+  EVENT_DECORATOR,
+  RESET_STATE_VARS_METHOD,
+  RESET_CONSUMER,
+  RESET_COMPUTED,
+  RESET_MONITORS_ON_REUSE,
+  OBJECT_TYPE,
+  REUSE_OR_CREATE_METHOD,
+  COMPONENT_CLASS,
+  GET_PARAMS,
+  GET_REUSE_ID,
+  EXTRA_INFO
 };

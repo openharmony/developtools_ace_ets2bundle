@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
@@ -122,7 +128,7 @@ class RecycleHomeComponent extends ViewPU {
         return "RecycleHomeComponent";
     }
 }
-class RecycleChild extends ViewPU {
+let RecycleChild = class RecycleChild extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -407,7 +413,10 @@ class RecycleChild extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
-}
+};
+RecycleChild = __decorate([
+    Reusable
+], RecycleChild);
 class RecycleNormalComponent extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
@@ -455,7 +464,7 @@ class RecycleNormalComponent extends ViewPU {
         this.updateDirtyElements();
     }
 }
-class RecycleAnimationTest extends ViewPU {
+let RecycleAnimationTest = class RecycleAnimationTest extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
@@ -506,6 +515,9 @@ class RecycleAnimationTest extends ViewPU {
     rerender() {
         this.updateDirtyElements();
     }
-}
+};
+RecycleAnimationTest = __decorate([
+    Reusable
+], RecycleAnimationTest);
 registerNamedRoute(() => new RecycleHomeComponent(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/render_decorator/@recycle/recycle", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/render_decorator/@recycle/recycle", integratedHsp: "false", moduleType: "followWithHap" });
 //# sourceMappingURL=recycle.js.map
