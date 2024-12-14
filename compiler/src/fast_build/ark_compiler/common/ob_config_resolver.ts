@@ -31,6 +31,7 @@ import {
 } from 'arkguard';
 import type {
   ArkObfuscator,
+  HvigorErrorInfo
 } from 'arkguard';
 
 import { isPackageModulesFile, mkdirsSync, toUnixPath } from '../../../utils';
@@ -38,6 +39,8 @@ import { allSourceFilePaths, localPackageSet } from '../../../ets_checker';
 import { isCurrentProjectFiles } from '../utils';
 import { sourceFileBelongProject } from '../module/module_source_file';
 import { ModuleInfo } from '../../../ark_utils';
+import { red, yellow, OBFUSCATION_TOOL } from './ark_define';
+import { logger } from '../../../compile_info';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
@@ -73,6 +76,56 @@ export const sourceFileDependencies: Map<string, ts.ModeAwareCache<ts.ResolvedMo
  * Identifier cache name
  */
 export const IDENTIFIER_CACHE: string = 'IdentifierCache';
+
+/**
+ * Subsystem Number For Obfuscation
+ */
+export const OBF_ERR_CODE = '108';
+
+/**
+ * Logger for obfuscation
+ */
+export let obfLogger: Object = undefined;
+
+enum LoggerLevel {
+  WARN = 'warn',
+  ERROR = 'error'
+}
+
+export function initObfLogger(share: Object): void {
+  if (share) {
+    obfLogger = share.getHvigorConsoleLogger ? share.getHvigorConsoleLogger(OBF_ERR_CODE) : share.getLogger(OBFUSCATION_TOOL);
+    return;
+  }
+  obfLogger = logger;
+}
+
+export function printObfLogger(errorInfo: string, errorCodeInfo: HvigorErrorInfo | string, level: LoggerLevel): void {
+  if (obfLogger.printError) {
+    switch (level) {
+      case LoggerLevel.WARN:
+        obfLogger.printWarn(errorCodeInfo);
+        break;
+      case LoggerLevel.ERROR: 
+        obfLogger.printError(errorCodeInfo);
+        break;
+      default:
+        break;
+    }
+    return;
+  }
+
+  switch (level) {
+    case LoggerLevel.WARN:
+      obfLogger.warn(yellow, errorInfo);
+      break;
+    case LoggerLevel.ERROR:
+      obfLogger.error(red, errorInfo);
+      break;
+    default:
+      return;
+  }
+}
 
 // Collect all keep files. If the path configured by the developer is a folder, all files in the compilation will be used to match this folder.
 function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>): Set<string> {
