@@ -40,10 +40,13 @@ class Logger {
     this.messsage = color.toString();
   }
 
+  public warn(color: string, msg: string) {
+    this.messsage = color.toString();
+  }
+
   public getPrefix() {
     return this.prefix;
   }
-
 
   public static getLogger(prefix): object {
     for (const instance of Logger.instances) {
@@ -52,6 +55,7 @@ class Logger {
       }
     }
   }
+
   public static createLogger(prefix) {
     const logger = new Logger(prefix);
     Logger.instances.push(logger);

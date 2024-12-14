@@ -23,7 +23,7 @@ import {
   EventList,
   blockPrinter,
   endFilesEvent,
-  startFilesEvent,
+  startFilesEvent
 } from 'arkguard';
 
 import {
@@ -52,6 +52,7 @@ import type { MergedConfig } from './ob_config_resolver';
 import type { ReseverdSetForArkguard } from 'arkguard';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { INIT_ARK_PROJECT_CONFIG } from '../../meomry_monitor/memory_define';
+import { initObfLogger, printObfLogger } from './ob_config_resolver';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -183,10 +184,10 @@ export function initArkProjectConfig(share: Object): Object {
   }
   if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
-    const logger: any = share.getLogger(OBFUSCATION_TOOL);
     startFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
     MemoryMonitor.getInstance().recordStage(INIT_ARK_PROJECT_CONFIG);
-    initObfuscationConfig(projectConfig, arkProjectConfig, logger);
+    initObfLogger(share);
+    initObfuscationConfig(projectConfig, arkProjectConfig, printObfLogger);
     MemoryMonitor.getInstance().stopRecordStage(INIT_ARK_PROJECT_CONFIG);
     endFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
   } else {
