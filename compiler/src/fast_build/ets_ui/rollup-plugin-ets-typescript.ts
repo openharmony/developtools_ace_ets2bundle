@@ -41,7 +41,8 @@ import {
   harFilesRecord,
   resetUtils,
   getResolveModules,
-  toUnixPath
+  toUnixPath,
+  getBelongModuleInfo
 } from '../../utils';
 import {
   preprocessExtend,
@@ -196,14 +197,19 @@ export function etsTransform() {
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allModuleIds.keys()) {
           const moduleInfo: Object = this.getModuleInfo(moduleInfoId);
-          if (!moduleInfo) {
+          if (!moduleInfo && !moduleInfoId.match(/\.d\.e?ts$/)) {
             continue;
           }
           if (moduleInfoId && !moduleInfoId.match(new RegExp(projectConfig.packageDir)) &&
             !moduleInfoId.startsWith('\x00') &&
             path.resolve(moduleInfoId).startsWith(projectConfig.moduleRootPath + path.sep)) {
             let filePath: string = moduleInfoId;
-            const metaInfo: Object = moduleInfo.meta;
+            let metaInfo: Object;
+            if (filePath.match(/\.d\.e?ts$/)) {
+              metaInfo = getBelongModuleInfo(moduleInfoId, projectConfig.modulePathMap, projectConfig.projectRootPath);
+            } else {
+              metaInfo = moduleInfo.meta;
+            }
             if (this.share.arkProjectConfig?.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
               filePath = mangleFilePath(filePath);
             }
