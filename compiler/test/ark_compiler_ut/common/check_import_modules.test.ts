@@ -52,8 +52,31 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
+        expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('1-1-1: test single file checkIfJsImportingArkts under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
         expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
       }
@@ -74,7 +97,7 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
         const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
         expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
@@ -96,8 +119,31 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
+        expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('1-3-1: test single file checkIfJsImportingArkts under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
         expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
       }
@@ -118,8 +164,31 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
-        checkIfJsImportingArkts(this.rollup);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup,);
+        const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
+        expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
+      }
+    }
+  });
+
+  mocha.it('1-4-1: test single file checkIfJsImportingArkts under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         const msg = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME).messsage;
         expect(msg.indexOf(ENTRYABILITY_JS_PATH_DEFAULT) > 0).to.be.true;
       }

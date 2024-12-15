@@ -110,7 +110,7 @@ export function processKitImport(id: string, metaInfo: Object,
         // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
         const processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
+        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.getInstance().stopRecordStage(NEW_SOURCE_FILE);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
