@@ -56,6 +56,7 @@ import {
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../lib/pre_define';
+import { isDebug } from '../../../src/fast_build/ark_compiler/utils';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -628,6 +629,39 @@ mocha.describe('test module_source_file file api', function () {
     }
   });
 
+  mocha.it('4-1-1: test single file processTransformedTsModuleRequest under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    this.moduleInfos = new Map<String, ModuleInfo>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
   mocha.it('4-2: test processTransformedTsModuleRequest under build release', function () {
     this.rollup.build(RELEASE);
     const modeMock = new ModuleModeMock(this.rollup);
@@ -690,6 +724,38 @@ mocha.describe('test module_source_file file api', function () {
     }
   });
 
+  mocha.it('4-3-1: test single file processTransformedTsModuleRequest under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
   mocha.it('4-4: test processTransformedTsModuleRequest under reload debug', function () {
     this.rollup.hotReload();
     const modeMock = new ModuleModeMock(this.rollup);
@@ -709,6 +775,38 @@ mocha.describe('test module_source_file file api', function () {
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
         ModuleSourceFile.processModuleSourceFiles(this.rollup);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
+  mocha.it('4-4-1: test single file processTransformedTsModuleRequest under reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
         moduleSource.processTransformedTsModuleRequest(this.rollup);
         expect(moduleSource.source.fileName === moduleId).to.be.true;
         expect(moduleSource.source.text === code).to.be.true;
