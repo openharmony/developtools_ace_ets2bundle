@@ -21,6 +21,7 @@ import sinon from 'sinon';
 import fs from 'fs';
 import childProcess from 'child_process';
 import cluster from 'cluster';
+import { EventEmitter } from 'events';
 
 import { toUnixPath } from '../../../lib/utils';
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
@@ -28,12 +29,14 @@ import { shouldETSOrTSFileTransformToJS } from '../../../lib/fast_build/ark_comp
 import {
   RELEASE,
   DEBUG,
+  ES2ABC,
   MODULES_ABC,
   EXTNAME_TS,
   EXTNAME_JS,
   EXTNAME_ETS,
   OH_MODULES,
-  GEN_ABC_PLUGIN_NAME
+  GEN_ABC_PLUGIN_NAME,
+  TS2ABC
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import ModuleModeMock from '../mock/class_mock/module_mode_mock';
@@ -87,6 +90,16 @@ import { AOT_FULL } from '../../../lib/pre_define';
 import {
   ArkObfuscator
 } from 'arkguard';
+import {
+  ArkTSErrorDescription,
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -1145,13 +1158,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.packageDir = OH_MODULES;
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const isTestErrorLog = true;
     try {
       moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
     } catch (e) {
     }
-    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+      ArkTSInternalErrorDescription,
+      sinon.match.any
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
@@ -1159,13 +1177,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build(RELEASE);
     this.rollup.share.projectConfig.packageDir = OH_MODULES;
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const isTestErrorLog = true;
     try {
       moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
     } catch (e) {
     }
-    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+      ArkTSInternalErrorDescription,
+      sinon.match.any
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
@@ -1173,13 +1196,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.preview();
     this.rollup.share.projectConfig.packageDir = OH_MODULES;
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const isTestErrorLog = true;
     try {
       moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
     } catch (e) {
     }
-    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+      ArkTSInternalErrorDescription,
+      sinon.match.any
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
@@ -1187,13 +1215,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.hotReload();
     this.rollup.share.projectConfig.packageDir = OH_MODULES;
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME), 'debug');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const isTestErrorLog = true;
     try {
       moduleMode.checkGetPackageEntryInfo(this.rollup, isTestErrorLog);
     } catch (e) {
     }
-    expect(stub.calledWith("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ")).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+      ArkTSInternalErrorDescription,
+      sinon.match.any
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
@@ -1241,12 +1274,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
-    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRITE_SOURCE_MAP_FAILED,
+      ArkTSInternalErrorDescription,
+      "Failed to write sourceMaps. ENOENT: no such file or directory, open ''",
+      ''
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
     copyFileSyncStub.restore();
     SourceMapGenerator.cleanSourceMapObject();
@@ -1256,12 +1295,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build(RELEASE);
     const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
-    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRITE_SOURCE_MAP_FAILED,
+      ArkTSInternalErrorDescription,
+      "Failed to write sourceMaps. ENOENT: no such file or directory, open ''",
+      ''
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
     copyFileSyncStub.restore();
     SourceMapGenerator.cleanSourceMapObject();
@@ -1271,12 +1316,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.preview();
     const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
-    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRITE_SOURCE_MAP_FAILED,
+      ArkTSInternalErrorDescription,
+      "Failed to write sourceMaps. ENOENT: no such file or directory, open ''",
+      ''
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
     copyFileSyncStub.restore();
     SourceMapGenerator.cleanSourceMapObject();
@@ -1286,12 +1337,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.hotReload();
     const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(sourceMapGenerator, 'throwArkTsCompilerError');
+    const stub = sinon.stub(sourceMapGenerator.logger, 'printErrorAndExit');
     const copyFileSyncStub = sinon.stub(fs, 'copyFileSync').returns(undefined);
     sourceMapGenerator.setSourceMapPath('');
     moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
     await sleep(100);
-    expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to write sourceMaps.')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_WRITE_SOURCE_MAP_FAILED,
+      ArkTSInternalErrorDescription,
+      "Failed to write sourceMaps. ENOENT: no such file or directory, open ''",
+      ''
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
     copyFileSyncStub.restore();
     SourceMapGenerator.cleanSourceMapObject();
@@ -1554,11 +1611,18 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     const child = childProcess.exec('false', { windowsHide: true });
     const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').returns(child);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     let parentEvent = undefined;
     moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
     await sleep(1000);
-    expect(stub.calledWithMatch('ArkTS:ERROR Failed to execute es2abc.\nError Message: ')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_ES2ABC_EXECUTION_FAILED,
+      ArkTSErrorDescription,
+      'Failed to execute es2abc.',
+      '',
+      ["Please refer to es2abc's error codes."]
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     triggerAsyncStub.restore();
     stub.restore();
   });
@@ -1576,7 +1640,7 @@ mocha.describe('test module_mode file api', function () {
       callback();
       return child;
     });
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     let errorEventCallback;
     child.on.callsFake((event, callback) => {
       if (event === 'error') {
@@ -1589,7 +1653,12 @@ mocha.describe('test module_mode file api', function () {
       errorEventCallback(new Error('test error'));
     }
     await sleep(100);
-    expect(stub.calledWith('Error: test error')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_ES2ABC_SUBPROCESS_START_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to initialize or launch the es2abc process. Error: test error'
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     triggerAsyncStub.restore();
     stub.restore();
   });
@@ -1598,13 +1667,18 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     const moduleMode = new ModuleModeMock(this.rollup);
     const triggerAsyncStub = sinon.stub(moduleMode, 'triggerAsync').throws(new Error('Execution failed'));
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     try {
       let parentEvent = undefined;
       moduleMode.generateMergedAbcOfEs2AbcMock(parentEvent);
     } catch (e) {
     }
-    expect(stub.calledWith('ArkTS:ERROR Failed to execute es2abc.\nError message: Error: Execution failed\n')).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_EXECUTE_ES2ABC_WITH_ASYNC_HANDLER_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to execute es2abc with async handler. Error: Execution failed'
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
     triggerAsyncStub.restore();
     stub.restore();
   });
@@ -1614,7 +1688,7 @@ mocha.describe('test module_mode file api', function () {
     const moduleMode = new ModuleModeMock(this.rollup);
     let existsSyncStub = sinon.stub(fs, 'existsSync');
     let readFileSyncStub = sinon.stub(fs, 'readFileSync');
-    let stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    let stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
     moduleMode.moduleInfos = new Map([
       ['moduleKey', { cacheFilePath: 'test' }]
     ]);
@@ -1641,7 +1715,7 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
     const execSyncStub = sinon.stub(childProcess, 'execSync').throws(new Error('Execution failed'));
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
     moduleMode.mergeProtoToAbc();
     expect(stub.calledWithMatch('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.')).to.be.true;
     execSyncStub.restore();
@@ -1651,7 +1725,7 @@ mocha.describe('test module_mode file api', function () {
   mocha.it('16-1: test the error message of invokeTs2AbcWorkersToGenProto', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
     const clusterStub = sinon.stub(cluster, 'fork');
     const fakeWorker = {
       on: sinon.stub()
@@ -1675,7 +1749,7 @@ mocha.describe('test module_mode file api', function () {
   mocha.it('17-1: test the error message of processTs2abcWorkersToGenAbc', function () {
     this.rollup.build();
     const moduleMode = new ModuleMode(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'throwArkTsCompilerError');
     const clusterStub = sinon.stub(cluster, 'on');
     const fakeWorker = {
       on: sinon.stub()
@@ -1813,9 +1887,7 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     this.rollup.mockCompileContextInfo();
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const entryObjName:string = 'test';
     const moduleId:string = 'd:/test.ets';
     try {
@@ -1824,9 +1896,13 @@ mocha.describe('test module_mode file api', function () {
       moduleMode.generateCompileContextInfoMock(this.rollup);
     } catch (e) {
     }
-
-    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
-      `Error Message: Failed to find module info with '${moduleId}' from the context information.`)).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_MODULE_INFO_NOT_FOUND,
+      ArkTSInternalErrorDescription,
+      'Failed to find module info. ' + 
+      "Failed to find module info with 'd:/test.ets' from the context information."
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
 
     stub.restore();
     SourceMapGenerator.cleanSourceMapObject();
@@ -1856,7 +1932,7 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     this.rollup.mockCompileContextInfo();
     const moduleMode = new ModuleModeMock(this.rollup);
-    const stub = sinon.stub(moduleMode, 'throwArkTsCompilerError');
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
     const entryObjName:string = 'noMetaInfo';
     const moduleId:string = 'd:/test.ets';
     moduleMode.projectConfig.entryObj[entryObjName]=moduleId;
@@ -1870,8 +1946,13 @@ mocha.describe('test module_mode file api', function () {
       moduleMode.generateCompileContextInfoMock(this.rollup);
     } catch (e) {
     }
-    expect(stub.calledWithMatch(`ArkTS:INTERNAL ERROR: Failed to find meta info.\n` +
-      `Error Message: Failed to find meta info with '${moduleId}' from the module info.`)).to.be.true;
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_META_INFO_NOT_FOUND,
+      ArkTSInternalErrorDescription,
+      'Failed to find meta info. ' + 
+      "Failed to find meta info with 'd:/test.ets' from the module info."
+    );
+    expect(stub.calledWithMatch(errInfo)).to.be.true;
     stub.restore();
   });
 
@@ -1885,5 +1966,21 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.generateCompileContextInfoMock(this.rollup);
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('19-1: test the error message of removeCompilationCache', function () {
+    this.rollup.build();
+    const moduleMode = new ModuleMode(this.rollup);
+    moduleMode.projectConfig.pandaMode = 'js2abc';
+    const stub = sinon.stub(moduleMode.logger, 'printErrorAndExit');
+    moduleMode.removeCompilationCache(this.rollup);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+      ArkTSInternalErrorDescription,
+      'Invalid compilation mode. ' + 
+      `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+    );
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
   });
 });
