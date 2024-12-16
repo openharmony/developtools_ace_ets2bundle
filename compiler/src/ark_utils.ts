@@ -87,6 +87,8 @@ import {
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
 
 const red: string = '\u001b[31m';
 const reset: string = '\u001b[39m';
@@ -520,9 +522,11 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
     startFilesEvent(moduleInfo.buildFilePath);
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.WRITE_OBFUSCATED_SOURCE_CODE);
     MemoryUtils.tryGC();
     await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
     MemoryUtils.tryGC();
+    MemoryMonitor.stopRecordStage(recordInfo);
     endFilesEvent(moduleInfo.buildFilePath, undefined, true);
     return;
   }

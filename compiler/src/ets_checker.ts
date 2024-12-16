@@ -94,6 +94,8 @@ import {
   getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -360,10 +362,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   };
 
   if (process.env.watchMode === 'true') {
-    return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+    const tsLanguageService = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    MemoryMonitor.stopRecordStage(recordInfo);
+    return tsLanguageService;
   }
-
-  return getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  MemoryMonitor.stopRecordStage(recordInfo);
+  return tsLanguageService;
 }
 
 export let targetESVersionChanged: boolean = false;
@@ -485,7 +492,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
         hotReloadSupportFiles.add(fileName);
       });
     }
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.CREATE_LANGUAGE_SERVICE);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
+    MemoryMonitor.stopRecordStage(recordInfo);
     props = languageService.getProps();
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -496,28 +505,36 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     } else {
       cache = {};
     }
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.CREATE_LANGUAGE_SERVICE);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
+    MemoryMonitor.stopRecordStage(recordInfo);
   }
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GET_BUILDER_PROGRAM);
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+  MemoryMonitor.stopRecordStage(recordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
+  const runArkTSLinterRecordInfo = MemoryMonitor.recordStage(MemoryDefine.RUN_ARK_TS_LINTER);
   runArkTSLinter();
+  MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
+    const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
+    MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
   if (globalProgram.program &&
@@ -561,6 +578,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
   }
   projectRootPath = toUnixPath(projectRootPath);
   const isMacOrWin = isWindows() || isMac();
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.COLLECT_TSC_FILES_ALL_RESOLVED_MODULES);
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
     // @ts-ignore
@@ -577,6 +595,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
       allResolvedModules.add(fileName);
     }
   });
+  MemoryMonitor.stopRecordStage(recordInfo);
 }
 
 function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileName: string): boolean {
@@ -597,6 +616,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
 }
 
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
@@ -604,6 +624,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
       addLocalPackageSet(moduleId, rollupObject);
     }
   }
+  MemoryMonitor.stopRecordStage(recordInfo);
 }
 
 // collect the modulename or pkgname of all local modules.
@@ -627,14 +648,18 @@ export function emitBuildInfo(): void {
 function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics,
   rollupShareObject: Object): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  const semanticRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
+  MemoryMonitor.stopRecordStage(semanticRecordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  const emitBuildRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_EMIT_BUILD_INFO);
   emitBuildInfo();
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
     printDiagnostic(diagnostic);
   });
+  MemoryMonitor.stopRecordStage(emitBuildRecordInfo);
   if (!projectConfig.xtsMode) {
     fse.ensureDirSync(projectConfig.cachePath);
     fs.writeFileSync(cacheFile, JSON.stringify({
@@ -735,6 +760,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
       elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
   });
 
+  const ignoreDiagnosticsRecordInfo = MemoryMonitor.recordStage(MemoryDefine.FILE_TO_IGNORE_DIAGNOSTICS);
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
     // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
@@ -748,6 +774,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
   });
+  MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
 export function printDiagnostic(diagnostic: ts.Diagnostic): void {
