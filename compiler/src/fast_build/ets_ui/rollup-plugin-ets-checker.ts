@@ -30,7 +30,6 @@ import {
   runArkTSLinter,
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
-  ErrorCodeModule,
   TSC_SYSTEM_CODE
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
@@ -47,6 +46,7 @@ import {
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { BUILDER_PROGRAM, COLLECT_FILE_TO_IGNORE, ROLLUP_PLUGIN_BUILD_START } from '../meomry_monitor/memory_define';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info'
+import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module'
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
