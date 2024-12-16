@@ -101,6 +101,8 @@ import {
   sharedModuleSet
 } from '../check_shared_module';
 import { SourceMapGenerator } from '../generate_sourcemap';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../../meomry_monitor/memory_define';
 
 export class ModuleInfo {
   filePath: string;
@@ -277,6 +279,7 @@ export class ModuleMode extends CommonMode {
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.PKG_ENTRY_INFOS_MODULE_INFOS);
     let moduleInfos: Map<String, ModuleInfo> = new Map<String, ModuleInfo>();
     let pkgEntryInfos: Map<String, PackageEntryInfo> = new Map<String, PackageEntryInfo>();
     for (const moduleId of fileList) {
@@ -296,6 +299,7 @@ export class ModuleMode extends CommonMode {
     this.getNativeModuleEntryInfo(pkgEntryInfos);
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
+    MemoryMonitor.stopRecordStage(recordInfo);
   }
 
   private isUsingNormalizedOHMUrl(): boolean {
