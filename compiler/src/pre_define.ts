@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -374,8 +374,35 @@ export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const STYLE_ADD_DOUBLE_EXCLAMATION: Set<string> = new Set([
-  BIND_MENU, BIND_CONTEXT_MENU, BIND_POPUP]);
+  BIND_MENU, BIND_CONTEXT_MENU, BIND_POPUP, BIND_CONTENT_COVER, BIND_SHEET]);
 export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
+  [RADIO, new Set([CHECKED])],
+  [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
+  [REFRESH, new Set([REFRESHING])],
+  [CHECK_BOX, new Set([SELECT_LOW])],
+  [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [DATE_PICKER, new Set([SELECTED])],
+  [TIME_PICKER, new Set([SELECTED])],
+  [MENU_ITEM, new Set([SELECTED])],
+  [PANEL, new Set([MODE])],
+  [RATING, new Set([RATING_LOW])],
+  [SEAECH, new Set([VALUE])],
+  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR])],
+  [SLIDER, new Set([VALUE])],
+  [STEPPER, new Set([INDEX])],
+  [SWIPER, new Set([INDEX])],
+  [TABS, new Set([INDEX])],
+  [TEXT_AREA, new Set([TEXT])],
+  [TEXT_INPUT, new Set([TEXT])],
+  [TEXT_PICKER, new Set([VALUE, SELECTED])],
+  [TOGGLE, new Set([IS_ON])],
+  [ALPHABET_INDEXER, new Set([SELECTED])],
+  [SELECT, new Set([SELECTED, VALUE])],
+  [CALENDAR, new Set([DATE])],
+  [GRID_ITEM, new Set([SELECTED])],
+  [LIST_ITEM, new Set([SELECTED])]
+]);
+export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new Map([
   [RADIO, new Set([CHECKED])],
   [TEXT_TIMER, new Set([FORMAT, COUNT, IS_COUNT_DOWN])],
   [REFRESH, new Set([REFRESHING])],
