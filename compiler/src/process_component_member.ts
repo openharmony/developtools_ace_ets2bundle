@@ -119,7 +119,8 @@ import {
 } from './component_map';
 
 export type ControllerType = {
-  hasController: boolean
+  hasController: boolean;
+  unassignedControllerSet: Set<string>;
 };
 
 export const observedPropertyDecorators: Set<string> =
@@ -355,6 +356,7 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
   name: ts.Identifier, checkController: ControllerType): ts.MethodDeclaration {
   if (componentCollection.customDialogs.has(componentName.getText()) && node.type &&
     node.type.getText() === SET_CONTROLLER_CTR_TYPE) {
+    checkController.unassignedControllerSet.add(name.getText());
     checkController.hasController = true;
     return ts.factory.createMethodDeclaration(undefined, undefined,
       ts.factory.createIdentifier(SET_CONTROLLER_METHOD), undefined, undefined,
