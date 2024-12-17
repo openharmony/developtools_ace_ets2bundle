@@ -101,11 +101,15 @@ export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
   targetESVersion?: ts.ScriptTarget;
+  maxFlowDepth?: number;
   preTsImportSendable?: boolean;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 export let localPackageSet: Set<string> = new Set();
+
+export const MAX_FLOW_DEPTH_DEFAULT_VALUE = 2000;
+export const MAX_FLOW_DEPTH_MAXIMUM_VALUE = 65535;
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -160,6 +164,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
     'target': convertConfigTarget(getTargetESVersion()),
+    'maxFlowDepth': getMaxFlowDepth(),
     'baseUrl': basePath,
     'paths': {
       '*': allPath
@@ -383,22 +388,25 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
+  const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
+  const lastMaxFlowDepth: number | undefined = cache?.maxFlowDepth;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
+  const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
   const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
     false :
     cache?.preTsImportSendable !== tsImportSendable;
-  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff || maxFlowDepthDiffers;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuiuldProgram(targetESVersionDiffers, tsImportSendableDiff);
+    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -410,19 +418,20 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service: service,
     pkgJsonFileHash: currentHash,
     targetESVersion: currentTargetESVersion,
+    maxFlowDepth: currentMaxFlowDepth,
     preTsImportSendable: tsImportSendable
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
 }
 
-function rebuiuldProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean): void {
+function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean, maxFlowDepthDiffers: boolean | undefined): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (tsImportSendableDiff) {
-    // When tsImportSendable is changed, we need to delete the build info cahce files
+  } else if (tsImportSendableDiff || maxFlowDepthDiffers) {
+    // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
@@ -1589,6 +1598,22 @@ function getTargetESVersion(): TargetESVersion {
     targetESVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid Target ES version\n');
   }
   return TargetESVersion.ES2021;
+}
+
+export function getMaxFlowDepth(): number {
+  // The value of maxFlowDepth ranges from 2000 to 65535.
+  let maxFlowDepth: number | undefined = projectConfig?.projectArkOption?.tscConfig?.maxFlowDepth;
+
+  if (maxFlowDepth === undefined) {
+    maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
+  } else if (maxFlowDepth < MAX_FLOW_DEPTH_DEFAULT_VALUE || maxFlowDepth > MAX_FLOW_DEPTH_MAXIMUM_VALUE) {
+    const maxFlowDepthLogger = fastBuildLogger || logger;
+    maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
+    maxFlowDepthLogger.warn('\u001b[33m' + 'ArkTS: Invalid maxFlowDepth for control flow analysis.' +
+      `The value of maxFlowDepth ranges from ${ MAX_FLOW_DEPTH_DEFAULT_VALUE } to ${ MAX_FLOW_DEPTH_MAXIMUM_VALUE }.\n` +
+      'If the modification does not take effect, set maxFlowDepth to the default value.');
+  }
+  return maxFlowDepth;
 }
 
 interface TargetESVersionLib {
