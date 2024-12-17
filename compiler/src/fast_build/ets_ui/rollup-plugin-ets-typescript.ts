@@ -95,8 +95,9 @@ import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin'
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { resetlogMessageCollection } from '../../log_message_collection';
 
-const filter:any = createFilter(/(?<!\.d)\.(ets|ts)$/);
+const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
+const shouldEmitJsFlagMap: Map<string, boolean> = new Map();
 let shouldDisableCache: boolean = false;
 interface ShouldEnableDebugLineType {
   enableDebugLine: boolean;
@@ -221,14 +222,6 @@ export function etsTransform() {
           }
         });
       }
-      if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
-        let widgetPath: string;
-        if (projectConfig.widgetCompile) {
-          widgetPath = path.resolve(projectConfig.aceModuleBuild, 'widget');
-        }
-        writeCollectionFile(projectConfig.cachePath, appComponentCollection,
-          this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
-      }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
       this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
@@ -253,6 +246,10 @@ export function etsTransform() {
       resetlogMessageCollection();
     }
   };
+}
+
+export function shouldEmitJsFlagById(id: string): boolean {
+  return shouldEmitJsFlagMap.get(id);
 }
 
 // If a ArkTS file don't have @Entry decorator but it is entry file this time
@@ -384,7 +381,7 @@ async function transform(code: string, id: string) {
         stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
       }
     }
-   
+
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     globalProgram.strictChecker = tsProgram.getLinterTypeChecker();
@@ -416,7 +413,8 @@ async function transform(code: string, id: string) {
   const metaInfo: Object = this.getModuleInfo(id).meta;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
-  const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile);
+  const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile, id);
+  shouldEmitJsFlagMap.set(id, shouldEmitJsFlag);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
   let transformResult: ts.TransformationResult<ts.SourceFile> = null;
   try {
@@ -486,7 +484,7 @@ function outFile(options: ts.CompilerOptions): string {
   return options.outFile || options.out;
 }
 
-function getShouldEmitJs(shouldEmitJs: boolean, targetSourceFile: ts.SourceFile): boolean {
+function getShouldEmitJs(shouldEmitJs: boolean, targetSourceFile: ts.SourceFile, id: string): boolean {
   let shouldEmitJsFlag: boolean = true;
   let hasKeepTs: boolean = false;
   if (!projectConfig.processTs) {
@@ -657,7 +655,7 @@ class CreateProgramMoment {
       name: 'createProgramPlugin',
       load: {
         order: 'pre',
-        handler(id: string) {
+        handler(id: string): void {
           CreateProgramMoment.transFileCollect.add(id);
         }
       },
@@ -667,6 +665,7 @@ class CreateProgramMoment {
         CreateProgramMoment.emitter?.emit('checkPrefCreateProgramId');
       },
       cleanUp(): void {
+        shouldEmitJsFlagMap.clear();
         CreateProgramMoment.reset();
       }
     };
