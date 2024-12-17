@@ -3577,6 +3577,7 @@ function checkCreateArgumentBuilder(node: ts.Identifier, attrNode: ts.Identifier
     CREATE_BIND_COMPONENT.has(node.escapedText.toString())) {
     return true;
   }
+  
   return false;
 }
 
