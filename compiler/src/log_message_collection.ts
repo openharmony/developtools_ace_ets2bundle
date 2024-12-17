@@ -20,22 +20,63 @@ import {
   LogType,
   LogInfo
 } from './utils';
+import constantDefine from './constant_define';
 
-class MessageCollection {
-  checkLocalBuilderDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, checkDecoratorCount: number, log: LogInfo[]): void {
-    if (checkDecoratorCount > 0) {
-      const message: string = 'The member property or method can not be decorated by multiple decorators.';
-      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+function checkLocalBuilderDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, checkDecoratorCount: number, log: LogInfo[]): void {
+  if (checkDecoratorCount > 0) {
+    const message: string = 'The member property or method can not be decorated by multiple decorators.';
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+  }
+}
+
+function checkTwoWayComputed(node: ts.PropertyAccessExpression, symbol: ts.Symbol, log: LogInfo[]): void {
+  if (symbol && symbol.declarations) {
+    symbol.declarations.forEach((declaration: ts.Declaration) => {
+      if (ts.isGetAccessor(declaration) && declaration.modifiers && 
+        isTagWithDecorator(declaration.modifiers, constantDefine.COMPUTED)) {
+        log.push({
+          type: LogType.ERROR,
+          message: `A property decorated by '${constantDefine.COMPUTED_DECORATOR}' cannot be used with two-bind syntax.`,
+          pos: node.getStart()
+        });
+      }
+    });
+  }
+}
+
+function checkComputedGetter(symbol: ts.Symbol, declaration: ts.Declaration, log: LogInfo[]): void {
+  if (ts.isSetAccessor(declaration) && declaration.name && ts.isIdentifier(declaration.name) &&
+    symbol.escapedName.toString() === declaration.name.escapedText.toString()) {
+    log.push({
+      type: LogType.ERROR,
+      message: `A property decorated by '${constantDefine.COMPUTED_DECORATOR}' cannot define a set method.`,
+      pos: declaration.getStart()
+    });
+  }
+}
+
+function checkIfNeedDollarEvent(doubleExclamationCollection: string[], dollarPropertyCollection: string[], 
+  node: ts.CallExpression, log: LogInfo[]): void {
+  for (const item of doubleExclamationCollection) {
+    if (dollarPropertyCollection.some((value: string) => value === '$' + item)) {
+      log.push({
+        type: LogType.ERROR,
+        message: `When the two-way binding syntax is used, do not assign a value to '${constantDefine.EVENT_DECORATOR}'` +
+          ` variable '${'$' + item}' because the framework generates the default assignment.`,
+        pos: node.getStart()
+      });
     }
   }
 }
 
-let messageCollection: MessageCollection = new MessageCollection();
-
-export function getMessageCollection(): MessageCollection {
-  return messageCollection;
+function isTagWithDecorator(node: ts.NodeArray<ts.ModifierLike>, decoratorName: string): boolean {
+  return node.some((item: ts.Decorator) => ts.isDecorator(item) && 
+    ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === decoratorName);
 }
 
-export function resetlogMessageCollection(): void {
-  messageCollection = new MessageCollection();
-}
+export default {
+  checkLocalBuilderDecoratorCount,
+  checkTwoWayComputed,
+  checkComputedGetter,
+  checkIfNeedDollarEvent
+};
