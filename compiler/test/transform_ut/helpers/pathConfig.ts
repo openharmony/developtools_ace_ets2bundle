@@ -191,6 +191,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_class/validateBuildMethodCount',
   'Decorators/process_component_class/validateDecorators',
   'Decorators/process_component_class/validateHasController',
+  'Decorators/process_component_class/validateControllerCount',
 
   'Decorators/process_component_member/@linkInitialize',
   'Decorators/process_component_member/@objectLinkInitialize',

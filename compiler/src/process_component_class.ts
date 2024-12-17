@@ -197,8 +197,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const purgeVariableDepStatements: ts.Statement[] = [];
   const rerenderStatements: ts.Statement[] = [];
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
-  const checkController: ControllerType =
-    { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()) };
+  const checkController: ControllerType = { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()), 
+    unassignedControllerSet: new Set() };
   const interfaceNode = ts.factory.createInterfaceDeclaration(undefined,
     parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, []);
   members.forEach((item: ts.ClassElement) => {
@@ -250,7 +250,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   });
   INTERFACE_NODE_SET.add(interfaceNode);
   validateBuildMethodCount(buildCount, parentComponentName, log);
-  validateHasController(parentComponentName, checkController, log);
+  validateHasControllerAndControllerCount(parentComponentName, checkController, log);
   if (storedFileInfo.getCurrentArkTsFile().recycleComponents.has(parentComponentName.getText())) {
     newMembers.unshift(addDeleteParamsFunc(deleteParamsStatements, true));
   }
@@ -1025,12 +1025,19 @@ export function validateBuildMethodCount(buildCount: BuildCount, parentComponent
   }
 }
 
-function validateHasController(componentName: ts.Identifier, checkController: ControllerType,
+function validateHasControllerAndControllerCount(componentName: ts.Identifier, checkController: ControllerType,
   log: LogInfo[]): void {
   if (!checkController.hasController) {
     log.push({
       type: LogType.ERROR,
       message: '@CustomDialog component should have a property of the CustomDialogController type.',
+      pos: componentName.pos
+    });
+  }
+  if (checkController.unassignedControllerSet.size >= 2) {
+    log.push({
+      type: LogType.WARN,
+      message: 'A @CustomDialog component can only have one uninitialized CustomDialogController.',
       pos: componentName.pos
     });
   }
