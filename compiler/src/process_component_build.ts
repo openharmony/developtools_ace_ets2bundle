@@ -194,7 +194,8 @@ import {
 import { regularCollection } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
 
-export function processComponentBuild(node: ts.MethodDeclaration, log: LogInfo[]): ts.MethodDeclaration {
+export function processComponentBuild(node: ts.MethodDeclaration,
+  log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
   let renderNode: ts.Identifier;
   if (!partialUpdateConfig.partialUpdateMode) {
