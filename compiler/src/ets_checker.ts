@@ -805,6 +805,12 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
+interface messageCollection {
+  positionMessage: string,
+  message: string,
+  logMessage: string
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
@@ -827,7 +833,6 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger || logger;
-    let errorCode: ts.ErrorInfo;
     let logMessage: string;
     if (logPrefix === 'ERROR') {
       checkerResult.count += 1;
@@ -845,22 +850,12 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     }
 
     if (errorCodeLogger) {
-      if (diagnostic.category === ts.DiagnosticCategory.Error) {
-        if (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
-            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
-          errorCode = ts.getErrorCode(diagnostic);
-          errorCodeLogger.printError(errorCode);
-        } else if (flag === ErrorCodeModule.LINTER ||
-            (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
-            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.LINTER)) {
-          const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
-          errorCodeLogger.printError(linterErrorInfo);
-        } else {
-          etsCheckerLogger.error('\u001b[31m' + logMessage);
-        }
-      } else {
-        etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      let messageCollection: messageCollection = {
+        positionMessage,
+        message,
+        logMessage
       }
+      printErrorCode(diagnostic, etsCheckerLogger, messageCollection, errorCodeLogger, flag);
     } else {
       if (diagnostic.category === ts.DiagnosticCategory.Error) {
         etsCheckerLogger.error('\u001b[31m' + logMessage);
@@ -869,6 +864,33 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
       }
     }
   }
+}
+
+function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
+  messageCollection: messageCollection, errorCodeLogger: Object, flag: ErrorCodeModule | undefined): void {
+  const isTSCErrorCodeModule: boolean = ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC;
+  // If the diagnostic is not an error, log a warning and return early.
+  if (diagnostic.category !== ts.DiagnosticCategory.Error) {
+    etsCheckerLogger.warn('\u001b[33m' + messageCollection.logMessage);
+    return;
+  }
+
+  // Check for TSC error codes
+  if (isTSCErrorCodeModule && ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
+    const errorCode = ts.getErrorCode(diagnostic);
+    errorCodeLogger.printError(errorCode);
+    return;
+  }
+
+  // Check for LINTER error codes
+  if (flag === ErrorCodeModule.LINTER || (isTSCErrorCodeModule && ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.LINTER)) {
+    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, messageCollection.positionMessage, messageCollection.message);
+    errorCodeLogger.printError(linterErrorInfo);
+    return;
+  }
+
+  // If the error is not a TSC or Linter error, log using etsCheckerLogger
+  etsCheckerLogger.error('\u001b[31m' + messageCollection.logMessage);
 }
 
 function validateError(message: string): boolean {
@@ -1649,7 +1671,7 @@ export function getMaxFlowDepth(): number {
     const maxFlowDepthLogger = fastBuildLogger || logger;
     maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
     maxFlowDepthLogger.warn('\u001b[33m' + 'ArkTS: Invalid maxFlowDepth for control flow analysis.' +
-      `The value of maxFlowDepth ranges from ${ MAX_FLOW_DEPTH_DEFAULT_VALUE } to ${ MAX_FLOW_DEPTH_MAXIMUM_VALUE }.\n` +
+      `The value of maxFlowDepth ranges from ${MAX_FLOW_DEPTH_DEFAULT_VALUE} to ${MAX_FLOW_DEPTH_MAXIMUM_VALUE}.\n` +
       'If the modification does not take effect, set maxFlowDepth to the default value.');
   }
   return maxFlowDepth;
