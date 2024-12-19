@@ -5,6 +5,6 @@
   "attrs": [
     "fontColor", "fontSize", "fontStyle", "fontFamily", "fontWeight", "decoration", "letterSpacing",
     "textCase","font", "textBackgroundStyle", "lineHeight", "textShadow", "baselineOffset",
-    "id", "key", "onClick"
+    "id", "key", "onClick", "attributeModifier"
   ]
 }

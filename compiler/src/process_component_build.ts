@@ -193,6 +193,7 @@ import {
 } from './process_ui_syntax';
 import { regularCollection } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
+import { extendCollection } from './ets_checker';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -2602,12 +2603,15 @@ function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
 function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
   let compName: string = identifierNode.escapedText.toString();
   if (SpanComponents.includes(compName) && ts.isPropertyAccessExpression(node) && node.name &&
-    ts.isIdentifier(node.name) && !COMPONENT_MAP[compName].attrs.includes(node.name.escapedText.toString())) {
-    log.push({
-      type: LogType.WARN,
-      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${compName}'.`,
-      pos: node.getStart()
-    });
+    ts.isIdentifier(node.name)) {
+    let propertyName = node.name.escapedText.toString();
+    if (!extendCollection.has(propertyName) && !COMPONENT_MAP[compName].attrs.includes(propertyName)) {
+      log.push({
+        type: LogType.WARN,
+        message: `Property '${propertyName}' does not take effect on '${compName}'.`,
+        pos: node.name.getStart()
+      });
+    }
   }
 }
 
