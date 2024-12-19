@@ -584,7 +584,12 @@ export class ModuleMode extends CommonMode {
     // generate npm entries cache
     let npmEntriesCacheFilePath: string = changeFileExtension(this.npmEntriesInfoPath, EXTNAME_PROTO_BIN);
     abcCacheFilesInfo += `${this.npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
-
+    if (this.projectConfig.cacheBytecodeHar) {
+      this.abcPaths.forEach((abcPath) => {
+        let abcCacheFilePath: string = changeFileExtension(abcPath, EXTNAME_PROTO_BIN);
+        abcCacheFilesInfo += `${abcPath};${abcCacheFilePath}\n`;
+      });
+    }
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
   }
 
