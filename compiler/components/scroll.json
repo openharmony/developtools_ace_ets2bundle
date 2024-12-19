@@ -3,6 +3,6 @@
   "single": true,
   "attrs": [
     "scrollable", "onScroll", "onScrollEdge", "onScrollEnd", "scrollBar", "scrollBarColor",
-    "scrollBarWidth", "edgeEffect", "enableScrollInteraction", "onScrollBegin"
+    "scrollBarWidth", "edgeEffect", "enableScrollInteraction", "onScrollBegin","fadingEdge"
   ]
 }
