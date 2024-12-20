@@ -5,6 +5,9 @@
     "listDirection", "scrollBar", "edgeEffect", "divider", "editMode", "cachedCount", "sticky",
     "chainAnimation", "lanes", "onScroll", "onReachStart", "onReachEnd", "onScrollStop", "onItemDelete",
     "onItemMove", "onItemDragStart", "onItemDragEnter", "onItemDragMove", "onItemDragLeave", "onItemDrop",
-    "multiSelectable", "enableScrollInteraction", "onScrollIndex", "onScrollBegin", "scrollSnapAlign"
+    "multiSelectable", "enableScrollInteraction", "onScrollIndex", "onScrollBegin", "scrollSnapAlign",
+    "alignListItem", "nestedScroll", "friction", "contentStartOffset", "contentEndOffset", "childrenMainSize",
+    "maintainVisibleContentPosition", "onScrollFrameBegin", "onScrollStart", "onScrollVisibleContentChange",
+    "flingSpeedLimit", "fadingEdge", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth"
   ]
 }
