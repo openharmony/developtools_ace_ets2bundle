@@ -32,7 +32,8 @@ import { toUnixPath } from '../../utils';
 import {
   getHookEventFactory,
   createAndStartEvent,
-  stopEvent
+  stopEvent,
+  transformLazyImport
 } from '../../ark_utils';
 import { SourceMapGenerator } from './generate_sourcemap';
 
@@ -41,7 +42,7 @@ import { SourceMapGenerator } from './generate_sourcemap';
  * @param {string} code: transformed source code of an input file
  * @param {string} id: absolute path of an input file
  */
-export function transformForModule(code: string, id: string) {
+export function transformForModule(code: string, id: string): string {
   const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'transform');
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
   if (this.share.projectConfig.compileMode === ESMODULE) {
@@ -49,12 +50,19 @@ export function transformForModule(code: string, id: string) {
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
+      // when ets/ts -> js, we need to convert lazy-import based on the js code generated after tsc conversion
+      if (this.share.projectConfig?.autoLazyImport) {
+        code = <string> transformLazyImport(code, undefined, id);
+      }
       ModuleSourceFile.newSourceFile(id, code, metaInfo);
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id)) {
+        if (this.share.projectConfig?.autoLazyImport) {
+          code = <string> transformLazyImport(code, undefined, id);
+        }
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
           code = transformedResult.code;
@@ -68,6 +76,8 @@ export function transformForModule(code: string, id: string) {
     }
   }
   stopEvent(eventTransformForModule);
+  // if we perform lazy-import conversion, we need to return the converted js code
+  return code;
 }
 
 function preserveSourceMap(sourceFilePath: string, sourcemap: Object, projectConfig: Object, metaInfo: Object, parentEvent: Object): void {
