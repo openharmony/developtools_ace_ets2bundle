@@ -173,12 +173,32 @@ const DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT: string =
 'const buf = new buffer();\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
+const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE: string =
+'import NoExist from "@kit.ArkTest";\n'
+
+const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT: string =
+'export {};\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
 const ARK_TEST_KIT: Object = {
   symbols: {
     "default": {
       "source": "@ohos.buffer.d.ts",
       "bindings": "default"
     },
+    "convertxml": {
+      "source": "@ohos.convertxml.d.ts",
+      "bindings": "default"
+    },
+    "process": {
+      "source": "@ohos.process.d.ts",
+      "bindings": "default"
+    }
+  }
+}
+
+const ARK_TEST_NO_DEFAULT_KIT: Object = {
+  symbols: {
     "convertxml": {
       "source": "@ohos.convertxml.d.ts",
       "bindings": "default"
@@ -386,6 +406,38 @@ mocha.describe('process Kit Imports tests', function () {
       transformers: { before: [ processKitImport() ] }
     });
     expect(result.outputText == DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-5 process single default-bindings import, but no use', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-6 process single default-bindings import, but kit no default export', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_NO_DEFAULT_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT).to.be.true;
     fs.unlinkSync(arkTestKitConfig);
   });
 
