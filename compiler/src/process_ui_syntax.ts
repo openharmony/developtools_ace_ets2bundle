@@ -1926,10 +1926,10 @@ export function resetLog(): void {
 
 function addCardStringliteral(newExpressionParams: any[], context: ts.TransformationContext,
   cardRelativePath: string): void {
+  const bundleName = projectConfig.allowEmptyBundleName ? '' : projectConfig.bundleName;
   if (cardRelativePath) {
     newExpressionParams.push(context.factory.createStringLiteral(
-      projectConfig.bundleName + '/' + projectConfig.moduleName + '/' +
-      cardRelativePath));
+      bundleName + '/' + projectConfig.moduleName + '/' + cardRelativePath));
   }
 }
 
