@@ -29,6 +29,7 @@ import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 import { compilerOptions } from './ets_checker';
+import { transformLazyImport } from './ark_utils';
 
 /*
 * basic implementation logic:
@@ -55,8 +56,8 @@ const KEEPTS = '// @keepTs';
 *      import ErrorCode from '@ohos.ability.errorCode'
 *    ```
 */
-export function processKitImport(id: string, metaInfo: Object,
-  compilationTime: CompilationTimeStatistics, shouldReturnOriginalNode: boolean = true): Function {
+export function processKitImport(id: string, metaInfo: Object, compilationTime: CompilationTimeStatistics,
+  shouldReturnOriginalNode: boolean = true, autoLazyImport: boolean = false): Function {
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -87,6 +88,8 @@ export function processKitImport(id: string, metaInfo: Object,
       interceptLazyImportWithKitImport(node);
 
       KitInfo.init(node, context, id);
+      // @ts-ignore
+      const resolver = context.getEmitResolver();
 
       // When compile hap or hsp, it is used to determine whether there is a keepTsNode in the file.
       let hasKeepTs: boolean = false;
@@ -101,11 +104,15 @@ export function processKitImport(id: string, metaInfo: Object,
           const processedNode: ts.SourceFile =
             ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
           stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
+          // this processNode is used to convert ets/ts to js intermediate products
           return processedNode;
         }
         // process [ConstEnum] + [TypeExportImport] + [KitImport] transforming
-        const processedNode: ts.SourceFile =
+        // when autoLazyImport is true, some imports are converted to lazy-import
+        // eg. import { xxx } form "xxx" --> import lazy { xxx } form "xxx"
+        let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
+        processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
