@@ -2,5 +2,5 @@
     "name": "ListItemGroup",
     "parents": ["List"],
     "children": ["ListItem"],
-    "attrs": ["divider"]
+    "attrs": ["divider", "childrenMainSize"]
   }
