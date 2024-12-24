@@ -23,58 +23,58 @@ import {
   TS2ABC
 } from '../../../lib/fast_build/ark_compiler/common/ark_define';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
-import { ModulePreviewMode } from '../../../lib/fast_build/ark_compiler/module/module_preview_mode';
+import { ModuleBuildMode } from '../../../lib/fast_build/ark_compiler/module/module_build_mode';
 import {
   ArkTSInternalErrorDescription,
   ErrorCode
 } from '../../../lib/fast_build/ark_compiler/error_code';
-import { 
+import {
   CommonLogger,
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
 
-mocha.describe('test module_preview_mode file api', function () {
+mocha.describe('test module_build_mode file api', function () {
   mocha.before(function () {
     this.rollup = new RollUpPluginMock();
   });
-  
+
   mocha.after(() => {
     delete this.rollup;
   });
 
-  mocha.it('1-1: test the error message of ModulePreviewMode executeArkCompiler', function () {
-    this.rollup.preview();
+  mocha.it('1-1: test the error message of ModuleBuildMode executeArkCompiler', function () {
+    this.rollup.build();
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
       ArkTSInternalErrorDescription,
-      'Invalid compilation mode. ' + 
+      'Invalid compilation mode. ' +
       `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
     );
-    const modulePreviewMode = new ModulePreviewMode(this.rollup);
-    modulePreviewMode.projectConfig.pandaMode = 'invalid value'
-    const stub = sinon.stub(modulePreviewMode.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
-    modulePreviewMode.executeArkCompiler();
+    const moduleBuildMode = new ModuleBuildMode(this.rollup);
+    moduleBuildMode.projectConfig.pandaMode = 'invalid value';
+    const stub = sinon.stub(moduleBuildMode.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
+    moduleBuildMode.executeArkCompiler();
     expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
-  mocha.it('1-2: test the error message of ModulePreviewMode executeArkCompiler ' +
+  mocha.it('1-2: test the error message of ModuleBuildMode executeArkCompiler ' +
     'without getHvigorConsoleLogger', function () {
-    this.rollup.preview();
+    this.rollup.build();
     const errInfo: LogData = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
       ArkTSInternalErrorDescription,
-      'Invalid compilation mode. ' + 
+      'Invalid compilation mode. ' +
       `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
     );
     CommonLogger.destroyInstance();
     const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
     this.rollup.share.getHvigorConsoleLogger = undefined;
-    const modulePreviewMode = new ModulePreviewMode(this.rollup);
-    modulePreviewMode.projectConfig.pandaMode = 'invalid value'
-    const stub = sinon.stub(modulePreviewMode.logger, 'throwArkTsCompilerError');
-    modulePreviewMode.executeArkCompiler();
+    const moduleBuildMode = new ModuleBuildMode(this.rollup);
+    moduleBuildMode.projectConfig.pandaMode = 'invalid value';
+    const stub = sinon.stub(moduleBuildMode.logger, 'throwArkTsCompilerError');
+    moduleBuildMode.executeArkCompiler();
     expect(stub.calledWith(errInfo.toString())).to.be.true;
     CommonLogger.destroyInstance();
     this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
