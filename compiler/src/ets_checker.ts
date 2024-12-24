@@ -105,8 +105,15 @@ export interface LanguageServiceCache {
   preTsImportSendable?: boolean;
 }
 
+export enum ErrorCodeModule {
+  TSC = 0,
+  LINTER = 1,
+  UI = 2
+}
+
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 export let localPackageSet: Set<string> = new Set();
+export const TSC_SYSTEM_CODE = '105';
 
 export const MAX_FLOW_DEPTH_DEFAULT_VALUE = 2000;
 export const MAX_FLOW_DEPTH_MAXIMUM_VALUE = 65535;
@@ -665,8 +672,11 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
   const emitBuildRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_EMIT_BUILD_INFO);
   emitBuildInfo();
+  let errorCodeLogger: Object | undefined = rollupShareObject?.getHvigorConsoleLogger ?
+    rollupShareObject?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
+
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
+    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
   });
   MemoryMonitor.stopRecordStage(emitBuildRecordInfo);
   if (!projectConfig.xtsMode) {
@@ -701,13 +711,13 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
         } catch (err) { }
       }
     });
-    printDeclarationDiagnostics();
+    printDeclarationDiagnostics(errorCodeLogger);
   }
 }
 
-function printDeclarationDiagnostics(): void {
+function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void {
   globalProgram.builderProgram.getDeclarationDiagnostics().forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
+    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
   });
 }
 
@@ -786,7 +796,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
-export function printDiagnostic(diagnostic: ts.Diagnostic): void {
+export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
   }
@@ -808,6 +818,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger || logger;
+    let errorCode: ts.ErrorInfo;
     let logMessage: string;
     if (logPrefix === 'ERROR') {
       checkerResult.count += 1;
@@ -822,10 +833,24 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
       logMessage = `ArkTS:${logPrefix}: ${message}`;
     }
 
-    if (diagnostic.category === ts.DiagnosticCategory.Error) {
-      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    if (errorCodeLogger) {
+      if (diagnostic.category === ts.DiagnosticCategory.Error) {
+        if (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
+            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
+          errorCode = ts.getErrorCode(diagnostic);
+          errorCodeLogger.printError(errorCode);
+        } else {
+          etsCheckerLogger.error('\u001b[31m' + logMessage);
+        }
+      } else {
+        etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      }
     } else {
-      etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      if (diagnostic.category === ts.DiagnosticCategory.Error) {
+        etsCheckerLogger.error('\u001b[31m' + logMessage);
+      } else {
+        etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      }
     }
   }
 }
