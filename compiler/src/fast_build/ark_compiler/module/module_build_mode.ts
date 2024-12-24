@@ -14,8 +14,23 @@
  */
 
 import { ModuleMode } from './module_mode';
-import { isEs2Abc, isTs2Abc } from '../../../ark_utils';
+import {
+  isEs2Abc, 
+  isTs2Abc 
+} from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
+import {
+  TS2ABC,
+  ES2ABC
+} from '../common/ark_define';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode 
+} from '../error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../logger';
 
 export class ModuleBuildMode extends ModuleMode {
   constructor(rollupObject: Object) {
@@ -40,7 +55,13 @@ export class ModuleBuildMode extends ModuleMode {
       this.invokeTs2AbcWorkersToGenProto(splittedModules);
       this.processTs2abcWorkersToGenAbc();
     } else {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+        ArkTSInternalErrorDescription,
+        'Invalid compilation mode. ' + 
+        `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 }

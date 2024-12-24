@@ -35,6 +35,14 @@ import {
   stopEvent
 } from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode 
+} from '../error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../logger';
 
 let isFirstBuild: boolean = true;
 
@@ -45,8 +53,12 @@ export class ModuleHotreloadMode extends ModuleMode {
     if (this.projectConfig.oldMapFilePath) {
       this.symbolMapFilePath = path.join(this.projectConfig.oldMapFilePath, SYMBOLMAP);
     } else {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Hotreload failed, ' +
-        'symbolMap file is not correctly configured.');
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_HOT_RELOAD_FAILED_INCORRECT_SYMBOL_MAP_CONFIG,
+        ArkTSInternalErrorDescription,
+        'Hot Reload failed, symbolMap file is not correctly configured.'
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 
