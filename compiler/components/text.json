@@ -8,6 +8,6 @@
     "wordBreak", "selection", "ellipsisMode", "enableDataDetector", "dataDetectorConfig", "bindSelectionMenu",
     "fontFeature", "lineSpacing", "privacySensitive", "lineBreakStrategy", "textSelectable", "editMenuOptions",
     "minFontScale", "maxFontScale", "halfLeading", "enableHapticFeedback", "caretColor", "selectedBackgroundColor",
-    "onCopy", "onTextSelectionChange", "closeSelectionMenu", "setStyledString", "getLayoutManager"
+    "onCopy", "onTextSelectionChange", "closeSelectionMenu", "setStyledString", "getLayoutManager", "marqueeOptions"
   ]
 }
