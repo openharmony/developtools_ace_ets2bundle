@@ -102,7 +102,6 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
       startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.NEW_SOURCE_FILE);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
-      interceptLazyImportWithKitImport(node);
 
       KitInfo.init(node, context, id);
       // @ts-ignore
@@ -143,27 +142,6 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
       return processedNode;
     };
   };
-}
-
-/**
- *  Kit does not support lazy-import yet, e.g.: import lazy {xxx} from '@kit.yyy'
- */
-function interceptLazyImportWithKitImport(node: ts.SourceFile): void {
-  if (node && node.statements) {
-    node.statements.forEach((statement) => {
-      if (ts.isImportDeclaration(statement) && statement.moduleSpecifier) {
-        const moduleRequest: string = (statement.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '');
-        if (moduleRequest.startsWith(KIT_PREFIX) && statement.importClause && statement.importClause.isLazy) {
-          kitTransformLog.errors.push({
-            type: LogType.ERROR,
-            message: `Can not use lazy import statement with Kit '${moduleRequest}', ` +
-              'Please remove the lazy keyword.',
-            pos: statement.getStart()
-          });
-        }
-      }
-    });
-  }
 }
 
 /*
@@ -556,13 +534,16 @@ class ImportSpecifierKitInfo extends KitInfo {
         }
       });
 
+      let newImportClause: ts.ImportClause = ts.factory.createImportClause(
+        node.importClause!.isTypeOnly,
+        this.specifierDefaultName,
+        this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
+      )
+      // @ts-ignore
+      newImportClause.isLazy = node.importClause!.isLazy;
       this.getOhosImportNodes().push(ts.factory.createImportDeclaration(
         this.getKitNodeModifier(),
-        ts.factory.createImportClause(
-          node.importClause!.isTypeOnly,
-          this.specifierDefaultName,
-          this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
-        ),
+        newImportClause,
         ts.factory.createStringLiteral(trimSourceSuffix(source))
       ));
 
