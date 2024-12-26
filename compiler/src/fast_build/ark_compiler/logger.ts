@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { GEN_ABC_PLUGIN_NAME } from "./common/ark_define";
+import { GEN_ABC_PLUGIN_NAME } from './common/ark_define';
 import {
   ErrorCode,
   SubsystemCode,

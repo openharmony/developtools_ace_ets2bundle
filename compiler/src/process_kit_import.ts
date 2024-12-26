@@ -131,7 +131,7 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
-        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
+        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]

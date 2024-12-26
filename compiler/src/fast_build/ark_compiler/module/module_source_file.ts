@@ -34,7 +34,6 @@ import {
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
-  isDebug,
   isJsonSourceFile,
   isJsSourceFile,
   updateSourceMap,
@@ -43,6 +42,7 @@ import {
 import { toUnixPath } from '../../../utils';
 import {
   createAndStartEvent,
+  getHookEventFactory,
   stopEvent
 } from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
@@ -63,6 +63,7 @@ import { readProjectAndLibsSource } from '../common/process_ark_config';
 import {
   allSourceFilePaths,
   collectAllFiles,
+  compilerOptions,
   localPackageSet
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
@@ -85,7 +86,7 @@ import {
   ArkTSInternalErrorDescription,
   ErrorCode
 } from '../error_code';
-
+import { checkIfJsImportingArkts } from '../check_import_module';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -107,6 +108,9 @@ export class ModuleSourceFile {
   private static transformedHarOrHspMockConfigInfo: Object = {};
   private static mockConfigKeyToModuleInfo: Object = {};
   private static needProcessMock: boolean = false;
+  private static moduleIdMap: Map<string, ModuleSourceFile> = new Map();
+  private static isEnvInitialized: boolean = false;
+  private static hookEventFactory: Object;
 
   constructor(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
     this.moduleId = moduleId;
@@ -309,13 +313,55 @@ export class ModuleSourceFile {
     }
   }
 
-  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object): void {
-    ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
+  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object, singleFileEmit: boolean): void {
+    if (singleFileEmit) {
+      ModuleSourceFile.moduleIdMap.set(moduleId, new ModuleSourceFile(moduleId, source, metaInfo));
+    } else {
+      ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
+    }
+  }
+
+  static getSourceFileById(moduleId: string): ModuleSourceFile | undefined {
+    return ModuleSourceFile.moduleIdMap.get(moduleId);
   }
 
   static getSourceFiles(): ModuleSourceFile[] {
     return ModuleSourceFile.sourceFiles;
   }
+
+  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string): Promise<void> {
+    if (!ModuleSourceFile.isEnvInitialized) {
+      this.initPluginEnv(rollupObject);
+      
+      ModuleSourceFile.hookEventFactory = getHookEventFactory(rollupObject.share, 'genAbc', 'moduleParsed');
+      ModuleSourceFile.setProcessMock(rollupObject);
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.collectMockConfigInfo(rollupObject);
+      } else {
+        ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
+      }
+      ModuleSourceFile.isEnvInitialized = true;
+    }
+    
+    if (ModuleSourceFile.moduleIdMap.has(moduleId)) {
+      let moduleSourceFile=ModuleSourceFile.moduleIdMap.get(moduleId);
+      ModuleSourceFile.moduleIdMap.delete(moduleId);
+
+      if (compilerOptions.needDoArkTsLinter) {
+        checkIfJsImportingArkts(rollupObject, moduleSourceFile);
+      }
+
+      if (!rollupObject.share.projectConfig.compileHar || ModuleSourceFile.projectConfig.byteCodeHar) {
+        //compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
+        const eventBuildModuleSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'build module source files');
+        await moduleSourceFile.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
+        stopEvent(eventBuildModuleSourceFile);
+      }
+      const eventWriteSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'write source file');
+      await moduleSourceFile.writeSourceFile(eventWriteSourceFile);
+      stopEvent(eventWriteSourceFile);
+    }
+  }  
 
   static async processModuleSourceFiles(rollupObject: Object, parentEvent: Object): Promise<void> {
     this.initPluginEnv(rollupObject);
@@ -687,5 +733,9 @@ export class ModuleSourceFile {
     ModuleSourceFile.transformedHarOrHspMockConfigInfo = {};
     ModuleSourceFile.mockConfigKeyToModuleInfo = {};
     ModuleSourceFile.needProcessMock = false;
+    ModuleSourceFile.moduleIdMap = new Map();
+    ModuleSourceFile.isEnvInitialized = false;
+    ModuleSourceFile.hookEventFactory = undefined;
   }
 }
+

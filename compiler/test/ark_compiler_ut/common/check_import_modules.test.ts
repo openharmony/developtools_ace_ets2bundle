@@ -70,8 +70,39 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWith(errInfo)).to.be.true;
+      }
+    }
+    stub.restore();
+  });
+
+  mocha.it('1-1-1: test single file checkIfJsImportingArkts under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.',
+      '',
+      sinon.match.any
+    );
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).getLoggerFromErrorCode(errInfo.code), 'printError');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWith(errInfo)).to.be.true;
       }
     }
@@ -100,7 +131,7 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
         expect(stub.calledWith(errInfo)).to.be.true;
       }
@@ -130,8 +161,39 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWith(errInfo)).to.be.true;
+      }
+    }
+    stub.restore();
+  });
+
+  mocha.it('1-3-1: test single file checkIfJsImportingArkts under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.',
+      '',
+      sinon.match.any
+    );
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).getLoggerFromErrorCode(errInfo.code), 'printError');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWith(errInfo)).to.be.true;
       }
     }
@@ -160,8 +222,39 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWith(errInfo)).to.be.true;
+      }
+    }
+    stub.restore();
+  });
+
+  mocha.it('1-4-1: test single file checkIfJsImportingArkts under hot reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.',
+      '',
+      sinon.match.any
+    );
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).getLoggerFromErrorCode(errInfo.code), 'printError');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWith(errInfo)).to.be.true;
       }
     }
@@ -191,8 +284,42 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
+      }
+    }
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
+  });
+
+  mocha.it('1-5-1: test single file checkIfJsImportingArkts under build debug without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).logger, 'error');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
       }
     }
@@ -224,7 +351,7 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
         expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
       }
@@ -257,8 +384,42 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
+      }
+    }
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
+  });
+
+  mocha.it('1-7-1: test single file checkIfJsImportingArkts under preview debug without getHvigorConsoleLogger', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).logger, 'error');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
       }
     }
@@ -290,8 +451,42 @@ mocha.describe('test check_import_module file api', function () {
         const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
         moduleInfo.setImportedIdMaps(path_ets);
         const code: string = fs.readFileSync(moduleId, 'utf-8');
-        ModuleSourceFile.newSourceFile(moduleId, code);
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
         checkIfJsImportingArkts(this.rollup);
+        expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
+      }
+    }
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
+  });
+
+  mocha.it('1-8-1: test single file checkIfJsImportingArkts under hot reload debug without getHvigorConsoleLogger', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    let path_ets: string;
+    const mockFileList: object = this.rollup.getModuleIds();
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FORBIDDEN_IMPORT_ARKTS_FILE,
+      ArkTSErrorDescription,
+      'Importing ArkTS files in JS and TS files is forbidden.'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).logger, 'error');
+    this.rollup.moduleInfos.forEach((moduleInfo) => {
+      if (moduleInfo.id.endsWith(EXTNAME_ETS)) {
+        path_ets = moduleInfo.id;
+      }
+    })
+    for (const moduleId of mockFileList) {
+      if (moduleId.endsWith(EXTNAME_JS)) {
+        const moduleInfo: object = this.rollup.getModuleInfo(moduleId);
+        moduleInfo.setImportedIdMaps(path_ets);
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        ModuleSourceFile.newSourceFile(moduleId, code, moduleInfo, this.rollup.share.projectConfig.singleFileEmit);
+        checkIfJsImportingArkts(this.rollup, ModuleSourceFile.getSourceFileById(moduleId));
         expect(stub.calledWithMatch(errInfo.toString())).to.be.true;
       }
     }
