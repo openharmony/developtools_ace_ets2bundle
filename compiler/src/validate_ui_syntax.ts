@@ -141,6 +141,7 @@ export class IComponentSet {
   stateInit: Set<string> = new Set();
   provideInit: Set<string> = new Set();
   privateCollection: Set<string> = new Set();
+  regularStaticCollection: Set<string> = new Set();
 }
 
 export let componentCollection: ComponentCollection = new ComponentCollection();
@@ -169,6 +170,7 @@ export const regularInitialization: Map<string, Set<string>> = new Map();
 export const stateInitialization: Map<string, Set<string>> = new Map();
 export const provideInitialization: Map<string, Set<string>> = new Map();
 export const privateCollection: Map<string, Set<string>> = new Map();
+export const regularStaticCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -1321,6 +1323,7 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
   stateInitialization.set(componentName, componentSet.stateInit);
   provideInitialization.set(componentName, componentSet.provideInit);
   privateCollection.set(componentName, componentSet.privateCollection);
+  regularStaticCollection.set(componentName, componentSet.regularStaticCollection);
   structInfo.updatePropsDecoratorsV1.push(
     ...componentSet.states, ...componentSet.props,
     ...componentSet.provides, ...componentSet.objectLinks
@@ -1357,6 +1360,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
         if (!decorators || !decorators.length) {
           componentSet.regulars.add(propertyName);
           setPrivateCollection(componentSet, accessQualifierResult, propertyName, COMPONENT_NON_DECORATOR);
+          setRegularStaticCollaction(componentSet, accessQualifierResult, propertyName);
         } else {
           isStatic = false;
           let hasValidatePrivate: boolean = false;
@@ -1449,9 +1453,17 @@ function setPrivateCollection(componentSet: IComponentSet, accessQualifierResult
   }
 }
 
+function setRegularStaticCollaction(componentSet: IComponentSet, accessQualifierResult: AccessQualifierResult,
+  propertyName: string): void {
+  if (accessQualifierResult.hasStatic) {
+    componentSet.regularStaticCollection.add(propertyName);
+  }
+}
+
 class AccessQualifierResult {
   hasPrivate: boolean = false;
   hasPublic: boolean = false;
+  hasStatic: boolean = false;
 }
 
 function getAccessQualifier(node: ts.PropertyDeclaration, uiCheck: boolean = false): AccessQualifierResult {
@@ -1464,6 +1476,9 @@ function getAccessQualifier(node: ts.PropertyDeclaration, uiCheck: boolean = fal
       }
       if (item.kind === ts.SyntaxKind.PublicKeyword) {
         accessQualifierResult.hasPublic = true;
+      }
+      if (item.kind === ts.SyntaxKind.StaticKeyword) {
+        accessQualifierResult.hasStatic = true;
       }
       if (uiCheck && item.kind === ts.SyntaxKind.ProtectedKeyword) {
         transformLog.errors.push({
@@ -1745,6 +1760,7 @@ export function resetComponentCollection(): void {
   stateInitialization.clear();
   provideInitialization.clear();
   privateCollection.clear();
+  regularStaticCollection.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {

@@ -58,7 +58,8 @@ import {
   regularInitialization,
   stateInitialization,
   provideInitialization,
-  privateCollection
+  privateCollection,
+  regularStaticCollection
 } from './validate_ui_syntax';
 import {
   getExtensionIfUnfullySpecifiedFilepath,
@@ -907,6 +908,7 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
   stateInitialization.set(name, componentSet.stateInit);
   provideInitialization.set(name, componentSet.provideInit);
   privateCollection.set(name, componentSet.privateCollection);
+  regularStaticCollection.set(name, componentSet.regularStaticCollection);
   if (asComponentName) {
     const asComponentNameStructInfo: StructInfo =
       processStructComponentV2.getOrCreateStructInfo(asComponentName);
