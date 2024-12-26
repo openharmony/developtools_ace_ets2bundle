@@ -18,7 +18,7 @@ import fs from 'fs';
 import { 
   createAndStartEvent,
   stopEvent
-} from "../../ark_utils";
+} from '../../ark_utils';
 import {
   EXTNAME_ETS,
   EXTNAME_JS,

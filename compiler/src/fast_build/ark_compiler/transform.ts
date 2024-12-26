@@ -57,7 +57,7 @@ export function transformForModule(code: string, id: string): string {
         code = <string> transformLazyImport(code, undefined, id);
       }
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
     }
 
@@ -77,7 +77,7 @@ export function transformForModule(code: string, id: string): string {
         }
       }
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.stopRecordStage(recordInfo);
     }
   }
