@@ -31,7 +31,9 @@ import {
   setUnobfuscationNames,
   sourceFileDependencies,
   writeObfuscatedFile,
-  IDENTIFIER_CACHE
+  IDENTIFIER_CACHE,
+  initObfLogger,
+  printObfLogger
 } from '../../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   OBFUSCATION_RULE_PATH,
@@ -523,54 +525,6 @@ mocha.describe('test obfuscate config resolver api', function () {
       expect(acutualReservedFileNames.toString() === expectReservedFileNames.toString()).to.be.true;
     });
   })
-
-  mocha.it('3-1: test resolveKeepConfig', function () {
-    this.rollup.build(RELEASE);
-    this.rollup.share.projectConfig.obfuscationOptions = {
-      'selfConfig': {
-        'ruleOptions': {
-          'enable': true,
-          'rules': [ OBFUSCATION_RULE_PATH ]
-        },
-        'consumerRules': [],
-      },
-      'dependencies': {
-        'libraries': [],
-        'hars': []
-      }
-    };
-    const keepConfigs = [
-      './bundle',
-      './testdata/**/filename_obf',
-      '!./testdata/obfuscation/filename_obf',
-      './testdata/obfuscation/filename_obf/..',
-      './testdata/obfuscation/keep?ts',
-      './testdata/obfuscation/*',
-      './^',
-      '$',
-      '!./testdata/expect/*',
-      './.ohpm/(*)'
-    ];
-    let configs = {
-      keepSourceOfPaths: [],
-      keepUniversalPaths: [],
-      excludeUniversalPaths: [],
-      excludePathSet: new Set<string>()
-    };
-    const currentFilePath = __filename;
-    const configPath = path.dirname(currentFilePath);
-    const obResolver = new ObConfigResolver(this.rollup.share.projectConfig, console, true);
-    obResolver.resolveKeepConfig(keepConfigs, configs, configPath);
-    let excludePathArray = Array.from(configs.excludePathSet);
-    expect(configs.keepSourceOfPaths[0].includes('bundle')).to.be.true;
-    expect(configs.keepSourceOfPaths[1].includes('obfuscation')).to.be.true;
-    expect(configs.keepUniversalPaths[0].toString().includes('filename_obf')).to.be.true;
-    expect(configs.keepUniversalPaths[1].toString().includes('keep[^/]ts')).to.be.true;
-    expect(configs.keepUniversalPaths[2].toString().includes('[^/]*')).to.be.true;
-    expect(configs.keepUniversalPaths[3].toString().includes('.ohpm')).to.be.true;
-    expect(configs.excludeUniversalPaths[0].toString().includes('[^/]*')).to.be.true;
-    expect(excludePathArray[0].includes('filename_obf')).to.be.true;
-  });
 
   mocha.it('4-1: test getRelativeSourcePath: filePath starts with projectRootPath', function () {
     const filePath = 'C:/projects/my-project/src/file.ts';

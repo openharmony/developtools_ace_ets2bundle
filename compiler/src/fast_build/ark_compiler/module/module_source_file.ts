@@ -51,7 +51,8 @@ import {
   handleKeepFilesAndGetDependencies,
   writeObfuscationNameCache,
   writeUnobfuscationContent,
-  handleUniversalPathInObf
+  handleUniversalPathInObf,
+  printObfLogger
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
@@ -415,7 +416,7 @@ export class ModuleSourceFile {
     }
 
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
+      await mangleDeclarationFileName(printObfLogger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
     }
     printTimeSumInfo('All files obfuscation:');
     printTimeSumData();
@@ -451,10 +452,10 @@ export class ModuleSourceFile {
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-        this.moduleId, parentEvent, ModuleSourceFile.logger);
+        this.moduleId, parentEvent, printObfLogger);
     } else {
       await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger, parentEvent, this.metaInfo);
+        printObfLogger, parentEvent, this.metaInfo);
     }
   }
 
