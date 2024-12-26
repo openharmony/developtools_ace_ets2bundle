@@ -17,7 +17,7 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import fs from "fs";
+import fs, { unwatchFile } from "fs";
 import path from "path";
 import MagicString from 'magic-string';
 import sinon from 'sinon';
@@ -63,7 +63,8 @@ import {
 } from '../../lib/utils';
 import {
   ObConfigResolver,
-  MergedConfig
+  MergedConfig,
+  obfLogger
 } from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   utProcessArkConfig
@@ -82,6 +83,8 @@ import {
   LogData,
   LogDataFactory
 } from '../../lib/fast_build/ark_compiler/logger';
+import { initObfLogger, printObfLogger } from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
+import { getLogger } from 'log4js';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -315,50 +318,63 @@ mocha.describe('test ark_utils file api', function () {
 
   mocha.it('6-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
     this.rollup.build(RELEASE);
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_ARKGUARD_OBFUSCATION_FAILED,
-      ArkTSInternalErrorDescription,
-      `Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')`
-    );
     SourceMapGenerator.initInstance(this.rollup);
-    const logger = CommonLogger.getInstance(this.rollup);
-    const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    initObfLogger(this.rollup.share);
+    const stub = sinon.stub(obfLogger, 'error');
+    const red: string = '\x1B[31m';
     try {
       await writeArkguardObfuscatedSourceCode(
         {content: undefined, buildFilePath: '', relativeSourceFilePath: '', originSourceFilePath: ''},
-        logger, this.rollup.share.projectConfig, {});
+        printObfLogger, this.rollup.share.projectConfig, {});
     } catch (e) {
     }
-    
-    expect(stub.calledWith(errInfo)).to.be.true;
+    expect(stub.calledWith(red,
+      `ArkTS:INTERNAL ERROR: Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')`
+    )).to.be.true;
     stub.restore();
     SourceMapGenerator.cleanSourceMapObject();
   });
-
-  mocha.it('6-2: test the error message of writeArkguardObfuscatedSourceCode ' +
-    'without getHvigorConsoleLogger', async function () {
+  
+  mocha.it('6-2: test the error message of writeArkguardObfuscatedSourceCode' +
+    'with getHvigorConsoleLogger', async function () {
     this.rollup.build(RELEASE);
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_ARKGUARD_OBFUSCATION_FAILED,
-      ArkTSInternalErrorDescription,
-      `Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')`
-    );
-    CommonLogger.destroyInstance();
-    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
-    this.rollup.share.getHvigorConsoleLogger = undefined;
     SourceMapGenerator.initInstance(this.rollup);
-    const logger = CommonLogger.getInstance(this.rollup);
-    const stub = sinon.stub(logger.logger, 'error');
+    class customShare {
+      public getHvigorConsoleLogger(prefix: string) {
+       const logger = hvigorLogger.getLogger(prefix);
+       return logger;
+     }
+    }
+    class hvigorLogger {
+      mSubSystem: string = '';
+      constructor(subSystem: string) {
+        this.mSubSystem = subSystem;
+      }
+    
+      public printError(errInfo: Object) {
+      }
+
+      public static getLogger(subSystem): hvigorLogger {
+        return new hvigorLogger(subSystem);
+      }
+    }
+    initObfLogger(new customShare());
+    const stub = sinon.stub(obfLogger, 'printError');
     try {
       await writeArkguardObfuscatedSourceCode(
         {content: undefined, buildFilePath: '', relativeSourceFilePath: '', originSourceFilePath: ''},
-        logger, this.rollup.share.projectConfig, {});
+        printObfLogger, this.rollup.share.projectConfig, {});
     } catch (e) {
     }
-    
-    expect(stub.calledWith(errInfo.toString())).to.be.true;
-    CommonLogger.destroyInstance();
-    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    const info = {
+        code: '10810001',
+        description: 'ArkTS compiler Error',
+        cause: "ArkTS:INTERNAL ERROR: Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')",
+        position: '',
+        solutions: [ 'Please modify the code based on the error information.' ]
+    };
+    expect(stub.calledWith(info)).to.be.true;
     stub.restore();
     SourceMapGenerator.cleanSourceMapObject();
   });
