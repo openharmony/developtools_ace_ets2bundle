@@ -69,6 +69,17 @@ function checkIfNeedDollarEvent(doubleExclamationCollection: string[], dollarPro
   }
 }
 
+function checkIfAssignToStaticProps(node: ts.ObjectLiteralElementLike, propName: string,
+  staticCollection: Set<string>, log: LogInfo[]): void {
+  if (staticCollection.has(propName)) {
+    log.push({
+      type: LogType.WARN,
+      message: `Static property '${propName}' can not be initialized through the component constructor.`,
+      pos: node.getStart()
+    });
+  }
+}
+
 function isTagWithDecorator(node: ts.NodeArray<ts.ModifierLike>, decoratorName: string): boolean {
   return node.some((item: ts.Decorator) => ts.isDecorator(item) && 
     ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === decoratorName);
@@ -78,5 +89,6 @@ export default {
   checkLocalBuilderDecoratorCount,
   checkTwoWayComputed,
   checkComputedGetter,
-  checkIfNeedDollarEvent
+  checkIfNeedDollarEvent,
+  checkIfAssignToStaticProps
 };

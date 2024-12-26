@@ -227,6 +227,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_custom_component/validateMandatoryToInitViaParam',
   'Decorators/process_custom_component/validateNonLinkWithDollar',
   'Decorators/process_custom_component/validateParamTwoWayBind',
+  'Decorators/process_custom_component/validateStaticVariables',
 
   'Decorators/process_struct_componentV2/param_require_once_check',
   'Decorators/process_struct_componentV2/v2Component_member_type_check',
