@@ -78,7 +78,8 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
           const kitDefs = getKitDefs(moduleRequest);
           if (kitDefs && kitDefs.symbols) {
             KitInfo.processKitInfo(moduleRequest, kitDefs.symbols as KitSymbols, node);
-            return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
+            const currentKitInfo: KitInfo | undefined = KitInfo.getCurrentKitInfo();
+            return currentKitInfo ? [...currentKitInfo.getOhosImportNodes()] : [];
           } else {
             const errInfo: LogData = LogDataFactory.newInstance(
               ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_CONFIG_FILE_NOT_FOUND,
