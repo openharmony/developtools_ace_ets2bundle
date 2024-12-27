@@ -19,6 +19,14 @@ import path from "path";
 import * as ts from 'typescript';
 import { PROJECT_ROOT } from "../mock/rollup_mock/path_config";
 import { DEFAULT_PROJECT } from "../mock/rollup_mock/path_config";
+import { 
+  ArkTSErrorDescription,
+  ErrorCode
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 export function cpus() {
   return os.cpus().length < 16 ? os.cpus().length : 16;
@@ -66,4 +74,15 @@ export function findImportSpecifier(node) {
     }
   });
   return result;
+}
+
+export function createErrInfo(name: string): LogData {
+  return LogDataFactory.newInstance(
+    ErrorCode.ETS2BUNDLE_EXTERNAL_LAZY_IMPORT_RE_EXPORT_ERROR,
+    ArkTSErrorDescription,
+    `'${name}' of lazy-import is re-export`,
+    '',
+    ['Please make sure the namedBindings of lazy-import are not be re-exported.',
+      'Please check whether the autoLazyImport switch is opened.']
+  );
 }

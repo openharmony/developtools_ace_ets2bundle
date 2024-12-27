@@ -345,7 +345,7 @@ export class ModuleSourceFile {
     }
     
     if (ModuleSourceFile.moduleIdMap.has(moduleId)) {
-      let moduleSourceFile=ModuleSourceFile.moduleIdMap.get(moduleId);
+      let moduleSourceFile = ModuleSourceFile.moduleIdMap.get(moduleId);
       ModuleSourceFile.moduleIdMap.delete(moduleId);
 
       if (compilerOptions.needDoArkTsLinter) {
