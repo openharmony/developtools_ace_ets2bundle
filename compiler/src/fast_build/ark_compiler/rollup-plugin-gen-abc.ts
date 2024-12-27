@@ -26,6 +26,7 @@ import { SourceMapGenerator } from './generate_sourcemap';
 import { cleanUpUtilsObjects } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
+import { CommonLogger } from './logger';
 
 export function genAbc() {
   return {
@@ -39,10 +40,19 @@ export function genAbc() {
     },
     shouldInvalidCache: shouldInvalidCache,
     transform: transformForModule,
+    moduleParsed(moduleInfo: moduleInfoType): void {
+      // process single ModuleSourceFile
+      if (this.share.projectConfig.singleFileEmit) {
+        ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id);
+      }
+    },
     beforeBuildEnd: {
       // [pre] means this handler running in first at the stage of beforeBuildEnd.
       order: 'pre',
       handler() {
+        if (this.share.projectConfig.singleFileEmit) {
+          return;
+        }
         if (compilerOptions.needDoArkTsLinter) {
           checkIfJsImportingArkts(this);
         }
@@ -61,6 +71,11 @@ export function genAbc() {
       cleanModuleMode();
       ModuleSourceFile.cleanUpObjects();
       cleanSharedModuleSet();
+      CommonLogger.destroyInstance();
     }
   };
 }
+
+interface moduleInfoType {
+  id: string;
+};

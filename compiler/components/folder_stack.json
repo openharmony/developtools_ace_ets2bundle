@@ -1,4 +1,10 @@
 {
-    "name": "FolderStack",
-    "attrs": ["upperItems","enableAnimation","autoHalfFold","onFolderStateChange","onHoverStatusChange"]
-  }
+  "name": "FolderStack",
+  "attrs": [
+    "alignContent",
+    "onFolderStateChange",
+    "onHoverStatusChange",
+    "enableAnimation",
+    "autoHalfFold"
+  ]
+}

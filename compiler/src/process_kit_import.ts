@@ -31,6 +31,16 @@ import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build
 import { compilerOptions } from './ets_checker';
 import { transformLazyImport } from './ark_utils';
 import createAstNodeUtils from './create_ast_node_utils';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
+import { 
+  ArkTSErrorDescription, 
+  ErrorCode
+} from './fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from './fast_build/ark_compiler/logger';
 
 /*
 * basic implementation logic:
@@ -68,13 +78,19 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
           const kitDefs = getKitDefs(moduleRequest);
           if (kitDefs && kitDefs.symbols) {
             KitInfo.processKitInfo(moduleRequest, kitDefs.symbols as KitSymbols, node);
-            return [...KitInfo.getCurrentKitInfo().getOhosImportNodes()];
+            const currentKitInfo: KitInfo | undefined = KitInfo.getCurrentKitInfo();
+            return currentKitInfo ? [...currentKitInfo.getOhosImportNodes()] : [];
           } else {
+            const errInfo: LogData = LogDataFactory.newInstance(
+              ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_CONFIG_FILE_NOT_FOUND,
+              ArkTSErrorDescription,
+              `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK.`,
+              '',
+              ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+            );
             kitTransformLog.errors.push({
               type: LogType.ERROR,
-              message: `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK. ` +
-                       'Please make sure the Kit apis are consistent with SDK ' +
-                       "and there's no local modification on Kit apis.",
+              message: errInfo.toString(),
               pos: node.getStart()
             });
           }
@@ -85,8 +101,8 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
 
     return (node: ts.SourceFile) => {
       startTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
+      const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.NEW_SOURCE_FILE);
       compilingEtsOrTsFiles.push(path.normalize(node.fileName));
-      interceptLazyImportWithKitImport(node);
 
       KitInfo.init(node, context, id);
       // @ts-ignore
@@ -104,6 +120,7 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
           // process KitImport transforming
           const processedNode: ts.SourceFile =
             ts.visitEachChild(node, visitor, context); // this node used for [writeFile]
+          MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
           stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
           // this processNode is used to convert ets/ts to js intermediate products
           return processedNode;
@@ -114,37 +131,18 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
-        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo);
+        ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
+        MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
         return shouldReturnOriginalNode ? node : processedNode; // this node not used for [writeFile]
       }
       // process KitImport transforming
       const processedNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+      MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
       return processedNode;
     };
   };
-}
-
-/**
- *  Kit does not support lazy-import yet, e.g.: import lazy {xxx} from '@kit.yyy'
- */ 
-function interceptLazyImportWithKitImport(node: ts.SourceFile): void {
-  if (node && node.statements) {
-    node.statements.forEach((statement) => {
-      if (ts.isImportDeclaration(statement) && statement.moduleSpecifier) {
-        const moduleRequest: string = (statement.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '');
-        if (moduleRequest.startsWith(KIT_PREFIX) && statement.importClause && statement.importClause.isLazy) {
-          kitTransformLog.errors.push({
-            type: LogType.ERROR,
-            message: `Can not use lazy import statement with Kit '${moduleRequest}', ` +
-              'Please remove the lazy keyword.',
-            pos: statement.getStart()
-          });
-        }
-      }
-    });
-  }
 }
 
 /*
@@ -210,10 +208,17 @@ class SpecificerInfo {
 
   validateImportingETSDeclarationSymbol() {
     if (!this.tsImportSendableEnable && KitInfo.isTSFile() && /.d.ets$/.test(this.symbol.source)) {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_IDENTIFIER_IMPORT_NOT_ALLOWED_IN_TS_FILE,
+        ArkTSErrorDescription,
+        `Identifier '${this.importName}' comes from '${this.symbol.source}' ` + 
+        'which can not be imported in .ts file.',
+        '',
+        ["Please remove the import statement or change the file extension to .ets."]
+      );
       kitTransformLog.errors.push({
         type: LogType.ERROR,
-        message: `Identifier '${this.importName}' comes from '${this.symbol.source}' ` +
-                 `which can not be imported in .ts file.`,
+        message: errInfo.toString(),
         pos: this.getOriginElementNode().getStart()
       });
     }
@@ -437,9 +442,16 @@ export class KitInfo {
         this.specifiers.set(symbol.source, [specifier]);
       }
     } else {
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_IMPORT_NAME_NOT_EXPORTED_FROM_KIT,
+        ArkTSErrorDescription,
+        `'${importName}' is not exported from Kit '${KitInfo.getCurrentKitName()}'.`,
+        '',
+        [`Please add the exported symbol of '${importName}' in the Kit '${KitInfo.getCurrentKitName()}'.`]
+      );
       kitTransformLog.errors.push({
         type: LogType.ERROR,
-        message: `'${importName}' is not exported from Kit '${KitInfo.getCurrentKitName()}.`,
+        message: errInfo.toString(),
         pos: originElement ? originElement.getStart() : this.getKitNode().getStart()
       });
     }
@@ -467,9 +479,17 @@ class NameSpaceKitInfo extends KitInfo {
   constructor(kitNode: ts.ImportDeclaration | ts.ExportDeclaration, symbols: Record<string, KitSymbol>) {
     super(kitNode, symbols);
 
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_NAMESPACE_IMPORT_EXPORT_NOT_SUPPORTED,
+      ArkTSErrorDescription,
+      'Namespace import or export of Kit is not supported currently.',
+      '',
+      ['Please namespace import or export of Kit replace it with named import or export instead. ' + 
+       'For example, import * as ArkTS from "@kit.ArkUI"; -> import { AlertDialog } from "@kit.ArkUI";']
+    );
     kitTransformLog.errors.push({
       type: LogType.ERROR,
-      message: `Namespace import or export of Kit is not supported currently.`,
+      message: errInfo.toString(),
       pos: kitNode.getStart()
     });
   }
@@ -515,13 +535,16 @@ class ImportSpecifierKitInfo extends KitInfo {
         }
       });
 
+      let newImportClause: ts.ImportClause = ts.factory.createImportClause(
+        node.importClause!.isTypeOnly,
+        this.specifierDefaultName,
+        this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
+      )
+      // @ts-ignore
+      newImportClause.isLazy = node.importClause!.isLazy;
       this.getOhosImportNodes().push(ts.factory.createImportDeclaration(
         this.getKitNodeModifier(),
-        ts.factory.createImportClause(
-          node.importClause!.isTypeOnly,
-          this.specifierDefaultName,
-          this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
-        ),
+        newImportClause,
         ts.factory.createStringLiteral(trimSourceSuffix(source))
       ));
 
@@ -540,11 +563,18 @@ class EmptyImportKitInfo extends KitInfo {
      * illustrate explicitly that Kit can not in Side-effect import to avoid misunderstanding
      * of runtime's behavior.
      */
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_EMPTY_IMPORT_NOT_ALLOWED_WITH_KIT,
+      ArkTSErrorDescription,
+      `Can not use empty import(side-effect import) statement with Kit ` + 
+      `'${(kitNode.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '')}'.`,
+      '',
+      ['Please specify imported symbols explicitly. ' + 
+       'For example, import "@kit.ArkUI"; -> import { lang } from "@kit.ArkUI";']
+    );
     kitTransformLog.errors.push({
       type: LogType.ERROR,
-      message: `Can not use empty import(side-effect import) statement with Kit ` +
-               `'${(kitNode.moduleSpecifier as ts.StringLiteral).text.replace(/'|"/g, '')}', ` +
-               `Please specify imported symbols explicitly.`,
+      message: errInfo.toString(),
       pos: kitNode.getStart()
     });
   }

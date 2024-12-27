@@ -167,7 +167,16 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
 
   'v2_component_decorator/builderParamStyles',
   'v2_component_decorator/param_event_twoway_binding',
-  'v2_component_decorator/staticComponentMember'
+  'v2_component_decorator/staticComponentMember',
+  'v2_component_decorator/observedv2/observedv2_trace_base',
+  'v2_component_decorator/observedv2/observedv2_trace_extends_class',
+  'v2_component_decorator/observedv2/observedv2_trace_static',
+  'v2_component_decorator/observedv2/observedv2_trace_nested_class',
+  'v2_component_decorator/observedv2/observedv2_trace_object',
+  'v2_component_decorator/observedv2/observedv2_trace_date',
+  'v2_component_decorator/local/local_base',
+  'v2_component_decorator/local/local_object',
+  'v2_component_decorator/local/local_union_types'
 ];
 
 export const UT_VALIDATE_PAGES_PREVIEW: string[] = [];
@@ -191,6 +200,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_class/validateBuildMethodCount',
   'Decorators/process_component_class/validateDecorators',
   'Decorators/process_component_class/validateHasController',
+  'Decorators/process_component_class/validateControllerCount',
 
   'Decorators/process_component_member/@linkInitialize',
   'Decorators/process_component_member/@objectLinkInitialize',

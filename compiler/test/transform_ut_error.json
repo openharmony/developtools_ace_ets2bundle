@@ -753,10 +753,6 @@
         {
             "message": "Static methods in custom components cannot be decorated by @LocalBuilder.",
             "type": "ERROR"
-        },
-        {
-            "message": "'xx();' does not meet UI component syntax.",
-            "type": "ERROR"
         }
     ],
     "v2Component_member_type_check": [
@@ -1007,6 +1003,12 @@
         {
             "message": "The type of the @Consumer property can not be a class decorated with @Observed.",
             "type": "ERROR"
+        }
+    ],
+    "validateControllerCount": [
+        {
+            "message": "A @CustomDialog component can only have one uninitialized CustomDialogController.",
+            "type": "WARN"
         }
     ]
 }

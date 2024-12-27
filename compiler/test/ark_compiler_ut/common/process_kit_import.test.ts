@@ -27,6 +27,15 @@ import {
 import { findImportSpecifier } from '../utils/utils';
 import { projectConfig } from '../../../main';
 import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
+import { 
+  ArkTSErrorDescription,
+  ArkTSInternalErrorDescription,
+  ErrorCode,
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -111,13 +120,43 @@ const KIT_EMPTY_IMPORT_CODE: string =
 'import "@kit.ArkUI";\n' +
 'appAccount.createAppAccountManager();';
 
+const KIT_NAMESPACE_IMPORT_CODE: string =
+'import * as ArkUI "@kit.ArkUI";\n' +
+'ArkUI.AlertDialog;';
+
 const KIT_LAZY_IMPORT_CODE: string =
 'import { test } from "./test";\n' +
 'import lazy { appAccount } from "@kit.BasicServicesKit";\n' +
 'import lazy { lang } from "@kit.ArkTS";\n' +
-'type ISendable = lang.ISendable;\n' +
+'import lazy { socket, VpnExtensionContext } from "@kit.NetworkKit";\n' +
+'import lazy { UIAbility as x1 } from "@kit.AbilityKit";\n' +
+'import lazy buffer from "@kit.ArkTest";\n' +
 'test;\n' +
-'appAccount.createAppAccountManager();';
+'appAccount.createAppAccountManager();\n' +
+'type ISendable = lang.ISendable;\n' +
+'socket.sppCloseServerSocket(1);\n' +
+'new VpnExtensionContext();\n' +
+'export { x1 };\n' +
+'const buf = new buffer();';
+
+const KIT_LAZY_IMPORT_CODE_EXPECT: string =
+'import { test } from "./test";\n' +
+'import lazy appAccount from "@ohos.account.appAccount";\n' +
+'import lazy socket from "@ohos.net.socket";\n' +
+'import lazy { VpnExtensionContext } from "@ohos.app.ability.VpnExtensionAbility";\n' +
+'import lazy x1 from "@ohos.app.ability.UIAbility";\n' +
+'import lazy buffer from "@ohos.buffer";\n' +
+'test;\n' +
+'appAccount.createAppAccountManager();\n' +
+'socket.sppCloseServerSocket(1);\n' +
+'new VpnExtensionContext();\n' +
+'export { x1 };\n' +
+'const buf = new buffer();\n' +
+'//# sourceMappingURL=kitTest.js.map';
+
+const KIT_LAZY_IMPORT_ERROR_CODE: string =
+'import lazy Animator from "@kit.ArkUI";\n' +
+'new Animator();'
 
 const SINGLE_DEFAULT_BINDINGS_IMPORT_CODE: string =
 'import buffer from "@kit.ArkTest";\n' +
@@ -173,12 +212,32 @@ const DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT: string =
 'const buf = new buffer();\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
+const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE: string =
+'import NoExist from "@kit.ArkTest";\n'
+
+const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT: string =
+'export {};\n' +
+'//# sourceMappingURL=kitTest.js.map'
+
 const ARK_TEST_KIT: Object = {
   symbols: {
     "default": {
       "source": "@ohos.buffer.d.ts",
       "bindings": "default"
     },
+    "convertxml": {
+      "source": "@ohos.convertxml.d.ts",
+      "bindings": "default"
+    },
+    "process": {
+      "source": "@ohos.process.d.ts",
+      "bindings": "default"
+    }
+  }
+}
+
+const ARK_TEST_NO_DEFAULT_KIT: Object = {
+  symbols: {
     "convertxml": {
       "source": "@ohos.convertxml.d.ts",
       "bindings": "default"
@@ -260,21 +319,41 @@ mocha.describe('process Kit Imports tests', function () {
     expect(result.outputText == KIT_USED_VALUE_IMPROT_CODE_EXPECT).to.be.true;
   });
 
+  mocha.it('1-8 process used lazy import', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == KIT_LAZY_IMPORT_CODE_EXPECT).to.be.true;
+  });
+
   mocha.it('2-1 the error message of processKitImport', function () {
     ts.transpileModule(KIT_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_CONFIG_FILE_NOT_FOUND,
+      ArkTSErrorDescription,
+      "Kit '@kit.Kit' has no corresponding config file in ArkTS SDK.",
+      '',
+      ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Kit '@kit.Kit' has no corresponding config file in ArkTS SDK. "+
-      'Please make sure the Kit apis are consistent with SDK ' +
-      "and there's no local modification on Kit apis.")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-2 the error message of newSpecificerInfo', function () {
+  mocha.it('2-2 the error message of test specifiers in newSpecificerInfo', function () {
     const symbols = {
       'test': ''
     }
@@ -287,42 +366,103 @@ mocha.describe('process Kit Imports tests', function () {
     );
     const kitNode = findImportSpecifier(sourceFile);
     const kitInfo = new KitInfo(kitNode, symbols);
-    kitInfo.newSpecificerInfo('', 'test', undefined)
+    kitInfo.newSpecificerInfo('', 'test', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_IMPORT_NAME_NOT_EXPORTED_FROM_KIT,
+      ArkTSErrorDescription,
+      "'test' is not exported from Kit '@kit.ArkTest'.",
+      '',
+      ["Please add the exported symbol of 'test' in the Kit '@kit.ArkTest'."]
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("'test' is not exported from Kit")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-3 the error message of empty import', function () {
+  mocha.it('2-3 the error message of EmptyImportKitInfo', function () {
     ts.transpileModule(KIT_EMPTY_IMPORT_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_EMPTY_IMPORT_NOT_ALLOWED_WITH_KIT,
+      ArkTSErrorDescription,
+      "Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI'.",
+      '',
+      ['Please specify imported symbols explicitly. ' + 
+       'For example, import "@kit.ArkUI"; -> import { lang } from "@kit.ArkUI";']
+    );
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use empty import(side-effect import) statement with Kit '@kit.ArkUI', " +
-      "Please specify imported symbols explicitly.")
+      error.message.includes(errInfo.toString())
     );
     expect(hasError).to.be.true;
   });
 
-  mocha.it('2-4 the error message of lazy import', function () {
-    ts.transpileModule(KIT_LAZY_IMPORT_CODE, {
+  mocha.it('2-4 the error message of default specifiers in newSpecificerInfo', function () {
+    ts.transpileModule(KIT_LAZY_IMPORT_ERROR_CODE, {
       compilerOptions: compilerOptions,
       fileName: "kitTest.ts",
       transformers: { before: [ processKitImport() ] }
     });
     const hasError = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use lazy import statement with Kit '@kit.BasicServicesKit', " +
-        "Please remove the lazy keyword.")
-    );
-    const hasError1 = kitTransformLog.errors.some(error =>
-      error.message.includes("Can not use lazy import statement with Kit '@kit.ArkTS', " +
-        "Please remove the lazy keyword.")
+      error.message.includes("'default' is not exported from Kit '@kit.ArkUI'.")
     );
     expect(hasError).to.be.true;
-    expect(hasError1).to.be.true;
+  });
+
+  mocha.it('2-5 the error message of NameSpaceKitInfo', function () {
+    ts.transpileModule(KIT_NAMESPACE_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_KIT_NAMESPACE_IMPORT_EXPORT_NOT_SUPPORTED,
+      ArkTSErrorDescription,
+      'Namespace import or export of Kit is not supported currently.',
+      '',
+      ['Please namespace import or export of Kit replace it with named import or export instead. ' + 
+       'For example, import * as ArkTS from "@kit.ArkUI"; -> import { AlertDialog } from "@kit.ArkUI";']
+    );
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes(errInfo.toString())
+    );
+    expect(hasError).to.be.true;
+  });
+
+  mocha.it('2-6 the error message of validateImportingETSDeclarationSymbol', function () {
+    const symbols = {
+      "test": {
+        "source": "@ohos.test.d.ets",
+        "bindings": "default"
+      }
+    };
+    const sourceCode = 'import { test } from "my-module";';
+    const sourceFile = ts.createSourceFile(
+      "tempFile.ts",
+      sourceCode,
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const kitNode = findImportSpecifier(sourceFile);
+    const kitInfo = new KitInfo(kitNode, symbols);
+    compilerOptions['tsImportSendableEnable'] = false;
+    kitInfo.newSpecificerInfo('', 'test', findImportSpecifier(sourceFile));
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_IDENTIFIER_IMPORT_NOT_ALLOWED_IN_TS_FILE,
+      ArkTSErrorDescription,
+      "Identifier 'test' comes from '@ohos.test.d.ets' " + 
+      'which can not be imported in .ts file.',
+      '',
+      ["Please remove the import statement or change the file extension to .ets."]
+    );
+    const hasError = kitTransformLog.errors.some(error =>
+      error.message.includes(errInfo.toString())
+
+    );
+    expect(hasError).to.be.true;
   });
 
   mocha.it('3-1 process single default-bindings import', function () {
@@ -386,6 +526,38 @@ mocha.describe('process Kit Imports tests', function () {
       transformers: { before: [ processKitImport() ] }
     });
     expect(result.outputText == DEFAULT_BINDINGS_IMPORT_WITH_NORMAL_KIT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-5 process single default-bindings import, but no use', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT).to.be.true;
+    fs.unlinkSync(arkTestKitConfig);
+  });
+
+  mocha.it('3-6 process single default-bindings import, but kit no default export', function () {
+    const ARK_TEST_KIT_JSON = '@kit.ArkTest.json';
+    const KIT_CONFIGS = 'kit_configs';
+
+    const arkTestKitConfig: string = path.resolve(__dirname, `../../../${KIT_CONFIGS}/${ARK_TEST_KIT_JSON}`);
+    fs.writeFileSync(arkTestKitConfig, JSON.stringify(ARK_TEST_NO_DEFAULT_KIT));
+
+    const result: ts.TranspileOutput = ts.transpileModule(SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE, {
+      compilerOptions: compilerOptions,
+      fileName: "kitTest.ts",
+      transformers: { before: [ processKitImport() ] }
+    });
+    expect(result.outputText == SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT).to.be.true;
     fs.unlinkSync(arkTestKitConfig);
   });
 

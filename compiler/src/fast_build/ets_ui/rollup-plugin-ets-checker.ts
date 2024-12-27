@@ -29,7 +29,8 @@ import {
   emitBuildInfo,
   runArkTSLinter,
   targetESVersionChanged,
-  collectFileToIgnoreDiagnostics
+  collectFileToIgnoreDiagnostics,
+  TSC_SYSTEM_CODE
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
@@ -42,6 +43,10 @@ import {
   configureSyscapInfo,
   configurePermission
 } from '../system_api/api_check_utils';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../meomry_monitor/memory_define';
+import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
+import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -51,6 +56,7 @@ export function etsChecker() {
   return {
     name: 'etsChecker',
     buildStart() {
+      const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsChecker', 'buildStart');
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
@@ -100,12 +106,18 @@ export function etsChecker() {
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
+          const buildProgramRecordInfo = MemoryMonitor.recordStage(MemoryDefine.BUILDER_PROGRAM);
           timePrinterInstance.appendTime(ts.TimePhase.START);
           globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
           globalProgram.program = globalProgram.builderProgram.getProgram();
           timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+          MemoryMonitor.stopRecordStage(buildProgramRecordInfo);
+          const collectFileToIgnore = MemoryMonitor.recordStage(MemoryDefine.COLLECT_FILE_TOIGNORE_RUN_TSLINTER);
           collectFileToIgnoreDiagnostics(rootFileNames);
-          runArkTSLinter();
+          const errorCodeLogger: Object | undefined = !!this.share?.getHvigorConsoleLogger ?
+            this.share?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
+          runArkTSLinter(errorCodeLogger);
+          MemoryMonitor.stopRecordStage(collectFileToIgnore);
         }
         executedOnce = true;
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
@@ -113,8 +125,11 @@ export function etsChecker() {
           .concat(globalProgram.builderProgram.getSemanticDiagnostics());
         stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
         emitBuildInfo();
+        let errorCodeLogger: Object | undefined = this.share?.getHvigorConsoleLogger ?
+          this.share?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
+
         allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-          printDiagnostic(diagnostic);
+          printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
         });
         fastBuildLogger.debug(TS_WATCH_END_MSG);
         tsWatchEmitter.emit(TS_WATCH_END_MSG);
@@ -122,6 +137,7 @@ export function etsChecker() {
         serviceChecker(rootFileNames, logger, resolveModulePaths, compilationTime, this.share);
       }
       setChecker();
+      MemoryMonitor.stopRecordStage(recordInfo);
     },
     shouldInvalidCache(): boolean {
       // The generated js file might be different in some cases when we change the targetESVersion,

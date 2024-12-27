@@ -40,6 +40,7 @@ import {
   red,
   blue,
   FAIL,
+  SUCCESS,
   reset
 } from '../common/ark_define';
 import {
@@ -53,6 +54,15 @@ import {
   isEs2Abc,
   isTs2Abc
 } from '../../../ark_utils';
+import { 
+  ArkTSErrorDescription, 
+  ArkTSInternalErrorDescription, 
+  ErrorCode
+} from '../error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../logger';
 
 interface File {
   filePath: string;
@@ -95,12 +105,21 @@ export class BundleMode extends CommonMode {
         } else if (rollupBundleFileSet[fileName].type === 'chunk') {
           rollupBundleSourceCode = rollupBundleFileSet[fileName].code;
         } else {
-          this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to retrieve source code ' +
-            `for ${fileName} from rollup file set.`);
+          const errInfo: LogData = LogDataFactory.newInstance(
+            ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_RETRIEVE_SOURCE_CODE_FROM_SUMMARY,
+            ArkTSInternalErrorDescription,
+            `Failed to retrieve source code for ${fileName} from rollup file set.`
+          );
+          this.logger.printErrorAndExit(errInfo);
         }
         fs.writeFileSync(cacheOutputPath, rollupBundleSourceCode, 'utf-8');
         if (!fs.existsSync(cacheOutputPath)) {
-          this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to generate cached source file: ${fileName}`);
+          const errInfo: LogData = LogDataFactory.newInstance(
+            ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GENERATE_CACHE_SOURCE_FILE,
+            ArkTSInternalErrorDescription,
+            `Failed to generate cached source file: ${fileName}.`
+          );
+          this.logger.printErrorAndExit(errInfo);
         }
         this.collectIntermediateJsBundle(outputPath, cacheOutputPath);
       }
@@ -127,9 +146,12 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = value.cacheFilePath;
       const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheFilePath)) {
-        this.throwArkTsCompilerError(
-          `ArkTS:INTERNAL ERROR: Failed to get bundle cached abc from ${cacheFilePath} in incremental build.` +
-          'Please try to rebuild the project.');
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_RETRIEVE_PACKAGE_CACHE_IN_INCREMENTAL_BUILD,
+          ArkTSInternalErrorDescription,
+          `Failed to get bundle cached abc from ${cacheFilePath} in incremental build.`
+        );
+        this.logger.printErrorAndExit(errInfo);
       }
       if (fs.existsSync(cacheAbcFilePath)) {
         const hashCacheFileContentData: string = toHashData(cacheFilePath);
@@ -156,7 +178,13 @@ export class BundleMode extends CommonMode {
       const splittedBundles: any[] = this.getSplittedBundles();
       this.invokeTs2AbcWorkersToGenAbc(splittedBundles);
     } else {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Invalid compilation mode.');
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+        ArkTSInternalErrorDescription,
+        'Invalid compilation mode. ' + 
+        `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 
@@ -203,6 +231,7 @@ export class BundleMode extends CommonMode {
 
   private executeEs2AbcCmd() {
     // collect data error from subprocess
+    let logDataList: Object[] = [];
     let errMsg: string = '';
     const genAbcCmd: string = this.cmdArgs.join(' ');
     try {
@@ -210,28 +239,51 @@ export class BundleMode extends CommonMode {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('close', (code: number) => {
-        if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.');
+        if (code === SUCCESS) {
+          this.afterCompilationProcess();
+          this.triggerEndSignal();
+          return;
         }
-        this.afterCompilationProcess();
-        this.triggerEndSignal();
+        for (const logData of logDataList) {
+          this.logger.printError(logData);
+        }
+        if (errMsg !== '') {
+          this.logger.error(`Error Message: ${errMsg}`);
+        }
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_EXTERNAL_ES2ABC_EXECUTION_FAILED,
+          ArkTSErrorDescription,
+          'Failed to execute es2abc.',
+          '',
+          ["Please refer to es2abc's error codes."]
+        );
+        this.logger.printErrorAndExit(errInfo);
       });
 
       child.on('error', (err: any) => {
-        this.throwArkTsCompilerError(err.toString());
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_ES2ABC_SUBPROCESS_START_FAILED,
+          ArkTSInternalErrorDescription,
+          `Failed to initialize or launch the es2abc process. ${err.toString()}`
+        );
+        this.logger.printErrorAndExit(errInfo);
       });
 
       child.stderr.on('data', (data: any) => {
-        errMsg += data.toString();
-      });
-
-      child.stderr.on('end', () => {
-        if (errMsg !== undefined && errMsg.length > 0) {
-          this.logger.error(red, errMsg, reset);
+        const logData = LogDataFactory.newInstanceFromEs2AbcError(data.toString());
+        if (logData) {
+          logDataList.push(logData);
+        } else {
+          errMsg += data.toString();
         }
       });
     } catch (e) {
-      this.throwArkTsCompilerError('ArkTS:ERROR failed to execute es2abc with async handler: ' + e.toString());
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_EXECUTE_ES2ABC_WITH_ASYNC_HANDLER_FAILED,
+        ArkTSInternalErrorDescription,
+        `Failed to execute es2abc with async handler. ${e.toString()}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 
@@ -289,7 +341,7 @@ export class BundleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
+            this.logger.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
           });
         });
       }
@@ -297,7 +349,7 @@ export class BundleMode extends CommonMode {
       let workerCount: number = 0;
       cluster.on('exit', (worker, code, signal) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc, exit code non-zero');
+          this.logger.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc, exit code non-zero');
         }
         workerCount++;
         if (workerCount === workerNumber) {
@@ -354,8 +406,12 @@ export class BundleMode extends CommonMode {
       const cacheFilePath: string = this.filterIntermediateJsBundle[i].cacheFilePath;
       const cacheAbcFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheAbcFilePath)) {
-        this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: During hash JSON file generation, ' +
-          `${cacheFilePath} or ${cacheAbcFilePath} is not found.`);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_HASH_JSON_FILE_GENERATION_MISSING_PATHS,
+          ArkTSInternalErrorDescription,
+          `During hash JSON file generation, ${cacheFilePath} or ${cacheAbcFilePath} is not found.`
+        );
+        this.logger.printErrorAndExit(errInfo);
       }
       const hashCacheFileContentData: string = toHashData(cacheFilePath);
       const hashCacheAbcContentData: string = toHashData(cacheAbcFilePath);
@@ -371,8 +427,12 @@ export class BundleMode extends CommonMode {
       const abcFilePath: string = changeFileExtension(value.filePath, EXTNAME_ABC, TEMP_JS);
       const cacheAbcFilePath: string = changeFileExtension(value.cacheFilePath, EXTNAME_ABC);
       if (!fs.existsSync(cacheAbcFilePath)) {
-        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: ${cacheAbcFilePath} not found during incremental build. ` +
-          'Please try to rebuild the project');
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_INCREMENTAL_BUILD_MISSING_CACHE_ABC_FILE_PATH,
+          ArkTSInternalErrorDescription,
+          `${cacheAbcFilePath} not found during incremental build.`
+        );
+        this.logger.printErrorAndExit(errInfo);
       }
       const parent: string = path.join(abcFilePath, '..');
       if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
