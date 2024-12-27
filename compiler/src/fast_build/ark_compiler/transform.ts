@@ -16,7 +16,8 @@
 import path from 'path';
 
 import {
-  ESMODULE
+  ESMODULE,
+  GEN_ABC_PLUGIN_NAME
 } from './common/ark_define';
 import { ModuleSourceFile } from './module/module_source_file';
 import {
@@ -28,12 +29,20 @@ import {
   isTsOrEtsSourceFile,
   shouldETSOrTSFileTransformToJS
 } from './utils';
-import { toUnixPath } from '../../utils';
+import {
+  toUnixPath,
+  emitLogInfo,
+  getTransformLog
+} from '../../utils';
 import {
   getHookEventFactory,
   createAndStartEvent,
   stopEvent,
-  transformLazyImport
+  transformLazyImport,
+  jsLazyImportReExportCheck,
+  reExportCheckLog,
+  resetReExportCheckLog,
+  LazyImportOptions
 } from '../../ark_utils';
 import { SourceMapGenerator } from './generate_sourcemap';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
@@ -47,14 +56,24 @@ import { MemoryDefine } from '../meomry_monitor/memory_define';
 export function transformForModule(code: string, id: string): string {
   const hookEventFactory = getHookEventFactory(this.share, 'genAbc', 'transform');
   const eventTransformForModule = createAndStartEvent(hookEventFactory, 'transform for module');
+  const {
+    autoLazyImport,
+    reExportCheckMode
+  }: LazyImportOptions = {
+    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? 'noCheck'
+  };
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const metaInfo: Object = this.getModuleInfo(id).meta;
     const projectConfig: Object = Object.assign(this.share.arkProjectConfig, this.share.projectConfig);
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
       // when ets/ts -> js, we need to convert lazy-import based on the js code generated after tsc conversion
-      if (this.share.projectConfig?.autoLazyImport) {
+      if (autoLazyImport) {
         code = <string> transformLazyImport(code, undefined, id);
+      }
+      if (reExportCheckMode !== 'noCheck') {
+        jsLazyImportReExportCheck(code, id, reExportCheckMode);
       }
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
       ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
@@ -64,8 +83,11 @@ export function transformForModule(code: string, id: string): string {
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id)) {
-        if (this.share.projectConfig?.autoLazyImport) {
+        if (autoLazyImport) {
           code = <string> transformLazyImport(code, undefined, id);
+        }
+        if (reExportCheckMode !== 'noCheck') {
+          jsLazyImportReExportCheck(code, id, reExportCheckMode);
         }
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
@@ -82,6 +104,12 @@ export function transformForModule(code: string, id: string): string {
     }
   }
   stopEvent(eventTransformForModule);
+
+  if (reExportCheckLog && reExportCheckLog.errors.length && reExportCheckMode !== 'noCheck' && !this.share.projectConfig.ignoreWarning) {
+    emitLogInfo(this.share.getLogger(GEN_ABC_PLUGIN_NAME), [...getTransformLog(reExportCheckLog)], true, id);
+    resetReExportCheckLog();
+  }
+
   // if we perform lazy-import conversion, we need to return the converted js code
   return code;
 }
