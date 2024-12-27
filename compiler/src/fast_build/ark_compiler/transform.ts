@@ -36,6 +36,8 @@ import {
   transformLazyImport
 } from '../../ark_utils';
 import { SourceMapGenerator } from './generate_sourcemap';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../meomry_monitor/memory_define';
 
 /**
  * rollup transform hook
@@ -54,7 +56,9 @@ export function transformForModule(code: string, id: string): string {
       if (this.share.projectConfig?.autoLazyImport) {
         code = <string> transformLazyImport(code, undefined, id);
       }
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
+      MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
     }
 
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
@@ -72,7 +76,9 @@ export function transformForModule(code: string, id: string): string {
           preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
         }
       }
-      ModuleSourceFile.newSourceFile(id, code, metaInfo);
+      const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
+      ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
+      MemoryMonitor.stopRecordStage(recordInfo);
     }
   }
   stopEvent(eventTransformForModule);

@@ -56,6 +56,15 @@ import {
   TRANSFORMED_MOCK_CONFIG,
   USER_DEFINE_MOCK_CONFIG
 } from '../../../lib/pre_define';
+import {
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import {
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
@@ -336,36 +345,89 @@ mocha.describe('test module_source_file file api', function () {
     SourceMapGenerator.cleanSourceMapObject();
   });
 
-  mocha.it('1-4: test the error message of getOhmUrl: module info is undefined', function () {
+  mocha.it('1-5: test the error message of getOhmUrl: GetModuleInfoFaild', function () {
     this.rollup.build();
     const filePath: string = 'test.ets';
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
     const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to get ModuleInfo, moduleId: test.ets'
+    );
     ModuleSourceFile.initPluginEnv(this.rollup);
-    const stub = sinon.stub(ModuleSourceFile.logger, 'error');
+    const stub = sinon.stub(ModuleSourceFile.logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
-    expect(stub.calledWith(red,
-      `ArkTS:INTERNAL ERROR: Failed to get module info of file 'test.ets'`, reset)).to.be.true;
+    expect(stub.calledWith(errInfo)).to.be.true;
     stub.restore();
   });
 
-  mocha.it('1-5: test the error message of getOhmUrl: meta info is undefined', function () {
+  mocha.it('1-5-1: test the error message of getOhmUrl: GetModuleInfoFaild ' +
+    'without getHvigorConsoleLogger', function () {
     this.rollup.build();
     const filePath: string = 'test.ets';
-    const red: string = '\u001b[31m';
-    const reset: string = '\u001b[39m';
+    const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to get ModuleInfo, moduleId: test.ets'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger.logger, 'error');
+    moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
+  });
+
+  mocha.it('1-6: test the error message of getOhmUrl: UnableToGetModuleInfoMeta', function () {
+    this.rollup.build();
+    const filePath: string = 'test.ets';
     const moduleInfo: Object = {
       id: filePath,
       meta: null
     }
     this.rollup.moduleInfos.push(moduleInfo);
     const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+      ArkTSInternalErrorDescription,
+      "Failed to get ModuleInfo properties 'meta', moduleId: test.ets"
+    );
     ModuleSourceFile.initPluginEnv(this.rollup);
-    const stub = sinon.stub(ModuleSourceFile.logger, 'error');
+    const stub = sinon.stub(ModuleSourceFile.logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
-    expect(stub.calledWith(red,
-      `ArkTS:INTERNAL ERROR: Failed to get meta info of file 'test.ets'`, reset)).to.be.true;
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('1-7: test the error message of getOhmUrl: UnableToGetModuleInfoMeta ' +
+    'without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    const filePath: string = 'test.ets';
+    const moduleInfo: Object = {
+      id: filePath,
+      meta: null
+    }
+    this.rollup.moduleInfos.push(moduleInfo);
+    const moduleSourceFile = new ModuleSourceFile(filePath, '', undefined);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+      ArkTSInternalErrorDescription,
+      "Failed to get ModuleInfo properties 'meta', moduleId: test.ets"
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger.logger, 'error');
+    moduleSourceFile.getOhmUrl(this.rollup, '', filePath, undefined);
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     stub.restore();
   });
 
@@ -628,6 +690,39 @@ mocha.describe('test module_source_file file api', function () {
     }
   });
 
+  mocha.it('4-1-1: test single file processTransformedTsModuleRequest under build debug', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    this.moduleInfos = new Map<String, ModuleInfo>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
   mocha.it('4-2: test processTransformedTsModuleRequest under build release', function () {
     this.rollup.build(RELEASE);
     const modeMock = new ModuleModeMock(this.rollup);
@@ -690,6 +785,38 @@ mocha.describe('test module_source_file file api', function () {
     }
   });
 
+  mocha.it('4-3-1: test single file processTransformedTsModuleRequest under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
   mocha.it('4-4: test processTransformedTsModuleRequest under reload debug', function () {
     this.rollup.hotReload();
     const modeMock = new ModuleModeMock(this.rollup);
@@ -709,6 +836,38 @@ mocha.describe('test module_source_file file api', function () {
         const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
         const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
         ModuleSourceFile.processModuleSourceFiles(this.rollup);
+        moduleSource.processTransformedTsModuleRequest(this.rollup);
+        expect(moduleSource.source.fileName === moduleId).to.be.true;
+        expect(moduleSource.source.text === code).to.be.true;
+        expect(moduleSource.source.languageVariant === ts.LanguageVariant.Standard).to.be.true;
+        expect(moduleSource.source.isDeclarationFile === false).to.be.true;
+        expect(moduleSource.source.hasNoDefaultLib === false).to.be.true;
+        expect(moduleSource.source.languageVersion === ts.ScriptTarget.Latest).to.be.true;
+        SourceMapGenerator.cleanSourceMapObject();
+      }
+    }
+  });
+
+  mocha.it('4-4-1: test single file processTransformedTsModuleRequest under reload debug', function () {
+    this.rollup.hotReload();
+    this.rollup.share.projectConfig.singleFileEmit = true;
+    const modeMock = new ModuleModeMock(this.rollup);
+    const allFiles = new Set<string>();
+    scanFiles(MODULE_TEST_PATH, allFiles);
+    for (const moduleId of allFiles.values()) {
+      if (moduleId.endsWith(EXTNAME_TS) || moduleId.endsWith(EXTNAME_ETS)) {
+        const code: string = fs.readFileSync(moduleId, 'utf-8');
+        const moduleInfo = new ModuleInfoMock(moduleId,
+          this.rollup.share.projectConfig.entryModuleName,
+          this.rollup.share.projectConfig.modulePath);
+        moduleInfo.setImportedIdMaps();
+        this.rollup.moduleInfos.push(moduleInfo);
+        const metaInfo: object = moduleInfo[META];
+        SourceMapGenerator.initInstance(this.rollup);
+        modeMock.addModuleInfoItem(moduleId, false, '', metaInfo, this.moduleInfos);
+        const sourceFile = ts.createSourceFile(moduleId, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const moduleSource = new ModuleSourceFile(moduleId, sourceFile);
+        ModuleSourceFile.processSingleModuleSourceFile(this.rollup, moduleInfo.id);
         moduleSource.processTransformedTsModuleRequest(this.rollup);
         expect(moduleSource.source.fileName === moduleId).to.be.true;
         expect(moduleSource.source.text === code).to.be.true;
@@ -862,5 +1021,49 @@ mocha.describe('test module_source_file file api', function () {
     ModuleSourceFile.removePotentialMockConfigCache(this.rollup);
     expect(!fs.existsSync(transformedMockConfigCache)).to.be.true;
     expect(!fs.existsSync(userDefinedMockConfigCache)).to.be.true;
+  });
+
+  mocha.it('7-1: test the error message of generateTransformedMockInfo', function () {
+    this.rollup.build();
+    const moduleInfo: Object = { 
+      filePath: '' 
+    };
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_MOCK_CONFIG_KEY_TO_OHM_URL_CONVERSION_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to convert the key in mock-config to ohmurl, ' +
+      'because the file path corresponding to the key in mock-config is empty.'
+    );
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger.getLoggerFromErrorCode(errInfo.code), 'printError');
+    this.rollup.moduleInfos.push(moduleInfo);
+    ModuleSourceFile.generateTransformedMockInfo(moduleInfo, '', 'filePath', this.rollup);
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('7-2: test the error message of generateTransformedMockInfo' +
+    'without getHvigorConsoleLogger', function () {
+    this.rollup.build();
+    const moduleInfo: Object = { 
+      filePath: '' 
+    };
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_MOCK_CONFIG_KEY_TO_OHM_URL_CONVERSION_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to convert the key in mock-config to ohmurl, ' +
+      'because the file path corresponding to the key in mock-config is empty.'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const stub = sinon.stub(ModuleSourceFile.logger.logger, 'error');
+    this.rollup.moduleInfos.push(moduleInfo);
+    ModuleSourceFile.generateTransformedMockInfo(moduleInfo, '', 'filePath', this.rollup);
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
+    stub.restore();
   });
 });

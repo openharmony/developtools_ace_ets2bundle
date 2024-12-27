@@ -48,6 +48,15 @@ import {
   SOURCE
 } from '../mock/rollup_mock/common';
 import { SourceMapGenerator } from '../../../lib/fast_build/ark_compiler/generate_sourcemap';
+import {
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../../lib/fast_build/ark_compiler/error_code';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../../lib/fast_build/ark_compiler/logger';
 
 mocha.describe('test module_coldreload_mode file api', function () {
   mocha.before(function () {
@@ -61,13 +70,40 @@ mocha.describe('test module_coldreload_mode file api', function () {
   mocha.it('1-1: test the error message of the ModuleColdreloadMode constructor', function () {
     this.rollup.coldReload(RELEASE);
     this.rollup.share.projectConfig.oldMapFilePath = '';
-    const stub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_COLD_RELOAD_FAILED_INCORRECT_SYMBOL_MAP_CONFIG,
+      ArkTSInternalErrorDescription,
+      'Coldreload failed, symbolMap file is not correctly configured.'
+    );
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup).getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
     try {
       new ModuleColdreloadMode(this.rollup);
     } catch (e) {
     }
-    expect(stub.calledWith('ArkTS:INTERNAL ERROR: Coldreload failed, ' +
-      'symbolMap file is not correctly configured.')).to.be.true;
+    expect(stub.calledWith(errInfo)).to.be.true;
+    stub.restore();
+  });
+
+  mocha.it('1-1-1: test the error message of the ModuleColdreloadMode constructor ' +
+    'without getHvigorConsoleLogger', function () {
+    this.rollup.coldReload(RELEASE);
+    this.rollup.share.projectConfig.oldMapFilePath = '';
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_COLD_RELOAD_FAILED_INCORRECT_SYMBOL_MAP_CONFIG,
+      ArkTSInternalErrorDescription,
+      'Coldreload failed, symbolMap file is not correctly configured.'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const stub = sinon.stub(CommonLogger.getInstance(this.rollup), 'throwArkTsCompilerError');
+    try {
+      new ModuleColdreloadMode(this.rollup);
+    } catch (e) {
+    }
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     stub.restore();
   });
 

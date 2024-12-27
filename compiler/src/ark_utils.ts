@@ -31,6 +31,7 @@ import {
   startFilesEvent,
   startSingleFileEvent,
 } from 'arkguard';
+import type { HvigorErrorInfo } from 'arkguard';
 import {
   OH_MODULES,
   SEPARATOR_AT,
@@ -87,9 +88,17 @@ import {
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
-
-const red: string = '\u001b[31m';
-const reset: string = '\u001b[39m';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
+import {
+  ArkTSInternalErrorDescription,
+  ArkTSErrorDescription,
+  ErrorCode
+} from './fast_build/ark_compiler/error_code';
+import {
+  LogData,
+  LogDataFactory
+} from './fast_build/ark_compiler/logger';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -116,10 +125,16 @@ export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: O
   // ---> @normalized:N&<moduleName>&<bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
   let pkgInfo = projectConfig.pkgContextInfo[pkgName];
   if (!pkgInfo || !pkgPath) {
-    logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-      `Error Message: Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".\n` +
-      `Solutions: > Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.` +
-      '> Check the corresponding file name is correct(including case-sensitivity).', reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+      ArkTSErrorDescription,
+      'Failed to resolve OhmUrl. ' +
+      `Failed to get a resolved OhmUrl for "${filePath}" imported by "${importerFile}".`,
+      '',
+      [`Check whether the "${pkgName}" module which ${filePath} belongs to is correctly configured.`, 
+       'Check the corresponding file name is correct(including case-sensitivity).']
+    );
+    logger.printError(errInfo);
     return filePath;
   }
   let projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath), '');
@@ -210,10 +225,16 @@ function processPackageDir(params: Object): string {
         }
       }
 
-      logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-        `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
-        `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
-        '> Check the corresponding file name is correct(including case-sensitivity).', reset);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+        ArkTSErrorDescription,
+        'Failed to resolve OhmUrl. ' +
+        `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
+        '',
+        [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`, 
+         'Check the corresponding file name is correct(including case-sensitivity).']
+      );
+      logger.printError(errInfo);
       return originalFilePath;
     }
 
@@ -243,10 +264,16 @@ function processPackageDir(params: Object): string {
     }
   }
 
-  logger.error(red, 'ArkTS:ERROR Failed to resolve OhmUrl.\n' +
-    `Error Message: Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".\n` +
-    `Solutions: > Check whether the module which ${originalFilePath} belongs to is correctly configured.` +
-    '> Check the corresponding file name is correct(including case-sensitivity).', reset);
+  const errInfo: LogData = LogDataFactory.newInstance(
+    ErrorCode.ETS2BUNDLE_EXTERNAL_FAILED_TO_RESOLVE_OHM_URL,
+    ArkTSErrorDescription,
+    'Failed to resolve OhmUrl. ' +
+    `Failed to get a resolved OhmUrl for "${originalFilePath}" imported by "${importerFile}".`,
+    '',
+    [`Check whether the module which ${originalFilePath} belongs to is correctly configured.`, 
+     'Check the corresponding file name is correct(including case-sensitivity).']
+  );
+  logger.printError(errInfo);
   return originalFilePath;
 }
 
@@ -281,8 +308,13 @@ export function getOhmUrlBySystemApiOrLibRequest(moduleRequest: string, config?:
     if (useNormalizedOHMUrl) {
       const pkgInfo = config.pkgContextInfo[moduleRequest];
       if (pkgInfo === undefined) {
-        logger?.error(red, `ArkTS:INTERNAL ERROR: Can not get pkgContextInfo of package '${moduleRequest}' ` +
-          `which being imported by '${importerFile}'`, reset);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_PKG_CONTENT_INFO,
+          ArkTSInternalErrorDescription,
+          `Can not get pkgContextInfo of package '${moduleRequest}' ` +
+          `which being imported by '${importerFile}'`
+        );
+        logger?.printError(errInfo);
       }
       const isSo = pkgInfo.isSO ? 'Y' : 'N';
       return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${moduleRequest}&${pkgInfo.version}`;
@@ -370,14 +402,24 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
   }
   const pkgInfo: Object = projectConfig.pkgContextInfo[pkgName];
   if (!pkgInfo) {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to find package '${pkgName}'.\n` +
-      `Error Message: Failed to obtain package '${pkgName}' from the package context information.`, reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_NOT_FOUND_IN_CONTEXT_INFO,
+      ArkTSInternalErrorDescription,
+      `Failed to find package '${pkgName}'. ` +
+      `Failed to obtain package '${pkgName}' from the package context information.`
+    );
+    logger.printError(errInfo);
   }
   let normalizedPath: string = '';
   if (!filePath) {
     if (!pkgInfo.entryPath) {
-      logger.error(red, `ArkTS:INTERNAL ERROR: Failed to find entry file of '${pkgName}'.\n` +
-        `Error Message: Failed to obtain the entry file information of '${pkgName}' from the package context information.`, reset);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_PACKAGE_ENTRY_FILE_NOT_FOUND,
+        ArkTSInternalErrorDescription,
+        `Failed to find entry file of '${pkgName}'. ` +
+        `Failed to obtain the entry file information of '${pkgName}' from the package context information.`
+      );
+      logger.printError(errInfo);
     }
     normalizedPath = `${pkgName}/${toUnixPath(pkgInfo.entryPath)}`;
     normalizedPath = removeSuffix(normalizedPath);
@@ -516,13 +558,15 @@ export interface ModuleInfo {
   rollupModuleId?: string
 }
 
-export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Function | Object,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   if (compileToolIsRollUp() && projectConfig.arkObfuscator) {
     startFilesEvent(moduleInfo.buildFilePath);
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.WRITE_OBFUSCATED_SOURCE_CODE);
     MemoryUtils.tryGC();
-    await writeArkguardObfuscatedSourceCode(moduleInfo, logger, projectConfig, rollupNewSourceMaps);
+    await writeArkguardObfuscatedSourceCode(moduleInfo, logger as Function, projectConfig, rollupNewSourceMaps);
     MemoryUtils.tryGC();
+    MemoryMonitor.stopRecordStage(recordInfo);
     endFilesEvent(moduleInfo.buildFilePath, undefined, true);
     return;
   }
@@ -552,7 +596,7 @@ export async function writeObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: 
  * This Api only be used by rollup compiling process & only be
  * exported for unit test.
  */
-export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, logger: Object,
+export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, printObfLogger: Function,
   projectConfig: Object, rollupNewSourceMaps: Object = {}): Promise<void> {
   const arkObfuscator = projectConfig.arkObfuscator;
   const isDeclaration = (/\.d\.e?ts$/).test(moduleInfo.buildFilePath);
@@ -586,7 +630,15 @@ export async function writeArkguardObfuscatedSourceCode(moduleInfo: ModuleInfo, 
       historyNameCache, moduleInfo.originSourceFilePath, projectInfo);
     endSingleFileEvent(EventList.OBFUSCATE, performancePrinter.timeSumPrinter);
   } catch (err) {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`);
+    const errorInfo: string = `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`;
+    const errorCodeInfo: HvigorErrorInfo = {
+      code: '10810001',
+      description: 'ArkTS compiler Error',
+      cause: `ArkTS:INTERNAL ERROR: Failed to obfuscate file '${moduleInfo.relativeSourceFilePath}' with arkguard. ${err}`,
+      position: moduleInfo.relativeSourceFilePath,
+      solutions: [`Please modify the code based on the error information.`],
+    };
+    printObfLogger(errorInfo, errorCodeInfo, 'error');
   }
 
   if (mixedInfo.sourceMap && !isDeclaration) {
@@ -631,7 +683,7 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
   return filePath;
 }
 
-export async function mangleDeclarationFileName(logger: Object, projectConfig: Object,
+export async function mangleDeclarationFileName(printObfLogger: Function, projectConfig: Object,
   sourceFileBelongProject: Map<string, string>): Promise<void> {
   for (const [sourcePath, genFilesInHar] of harFilesRecord) {
     if (genFilesInHar.originalDeclarationCachePath && genFilesInHar.originalDeclarationContent) {
@@ -643,7 +695,7 @@ export async function mangleDeclarationFileName(logger: Object, projectConfig: O
           buildFilePath: genFilesInHar.originalDeclarationCachePath,
           relativeSourceFilePath: relativeSourceFilePath,
           originSourceFilePath: sourcePath
-        }, logger, projectConfig, {});
+        }, printObfLogger, projectConfig, {});
     }
   }
 }
@@ -668,7 +720,12 @@ export async function writeMinimizedSourceCode(content: string, filePath: string
     }
     result = await minify(content, minifyOptions);
   } catch {
-    logger.error(red, `ArkTS:INTERNAL ERROR: Failed to obfuscate source code for ${filePath}`, reset);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_SOURCE_CODE_OBFUSCATION_FAILED,
+      ArkTSInternalErrorDescription,
+      `Failed to obfuscate source code for ${filePath}`
+    );
+    logger.printError(errInfo);
   }
 
   fs.writeFileSync(filePath, result.code);

@@ -22,6 +22,10 @@ compiler/src/process_ui_syntax.ts @lixingchi1
 compiler/src/result_process.ts @lixingchi1
 compiler/src/utils.ts @lixingchi1
 compiler/src/validate_ui_syntax.ts @lixingchi1
+compiler/test/ut @lixingchi1
+compiler/test/utForPartialUpdate @lixingchi1
+compiler/test/utForValidate @lixingchi1
+compiler/test/transform_ut @lixingchi1
 
 # Code owners for ArkCompiler ace_ets2bundle
 

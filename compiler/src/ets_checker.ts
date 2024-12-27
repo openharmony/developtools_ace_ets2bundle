@@ -86,6 +86,7 @@ import {
   doArkTSLinter,
   ArkTSLinterMode,
   ArkTSVersion,
+  transfromErrorCode,
 } from './do_arkTS_linter';
 import {
   getJsDocNodeCheckConfig,
@@ -94,16 +95,28 @@ import {
   getJsDocNodeConditionCheckResult
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
+import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
+import {
+  LINTER_SUBSYSTEM_CODE,
+  HvigorErrorInfo
+} from './hvigor_error_code/hvigor_error_info';
+import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
   targetESVersion?: ts.ScriptTarget;
+  maxFlowDepth?: number;
   preTsImportSendable?: boolean;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
 export let localPackageSet: Set<string> = new Set();
+export const TSC_SYSTEM_CODE = '105';
+
+export const MAX_FLOW_DEPTH_DEFAULT_VALUE = 2000;
+export const MAX_FLOW_DEPTH_MAXIMUM_VALUE = 65535;
 
 export function readDeaclareFiles(): string[] {
   const declarationsFileNames: string[] = [];
@@ -158,6 +171,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'moduleResolution': ts.ModuleResolutionKind.NodeJs,
     'noEmit': true,
     'target': convertConfigTarget(getTargetESVersion()),
+    'maxFlowDepth': getMaxFlowDepth(),
     'baseUrl': basePath,
     'paths': {
       '*': allPath
@@ -360,10 +374,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   };
 
   if (process.env.watchMode === 'true') {
-    return ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+    const tsLanguageService = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    MemoryMonitor.stopRecordStage(recordInfo);
+    return tsLanguageService;
   }
-
-  return getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
+  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  MemoryMonitor.stopRecordStage(recordInfo);
+  return tsLanguageService;
 }
 
 export let targetESVersionChanged: boolean = false;
@@ -376,22 +395,25 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   let service: ts.LanguageService | undefined = cache?.service;
   const currentHash: string | undefined = rollupShareObject?.projectConfig?.pkgJsonFileHash;
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
+  const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
+  const lastMaxFlowDepth: number | undefined = cache?.maxFlowDepth;
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
+  const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
   const tsImportSendableDiff: boolean = (cache?.preTsImportSendable === undefined && !tsImportSendable) ?
     false :
     cache?.preTsImportSendable !== tsImportSendable;
-  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff;
+  const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || targetESVersionDiffers || tsImportSendableDiff || maxFlowDepthDiffers;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
     needReCheckForChangedDepUsers = true;
   }
 
   if (!service || shouldRebuild) {
-    rebuiuldProgram(targetESVersionDiffers, tsImportSendableDiff);
+    rebuildProgram(targetESVersionDiffers, tsImportSendableDiff, maxFlowDepthDiffers);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
   } else {
     // Found language service from cache, update root files
@@ -403,19 +425,20 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     service: service,
     pkgJsonFileHash: currentHash,
     targetESVersion: currentTargetESVersion,
+    maxFlowDepth: currentMaxFlowDepth,
     preTsImportSendable: tsImportSendable
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
 }
 
-function rebuiuldProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean): void {
+function rebuildProgram(targetESVersionDiffers: boolean | undefined, tsImportSendableDiff: boolean, maxFlowDepthDiffers: boolean | undefined): void {
   if (targetESVersionDiffers) {
     // If the targetESVersion is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
-  } else if (tsImportSendableDiff) {
-    // When tsImportSendable is changed, we need to delete the build info cahce files
+  } else if (tsImportSendableDiff || maxFlowDepthDiffers) {
+    // When tsImportSendable or maxFlowDepth is changed, we need to delete the build info cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
@@ -485,7 +508,9 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
         hotReloadSupportFiles.add(fileName);
       });
     }
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.CREATE_LANGUAGE_SERVICE);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime);
+    MemoryMonitor.stopRecordStage(recordInfo);
     props = languageService.getProps();
   } else {
     cacheFile = path.resolve(projectConfig.cachePath, '../.ts_checker_cache');
@@ -496,28 +521,38 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     } else {
       cache = {};
     }
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.CREATE_LANGUAGE_SERVICE);
     languageService = createLanguageService(rootFileNames, resolveModulePaths, compilationTime, rollupShareObject);
+    MemoryMonitor.stopRecordStage(recordInfo);
   }
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
   startTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GET_BUILDER_PROGRAM);
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
   globalProgram.program = globalProgram.builderProgram.getProgram();
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
+  MemoryMonitor.stopRecordStage(recordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.createProgramTime : undefined);
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
   startTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
-  runArkTSLinter();
+  const runArkTSLinterRecordInfo = MemoryMonitor.recordStage(MemoryDefine.RUN_ARK_TS_LINTER);
+  const errorCodeLogger: Object | undefined = !!rollupShareObject?.getHvigorConsoleLogger ?
+    rollupShareObject?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
+  runArkTSLinter(errorCodeLogger);
+  MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.runArkTSLinterTime : undefined);
 
   if (process.env.watchMode !== 'true') {
+    const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, compilationTime, rollupShareObject);
+    MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
   if (globalProgram.program &&
@@ -561,6 +596,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
   }
   projectRootPath = toUnixPath(projectRootPath);
   const isMacOrWin = isWindows() || isMac();
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.COLLECT_TSC_FILES_ALL_RESOLVED_MODULES);
   programAllFiles.forEach(sourceFile => {
     const fileName = toUnixPath(sourceFile.fileName);
     // @ts-ignore
@@ -577,6 +613,7 @@ export function collectTscFiles(program: ts.Program, rollupShareObject: Object =
       allResolvedModules.add(fileName);
     }
   });
+  MemoryMonitor.stopRecordStage(recordInfo);
 }
 
 function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileName: string): boolean {
@@ -597,6 +634,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
 }
 
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object) {
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
     if (fs.existsSync(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
@@ -604,6 +642,7 @@ export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollu
       addLocalPackageSet(moduleId, rollupObject);
     }
   }
+  MemoryMonitor.stopRecordStage(recordInfo);
 }
 
 // collect the modulename or pkgname of all local modules.
@@ -627,14 +666,21 @@ export function emitBuildInfo(): void {
 function processBuildHap(cacheFile: string, rootFileNames: string[], compilationTime: CompilationTimeStatistics,
   rollupShareObject: Object): void {
   startTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  const semanticRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
+  MemoryMonitor.stopRecordStage(semanticRecordInfo);
   stopTimeStatisticsLocation(compilationTime ? compilationTime.diagnosticTime : undefined);
+  const emitBuildRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_EMIT_BUILD_INFO);
   emitBuildInfo();
+  let errorCodeLogger: Object | undefined = rollupShareObject?.getHvigorConsoleLogger ?
+    rollupShareObject?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;
+
   allDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
+    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
   });
+  MemoryMonitor.stopRecordStage(emitBuildRecordInfo);
   if (!projectConfig.xtsMode) {
     fse.ensureDirSync(projectConfig.cachePath);
     fs.writeFileSync(cacheFile, JSON.stringify({
@@ -667,13 +713,13 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], compilation
         } catch (err) { }
       }
     });
-    printDeclarationDiagnostics();
+    printDeclarationDiagnostics(errorCodeLogger);
   }
 }
 
-function printDeclarationDiagnostics(): void {
+function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void {
   globalProgram.builderProgram.getDeclarationDiagnostics().forEach((diagnostic: ts.Diagnostic) => {
-    printDiagnostic(diagnostic);
+    printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
   });
 }
 
@@ -735,6 +781,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
       elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
   });
 
+  const ignoreDiagnosticsRecordInfo = MemoryMonitor.recordStage(MemoryDefine.FILE_TO_IGNORE_DIAGNOSTICS);
   fileToIgnoreDiagnostics = new Set<string>();
   globalProgram.program.getSourceFiles().forEach(sourceFile => {
     // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
@@ -748,9 +795,10 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
   });
+  MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
-export function printDiagnostic(diagnostic: ts.Diagnostic): void {
+export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
   }
@@ -772,24 +820,46 @@ export function printDiagnostic(diagnostic: ts.Diagnostic): void {
 
     const logPrefix: string = diagnostic.category === ts.DiagnosticCategory.Error ? 'ERROR' : 'WARN';
     const etsCheckerLogger = fastBuildLogger || logger;
+    let errorCode: ts.ErrorInfo;
     let logMessage: string;
     if (logPrefix === 'ERROR') {
       checkerResult.count += 1;
     } else {
       warnCheckerResult.count += 1;
     }
+    let positionMessage: string = '';
     if (diagnostic.file) {
       const { line, character }: ts.LineAndCharacter =
         diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-      logMessage = `ArkTS:${logPrefix} File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}\n ${message}\n`;
+      positionMessage = `File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}`;
+      logMessage = `ArkTS:${logPrefix} ${positionMessage}\n ${message}\n`;
     } else {
       logMessage = `ArkTS:${logPrefix}: ${message}`;
     }
 
-    if (diagnostic.category === ts.DiagnosticCategory.Error) {
-      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    if (errorCodeLogger) {
+      if (diagnostic.category === ts.DiagnosticCategory.Error) {
+        if (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
+            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.TSC) {
+          errorCode = ts.getErrorCode(diagnostic);
+          errorCodeLogger.printError(errorCode);
+        } else if (flag === ErrorCodeModule.LINTER ||
+            (ts.getErrorCodeArea && ts.getErrorCode && flag === ErrorCodeModule.TSC &&
+            ts.getErrorCodeArea(diagnostic.code) === ts.ErrorCodeArea.LINTER)) {
+          const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
+          errorCodeLogger.printError(linterErrorInfo);
+        } else {
+          etsCheckerLogger.error('\u001b[31m' + logMessage);
+        }
+      } else {
+        etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      }
     } else {
-      etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      if (diagnostic.category === ts.DiagnosticCategory.Error) {
+        etsCheckerLogger.error('\u001b[31m' + logMessage);
+      } else {
+        etsCheckerLogger.warn('\u001b[33m' + logMessage);
+      }
     }
   }
 }
@@ -1446,7 +1516,7 @@ export function incrementWatchFile(watchModifiedFiles: string[],
   });
 }
 
-export function runArkTSLinter(): void {
+export function runArkTSLinter(errorCodeLogger?: Object | undefined): void {
   const originProgram: ts.BuilderProgram = globalProgram.builderProgram;
 
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
@@ -1456,7 +1526,8 @@ export function runArkTSLinter(): void {
     originProgram,
     printArkTSLinterDiagnostic,
     !projectConfig.xtsMode,
-    buildInfoWriteFile);
+    buildInfoWriteFile,
+    errorCodeLogger);
 
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
@@ -1468,7 +1539,7 @@ export function runArkTSLinter(): void {
   ts.ArkTSLinterTimePrinter.destroyInstance();
 }
 
-function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
+function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic, errorCodeLogger?: Object | undefined): void {
   if (diagnostic.category === ts.DiagnosticCategory.Error && (isInOhModuleFile(diagnostic) || isEtsDeclFileInSdk(diagnostic))) {
     const originalCategory = diagnostic.category;
     diagnostic.category = ts.DiagnosticCategory.Warning;
@@ -1476,7 +1547,7 @@ function printArkTSLinterDiagnostic(diagnostic: ts.Diagnostic): void {
     diagnostic.category = originalCategory;
     return;
   }
-  printDiagnostic(diagnostic);
+  printDiagnostic(diagnostic, ErrorCodeModule.LINTER, errorCodeLogger);
 }
 
 function isEtsDeclFileInSdk(diagnostics: ts.Diagnostic): boolean {
@@ -1562,6 +1633,22 @@ function getTargetESVersion(): TargetESVersion {
     targetESVersionLogger.warn('\u001b[33m' + 'ArkTS: Invalid Target ES version\n');
   }
   return TargetESVersion.ES2021;
+}
+
+export function getMaxFlowDepth(): number {
+  // The value of maxFlowDepth ranges from 2000 to 65535.
+  let maxFlowDepth: number | undefined = projectConfig?.projectArkOption?.tscConfig?.maxFlowDepth;
+
+  if (maxFlowDepth === undefined) {
+    maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
+  } else if (maxFlowDepth < MAX_FLOW_DEPTH_DEFAULT_VALUE || maxFlowDepth > MAX_FLOW_DEPTH_MAXIMUM_VALUE) {
+    const maxFlowDepthLogger = fastBuildLogger || logger;
+    maxFlowDepth = MAX_FLOW_DEPTH_DEFAULT_VALUE;
+    maxFlowDepthLogger.warn('\u001b[33m' + 'ArkTS: Invalid maxFlowDepth for control flow analysis.' +
+      `The value of maxFlowDepth ranges from ${ MAX_FLOW_DEPTH_DEFAULT_VALUE } to ${ MAX_FLOW_DEPTH_MAXIMUM_VALUE }.\n` +
+      'If the modification does not take effect, set maxFlowDepth to the default value.');
+  }
+  return maxFlowDepth;
 }
 
 interface TargetESVersionLib {

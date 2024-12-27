@@ -23,7 +23,7 @@ import {
   EventList,
   blockPrinter,
   endFilesEvent,
-  startFilesEvent,
+  startFilesEvent
 } from 'arkguard';
 
 import {
@@ -33,10 +33,10 @@ import {
   OH_MODULES,
   OBFUSCATION_TOOL
 } from './ark_define';
-import { 
-  isAotMode, 
-  isDebug, 
-  isBranchElimination 
+import {
+  isAotMode,
+  isDebug,
+  isBranchElimination
 } from '../utils';
 import {
   isHarmonyOs,
@@ -50,6 +50,9 @@ import { checkAotConfig } from '../../../gen_aot';
 import { projectConfig as mainProjectConfig } from '../../../../main';
 import type { MergedConfig } from './ob_config_resolver';
 import type { ReseverdSetForArkguard } from 'arkguard';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../../meomry_monitor/memory_define';
+import { initObfLogger, printObfLogger } from './ob_config_resolver';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -138,6 +141,9 @@ export function initArkProjectConfig(share: Object): Object {
     if (buildJsonInfo.byteCodeHarInfo) {
       arkProjectConfig.byteCodeHarInfo = buildJsonInfo.byteCodeHarInfo;
     }
+    // Currently, the IDE does not have this configuration option, and cacheBytecodeHar is true by default.
+    arkProjectConfig.cacheBytecodeHar = !Object.prototype.hasOwnProperty.call(buildJsonInfo, 'cacheBytecodeHar') ||
+      buildJsonInfo.cacheBytecodeHar;
   }
   if (projectConfig.aceManifestPath && fs.existsSync(projectConfig.aceManifestPath)) {
     const manifestJsonInfo = JSON.parse(fs.readFileSync(projectConfig.aceManifestPath).toString());
@@ -178,9 +184,11 @@ export function initArkProjectConfig(share: Object): Object {
   }
   if (!isDebug(projectConfig)) {
     arkProjectConfig.useTsHar = mainProjectConfig.useTsHar;
-    const logger: any = share.getLogger(OBFUSCATION_TOOL);
     startFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
-    initObfuscationConfig(projectConfig, arkProjectConfig, logger);
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.INIT_ARK_PROJECT_CONFIG);
+    MemoryMonitor.stopRecordStage(recordInfo);
+    initObfLogger(share);
+    initObfuscationConfig(projectConfig, arkProjectConfig, printObfLogger);
     endFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);
   } else {
     // Set performance printer to undefined in case we cannot disable it without obfuscation initialization

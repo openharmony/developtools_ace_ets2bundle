@@ -34,7 +34,6 @@ import {
 } from '../../../ark_utils';
 import { writeFileSyncByNode } from '../../../process_module_files';
 import {
-  isDebug,
   isJsonSourceFile,
   isJsSourceFile,
   updateSourceMap,
@@ -43,6 +42,7 @@ import {
 import { toUnixPath } from '../../../utils';
 import {
   createAndStartEvent,
+  getHookEventFactory,
   stopEvent
 } from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
@@ -51,7 +51,8 @@ import {
   handleKeepFilesAndGetDependencies,
   writeObfuscationNameCache,
   writeUnobfuscationContent,
-  handleUniversalPathInObf
+  handleUniversalPathInObf,
+  printObfLogger
 } from '../common/ob_config_resolver';
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
@@ -63,6 +64,7 @@ import { readProjectAndLibsSource } from '../common/process_ark_config';
 import {
   allSourceFilePaths,
   collectAllFiles,
+  compilerOptions,
   localPackageSet
 } from '../../../ets_checker';
 import { projectConfig } from '../../../../main';
@@ -74,6 +76,18 @@ import {
   printTimeSumInfo,
   startFilesEvent
 } from 'arkguard';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../../meomry_monitor/memory_define';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../logger';
+import { 
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../error_code';
+import { checkIfJsImportingArkts } from '../check_import_module';
 const ROLLUP_IMPORT_NODE: string = 'ImportDeclaration';
 const ROLLUP_EXPORTNAME_NODE: string = 'ExportNamedDeclaration';
 const ROLLUP_EXPORTALL_NODE: string = 'ExportAllDeclaration';
@@ -88,13 +102,16 @@ export class ModuleSourceFile {
   private metaInfo: Object;
   private isSourceNode: boolean = false;
   private static projectConfig: Object;
-  private static logger: Object;
+  private static logger: CommonLogger;
   private static mockConfigInfo: Object = {};
   private static mockFiles: string[] = [];
   private static newMockConfigInfo: Object = {};
   private static transformedHarOrHspMockConfigInfo: Object = {};
   private static mockConfigKeyToModuleInfo: Object = {};
   private static needProcessMock: boolean = false;
+  private static moduleIdMap: Map<string, ModuleSourceFile> = new Map();
+  private static isEnvInitialized: boolean = false;
+  private static hookEventFactory: Object;
 
   constructor(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
     this.moduleId = moduleId;
@@ -174,8 +191,13 @@ export class ModuleSourceFile {
       ModuleSourceFile.addMockConfig(ModuleSourceFile.transformedHarOrHspMockConfigInfo, transformedMockTarget, src);
       return;
     } else {
-      ModuleSourceFile.logger.error(red, 'ArkTS:INTERNAL ERROR: Failed to convert the key in mock-config to ohmurl, ' +
-                                    'because the file path corresponding to the key in mock-config is empty.', reset);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_MOCK_CONFIG_KEY_TO_OHM_URL_CONVERSION_FAILED,
+        ArkTSInternalErrorDescription,
+        'Failed to convert the key in mock-config to ohmurl, ' +
+        'because the file path corresponding to the key in mock-config is empty.'
+      );
+      ModuleSourceFile.logger.printError(errInfo);
     }
   }
 
@@ -292,13 +314,55 @@ export class ModuleSourceFile {
     }
   }
 
-  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object): void {
-    ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
+  static newSourceFile(moduleId: string, source: string | ts.SourceFile, metaInfo: Object, singleFileEmit: boolean): void {
+    if (singleFileEmit) {
+      ModuleSourceFile.moduleIdMap.set(moduleId, new ModuleSourceFile(moduleId, source, metaInfo));
+    } else {
+      ModuleSourceFile.sourceFiles.push(new ModuleSourceFile(moduleId, source, metaInfo));
+    }
+  }
+
+  static getSourceFileById(moduleId: string): ModuleSourceFile | undefined {
+    return ModuleSourceFile.moduleIdMap.get(moduleId);
   }
 
   static getSourceFiles(): ModuleSourceFile[] {
     return ModuleSourceFile.sourceFiles;
   }
+
+  static async processSingleModuleSourceFile(rollupObject: Object, moduleId: string): Promise<void> {
+    if (!ModuleSourceFile.isEnvInitialized) {
+      this.initPluginEnv(rollupObject);
+      
+      ModuleSourceFile.hookEventFactory = getHookEventFactory(rollupObject.share, 'genAbc', 'moduleParsed');
+      ModuleSourceFile.setProcessMock(rollupObject);
+      if (ModuleSourceFile.needProcessMock) {
+        ModuleSourceFile.collectMockConfigInfo(rollupObject);
+      } else {
+        ModuleSourceFile.removePotentialMockConfigCache(rollupObject);
+      }
+      ModuleSourceFile.isEnvInitialized = true;
+    }
+    
+    if (ModuleSourceFile.moduleIdMap.has(moduleId)) {
+      let moduleSourceFile=ModuleSourceFile.moduleIdMap.get(moduleId);
+      ModuleSourceFile.moduleIdMap.delete(moduleId);
+
+      if (compilerOptions.needDoArkTsLinter) {
+        checkIfJsImportingArkts(rollupObject, moduleSourceFile);
+      }
+
+      if (!rollupObject.share.projectConfig.compileHar || ModuleSourceFile.projectConfig.byteCodeHar) {
+        //compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
+        const eventBuildModuleSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'build module source files');
+        await moduleSourceFile.processModuleRequest(rollupObject, eventBuildModuleSourceFile);
+        stopEvent(eventBuildModuleSourceFile);
+      }
+      const eventWriteSourceFile = createAndStartEvent(ModuleSourceFile.hookEventFactory, 'write source file');
+      await moduleSourceFile.writeSourceFile(eventWriteSourceFile);
+      stopEvent(eventWriteSourceFile);
+    }
+  }  
 
   static async processModuleSourceFiles(rollupObject: Object, parentEvent: Object): Promise<void> {
     this.initPluginEnv(rollupObject);
@@ -313,6 +377,7 @@ export class ModuleSourceFile {
 
     collectAllFiles(undefined, rollupObject.getModuleIds(), rollupObject);
     startFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SCAN_SOURCEFILES);
     let sourceProjectConfig: Object = ModuleSourceFile.projectConfig;
     // obfuscation initialization, include collect file, resolve denpendency, read source
     if (compileToolIsRollUp()) {
@@ -323,6 +388,7 @@ export class ModuleSourceFile {
       readProjectAndLibsSource(allSourceFilePaths, obfuscationConfig, sourceProjectConfig.arkObfuscator,
         sourceProjectConfig.compileHar, keepFilesAndDependencies);
     }
+    MemoryMonitor.stopRecordStage(recordInfo);
     endFilesEvent(EventList.SCAN_SOURCEFILES, performancePrinter.timeSumPrinter);
 
     startFilesEvent(EventList.ALL_FILES_OBFUSCATION);
@@ -330,10 +396,12 @@ export class ModuleSourceFile {
     if (Object.prototype.hasOwnProperty.call(sourceProjectConfig, 'byteCodeHar')) {
       byteCodeHar = sourceProjectConfig.byteCodeHar;
     }
+	const allFilesObfuscationRecordInfo = MemoryMonitor.recordStage(MemoryDefine.ALL_FILES_OBFUSCATION);
     // Sort the collection by file name to ensure binary consistency.
     ModuleSourceFile.sortSourceFilesByModuleId();
     sourceProjectConfig.localPackageSet = localPackageSet;
     for (const source of ModuleSourceFile.sourceFiles) {
+      const filesForEach = MemoryMonitor.recordStage(MemoryDefine.FILES_FOR_EACH);
       sourceFileBelongProject.set(toUnixPath(source.moduleId), source.metaInfo?.belongProjectPath);
       if (!rollupObject.share.projectConfig.compileHar || byteCodeHar) {
         // compileHar: compile closed source har of project, which convert .ets to .d.ts and js, doesn't transform module request.
@@ -344,14 +412,16 @@ export class ModuleSourceFile {
       const eventWriteSourceFile = createAndStartEvent(parentEvent, 'write source file');
       await source.writeSourceFile(eventWriteSourceFile);
       stopEvent(eventWriteSourceFile);
+      MemoryMonitor.stopRecordStage(filesForEach);
     }
 
     if (compileToolIsRollUp() && rollupObject.share.arkProjectConfig.compileMode === ESMODULE) {
-      await mangleDeclarationFileName(ModuleSourceFile.logger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
+      await mangleDeclarationFileName(printObfLogger, rollupObject.share.arkProjectConfig, sourceFileBelongProject);
     }
     printTimeSumInfo('All files obfuscation:');
     printTimeSumData();
     endFilesEvent(EventList.ALL_FILES_OBFUSCATION);
+    MemoryMonitor.stopRecordStage(allFilesObfuscationRecordInfo);
 
     const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
     const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
@@ -382,10 +452,10 @@ export class ModuleSourceFile {
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-        this.moduleId, parentEvent, ModuleSourceFile.logger);
+        this.moduleId, parentEvent, printObfLogger);
     } else {
       await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger, parentEvent, this.metaInfo);
+        printObfLogger, parentEvent, this.metaInfo);
     }
   }
 
@@ -422,14 +492,22 @@ export class ModuleSourceFile {
     if (filePath) {
       const targetModuleInfo: Object = rollupObject.getModuleInfo(filePath);
       if (!targetModuleInfo) {
-        ModuleSourceFile.logger.error(red,
-          `ArkTS:INTERNAL ERROR: Failed to get module info of file '${filePath}'`, reset);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_GET_MODULE_INFO_FAILED,
+          ArkTSInternalErrorDescription,
+          `Failed to get ModuleInfo, moduleId: ${filePath}`
+        );
+        ModuleSourceFile.logger.printError(errInfo);
         return undefined;
       }
       if (!targetModuleInfo.meta) {
-        ModuleSourceFile.logger.error(red,
-          `ArkTS:INTERNAL ERROR: Failed to get meta info of file '${filePath}'`, reset);
-          return undefined;
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META,
+          ArkTSInternalErrorDescription,
+          `Failed to get ModuleInfo properties 'meta', moduleId: ${filePath}`
+        );
+        ModuleSourceFile.logger.printError(errInfo);
+        return undefined;
       }
       let res: string = '';
       if (useNormalizedOHMUrl) {
@@ -639,7 +717,7 @@ export class ModuleSourceFile {
 
   private static initPluginEnv(rollupObject: Object): void {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
-    this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
+    this.logger = CommonLogger.getInstance(rollupObject);
   }
 
   public static sortSourceFilesByModuleId(): void {
@@ -656,5 +734,9 @@ export class ModuleSourceFile {
     ModuleSourceFile.transformedHarOrHspMockConfigInfo = {};
     ModuleSourceFile.mockConfigKeyToModuleInfo = {};
     ModuleSourceFile.needProcessMock = false;
+    ModuleSourceFile.moduleIdMap = new Map();
+    ModuleSourceFile.isEnvInitialized = false;
+    ModuleSourceFile.hookEventFactory = undefined;
   }
 }
+

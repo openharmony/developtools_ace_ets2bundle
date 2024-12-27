@@ -26,6 +26,7 @@ const { babelPlugin } = require('./lib/fast_build/ark_compiler/babel-plugin');
 const { JSBUNDLE, RELEASE } = require('./lib/fast_build/ark_compiler/common/ark_define');
 const { generateConsumerObConfigFile } = require('./lib/fast_build/ark_compiler/common/ob_config_resolver');
 const { etsStandaloneChecker } = require('./lib/ets_checker');
+const { memoryMonitor } = require('./lib/fast_build/meomry_monitor/rollup-plugin-memory-monitor');
 
 exports.initConfig = initConfig;
 exports.getCleanConfig = getCleanConfig;
@@ -35,6 +36,7 @@ exports.etsStandaloneChecker = etsStandaloneChecker;
 // list of functional plugins
 exports.sdkPlugins = (projectConfig) => {
     return [
+        memoryMonitor(),
         watchChangeFiles(),
         etsChecker(),
         visualTransform(),
@@ -47,15 +49,16 @@ exports.sdkPlugins = (projectConfig) => {
     ];
 };
 exports.sdkPluginsMap = {
-    'watchChangeFiles': 0,
-    'etsChecker': 1,
-    'visualTransform': 2,
-    'etsTransform': 3,
-    'apiTransform': 4,
-    'genAbc': 5,
-    'terserPlugin': 6,
-    'babelPlugin': 7,
-    'createProgramPlugin': 8
+    'memoryMonitor': 0,
+    'watchChangeFiles': 1,
+    'etsChecker': 2,
+    'visualTransform': 3,
+    'etsTransform': 4,
+    'apiTransform': 5,
+    'genAbc': 6,
+    'terserPlugin': 7,
+    'babelPlugin': 8,
+    'createProgramPlugin': 9
 };
 
 exports.resolveFileExtensions = [];

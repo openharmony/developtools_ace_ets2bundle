@@ -101,6 +101,17 @@ import {
   sharedModuleSet
 } from '../check_shared_module';
 import { SourceMapGenerator } from '../generate_sourcemap';
+import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../../meomry_monitor/memory_define';
+import { 
+  ArkTSInternalErrorDescription,
+  ArkTSErrorDescription,
+  ErrorCode
+} from '../error_code';
+import {
+  LogData,
+  LogDataFactory
+} from '../logger';
 
 export class ModuleInfo {
   filePath: string;
@@ -205,13 +216,23 @@ export class ModuleMode extends CommonMode {
       let moduleId: string = entryObj[key];
       let moduleInfo: Object = rollupObject.getModuleInfo(moduleId);
       if (!moduleInfo) {
-        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to find module info.\n` +
-          `Error Message: Failed to find module info with '${moduleId}' from the context information.`);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_MODULE_INFO_NOT_FOUND,
+          ArkTSInternalErrorDescription,
+          'Failed to find module info. ' + 
+          `Failed to find module info with '${moduleId}' from the context information.`
+        );
+        this.logger.printErrorAndExit(errInfo);
       }
       let metaInfo: Object = moduleInfo.meta;
       if (!metaInfo) {
-        this.throwArkTsCompilerError(`ArkTS:INTERNAL ERROR: Failed to find meta info.\n` +
-          `Error Message: Failed to find meta info with '${moduleId}' from the module info.`);
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_META_INFO_NOT_FOUND,
+          ArkTSInternalErrorDescription,
+          'Failed to find meta info. ' + 
+          `Failed to find meta info with '${moduleId}' from the module info.`
+        );
+        this.logger.printErrorAndExit(errInfo);
       }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
@@ -277,6 +298,7 @@ export class ModuleMode extends CommonMode {
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.PKG_ENTRY_INFOS_MODULE_INFOS);
     let moduleInfos: Map<String, ModuleInfo> = new Map<String, ModuleInfo>();
     let pkgEntryInfos: Map<String, PackageEntryInfo> = new Map<String, PackageEntryInfo>();
     for (const moduleId of fileList) {
@@ -296,6 +318,7 @@ export class ModuleMode extends CommonMode {
     this.getNativeModuleEntryInfo(pkgEntryInfos);
     this.moduleInfos = moduleInfos;
     this.pkgEntryInfos = pkgEntryInfos;
+    MemoryMonitor.stopRecordStage(recordInfo);
   }
 
   private isUsingNormalizedOHMUrl(): boolean {
@@ -356,8 +379,12 @@ export class ModuleMode extends CommonMode {
     }
 
     if (!metaInfo.pkgPath) {
-      this.logger.debug("ArkTS:INTERNAL ERROR: Failed to get 'pkgPath' from metaInfo. File: ", filePath);
-      return;
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_UNABLE_TO_GET_MODULE_INFO_META_PKG_PATH,
+        ArkTSInternalErrorDescription,
+        `Failed to get ModuleInfo properties 'meta.pkgPath', moduleId: ${filePath}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
     const pkgPath: string = metaInfo.pkgPath;
     let originPkgEntryPath: string = toUnixPath(filePath.replace(pkgPath, ''));
@@ -580,7 +607,12 @@ export class ModuleMode extends CommonMode {
     // generate npm entries cache
     let npmEntriesCacheFilePath: string = changeFileExtension(this.npmEntriesInfoPath, EXTNAME_PROTO_BIN);
     abcCacheFilesInfo += `${this.npmEntriesInfoPath};${npmEntriesCacheFilePath}\n`;
-
+    if (this.projectConfig.cacheBytecodeHar) {
+      this.abcPaths.forEach((abcPath) => {
+        let abcCacheFilePath: string = changeFileExtension(abcPath, EXTNAME_PROTO_BIN);
+        abcCacheFilesInfo += `${abcPath};${abcCacheFilePath}\n`;
+      });
+    }
     fs.writeFileSync(this.cacheFilePath, abcCacheFilesInfo, 'utf-8');
   }
 
@@ -594,6 +626,7 @@ export class ModuleMode extends CommonMode {
 
   generateMergedAbcOfEs2Abc(parentEvent: Object): void {
     // collect data error from subprocess
+    let logDataList: Object[] = [];
     let errMsg: string = '';
     const eventGenDescriptionsForMergedEs2abc = createAndStartEvent(parentEvent, 'generate descriptions for merged es2abc');
     stopEvent(eventGenDescriptionsForMergedEs2abc);
@@ -605,26 +638,54 @@ export class ModuleMode extends CommonMode {
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
       child.on('close', (code: any) => {
-        if (code !== SUCCESS) {
-          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute es2abc.\n' +
-            `Error Message: ${errMsg}`);
+        if (code === SUCCESS) {
+          stopEvent(eventGenAbc, true);
+          this.triggerEndSignal();
+          this.processAotIfNeeded();
+          return;
         }
-        stopEvent(eventGenAbc, true);
-        this.triggerEndSignal();
-        this.processAotIfNeeded();
+        for (const logData of logDataList) {
+          this.logger.printError(logData);
+        }
+        if (errMsg !== '') {
+          this.logger.error(`Error Message: ${errMsg}`);
+        }
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_EXTERNAL_ES2ABC_EXECUTION_FAILED,
+          ArkTSErrorDescription,
+          'Failed to execute es2abc.',
+          '',
+          ["Please refer to es2abc's error codes."]
+        );
+        this.logger.printErrorAndExit(errInfo);
       });
 
       child.on('error', (err: any) => {
         stopEvent(eventGenAbc, true);
-        this.throwArkTsCompilerError(err.toString());
+        const errInfo: LogData = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_ES2ABC_SUBPROCESS_START_FAILED,
+          ArkTSInternalErrorDescription,
+          `Failed to initialize or launch the es2abc process. ${err.toString()}`
+        );
+        this.logger.printErrorAndExit(errInfo);
       });
 
       child.stderr.on('data', (data: any) => {
-        errMsg += data.toString();
+        const logData = LogDataFactory.newInstanceFromEs2AbcError(data.toString());
+        if (logData) {
+          logDataList.push(logData);
+        } else {
+          errMsg += data.toString();
+        }
       });
 
     } catch (e) {
-      this.throwArkTsCompilerError(`ArkTS:ERROR Failed to execute es2abc.\nError message: ${e.toString()}\n`);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_EXECUTE_ES2ABC_WITH_ASYNC_HANDLER_FAILED,
+        ArkTSInternalErrorDescription,
+        `Failed to execute es2abc with async handler. ${e.toString()}`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 
@@ -648,7 +709,7 @@ export class ModuleMode extends CommonMode {
         const cacheFilePath: string = value.cacheFilePath;
         const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
         if (!fs.existsSync(cacheFilePath)) {
-          this.throwArkTsCompilerError(
+          this.logger.throwArkTsCompilerError(
             `ArkTS:INTERNAL ERROR: Failed to get module cache abc from ${cacheFilePath} in incremental build.` +
             'Please try to rebuild the project.');
         }
@@ -714,7 +775,7 @@ export class ModuleMode extends CommonMode {
           const worker: Object = cluster.fork(workerData);
           worker.on('message', (errorMsg) => {
             this.logger.error(red, errorMsg.data.toString(), reset);
-            this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc.');
+            this.logger.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc.');
           });
         });
       }
@@ -727,7 +788,7 @@ export class ModuleMode extends CommonMode {
     if (isMasterOrPrimary()) {
       cluster.on('exit', (worker, code, signal) => {
         if (code === FAIL) {
-          this.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
+          this.logger.throwArkTsCompilerError('ArkTS:ERROR Failed to execute ts2abc');
         }
         workerCount++;
         if (workerCount === this.workerNumber) {
@@ -750,7 +811,7 @@ export class ModuleMode extends CommonMode {
     if (!needAotCompiler(this.projectConfig)) {
       return;
     }
-    let faultHandler: FaultHandler = ((error: string) => { this.throwArkTsCompilerError(error); });
+    let faultHandler: FaultHandler = ((error: string) => { this.logger.throwArkTsCompilerError(error); });
     generateAot(this.arkConfig.arkRootPath, this.moduleAbcPath, this.projectConfig, this.logger, faultHandler);
   }
 
@@ -816,7 +877,7 @@ export class ModuleMode extends CommonMode {
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      this.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.\n' +
+      this.logger.throwArkTsCompilerError('ArkTS:INTERNAL ERROR: Failed to merge proto file to abc.\n' +
         'Error message:' + e.toString());
     }
   }
@@ -834,7 +895,7 @@ export class ModuleMode extends CommonMode {
       const cacheFilePath: string = value.cacheFilePath;
       const cacheProtoFilePath: string = changeFileExtension(cacheFilePath, EXTNAME_PROTO_BIN);
       if (!fs.existsSync(cacheFilePath) || !fs.existsSync(cacheProtoFilePath)) {
-        this.throwArkTsCompilerError(
+        this.logger.throwArkTsCompilerError(
           `ArkTS:ERROR ${cacheFilePath} or  ${cacheProtoFilePath} is lost`
         );
       }
@@ -857,7 +918,7 @@ export class ModuleMode extends CommonMode {
     try {
       childProcess.execSync(cmd, { windowsHide: true });
     } catch (e) {
-      this.throwArkTsCompilerError('ArkTS:ERROR failed to generate npm proto file to abc. Error message: ' + e.toString());
+      this.logger.throwArkTsCompilerError('ArkTS:ERROR failed to generate npm proto file to abc. Error message: ' + e.toString());
     }
   }
 
@@ -867,8 +928,13 @@ export class ModuleMode extends CommonMode {
     } else if (isTs2Abc(this.projectConfig)) {
       this.removeTs2abcCompilationCache();
     } else {
-      this.throwArkTsCompilerError(`Invalid projectConfig.pandaMode for module build, should be either
-      "${TS2ABC}" or "${ES2ABC}"`);
+      const errInfo: LogData = LogDataFactory.newInstance(
+        ErrorCode.ETS2BUNDLE_INTERNAL_INVALID_COMPILE_MODE,
+        ArkTSInternalErrorDescription,
+        'Invalid compilation mode. ' + 
+        `ProjectConfig.pandaMode should be either ${TS2ABC} or ${ES2ABC}.`
+      );
+      this.logger.printErrorAndExit(errInfo);
     }
   }
 

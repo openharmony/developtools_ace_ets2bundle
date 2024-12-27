@@ -17,7 +17,7 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import fs from "fs";
+import fs, { unwatchFile } from "fs";
 import path from "path";
 import MagicString from 'magic-string';
 import sinon from 'sinon';
@@ -63,7 +63,8 @@ import {
 } from '../../lib/utils';
 import {
   ObConfigResolver,
-  MergedConfig
+  MergedConfig,
+  obfLogger
 } from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
 import {
   utProcessArkConfig
@@ -73,6 +74,17 @@ import { PROJECT_ROOT, TERSER_PROCESSED_EXPECTED_CODE } from './mock/rollup_mock
 import { GEN_ABC_PLUGIN_NAME } from '../../lib/fast_build/ark_compiler/common/ark_define';
 import { SourceMapGenerator } from '../../lib/fast_build/ark_compiler/generate_sourcemap';
 import { ArkObfuscator } from 'arkguard';
+import {
+  ArkTSInternalErrorDescription,
+  ErrorCode
+} from '../../lib/fast_build/ark_compiler/error_code';
+import { 
+  CommonLogger,
+  LogData,
+  LogDataFactory
+} from '../../lib/fast_build/ark_compiler/logger';
+import { initObfLogger, printObfLogger } from '../../lib/fast_build/ark_compiler/common/ob_config_resolver';
+import { getLogger } from 'log4js';
 
 mocha.describe('test ark_utils file api', function () {
   mocha.before(function () {
@@ -307,13 +319,14 @@ mocha.describe('test ark_utils file api', function () {
   mocha.it('6-1: test the error message of writeArkguardObfuscatedSourceCode', async function () {
     this.rollup.build(RELEASE);
     SourceMapGenerator.initInstance(this.rollup);
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
-    const stub = sinon.stub(logger, 'error');
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    initObfLogger(this.rollup.share);
+    const stub = sinon.stub(obfLogger, 'error');
     const red: string = '\x1B[31m';
     try {
       await writeArkguardObfuscatedSourceCode(
         {content: undefined, buildFilePath: '', relativeSourceFilePath: '', originSourceFilePath: ''},
-        logger, this.rollup.share.projectConfig, {});
+        printObfLogger, this.rollup.share.projectConfig, {});
     } catch (e) {
     }
     expect(stub.calledWith(red,
@@ -322,20 +335,86 @@ mocha.describe('test ark_utils file api', function () {
     stub.restore();
     SourceMapGenerator.cleanSourceMapObject();
   });
+  
+  mocha.it('6-2: test the error message of writeArkguardObfuscatedSourceCode' +
+    'with getHvigorConsoleLogger', async function () {
+    this.rollup.build(RELEASE);
+    SourceMapGenerator.initInstance(this.rollup);
+    class customShare {
+      public getHvigorConsoleLogger(prefix: string) {
+       const logger = hvigorLogger.getLogger(prefix);
+       return logger;
+     }
+    }
+    class hvigorLogger {
+      mSubSystem: string = '';
+      constructor(subSystem: string) {
+        this.mSubSystem = subSystem;
+      }
+    
+      public printError(errInfo: Object) {
+      }
+
+      public static getLogger(subSystem): hvigorLogger {
+        return new hvigorLogger(subSystem);
+      }
+    }
+    initObfLogger(new customShare());
+    const stub = sinon.stub(obfLogger, 'printError');
+    try {
+      await writeArkguardObfuscatedSourceCode(
+        {content: undefined, buildFilePath: '', relativeSourceFilePath: '', originSourceFilePath: ''},
+        printObfLogger, this.rollup.share.projectConfig, {});
+    } catch (e) {
+    }
+    const info = {
+        code: '10810001',
+        description: 'ArkTS compiler Error',
+        cause: "ArkTS:INTERNAL ERROR: Failed to obfuscate file '' with arkguard. TypeError: Cannot read properties of undefined (reading 'obfuscate')",
+        position: '',
+        solutions: [ 'Please modify the code based on the error information.' ]
+    };
+    expect(stub.calledWith(info)).to.be.true;
+    stub.restore();
+    SourceMapGenerator.cleanSourceMapObject();
+  });
 
   mocha.it('7-1: test the error message of writeMinimizedSourceCode', async function () {
     this.rollup.build(RELEASE);
-    const logger = this.rollup.share.getLogger(GEN_ABC_PLUGIN_NAME);
-    const stub = sinon.stub(logger, 'error');
-    const red: string = '\x1B[31m';
-    const reset: string = '\x1B[39m';
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_SOURCE_CODE_OBFUSCATION_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to obfuscate source code for filePath'
+    );
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.getLoggerFromErrorCode(errInfo.code), 'printError');
     try {
-      await writeMinimizedSourceCode(undefined, '', logger);
+      await writeMinimizedSourceCode(undefined, 'filePath', logger);
     } catch (e) {
     }
-    expect(stub.calledWith(red,
-      'ArkTS:INTERNAL ERROR: Failed to obfuscate source code for ', reset
-    )).to.be.true;
+    expect(stub.calledWith(errInfo)).to.be.true; 
+    stub.restore();
+  });
+
+  mocha.it('7-2: test the error message of writeMinimizedSourceCode without getHvigorConsoleLogger', async function () {
+    this.rollup.build(RELEASE);
+    const errInfo: LogData = LogDataFactory.newInstance(
+      ErrorCode.ETS2BUNDLE_INTERNAL_SOURCE_CODE_OBFUSCATION_FAILED,
+      ArkTSInternalErrorDescription,
+      'Failed to obfuscate source code for filePath'
+    );
+    CommonLogger.destroyInstance();
+    const getHvigorConsoleLogger = this.rollup.share.getHvigorConsoleLogger;
+    this.rollup.share.getHvigorConsoleLogger = undefined;
+    const logger = CommonLogger.getInstance(this.rollup);
+    const stub = sinon.stub(logger.logger, 'error');
+    try {
+      await writeMinimizedSourceCode(undefined, 'filePath', logger);
+    } catch (e) {
+    }
+    expect(stub.calledWith(errInfo.toString())).to.be.true;
+    CommonLogger.destroyInstance();
+    this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     stub.restore();
   });
 

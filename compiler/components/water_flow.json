@@ -13,6 +13,7 @@
         "rowsGap",
         "layoutDirection",
         "enableScrollInteraction",
+        "fadingEdge",
         "nestedScroll",
         "onScrollFrameBegin",
         "friction",
@@ -28,7 +29,6 @@
         "flingSpeedLimit",
         "onWillScroll",
         "onDidScroll",
-        "fadingEdge",
         "clipContent"
     ]
 }

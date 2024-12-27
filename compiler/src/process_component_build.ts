@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -64,6 +64,7 @@ import {
   CUSTOM_COMPONENT_DEFAULT,
   $$,
   PROPERTIES_ADD_DOUBLE_DOLLAR,
+  PROPERTIES_ADD_DOUBLE_EXCLAMATION,
   ATTRIBUTE_ID,
   RESOURCE,
   ISINITIALRENDER,
@@ -192,6 +193,7 @@ import {
 } from './process_ui_syntax';
 import { regularCollection } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
+import { extendCollection } from './ets_checker';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -2601,12 +2603,15 @@ function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
 function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
   let compName: string = identifierNode.escapedText.toString();
   if (SpanComponents.includes(compName) && ts.isPropertyAccessExpression(node) && node.name &&
-    ts.isIdentifier(node.name) && !COMPONENT_MAP[compName].attrs.includes(node.name.escapedText.toString())) {
-    log.push({
-      type: LogType.WARN,
-      message: `Property '${node.name.escapedText.toString()}' does not take effect on '${compName}'.`,
-      pos: node.getStart()
-    });
+    ts.isIdentifier(node.name)) {
+    let propertyName = node.name.escapedText.toString();
+    if (!extendCollection.has(propertyName) && !COMPONENT_MAP[compName].attrs.includes(propertyName)) {
+      log.push({
+        type: LogType.WARN,
+        message: `Property '${propertyName}' does not take effect on '${compName}'.`,
+        pos: node.name.getStart()
+      });
+    }
   }
 }
 
@@ -2697,7 +2702,7 @@ function isDoubleBind(styleResult: StyleResult, isStylesAttr: boolean, identifie
   if (isDoubleDollarToChange(isStylesAttr, identifierNode, propName, temp)) {
     styleResult.doubleDollar = true;
     return true;
-  } else if (isDoubleExclamationToChange(isStylesAttr, propName, temp)) {
+  } else if (isDoubleExclamationToChange(isStylesAttr, identifierNode, propName, temp)) {
     styleResult.doubleExclamation = true;
     return true;
   }
@@ -2787,7 +2792,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
   } else if (isDoubleBind(styleResult, isStylesAttr, identifierNode, propName, temp)) {
     const argumentsArr: ts.Expression[] = [];
     styleResult.doubleDollar ? classifyArgumentsNum(temp.arguments, argumentsArr, propName, identifierNode) :
-      classifyArgumentsNumV2(temp.arguments, argumentsArr, propName);
+      classifyArgumentsNumV2(temp.arguments, argumentsArr, propName, identifierNode);
     const doubleDollarNode: ts.Statement = ts.factory.createExpressionStatement(
       createFunction(identifierNode, node, argumentsArr));
     statements.push(doubleDollarNode);
@@ -2893,9 +2898,11 @@ function isDoubleDollarToChange(isStylesAttr: boolean, identifierNode: ts.Identi
     false;
 }
 
-function isDoubleExclamationToChange(isStylesAttr: boolean, propName: string, temp): boolean {
+function isDoubleExclamationToChange(isStylesAttr: boolean, identifierNode: ts.Identifier, propName: string, temp: ts.CallExpression): boolean {
   return !isStylesAttr &&
-    STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && temp.arguments.length && temp.arguments[0] &&
+    (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && temp.arguments.length && temp.arguments[0] || 
+    PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(identifierNode.escapedText.toString()) &&
+    PROPERTIES_ADD_DOUBLE_EXCLAMATION.get(identifierNode.escapedText.toString()).has(propName)) &&
     ts.isNonNullExpression(temp.arguments[0]) && ts.isNonNullExpression(temp.arguments[0].expression) &&
     !ts.isNonNullExpression(temp.arguments[0].expression.expression);
 }
@@ -2904,6 +2911,13 @@ function isHaveDoubleDollar(param: ts.PropertyAssignment, name: string): boolean
   return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
     PROPERTIES_ADD_DOUBLE_DOLLAR.get(name).has(param.name.getText()) && param.initializer &&
     param.initializer.getText().match(/^(?!\$\$\.)\$\$(.|\n)+/) !== null;
+}
+
+function isHaveDoubleExclamation(param: ts.PropertyAssignment, name: string): boolean {
+  return ts.isPropertyAssignment(param) && param.name && ts.isIdentifier(param.name) &&
+    PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(name) && PROPERTIES_ADD_DOUBLE_EXCLAMATION.get(name).has(param.name.getText()) &&
+    param.initializer && ts.isNonNullExpression(param.initializer) && ts.isNonNullExpression(param.initializer.expression) &&
+    !ts.isNonNullExpression(param.initializer.expression.expression);
 }
 
 function loopEtscomponent(node: any, isStylesAttr: boolean): ts.Node {
@@ -2944,8 +2958,12 @@ function classifyArgumentsNum(args, argumentsArr: ts.Expression[], propName: str
   }
 }
 
-function classifyArgumentsNumV2(args, argumentsArr: ts.Expression[], propName: string): void {
-  if (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && args.length >= 2) {
+function classifyArgumentsNumV2(args: any, argumentsArr: ts.Expression[], propName: string, 
+  identifierNode: ts.Identifier): void {
+  const componentName: string = identifierNode.escapedText.toString();
+  if (STYLE_ADD_DOUBLE_EXCLAMATION.has(propName) && args.length || 
+  PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(componentName) && args.length === 1 &&
+  PROPERTIES_ADD_DOUBLE_EXCLAMATION.get(componentName).has(propName)) {
     const varExp: ts.Expression = updateArgumentForExclamation(args[0]);
     argumentsArr.push(generateObjectForExclamation(varExp), ...args.slice(1));
   }
@@ -2989,6 +3007,13 @@ function generateObjectForDollar(varExp: ts.Expression): ts.ObjectLiteralExpress
       )
     ],
     false
+  );
+}
+
+function generateFunctionPropertyAssignmentForExclamation(name: string, varExp: ts.Expression): ts.PropertyAssignment {
+  return ts.factory.createPropertyAssignment(
+    ts.factory.createIdentifier('$' + name),
+    createArrowFunctionForDollar(varExp)
   );
 }
 
@@ -3427,6 +3452,28 @@ function processDollarEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, na
   return arr;
 }
 
+function processExclamationEtsComponent(argumentsArr: ts.NodeArray<ts.Expression>, name: string): ts.Expression[] {
+  const arr: ts.Expression[] = [];
+  argumentsArr.forEach((item: ts.Expression, index: number) => {
+    if (ts.isObjectLiteralExpression(item) && item.properties && item.properties.length) {
+      const properties: ts.PropertyAssignment[] = [];
+      item.properties.forEach((param: ts.PropertyAssignment, paramIndex: number) => {
+        if (isHaveDoubleExclamation(param, name) && param.initializer && param.name) {
+          const varExp: ts.Expression = updateArgumentForExclamation(param.initializer);
+          properties.push(ts.factory.updatePropertyAssignment(param, param.name, varExp));
+          properties.push(generateFunctionPropertyAssignmentForExclamation(param.name.getText(), varExp));
+        } else {
+          properties.push(param);
+        }
+      });
+      arr.push(ts.factory.updateObjectLiteralExpression(item, properties));
+    } else {
+      arr.push(item);
+    }
+  });
+  return arr;
+}
+
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
     const compName: string = node.escapedText.toString();
@@ -3435,6 +3482,9 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
       argumentsArr = processDollarEtsComponent(argumentsArr, compName);
+    }
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(compName)) {
+      argumentsArr = processExclamationEtsComponent(argumentsArr, compName) as unknown as ts.NodeArray<ts.Expression>;
     }
     if (checkCreateArgumentBuilder(node, attrNode)) {
       argumentsArr = transformBuilder(argumentsArr);

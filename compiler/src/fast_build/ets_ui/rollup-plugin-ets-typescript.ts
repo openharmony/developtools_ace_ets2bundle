@@ -41,7 +41,8 @@ import {
   harFilesRecord,
   resetUtils,
   getResolveModules,
-  toUnixPath
+  toUnixPath,
+  getBelongModuleInfo
 } from '../../utils';
 import {
   preprocessExtend,
@@ -98,8 +99,10 @@ import {
 } from '../ark_compiler/common/ob_config_resolver';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
-import { resetlogMessageCollection } from '../../log_message_collection';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
+import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
+import { MemoryDefine } from '../meomry_monitor/memory_define';
+import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -127,6 +130,12 @@ export function etsTransform() {
   return {
     name: 'etsTransform',
     transform: transform,
+    moduleParsed(moduleInfo: moduleInfoType): void {
+      if (this.share.projectConfig.singleFileEmit && this.share.projectConfig.needCoverageInsert) {
+        //ts coverage instrumentation
+        this.share.sourceFile = ModuleSourceFile.getSourceFileById(moduleInfo.id);
+      }
+    },
     buildStart() {
       const compilationTime: CompilationTimeStatistics = new CompilationTimeStatistics(this.share, 'etsTransform', 'buildStart');
       startTimeStatisticsLocation(compilationTime ? compilationTime.etsTransformBuildStartTime : undefined);
@@ -196,14 +205,19 @@ export function etsTransform() {
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
         for (let moduleInfoId of allModuleIds.keys()) {
           const moduleInfo: Object = this.getModuleInfo(moduleInfoId);
-          if (!moduleInfo) {
+          if (!moduleInfo && !moduleInfoId.match(/\.d\.e?ts$/)) {
             continue;
           }
           if (moduleInfoId && !moduleInfoId.match(new RegExp(projectConfig.packageDir)) &&
             !moduleInfoId.startsWith('\x00') &&
             path.resolve(moduleInfoId).startsWith(projectConfig.moduleRootPath + path.sep)) {
             let filePath: string = moduleInfoId;
-            const metaInfo: Object = moduleInfo.meta;
+            let metaInfo: Object;
+            if (filePath.match(/\.d\.e?ts$/)) {
+              metaInfo = getBelongModuleInfo(moduleInfoId, projectConfig.modulePathMap, projectConfig.projectRootPath);
+            } else {
+              metaInfo = moduleInfo.meta;
+            }
             if (this.share.arkProjectConfig?.obfuscationMergedObConfig?.options?.enableFileNameObfuscation) {
               filePath = mangleFilePath(filePath);
             }
@@ -212,11 +226,13 @@ export function etsTransform() {
               process.env.cachePath, projectConfig, metaInfo);
             const buildFilePath: string = genTemporaryPath(filePath, projectConfig.moduleRootPath,
               projectConfig.buildPath, projectConfig, metaInfo, true);
+			const recordInfo = MemoryMonitor.recordStage(MemoryDefine.SET_INCREMENTAL_FILE_IN_HAR);
             if (filePath.match(/\.e?ts$/)) {
               setIncrementalFileInHar(cacheFilePath, buildFilePath, allFilesInHar);
             } else {
               allFilesInHar.set(cacheFilePath, buildFilePath);
             }
+            MemoryMonitor.stopRecordStage(recordInfo);
           }
         }
 
@@ -249,7 +265,6 @@ export function etsTransform() {
       resetUtils();
       resetValidateUiSyntax();
       resetObfuscation();
-      resetlogMessageCollection();
     }
   };
 }
@@ -331,9 +346,9 @@ async function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
-
+  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.STORED_FILE_INFO_TRANSFORM);
   storedFileInfo.collectTransformedFiles(path.resolve(id));
-
+  MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
 
   if (projectConfig.compileMode !== 'esmodule') {
@@ -388,17 +403,20 @@ async function transform(code: string, id: string) {
         stopTimeStatisticsLocation(compilationTime ? compilationTime.noSourceFileRebuildProgramTime : undefined);
       }
     }
-
+	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
     globalProgram.checker = tsProgram.getTypeChecker();
     globalProgram.strictChecker = tsProgram.getLinterTypeChecker();
+    MemoryMonitor.stopRecordStage(recordInfo);
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
     collectAllFiles(tsProgram);
   } else {
     if (!storedFileInfo.reUseProgram) {
+	  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
       globalProgram.checker = globalProgram.program.getTypeChecker();
       globalProgram.strictChecker = globalProgram.program.getLinterTypeChecker();
+      MemoryMonitor.stopRecordStage(recordInfo);
     }
     storedFileInfo.reUseProgram = true;
   }
@@ -427,12 +445,14 @@ async function transform(code: string, id: string) {
   let transformResult: ts.TransformationResult<ts.SourceFile> = null;
   try {
     startTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
+    const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
     }
     if (shouldEmitJsFlag) {
       startTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
+      const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
@@ -443,8 +463,10 @@ async function transform(code: string, id: string) {
           ]
         }
       );
+      MemoryMonitor.stopRecordStage(uiKitrecordInfo);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.emitTime : undefined);
     } else {
+	  const uiKitrecordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
       startTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
       const emitResolver: ts.EmitResolver = globalProgram.checker.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
@@ -455,8 +477,10 @@ async function transform(code: string, id: string) {
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
+      MemoryMonitor.stopRecordStage(uiKitrecordInfo);
     }
     stopTimeStatisticsLocation(compilationTime ? compilationTime.tsProgramEmitTime : undefined);
+    MemoryMonitor.stopRecordStage(recordInfo);
   } finally {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
