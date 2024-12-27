@@ -12,6 +12,23 @@
         "columnsGap",
         "rowsGap",
         "layoutDirection",
-        "enableScrollInteraction"
+        "enableScrollInteraction",
+        "nestedScroll",
+        "onScrollFrameBegin",
+        "friction",
+        "cachedCount",
+        "edgeEffect",
+        "onScroll",
+        "onScrollStart",
+        "onScrollStop",
+        "onScrollIndex",
+        "scrollBar",
+        "scrollBarWidth",
+        "scrollBarColor",
+        "flingSpeedLimit",
+        "onWillScroll",
+        "onDidScroll",
+        "fadingEdge",
+        "clipContent"
     ]
 }
