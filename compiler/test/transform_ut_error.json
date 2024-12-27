@@ -643,6 +643,40 @@
             "type": "ERROR"
         }
     ],
+    "validateStaticVariables": [
+        {
+            "message": "Static property 'a1' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static property 'b4' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static property 'b5' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static property 'c1' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static property 'd4' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Static property 'd5' can not be initialized through the component constructor.",
+            "type": "WARN"
+        },
+        {
+            "message": "Property 'b1' in the custom component 'StaticChildTwo' cannot be initialized here (forbidden to specify).",
+            "type": "ERROR"
+        },
+        {
+            "message": "Property 'd1' in the custom component 'StaticChildFour' cannot be initialized here (forbidden to specify).",
+            "type": "ERROR"
+        }
+    ],
     "validateDifferentMethod": [
         {
             "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",

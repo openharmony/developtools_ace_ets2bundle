@@ -76,6 +76,7 @@ import {
   stateInitialization,
   provideInitialization,
   privateCollection,
+  regularStaticCollection,
   componentCollection
 } from './validate_ui_syntax';
 import {
@@ -434,6 +435,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       });
     }
   }
+  logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
 }
 
 function isForbiddenAssignToComponentV1(item: ts.PropertyAssignment, itemName: string,
@@ -964,7 +966,9 @@ function validateCustomComponentPrams(node: ts.CallExpression, name: string,
     const dollarPropertyCollection: string[] = [];
     nodeArgument.properties.forEach(item => {
       if (item.name && ts.isIdentifier(item.name)) {
-        curChildProps.add(item.name.escapedText.toString());
+        const propName: string = item.name.escapedText.toString();
+        curChildProps.add(propName);
+        logMessageCollection.checkIfAssignToStaticProps(item, propName, regularStaticCollection.get(name) || new Set(), log);
       }
       validateStateManagement(item, name, log, isBuilder, doubleExclamationCollection, dollarPropertyCollection);
       if (isNonThisProperty(item, linkSet)) {
