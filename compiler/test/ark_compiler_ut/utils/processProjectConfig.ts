@@ -27,10 +27,24 @@ projectConfig.modulePathMap = {
 projectConfig.projectRootPath = "/testProjectRootPath";
 projectConfig.packageDir = 'oh_modules';
 projectConfig.harNameOhmMap = {
-  "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index"
+  "@ohos/sharedLibrary": "@bundle:UtTestApplication/sharedLibrary/ets/index",
+  "@ohos/library": "@bundle:UtTestApplication/library/ets/index"
 };
 projectConfig.hspNameOhmMap = {};
 projectConfig.cachePath = '../../test/ark_compiler_ut/cache/';
-projectConfig.pkgContextInfo = {};
+projectConfig.pkgContextInfo = {
+  "@ohos/library": {
+    "packageName": "@ohos/library",
+    "bundleName": "",
+    "moduleName": "",
+    "version": "1.0.0",
+    "entryPath": "Index",
+    "isSO": false,
+    "dependencyAlias": ""
+  }
+};
+projectConfig.dependencyAliasMap = new Map([
+  ['library', '@bundle:UtTestApplication/sharedLibrary/ets/index']
+]);
 
 export default projectConfig;
