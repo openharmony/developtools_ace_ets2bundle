@@ -431,11 +431,14 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
 }
 
 function isRequireCanReleaseMandatoryDecorators(node: ts.PropertyDeclaration, decoratorName: string): boolean {
-  const decoratorIsRequire: boolean = decoratorName === COMPONENT_REQUIRE_DECORATOR;
+  if (decoratorName === COMPONENT_REQUIRE_DECORATOR) {
+    return true;
+  }
+
   const decoratorIsNotMandatory: boolean = (ts.getAllDecorators(node).find(
     (decorator: ts.Decorator) => decorator.getText() === COMPONENT_REQUIRE_DECORATOR) &&
     requireCanReleaseMandatoryDecorators.has(decoratorName))
-  return decoratorIsRequire || decoratorIsNotMandatory;
+  return decoratorIsNotMandatory;
 }
 
 function validatePropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
