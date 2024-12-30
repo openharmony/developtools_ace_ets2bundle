@@ -103,6 +103,7 @@ import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/uti
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
+import { LazyImportOptions } from '../../ark_utils';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -436,7 +437,10 @@ async function transform(code: string, id: string) {
   // close `noEmit` to make invoking emit() effective.
   tsProgram.getCompilerOptions().noEmit = false;
   const metaInfo: Object = this.getModuleInfo(id).meta;
-  const autoLazyImport: boolean = this.share.projectConfig?.autoLazyImport;
+  const lazyImportOptions: LazyImportOptions = {
+    autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? 'noCheck'
+  };
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
   const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile, id);
@@ -457,7 +461,7 @@ async function transform(code: string, id: string) {
         {
           before: [
             processUISyntax(null, false, compilationTime, id),
-            processKitImport(id, metaInfo, compilationTime, true, autoLazyImport),
+            processKitImport(id, metaInfo, compilationTime, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
           ]
@@ -473,7 +477,7 @@ async function transform(code: string, id: string) {
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, compilationTime, id),
-        processKitImport(id, metaInfo, compilationTime, false, autoLazyImport),
+        processKitImport(id, metaInfo, compilationTime, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
       stopTimeStatisticsLocation(compilationTime ? compilationTime.transformNodesTime : undefined);
