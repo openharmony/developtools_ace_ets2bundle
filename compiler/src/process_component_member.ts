@@ -435,9 +435,9 @@ function isRequireCanReleaseMandatoryDecorators(node: ts.PropertyDeclaration, de
     return true;
   }
 
-  const decoratorIsNotMandatory: boolean = (ts.getAllDecorators(node).find(
+  const decoratorIsNotMandatory: boolean = ts.getAllDecorators(node).find(
     (decorator: ts.Decorator) => decorator.getText() === COMPONENT_REQUIRE_DECORATOR) &&
-    requireCanReleaseMandatoryDecorators.has(decoratorName))
+    requireCanReleaseMandatoryDecorators.has(decoratorName);
   return decoratorIsNotMandatory;
 }
 
