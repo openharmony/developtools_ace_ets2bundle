@@ -85,6 +85,11 @@ import {
   setUnobfuscationNames,
   writeObfuscatedFile
 } from './fast_build/ark_compiler/common/ob_config_resolver';
+import {
+  IFileLog,
+  LogType
+} from './utils';
+import creatAstNodeUtils from './create_ast_node_utils';
 import { moduleRequestCallback } from './fast_build/system_api/api_check_utils';
 import { SourceMapGenerator } from './fast_build/ark_compiler/generate_sourcemap';
 import { sourceFileBelongProject } from './fast_build/ark_compiler/module/module_source_file';
@@ -105,6 +110,7 @@ export const SRC_MAIN: string = 'src/main';
 export let newSourceMaps: Object = {};
 
 export const packageCollection: Map<string, Array<string>> = new Map();
+export const reExportCheckLog: IFileLog = new creatAstNodeUtils.FileLog();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
@@ -971,6 +977,11 @@ export function transformOhmurlToPkgName(ohmurl: string): string {
   return paths[0];
 }
 
+export interface LazyImportOptions {
+  autoLazyImport: boolean;
+  reExportCheckMode: string;
+}
+
 export function transformLazyImport(sourceFile: ts.SourceFile | string, resolver: Object, filePath?: string): ts.SourceFile | string {
   const sourceNode: ts.SourceFile = (typeof sourceFile !== 'string') ? <ts.SourceFile> sourceFile :
     ts.createSourceFile(filePath, <string> sourceFile, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
@@ -1029,4 +1040,88 @@ function eliminateTypeSymbol(namedBindings: ts.NamedImportBindings, resolver: Ob
     }
   });
   return newNameBindings;
+}
+
+export function resetReExportCheckLog(): void {
+  reExportCheckLog.cleanUp();
+}
+
+export function jsLazyImportReExportCheck(code: string, id: string, reExportCheckMode: string): void {
+  const sourceNode = ts.createSourceFile(id, code, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
+  lazyImportReExportCheck(sourceNode, reExportCheckMode);
+}
+
+export function lazyImportReExportCheck(node: ts.SourceFile, reExportCheckMode: string): void {
+  reExportCheckLog.sourceFile = node;
+  const lazyImportSymbols: Set<string> = new Set();
+  node.statements.forEach(stmt => {
+    collectLazyImportSymbols(stmt, lazyImportSymbols);
+  });
+  node.statements.forEach(stmt => {
+    // export {xxx}
+    if (ts.isExportDeclaration(stmt) && !stmt.moduleSpecifier && ts.isNamedExports(stmt.exportClause)) {
+      const namedExportBindings: ts.NamedExportBindings = stmt.exportClause;
+      if (namedExportBindings && namedExportBindings.elements.length !== 0) {
+        namedExportBindings.elements.forEach((element: ts.ExportSpecifier) => {
+          collectReExportErrors(lazyImportSymbols, stmt, element.getText(), reExportCheckMode);
+        });
+      }
+    }
+    // export default xxx
+    if (ts.isExportAssignment(stmt)) {
+      const expression = stmt.expression;
+      if (expression && ts.isIdentifier(expression)) {
+        collectReExportErrors(lazyImportSymbols, stmt, expression.text, reExportCheckMode);
+      }
+    }
+  });
+}
+
+function collectLazyImportSymbols(node: ts.Node, lazyImportSymbols: Set<string>): void {
+  if (ts.isImportDeclaration(node) && node.importClause && node.importClause.isLazy) {
+    // For import lazy xxx from './yyy', collect 'xxx'
+    if (node.importClause.name) {
+      lazyImportSymbols.add(node.importClause.name.text);
+    }
+    const importNamedBindings: ts.NamedImportBindings = node.importClause.namedBindings;
+    // For import lazy {xxx} from './yyy', collect 'xxx'
+    if (importNamedBindings && ts.isNamedImports(importNamedBindings) && importNamedBindings.elements.length !== 0) {
+      importNamedBindings.elements.forEach((element: ts.ImportSpecifier) => {
+        if (element.name) {
+          lazyImportSymbols.add(element.name.text);
+        }
+      });
+    }
+  }
+}
+
+function collectReExportErrors(lazyImportSymbols: Set<string>, node: ts.Node,
+  elementText: string, reExportCheckMode: string): void {
+  if (!lazyImportSymbols.has(elementText)) {
+    return;
+  }
+  let pos: number;
+  try {
+    pos = node.getStart();
+  } catch {
+    pos = 0;
+  }
+  let type: LogType = LogType.WARN;
+  if (reExportCheckMode === 'error') {
+    type = LogType.ERROR;
+  }
+  const errInfo: LogData = LogDataFactory.newInstance(
+    ErrorCode.ETS2BUNDLE_EXTERNAL_LAZY_IMPORT_RE_EXPORT_ERROR,
+    ArkTSErrorDescription,
+    `'${elementText}' of lazy-import is re-export`,
+    '',
+    ['Please make sure the namedBindings of lazy-import are not be re-exported.',
+      'Please check whether the autoLazyImport switch is opened.']
+  );
+
+  reExportCheckLog.errors.push({
+    type: type,
+    message: errInfo.toString(),
+    pos: pos
+  });
 }

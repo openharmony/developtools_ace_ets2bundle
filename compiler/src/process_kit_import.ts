@@ -29,7 +29,11 @@ import { ModuleSourceFile } from './fast_build/ark_compiler/module/module_source
 import { collectKitModules } from './fast_build/system_api/rollup-plugin-system-api';
 import { hasTsNoCheckOrTsIgnoreFiles, compilingEtsOrTsFiles } from './fast_build/ark_compiler/utils';
 import { compilerOptions } from './ets_checker';
-import { transformLazyImport } from './ark_utils';
+import {
+  transformLazyImport,
+  lazyImportReExportCheck,
+  LazyImportOptions
+} from './ark_utils';
 import createAstNodeUtils from './create_ast_node_utils';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
@@ -68,7 +72,9 @@ const KEEPTS = '// @keepTs';
 *    ```
 */
 export function processKitImport(id: string, metaInfo: Object, compilationTime: CompilationTimeStatistics,
-  shouldReturnOriginalNode: boolean = true, autoLazyImport: boolean = false): Function {
+  shouldReturnOriginalNode: boolean = true,
+  lazyImportOptions: LazyImportOptions = { autoLazyImport: false, reExportCheckMode: 'noCheck' }): Function {
+  const { autoLazyImport, reExportCheckMode } = lazyImportOptions;
   return (context: ts.TransformationContext) => {
     const visitor: ts.Visitor = node => {
       // only transform static import/export declaration
@@ -131,6 +137,9 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(processedNode, resolver) : processedNode);
+        if (reExportCheckMode !== 'noCheck') {
+          lazyImportReExportCheck(processedNode, reExportCheckMode);
+        }
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
         stopTimeStatisticsLocation(compilationTime ? compilationTime.processKitImportTime : undefined);
@@ -539,7 +548,7 @@ class ImportSpecifierKitInfo extends KitInfo {
         node.importClause!.isTypeOnly,
         this.specifierDefaultName,
         this.hasNamedBindings() ? ts.factory.createNamedImports(this.namedBindings) : undefined
-      )
+      );
       // @ts-ignore
       newImportClause.isLazy = node.importClause!.isLazy;
       this.getOhosImportNodes().push(ts.factory.createImportDeclaration(
