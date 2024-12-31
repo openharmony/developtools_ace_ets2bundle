@@ -45,6 +45,7 @@ import {
   LogData,
   LogDataFactory
 } from './fast_build/ark_compiler/logger';
+import { etsLoaderErrorReferences } from './fast_build/ark_compiler/url_config.json';
 
 /*
 * basic implementation logic:
@@ -92,7 +93,10 @@ export function processKitImport(id: string, metaInfo: Object, compilationTime: 
               ArkTSErrorDescription,
               `Kit '${moduleRequest}' has no corresponding config file in ArkTS SDK.`,
               '',
-              ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+              [
+                "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+                `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+              ]
             );
             kitTransformLog.errors.push({
               type: LogType.ERROR,
@@ -456,7 +460,10 @@ export class KitInfo {
         ArkTSErrorDescription,
         `'${importName}' is not exported from Kit '${KitInfo.getCurrentKitName()}'.`,
         '',
-        [`Please add the exported symbol of '${importName}' in the Kit '${KitInfo.getCurrentKitName()}'.`]
+        [
+          "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+          `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+        ]
       );
       kitTransformLog.errors.push({
         type: LogType.ERROR,
