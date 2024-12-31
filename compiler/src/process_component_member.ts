@@ -136,6 +136,10 @@ export const appStorageDecorators: Set<string> =
 export const mandatorySpecifyDefaultValueDecorators: Set<string> =
   new Set([...observedPropertyDecorators, ...appStorageDecorators]);
 
+export const requireCanReleaseMandatoryDecorators: Set<string> =
+  new Set([COMPONENT_PROP_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR,
+    ...observedPropertyDecorators]);
+
 export const forbiddenSpecifyDefaultValueDecorators: Set<string> =
   new Set([COMPONENT_LINK_DECORATOR, COMPONENT_CONSUME_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
 
@@ -400,7 +404,8 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     if (node.initializer && forbiddenSpecifyDefaultValueDecorators.has(decoratorName)) {
       validatePropertyDefaultValue(name, decoratorName, log);
       return;
-    } else if (!node.initializer && mandatorySpecifyDefaultValueDecorators.has(decoratorName)) {
+    } else if (!node.initializer && !isRequireCanReleaseMandatoryDecorators(node, decoratorName) && 
+    mandatorySpecifyDefaultValueDecorators.has(decoratorName)) {
       validatePropertyNonDefaultValue(name, decoratorName, log);
       return;
     }
@@ -423,6 +428,17 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     }
   }
   validatePropertyDecorator(propertyDecorators, name, log);
+}
+
+function isRequireCanReleaseMandatoryDecorators(node: ts.PropertyDeclaration, decoratorName: string): boolean {
+  if (decoratorName === COMPONENT_REQUIRE_DECORATOR) {
+    return true;
+  }
+
+  const decoratorIsNotMandatory: boolean = ts.getAllDecorators(node).find(
+    (decorator: ts.Decorator) => decorator.getText() === COMPONENT_REQUIRE_DECORATOR) &&
+    requireCanReleaseMandatoryDecorators.has(decoratorName);
+  return decoratorIsNotMandatory;
 }
 
 function validatePropertyDecorator(propertyDecorators: string[], name: ts.Identifier,
@@ -1254,8 +1270,14 @@ function updateObservedPropertyPU(item: ts.PropertyDeclaration, name: ts.Identif
     createPropertyAccessExpressionWithThis(`__${name.getText()}`),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createNewExpression(
       ts.factory.createIdentifier(isSimpleType(type, program) ? OBSERVED_PROPERTY_SIMPLE_PU :
-        OBSERVED_PROPERTY_OBJECT_PU), undefined, [item.initializer, ts.factory.createThis(),
-        ts.factory.createStringLiteral(name.escapedText.toString())])));
+        OBSERVED_PROPERTY_OBJECT_PU), undefined, [
+          item.initializer ?? ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED), 
+          ts.factory.createThis(),
+          ts.factory.createStringLiteral(name.escapedText.toString())
+        ]
+      )
+    )
+  );
 }
 
 function updateSynchedPropertyTwoWayPU(nameIdentifier: ts.Identifier, type: ts.TypeNode,
