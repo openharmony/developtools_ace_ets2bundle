@@ -389,29 +389,15 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     if (!includeWatchAndRequire) {
       PropMapManager.register(name.escapedText.toString(), decoratorName);
     }
-    if (BUILDIN_STYLE_NAMES.has(decoratorName.replace('@', ''))) {
-      validateDuplicateDecorator(decorators[i], log);
-    }
-    if (!includeWatchAndRequire && isForbiddenUseStateType(node.type)) {
-      // @ts-ignore
-      validateForbiddenUseStateType(name, decoratorName, node.type.typeName.getText(), log);
+    checkDecoratorIsDuplicated(decoratorName, decorators[i], log);
+    if (checkDecoratorIsForbidden(node, includeWatchAndRequire, decoratorName, name, log)) {
       return;
     }
-    if (parentName.getText() === componentCollection.entryComponent &&
-      mandatoryToInitViaParamDecorators.has(decoratorName)) {
-      validateHasIllegalDecoratorInEntry(parentName, name, decoratorName, log);
-    }
-    if (node.initializer && forbiddenSpecifyDefaultValueDecorators.has(decoratorName)) {
-      validatePropertyDefaultValue(name, decoratorName, log);
-      return;
-    } else if (!node.initializer && !isRequireCanReleaseMandatoryDecorators(node, decoratorName) && 
-    mandatorySpecifyDefaultValueDecorators.has(decoratorName)) {
-      validatePropertyNonDefaultValue(name, decoratorName, log);
+    checkDecoratorIsIllegalInEntry(parentName, decoratorName, name, log);
+    if (checkDecoratorIsIllegalInPropertyInit(node, decoratorName, name, log)) {
       return;
     }
-    if (node.questionToken && mandatoryToInitViaParamDecorators.has(decoratorName) && !(decoratorName === COMPONENT_PROP_DECORATOR && node.initializer)) {
-      validateHasIllegalQuestionToken(name, decoratorName, log);
-    }
+    checkDecoratorHasIllegalQuestionToken(node, decoratorName, name, log);
     if (!isSimpleType(node.type, program) &&
       decoratorName !== COMPONENT_BUILDERPARAM_DECORATOR) {
       stateObjectCollection.add(name.escapedText.toString());
@@ -428,6 +414,51 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
     }
   }
   validatePropertyDecorator(propertyDecorators, name, log);
+}
+
+function checkDecoratorHasIllegalQuestionToken(
+  node: ts.PropertyDeclaration, decoratorName: string, name: ts.Identifier, log: LogInfo[]): void {
+  if (node.questionToken && mandatoryToInitViaParamDecorators.has(decoratorName) && 
+    !(decoratorName === COMPONENT_PROP_DECORATOR && node.initializer)) {
+    validateHasIllegalQuestionToken(name, decoratorName, log);
+  }
+}
+
+function checkDecoratorIsIllegalInPropertyInit(
+  node: ts.PropertyDeclaration, decoratorName: string, name: ts.Identifier, log: LogInfo[]): boolean {
+  if (node.initializer && forbiddenSpecifyDefaultValueDecorators.has(decoratorName)) {
+    validatePropertyDefaultValue(name, decoratorName, log);
+    return true;
+  } else if (!node.initializer && !isRequireCanReleaseMandatoryDecorators(node, decoratorName) && 
+    mandatorySpecifyDefaultValueDecorators.has(decoratorName)) {
+    validatePropertyNonDefaultValue(name, decoratorName, log);
+    return true;
+  }
+  return false;
+}
+
+function checkDecoratorIsIllegalInEntry(
+  parentName: ts.Identifier, decoratorName: string, name: ts.Identifier, log: LogInfo[]): void {
+  if (parentName.getText() === componentCollection.entryComponent &&
+    mandatoryToInitViaParamDecorators.has(decoratorName)) {
+    validateHasIllegalDecoratorInEntry(parentName, name, decoratorName, log);
+  }
+}
+
+function checkDecoratorIsForbidden(
+  node: ts.PropertyDeclaration, includeWatchAndRequire: boolean, decoratorName: string, 
+  name: ts.Identifier, log: LogInfo[]): boolean {
+  if (!includeWatchAndRequire && ts.isTypeReferenceNode(node.type) && isForbiddenUseStateType(node.type)) {
+    validateForbiddenUseStateType(name, decoratorName, node.type.typeName.getText(), log);
+    return true;
+  }
+  return false;
+}
+
+function checkDecoratorIsDuplicated(decoratorName: string, decorator: ts.Decorator, log: LogInfo[]): void {
+  if (BUILDIN_STYLE_NAMES.has(decoratorName.replace('@', ''))) {
+    validateDuplicateDecorator(decorator, log);
+  }
 }
 
 function isRequireCanReleaseMandatoryDecorators(node: ts.PropertyDeclaration, decoratorName: string): boolean {
