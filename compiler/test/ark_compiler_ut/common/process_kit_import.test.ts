@@ -39,6 +39,7 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
+import { etsLoaderErrorReferences } from '../../../lib/fast_build/ark_compiler/url_config.json';
 
 const KIT_IMPORT_CODE: string =
 `
@@ -367,7 +368,10 @@ mocha.describe('process Kit Imports tests', function () {
       ArkTSErrorDescription,
       "Kit '@kit.Kit' has no corresponding config file in ArkTS SDK.",
       '',
-      ["Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis."]
+      [
+        "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+        `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+      ]
     );
     const hasError = kitTransformLog.errors.some(error =>
       error.message.includes(errInfo.toString())
@@ -394,7 +398,10 @@ mocha.describe('process Kit Imports tests', function () {
       ArkTSErrorDescription,
       "'test' is not exported from Kit '@kit.ArkTest'.",
       '',
-      ["Please add the exported symbol of 'test' in the Kit '@kit.ArkTest'."]
+      [
+        "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+        `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+      ]
     );
     const hasError = kitTransformLog.errors.some(error =>
       error.message.includes(errInfo.toString())
@@ -433,7 +440,10 @@ mocha.describe('process Kit Imports tests', function () {
       ArkTSErrorDescription,
       "'default' is not exported from Kit '@kit.ArkUI'.",
       '',
-      ["Please add the exported symbol of 'default' in the Kit '@kit.ArkUI'."]
+      [
+        "Please make sure the Kit apis are consistent with SDK and there's no local modification on Kit apis.",
+        `For more details on Kit apis, please refer to ${etsLoaderErrorReferences.harmonyOSReferencesAPI}.`
+      ]
     );
     const hasError = kitTransformLog.errors.some(error =>
       error.message.includes(errInfo.toString())

@@ -80,6 +80,7 @@ action("build_ets_loader_library") {
   _babel_js = _ace_config_dir + "/node_modules/@babel/cli/bin/babel.js"
   _babel_config_js = _ace_config_dir + "/babel.config.js"
   _uglify_source_js = _ace_config_dir + "/uglify-source.js"
+  _copy_json_files_js = _ace_config_dir + "/copy_json_files.js"
   _build_declarations_file_js = _ace_config_dir + "/build_declarations_file.js"
   _build_kit_configs_file_js = _ace_config_dir + "/build_kitConfigs_file.js"
 
@@ -87,6 +88,7 @@ action("build_ets_loader_library") {
     _babel_config_js,
     _babel_js,
     _uglify_source_js,
+    _copy_json_files_js,
     _build_declarations_file_js,
     _build_kit_configs_file_js,
   ]
@@ -107,6 +109,12 @@ action("build_ets_loader_library") {
     "--uglify-source-js",
     rebase_path(_uglify_source_js, root_build_dir),
     "--output-dir",
+    rebase_path(ets_loader_lib_dir, root_build_dir),
+    "--copy-json-files-js",
+    rebase_path(_copy_json_files_js, root_build_dir),
+    "--copy-src-dir",
+    rebase_path(_ets_loader_dir + "/src", root_build_dir),
+    "--copy-dest-dir",
     rebase_path(ets_loader_lib_dir, root_build_dir),
     "--declarations-file-dir",
     rebase_path(_declarations_file_dir, root_build_dir),
