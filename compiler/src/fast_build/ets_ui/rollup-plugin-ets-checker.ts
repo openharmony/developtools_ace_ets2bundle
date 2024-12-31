@@ -114,9 +114,7 @@ export function etsChecker() {
           MemoryMonitor.stopRecordStage(buildProgramRecordInfo);
           const collectFileToIgnore = MemoryMonitor.recordStage(MemoryDefine.COLLECT_FILE_TOIGNORE_RUN_TSLINTER);
           collectFileToIgnoreDiagnostics(rootFileNames);
-          const errorCodeLogger: Object | undefined = !!this.share?.getHvigorConsoleLogger ?
-            this.share?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
-          runArkTSLinter(errorCodeLogger);
+          runArkTSLinter(getErrorCodeLogger(LINTER_SUBSYSTEM_CODE, this.share));
           MemoryMonitor.stopRecordStage(collectFileToIgnore);
         }
         executedOnce = true;
@@ -145,6 +143,10 @@ export function etsChecker() {
       return targetESVersionChanged;
     }
   };
+}
+
+function getErrorCodeLogger(code: string, share: Object): Object | undefined {
+  return !!share?.getHvigorConsoleLogger ? share?.getHvigorConsoleLogger(code) : undefined;
 }
 
 function rootFileNamesCollect(rootFileNames: string[]): void {
