@@ -448,8 +448,7 @@ function checkDecoratorIsIllegalInEntry(
 function checkDecoratorIsForbidden(
   node: ts.PropertyDeclaration, includeWatchAndRequire: boolean, decoratorName: string, 
   name: ts.Identifier, log: LogInfo[]): boolean {
-  if (!includeWatchAndRequire && isForbiddenUseStateType(node.type)) {
-    // @ts-ignore
+  if (!includeWatchAndRequire && ts.isTypeReferenceNode(node.type) && isForbiddenUseStateType(node.type)) {
     validateForbiddenUseStateType(name, decoratorName, node.type.typeName.getText(), log);
     return true;
   }
