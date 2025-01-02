@@ -113,7 +113,8 @@ import {
   linkCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  methodDecoratorCollect
 } from './validate_ui_syntax';
 import {
   addConstructor,
@@ -201,6 +202,11 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     unassignedControllerSet: new Set() };
   const interfaceNode = ts.factory.createInterfaceDeclaration(undefined,
     parentComponentName.getText() + INTERFACE_NAME_SUFFIX, undefined, undefined, []);
+  members.forEach((item: ts.MethodDeclaration) => {
+    if (hasDecorator(item, COMPONENT_STYLES_DECORATOR)) {
+      methodDecoratorCollect(item);
+    }
+  })
   members.forEach((item: ts.ClassElement) => {
     let updateItem: ts.ClassElement;
     if (ts.isPropertyDeclaration(item)) {

@@ -607,7 +607,7 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
   }
 }
 
-function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
+export function methodDecoratorCollect(node: ts.MethodDeclaration | ts.FunctionDeclaration): void {
   const extendResult: ExtendResult = { decoratorName: '', componentName: '' };
   const builderCondition: builderConditionType = {
     isBuilder: false,
