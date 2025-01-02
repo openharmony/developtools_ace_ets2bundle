@@ -47,9 +47,11 @@ class ModuleModeMock extends ModuleMode {
     const mockFileList = rollupObject.getModuleIds();
     for (const filePath of mockFileList) {
       if (filePath.endsWith(EXTNAME_TS) || filePath.endsWith(EXTNAME_ETS) || filePath.endsWith(EXTNAME_JS)) {
+        const subStrings: string = filePath.split('.');
+
         const moduleInfo: object = rollupObject.getModuleInfo(filePath);
         const metaInfo: object = moduleInfo[META];
-        this.addModuleInfoItem(filePath, isCommonJs, extName, metaInfo, this.moduleInfos);
+        this.addModuleInfoItem(filePath, isCommonJs, extName, metaInfo, this.moduleInfos, subStrings[subStrings.length - 1]);
       }
     }
   }
@@ -158,7 +160,7 @@ class ModuleModeMock extends ModuleMode {
       const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
       mockfilesInfo +=
         `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
-        `${isSharedModule}\n`;
+        `${isSharedModule};${info.originSourceLang}\n`;
     });
     if (includeByteCodeHarInfo) {
       Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {  
