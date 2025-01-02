@@ -24,13 +24,7 @@ import {
   kitTransformLog,
   KitInfo
 } from '../../../lib/process_kit_import';
-import { 
-  findImportSpecifier,
-  createErrInfo
- } from '../utils/utils';
-import { projectConfig } from '../../../main';
-import { ModuleSourceFile } from '../../../lib/fast_build/ark_compiler/module/module_source_file';
-import { reExportCheckLog } from '../../../lib/ark_utils';
+import { findImportSpecifier } from '../utils/utils';
 import { 
   ArkTSErrorDescription,
   ErrorCode
@@ -83,9 +77,6 @@ const KIT_STAR_EXPORT_CODE_EXPECT: string =
 
 const KIT_IMPORT_ERROR_CODE: string =
 'import { Ability } from "@kit.Kit";'
-
-const KIT_IMPORT_DEFAULT_CODE: string =
-'import { Ability } from "@kit.AbilityKit";'
 
 const KIT_UNUSED_TYPE_IMPROT_CODE: string = 
 'import { BusinessError } from "@kit.BasicServicesKit";'
@@ -221,25 +212,6 @@ const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE: string =
 
 const SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT: string =
 'export {};\n' +
-'//# sourceMappingURL=kitTest.js.map'
-
-const LAZY_IMPORT_RE_EXPORT_ERROR: string =
-'import lazy { e1 } from "./test1";\n' +
-'import lazy { e2, e3 as a3 } from "./test1";\n' +
-'import lazy d1 from "./test1";\n' +
-'import lazy d2, { e4 as a4, e5 } from "./test2";\n' +
-'import lazy { componentUtils } from "@kit.ArkUI";\n' +
-'import lazy { dragController as k1, uiObserver } from "@kit.ArkUI";\n' +
-'import lazy { lazy } from "./test3"\n' +
-'import lazy { e6, type type1 } from "./testType1"\n' +
-'import lazy d3, { type type2 } from "./testType2"\n' +
-'export { e1 };\n' +
-'export { e2, a3 };\n' +
-'export { d1, d2, a4, e5, componentUtils, k1, uiObserver, lazy, e6, type1, d3, type2 };'
-
-const CLOSE_REEXPORTCHECKMODE_EXPECT: string =
-'import lazy { e1 } from "./test";\n' +
-'export { e1 };\n' +
 '//# sourceMappingURL=kitTest.js.map'
 
 const ARK_TEST_KIT: Object = {
@@ -598,210 +570,5 @@ mocha.describe('process Kit Imports tests', function () {
     });
     expect(result.outputText == SINGLE_DEFAULT_BINDINGS_NO_DEFAULT_IMPORT_CODE_EXPECT).to.be.true;
     fs.unlinkSync(arkTestKitConfig);
-  });
-
-  mocha.it('4-1: test transformLazyImport (ts.sourceFile): perform lazy conversion', function () {
-    const code: string = `
-    import { test } from "./test";
-    import { test1 as t } from "./test1";
-    const a: string = "a" + test() + t();
-    `;
-    projectConfig.processTs = true;
-    ts.transpileModule(code, {
-      compilerOptions: compilerOptions,
-      fileName: 'test.ets',
-      transformers: {
-        before: [
-          processKitImport('test.ets', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: undefined })
-        ]
-      }
-    });
-    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'test.ets');
-    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-    // @ts-ignore
-    const writer: ts.EmitTextWriter = ts.createTextWriter(
-      // @ts-ignore
-      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
-    printer.writeFile(sourceFile.source, writer, undefined);
-    const expectCode: string = 'import lazy { test } from "./test";\n' +
-    'import lazy { test1 as t } from "./test1";\n' +
-    'const a: string = "a" + test() + t();\n';
-    expect(writer.getText() === expectCode).to.be.true;
-  });
-
-  mocha.it('4-2: test transformLazyImport (ts.sourceFile): no lazy conversion', function () {
-    const code: string = `
-    import lazy { test } from "./test";
-    import lazy { test1 as t } from "./test1";
-    import test2 from "./test2";
-    import * as test3 from "./test3";
-    import test4, { test5 } from "./test4";
-    import type { testType } from "./testType";
-    import "test6";
-    let a: testType = test + t + test2 + test3.b + test4 + test5;
-    `;
-    projectConfig.processTs = true;
-    ts.transpileModule(code, {
-      compilerOptions: compilerOptions,
-      fileName: 'no.ets',
-      transformers: {
-        before: [
-          processKitImport('no.ets', undefined, undefined, true, { autoLazyImport: true, reExportCheckMode: undefined })
-        ]
-      }
-    });
-    const sourceFile: ts.SourceFile = ModuleSourceFile.getSourceFiles().find(element => element.moduleId === 'no.ets');
-    const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-    // @ts-ignore
-    const writer: ts.EmitTextWriter = ts.createTextWriter(
-      // @ts-ignore
-      ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
-    printer.writeFile(sourceFile.source, writer, undefined);
-    const expectCode: string = 'import lazy { test } from "./test";\n' +
-    'import lazy { test1 as t } from "./test1";\n' +
-    'import test2 from "./test2";\n' +
-    'import * as test3 from "./test3";\n' +
-    'import test4, { test5 } from "./test4";\n' +
-    'import type { testType } from "./testType";\n' +
-    'import "test6";\n' +
-    'let a: testType = test + t + test2 + test3.b + test4 + test5;\n';
-    expect(writer.getText() === expectCode).to.be.true;
-  });
-
-  mocha.it('5-1: the error message of lazy-import re-export', function () {
-    projectConfig.processTs = true;
-    ts.transpileModule(LAZY_IMPORT_RE_EXPORT_ERROR, {
-      compilerOptions: compilerOptions,
-      fileName: "kitTest.ts",
-      transformers: {
-        before: [ 
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'error' })
-        ]
-      }
-    });
-    const errInfo1 = createErrInfo('e1');
-    const errInfo2 = createErrInfo('e2');
-    const errInfo3 = createErrInfo('a3');
-    const errInfo4 = createErrInfo('d1');
-    const errInfo5 = createErrInfo('d2');
-    const errInfo6 = createErrInfo('a4');
-    const errInfo7 = createErrInfo('e5');
-    const errInfo8 = createErrInfo('componentUtils');
-    const errInfo9 = createErrInfo('k1');
-    const errInfo10 = createErrInfo('uiObserver');
-    const errInfo11 = createErrInfo('lazy');
-    const errInfo12 = createErrInfo('e6');
-    const errInfo13 = createErrInfo('type1');
-    const errInfo14 = createErrInfo('d3');
-    const errInfo15 = createErrInfo('type2');
-
-    const hasError1 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo1.toString())
-    );
-    const hasError2 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo2.toString())
-    );
-    const hasError3 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo3.toString())
-    );
-    const hasError4 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo4.toString())
-    );
-    const hasError5 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo5.toString())
-    );
-    const hasError6 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo6.toString())
-    );
-    const hasError7 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo7.toString())
-    );
-    const hasError8 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo8.toString())
-    );
-    const hasError9 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo9.toString())
-    );
-    const hasError10 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo10.toString())
-    );
-    const hasError11 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo11.toString())
-    );
-    const hasError12 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo12.toString())
-    );
-    const hasError13 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo13.toString())
-    );
-    const hasError14 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo14.toString())
-    );
-    const hasError15 = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo15.toString())
-    );
-
-    expect(hasError1).to.be.true;
-    expect(hasError2).to.be.true;
-    expect(hasError3).to.be.true;
-    expect(hasError4).to.be.true;
-    expect(hasError5).to.be.true;
-    expect(hasError6).to.be.true;
-    expect(hasError7).to.be.true;
-    expect(hasError8).to.be.true;
-    expect(hasError9).to.be.true;
-    expect(hasError10).to.be.true;
-    expect(hasError11).to.be.true;
-    expect(hasError12).to.be.true;
-    expect(hasError13).to.be.true;
-    expect(hasError14).to.be.true;
-    expect(hasError15).to.be.true;
-    projectConfig.processTs = false;
-  });
-
-  mocha.it('5-2: the error message of lazy-import re-export with the name lazy', function () {
-    projectConfig.processTs = true;
-    const code: string = `
-    import lazy lazy from "./test";
-    export { lazy };
-    `;
-    ts.transpileModule(code, {
-      compilerOptions: compilerOptions,
-      fileName: "kitTest.ts",
-      transformers: {
-        before: [ 
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'error' })
-        ]
-      }
-    });
-    const errInfo = createErrInfo('lazy');
-    const hasError = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo.toString())
-    );
-    expect(hasError).to.be.true;
-    projectConfig.processTs = false;
-  });
-
-  mocha.it('5-3: the warn message of lazy-import re-export', function () {
-    projectConfig.processTs = true;
-    const code: string = `
-    import lazy { y1 } from "./test";
-    export { y1 };
-    `;
-    ts.transpileModule(code, {
-      compilerOptions: compilerOptions,
-      fileName: "kitTest.ts",
-      transformers: {
-        before: [ 
-          processKitImport('kitTest.ts', undefined, undefined, true, { autoLazyImport: false, reExportCheckMode: 'warn' })
-        ]
-      }
-    });
-    const errInfo = createErrInfo('y1');
-    const hasError = reExportCheckLog.errors.some(error =>
-      error.message.includes(errInfo.toString())
-    );
-    expect(hasError).to.be.true;
-    projectConfig.processTs = false;
   });
 });

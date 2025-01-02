@@ -37,13 +37,15 @@ import {
 import {
   getHookEventFactory,
   createAndStartEvent,
-  stopEvent,
-  transformLazyImport,
-  jsLazyImportReExportCheck,
-  reExportCheckLog,
-  resetReExportCheckLog,
-  LazyImportOptions
+  stopEvent
 } from '../../ark_utils';
+import {
+  resetReExportCheckLog,
+  reExportNoCheckMode,
+  processJsCodeLazyImport,
+  reExportCheckLog,
+  LazyImportOptions
+} from '../../process_lazy_import';
 import { SourceMapGenerator } from './generate_sourcemap';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
@@ -61,7 +63,7 @@ export function transformForModule(code: string, id: string): string {
     reExportCheckMode
   }: LazyImportOptions = {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? 'noCheck'
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
   };
   if (this.share.projectConfig.compileMode === ESMODULE) {
     const metaInfo: Object = this.getModuleInfo(id).meta;
@@ -69,12 +71,7 @@ export function transformForModule(code: string, id: string): string {
     if (isTsOrEtsSourceFile(id) && shouldETSOrTSFileTransformToJS(id, projectConfig, metaInfo)) {
       preserveSourceMap(id, this.getCombinedSourcemap(), projectConfig, metaInfo, eventTransformForModule);
       // when ets/ts -> js, we need to convert lazy-import based on the js code generated after tsc conversion
-      if (autoLazyImport) {
-        code = <string> transformLazyImport(code, undefined, id);
-      }
-      if (reExportCheckMode !== 'noCheck') {
-        jsLazyImportReExportCheck(code, id, reExportCheckMode);
-      }
+      code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode);
       const newSourceFileRecordInfo = MemoryMonitor.recordStage(MemoryDefine.MODULE_SOURCE_FILE_NEW_SOURCE_FILE);
       ModuleSourceFile.newSourceFile(id, code, metaInfo, projectConfig.singleFileEmit);
       MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
@@ -83,12 +80,7 @@ export function transformForModule(code: string, id: string): string {
     if (isJsSourceFile(id) || isJsonSourceFile(id)) {
       let code: string = this.getModuleInfo(id).originalCode;
       if (isJsSourceFile(id)) {
-        if (autoLazyImport) {
-          code = <string> transformLazyImport(code, undefined, id);
-        }
-        if (reExportCheckMode !== 'noCheck') {
-          jsLazyImportReExportCheck(code, id, reExportCheckMode);
-        }
+        code = processJsCodeLazyImport(id, code, autoLazyImport, reExportCheckMode);
         if (projectConfig.compatibleSdkVersion <= 10) {
           const transformedResult: object = transformJsByBabelPlugin(code, eventTransformForModule);
           code = transformedResult.code;
@@ -105,7 +97,8 @@ export function transformForModule(code: string, id: string): string {
   }
   stopEvent(eventTransformForModule);
 
-  if (reExportCheckLog && reExportCheckLog.errors.length && reExportCheckMode !== 'noCheck' && !this.share.projectConfig.ignoreWarning) {
+  if (reExportCheckLog && reExportCheckLog.errors.length &&
+    reExportCheckMode !== reExportNoCheckMode && !this.share.projectConfig.ignoreWarning) {
     emitLogInfo(this.share.getLogger(GEN_ABC_PLUGIN_NAME), [...getTransformLog(reExportCheckLog)], true, id);
     resetReExportCheckLog();
   }
