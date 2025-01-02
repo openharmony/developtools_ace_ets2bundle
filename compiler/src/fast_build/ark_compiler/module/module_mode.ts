@@ -50,7 +50,10 @@ import {
   SOURCEMAPS_JSON,
   WIDGETS_ABC,
   TS2ABC,
-  ES2ABC
+  ES2ABC,
+  ETS,
+  TS,
+  JS
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -120,9 +123,10 @@ export class ModuleInfo {
   isCommonJs: boolean;
   sourceFile: string;
   packageName: string;
+  originSourceLang: string;
 
   constructor(filePath: string, cacheFilePath: string, isCommonJs: boolean, recordName: string, sourceFile: string,
-    packageName: string
+    packageName: string, originSourceLang: string
   ) {
     this.filePath = filePath;
     this.cacheFilePath = cacheFilePath;
@@ -130,6 +134,7 @@ export class ModuleInfo {
     this.isCommonJs = isCommonJs;
     this.sourceFile = sourceFile;
     this.packageName = packageName;
+    this.originSourceLang = originSourceLang
   }
 }
 
@@ -418,12 +423,12 @@ export class ModuleMode extends CommonMode {
     switch (path.extname(moduleId)) {
       case EXTNAME_ETS: {
         const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : EXTNAME_TS;
-        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
+        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos, ETS);
         break;
       }
       case EXTNAME_TS: {
         const extName: string = shouldETSOrTSFileTransformToJS(moduleId, this.projectConfig, metaInfo) ? EXTNAME_JS : '';
-        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos);
+        this.addModuleInfoItem(moduleId, false, extName, metaInfo, moduleInfos, TS);
         break;
       }
       case EXTNAME_JS:
@@ -431,7 +436,7 @@ export class ModuleMode extends CommonMode {
       case EXTNAME_CJS: {
         const extName: string = (moduleId.endsWith(EXTNAME_MJS) || moduleId.endsWith(EXTNAME_CJS)) ? EXTNAME_JS : '';
         const isCommonJS: boolean = metaInfo && metaInfo.commonjs && metaInfo.commonjs.isCommonJS;
-        this.addModuleInfoItem(moduleId, isCommonJS, extName, metaInfo, moduleInfos);
+        this.addModuleInfoItem(moduleId, isCommonJS, extName, metaInfo, moduleInfos, JS);
         break;
       }
       case EXTNAME_JSON: {
@@ -468,7 +473,7 @@ export class ModuleMode extends CommonMode {
   }
 
   private addModuleInfoItem(originalFilePath: string, isCommonJs: boolean, extName: string,
-    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>): void {
+    metaInfo: Object, moduleInfos: Map<String, ModuleInfo>, originSourceLang: string = ""): void {
     const sourceMapGenerator: SourceMapGenerator = SourceMapGenerator.getInstance();
     const isPackageModules = isPackageModulesFile(originalFilePath, this.projectConfig);
     let filePath: string = originalFilePath;
@@ -520,7 +525,8 @@ export class ModuleMode extends CommonMode {
     }
     filePath = toUnixPath(filePath);
 
-    moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName));
+    moduleInfos.set(filePath, new ModuleInfo(filePath, cacheFilePath, isCommonJs, recordName, sourceFile, packageName,
+                                             originSourceLang));
   }
 
   generateEs2AbcCmd() {
@@ -573,7 +579,7 @@ export class ModuleMode extends CommonMode {
       const moduleType: string = info.isCommonJs ? COMMONJS : ESM;
       const isSharedModule: boolean = sharedModuleSet.has(info.filePath);
       filesInfo += `${info.cacheFilePath};${info.recordName};${moduleType};${info.sourceFile};${info.packageName};` +
-        `${isSharedModule}\n`;
+        `${isSharedModule};${info.originSourceLang}\n`;
     });
     if (includeByteCodeHarInfo) {
       Object.entries(this.projectConfig.byteCodeHarInfo).forEach(([pkgName, abcInfo]) => {
