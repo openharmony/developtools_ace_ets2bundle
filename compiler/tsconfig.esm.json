@@ -276,7 +276,8 @@
         "RichEditor",
         "Component3D",
         "ContainerSpan",
-        "ArcSwiper"
+        "ArcSwiper",
+        "ArcScrollBar",
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -865,6 +866,11 @@
             "name": "ArcSwiper",
             "type": "ArcSwiperAttribute",
             "instance": "ArcSwiperInstance"
+          },
+          {
+            "name": "ArcScrollBar",
+            "type": "ArcScrollBarAttribute",
+            "instance": "ArcScrollBarInstance"
           }
         ]
       },
