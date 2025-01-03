@@ -338,6 +338,7 @@ export const SEAECH: string = 'Search';
 export const CALENDAR: string = 'Calendar';
 export const MODE: string = 'mode';
 export const SHOW_SIDE_BAR: string = 'showSideBar';
+export const SIDE_BAR_WIDTH: string = 'sideBarWidth';
 export const CHECK_BOX: string = 'Checkbox';
 export const SELECT_LOW: string = 'select';
 export const CHECKBOX_GROUP: string = 'CheckboxGroup';
@@ -367,6 +368,7 @@ export const LIST_ITEM: string = 'ListItem';
 export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
+export const NAV_BAR_WIDTH: string = 'navBarWidth';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
@@ -411,10 +413,11 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
+  [NAVIGATION, new Set([NAV_BAR_WIDTH])],
   [PANEL, new Set([MODE])],
   [RATING, new Set([RATING_LOW])],
   [SEAECH, new Set([VALUE])],
-  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR])],
+  [SIDE_BAR_CONTAINER, new Set([SHOW_SIDE_BAR, SIDE_BAR_WIDTH])],
   [SLIDER, new Set([VALUE])],
   [STEPPER, new Set([INDEX])],
   [SWIPER, new Set([INDEX])],
