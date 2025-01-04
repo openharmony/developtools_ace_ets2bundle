@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import { es2abcErrorReferences } from './url_config.json';
+
 export enum SubsystemCode {
   ETS2BUNDLE = '103',
   ABC2PROGRAM = '104',
@@ -73,7 +75,7 @@ export const ES2ABC_SYNTAX_ERROR_DESCRIPTION = 'Syntax Error';
 export const ES2ABC_PATCH_FIX_ERROR_PREFIX = '[Patch] ';
 export const ES2ABC_PATCH_FIX_ERROR_DESCRIPTION = 'Unsupported Change in Hot Reload';
 export const ES2ABC_PATCH_FIX_ERROR_ACTION = 'For more details on hot reload specification, ' +
-  'please refer to https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hot-reload-V5.';
+  `please refer to ${es2abcErrorReferences.harmonyOSGuideHotReload}.`;
 
 export const ES2ABC_ERROR_MAPPING: Record<string, { code: string; description: string; solutions: string[] }> = {
   [ES2ABC_SYNTAX_ERROR_PREFIX]: {

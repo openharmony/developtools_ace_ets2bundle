@@ -42,6 +42,9 @@ def parse_args():
     parser.add_argument('--babel-config-js', help='path babel.config.js')
     parser.add_argument('--uglify-source-js', help='path uglify-source.js')
     parser.add_argument('--output-dir', help='path to output')
+    parser.add_argument('--copy-json-files-js', help='path copy_json_files.js')
+    parser.add_argument('--copy-src-dir', help='path to copy src dir')
+    parser.add_argument('--copy-dest-dir', help='path to copy dest dir')
     parser.add_argument('--declarations-file-dir',
         help='path declarations file')
     parser.add_argument('--build-declarations-file-js',
@@ -71,8 +74,8 @@ def parse_args():
     return options
 
 
-def do_build(build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd):
-    for cmd in [build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd]:
+def do_build(build_cmd, uglify_cmd, copy_json_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd):
+    for cmd in [build_cmd, uglify_cmd, copy_json_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd]:
         build_utils.check_output(cmd)
 
 
@@ -90,25 +93,32 @@ def main():
     uglify_cmd = [options.node, options.uglify_source_js, options.output_dir]
     depfile_deps.append(options.uglify_source_js)
 
-    build_declarations_file_cmd = [options.node,
+    copy_json_cmd = [options.node, options.copy_json_files_js, options.copy_src_dir, options.copy_dest_dir]
+    depfile_deps.append(options.copy_json_files_js)
+
+    build_declarations_file_cmd = [
+        options.node,
         options.build_declarations_file_js,
         options.declarations_file_dir,
         options.output_declarations_dir,
         options.output_dir,
-        options.build_public_sdk]
+        options.build_public_sdk
+    ]
     depfile_deps.append(options.build_declarations_file_js)
 
-    build_kit_configs_file_cmd = [options.node,
+    build_kit_configs_file_cmd = [
+        options.node,
         options.build_kit_configs_file_js,
         options.kit_configs_file_dir,
         options.output_kit_configs_dir,
         options.kit_apis_file_dir,
         options.arkts_apis_file_dir,
-        options.output_dir]
+        options.output_dir
+    ]
     depfile_deps.append(options.build_kit_configs_file_js)
 
     build_utils.call_and_write_depfile_if_stale(
-        lambda: do_build(build_cmd, uglify_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd),
+        lambda: do_build(build_cmd, uglify_cmd, copy_json_cmd, build_declarations_file_cmd, build_kit_configs_file_cmd),
         options,
         depfile_deps=depfile_deps,
         input_paths=depfile_deps,
