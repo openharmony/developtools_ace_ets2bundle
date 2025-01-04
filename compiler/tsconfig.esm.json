@@ -163,6 +163,8 @@
         "AlphabetIndexer",
         "AnalogClock",
         "Animator",
+        "ArcList",
+        "ArcListItem",
         "Badge",
         "Blank",
         "Button",
@@ -301,6 +303,16 @@
             "name": "Animator",
             "type": "AnimatorAttribute",
             "instance": "AnimatorInstance"
+          },
+          {
+            "name": "ArcList",
+            "type": "ArcListAttribute",
+            "instance": "ArcListInstance"
+          },
+          {
+            "name": "ArcListItem",
+            "type": "ArcListItemAttribute",
+            "instance": "ArcListItemInstance"
           },
           {
             "name": "Badge",
