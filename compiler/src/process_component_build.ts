@@ -2930,18 +2930,15 @@ function isSimpleType(node: ts.PropertyAccessExpression): boolean {
 
 function traversePropNode(node: ts.PropertyAccessExpression, result: AttrResult): void {
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
-  if (structInfo.isComponentV2) {
-    if (node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
-      structInfo.regularSet.has(node.name.escapedText.toString()) && isSimpleType(node)) {
-      result.isRegularNode = true;
-      return;
-    }
-  } else {
-    if (node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
-      regularCollection.get(componentCollection.currentClassName).has(node.name.escapedText.toString())) {
-      result.isRegularNode = true;
-      return;
-    }
+  if (structInfo.isComponentV2 && node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+    structInfo.regularSet.has(node.name.escapedText.toString()) && isSimpleType(node)) {
+    result.isRegularNode = true;
+    return;
+  }
+  if (!structInfo.isComponentV2 && node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+    regularCollection.get(componentCollection.currentClassName).has(node.name.escapedText.toString())) {
+    result.isRegularNode = true;
+    return;
   }
   if (ts.isPropertyAccessExpression(node.expression)) {
     traversePropNode(node.expression, result);

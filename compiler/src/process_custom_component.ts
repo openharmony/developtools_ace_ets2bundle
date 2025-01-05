@@ -601,7 +601,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     observeArgArr.push(componentPop(name));
   }
   const reuseOrCreateArgArr: ts.ObjectLiteralExpression[] = [ts.factory.createObjectLiteralExpression(
-    generateReuseOrCreateArgArr(componentNode, isReuseComponentInV2, componentAttrInfo, name, newNode), true)];
+    generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
@@ -619,8 +619,8 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   );
 }
 
-function generateReuseOrCreateArgArr(componentNode: ts.CallExpression, isReuseComponentInV2: boolean,
-  componentAttrInfo: ComponentAttrInfo, name: string, newNode: ts.NewExpression): ts.ObjectLiteralElementLike[] {
+function generateReuseOrCreateArgArr(componentNode: ts.CallExpression, componentAttrInfo: ComponentAttrInfo, 
+  name: string, newNode: ts.NewExpression): ts.ObjectLiteralElementLike[] {
   const reuseParamsArr: ts.ObjectLiteralElementLike[] = [];
   if (componentNode.expression && ts.isIdentifier(componentNode.expression)) {
     reuseParamsArr.push(ts.factory.createPropertyAssignment(
@@ -628,26 +628,24 @@ function generateReuseOrCreateArgArr(componentNode: ts.CallExpression, isReuseCo
       componentNode.expression
     ));
   }
-  if (componentNode.arguments && componentNode.arguments.length === 1 && 
-    ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties &&
-    componentNode.arguments[0].properties.length) {
-    reuseParamsArr.push(createReuseParameterArrowFunction(componentNode.arguments[0].properties, constantDefine.GET_PARAMS, name));
-  } else {
-    reuseParamsArr.push(createReuseParameterArrowFunction([], constantDefine.GET_PARAMS, name));
-  }
-  if (isReuseComponentInV2) {
-    if (componentAttrInfo.reuse) {
-      reuseParamsArr.push(createReuseParameterArrowFunction([], constantDefine.GET_REUSE_ID, componentAttrInfo.reuse));
-    } else {
-      reuseParamsArr.push(createReuseParameterArrowFunction([], constantDefine.GET_REUSE_ID, name));
-    }
-  }
+  reuseParamsArr.push(createReuseParameterArrowFunction(getArgumentsToPass(componentNode), constantDefine.GET_PARAMS, name));
+  reuseParamsArr.push(createReuseParameterArrowFunction(
+    [], constantDefine.GET_REUSE_ID, componentAttrInfo.reuse ? componentAttrInfo.reuse : name));
   if (newNode.arguments.length >= 6 && ts.isObjectLiteralExpression(newNode.arguments[5])) {
     reuseParamsArr.push(generateExtraInfo(true, newNode.arguments[5]));
   } else {
     reuseParamsArr.push(generateExtraInfo(false));
   }
   return reuseParamsArr;
+}
+
+function getArgumentsToPass(componentNode: ts.CallExpression): ts.NodeArray<ts.ObjectLiteralElementLike> | undefined[] {
+  if (componentNode.arguments && componentNode.arguments.length === 1 && 
+    ts.isObjectLiteralExpression(componentNode.arguments[0]) && componentNode.arguments[0].properties &&
+    componentNode.arguments[0].properties.length) {
+    return componentNode.arguments[0].properties;
+  }
+  return [];
 }
 
 function createReuseParameterArrowFunction(propertyArray: ts.NodeArray<ts.ObjectLiteralElementLike> | undefined[],
@@ -1104,21 +1102,21 @@ export enum ParentType {
 function getParentComponentType(parentName: string): ParentType {
   const parentCustomComponentInfo: StructInfo = parentName ? 
     processStructComponentV2.getOrCreateStructInfo(parentName) : new StructInfo();
+  let type: ParentType = ParentType.InvalidComponentType;
   if (parentCustomComponentInfo.isComponentV1 &&
     parentCustomComponentInfo.isReusable) {
-    return ParentType.ReuseComponentV1;
+    type = ParentType.ReuseComponentV1;
   } else if (parentCustomComponentInfo.isComponentV1 &&
     !parentCustomComponentInfo.isReusable) {
-    return ParentType.NormalComponentV1;
+    type = ParentType.NormalComponentV1;
   } else if (parentCustomComponentInfo.isComponentV2 &&
     parentCustomComponentInfo.isReusableV2) {
-    return ParentType.ReuseComponentV2;
+    type = ParentType.ReuseComponentV2;
   } else if (parentCustomComponentInfo.isComponentV2 &&
     !parentCustomComponentInfo.isReusableV2) {
-    return ParentType.NormalComponentV2;
-  } else {
-    return ParentType.InvalidComponentType;
+    type = ParentType.NormalComponentV2;
   }
+  return type;
 }
 
 function getCollectionSet(name: string, collection: Map<string, Set<string>>): Set<string> {
