@@ -65,7 +65,8 @@ import {
   OBSERVED,
   SENDABLE,
   TYPE,
-  COMPONENT_LOCAL_BUILDER_DECORATOR
+  COMPONENT_LOCAL_BUILDER_DECORATOR,
+  COMPONENT_DECORATOR_REUSABLE_V2
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -358,6 +359,10 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
           storedFileInfo.getCurrentArkTsFile().recycleComponents.add(componentName);
           structInfo.isReusable = true;
           break;
+        case COMPONENT_DECORATOR_REUSABLE_V2:
+          storedFileInfo.getCurrentArkTsFile().reuseComponentsV2.add(componentName);
+          structInfo.isReusableV2 = true;
+          break;
       }
     } else {
       validateInvalidStructDecorator(element, componentName, log, sourceFile);
@@ -381,6 +386,13 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
   } else if (structInfo.isComponentV2 && (structInfo.isComponentV1 || structInfo.isReusable || structInfo.isCustomDialog) ) {
     const message: string = `The struct '${componentName}' can not be decorated with '@ComponentV2' ` +
       `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+  } else if (structInfo.isReusableV2 && !structInfo.isComponentV2) {
+    const message: string = `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+  }
+  if (structInfo.isReusable && structInfo.isReusableV2) {
+    const message: string = `The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
   if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
@@ -895,7 +907,7 @@ function parseShorthandPropertyForClass(node: ts.ShorthandPropertyAssignment, ch
   }
 }
 
-function getSymbolIfAliased(node: ts.Node): ts.Symbol {
+export function getSymbolIfAliased(node: ts.Node): ts.Symbol {
   const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
   if (symbol && (symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
     return globalProgram.checker.getAliasedSymbol(symbol);

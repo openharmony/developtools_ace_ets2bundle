@@ -28,6 +28,9 @@ class HomeComponent extends ViewV2 {
         this.local_value = "Foo";
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.local_value = "Foo";
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
@@ -102,6 +105,11 @@ class TestParam extends ViewV2 {
         this.initParam("paramValue1", (params && "paramValue1" in params) ? params.paramValue1 : undefined);
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.updateParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam");
+        this.$paramValue = "$paramValue" in params ? params.$paramValue : (value) => { };
+        this.updateParam("paramValue1", (params && "paramValue1" in params) ? params.paramValue1 : undefined);
+    }
     initialRender() { }
     updateStateVars(params) {
         if (params === undefined) {
@@ -134,6 +142,11 @@ class TestParam1 extends ViewV2 {
         this.myEvent = "myEvent" in params ? params.myEvent : (newVal) => { };
         this.myEvent1 = "myEvent1" in params ? params.myEvent1 : () => { };
         this.finalizeConstruction();
+    }
+    resetStateVarsOnReuse(params) {
+        this.updateParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
+        this.myEvent = "myEvent" in params ? params.myEvent : (newVal) => { };
+        this.myEvent1 = "myEvent1" in params ? params.myEvent1 : (newVal) => { };
     }
     initialRender() { }
     updateStateVars(params) {

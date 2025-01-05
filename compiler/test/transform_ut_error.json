@@ -1044,5 +1044,157 @@
             "message": "A @CustomDialog component can only have one uninitialized CustomDialogController.",
             "type": "WARN"
         }
+    ],
+    "@ReusableV2": [
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The struct 'v21' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A function can only be decorated by one of the 'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The '@ReusableV2' decorator can only be used with 'struct'.",
+            "type": "ERROR"
+        }
+    ],
+    "validateNestedReusableComponents": [
+        {
+            "message": "When a custom component is decorated with @ComponentV2 and contains a child decorated with @Reusable, the child component will not create.",
+            "type": "WARN"
+        },
+        {
+            "message": "When a custom component is decorated with @ComponentV2 and contains a child decorated with @Reusable, the child component will not create.",
+            "type": "WARN"
+        },
+        {
+            "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+            "type": "ERROR"
+        }
+    ],
+    "validateReusableV2InRepeat": [
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+            "type": "ERROR"
+        }
+    ],
+    "validateReuseAndReuseId": [
+        {
+            "message": "When a custom component is decorated with @ComponentV2 and contains a child decorated with @Reusable, the child component will not create.",
+            "type": "WARN"
+        },
+        {
+            "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+            "type": "ERROR"
+        },
+        {
+            "message": "The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+            "type": "ERROR"
+        }
     ]
 }
