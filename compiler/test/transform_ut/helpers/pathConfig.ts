@@ -184,7 +184,10 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'v2_component_decorator/observedv2/observedv2_trace_date',
   'v2_component_decorator/local/local_base',
   'v2_component_decorator/local/local_object',
-  'v2_component_decorator/local/local_union_types'
+  'v2_component_decorator/local/local_union_types',
+  'v2_component_decorator/reusableV2/reusableV2_initialRender',
+  'v2_component_decorator/reusableV2/reusableV2_members',
+  'v2_component_decorator/reusableV2/reusableV2_component_nesting',
 ];
 
 export const UT_VALIDATE_PAGES_PREVIEW: string[] = [];
@@ -201,6 +204,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_component_build/ifComponent',
   'Decorators/process_component_build/rootContainerCheck',
   'Decorators/process_component_build/stateStyles',
+  'Decorators/process_component_build/validateReuseAndReuseId',
 
   'Decorators/process_component_class/@StylesParamChack',
   'Decorators/process_component_class/processComponentMethod',
@@ -236,6 +240,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_custom_component/validateNonLinkWithDollar',
   'Decorators/process_custom_component/validateParamTwoWayBind',
   'Decorators/process_custom_component/validateStaticVariables',
+  'Decorators/process_custom_component/validateNestedReusableComponents',
+  'Decorators/process_custom_component/validateReusableV2InRepeat',
 
   'Decorators/process_struct_componentV2/param_require_once_check',
   'Decorators/process_struct_componentV2/v2Component_member_type_check',
@@ -258,6 +264,7 @@ export const UT_VALIDATE_PAGES: string[] = [
 
   'Decorators/vaildate_ui_syntax/@localBuilder',
   'Decorators/vaildate_ui_syntax/@Monitor',
+  'Decorators/vaildate_ui_syntax/@ReusableV2',
   'Decorators/vaildate_ui_syntax/@Trace',
   'Decorators/vaildate_ui_syntax/@Type',
   'Decorators/vaildate_ui_syntax/componentV2BothWithComponent',

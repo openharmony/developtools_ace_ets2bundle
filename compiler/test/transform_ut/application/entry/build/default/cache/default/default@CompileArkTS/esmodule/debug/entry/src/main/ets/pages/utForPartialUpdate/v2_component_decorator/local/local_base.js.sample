@@ -31,6 +31,11 @@ class Index extends ViewV2 {
         this.flag = false;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.count = 0;
+        this.message = "Hello";
+        this.flag = false;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();

@@ -139,7 +139,8 @@ import {
   CREATE_ROUTER_COMPONENT_COLLECT,
   NAV_PATH_STACK,
   IS_USER_CREATE_STACK,
-  SpanComponents
+  SpanComponents,
+  REUSE_ATTRIBUTE
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -171,7 +172,8 @@ import {
 import {
   processCustomComponent,
   createConditionParent,
-  isRecycle
+  isRecycle,
+  isReuseInV2
 } from './process_custom_component';
 import {
   LogType,
@@ -191,9 +193,11 @@ import {
   builderTypeParameter,
   resourceFileName
 } from './process_ui_syntax';
-import { regularCollection } from './validate_ui_syntax';
+import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
 import { extendCollection } from './ets_checker';
+import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import logMessageCollection from './log_message_collection';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -264,10 +268,10 @@ export function processComponentBlock(node: ts.Block, isLazy: boolean, log: LogI
   isTransition: boolean = false, isBuilder: boolean = false, parent: string = undefined,
   forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined,
   isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null,
-  rootGlobalBuilder: boolean = false): ts.Block {
+  rootGlobalBuilder: boolean = false, isInRepeatTemplate: boolean = false): ts.Block {
   const newStatements: ts.Statement[] = [];
   processComponentChild(node, newStatements, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-    isBuilder, parent, forEachParameters, isGlobalBuilder, isTransition, builderParamsResult);
+    isBuilder, parent, forEachParameters, isGlobalBuilder, isTransition, builderParamsResult, isInRepeatTemplate);
   if (isLazy && !partialUpdateConfig.partialUpdateMode) {
     newStatements.unshift(createRenderingInProgress(true));
   }
@@ -442,7 +446,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
   log: LogInfo[], supplement: supplementType = {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
   isBuilder: boolean = false, parent: string = undefined,
   forEachParameters: ts.NodeArray<ts.ParameterDeclaration> = undefined, isGlobalBuilder: boolean = false,
-  isTransition: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  isTransition: boolean = false, builderParamsResult: BuilderParamsResult = null,
+  isInRepeatTemplate: boolean = false): void {
   if (supplement.isAcceleratePreview) {
     newsupplement = supplement;
     const compilerOptions = ts.readConfigFile(
@@ -471,7 +476,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
               parent = etsExpression.expression.escapedText.toString();
             }
             processInnerComponent(item, newStatements, log, parent, isBuilder, isGlobalBuilder,
-              isTransition, idName, savedParent, builderParamsResult);
+              isTransition, idName, savedParent, builderParamsResult, isInRepeatTemplate);
             break;
           }
           case ComponentType.customComponent: {
@@ -486,7 +491,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
                 }
               }
               processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
-                isBuilder, isGlobalBuilder, idName, builderParamsResult);
+                isBuilder, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
             }
             break;
           }
@@ -495,12 +500,12 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             if (!partialUpdateConfig.partialUpdateMode) {
               processForEachComponent(item, newStatements, log, isBuilder, isGlobalBuilder);
             } else {
-              processForEachComponentNew(item, newStatements, log, name, isGlobalBuilder, builderParamsResult);
+              processForEachComponentNew(item, newStatements, log, name, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
             }
             break;
           case ComponentType.repeatComponent:
             parent = undefined;
-            processRepeatComponent(item, newStatements, log, isBuilder, isGlobalBuilder, isTransition, builderParamsResult);
+            processRepeatComponent(item, newStatements, log, isBuilder, isGlobalBuilder, isTransition, builderParamsResult, isInRepeatTemplate);
             break;
           case ComponentType.customBuilderMethod:
             parent = undefined;
@@ -533,7 +538,7 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
         }
       } else if (ts.isIfStatement(item)) {
         assignParameter(forEachParameters, item);
-        processIfStatement(item, newStatements, log, isBuilder, isGlobalBuilder, builderParamsResult);
+        processIfStatement(item, newStatements, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
       } else if (!ts.isBlock(item)) {
         log.push({
           type: LogType.ERROR,
@@ -807,7 +812,7 @@ export function createCollectElmtIdNode(): ts.ExpressionStatement {
 function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isTransition: boolean = false, idName: ts.Expression = undefined, savedParent: string = undefined,
-  builderParamsResult: BuilderParamsResult = null): void {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
   newStatements.push(res.newNode);
@@ -817,19 +822,19 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
     checkNonspecificParents(node, nameResult.name, savedParent, log);
   }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
-    processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult);
+    processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
-    processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult);
+    processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
-      isTransition, idName, builderParamsResult);
+      isTransition, idName, builderParamsResult, isInRepeatTemplate);
   }
 }
 
 function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameResult,
   innerCompStatements: ts.Statement[], log: LogInfo[], parent: string = undefined, isBuilder: boolean = false,
   isGlobalBuilder: boolean = false, isTransition: boolean = false, idName: ts.Expression = undefined,
-  builderParamsResult: BuilderParamsResult = null): void {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
   const newStatements: ts.Statement[] = [];
   if (addElmtIdNode()) {
     newStatements.push(createCollectElmtIdNode());
@@ -861,7 +866,7 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     storedFileInfo.lazyForEachInfo.isDependItem = false;
     processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isBuilder, parent, undefined,
-      isGlobalBuilder, false, builderParamsResult);
+      isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
   } else {
     bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
     processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
@@ -899,9 +904,11 @@ export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression):
 
 function processRepeatComponent(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  isTransition: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  isTransition: boolean = false, builderParamsResult: BuilderParamsResult = null,
+  isInRepeatTemplate: boolean = false): void {
   const chainCallTransform: ts.CallExpression =
-    recurseRepeatExpression(node.expression as ts.CallExpression, log, isBuilder, isGlobalBuilder, isTransition) as ts.CallExpression;
+    recurseRepeatExpression(node.expression as ts.CallExpression, log, isBuilder, isGlobalBuilder,
+      isTransition, isInRepeatTemplate) as ts.CallExpression;
   innerCompStatements.push(createComponentCreationStatement(node,
     [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
@@ -914,34 +921,36 @@ function processRepeatComponent(node: ts.ExpressionStatement, innerCompStatement
 }
 
 function recurseRepeatExpression(node: ts.CallExpression | ts.PropertyAccessExpression,
-  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false):
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false, isInRepeatTemplate: boolean = false):
   ts.PropertyAccessExpression | ts.CallExpression {
   if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
     node.expression.getText() === COMPONENT_REPEAT) {
     return ts.factory.createCallExpression(node.expression, node.typeArguments, [...node.arguments, ts.factory.createThis()]);
   } else if (ts.isPropertyAccessExpression(node)) {
     return ts.factory.updatePropertyAccessExpression(node,
-      recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition), node.name);
+      recurseRepeatExpression(node.expression, log, isBuilder, isGlobalBuilder, isTransition, isInRepeatTemplate), node.name);
   } else {
     let repeatPropArgs: ts.ArrowFunction[] = processRepeatAttributeArrowNode(node.arguments);
     storedFileInfo.processRepeat = true;
-    repeatPropArgs = processRepeatPropWithChild(node, repeatPropArgs, log, isBuilder, isGlobalBuilder, isTransition);
+    repeatPropArgs = processRepeatPropWithChild(node, repeatPropArgs, log, isBuilder, isGlobalBuilder, isTransition, isInRepeatTemplate);
     storedFileInfo.processRepeat = false;
     return ts.factory.updateCallExpression(node,
       recurseRepeatExpression(node.expression as ts.PropertyAccessExpression, log, isBuilder,
-        isGlobalBuilder, isTransition) as ts.PropertyAccessExpression, undefined, repeatPropArgs);
+        isGlobalBuilder, isTransition, isInRepeatTemplate) as ts.PropertyAccessExpression, undefined, repeatPropArgs);
   }
 }
 
 function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.ArrowFunction[],
-  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false): ts.ArrowFunction[] {
+  log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false, isTransition: boolean = false,
+  isInRepeatTemplate: boolean = false): ts.ArrowFunction[] {
   if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
     node.expression.name.getText() === REPEAT_EACH && repeatPropArgs.length > 0 && repeatPropArgs[0].body) {
     // transfer args for each property
     return [
       ts.factory.updateArrowFunction(repeatPropArgs[0], repeatPropArgs[0].modifiers, repeatPropArgs[0].typeParameters,
         repeatPropArgs[0].parameters, repeatPropArgs[0].type, repeatPropArgs[0].equalsGreaterThanToken,
-        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[0]), false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[0]), false, log, isTransition,
+          isBuilder, undefined, undefined, isGlobalBuilder, null, false, isInRepeatTemplate)),
       ...repeatPropArgs.slice(1)
     ];
   } else if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.name) &&
@@ -950,7 +959,8 @@ function processRepeatPropWithChild(node: ts.CallExpression, repeatPropArgs: ts.
     return [
       repeatPropArgs[0], ts.factory.updateArrowFunction(repeatPropArgs[1], repeatPropArgs[1].modifiers, repeatPropArgs[1].typeParameters,
         repeatPropArgs[1].parameters, repeatPropArgs[1].type, repeatPropArgs[1].equalsGreaterThanToken,
-        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[1]), false, log, isTransition, isBuilder, undefined, undefined, isGlobalBuilder)),
+        processComponentBlock(processRepeatCallBackBlock(repeatPropArgs[1]), false, log, isTransition, isBuilder, undefined, undefined,
+          isGlobalBuilder, null, false, true)),
       ...repeatPropArgs.slice(2)
     ];
   }
@@ -1146,7 +1156,7 @@ function createInitRenderStatement(node: ts.Statement,
 
 function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResult, innerCompStatements: ts.Statement[],
   log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false, idName: ts.Expression = undefined,
-  builderParamsResult: BuilderParamsResult = null): void {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
   const itemRenderInnerStatements: ts.Statement[] = [];
   const immutableStatements: ts.Statement[] = [];
   const deepItemRenderInnerStatements: ts.Statement[] = [];
@@ -1165,7 +1175,7 @@ function processItemComponent(node: ts.ExpressionStatement, nameResult: NameResu
     storedFileInfo.lazyForEachInfo.isDependItem = false;
     processComponentChild(etsComponentResult.etsComponentNode.body, deepItemRenderInnerStatements, log,
       {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, false, parent, undefined, isGlobalBuilder, false,
-      builderParamsResult);
+      builderParamsResult, isInRepeatTemplate);
   } else {
     bindComponentAttr(node, res.identifierNode, itemRenderInnerStatements, log, true, false, immutableStatements);
   }
@@ -1441,7 +1451,8 @@ function createObservedDeepRender(
 
 function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.Statement[],
   nameResult: NameResult, log: LogInfo[], parent: string = undefined, isGlobalBuilder: boolean = false,
-  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null): void {
+  idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null,
+  isInRepeatTemplate: boolean = false): void {
   const name: string = nameResult.name;
   const tabContentComp: ts.EtsComponentExpression = getEtsComponentExpression(node);
   const tabContentBody: ts.Block = tabContentComp.body;
@@ -1461,7 +1472,7 @@ function processTabAndNav(node: ts.ExpressionStatement, innerCompStatements: ts.
   if (tabContentBody && tabContentBody.statements.length) {
     const newTabContentChildren: ts.Statement[] = [];
     processComponentChild(tabContentBody, newTabContentChildren, log, {isAcceleratePreview: false, line: 0, column: 0, fileName: ''},
-      false, parent, undefined, isGlobalBuilder, false, builderParamsResult);
+      false, parent, undefined, isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
     const navDestinationCallback: (ts.ArrowFunction | ts.NewExpression | ts.ObjectLiteralExpression)[] =
       [ts.factory.createArrowFunction(undefined, undefined, [], undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
@@ -1562,7 +1573,8 @@ function generateForEachAttribute(tempNode: ts.CallExpression, name: string): ts
 }
 
 function processForEachComponentNew(node: ts.ExpressionStatement, newStatements: ts.Statement[],
-  log: LogInfo[], name: string, isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null): void {
+  log: LogInfo[], name: string, isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null,
+  isInRepeatTemplate: boolean = false): void {
   const attributeList: ts.ExpressionStatement[] = [];
   const newNode = collectForEachAttribute(node, attributeList, name);
   const newForEachStatements: ts.Statement[] = [];
@@ -1583,7 +1595,7 @@ function processForEachComponentNew(node: ts.ExpressionStatement, newStatements:
     const newForEachArrowFunc: ts.ArrowFunction = processForEachFunctionBlock(newNode.expression);
     const newArrowNode: ts.NodeArray<ts.Statement> =
       processForEachBlock(newNode.expression, log, newForEachArrowFunc, false, isGlobalBuilder,
-        builderParamsResult) as ts.NodeArray<ts.Statement>;
+        builderParamsResult, isInRepeatTemplate) as ts.NodeArray<ts.Statement>;
     const itemGenFunctionStatement: ts.VariableStatement = createItemGenFunctionStatement(newNode.expression, newArrowNode, newForEachArrowFunc);
     const itemIdFuncStatement: ts.VariableStatement = createItemIdFuncStatement(newNode.expression, argumentsArray);
     const updateFunctionStatement: ts.ExpressionStatement = createUpdateFunctionStatement(argumentsArray, newForEachArrowFunc, isGlobalBuilder);
@@ -1812,7 +1824,7 @@ function processForEachFunctionBlock(node: ts.CallExpression): ts.ArrowFunction 
 }
 function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
   arrowNode: ts.ArrowFunction, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  builderParamsResult: BuilderParamsResult = null): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): ts.NodeArray<ts.Statement> | ts.ArrowFunction {
   if (node.arguments.length > 1 && ts.isArrowFunction(arrowNode)) {
     const isLazy: boolean = node.expression.getText() === COMPONENT_LAZYFOREACH;
     const body: ts.ConciseBody = arrowNode.body;
@@ -1829,7 +1841,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
             arrowNode.parameters, isGlobalBuilder));
       } else {
         return processComponentBlock(blockNode, isLazy, log, false, false, undefined,
-          arrowNode.parameters, isGlobalBuilder, builderParamsResult).statements;
+          arrowNode.parameters, isGlobalBuilder, builderParamsResult, false, isInRepeatTemplate).statements;
       }
     } else {
       if (!partialUpdateConfig.partialUpdateMode) {
@@ -1839,7 +1851,7 @@ function processForEachBlock(node: ts.CallExpression, log: LogInfo[],
           processComponentBlock(body, isLazy, log, false, isBuilder, undefined, arrowNode.parameters));
       } else {
         return processComponentBlock(body, isLazy, log, false, false, undefined, arrowNode.parameters,
-          isGlobalBuilder, builderParamsResult).statements;
+          isGlobalBuilder, builderParamsResult, false, isInRepeatTemplate).statements;
       }
     }
   }
@@ -1864,14 +1876,14 @@ function addElmtIdNode(): boolean {
 
 function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  builderParamsResult: BuilderParamsResult = null): void {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): void {
   const ifStatements: ts.Statement[] = [];
   if (addElmtIdNode()) {
     ifStatements.push(createCollectElmtIdNode());
     storedFileInfo.lazyForEachInfo.isDependItem = false;
   }
   const ifCreate: ts.ExpressionStatement = createIfCreate();
-  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isBuilder, isGlobalBuilder, builderParamsResult);
+  const newIfNode: ts.IfStatement = processInnerIfStatement(node, 0, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
   ifStatements.push(ifCreate, newIfNode);
   const ifPop: ts.ExpressionStatement = createIfPop();
   if (!partialUpdateConfig.partialUpdateMode) {
@@ -1884,7 +1896,7 @@ function processIfStatement(node: ts.IfStatement, newStatements: ts.Statement[],
 
 function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[],
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  builderParamsResult: BuilderParamsResult = null): ts.IfStatement {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): ts.IfStatement {
   if (ts.isIdentifier(node.expression) && node.expression.originalKeywordKind === undefined &&
     !node.expression.escapedText) {
     log.push({
@@ -1895,8 +1907,10 @@ function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[
     node = ts.factory.updateIfStatement(node, ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
       node.thenStatement, node.elseStatement);
   }
-  const newThenStatement: ts.Statement = processThenStatement(node.thenStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult);
-  const newElseStatement: ts.Statement = processElseStatement(node.elseStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult);
+  const newThenStatement: ts.Statement = processThenStatement(
+    node.thenStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
+  const newElseStatement: ts.Statement = processElseStatement(
+    node.elseStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
   const newIfNode: ts.IfStatement = ts.factory.updateIfStatement(
     node, node.expression, newThenStatement, newElseStatement);
   return newIfNode;
@@ -1904,7 +1918,7 @@ function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[
 
 function processThenStatement(thenStatement: ts.Statement, id: number,
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  builderParamsResult: BuilderParamsResult = null): ts.Statement {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): ts.Statement {
   if (ts.isExpressionStatement(thenStatement) && ts.isIdentifier(thenStatement.expression) &&
     thenStatement.expression.originalKeywordKind === undefined &&
     !thenStatement.expression.escapedText) {
@@ -1916,9 +1930,9 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
   }
   if (thenStatement) {
     if (ts.isBlock(thenStatement)) {
-      thenStatement = processIfBlock(thenStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      thenStatement = processIfBlock(thenStatement, id, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
     } else if (ts.isIfStatement(thenStatement)) {
-      thenStatement = processInnerIfStatement(thenStatement, 0, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      thenStatement = processInnerIfStatement(thenStatement, 0, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
       thenStatement = ts.factory.createBlock(
         partialUpdateConfig.partialUpdateMode ?
           [createIfCreate(), createIfBranchFunc(id, [thenStatement], isGlobalBuilder), createIfPop()] :
@@ -1927,7 +1941,7 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
       );
     } else {
       thenStatement = ts.factory.createBlock([thenStatement], true);
-      thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      thenStatement = processIfBlock(thenStatement as ts.Block, id, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
     }
   }
   return thenStatement;
@@ -1935,15 +1949,15 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
 
 function processElseStatement(elseStatement: ts.Statement, id: number,
   log: LogInfo[], isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  builderParamsResult: BuilderParamsResult = null): ts.Statement {
+  builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): ts.Statement {
   if (elseStatement) {
     if (ts.isBlock(elseStatement)) {
-      elseStatement = processIfBlock(elseStatement, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      elseStatement = processIfBlock(elseStatement, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
     } else if (ts.isIfStatement(elseStatement)) {
-      elseStatement = processInnerIfStatement(elseStatement, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      elseStatement = processInnerIfStatement(elseStatement, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
     } else {
       elseStatement = ts.factory.createBlock([elseStatement], true);
-      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult);
+      elseStatement = processIfBlock(elseStatement as ts.Block, id + 1, log, isBuilder, isGlobalBuilder, builderParamsResult, isInRepeatTemplate);
     }
   } else if (partialUpdateConfig.partialUpdateMode) {
     elseStatement = ts.factory.createBlock([
@@ -1974,9 +1988,9 @@ function processElseStatement(elseStatement: ts.Statement, id: number,
 }
 
 function processIfBlock(block: ts.Block, id: number, log: LogInfo[], isBuilder: boolean = false,
-  isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null): ts.Block {
+  isGlobalBuilder: boolean = false, builderParamsResult: BuilderParamsResult = null, isInRepeatTemplate: boolean = false): ts.Block {
   return addIfBranchId(id, isGlobalBuilder,
-    processComponentBlock(block, false, log, false, isBuilder, COMPONENT_IF, undefined, isGlobalBuilder, builderParamsResult));
+    processComponentBlock(block, false, log, false, isBuilder, COMPONENT_IF, undefined, isGlobalBuilder, builderParamsResult, false, isInRepeatTemplate));
 }
 
 function addIfBranchId(id: number, isGlobalBuilder: boolean = false, container: ts.Block): ts.Block {
@@ -2125,12 +2139,14 @@ export interface ComponentAttrInfo {
   reuseId: ts.Node,
   hasIdAttr: boolean,
   attrCount: number,
+  reuse: string,
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
   newStatements: ts.Statement[], log: LogInfo[], reverse: boolean = true,
   isStylesAttr: boolean = false, newImmutableStatements: ts.Statement[] = null,
-  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null): void {
+  isStyleFunction: boolean = false, componentAttrInfo: ComponentAttrInfo = null,
+  isReusableV2NodeAttr: boolean = false): void {
   const isStylesUIComponent: boolean = validateStylesUIComponent(node, isStylesAttr);
   let temp = node.expression;
   const statements: ts.Statement[] = [];
@@ -2142,6 +2158,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     hasAnimationAttr: false
   };
   const isRecycleComponent: boolean = isRecycle(componentCollection.currentClassName);
+  const isReuseComponentInV2: boolean = isReuseInV2(componentCollection.currentClassName);
   if (ts.isPropertyAccessExpression(temp) || isStylesUIComponent) {
     log.push({
       type: isStylesUIComponent ? LogType.WARN :LogType.ERROR,
@@ -2174,20 +2191,20 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     if (ts.isPropertyAccessExpression(temp.expression) &&
       temp.expression.name && ts.isIdentifier(temp.expression.name) &&
       (!componentCollection.customComponents.has(temp.expression.name.getText()) || STYLES_ATTRIBUTE.has(temp.expression.name.getText()))) {
-      parseRecycleId(temp, temp.expression.name, isRecycleComponent, componentAttrInfo);
+      parseRecycleId(temp, temp.expression.name, componentAttrInfo, log, isReusableV2NodeAttr);
       addComponentAttr(temp, temp.expression.name, lastStatement, statements, identifierNode, log,
         isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
-        isRecycleComponent, isStyleFunction);
+        isRecycleComponent, isReuseComponentInV2, isStyleFunction);
       temp = temp.expression.expression;
       flag = true;
     } else if (ts.isIdentifier(temp.expression)) {
       if (!INNER_COMPONENT_NAMES.has(temp.expression.getText()) &&
         !GESTURE_TYPE_NAMES.has(temp.expression.getText()) &&
         !componentCollection.customComponents.has(temp.expression.getText())) {
-        parseRecycleId(temp, temp.expression.name, isRecycleComponent, componentAttrInfo);
+        parseRecycleId(temp, temp.expression.name, componentAttrInfo, log, isReusableV2NodeAttr);
         addComponentAttr(temp, temp.expression, lastStatement, statements, identifierNode, log,
           isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
-          isRecycleComponent, isStyleFunction);
+          isRecycleComponent, isReuseComponentInV2, isStyleFunction);
       }
       break;
     }
@@ -2198,7 +2215,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   if (lastStatement.statement && lastStatement.kind) {
     statements.push(lastStatement.statement);
   }
-  if (!isRecycleComponent || lastStatement.hasAnimationAttr) {
+  if ((!isRecycleComponent && !isReuseComponentInV2) || lastStatement.hasAnimationAttr) {
     if (statements.length) {
       reverse ? newStatements.push(...statements.reverse()) : newStatements.push(...statements);
     }
@@ -2216,17 +2233,40 @@ function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: b
   return (ts.isIfStatement(node) || ts.isSwitchStatement(node)) && isStylesAttr;
 }
 
-function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, isRecycleComponent: boolean,
-  componentAttrInfo: ComponentAttrInfo): void {
+function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, componentAttrInfo: ComponentAttrInfo, log: LogInfo[],
+  isReusableV2NodeAttr: boolean = false): void {
   if (componentAttrInfo) {
     const attrName: string = attr.escapedText.toString();
     if (attrName === RECYCLE_REUSE_ID) {
+      logMessageCollection.checkUsageOfReuseIdAttribute(node, isReusableV2NodeAttr, log);
       componentAttrInfo.reuseId = node.arguments[0];
     } else if (attrName === ATTRIBUTE_ID) {
       componentAttrInfo.hasIdAttr = true;
+    } else if (attrName === REUSE_ATTRIBUTE) {
+      logMessageCollection.checkUsageOfReuseAttribute(node, isReusableV2NodeAttr, log);
+      if (ts.isObjectLiteralExpression(node.arguments[0]) && !!getReuseIdInReuse(node.arguments[0])) {
+        componentAttrInfo.reuse = getReuseIdInReuse(node.arguments[0]);
+      } else {
+        componentAttrInfo.reuse = '';
+      }
     }
     componentAttrInfo.attrCount++;
   }
+}
+
+function getReuseIdInReuse(node: ts.ObjectLiteralExpression): string {
+  let reuse: string = '';
+  if (node.properties && node.properties.length) {
+    node.properties.forEach((item: ts.ObjectLiteralElementLike) => {
+      if (ts.isPropertyAssignment(item) && item.name && ts.isIdentifier(item.name) &&
+        item.name.getText() === RECYCLE_REUSE_ID && item.initializer && 
+        ts.isArrowFunction(item.initializer) && item.initializer.body &&
+        ts.isStringLiteral(item.initializer.body)) {
+        reuse = item.initializer.body.text;
+      }
+    })
+  }
+  return reuse;
 }
 
 function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: ts.Identifier,
@@ -2713,7 +2753,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
   statements: ts.Statement[], identifierNode: ts.Identifier, log: LogInfo[],
   isStylesAttr: boolean, immutableStatements: ts.Statement[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false,
-  isStyleFunction: boolean = false): void {
+  isReuseComponentInV2: boolean = false, isStyleFunction: boolean = false): void {
   const styleResult: StyleResult = new StyleResult();
   const propName: string = node.getText();
   verifyComponentId(temp, node, propName, log);
@@ -2800,7 +2840,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
     lastStatement.kind = true;
   } else {
     temp = loopEtscomponent(temp, isStylesAttr);
-    if (propName !== RECYCLE_REUSE_ID) {
+    if (propName !== RECYCLE_REUSE_ID && propName !== REUSE_ATTRIBUTE) {
       let isAttributeModifier: boolean = false;
       if ([ATTRIBUTE_ATTRIBUTE_MODIFIER, ATTRIBUTE_CONTENT_MODIFIER,
         ATTRIBUTE_MENUITEM_CONTENT_MODIFIER].includes(propName)) {
@@ -2809,7 +2849,7 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
       const attrStatement: ts.Statement = ts.factory.createExpressionStatement(
         createFunction(identifierNode, node, temp.arguments, isAttributeModifier));
       statements.push(attrStatement);
-      if (isRecycleComponent && (!isStylesAttr || isStyleFunction) &&
+      if ((isRecycleComponent || isReuseComponentInV2) && (!isStylesAttr || isStyleFunction) &&
         !isGestureType(identifierNode) && filterRegularAttrNode(temp.arguments)) {
         immutableStatements.push(attrStatement);
       } else {
@@ -2877,8 +2917,25 @@ function isLiteralNode(node: ts.Expression): boolean {
     [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(node.kind);
 }
 
+function isSimpleType(node: ts.PropertyAccessExpression): boolean {
+  const symbol: ts.Symbol = getSymbolIfAliased(node);
+  const simpleTypeCollection: ts.SyntaxKind[] = [ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, 
+    ts.SyntaxKind.BooleanKeyword];
+  if (symbol && symbol.declarations && symbol.declarations.length === 1 && ts.isPropertyDeclaration(symbol.declarations[0]) &&
+    symbol.declarations[0].type && symbol.declarations[0].type.kind && simpleTypeCollection.includes(symbol.declarations[0].type.kind)) {
+    return true;
+  }
+  return false;
+}
+
 function traversePropNode(node: ts.PropertyAccessExpression, result: AttrResult): void {
-  if (node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName);
+  if (structInfo.isComponentV2 && node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
+    structInfo.regularSet.has(node.name.escapedText.toString()) && isSimpleType(node)) {
+    result.isRegularNode = true;
+    return;
+  }
+  if (!structInfo.isComponentV2 && node.expression.kind === ts.SyntaxKind.ThisKeyword && ts.isIdentifier(node.name) &&
     regularCollection.get(componentCollection.currentClassName).has(node.name.escapedText.toString())) {
     result.isRegularNode = true;
     return;

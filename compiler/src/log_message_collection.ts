@@ -20,6 +20,7 @@ import {
   LogType,
   LogInfo
 } from './utils';
+import { ParentType } from './process_custom_component';
 import constantDefine from './constant_define';
 
 function checkLocalBuilderDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, checkDecoratorCount: number, log: LogInfo[]): void {
@@ -80,6 +81,70 @@ function checkIfAssignToStaticProps(node: ts.ObjectLiteralElementLike, propName:
   }
 }
 
+function CheckNestedComponents(parentComponentType: ParentType, isRecycleChild: boolean, isReuseV2Child: boolean,
+  node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (parentComponentType === ParentType.NormalComponentV1 && isReuseV2Child) {
+    log.push({
+      type: LogType.ERROR,
+      message: `A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.`,
+      pos: node.getStart()
+    });
+  }
+  if (parentComponentType === ParentType.ReuseComponentV1 && isReuseV2Child) {
+    log.push({
+      type: LogType.ERROR,
+      message: `A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.`,
+      pos: node.getStart()
+    });
+  }
+  if (parentComponentType === ParentType.ReuseComponentV2 && isRecycleChild) {
+    log.push({
+      type: LogType.ERROR,
+      message: `A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.`,
+      pos: node.getStart()
+    });
+  }
+  if (parentComponentType === ParentType.NormalComponentV2 && isRecycleChild) {
+    log.push({
+      type: LogType.WARN,
+      message: `When a custom component is decorated with @ComponentV2 and contains a child decorated with @Reusable, ` + 
+        `the child component will not create.`,
+      pos: node.getStart()
+    });
+  }
+}
+
+function checkIfReuseV2InRepeatTemplate(isInRepeatTemplate: boolean, isReuseV2Child: boolean,
+  node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (isInRepeatTemplate && isReuseV2Child) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.`,
+      pos: node.getStart()
+    });
+  }
+}
+
+function checkUsageOfReuseAttribute(node: ts.CallExpression, isReusableV2NodeAttr: boolean, log: LogInfo[]): void {
+  if (!isReusableV2NodeAttr) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+      pos: node.getStart()
+    });
+  }
+}
+
+function checkUsageOfReuseIdAttribute(node: ts.CallExpression, isReusableV2NodeAttr: boolean, log: LogInfo[]): void {
+  if (isReusableV2NodeAttr) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.`,
+      pos: node.getStart()
+    });
+  }
+}
+
 function isTagWithDecorator(node: ts.NodeArray<ts.ModifierLike>, decoratorName: string): boolean {
   return node.some((item: ts.Decorator) => ts.isDecorator(item) && 
     ts.isIdentifier(item.expression) && item.expression.escapedText.toString() === decoratorName);
@@ -90,5 +155,9 @@ export default {
   checkTwoWayComputed,
   checkComputedGetter,
   checkIfNeedDollarEvent,
-  checkIfAssignToStaticProps
+  checkIfAssignToStaticProps,
+  CheckNestedComponents,
+  checkIfReuseV2InRepeatTemplate,
+  checkUsageOfReuseAttribute,
+  checkUsageOfReuseIdAttribute
 };

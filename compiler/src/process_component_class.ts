@@ -98,7 +98,8 @@ import {
   COMPONENT_POP_FUNCTION,
   PUSH,
   PUV2_VIEW_BASE,
-  COMPONENT_LOCAL_BUILDER_DECORATOR
+  COMPONENT_LOCAL_BUILDER_DECORATOR,
+  DECORATOR_REUSEABLE
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -136,6 +137,7 @@ import {
   processComponentBuild,
   processComponentBlock
 } from './process_component_build';
+import { isRecycle } from "./process_custom_component";
 import {
   LogType,
   LogInfo,
@@ -161,8 +163,18 @@ export function processComponentClass(node: ts.StructDeclaration, context: ts.Tr
   const decoratorNode: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const memberNode: ts.ClassElement[] =
     processMembers(node.members, node.name, context, decoratorNode, log, program, checkPreview(node));
-  return ts.factory.createClassDeclaration(ts.getModifiers(node), node.name,
-    node.typeParameters, updateHeritageClauses(node, log), memberNode);
+  const addReusable: boolean = node.name && ts.isIdentifier(node.name) && isRecycle(node.name.getText());
+  return ts.factory.createClassDeclaration(addReusable ? 
+    ts.concatenateDecoratorsAndModifiers(
+      [ts.factory.createDecorator(ts.factory.createIdentifier(DECORATOR_REUSEABLE))], 
+      ts.getModifiers(node)
+    ) : 
+    ts.getModifiers(node), 
+    node.name,
+    node.typeParameters, 
+    updateHeritageClauses(node, log), 
+    memberNode
+  );
 }
 
 function checkPreview(node: ts.StructDeclaration): boolean {
