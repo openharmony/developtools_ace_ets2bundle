@@ -81,7 +81,7 @@ function checkIfAssignToStaticProps(node: ts.ObjectLiteralElementLike, propName:
   }
 }
 
-function CheckNestedComponents(parentComponentType: ParentType, isRecycleChild: boolean, isReuseV2Child: boolean,
+function checkNestedComponents(parentComponentType: ParentType, isRecycleChild: boolean, isReuseV2Child: boolean,
   node: ts.ExpressionStatement, log: LogInfo[]): void {
   if (parentComponentType === ParentType.NormalComponentV1 && isReuseV2Child) {
     log.push({
@@ -156,7 +156,7 @@ export default {
   checkComputedGetter,
   checkIfNeedDollarEvent,
   checkIfAssignToStaticProps,
-  CheckNestedComponents,
+  checkNestedComponents,
   checkIfReuseV2InRepeatTemplate,
   checkUsageOfReuseAttribute,
   checkUsageOfReuseIdAttribute

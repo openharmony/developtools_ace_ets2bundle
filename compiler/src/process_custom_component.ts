@@ -140,7 +140,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
     getParentComponentType(componentCollection.currentClassName) : getParentComponentType('');
     const isRecycleComponent: boolean = isRecycle(name);
     const isReuseComponentInV2: boolean = isReuseInV2(name);
-    logMessageCollection.CheckNestedComponents(parentComponentType, isRecycleComponent, isReuseComponentInV2, node, log);
+    logMessageCollection.checkNestedComponents(parentComponentType, isRecycleComponent, isReuseComponentInV2, node, log);
     logMessageCollection.checkIfReuseV2InRepeatTemplate(isInRepeatTemplate, isReuseComponentInV2, node, log);
     const hasChainCall: boolean = componentNode.parent &&
       ts.isPropertyAccessExpression(componentNode.parent);
@@ -668,7 +668,7 @@ function createReuseParameterArrowFunction(propertyArray: ts.NodeArray<ts.Object
   );
 }
 
-function generateExtraInfo(hasPositionInfo: boolean, positionInfo?: ts.ObjectLiteralExpression) {
+function generateExtraInfo(hasPositionInfo: boolean, positionInfo?: ts.ObjectLiteralExpression): ts.PropertyAssignment {
   return ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(constantDefine.EXTRA_INFO),
     hasPositionInfo ? 
