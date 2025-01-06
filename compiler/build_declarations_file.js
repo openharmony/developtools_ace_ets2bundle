@@ -30,7 +30,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'TabContent', 'Tabs', 'Text', 'TextArea', 'TextClock', 'TextInput', 'TextPicker', 'TextTimer',
   'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow', 'WaterFlow', 'FlowItem', 'ImageSpan',
   'RootScene', 'Screen', 'WindowScene', 'EffectComponent', 'RichEditor', 'ArcSwiper' , 'ArcScrollBar',
-  'ArcList', 'ArcListItem'];
+  'ArcList', 'ArcListItem', 'ArcAlphabetIndexer'];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
