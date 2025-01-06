@@ -142,8 +142,8 @@ let ReuseV2Child1 = class ReuseV2Child1 extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("a", (params && "a" in params) ? params.a : 'a');
-        this.updateParam("b", (params && "b" in params) ? params.b : undefined);
+        this.resetParam("a", (params && "a" in params) ? params.a : 'a');
+        this.resetParam("b", (params && "b" in params) ? params.b : undefined);
         this.e1 = "e1" in params ? params.e1 : () => { };
     }
     initialRender() { }

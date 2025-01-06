@@ -137,7 +137,7 @@ import {
   processComponentBuild,
   processComponentBlock
 } from './process_component_build';
-import { isRecycle } from "./process_custom_component";
+import { isRecycle } from './process_custom_component';
 import {
   LogType,
   LogInfo,
