@@ -42,6 +42,7 @@ const DECORATOR_V2: string[] = [
 const STRUCT_PARENT: string = 'ViewV2';
 const INIT_PARAM: string = 'initParam';
 const UPDATE_PARAM: string = 'updateParam';
+const RESET_PARAM: string = 'resetParam';
 const UPDATE_STATE_VARS: string = 'updateStateVars';
 const RESET_STATE_VARS_METHOD: string = 'resetStateVarsOnReuse';
 const RESET_CONSUMER: string = 'resetConsumer';
@@ -71,6 +72,7 @@ export default {
   COMPONENT_MEMBER_DECORATOR_V2,
   INIT_PARAM,
   UPDATE_PARAM,
+  RESET_PARAM,
   UPDATE_STATE_VARS,
   REQUIRE,
   MONITOR_DECORATOR,

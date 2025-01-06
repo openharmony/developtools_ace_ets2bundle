@@ -35,6 +35,12 @@ class TestCheckbox extends ViewV2 {
         this.select4 = true;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.select1 = true;
+        this.select2 = true;
+        this.select3 = true;
+        this.select4 = true;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Row.create();

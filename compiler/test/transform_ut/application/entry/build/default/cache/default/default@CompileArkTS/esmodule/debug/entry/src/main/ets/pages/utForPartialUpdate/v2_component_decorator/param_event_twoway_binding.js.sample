@@ -106,9 +106,9 @@ class TestParam extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam");
+        this.resetParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam");
         this.$paramValue = "$paramValue" in params ? params.$paramValue : (value) => { };
-        this.updateParam("paramValue1", (params && "paramValue1" in params) ? params.paramValue1 : undefined);
+        this.resetParam("paramValue1", (params && "paramValue1" in params) ? params.paramValue1 : undefined);
     }
     initialRender() { }
     updateStateVars(params) {
@@ -144,7 +144,7 @@ class TestParam1 extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
+        this.resetParam("paramValue", (params && "paramValue" in params) ? params.paramValue : "hello TestParam1");
         this.myEvent = "myEvent" in params ? params.myEvent : (newVal) => { };
         this.myEvent1 = "myEvent1" in params ? params.myEvent1 : (newVal) => { };
     }

@@ -43,7 +43,7 @@ import {
   FreezeParamType,
   decoratorAssignParams
 } from './process_component_class';
-import { isReuseInV2 } from "./process_custom_component";
+import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
 import {
   componentCollection,
@@ -603,7 +603,7 @@ function createSuperV2(): ts.Statement {
 function createInitOrUpdateParam(propName: string, initializer: ts.Expression, isInit: boolean): ts.ExpressionStatement {
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createThis(),
-      ts.factory.createIdentifier(isInit ? constantDefine.INIT_PARAM : constantDefine.UPDATE_PARAM)),
+      ts.factory.createIdentifier(isInit ? constantDefine.INIT_PARAM : constantDefine.RESET_PARAM)),
     undefined,
     [
       ts.factory.createStringLiteral(propName),

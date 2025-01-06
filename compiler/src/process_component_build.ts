@@ -2264,7 +2264,7 @@ function getReuseIdInReuse(node: ts.ObjectLiteralExpression): string {
         ts.isStringLiteral(item.initializer.body)) {
         reuse = item.initializer.body.text;
       }
-    })
+    });
   }
   return reuse;
 }

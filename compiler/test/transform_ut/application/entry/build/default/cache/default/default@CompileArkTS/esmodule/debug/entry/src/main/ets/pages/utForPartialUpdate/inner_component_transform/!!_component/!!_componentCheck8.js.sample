@@ -126,6 +126,11 @@ class SearchExample extends ViewV2 {
         this.textAreaController = new TextAreaController();
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.changeValue = '';
+        this.submitValue = '';
+        this.swiperIndex = 2;
+    }
     aboutToAppear() {
         let list = [];
         for (let i = 1; i <= 10; i++) {

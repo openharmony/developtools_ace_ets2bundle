@@ -54,7 +54,7 @@ let V2Reusable = class V2Reusable extends ViewV2 {
     }
     resetStateVarsOnReuse(params) {
         this.num = 100;
-        this.updateParam("num2", (params && "num2" in params) ? params.num2 : 150);
+        this.resetParam("num2", (params && "num2" in params) ? params.num2 : 150);
         this.pro = 500;
         this.resetComputed("Y");
     }
