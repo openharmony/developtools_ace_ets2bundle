@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-// @Local object
+// This test case is used to verify @Local object.
 @ObservedV2
 class Info {
   @Trace name: string;

@@ -32,6 +32,9 @@ class BindMenuInterface extends ViewV2 {
         this.isShow = false;
         this.finalizeConstruction();
     }
+    resetStateVarsOnReuse(params) {
+        this.isShow = false;
+    }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();

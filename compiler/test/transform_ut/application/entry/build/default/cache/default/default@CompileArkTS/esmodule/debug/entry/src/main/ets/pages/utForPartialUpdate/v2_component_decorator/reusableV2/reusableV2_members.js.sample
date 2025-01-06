@@ -61,8 +61,8 @@ let V2ReusableMember = class V2ReusableMember extends ViewV2 {
     }
     resetStateVarsOnReuse(params) {
         this.num = 100;
-        this.updateParam("num2", (params && "num2" in params) ? params.num2 : 150);
-        this.updateParam("num4", (params && "num4" in params) ? params.num4 : undefined);
+        this.resetParam("num2", (params && "num2" in params) ? params.num2 : 150);
+        this.resetParam("num4", (params && "num4" in params) ? params.num4 : undefined);
         this.pro = 500;
         this.resetConsumer("con", '5000');
         this.resetConsumer("con2", undefined);
