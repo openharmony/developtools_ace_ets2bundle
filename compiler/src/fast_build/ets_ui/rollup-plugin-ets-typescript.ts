@@ -97,13 +97,16 @@ import {
   mangleFilePath,
   resetObfuscation
 } from '../ark_compiler/common/ob_config_resolver';
+import {
+  LazyImportOptions,
+  reExportNoCheckMode
+} from '../../process_lazy_import';
 import arkoalaProgramTransform, { ArkoalaPluginOptions } from './arkoala-plugin';
 import processStructComponentV2 from '../../process_struct_componentV2';
 import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/utils';
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
-import { LazyImportOptions } from '../../ark_utils';
 
 const filter: any = createFilter(/(?<!\.d)\.(ets|ts)$/);
 
@@ -439,7 +442,7 @@ async function transform(code: string, id: string) {
   const metaInfo: Object = this.getModuleInfo(id).meta;
   const lazyImportOptions: LazyImportOptions = {
     autoLazyImport: this.share.projectConfig?.autoLazyImport ?? false,
-    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? 'noCheck'
+    reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode
   };
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   startTimeStatisticsLocation(compilationTime ? compilationTime.shouldEmitJsTime : undefined);
