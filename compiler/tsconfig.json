@@ -288,6 +288,7 @@
         "ContainerSpan",
         "ArcSwiper",
         "ArcScrollBar",
+        "ArcAlphabetIndexer"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -926,6 +927,11 @@
             "name": "ArcScrollBar",
             "type": "ArcScrollBarAttribute",
             "instance": "ArcScrollBarInstance"
+          },
+          {
+            "name": "ArcAlphabetIndexer",
+            "type": "ArcAlphabetIndexerAttribute",
+            "instance": "ArcAlphabetIndexerInstance"
           }
         ]
       },
