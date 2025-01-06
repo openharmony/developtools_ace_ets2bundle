@@ -137,10 +137,7 @@ function generateIntermediateContent(sourceFile) {
 
 mocha.describe('compiler', () => {
   let utPath = path.resolve(__dirname, './ut');
-  if (process.argv.includes('--partialUpdate')) {
-    partialUpdateConfig.partialUpdateMode = true;
-    utPath = path.resolve(__dirname, './utForPartialUpdate');
-  } else if (process.argv.includes('--assertError')) {
+  if (process.argv.includes('--assertError')) {
     partialUpdateConfig.partialUpdateMode = true;
     utPath = path.resolve(__dirname, './utForValidate');
   }
