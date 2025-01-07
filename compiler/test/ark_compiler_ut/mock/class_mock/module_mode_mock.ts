@@ -39,6 +39,7 @@ import { toUnixPath } from '../../../../lib/utils';
 import { META } from '../rollup_mock/common';
 import { sharedModuleSet } from '../../../../lib/fast_build/ark_compiler/check_shared_module';
 import { SourceMapGenerator } from '../../../../lib/fast_build/ark_compiler/generate_sourcemap';
+import { CompileEvent } from '../../../../lib/performance';
 class ModuleModeMock extends ModuleMode {
   collectModuleFileListMock(rollupObject: object) {
     const fileList = Array.from(rollupObject.getModuleIds());
@@ -270,7 +271,7 @@ class ModuleModeMock extends ModuleMode {
     }
   }
 
-  generateMergedAbcOfEs2AbcMock(parentEvent: Object) {
+  generateMergedAbcOfEs2AbcMock(parentEvent: CompileEvent) {
     this.generateMergedAbcOfEs2Abc(parentEvent)
   }
 

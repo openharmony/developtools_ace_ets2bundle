@@ -52,10 +52,8 @@ import { isCurrentProjectFiles } from '../utils';
 import { sourceFileBelongProject } from '../module/module_source_file';
 import {
   compileToolIsRollUp,
-  createAndStartEvent,
   mangleDeclarationFileName,
   ModuleInfo,
-  stopEvent,
   writeArkguardObfuscatedSourceCode
 } from '../../../ark_utils';
 import { OBFUSCATION_TOOL, red, yellow } from './ark_define';
@@ -67,6 +65,11 @@ import { CommonLogger } from '../logger';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import { ESMODULE } from '../../../pre_define';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from '../../../performance';
 
 export {
   collectResevedFileNameInIDEConfig, // For running unit test.
@@ -479,8 +482,8 @@ export async function handlePostObfuscationTasks(
 /**
  * Write obfuscation caches if needed
  */
-export function writeObfuscationCaches(sourceProjectConfig: Object, eventOrEventFactory: Object): void {
-  const eventObfuscatedCode = createAndStartEvent(eventOrEventFactory, 'write obfuscation name cache');
+export function writeObfuscationCaches(sourceProjectConfig: Object, parentEvent: CompileEvent): void {
+  const eventObfuscatedCode = createAndStartEvent(parentEvent, 'write obfuscation name cache');
 
   const needToWriteCache = compileToolIsRollUp() && sourceProjectConfig.arkObfuscator && sourceProjectConfig.obfuscationOptions;
   const isWidgetCompile = sourceProjectConfig.widgetCompile;
