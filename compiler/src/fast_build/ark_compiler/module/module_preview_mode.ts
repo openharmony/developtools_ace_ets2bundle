@@ -31,23 +31,24 @@ import {
   LogData,
   LogDataFactory
 } from '../logger';
+import { CompileEvent } from '../../../performance';
 
 export class ModulePreviewMode extends ModuleMode {
   constructor(rollupObject: Object) {
     super(rollupObject);
   }
 
-  generateAbc(rollupObject: Object, parentEvent: Object): void {
+  generateAbc(rollupObject: Object, parentEvent: CompileEvent): void {
     this.prepareForCompilation(rollupObject, parentEvent);
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.executeArkCompiler(parentEvent);
   }
 
-  executeArkCompiler(parentEvent: Object): void {
+  executeArkCompiler(parentEvent: CompileEvent): void {
     if (isEs2Abc(this.projectConfig)) {
       this.generateEs2AbcCmd();
       this.addCacheFileArgs();
-      this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo);
+      this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo, parentEvent);
       this.generateMergedAbcOfEs2Abc(parentEvent);
     } else if (isTs2Abc(this.projectConfig)) {
       this.filterModulesByHashJson();

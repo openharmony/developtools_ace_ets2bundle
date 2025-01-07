@@ -19,6 +19,7 @@ import { ModuleMode } from './module_mode';
 import { PATCH_SYMBOL_TABLE } from '../common/ark_define';
 import { getEs2abcFileThreadNumber } from '../utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
+import { CompileEvent } from '../../../performance';
 
 export class ModuleHotfixMode extends ModuleMode {
   patch: boolean;
@@ -32,7 +33,7 @@ export class ModuleHotfixMode extends ModuleMode {
     this.enableMap = false;
   }
 
-  generateAbc(rollupObject: Object, parentEvent: Object): void {
+  generateAbc(rollupObject: Object, parentEvent: CompileEvent): void {
     this.patch = this.projectConfig.patch || false;
     this.inOldSymbolTablePath = this.projectConfig.inOldSymbolTablePath || this.projectConfig.projectRootPath;
     this.enableMap = this.projectConfig.enableMap || false;
@@ -40,7 +41,7 @@ export class ModuleHotfixMode extends ModuleMode {
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
 
     this.generateEs2AbcCmdForHotfix();
-    this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo);
+    this.genDescriptionsForMergedEs2abc(!!this.projectConfig.byteCodeHarInfo, parentEvent);
     this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 
