@@ -30,10 +30,6 @@ import {
   toUnixPath,
   validateFilePathLength
 } from '../../../utils';
-import {
-  createAndStartEvent,
-  stopEvent
-} from '../../../ark_utils';
 import { SourceMapGenerator } from '../generate_sourcemap';
 import { 
   ArkTSInternalErrorDescription,
@@ -43,6 +39,11 @@ import {
   LogData,
   LogDataFactory
 } from '../logger';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from '../../../performance';
 
 let isFirstBuild: boolean = true;
 
@@ -62,7 +63,7 @@ export class ModuleColdreloadMode extends ModuleMode {
     }
   }
 
-  generateAbc(rollupObject: Object, parentEvent: Object): void {
+  generateAbc(rollupObject: Object, parentEvent: CompileEvent): void {
     isFirstBuild = this.projectConfig.isFirstBuild;
     if (isFirstBuild) {
       this.compileAllFiles(rollupObject, parentEvent);
@@ -83,13 +84,13 @@ export class ModuleColdreloadMode extends ModuleMode {
     this.cmdArgs.push('--cold-reload');
   }
 
-  private compileAllFiles(rollupObject: Object, parentEvent: Object): void {
+  private compileAllFiles(rollupObject: Object, parentEvent: CompileEvent): void {
     this.prepareForCompilation(rollupObject, parentEvent);
     SourceMapGenerator.getInstance().buildModuleSourceMapInfo(parentEvent);
     this.generateAbcByEs2abc(parentEvent, !!this.projectConfig.byteCodeHarInfo);
   }
 
-  private compileChangeListFiles(rollupObject: Object, parentEvent: Object): void {
+  private compileChangeListFiles(rollupObject: Object, parentEvent: CompileEvent): void {
     if (!fs.existsSync(this.projectConfig.changedFileList)) {
     this.logger.debug(blue, `ArkTS: Cannot find file: ${
         this.projectConfig.changedFileList}, skip cold reload build`, reset);
@@ -134,7 +135,7 @@ export class ModuleColdreloadMode extends ModuleMode {
     this.generateAbcByEs2abc(parentEvent, false);
   }
 
-  private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: Object): void {
+  private updateSourceMapFromFileList(fileList: Array<string>, parentEvent: CompileEvent): void {
     const eventUpdateSourceMapFromFileList = createAndStartEvent(parentEvent, 'update source map from file list');
     const sourceMapGenerator = SourceMapGenerator.getInstance();
     const relativeProjectPath: string = this.projectConfig.projectPath.slice(
@@ -160,10 +161,10 @@ export class ModuleColdreloadMode extends ModuleMode {
     stopEvent(eventUpdateSourceMapFromFileList);
   }
 
-  private generateAbcByEs2abc(parentEvent: Object, includeByteCodeHarInfo: boolean): void {
+  private generateAbcByEs2abc(parentEvent: CompileEvent, includeByteCodeHarInfo: boolean): void {
     this.generateEs2AbcCmd();
     this.addColdReloadArgs();
-    this.genDescriptionsForMergedEs2abc(includeByteCodeHarInfo);
+    this.genDescriptionsForMergedEs2abc(includeByteCodeHarInfo, parentEvent);
     this.generateMergedAbcOfEs2Abc(parentEvent);
   }
 }
