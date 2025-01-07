@@ -955,42 +955,6 @@ export function cleanUpUtilsObjects(): void {
   packageCollection.clear();
 }
 
-export function getHookEventFactory(share: Object, pluginName: string, hookName: string): Object {
-  if (typeof share.getHookEventFactory === 'function') {
-    return share.getHookEventFactory(pluginName, hookName);
-  } else {
-    return undefined;
-  }
-}
-
-export function createAndStartEvent(eventOrEventFactory: Object, eventName: string, syncFlag = false): Object {
-  if (eventOrEventFactory === undefined) {
-    return undefined;
-  }
-  let event: Object;
-  if (typeof eventOrEventFactory.createSubEvent === 'function') {
-    event = eventOrEventFactory.createSubEvent(eventName);
-  } else {
-    event = eventOrEventFactory.createEvent(eventName);
-  }
-  if (typeof event.startAsyncEvent === 'function' && syncFlag) {
-    event.startAsyncEvent();
-  } else {
-    event.start();
-  }
-  return event;
-}
-
-export function stopEvent(event: Object, syncFlag = false): void {
-  if (event !== undefined) {
-    if (typeof event.stopAsyncEvent === 'function' && syncFlag) {
-      event.stopAsyncEvent();
-    } else {
-      event.stop();
-    }
-  }
-}
-
 export function compileToolIsRollUp(): boolean {
   return process.env.compileTool === 'rollup';
 }

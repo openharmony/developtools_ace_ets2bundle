@@ -27,6 +27,11 @@ import { cleanUpUtilsObjects, writeDeclarationFiles } from '../../ark_utils';
 import { cleanUpKitImportObjects } from '../../process_kit_import';
 import { cleanUpFilesList } from './utils';
 import { CommonLogger } from './logger';
+import {
+  getHookEventFactory,
+  cleanUpAsyncEvents,
+  CompileEvent
+} from '../../performance';
 
 export function genAbc() {
   return {
@@ -43,7 +48,8 @@ export function genAbc() {
     moduleParsed(moduleInfo: moduleInfoType): void {
       // process single ModuleSourceFile
       if (this.share.projectConfig.singleFileEmit) {
-        ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id);
+        const hookEventFactory: CompileEvent | undefined = getHookEventFactory(this.share, 'genAbc', 'moduleParsed');
+        ModuleSourceFile.processSingleModuleSourceFile(this, moduleInfo.id, hookEventFactory);
       }
     },
     beforeBuildEnd: {
@@ -73,6 +79,7 @@ export function genAbc() {
       ModuleSourceFile.cleanUpObjects();
       cleanSharedModuleSet();
       CommonLogger.destroyInstance();
+      cleanUpAsyncEvents();
     }
   };
 }
