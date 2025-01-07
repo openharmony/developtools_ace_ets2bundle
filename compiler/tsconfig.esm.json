@@ -183,7 +183,7 @@
         "DataPanel",
         "DatePicker",
         "Divider",
-	"DotMatrix",
+        "DotMatrix",
         "EffectComponent",
         "Ellipse",
         "EmbeddedComponent",
@@ -406,7 +406,7 @@
             "type": "DividerAttribute",
             "instance": "DividerInstance"
           },
-	  {
+          {
             "name": "DotMatrix",
             "type": "DotMatrixAttribute",
             "instance": "DotMatrixInstance"
