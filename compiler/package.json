@@ -14,7 +14,7 @@
     "create": "node ./lib/create.js --env projectName",
     "copyJsonFiles": "node copy_json_files.js ./src lib",
     "compile": "webpack --config webpack.config.js --env buildMode=debug projectName",
-    "test": "npm run build && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError",
+    "test": "npm run build && mocha test/test.js && npm run etsTest",
     "test:coverage": "npm run generateDeclarations && ./node_modules/.bin/babel ./src --out-dir lib --extensions .ts && npm run copyJsonFiles && mocha test/test.js && mocha test/test.js --partialUpdate && mocha test/test.js --assertError",
     "generateDeclarations": "node ./build_declarations_file.js ../../../interface/sdk-js/api/@internal/component/ets ./declarations ./lib false",
     "generateComponents": "node ./build_components_file.js ../../../interface/sdk-js/api/@internal/component/ets ./components ./form_components",
