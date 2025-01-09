@@ -139,7 +139,6 @@ import {
   CREATE_ROUTER_COMPONENT_COLLECT,
   NAV_PATH_STACK,
   IS_USER_CREATE_STACK,
-  SpanComponents,
   REUSE_ATTRIBUTE
 } from './pre_define';
 import {
@@ -160,8 +159,7 @@ import {
   ID_ATTRS,
   SPECIFIC_PARENT_COMPONENT,
   STYLES_ATTRIBUTE,
-  INNER_CUSTOM_LOCALBUILDER_METHOD,
-  COMPONENT_MAP
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
 import {
   componentCollection,
@@ -195,7 +193,6 @@ import {
 } from './process_ui_syntax';
 import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
-import { extendCollection } from './ets_checker';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
 
@@ -2168,7 +2165,6 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
   }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
     let flag: boolean = false;
-    validatePropertyAccessExpressionOnSpanComponent(temp.expression, identifierNode, log);
     if (temp.expression && (validatePropertyAccessExpressionWithCustomBuilder(temp.expression) ||
       validateIdentifierWithCustomBuilder(temp.expression))) {
       let propertyName: string = '';
@@ -2638,21 +2634,6 @@ function validatePropertyAccessExpressionWithCustomBuilder(node: ts.Node): boole
 
 function validateIdentifierWithCustomBuilder(node: ts.Node): boolean {
   return ts.isIdentifier(node) && CUSTOM_BUILDER_PROPERTIES.has(node.escapedText.toString());
-}
-
-function validatePropertyAccessExpressionOnSpanComponent(node: ts.Node, identifierNode: ts.Identifier, log: LogInfo[]): void {
-  let compName: string = identifierNode.escapedText.toString();
-  if (SpanComponents.includes(compName) && ts.isPropertyAccessExpression(node) && node.name &&
-    ts.isIdentifier(node.name)) {
-    let propertyName = node.name.escapedText.toString();
-    if (!extendCollection.has(propertyName) && !COMPONENT_MAP[compName].attrs.includes(propertyName)) {
-      log.push({
-        type: LogType.WARN,
-        message: `Property '${propertyName}' does not take effect on '${compName}'.`,
-        pos: node.name.getStart()
-      });
-    }
-  }
 }
 
 function createArrowFunctionForDollar($$varExp: ts.Expression): ts.ArrowFunction {
