@@ -1127,9 +1127,11 @@ mocha.describe('test module_mode file api', function () {
     SourceMapGenerator.initInstance(this.rollup);
     const moduleMode = new ModuleModeMock(this.rollup);
     moduleMode.projectConfig.cacheBytecodeHar = true;
+    moduleMode.projectConfig.projectRootPath = "D:/project";
+    moduleMode.projectConfig.cachePath = "D:/project/cache"
     moduleMode.abcPaths = [
-      "D:/bchar1/modules.abc",
-      "E:/bchar1/modules.abc",
+      "D:/project/oh_modules/bchar1/modules.abc",
+      "D:/project/oh_modules/bchar2/modules.abc",
     ];
     moduleMode.generateAbcCacheFilesInfoMock();
     const cacheInfo = fs.readFileSync(moduleMode.cacheFilePath, 'utf-8');
@@ -1137,8 +1139,8 @@ mocha.describe('test module_mode file api', function () {
     const lines = cacheInfo.split('\n');
     lines.shift();
     const res = lines.join('\n');
-    const expectRes = 'D:/bchar1/modules.abc;D:/bchar1/modules.protoBin\n' +
-                      'E:/bchar1/modules.abc;E:/bchar1/modules.protoBin\n';
+    const expectRes = 'D:/project/oh_modules/bchar1/modules.abc;D:/project/cache/oh_modules/bchar1/modules.protoBin\n' +
+                      'D:/project/oh_modules/bchar2/modules.abc;D:/project/cache/oh_modules/bchar2/modules.protoBin\n';
     expect(res === expectRes).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
   });
