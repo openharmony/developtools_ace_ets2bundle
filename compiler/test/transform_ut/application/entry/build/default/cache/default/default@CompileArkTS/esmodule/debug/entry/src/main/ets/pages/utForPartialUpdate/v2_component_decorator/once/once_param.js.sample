@@ -42,8 +42,8 @@ class Child extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("onceParamNum", (params && "onceParamNum" in params) ? params.onceParamNum : 0);
-        this.updateParam("onceParamInfo", (params && "onceParamInfo" in params) ? params.onceParamInfo : undefined);
+        this.resetParam("onceParamNum", (params && "onceParamNum" in params) ? params.onceParamNum : 0);
+        this.resetParam("onceParamInfo", (params && "onceParamInfo" in params) ? params.onceParamInfo : undefined);
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
