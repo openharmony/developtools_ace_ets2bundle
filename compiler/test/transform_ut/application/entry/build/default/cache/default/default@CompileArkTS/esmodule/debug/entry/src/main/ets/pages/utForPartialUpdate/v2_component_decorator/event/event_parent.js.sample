@@ -30,7 +30,7 @@ class Child extends ViewV2 {
         this.finalizeConstruction();
     }
     resetStateVarsOnReuse(params) {
-        this.updateParam("index", (params && "index" in params) ? params.index : 0);
+        this.resetParam("index", (params && "index" in params) ? params.index : 0);
         this.changeIndex = "changeIndex" in params ? params.changeIndex : (val) => { };
     }
     initialRender() {
