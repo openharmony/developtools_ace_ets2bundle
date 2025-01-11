@@ -364,6 +364,7 @@ export const TEXT_INPUT: string = 'TextInput';
 export const TEXT_PICKER: string = 'TextPicker';
 export const TOGGLE: string = 'Toggle';
 export const ALPHABET_INDEXER: string = 'AlphabetIndexer';
+export const ARC_ALPHABET_INDEXER: string = 'ArcAlphabetIndexer';
 export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
 export const GRID_ITEM: string = 'GridItem';
@@ -376,7 +377,7 @@ export const ARC_LIST_ITEM: string = 'ArcListItem';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
-  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER]);
+  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const STYLE_ADD_DOUBLE_EXCLAMATION: Set<string> = new Set([
@@ -403,6 +404,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
+  [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
@@ -431,6 +433,7 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [TEXT_PICKER, new Set([VALUE, SELECTED])],
   [TOGGLE, new Set([IS_ON])],
   [ALPHABET_INDEXER, new Set([SELECTED])],
+  [ARC_ALPHABET_INDEXER, new Set([SELECTED])],
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
