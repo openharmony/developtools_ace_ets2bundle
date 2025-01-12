@@ -410,7 +410,8 @@ function validateDecorators(item: ts.ClassElement, log: LogInfo[]): void {
         log.push({
           type: LogType.ERROR,
           message: `The static variable of struct cannot be used together with built-in decorators.`,
-          pos: item.getStart()
+          pos: item.getStart(),
+          code: '10905313'
         });
       }
     });
@@ -584,7 +585,8 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       log.push({
         type: LogType.ERROR,
         message: `The 'build' method can not have arguments.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905106'
       });
     }
     const buildNode: ts.MethodDeclaration = processComponentBuild(node, log);
@@ -640,7 +642,8 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
         log.push({
           type: LogType.ERROR,
           message: `@Styles can't have parameters.`,
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905105'
         });
       }
       return undefined;
@@ -656,7 +659,8 @@ function checkDecoratorMethod(node: ts.MethodDeclaration, modifiers: readonly ts
         log.push({
           type: LogType.ERROR,
           message: `Static methods in custom components cannot be decorated by @LocalBuilder.`,
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905104'
         });
         return;
       }
@@ -788,7 +792,8 @@ export function updateHeritageClauses(node: ts.StructDeclaration, log: LogInfo[]
     log.push({
       type: LogType.ERROR,
       message: 'The struct component is not allowed to extends other class or implements other interface.',
-      pos: node.heritageClauses.pos
+      pos: node.heritageClauses.pos,
+      code: '10905212'
     });
   }
   const result: ts.HeritageClause[] = [];
@@ -1036,9 +1041,10 @@ export function validateBuildMethodCount(buildCount: BuildCount, parentComponent
   if (buildCount.count !== 1) {
     log.push({
       type: LogType.ERROR,
-      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.` +
-        `Solutions:>A structurally modified page must have at least one and no more than one'build' method.`,
-      pos: parentComponentName.getStart()
+      message: `struct '${parentComponentName.getText()}' must be at least or at most one 'build' method.`,
+      pos: parentComponentName.getStart(),
+      code: '10905103',
+      solutions: [`A structurally modified page must have at least one and no more than one 'build' method.`]
     });
   }
 }
@@ -1049,7 +1055,8 @@ function validateHasControllerAndControllerCount(componentName: ts.Identifier, c
     log.push({
       type: LogType.ERROR,
       message: '@CustomDialog component should have a property of the CustomDialogController type.',
-      pos: componentName.pos
+      pos: componentName.pos,
+      code: '10905211'
     });
   }
   if (checkController.unassignedControllerSet.size >= 2) {

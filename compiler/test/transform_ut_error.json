@@ -1,11 +1,13 @@
 {
     "@linkInitialize": {
-        "message": "The @Link property 'link' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
-        "type": "ERROR"
+        "message": "The @Link property 'link' cannot be specified a default value.",
+        "type": "ERROR",
+        "solutions": ["Please initialize the rules according to the decorator."]
     },
     "@objectLinkInitialize": {
-        "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
-        "type": "ERROR"
+        "message": "The @ObjectLink property 'objectLink' cannot be specified a default value.",
+        "type": "ERROR",
+        "solutions": ["Please initialize the rules according to the decorator."]
     },
     "rootContainerCheck": {
         "message": "There should have a root container component.",
@@ -74,8 +76,9 @@
         "type": "ERROR"
     },
     "validateBuildMethodCount": {
-        "message": "struct 'ValidateBuildMethodCountIndex' must be at least or at most one 'build' method.Solutions:>A structurally modified page must have at least one and no more than one'build' method.",
-        "type": "ERROR"
+        "message": "struct 'ValidateBuildMethodCountIndex' must be at least or at most one 'build' method.",
+        "type": "ERROR",
+        "solutions": ["A structurally modified page must have at least one and no more than one 'build' method."]
     },
     "validateHasController": {
         "message": "@CustomDialog component should have a property of the CustomDialogController type.",
@@ -98,8 +101,9 @@
         "type": "ERROR"
     },
     "validatePropertyDefaultValue": {
-        "message": "The @Link property 'message' cannot be specified a default value.Solutions:>Please initialize the rules according to the decorator.",
-        "type": "ERROR"
+        "message": "The @Link property 'message' cannot be specified a default value.",
+        "type": "ERROR",
+        "solutions": ["Please initialize the rules according to the decorator."]
     },
     "validatePropertyNonType": {
         "message": "The property 'message' must specify a type.",

@@ -348,7 +348,8 @@ export function processUISyntax(program: ts.Program, ut = false,
             transformLog.errors.push({
               type: LogType.ERROR,
               message: `@Styles can't have parameters.`,
-              pos: node.getStart()
+              pos: node.getStart(),
+              code: '10905110'
             });
           }
         } else if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
@@ -393,7 +394,8 @@ export function processUISyntax(program: ts.Program, ut = false,
           transformLog.errors.push({
             type: LogType.ERROR,
             message: `wrapBuilder's parameter should be @Builder function.`,
-            pos: node.getStart()
+            pos: node.getStart(),
+            code: '10905109'
           });
         }
       } else if (ts.isClassDeclaration(node)) {
@@ -497,7 +499,8 @@ function createNavigationInit(fileName: string, statements: ts.Statement[]): voi
       } else {
         transformLog.errors.push({
           type: LogType.ERROR,
-          message: `The buildFunction '${item.buildFunction}' configured in the routerMap json file does not exist.`
+          message: `The buildFunction '${item.buildFunction}' configured in the routerMap json file does not exist.`,
+          code: '10904336'
         });
       }
     });
@@ -642,7 +645,8 @@ function validateCustomDialogControllerBuilderInit(node: ts.ObjectLiteralElement
   log.push({
     type: LogType.ERROR,
     message: 'The builder should be initialized with a @CustomDialog Component.',
-    pos: node.getStart()
+    pos: node.getStart(),
+    code: '10905335'
   });
 }
 
@@ -745,7 +749,8 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
   if (previewLog.isAcceleratePreview) {
     previewLog.log.push({
       type: LogType.ERROR,
-      message: 'not support AcceleratePreview'
+      message: 'not support AcceleratePreview',
+      code: '10906401'
     });
   }
 }
@@ -759,7 +764,8 @@ function getResourceDataNode(node: ts.CallExpression,
       transformLog.errors.push({
         type: LogType.ERROR,
         message: `The resource type ${resourceData[1]} is not supported.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10906334'
       });
       return node;
     }
@@ -782,7 +788,8 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
     transformLog.errors.push({
       type: LogType.ERROR,
       message: `No such '${node.arguments[0].text}' resource in current module.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10904333'
     });
   }
 }
@@ -899,7 +906,8 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     log.push({
       type: LogType.ERROR,
       message: 'The input parameter is not supported.',
-      pos: pos
+      pos,
+      code: '10905332'
     });
   } else {
     if (!isAcceleratePreview && process.env.compileTool === 'rollup' && process.env.compileMode === 'moduleJson') {
@@ -926,19 +934,22 @@ function resourceCheck(resourceData: string[], resources: object, pos: number, l
     log.push({
       type: logType,
       message: `Unknown resource source '${resourceDataFirst}'.`,
-      pos: pos
+      pos,
+      code: '10903331'
     });
   } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]]) {
     log.push({
       type: logType,
       message: `Unknown resource type '${resourceData[1]}'.`,
-      pos: pos
+      pos,
+      code: '10903330'
     });
   } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
     log.push({
       type: logType,
       message: `Unknown resource name '${resourceData[2]}'.`,
-      pos: pos
+      pos,
+      code: '10903329'
     });
   } else {
     return true;
@@ -1199,7 +1210,8 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
       transformLog.errors.push({
         type: LogType.ERROR,
         message: `@${extendResult.decoratorName} should have one and only one parameter`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905108'
       });
     }
   }
@@ -1266,7 +1278,8 @@ function createEntryFunction(name: string, context: ts.TransformationContext, ca
         transformLog.errors.push({
           type: LogType.ERROR,
           message: `@Entry doesn't support {} parameter in card`,
-          pos: componentCollection.entryComponentPos
+          pos: componentCollection.entryComponentPos,
+          code: '10906218'
         });
       }
       return [
@@ -1901,7 +1914,8 @@ function createPreviewElseBlock(name: string, context: ts.TransformationContext,
           transformLog.errors.push({
             type: LogType.ERROR,
             message: `@Entry doesn't support {} parameter in card`,
-            pos: componentCollection.entryComponentPos
+            pos: componentCollection.entryComponentPos,
+            code: '10906217'
           });
         }
         return [
@@ -1933,11 +1947,11 @@ function addCardStringliteral(newExpressionParams: any[], context: ts.Transforma
   }
 }
 
-export function validatorCard(log: any[], type: number, pos: number,
+export function validatorCard(log: LogInfo[], type: number, pos: number,
   name: string = ''): void {
   if (projectConfig && projectConfig.cardObj && resourceFileName &&
     projectConfig.cardObj[resourceFileName]) {
-    const logInfo: object = {
+    const logInfo: LogInfo = {
       type: LogType.ERROR,
       message: '',
       pos: pos
@@ -1945,12 +1959,15 @@ export function validatorCard(log: any[], type: number, pos: number,
     switch (type) {
       case CARD_LOG_TYPE_COMPONENTS:
         logInfo.message = `Card page cannot use the component ${name}.`;
+        logInfo.code = '10905216';
         break;
       case CARD_LOG_TYPE_DECORATORS:
         logInfo.message = `Card page cannot use ${name}`;
+        logInfo.code = '10905215';
         break;
       case CARD_LOG_TYPE_IMPORT:
         logInfo.message = `Card page cannot use import.`;
+        logInfo.code = '10905214';
         break;
     }
     log.push(logInfo);

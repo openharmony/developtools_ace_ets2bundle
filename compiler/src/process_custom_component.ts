@@ -420,7 +420,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
         type: LogType.ERROR,
         message: `Property '${itemName}' in the custom component '${info.childName}'` +
           ` cannot be initialized here (forbidden to specify).`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905324'
       });
       return;
     }
@@ -431,7 +432,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the @ComponentV2 component '${info.childName}' are not allowed to be assigned values here.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905323'
       });
     }
   } else {
@@ -442,7 +444,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       log.push({
         type: LogType.ERROR,
         message: `Property '${itemName}' in the @Component component '${info.childName}' are not allowed to be assigned values here.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905322'
       });
     }
   }
@@ -537,7 +540,8 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
         log.push({
           type: LogType.ERROR,
           message: `Property '${paramName}' must be initialized through the component constructor.`,
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905321'
         });
       }
     });
@@ -545,7 +549,8 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
     log.push({
       type: LogType.ERROR,
       message: 'The @ComponentV2 struct must not contain any @Component with an @Link decorated variable',
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905213'
     });
   }
 }
@@ -847,7 +852,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
         log.push({
           type: LogType.ERROR,
           message: `The optional character can not be used in the initial value of property '${itemName}'.`,
-          pos: item.getStart()
+          pos: item.getStart(),
+          code: '10905320'
         });
         return;
       }
@@ -861,7 +867,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
         message: 'When the two-way binding syntax is used, ' +
           `the variable '${itemName}' must be decorated with @Param, ` +
           `and the @Event variable '$` + `${itemName}' ` + `must be defined in the ${childStructInfo.structName}.`,
-        pos: item.getStart()
+        pos: item.getStart(),
+        code: '10905319'
       });
       return;
     }
@@ -869,7 +876,8 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
       type: LogType.ERROR,
       message: 'When the two-way binding syntax is used, ' +
         `the initial value of property '${itemName}' must be a variable.`,
-      pos: item.getStart()
+      pos: item.getStart(),
+      code: '10905318'
     });
     return;
   }
@@ -1405,7 +1413,8 @@ function validateForbiddenToInitViaParam(node: ts.ObjectLiteralElementLike,
       type: LogType.ERROR,
       message: `Property '${node.name.getText()}' in the custom component '${customComponentName}'` +
         ` cannot be initialized here (forbidden to specify).`,
-      pos: node.name.getStart()
+      pos: node.name.getStart(),
+      code: '10905317'
     });
   }
 }
@@ -1434,7 +1443,8 @@ function validateMandatoryToInitViaParam(node: ts.CallExpression, customComponen
         type: LogType.ERROR,
         message: `Property '${item}' in the custom component '${customComponentName}'` +
           ` is missing (mandatory to specify).`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905316'
       });
     }
   });
@@ -1461,7 +1471,8 @@ function validateInitDecorator(node: ts.CallExpression, customComponentName: str
       log.push({
         type: LogType.ERROR,
         message: `Property '${item}' must be initialized through the component constructor.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905359'
       });
     }
   });
@@ -1492,7 +1503,8 @@ function validateIllegalInitFromParent(node: ts.ObjectLiteralElementLike, proper
     message: `The ${parentPropertyKind} property '${parentPropertyName}' cannot be assigned to ` +
       `the ${curPropertyKind} property '${propertyName}'.`,
     // @ts-ignore
-    pos: node.initializer ? node.initializer.getStart() : node.getStart()
+    pos: node.initializer ? node.initializer.getStart() : node.getStart(),
+    code: type === LogType.ERROR ? '10905315' : undefined
   });
 }
 
@@ -1501,6 +1513,7 @@ function validateNonLinkWithDollar(node: ts.PropertyAssignment, log: LogInfo[]):
     type: LogType.ERROR,
     message: `Property '${node.name.getText()}' cannot initialize` +
       ` using '$' to create a reference to a variable.`,
-    pos: node.initializer.getStart()
+    pos: node.initializer.getStart(),
+    code: '10905314'
   });
 }
