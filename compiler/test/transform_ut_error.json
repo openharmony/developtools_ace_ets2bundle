@@ -1051,7 +1051,7 @@
             "type": "ERROR"
         },
         {
-            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "message": "The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.",
             "type": "ERROR"
         },
         {
@@ -1059,7 +1059,7 @@
             "type": "ERROR"
         },
         {
-            "message": "The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.",
+            "message": "The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.",
             "type": "ERROR"
         },
         {

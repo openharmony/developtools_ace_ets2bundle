@@ -392,7 +392,7 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
   if (structInfo.isReusable && structInfo.isReusableV2) {
-    const message: string = `The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.`;
+    const message: string = `The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
   }
   if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
