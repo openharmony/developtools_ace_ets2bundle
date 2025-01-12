@@ -732,7 +732,8 @@ function validateModuleName(moduleNode: ts.Identifier, log: LogInfo[], sourceFil
     const error: LogInfo = {
       type: LogType.ERROR,
       message: `The module name '${moduleName}' can not be the same as the inner component name.`,
-      pos: moduleNode.getStart()
+      pos: moduleNode.getStart(),
+      code: '10905235'
     };
     if (sourceFile && fileResolvePath) {
       const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(moduleNode.getStart());

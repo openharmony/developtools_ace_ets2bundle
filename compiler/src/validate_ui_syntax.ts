@@ -229,7 +229,7 @@ function checkComponentDecorator(source: string, filePath: string,
         for (let i = 0; i < decorators.length; i++) {
           if (decorators[i] && /struct/.test(decorators[i].getText())) {
             const message: string = `Please use a valid decorator.`;
-            addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+            addLog(LogType.ERROR, message, item.getStart(), log, sourceFile, { code: '10905234' });
             break;
           }
         }
@@ -259,11 +259,11 @@ function validateStructSpec(item: ts.StructDeclaration, result: DecoratorResult,
       checkDecorators(decorators, result, item.name, log, sourceFile, item);
     } else {
       const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
-      addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+      addLog(LogType.ERROR, message, item.getStart(), log, sourceFile, { code: '10905233' });
     }
   } else {
     const message: string = `A struct must have a name.`;
-    addLog(LogType.ERROR, message, item.getStart(), log, sourceFile);
+    addLog(LogType.ERROR, message, item.getStart(), log, sourceFile, { code: '10905232' });
   }
 }
 
@@ -273,14 +273,16 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     log.push({
       type: LogType.ERROR,
       message: `A page can contain at most 10 '@Preview' decorators.`,
-      fileName: fileName
+      fileName: fileName,
+      code: '10905404'
     });
   }
   if (result.entryCount > 1 && fileQuery === '?entry') {
     log.push({
       type: LogType.ERROR,
       message: `A page can't contain more than one '@Entry' decorator`,
-      fileName: fileName
+      fileName: fileName,
+      code: '10905231'
     });
   }
   if (isPreview && !checkEntry && result.previewCount < 1 && result.entryCount !== 1 &&
@@ -289,7 +291,8 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
       type: LogType.ERROR,
       message: `A page which is being previewed must have one and only one '@Entry' ` +
         `decorator, or at least one '@Preview' decorator.`,
-      fileName: fileName
+      fileName: fileName,
+      code: '10905403'
     });
   } else if ((!isPreview || isPreview && checkEntry) && result.entryCount !== 1 && fileQuery === '?entry' &&
     !abilityPagesFullPath.has(path.resolve(fileName).toLowerCase())) {
@@ -297,7 +300,8 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
       type: LogType.ERROR,
       message: `A page configured in '${projectConfig.pagesJsonFileName} or build-profile.json5' must have one and only one '@Entry' decorator.` +
         `Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.`,
-      fileName: fileName
+      fileName: fileName,
+      code: '10905402'
     });
   }
 }
@@ -382,11 +386,11 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
   log: LogInfo[], sourceFile: ts.SourceFile, structInfo: StructInfo): void {
   if (!hasInnerComponentDecorator) {
     const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905230' });
   } else if (structInfo.isComponentV2 && (structInfo.isComponentV1 || structInfo.isReusable || structInfo.isCustomDialog) ) {
     const message: string = `The struct '${componentName}' can not be decorated with '@ComponentV2' ` +
       `and '@Component', '@Reusable', '@CustomDialog' at the same time.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905229' });
   } else if (structInfo.isReusableV2 && !structInfo.isComponentV2) {
     const message: string = `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`;
     addLog(LogType.ERROR, message, component.pos, log, sourceFile);
@@ -398,12 +402,12 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
   if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
     const message: string = `The struct '${componentName}' cannot have the same name ` +
       `as the built-in attribute '${componentName}'.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905228' });
   }
   if (INNER_COMPONENT_NAMES.has(componentName)) {
     const message: string = `The struct '${componentName}' cannot have the same name ` +
       `as the built-in component '${componentName}'.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905227' });
   }
 }
 
@@ -416,7 +420,7 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
   }
   if (ts.isMethodDeclaration(node)) {
     const message: string = `@Concurrent can not be used on method. please use it on function declaration.`;
-    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
+    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile, { code: '10905123' });
   }
   if (node.asteriskToken) {
     let hasAsync: boolean = false;
@@ -425,7 +429,7 @@ function checkConcurrentDecorator(node: ts.FunctionDeclaration | ts.MethodDeclar
     modifiers && (hasAsync = modifiers.some(checkAsyncModifier));
     const funcKind: string = hasAsync ? 'Async generator' : 'Generator';
     const message: string = `@Concurrent can not be used on ${funcKind} function declaration.`;
-    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile);
+    addLog(LogType.ERROR, message, decorators![0].pos, log, sourceFile, { code: '10905122' });
   }
 }
 
@@ -519,12 +523,12 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
     let message: string;
     if (isV1Decorator && classResult.hasObservedV2) {
       message = `The type of the @${decoratorName} property can not be a class decorated with @ObservedV2.`;
-      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode);
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
       return;
     }
     if (isV2Decorator && classResult.hasObserved) {
       message = `The type of the @${decoratorName} property can not be a class decorated with @Observed.`;
-      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode);
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905347' });
       return;
     }
   }
@@ -608,15 +612,17 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     logMessageCollection.checkLocalBuilderDecoratorCount(node, sourceFileNode, checkDecoratorCount, log);
     if (innerDecoratorCount > 1) {
       const message: string = 'The member property or method can not be decorated by multiple built-in decorators.';
-      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905121' });
     }
     const v2Duplicate: boolean = v2DecoratorMapValues.length &&
       v2DecoratorMapValues.some((count: number) => count > 1);
     const v1Duplicate: boolean = v1DecoratorMapValues.length &&
       v1DecoratorMapValues.some((count: number) => count > 1);
     const duplicateMessage: string = 'Duplicate decorators for method are not allowed.';
-    if (v2Duplicate || v1Duplicate) {
-      addLog(v1Duplicate ? LogType.WARN : LogType.ERROR, duplicateMessage, node.getStart(), log, sourceFileNode);
+    if (v1Duplicate) {
+      addLog(LogType.WARN, duplicateMessage, node.getStart(), log, sourceFileNode);
+    } else if (v2Duplicate) {
+      addLog(LogType.ERROR, duplicateMessage, node.getStart(), log, sourceFileNode, { code: '10905119' });
     }
   }
 }
@@ -685,7 +691,7 @@ function validateFunction(node: ts.MethodDeclaration | ts.FunctionDeclaration,
     if (decoratorKeys.length > 1 || decoratorKeys.includes('LocalBuilder')) {
       const message: string = 'A function can only be decorated by one of the ' +
         `'AnimatableExtend, Builder, Extend, Styles, Concurrent and Sendable'.`;
-      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+      addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905117' });
     }
   }
 }
@@ -720,20 +726,20 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
   const decoratorName: string = node.getText().replace(/\([^\(\)]*\)/, '');
   if (decoratorName === constantDefine.COMPUTED_DECORATOR && node.parent && !ts.isGetAccessor(node.parent)) {
     const message: string = `@Computed can only decorate 'GetAccessor'.`;
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905116' });
     return;
   }
   const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR];
   if (partialDecoratorCollection.includes(decoratorName) && node.parent &&
     !ts.isMethodDeclaration(node.parent)) {
     const message: string = `'${decoratorName}' can only decorate method.`;
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905115' });
     return;
   }
   if (isMemberForComponentV2(decoratorName, isComponentV2) && node.parent &&
     !ts.isPropertyDeclaration(node.parent)) {
     const message: string = `'${decoratorName}' can only decorate member property.`;
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905346' });
     return;
   }
 }
@@ -770,7 +776,7 @@ function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifi
   const isTypeFromSdk: boolean = validTypeCallback(node);
   if (!classContext && (classDecorators.includes(decoratorName) || isTypeFromSdkCallback(classContext, decoratorName, isTypeFromSdk))) {
     const message: string = `The '@${decoratorName}' decorator can only be used in 'class'.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905345' });
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
     validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass, isTypeFromSdk);
   }
@@ -781,7 +787,7 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
       const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with ObservedV2.`;
-      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905344' });
     }
     return;
   }
@@ -794,7 +800,7 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
     const message: string = `The '@${decoratorName}' can decorate only member ${info} within a 'class' decorated with ObservedV2.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905343' });
     return;
   }
 }
@@ -803,15 +809,15 @@ function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogI
   isObservedV1Class: boolean, isSendableClass: boolean): void {
   if (isSendableClass) {
     const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Sendable.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905342' });
   }
   if (isObservedV1Class) {
     const message: string = `The '@${decoratorName}' decorator can not be used in a 'class' decorated with Observed.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905341' });
   }
   if (ts.isDecorator(node.parent?.parent) && !ts.isPropertyDeclaration(node.parent?.parent?.parent)) {
     const message: string = `The '@${decoratorName}' can decorate only member variables in a 'class'.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905340' });
   }
 }
 
@@ -864,7 +870,7 @@ function validateMutilObserved(node: ts.ClassDeclaration, classResult: ClassDeco
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   if (classResult.hasObserved && classResult.hasObservedV2) {
     const message: string = `A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.`;
-    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905226' });
   }
 }
 
@@ -921,13 +927,13 @@ function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childCla
   if (childClassResult.hasObservedV2 && parentClassResult.hasObserved) {
     const message: string = `Because the current class is decorated by '@ObservedV2', ` +
       `it can not inherit a class decorated by '@Observed'.`;
-    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode, { code: '10905225' });
     return;
   }
   if (childClassResult.hasObserved && parentClassResult.hasObservedV2) {
     const message: string = `Because the current class is decorated by '@Observed', ` +
       `it can not inherit a class decorated by '@ObservedV2'.`;
-    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode);
+    addLog(LogType.ERROR, message, childClass.getStart(), log, sourceFileNode, { code: '10905224' });
     return;
   }
 }
@@ -939,31 +945,29 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
     if (isComponentV2) {
       if (constantDefine.COMPONENT_MEMBER_DECORATOR_V1.includes(name)) {
         const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
-        addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+        addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905339' });
       }
     } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
-      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905338' });
     }
   } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
     const message: string = `The '@${decoratorName}' decorator can only be used with 'struct'.`;
-    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905337' });
   }
 }
 
 function validateMethodDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   structContext: boolean, decoratorName: string): void {
-  let message: string;
   if (ts.isMethodDeclaration(node.parent.parent) ||
     (ts.isDecorator(node.parent.parent) && ts.isMethodDeclaration(node.parent.parent.parent))) {
     if (!structContext && STRUCT_CONTEXT_METHOD_DECORATORS.has(`@${decoratorName}`)) {
-      message = `The '@${decoratorName}' decorator can only be used in 'struct'.`;
+      const message: string = `The '@${decoratorName}' decorator can only be used in 'struct'.`;
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905114' });
     }
     if (CHECK_EXTEND_DECORATORS.includes(decoratorName)) {
-      message = `The '@${decoratorName}' decorator can not be a member property method of a 'class' or 'struct'.`;
-    }
-    if (message) {
-      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode);
+      const message: string = `The '@${decoratorName}' decorator can not be a member property method of a 'class' or 'struct'.`;
+      addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905113' });
     }
   }
 }
@@ -1013,11 +1017,17 @@ function checkNoChildComponent(node: ts.EtsComponentExpression, sourceFileNode: 
   if (hasChild(node, isCheckType)) {
     const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
     const pos: number = node.expression.getStart();
-    const message: string = isCheckType.name === null ?
-      `The component '${componentName}' can't have any child.` :
-      `When the component '${componentName}' set '${isCheckType.name}' is '${isCheckType.value}'` +
+    let message: string;
+    let code: string | undefined;
+    if (isCheckType.name === null) {
+      message = `The component '${componentName}' can't have any child.`;
+      code = '10905222';
+    } else {
+      message = `When the component '${componentName}' set '${isCheckType.name}' is '${isCheckType.value}'` +
         `, can't have any child.`;
-    addLog(LogType.ERROR, message, pos, log, sourceFileNode);
+      code = '10905223';
+    }
+    addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code });
   }
 }
 
@@ -1068,11 +1078,17 @@ function checkOneChildComponent(node: ts.EtsComponentExpression, allComponentNam
   if (hasNonSingleChild(node, allComponentNames, isCheckType)) {
     const componentName: string = (node.expression as ts.Identifier).escapedText.toString();
     const pos: number = node.expression.getStart();
-    const message: string = isCheckType.name === null ?
-      `The component '${componentName}' can only have a single child component.` :
-      `When the component '${componentName}' set '${isCheckType.name}' is ` +
+    let message: string;
+    let code: string | undefined;
+    if (isCheckType.name === null) {
+      message = `The component '${componentName}' can only have a single child component.`;
+      code = '10905220';
+    } else {
+      message = `When the component '${componentName}' set '${isCheckType.name}' is ` +
         `'${isCheckType.value}', can only have a single child component.`;
-    addLog(LogType.ERROR, message, pos, log, sourceFileNode);
+      code = '10905221';
+    }
+    addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code });
   }
 }
 
@@ -1184,7 +1200,7 @@ function checkSpecificChildComponent(node: ts.EtsComponentExpression, allCompone
       Array.from(SPECIFIC_CHILD_COMPONENT.get(componentName)).join(' and ');
     const message: string =
       `The component '${componentName}' can only have the child component ${specificChildArray}.`;
-    addLog(LogType.ERROR, message, pos, log, sourceFileNode);
+    addLog(LogType.ERROR, message, pos, log, sourceFileNode, { code: '10905219' });
   }
 }
 
@@ -1802,7 +1818,8 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
         transformLog.errors.push({
           type: LogType.ERROR,
           message: `'${decorators[i].getText()}' can not decorate the method.`,
-          pos: decorators[i].getStart()
+          pos: decorators[i].getStart(),
+          code: '10905112'
         });
       }
     }

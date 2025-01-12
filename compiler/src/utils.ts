@@ -44,6 +44,11 @@ import {
   USE_SHARED_STORAGE,
   STORAGE
 } from './pre_define';
+import { 
+  ERROR_DESCRIPTION,
+  HvigorLogInfo,
+  HvigorErrorInfo
+} from './hvigor_error_code/hvigor_error_info';
 
 export enum LogType {
   ERROR = 'ERROR',
@@ -62,7 +67,7 @@ const LINUX: string = 'Linux';
 const MAC: string = 'Darwin';
 const HARMONYOS: string = 'HarmonyOS';
 
-export interface LogInfo {
+export interface LogInfo extends HvigorLogInfo {
   type: LogType,
   message: string,
   pos?: number,
@@ -79,37 +84,82 @@ export interface IFileLog {
   cleanUp(): void
 }
 
+export function buildErrorInfoFromLogInfo(info: LogInfo, fileName: string): HvigorErrorInfo {
+  const positionMessage: string = info.line && info.column ? `${fileName}:${info.line}:${info.column}` : fileName;
+  return new HvigorErrorInfo()
+    .setCode(info.code)
+    .setDescription(info.description ?? ERROR_DESCRIPTION)
+    .setCause(info.cause ?? info.message)
+    .setPosition(`File: ${positionMessage}`)
+    .setSolutions(info.solutions ?? []);
+}
+
+export function isHvigorLogInfo(logInfo: LogInfo): boolean {
+  return !!logInfo.code;
+}
+
 export function emitLogInfo(loader: any, infos: LogInfo[], fastBuild: boolean = false,
-  resourcePath: string = null): void {
+  resourcePath: string | null = null, hvigorLogger: any = undefined): void {
   if (infos && infos.length) {
     infos.forEach((item) => {
-      switch (item.type) {
-        case LogType.ERROR:
-          fastBuild ? loader.error('\u001b[31m' + getMessage(item.fileName || resourcePath, item, true)) :
-            loader.emitError(getMessage(item.fileName || loader.resourcePath, item));
-          break;
-        case LogType.WARN:
-          fastBuild ? loader.warn('\u001b[33m' + getMessage(item.fileName || resourcePath, item, true)) :
-            loader.emitWarning(getMessage(item.fileName || loader.resourcePath, item));
-          break;
-        case LogType.NOTE:
-          fastBuild ? loader.info('\u001b[34m' + getMessage(item.fileName || resourcePath, item, true)) :
-            loader.emitWarning(getMessage(loader.resourcePath, item));
-          break;
-      }
+      hvigorLogger ? emitLogInfoFromHvigorLogger(hvigorLogger, item, loader, fastBuild, resourcePath) 
+        : emitLogInfoFromLoader(loader, item, fastBuild, resourcePath);
     });
   }
 }
 
-export function addLog(type: LogType, message: string, pos: number, log: LogInfo[],
-  sourceFile: ts.SourceFile) {
+function emitLogInfoFromHvigorLogger(hvigorLogger: any, info: LogInfo, loader: any, 
+  fastBuild: boolean, resourcePath: string | null): void {
+  if (!isHvigorLogInfo(info)) {
+    return emitLogInfoFromLoader(loader, info, fastBuild, resourcePath);
+  }
+  const errorInfo: HvigorErrorInfo = buildErrorInfoFromLogInfo(info, info.fileName || resourcePath);
+  switch (info.type) {
+    case LogType.ERROR:
+      hvigorLogger.printError(errorInfo);
+      break;
+    case LogType.WARN:
+      hvigorLogger.printWarn(errorInfo);
+      break;
+    case LogType.NOTE:
+      hvigorLogger.printInfo(errorInfo);
+      break;
+  }
+}
+
+function emitLogInfoFromLoader(loader: any, info: LogInfo, fastBuild: boolean = false,
+  resourcePath: string | null = null): void {
+  const message: string = fastBuild ? '\u001b[31m' + getMessage(info.fileName || resourcePath, info, true)
+    : getMessage(info.fileName || loader.resourcePath, info);
+  switch (info.type) {
+    case LogType.ERROR:
+      fastBuild ? loader.error(message) : loader.emitError(message);
+      break;
+    case LogType.WARN:
+      fastBuild ? loader.warn(message) : loader.emitWarning(message);
+      break;
+    case LogType.NOTE:
+      fastBuild ? loader.info(message) : loader.emitWarning(message);
+      break;
+  }
+}
+
+export function addLog(
+  type: LogType, 
+  message: string, 
+  pos: number, 
+  log: LogInfo[],
+  sourceFile: ts.SourceFile,
+  hvigorLogInfo?: HvigorLogInfo
+): void {
   const posOfNode: ts.LineAndCharacter = sourceFile.getLineAndCharacterOfPosition(pos);
   log.push({
     type: type,
     message: message,
     line: posOfNode.line + 1,
     column: posOfNode.character + 1,
-    fileName: sourceFile.fileName
+    fileName: sourceFile.fileName,
+    ...hvigorLogInfo
   });
 }
 
@@ -197,7 +247,8 @@ export function hasDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration
       log.push({
         type: LogType.ERROR,
         message: `The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.`,
-        pos: node.getStart()
+        pos: node.getStart(),
+        code: '10905111'
       });
     }
     return (decortorName === COMPONENT_EXTEND_DECORATOR && extendResult.Extend) ||

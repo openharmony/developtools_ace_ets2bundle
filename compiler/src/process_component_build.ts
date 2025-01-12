@@ -371,7 +371,8 @@ function validateRootNode(node: ts.MethodDeclaration, log: LogInfo[]): boolean {
     log.push({
       type: LogType.ERROR,
       message: `There should have a root container component.`,
-      pos: node.body.statements.pos
+      pos: node.body.statements.pos,
+      code: '10905210'
     });
   }
   return isValid;
@@ -540,7 +541,8 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
         log.push({
           type: LogType.ERROR,
           message: `Only UI component syntax can be written in build method.`,
-          pos: item.getStart()
+          pos: item.getStart(),
+          code: '10905209'
         });
       }
       storedFileInfo.lazyForEachInfo.isDependItem = false;
@@ -733,7 +735,8 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
       type: LogType.ERROR,
       message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
         '@BuilderParam, and its @BuilderParam expects no parameter.',
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905102'
     });
     return null;
   }
@@ -1899,7 +1902,8 @@ function processInnerIfStatement(node: ts.IfStatement, id: number, log: LogInfo[
     log.push({
       type: LogType.ERROR,
       message: 'Condition expression cannot be null in if statement.',
-      pos: node.expression.getStart()
+      pos: node.expression.getStart(),
+      code: '10905208'
     });
     node = ts.factory.updateIfStatement(node, ts.factory.createIdentifier(COMPONENT_IF_UNDEFINED),
       node.thenStatement, node.elseStatement);
@@ -1922,7 +1926,8 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
     log.push({
       type: LogType.ERROR,
       message: 'Then statement cannot be null in if statement.',
-      pos: thenStatement.expression.getStart()
+      pos: thenStatement.expression.getStart(),
+      code: '10905208'
     });
   }
   if (thenStatement) {
@@ -2764,7 +2769,8 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
       log.push({
         type: LogType.ERROR,
         message: `Doesn't support Extend function now`,
-        pos: temp.getStart()
+        pos: temp.getStart(),
+        code: '10906205'
       });
     }
     let functionName: string = '';
@@ -3333,7 +3339,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     log.push({
       type: LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905204'
     });
   }
   return null;
@@ -3382,7 +3389,8 @@ export function validateStateStyleSyntax(temp, log: LogInfo[]): void {
   log.push({
     type: LogType.ERROR,
     message: `.stateStyles doesn't conform standard.`,
-    pos: temp.getStart()
+    pos: temp.getStart(),
+    code: '10905203'
   });
 }
 
@@ -3450,7 +3458,8 @@ function checkButtonParamHasLabel(node: ts.EtsComponentExpression, log: LogInfo[
         log.push({
           type: LogType.ERROR,
           message: 'The Button component with a label parameter can not have any child.',
-          pos: node.getStart()
+          pos: node.getStart(),
+          code: '10905202'
         });
         return;
       }
