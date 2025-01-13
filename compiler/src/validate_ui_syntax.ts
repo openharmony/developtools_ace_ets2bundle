@@ -298,10 +298,10 @@ function validateEntryAndPreviewCount(result: DecoratorResult, fileQuery: string
     !abilityPagesFullPath.has(path.resolve(fileName).toLowerCase())) {
     log.push({
       type: LogType.ERROR,
-      message: `A page configured in '${projectConfig.pagesJsonFileName} or build-profile.json5' must have one and only one '@Entry' decorator.` +
-        `Solutions:>Please make sure that the splash page has one and only one '@Entry' decorator.`,
+      message: `A page configured in '${projectConfig.pagesJsonFileName} or build-profile.json5' must have one and only one '@Entry' decorator.`,
       fileName: fileName,
-      code: '10905402'
+      code: '10905402',
+      solutions: [`Please make sure that the splash page has one and only one '@Entry' decorator.`]
     });
   }
 }
@@ -393,11 +393,11 @@ function validateStruct(hasInnerComponentDecorator: boolean, componentName: stri
     addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905229' });
   } else if (structInfo.isReusableV2 && !structInfo.isComponentV2) {
     const message: string = `@ReusableV2 is only applicable to custom components decorated by @ComponentV2.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905242' });
   }
   if (structInfo.isReusable && structInfo.isReusableV2) {
-    const message: string = `The @Reusable and @ReusableV2 decorators cannot be applied simultaneously.`;
-    addLog(LogType.ERROR, message, component.pos, log, sourceFile);
+    const message: string = `The @Reusable and @ReusableV2 decoraotrs cannot be applied simultaneously.`;
+    addLog(LogType.ERROR, message, component.pos, log, sourceFile, { code: '10905241' });
   }
   if (BUILDIN_STYLE_NAMES.has(componentName) && !COMPONENT_SYSTEMAPI_NAMES.has(componentName)) {
     const message: string = `The struct '${componentName}' cannot have the same name ` +

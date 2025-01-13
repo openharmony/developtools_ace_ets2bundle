@@ -881,7 +881,7 @@ function updateBuilderParamProperty(node: ts.PropertyDeclaration,
       type: LogType.ERROR,
       message: 'BuilderParam property can only initialized by Builder function or LocalBuilder method in struct.',
       pos: node.getStart(),
-      code: '10905302'
+      code: '10905101'
     });
   }
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(

@@ -1927,7 +1927,7 @@ function processThenStatement(thenStatement: ts.Statement, id: number,
       type: LogType.ERROR,
       message: 'Then statement cannot be null in if statement.',
       pos: thenStatement.expression.getStart(),
-      code: '10905208'
+      code: '10905207'
     });
   }
   if (thenStatement) {
@@ -2165,7 +2165,8 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     log.push({
       type: isStylesUIComponent ? LogType.WARN :LogType.ERROR,
       message: `'${node.getText()}' does not meet UI component syntax.`,
-      pos: node.getStart()
+      pos: node.getStart(),
+      code: '10905206'
     });
   }
   while (temp && ts.isCallExpression(temp) && temp.expression) {
@@ -3657,7 +3658,8 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
       log.push({
         type: LogType.ERROR,
         message: `The '${name}' component can only be nested in the '${specificParentArray}' parent component.`,
-        pos: node.expression.getStart()
+        pos: node.expression.getStart(),
+        code: '10905201'
       });
     }
   }
