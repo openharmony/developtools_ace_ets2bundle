@@ -95,6 +95,8 @@ export function buildErrorInfoFromLogInfo(info: LogInfo, fileName: string): Hvig
 }
 
 export function isHvigorLogInfo(logInfo: LogInfo): boolean {
+  // Hvigor logger requires code as mendatory attribute.
+  // ArkUI warnings or info are not using Hvigor logger to emit.
   return logInfo.code !== undefined;
 }
 
